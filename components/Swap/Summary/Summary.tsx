@@ -26,13 +26,15 @@ type SwapInfoProps = {
     destinationAddress: string;
     hasRefuel?: boolean;
     refuelAmount?: number;
-    fee: number
+    fee: number,
+    exchange_account_connected: boolean;
+    exchange_account_name?: string;
 }
 
-const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee }) => {
+const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name }) => {
     const { resolveImgSrc, currencies, networks } = useSettingsState()
     const { address: evmAddress } = useAccount();
-    const { starknetAccount, authorizedCoinbaseAccount } = useWalletState()
+    const { starknetAccount } = useWalletState()
     const {
         hideFrom,
         hideTo,
@@ -69,8 +71,8 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     else if (sourceAddressType === NetworkAddressType.starknet && starknetAccount && !from?.isExchange) {
         sourceAccountAddress = shortenAddress(starknetAccount?.account?.address);
     }
-    else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && authorizedCoinbaseAccount) {
-        sourceAccountAddress = shortenEmail(authorizedCoinbaseAccount?.note);
+    else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
+        sourceAccountAddress = shortenEmail(exchange_account_name);
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
@@ -84,7 +86,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                     <div className="flex items-center gap-2">
                         <Image src={resolveImgSrc(source)} alt={sourceDisplayName} width={30} height={30} className="rounded-md" />
                         <div>
-                            <p className="text-primary-text text-lg leading-5">{sourceDisplayName}</p>
+                            <p className="text-white text-lg leading-5">{sourceDisplayName}</p>
                             {
                                 sourceAccountAddress &&
                                 <p className="text-sm text-primary-text">{sourceAccountAddress}</p>
@@ -101,7 +103,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                     <div className="flex items-center gap-2">
                         <Image src={resolveImgSrc(destination)} alt={destinationDisplayName} width={30} height={30} className="rounded-md" />
                         <div>
-                            <p className="text-primary-text text-lg leading-5">{destinationDisplayName}</p>
+                            <p className="text-white text-lg leading-5">{destinationDisplayName}</p>
                             <p className="text-sm text-primary-text">{shortenAddress(destAddress)}</p>
                         </div>
                     </div>

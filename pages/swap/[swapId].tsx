@@ -4,7 +4,6 @@ import { LayerSwapSettings } from '../../Models/LayerSwapSettings';
 import { InferGetServerSidePropsType } from 'next';
 import React from 'react';
 import { SwapDataProvider } from '../../context/swap';
-import { UserExchangeProvider } from '../../context/userExchange';
 import SwapWithdrawal from '../../components/SwapWithdrawal';
 import LayerSwapAuthApiClient from '../../lib/userAuthApiClient';
 import { validateSignature } from '../../helpers/validateSignature';
@@ -18,11 +17,9 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
   return (
     <Layout settings={appSettings}>
       <SwapDataProvider >
-        <UserExchangeProvider>
           <TimerProvider>
             <SwapWithdrawal />
           </TimerProvider>
-        </UserExchangeProvider>
       </SwapDataProvider >
     </Layout>
   )

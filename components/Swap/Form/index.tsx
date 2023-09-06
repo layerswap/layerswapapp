@@ -10,7 +10,6 @@ import axios from "axios";
 import ConnectImmutableX from "./ConnectImmutableX";
 import ConnectNetwork from "../../ConnectNetwork";
 import toast from "react-hot-toast";
-import { clearTempData, getTempData } from "../../../lib/openLink";
 import KnownInternalNames from "../../../lib/knownIds";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import { generateSwapInitialValues } from "../../../lib/generateSwapInitialValues";
@@ -46,7 +45,7 @@ export default function () {
 
     const settings = useSettingsState();
     const query = useQueryState();
-    const { setDepositeAddressIsfromAccount, createSwap } = useSwapDataUpdate()
+    const { createSwap } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?name=${query?.addressSource}`, layerswapApiClient.fetcher)
@@ -103,16 +102,6 @@ export default function () {
                 }
             }
 
-            if (query.addressSource === "imxMarketplace" && settings.validSignatureisPresent) {
-                try {
-                    const account = await layerswapApiClient.GetWhitelistedAddress(values?.to?.internal_name, query.destAddress)
-                }
-                catch (e) {
-                    //TODO handle account not found
-                    const internalApiClient = new InternalApiClient()
-                    await internalApiClient.VerifyWallet(window.location.search);
-                }
-            }
             const swapId = await createSwap(values, query, partner);
             await router.push(`/swap/${swapId}`)
         }

@@ -1,6 +1,5 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
-import useSWR from 'swr';
 import { useQueryState } from '../../../../context/query';
 import { useSettingsState } from '../../../../context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
@@ -8,10 +7,9 @@ import { useInterval } from '../../../../hooks/useInterval';
 import { Configs, usePersistedState } from '../../../../hooks/usePersistedState';
 import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
 import { parseJwt } from '../../../../lib/jwtParser';
-import LayerSwapApiClient, { UserExchangesData, WithdrawType } from '../../../../lib/layerSwapApiClient';
+import { WithdrawType } from '../../../../lib/layerSwapApiClient';
 import { OpenLink } from '../../../../lib/openLink';
 import TokenService from '../../../../lib/TokenService';
-import { ApiResponse } from '../../../../Models/ApiResponse';
 import SubmitButton from '../../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../../Carousel';
 import Widget from '../../../Wizard/Widget';
@@ -20,7 +18,7 @@ import KnownInternalNames from '../../../../lib/knownIds';
 import { Layer } from '../../../../Models/Layer';
 
 type Props = {
-    onAuthorized: (authorizedExchange: UserExchangesData) => void,
+    onAuthorized: () => void,
     onDoNotConnect: () => void,
     stickyFooter: boolean,
     hideHeader?: boolean,
@@ -50,10 +48,6 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount))
 
-    const layerswapApiClient = new LayerSwapApiClient()
-    const exchange_accounts_endpoint = `/exchange_accounts`
-    const { data: exchange_accounts } = useSWR<ApiResponse<UserExchangesData[]>>(authorizedAmount ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
-
     const handleTransferMannually = useCallback(() => {
         setWithdrawType(WithdrawType.Manually)
         onDoNotConnect()
@@ -82,17 +76,14 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     )
 
     useEffect(() => {
-        if (exchange_accounts && authorizedAmount) {
-            const authorizedExchange = exchange_accounts?.data?.find(e => e.exchange === exchange?.internal_name && e.type === 'authorize')
-            if (authorizedExchange) {
-                if (Number(authorizedAmount) < minimalAuthorizeAmount)
-                    toast.error("You did not authorize enough")
-                else {
-                    onAuthorized(authorizedExchange)
-                }
+        if (swap.exchange_account_connected && authorizedAmount) {
+            if (Number(authorizedAmount) < minimalAuthorizeAmount)
+                toast.error("You did not authorize enough")
+            else {
+                onAuthorized()
             }
         }
-    }, [exchange_accounts, authorizedAmount, minimalAuthorizeAmount])
+    }, [authorizedAmount, minimalAuthorizeAmount])
 
     const handleConnect = useCallback(() => {
         try {
@@ -103,7 +94,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
             const access_token = TokenService.getAuthData()?.access_token
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ SwapId: swap?.id, UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
-            const authWindow = OpenLink({ link: oauth_authorize_url + encoded,  query: query })
+            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, query: query })
             setAuthWindow(authWindow)
         }
         catch (e) {

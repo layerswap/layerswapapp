@@ -12,7 +12,7 @@ import SwapSummary from '../Summary';
 import Coinbase from './Coinbase';
 import { useQueryState } from '../../../context/query';
 import External from './External';
-import LayerSwapApiClient, { UserExchangesData, WithdrawType } from '../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { WithdrawType } from '../../../lib/layerSwapApiClient';
 import WalletIcon from '../../icons/WalletIcon';
 import { useAccount } from 'wagmi';
 import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
@@ -168,10 +168,10 @@ const Withdraw: FC = () => {
 }
 
 const WalletTransferContent: FC = () => {
-    const { isConnected, address, connector } = useAccount();
+    const { address, connector } = useAccount();
     const { openAccountModal } = useAccountModal();
-    const { starknetAccount, authorizedCoinbaseAccount } = useWalletState()
-    const { setStarknetAccount, setAuthorizedCoinbaseAccount } = useWalletUpdate()
+    const { starknetAccount } = useWalletState()
+    const { setStarknetAccount } = useWalletUpdate()
 
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
@@ -185,21 +185,19 @@ const WalletTransferContent: FC = () => {
 
     const sourceAddressType = GetDefaultNetwork(source_network, source_network_asset)?.address_type
 
-    const handleDisconnectCoinbase = useCallback(async () => {
-        try {
-            const apiClient = new LayerSwapApiClient()
-            await apiClient.DeleteExchange("coinbase")
-            setAuthorizedCoinbaseAccount(null)
-        }
-        catch (e) {
-            toast.error(e.message)
-        }
+    const handleReconnectCoinbase = useCallback(async () => {
+        // try {
+        //     const apiClient = new LayerSwapApiClient()
+        //     await apiClient.DeleteExchange("coinbase")
+        // }
+        // catch (e) {
+        //     toast.error(e.message)
+        // }
     }, [])
-
 
     const handleDisconnect = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
         if (swap.source_exchange) {
-            handleDisconnectCoinbase()
+            handleReconnectCoinbase()
         }
         else if (sourceAddressType === NetworkAddressType.evm) {
             wagmiDisconnect()
@@ -226,7 +224,7 @@ const WalletTransferContent: FC = () => {
             openAccountModal()
     }, [canOpenAccount, openAccountModal])
 
-    if (!accountAddress || (swap.source_exchange && !authorizedCoinbaseAccount)) {
+    if (!accountAddress || (swap.source_exchange && !swap.exchange_account_connected)) {
         return <>
             <div className='flex justify-center'>
                 <WalletIcon className='w-12 text-secondary-800/70' />
@@ -276,7 +274,7 @@ const WalletTransferContent: FC = () => {
                         {shortenAddress(accountAddress)}
                     </span>}
                     {swap.source_exchange && <span>
-                        {shortenEmail(authorizedCoinbaseAccount?.note)}
+                        {shortenEmail(swap?.exchange_account_name)}
                     </span>}
                 </div>
             </div>
