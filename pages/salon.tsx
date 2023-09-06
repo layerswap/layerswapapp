@@ -2,10 +2,10 @@ import Layout from '../components/layout'
 import React, { useEffect } from 'react'
 import { useRouter } from 'next/router';
 import { clearTempData, getTempData } from '../lib/openLink';
-import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import { InferGetServerSidePropsType } from 'next';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
+import { getServerSideProps } from '../helpers/getSettings';
 
 export default function Salon({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const router = useRouter();
@@ -51,23 +51,4 @@ export default function Salon({ settings }: InferGetServerSidePropsType<typeof g
     )
 }
 
-export async function getServerSideProps(context) {
-
-    context.res.setHeader(
-        'Cache-Control',
-        's-maxage=60, stale-while-revalidate'
-    );
-
-    var apiClient = new LayerSwapApiClient();
-    const { data: settings } = await apiClient.GetSettingsAsync()
-
-    const resource_storage_url = settings.discovery.resource_storage_url
-    if (resource_storage_url[resource_storage_url.length - 1] === "/")
-        settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
-
-    LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
-
-    return {
-        props: { settings }
-    }
-}
+export { getServerSideProps };

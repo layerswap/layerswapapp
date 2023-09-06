@@ -8,6 +8,7 @@ export interface SwapButtonProps {
   type?: 'submit' | 'reset' | 'button' | undefined;
   onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
   className?: string
+  children?: React.ReactNode
 }
 
 const SwapButton: FC<SwapButtonProps> = (props) => {

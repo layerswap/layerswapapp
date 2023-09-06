@@ -74,7 +74,7 @@ const WalletTransfer: FC = () => {
 
 }
 
-const Wrapper: FC = ({ children }) => {
+const Wrapper: FC<{ children?: React.ReactNode }> = ({ children }) => {
     return <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
         {children}
     </div>

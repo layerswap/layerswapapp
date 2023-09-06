@@ -10,7 +10,6 @@ import axios from "axios";
 import ConnectImmutableX from "./ConnectImmutableX";
 import ConnectNetwork from "../../ConnectNetwork";
 import toast from "react-hot-toast";
-import { clearTempData, getTempData } from "../../../lib/openLink";
 import KnownInternalNames from "../../../lib/knownIds";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import { generateSwapInitialValues } from "../../../lib/generateSwapInitialValues";
@@ -46,7 +45,7 @@ export default function () {
 
     const settings = useSettingsState();
     const query = useQueryState();
-    const { setDepositeAddressIsfromAccount, createSwap } = useSwapDataUpdate()
+    const { createSwap } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?name=${query?.addressSource}`, layerswapApiClient.fetcher)
@@ -54,43 +53,13 @@ export default function () {
 
 
     useEffect(() => {
-        if (query.coinbase_redirect) {
-            const temp_data = getTempData()
-            const five_minutes_before = new Date(new Date().setMinutes(-5))
-            let formValues = { ...temp_data?.swap_data }
-            const source = formValues?.from
-            if (new Date(temp_data?.date) >= five_minutes_before) {
-                (async () => {
-                    try {
-
-                        if (temp_data?.swap_data?.to?.isExchange) {
-                            const layerswapApiClient = new LayerSwapApiClient(router)
-                            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(KnownInternalNames.Exchanges.Coinbase, temp_data.swap_data?.currency?.asset)
-                            formValues.destination_address = deposit_address?.data
-                            setDepositeAddressIsfromAccount(true)
-                        }
-                    }
-                    catch (e) {
-                        toast(e?.response?.data?.error?.message || e.message)
-                    }
-
-                })()
-            }
-            if (temp_data) {
-                clearTempData()
-                formikRef.current.resetForm({ values: formValues })
-            }
-            setLoading(false)
-        }
-        else {
-            const initialValues = generateSwapInitialValues(settings, query)
-            formikRef.current.resetForm({ values: initialValues })
-            formikRef.current.validateForm(initialValues)
-            setLoading(false)
-        }
+        const initialValues = generateSwapInitialValues(settings, query)
+        formikRef.current.resetForm({ values: initialValues })
+        formikRef.current.validateForm(initialValues)
+        setLoading(false)
     }, [query, settings])
 
-    
+
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
             const destination_internal_name = values?.to?.internal_name
@@ -133,16 +102,6 @@ export default function () {
                 }
             }
 
-            if (query.addressSource === "imxMarketplace" && settings.validSignatureisPresent) {
-                try {
-                    const account = await layerswapApiClient.GetWhitelistedAddress(values?.to?.internal_name, query.destAddress)
-                }
-                catch (e) {
-                    //TODO handle account not found
-                    const internalApiClient = new InternalApiClient()
-                    await internalApiClient.VerifyWallet(window.location.search);
-                }
-            }
             const swapId = await createSwap(values, query, partner);
             await router.push(`/swap/${swapId}`)
         }

@@ -6,6 +6,7 @@ type SecondaryButtonProps = {
     size?: buttonSize
     onClick?: MouseEventHandler<HTMLButtonElement>
     className?: string
+    children?: React.ReactNode
 }
 
 const SecondaryButton: FC<SecondaryButtonProps> = ({ size = 'md', onClick, children, className }) => {

@@ -1,6 +1,6 @@
 import { useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
-import { AddressBookItem, UserExchangesData } from "../../lib/layerSwapApiClient";
+import { AddressBookItem } from "../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";

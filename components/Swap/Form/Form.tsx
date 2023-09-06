@@ -5,7 +5,7 @@ import SwapButton from "../../buttons/swapButton";
 import React from "react";
 import NetworkFormField from "../../Input/NetworkFormField";
 import AmountField from "../../Input/Amount";
-import LayerSwapApiClient, { AddressBookItem, UserExchangesData } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
 import AmountAndFeeDetails from "../../DisclosureComponents/amountAndFeeDetailsComponent";
@@ -57,7 +57,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies);
     const partnerImage = partner?.organization_name ? settings.resolveImgSrc(partner) : null
-    const router = useRouter();
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()
     const query = useQueryState();
@@ -73,7 +72,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const handleConfirmToggleChange = (value: boolean) => {
         setFieldValue('refuel', value)
     }
-
     const depositeAddressIsfromAccountRef = useRef(depositeAddressIsfromAccount);
 
     useEffect(() => {
@@ -81,23 +79,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         return () => depositeAddressIsfromAccountRef.current = null
     }, [depositeAddressIsfromAccount])
 
-    const handleExchangeConnected = useCallback(async () => {
-        if (!destination || !values.currency)
-            return
-        try {
-            const layerswapApiClient = new LayerSwapApiClient(router)
-            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(destination?.internal_name, values?.currency?.asset)
-            setFieldValue("destination_address", deposit_address.data)
-            setDepositeAddressIsfromAccount(true)
-        }
-        catch (e) {
-            toast(e?.response?.data?.error?.message || e.message)
-        }
-    }, [values])
-
     useEffect(() => {
-        if (depositeAddressIsfromAccountRef.current)
-            handleExchangeConnected()
         if (!destination?.isExchange && !GetNetworkCurrency(source, asset)?.is_refuel_enabled) {
             handleConfirmToggleChange(false)
         }

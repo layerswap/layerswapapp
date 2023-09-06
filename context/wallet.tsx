@@ -1,39 +1,31 @@
-import React, { FC, useCallback, useState } from 'react'
-import { KnownErrorCode } from '../Models/ApiError';
+import React, { FC, useState } from 'react'
 import { Steps } from '../Models/Wizard';
-import { AccountInterface } from 'starknet';
 import { StarknetWindowObject } from 'get-starknet';
-import { UserExchangesData } from '../lib/layerSwapApiClient';
 
-const WalletStateContext = React.createContext(null);
+export const WalletStateContext = React.createContext(null);
 const WalletStateUpdateContext = React.createContext(null);
 
 export type WizardProvider<T> = {
     starknetAccount: StarknetWindowObject,
-    authorizedCoinbaseAccount: UserExchangesData,
 }
 
 type UpdateInterface<T> = {
     setStarknetAccount: (account: StarknetWindowObject) => void,
-    setAuthorizedCoinbaseAccount: (value: UserExchangesData) => void,
 }
 
-type Props<T> = {
+type Props = {
     children?: JSX.Element | JSX.Element[];
 }
 
-export const WalletDatadProvider: FC = <T extends Steps>({ children }) => {
+export const WalletDatadProvider: FC<Props> = <T extends Steps>({ children }) => {
     const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject>()
-    const [authorizedCoinbaseAccount, setAuthorizedCoinbaseAccount] = useState<UserExchangesData>()
 
     return (
         <WalletStateContext.Provider value={{
             starknetAccount,
-            authorizedCoinbaseAccount
         }}>
             <WalletStateUpdateContext.Provider value={{
                 setStarknetAccount,
-                setAuthorizedCoinbaseAccount
             }}>
                 {children}
             </WalletStateUpdateContext.Provider>

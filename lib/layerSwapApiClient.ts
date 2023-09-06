@@ -22,7 +22,7 @@ export default class LayerSwapApiClient {
 
     async GetSettingsAsync(): Promise<ApiResponse<LayerSwapSettings>> {
         const version = process.env.NEXT_PUBLIC_API_VERSION
-        return await (await fetch(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${version}`))?.json();
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${version}`).then(res => res.data);
     }
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<CreateSwapData>> {
@@ -34,7 +34,6 @@ export default class LayerSwapApiClient {
         const version = process.env.NEXT_PUBLIC_API_VERSION
         return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}${status ? `&status=${status}` : ''}&version=${version}`);
     }
-
 
     async GetPendingSwapsAsync(): Promise<ApiResponse<SwapItem[]>> {
         const version = process.env.NEXT_PUBLIC_API_VERSION
@@ -55,46 +54,6 @@ export default class LayerSwapApiClient {
 
     async GenerateDepositAddress(network: string): Promise<ApiResponse<DepositAddress>> {
         return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/deposit_addresses/${network}`);
-    }
-
-    async GetExchangeAccounts(): Promise<ApiResponse<UserExchangesData[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<UserExchangesData[]>>("GET", '/exchange_accounts');
-    }
-    async GetExchangeAccount(exchange: string, type?: number): Promise<ApiResponse<UserExchangesData>> {
-        return await this.AuthenticatedRequest<ApiResponse<UserExchangesData>>("GET", `/exchange_accounts/${exchange}?type=${type || 0}`);
-    }
-    async GetExchangeDepositAddress(exchange: string, currency: string): Promise<ApiResponse<string>> {
-        return await this.AuthenticatedRequest<ApiResponse<string>>("GET", `/exchange_accounts/${exchange}/deposit_address/${currency}`);
-    }
-    async DeleteExchange(exchange: string): Promise<ApiResponse<void>> {
-        try {
-            await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/exchange_accounts/${exchange}?type=0`);
-        }
-        catch (e) {
-            //TODO handle types in backend
-        }
-        try {
-            await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/exchange_accounts/${exchange}?type=1`);
-        }
-        catch (e) {
-            //TODO handle types in backend
-        }
-        return
-    }
-    async ConnectExchangeApiKeys(params: ConnectParams): Promise<ApiResponse<void>> {
-        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", '/exchange_accounts', params);
-    }
-
-    async ProcessPayment(id: string, twoFactorCode?: string): Promise<ApiResponse<void>> {
-        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${id}/initiate${twoFactorCode ? `?confirmationCode=${twoFactorCode}` : ''}`);
-    }
-
-    async GetWhitelistedAddress(networkName: string, address: string): Promise<ApiResponse<NetworkAccount>> {
-        return await this.AuthenticatedRequest<ApiResponse<NetworkAccount>>("GET", `/whitelisted_addresses/${networkName}/${address}`,);
-    }
-
-    async CreateWhitelistedAddress(params: NetworkAccountParams): Promise<ApiResponse<void>> {
-        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/whitelisted_addresses`, params);
     }
 
     async WithdrawFromExchange(swapId: string, exchange: string, twoFactorCode?: string): Promise<ApiResponse<void>> {
@@ -140,12 +99,6 @@ export enum DepositAddressSource {
     Managed = 1
 }
 
-type WhitelistedAddressesParams = {
-    address: string,
-    network: string,
-    user_id: string
-}
-
 type NetworkAccountParams = {
     address: string,
     network: string,
@@ -180,11 +133,11 @@ export type SwapItem = {
     status: SwapStatus,
     destination_address: string,
     requested_amount: number,
-    message: string,
-    reference_id: string,
-    app_name: string,
-    refuel_price: number,
-    refuel_transaction_id: string,
+    message?: string,
+    reference_id?: string,
+    app_name?: string,
+    refuel_price?: number,
+    refuel_transaction_id?: string,
     source_network_asset: string,
     source_network: string,
     source_exchange: string,
@@ -193,10 +146,9 @@ export type SwapItem = {
     destination_exchange: string,
     transactions: Transaction[]
     has_refuel?: boolean,
-    has_sucessfull_published_tx: boolean;
-    metadata?: {
-        'STRIPE:SessionId': string
-    },
+    exchange_account_connected: boolean;
+    exchange_account_name?: string;
+    fiat_session_id?: string;
     has_pending_deposit: boolean;
     sequence_number: number;
 }
@@ -219,14 +171,21 @@ type Transaction = {
     max_confirmations: number,
     explorer_url: string,
     account_explorer_url: string,
-    usd_value: number
-    usd_price: number
+    usd_value: number,
+    usd_price: number,
+    status: TransactionStatus,
 }
 
 export enum TransactionType {
     Input = 'input',
     Output = 'output',
     Refuel = 'refuel'
+}
+
+export enum TransactionStatus {
+    Completed = 'completed',
+    Initiated = 'initiated',
+    Pending = 'pending'
 }
 
 export type Fee = {
@@ -277,13 +236,6 @@ export type ConnectParams = {
     api_secret: string,
     keyphrase?: string,
     exchange: string
-}
-
-export type UserExchangesData = {
-    id: string;
-    exchange: string;
-    note: string;
-    type: "connect" | "authorize"
 }
 
 export type CreateSwapData = {
