@@ -16,6 +16,7 @@ import ToggleButton from "../buttons/toggleButton";
 import Modal from "../modal/modal";
 import HeaderWithMenu from "../HeaderWithMenu";
 import Link from "next/link";
+import AppSettings from "../../lib/AppSettings";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
@@ -313,7 +314,7 @@ function TransactionsHistory() {
                   <Scroll className='h-40 w-40 text-secondary-700 mx-auto' />
                   <p className="my-2 text-xl">It's empty here</p>
                   <p className="px-14 text-primary-text">You can find all your transactions by searching with address in</p>
-                  <Link target="_blank" href="https://www.layerswap.io/explorer" className="underline hover:no-underline cursor-pointer hover:text-primary-text text-white font-light">
+                  <Link target="_blank" href={AppSettings.ExplorerURl} className="underline hover:no-underline cursor-pointer hover:text-primary-text text-white font-light">
                     <span>Layerswap Explorer</span>
                   </Link>
                 </div>
