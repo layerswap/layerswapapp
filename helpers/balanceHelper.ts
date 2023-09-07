@@ -1,5 +1,5 @@
-import { PublicClient, erc20ABI, usePublicClient } from 'wagmi';
-import { parseEther, encodeFunctionData } from 'viem'
+import { erc20ABI } from 'wagmi';
+import { parseEther, encodeFunctionData, PublicClient } from 'viem'
 import { multicall, fetchBalance, fetchFeeData, FetchBalanceResult } from '@wagmi/core'
 import { BaseL2Asset, Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
@@ -30,12 +30,12 @@ export type Gas = {
     gas: number,
 }
 
-export const resolveFeeData = async (chainId: number) => {
+export const resolveFeeData = async (publicClient: PublicClient, chainId: number) => {
     try {
-        const feeData = await fetchFeeData({
-            chainId,
-        })
-        return feeData
+
+        const gasPrice = await publicClient.getGasPrice()
+        const maxFeePerGas = await publicClient.estimateMaxPriorityFeePerGas()
+        return { gasPrice, maxFeePerGas }
     } catch (e) {
         //TODO: log the error to our logging service
         console.log(e)
@@ -195,7 +195,7 @@ const GetOptimismGas = async (publicClient: PublicClient, chainId: number, accou
 }
 
 const GetGas = async (publicClient: PublicClient, chainId: number, account: `0x${string}`, nativeBalance: Balance, currency: Currency, contract_address: `0x${string}`) => {
-    const feeData = await resolveFeeData(Number(chainId))
+    const feeData = await resolveFeeData(publicClient, Number(chainId))
     const estimatedGas = contract_address ?
         await estimateGas(publicClient, account, contract_address)
         : await estimateNativeGas(publicClient, account)
