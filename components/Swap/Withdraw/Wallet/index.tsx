@@ -5,11 +5,11 @@ import { useSwapDataState } from "../../../../context/swap"
 import { DepositType } from "../../../../lib/NetworkSettings"
 import KnownInternalNames from "../../../../lib/knownIds"
 import LayerSwapApiClient, { DepositAddress, DepositAddressSource, Fee } from "../../../../lib/layerSwapApiClient"
-import TransferFromWallet from "./ERC20Transfer"
 import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep"
 import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw"
 import useSWR from 'swr'
 import { useAccount } from "wagmi"
+import TransferFromWallet from "./WalletTransfer"
 
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
@@ -59,6 +59,7 @@ const WalletTransfer: FC = () => {
         </Wrapper>
     return <Wrapper>
         <TransferFromWallet
+            sequenceNumber={swap.sequence_number}
             swapId={swap.id}
             networkDisplayName={source_network?.display_name}
             tokenDecimals={sourceAsset?.decimals}

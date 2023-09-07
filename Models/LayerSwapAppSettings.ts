@@ -6,7 +6,7 @@ import { LayerSwapSettings } from "./LayerSwapSettings";
 import { Partner } from "./Partner";
 
 export class LayerSwapAppSettings extends LayerSwapSettings {
-    constructor(settings: LayerSwapSettings) {
+    constructor(settings: LayerSwapSettings | any) {
         super();
         Object.assign(this, settings)
 
@@ -16,6 +16,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
     layers?: Layer[]
 
     resolveImgSrc = (item: Layer | Currency | Pick<Layer, 'internal_name'> | { asset: string } | Partner) => {
+
         if (!item) {
             return "/images/logo_placeholder.png";
         }

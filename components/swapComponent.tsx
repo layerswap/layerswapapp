@@ -4,7 +4,7 @@ import { SwapDataProvider } from '../context/swap';
 import { MenuProvider } from '../context/menu';
 import { TimerProvider } from '../context/timerContext';
 import SwapForm from "./Swap/Form"
-import { WalletDatadProvider } from '../context/wallet';
+import { WalletDataProvider } from '../context/wallet';
 
 const Swap: FC = () => {
   return (
@@ -12,9 +12,9 @@ const Swap: FC = () => {
       <MenuProvider>
         <SwapDataProvider >
             <TimerProvider>
-              <WalletDatadProvider>
+              <WalletDataProvider>
                 <SwapForm />
-              </WalletDatadProvider>
+              </WalletDataProvider>
             </TimerProvider>
         </SwapDataProvider >
       </MenuProvider>

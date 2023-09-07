@@ -31,6 +31,9 @@ import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetw
 import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
+import { useWalletState, useWalletUpdate } from "../../../context/wallet";
+import { useAccount } from "wagmi";
+import { truncateDecimals } from "../../utils/RoundDecimals";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -51,6 +54,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const source = values.from
     const asset = values.currency?.asset
     const { authData } = useAuthState()
+    const { getBalance, getGas } = useWalletUpdate()
+    const { balances, gases } = useWalletState()
+    const { address } = useAccount()
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
@@ -145,6 +151,19 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
 
     }, [source, destination, query, settings, lockedCurrency])
 
+    useEffect(() => {
+        getBalance(values.from)
+    }, [values.from, values.destination_address, address])
+
+    const contract_address = values.from?.assets?.find(a => a.asset === values?.currency?.asset)?.contract_address
+    const walletBalance = balances?.find(b => b?.network === values?.from?.internal_name && b?.token === values?.currency?.asset)
+    const networkGas = gases?.[values.from?.internal_name]?.find(g => g.token === values?.currency?.asset)?.gas
+
+    useEffect(() => {
+        if (walletBalance)
+            getGas(values.from, values.currency)
+    }, [contract_address, values.currency, address, walletBalance])
+
     const destinationNetwork = GetDefaultNetwork(destination, values?.currency?.asset)
     const destination_native_currency = !destination?.isExchange && destinationNetwork?.native_currency
 
@@ -161,107 +180,122 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         && (query?.lockTo || query?.hideTo)
         && isValidAddress(query?.destAddress, destination)
 
-    return <>
-        <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-            <Widget className="sm:min-h-[504px]">
-                <Widget.Content>
-                    <div className='flex-col relative flex justify-between w-full space-y-4 mb-3.5 leading-4'>
-                        {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="from" label="From" />
-                        </div>}
-                        {!query?.hideFrom && !query?.hideTo && <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[74px] z-10 border-4 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed hover:text-primary disabled:text-primary-text duration-200 transition'>
-                            <motion.div
-                                animate={animate}
-                                transition={{ duration: 0.3 }}
-                                onTap={() => !valuesSwapperDisabled && cycle()}
-                            >
-                                <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-8 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />
-                            </motion.div>
-                        </button>}
-                        {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="to" label="To" />
-                        </div>}
-                    </div>
-                    <div className="mb-6 leading-4">
-                        <AmountField />
-                    </div>
-                    {
-                        !hideAddress &&
-                        <div className="w-full mb-3.5 leading-4">
-                            <label htmlFor="destination_address" className="block font-semibold text-primary-text text-sm">
-                                {`To ${values?.to?.display_name || ''} address`}
-                            </label>
-                            <AddressButton
-                                disabled={!values.to || !values.from}
-                                isPartnerWallet={isPartnerWallet}
-                                openAddressModal={() => setShowAddressModal(true)}
+    const handleReserveGas = useCallback(() => {
+        setFieldValue('amount', walletBalance.amount - networkGas)
+    }, [values.amount, walletBalance])
+
+    return <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
+        <Widget className="sm:min-h-[504px]">
+            <Widget.Content>
+                <div className='flex-col relative flex justify-between w-full space-y-4 mb-3.5 leading-4'>
+                    {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
+                        <NetworkFormField direction="from" label="From" />
+                    </div>}
+                    {!query?.hideFrom && !query?.hideTo && <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[74px] z-10 border-4 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed hover:text-primary disabled:text-primary-text duration-200 transition'>
+                        <motion.div
+                            animate={animate}
+                            transition={{ duration: 0.3 }}
+                            onTap={() => !valuesSwapperDisabled && cycle()}
+                        >
+                            <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-8 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />
+                        </motion.div>
+                    </button>}
+                    {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
+                        <NetworkFormField direction="to" label="To" />
+                    </div>}
+                </div>
+                <div className="mb-6 leading-4">
+                    <AmountField />
+                </div>
+                {
+                    !hideAddress &&
+                    <div className="w-full mb-3.5 leading-4">
+                        <label htmlFor="destination_address" className="block font-semibold text-primary-text text-sm">
+                            {`To ${values?.to?.display_name || ''} address`}
+                        </label>
+                        <AddressButton
+                            disabled={!values.to || !values.from}
+                            isPartnerWallet={isPartnerWallet}
+                            openAddressModal={() => setShowAddressModal(true)}
+                            partnerImage={partnerImage}
+                            values={values} />
+                        <Modal
+                            header={`To ${values?.to?.display_name || ''} address`}
+                            height="fit"
+                            show={showAddressModal} setShow={setShowAddressModal}
+                            className="min-h-[70%]"
+                        >
+                            <Address
+                                close={() => setShowAddressModal(false)}
+                                disabled={lockAddress || (!values.to || !values.from)}
+                                name={"destination_address"}
                                 partnerImage={partnerImage}
-                                values={values} />
-                            <Modal
-                                header={`To ${values?.to?.display_name || ''} address`}
-                                height="fit"
-                                show={showAddressModal} setShow={setShowAddressModal}
-                                className="min-h-[70%]"
-                            >
-                                <Address
-                                    close={() => setShowAddressModal(false)}
-                                    disabled={lockAddress || (!values.to || !values.from)}
-                                    name={"destination_address"}
-                                    partnerImage={partnerImage}
-                                    isPartnerWallet={isPartnerWallet}
-                                    partner={partner}
-                                    address_book={address_book?.data}
-                                />
-                            </Modal>
+                                isPartnerWallet={isPartnerWallet}
+                                partner={partner}
+                                address_book={address_book?.data}
+                            />
+                        </Modal>
+                    </div>
+                }
+                <div className="w-full">
+                    {
+                        !destination?.isExchange && GetNetworkCurrency(destination, asset)?.is_refuel_enabled && !query?.hideRefuel &&
+                        <div className="flex items-center justify-between px-3.5 py-3 bg-secondary-700 border border-secondary-500 rounded-lg mb-4">
+                            <div className="flex items-center space-x-2">
+                                <Fuel className='h-8 w-8 text-primary' />
+                                <div>
+                                    <p className="font-medium flex items-center">
+                                        <span>Need gas?</span>
+                                        <ClickTooltip text={`You will get a small amount of ${destination_native_currency} that you can use to pay for gas fees.`} />
+                                    </p>
+                                    <p className="font-light text-xs">
+                                        Get <span className="font-semibold">{destination_native_currency}</span> to pay fees in {values.to?.display_name}
+                                    </p>
+                                </div>
+                            </div>
+                            <ToggleButton name="refuel" value={values?.refuel} onChange={handleConfirmToggleChange} />
                         </div>
                     }
-                    <div className="w-full">
-                        {
-                            !destination?.isExchange && GetNetworkCurrency(destination, asset)?.is_refuel_enabled && !query?.hideRefuel &&
-                            <div className="flex items-center justify-between px-3.5 py-3 bg-secondary-700 border border-secondary-500 rounded-lg mb-4">
-                                <div className="flex items-center space-x-2">
-                                    <Fuel className='h-8 w-8 text-primary' />
-                                    <div>
-                                        <p className="font-medium flex items-center">
-                                            <span>Need gas?</span>
-                                            <ClickTooltip text={`You will get a small amount of ${destination_native_currency} that you can use to pay for gas fees.`} />
-                                        </p>
-                                        <p className="font-light text-xs">
-                                            Get <span className="font-semibold">{destination_native_currency}</span> to pay fees in {values.to?.display_name}
-                                        </p>
-                                    </div>
+                    <AmountAndFeeDetails values={values} />
+                    {
+                        //TODO refactor
+                        GetNetworkCurrency(destination, asset)?.status == 'insufficient_liquidity' &&
+                        <WarningMessage messageType="warning" className="mt-4">
+                            <span className="font-normal">We're experiencing delays for transfers of {values?.currency?.asset} to {values?.to?.display_name}. Estimated arrival time can take up to 2 hours.</span>
+                        </WarningMessage>
+                    }
+                    {
+                        GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
+                        <WarningMessage messageType="warning" className="mt-4">
+                            <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
+                        </WarningMessage>
+                    }
+                    {
+                        walletBalance?.isNativeCurrency && Number(values.amount) + networkGas > walletBalance.amount && walletBalance.amount > minAllowedAmount &&
+                        <WarningMessage messageType="warning" className="mt-4">
+                            <div className="font-normal text-white">
+                                <div>
+                                    You might not be able to complete the transaction.
                                 </div>
-                                <ToggleButton name="refuel" value={values?.refuel} onChange={handleConfirmToggleChange} />
+                                <div onClick={handleReserveGas} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
+                                    Reserve {truncateDecimals(networkGas, values.currency.precision)} {values.currency.asset} for gas.
+                                </div>
                             </div>
-                        }
-                        <AmountAndFeeDetails values={values} />
-                        {
-                            //TODO refactor
-                            GetNetworkCurrency(destination, asset)?.status == 'insufficient_liquidity' &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal">We're experiencing delays for transfers of {values?.currency?.asset} to {values?.to?.display_name}. Estimated arrival time can take up to 2 hours.</span>
-                            </WarningMessage>
-                        }
-                        {
-                            GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
-                            </WarningMessage>
-                        }
-                    </div>
-                </Widget.Content>
-                <Widget.Footer>
-                    <SwapButton
-                        className="plausible-event-name=Swap+initiated"
-                        type='submit'
-                        isDisabled={!isValid || loading}
-                        isSubmitting={isSubmitting || loading}>
-                        {ActionText(errors, actionDisplayName)}
-                    </SwapButton>
-                </Widget.Footer>
-            </Widget>
-        </Form >
-    </>
+                        </WarningMessage>
+                    }
+                </div>
+            </Widget.Content>
+            <Widget.Footer>
+                <SwapButton
+                    className="plausible-event-name=Swap+initiated"
+                    type='submit'
+                    isDisabled={!isValid || loading}
+                    isSubmitting={isSubmitting || loading}>
+                    {ActionText(errors, actionDisplayName)}
+                </SwapButton>
+            </Widget.Footer>
+        </Widget>
+    </Form >
 }
 
 function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: string): string {
