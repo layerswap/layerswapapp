@@ -7,12 +7,9 @@ import MessageComponent from '../../MessageComponent';
 import Widget from '../../Wizard/Widget';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import GoHomeButton from '../../utils/GoHome';
-import SwapSummary from '../Summary';
 import { useQueryState } from '../../../context/query';
-import { truncateDecimals } from '../../utils/RoundDecimals';
 import { TransactionType } from '../../../lib/layerSwapApiClient';
-
-
+import AppSettings from '../../../lib/AppSettings';
 
 const Success: FC = () => {
     const { networks } = useSettingsState()
@@ -26,7 +23,7 @@ const Success: FC = () => {
     const handleViewInExplorer = useCallback(() => {
         if (!transaction_explorer_template)
             return
-        window.open(`https://www.layerswap.io/explorer/${swapOutputTransaction?.transaction_id}`, '_blank')
+        window.open(`${AppSettings.ExplorerURl}/${swapOutputTransaction?.transaction_id}`, '_blank')
     }, [transaction_explorer_template])
 
     return (
