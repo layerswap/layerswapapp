@@ -5,13 +5,12 @@ import {
     usePrepareContractWrite,
     useWaitForTransaction,
     useNetwork,
-    erc20ABI
+    erc20ABI,
 } from "wagmi";
 import { PublishedSwapTransactionStatus } from "../../../../../lib/layerSwapApiClient";
 import { useSwapDataUpdate } from "../../../../../context/swap";
 import WalletIcon from "../../../../icons/WalletIcon";
-import { encodeFunctionData, createPublicClient, http, parseUnits } from 'viem'
-import usdtAbi from "../../../../../lib/abis/usdt.json"
+import { encodeFunctionData, http, parseUnits, createWalletClient, publicActions, ContractFunctionConfig } from 'viem'
 import TransactionMessage from "./transactionMessage";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import { ButtonWrapper } from "./buttons";
@@ -39,11 +38,10 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
 
     const depositAddress = managedDepositAddress
-
     const contractWritePrepare = usePrepareContractWrite({
         enabled: !!depositAddress,
         address: tokenContractAddress,
-        abi: asset?.toUpperCase() == 'USDT' ? usdtAbi : erc20ABI,
+        abi: erc20ABI,
         functionName: 'transfer',
         gas: estimatedGas,
         args: [depositAddress, parseUnits(amount.toString(), tokenDecimals)],
@@ -54,7 +52,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             ...contractWritePrepare?.config?.request,
         });
 
-    if (address !== userDestinationAddress) {
+    if (encodedData && address !== userDestinationAddress) {
         encodedData = encodedData ? `${encodedData}${sequenceNumber}` as `0x${string}` : null;
     }
 
@@ -66,23 +64,20 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         }
     }
     const { chain } = useNetwork();
-
-    const publicClient = createPublicClient({
+    const publicClient = createWalletClient({
+        account: address,
         chain: chain,
-        transport: http()
-    })
+        transport: http(),
+    }).extend(publicActions);
 
     useEffect(() => {
         (async () => {
             if (encodedData) {
-
                 const estimate = await publicClient.estimateGas({
                     data: encodedData,
+                    to: tokenContractAddress,
                     account: address,
-                    to: depositAddress,
-                    value: parseUnits(amount.toString(), tokenDecimals)
                 })
-
                 setEstimatedGas(estimate)
             }
         })()
