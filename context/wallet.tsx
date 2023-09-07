@@ -20,7 +20,8 @@ export type WizardProvider = {
 type UpdateInterface = {
     setStarknetAccount: (account: StarknetWindowObject) => void,
     getBalance: (from: Layer) => Promise<void>,
-    getGas: (from: Layer, currency: Currency) => Promise<void>
+    getGas: (from: Layer, currency: Currency) => Promise<void>,
+    MutateBalanceAndGas: (from: Layer, currency: Currency) => Promise<void>
 }
 
 type Props = {
@@ -86,6 +87,11 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         }
     }
 
+    const MutateBalanceAndGas = async (from: Layer, currency: Currency) => {
+        await getBalance(from)
+        await getGas(from, currency)
+    }
+
     return (
         <WalletStateContext.Provider value={{
             starknetAccount,
@@ -97,7 +103,8 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
             <WalletStateUpdateContext.Provider value={{
                 setStarknetAccount,
                 getBalance,
-                getGas
+                getGas,
+                MutateBalanceAndGas
             }}>
                 {children}
             </WalletStateUpdateContext.Provider>

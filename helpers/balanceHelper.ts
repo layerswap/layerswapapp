@@ -28,6 +28,12 @@ export type Balance = {
 export type Gas = {
     token: string,
     gas: number,
+    gasDetails?: {
+        gasLimit: number,
+        maxFeePerGas: number,
+        gasPrice: number,
+        maxPriorityFeePerGas: number
+    }
 }
 
 export const resolveFeeData = async (chainId: number) => {
@@ -159,7 +165,7 @@ export const estimateGas = async (publicClient: PublicClient, contract_address: 
 }
 
 export const resolveGas = async (publicClient: PublicClient, chainId: number, contract_address: `0x${string}`, account: `0x${string}`, balances: Balance[], from: string, currency: Currency) => {
-    const nativeBalance = balances?.find(b =>
+    const nativeToken = balances?.find(b =>
         b.network === from
         && b.isNativeCurrency)
 
@@ -167,16 +173,16 @@ export const resolveGas = async (publicClient: PublicClient, chainId: number, co
 
     switch (from) {
         case KnownInternalNames.Networks.OptimismMainnet:
-            fee = await GetOptimismGas(publicClient, chainId, account, nativeBalance, currency)
+            fee = await GetOptimismGas(publicClient, chainId, account, nativeToken, currency)
             break;
         default:
-            fee = await GetGas(publicClient, chainId, account, nativeBalance, currency, contract_address)
+            fee = await GetGas(publicClient, chainId, account, nativeToken, currency, contract_address)
     }
 
     return fee
 }
 
-const GetOptimismGas = async (publicClient: PublicClient, chainId: number, account: `0x${string}`, nativeBalance: Balance, currency: Currency) => {
+const GetOptimismGas = async (publicClient: PublicClient, chainId: number, account: `0x${string}`, nativeToken: Balance, currency: Currency) => {
 
     var dummyAddress = "0x3535353535353535353535353535353535353535" as const;
     const amount = BigInt(100000000)
@@ -191,7 +197,7 @@ const GetOptimismGas = async (publicClient: PublicClient, chainId: number, accou
         to: dummyAddress
     })
 
-    return { gas: formatAmount(fee, nativeBalance?.decimals), token: currency?.asset }
+    return { gas: formatAmount(fee, nativeToken?.decimals), token: currency?.asset }
 }
 
 const GetGas = async (publicClient: PublicClient, chainId: number, account: `0x${string}`, nativeBalance: Balance, currency: Currency, contract_address: `0x${string}`) => {
@@ -204,7 +210,16 @@ const GetGas = async (publicClient: PublicClient, chainId: number, account: `0x$
         ? (feeData?.maxFeePerGas * estimatedGas)
         : (feeData?.gasPrice * estimatedGas)
 
-    return { gas: formatAmount(gasBigint, nativeBalance?.decimals), token: currency?.asset }
+    return {
+        gas: formatAmount(gasBigint, nativeBalance?.decimals),
+        token: currency?.asset,
+        gasDetails: {
+            gasLimit: Number(estimatedGas),
+            maxFeePerGas: Number(feeData?.maxFeePerGas),
+            gasPrice: Number(feeData?.gasPrice),
+            maxPriorityFeePerGas: Number(feeData?.maxPriorityFeePerGas),
+        }
+    }
 }
 
 export const formatAmount = (unformattedAmount: bigint | unknown, decimals: number) => {
