@@ -43,8 +43,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const currencyName = currency?.asset || " "
 
     const destinationNetwork = GetDefaultNetwork(to, currency?.asset)
-    const { balances, gases, isGasLoading, isBalanceLoading } = useWalletState()
-    const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
+    const { gases, isGasLoading } = useWalletState()
     const networkGas = gases?.[values.from?.internal_name]?.find(g => g.token === values.currency?.asset)?.gas
 
     return (
@@ -101,13 +100,15 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                 </div>
                             }
                             {
-                                from?.isExchange === false && from?.address_type === NetworkAddressType.evm && balances?.length > 0 && walletBalance &&
+                                from?.isExchange === false 
+                                && from?.address_type === NetworkAddressType.evm 
+                                && (networkGas || isGasLoading) &&
                                 <div className="mt-2 flex flex-row items-baseline justify-between">
                                     <label className="inline-flex items-center text-left text-primary-text-placeholder">
                                         Estimated gas
                                     </label>
                                     <div className="text-right flex items-center gap-1">
-                                        {(isGasLoading || isBalanceLoading) ? <div className='h-3 w-10 bg-gray-500 rounded-sm animate-pulse' /> : truncateDecimals(networkGas, currencies.find(a => a.asset === from.native_currency).precision)} <span>{from?.native_currency}</span>
+                                        {isGasLoading ? <div className='h-3 w-10 bg-gray-500 rounded-sm animate-pulse' /> : truncateDecimals(networkGas, currencies.find(a => a.asset === from.native_currency).precision)} <span>{from?.native_currency}</span>
                                     </div>
                                 </div>
                             }

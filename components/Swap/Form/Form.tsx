@@ -160,9 +160,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const networkGas = gases?.[values.from?.internal_name]?.find(g => g.token === values?.currency?.asset)?.gas
 
     useEffect(() => {
-        if (walletBalance)
-            getGas(values.from, values.currency)
-    }, [contract_address, values.currency, address, walletBalance])
+        getGas(values.from, values.currency)
+    }, [contract_address, values.currency, address])
 
     const destinationNetwork = GetDefaultNetwork(destination, values?.currency?.asset)
     const destination_native_currency = !destination?.isExchange && destinationNetwork?.native_currency
