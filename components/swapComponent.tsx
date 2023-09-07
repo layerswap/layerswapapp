@@ -14,7 +14,7 @@ const Swap: FC = () => {
             <TimerProvider>
               <WalletDataProvider>
                 <SwapForm />
-              </WalletDatadProvider>
+              </WalletDataProvider>
             </TimerProvider>
         </SwapDataProvider >
       </MenuProvider>

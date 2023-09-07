@@ -5,8 +5,6 @@ import { NetworkAddressType } from '../Models/CryptoNetwork';
 import { Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
 import { Balance, Gas, getErc20Balances, getNativeBalance, resolveERC20Balances, resolveGas, resolveNativeBalance } from '../helpers/balanceHelper';
-import { Steps } from '../Models/Wizard';
-import { StarknetWindowObject } from 'get-starknet';
 
 export const WalletStateContext = React.createContext(null);
 const WalletStateUpdateContext = React.createContext(null);
@@ -100,9 +98,6 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
                 setStarknetAccount,
                 getBalance,
                 getGas
-        }}>
-            <WalletStateUpdateContext.Provider value={{
-                setStarknetAccount,
             }}>
                 {children}
             </WalletStateUpdateContext.Provider>
