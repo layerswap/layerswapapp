@@ -1,18 +1,18 @@
 import React, { FC, useState } from 'react'
 import { StarknetWindowObject } from 'get-starknet';
-import { UserExchangesData } from '../lib/layerSwapApiClient';
 import { useAccount, usePublicClient } from 'wagmi';
 import { NetworkAddressType } from '../Models/CryptoNetwork';
 import { Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
 import { Balance, Gas, getErc20Balances, getNativeBalance, resolveERC20Balances, resolveGas, resolveNativeBalance } from '../helpers/balanceHelper';
+import { Steps } from '../Models/Wizard';
+import { StarknetWindowObject } from 'get-starknet';
 
 export const WalletStateContext = React.createContext(null);
 const WalletStateUpdateContext = React.createContext(null);
 
 export type WizardProvider = {
     starknetAccount: StarknetWindowObject,
-    authorizedCoinbaseAccount: UserExchangesData,
     balances: Balance[],
     gases: { [network: string]: Gas[] },
     isBalanceLoading: boolean,
@@ -21,7 +21,6 @@ export type WizardProvider = {
 
 type UpdateInterface = {
     setStarknetAccount: (account: StarknetWindowObject) => void,
-    setAuthorizedCoinbaseAccount: (value: UserExchangesData) => void,
     getBalance: (from: Layer) => Promise<void>,
     getGas: (from: Layer, currency: Currency) => Promise<void>
 }
@@ -32,7 +31,6 @@ type Props = {
 
 export const WalletDataProvider: FC<Props> = ({ children }) => {
     const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject>()
-    const [authorizedCoinbaseAccount, setAuthorizedCoinbaseAccount] = useState<UserExchangesData>()
     const [allBalances, setAllBalances] = useState<{ [address: string]: Balance[] }>({})
     const [allGases, setAllGases] = useState<{ [network: string]: Gas[] }>({})
     const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
@@ -93,7 +91,6 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
     return (
         <WalletStateContext.Provider value={{
             starknetAccount,
-            authorizedCoinbaseAccount,
             balances,
             gases,
             isBalanceLoading,
@@ -101,9 +98,11 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         }}>
             <WalletStateUpdateContext.Provider value={{
                 setStarknetAccount,
-                setAuthorizedCoinbaseAccount,
                 getBalance,
                 getGas
+        }}>
+            <WalletStateUpdateContext.Provider value={{
+                setStarknetAccount,
             }}>
                 {children}
             </WalletStateUpdateContext.Provider>

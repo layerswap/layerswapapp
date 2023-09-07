@@ -12,7 +12,7 @@ import SwapSummary from '../Summary';
 import Coinbase from './Coinbase';
 import { useQueryState } from '../../../context/query';
 import External from './External';
-import LayerSwapApiClient, { UserExchangesData, WithdrawType } from '../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { WithdrawType } from '../../../lib/layerSwapApiClient';
 import WalletIcon from '../../icons/WalletIcon';
 import { useAccount } from 'wagmi';
 import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
@@ -25,6 +25,7 @@ import { disconnect as starknetDisconnect } from "get-starknet";
 import Image from 'next/image';
 import { ResolveWalletIcon } from '../../HeaderWithMenu/ConnectedWallets';
 import toast from 'react-hot-toast';
+import SpinIcon from '../../icons/spinIcon';
 
 const Withdraw: FC = () => {
 
@@ -138,7 +139,7 @@ const Withdraw: FC = () => {
                             {
                                 showTabsHeader &&
                                 <>
-                                    <div className="mb-3 ml-1">Choose how you’d like to complete the swap</div>
+                                    <div className="mb-4 ml-1 text-md">Choose how you'd like to complete the swap</div>
                                     <div className="flex space-x-3 w-full">
                                         {tabs.filter(t => t.enabled).map((tab) => (
                                             <TabHeader
@@ -168,51 +169,60 @@ const Withdraw: FC = () => {
 }
 
 const WalletTransferContent: FC = () => {
-    const { isConnected, address, connector } = useAccount();
+    const { address, connector } = useAccount();
     const { openAccountModal } = useAccountModal();
-    const { starknetAccount, authorizedCoinbaseAccount } = useWalletState()
-    const { setStarknetAccount, setAuthorizedCoinbaseAccount } = useWalletUpdate()
+    const { starknetAccount } = useWalletState()
+    const { setStarknetAccount } = useWalletUpdate()
 
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
+    const { mutateSwap } = useSwapDataUpdate()
+    const [isLoading, setIsloading] = useState(false);
 
     const {
         source_network: source_network_internal_name,
         source_exchange: source_exchange_internal_name,
         source_network_asset } = swap
+
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
     const sourceAddressType = GetDefaultNetwork(source_network, source_network_asset)?.address_type
 
     const handleDisconnectCoinbase = useCallback(async () => {
-        try {
-            const apiClient = new LayerSwapApiClient()
-            await apiClient.DeleteExchange("coinbase")
-            setAuthorizedCoinbaseAccount(null)
-        }
-        catch (e) {
-            toast.error(e.message)
-        }
+        const apiClient = new LayerSwapApiClient()
+        await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
+        await mutateSwap()
     }, [])
 
-
-    const handleDisconnect = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-        if (swap.source_exchange) {
-            handleDisconnectCoinbase()
+    const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
+        setIsloading(true);
+        try {
+            if (swap.source_exchange) {
+                await handleDisconnectCoinbase()
+            }
+            else if (sourceAddressType === NetworkAddressType.evm) {
+                await wagmiDisconnect()
+            }
+            else if (sourceAddressType === NetworkAddressType.starknet) {
+                await starknetDisconnect({ clearLastWallet: true })
+                setStarknetAccount(null)
+            }
         }
-        else if (sourceAddressType === NetworkAddressType.evm) {
-            wagmiDisconnect()
+        catch {
+            toast.error("Couldn't disconnect the account")
         }
-        else if (sourceAddressType === NetworkAddressType.starknet) {
-            starknetDisconnect({ clearLastWallet: true })
-            setStarknetAccount(null)
+        finally {
+            setIsloading(false);
         }
         e?.stopPropagation();
     }, [sourceAddressType, swap.source_exchange])
 
     let accountAddress = ""
-    if (sourceAddressType === NetworkAddressType.evm) {
+    if (swap.source_exchange) {
+        accountAddress = swap.exchange_account_name
+    }
+    else if (sourceAddressType === NetworkAddressType.evm) {
         accountAddress = address;
     }
     else if (sourceAddressType === NetworkAddressType.starknet) {
@@ -226,7 +236,7 @@ const WalletTransferContent: FC = () => {
             openAccountModal()
     }, [canOpenAccount, openAccountModal])
 
-    if (!accountAddress || (swap.source_exchange && !authorizedCoinbaseAccount)) {
+    if (!accountAddress || (swap.source_exchange && !swap.exchange_account_connected)) {
         return <>
             <div className='flex justify-center'>
                 <WalletIcon className='w-12 text-secondary-800/70' />
@@ -236,9 +246,7 @@ const WalletTransferContent: FC = () => {
 
     return <div className="grid content-end">
         {
-            swap.source_exchange ?
-                <span className='mb-1 font-medium'>Connected account</span>
-                : <span className='mb-1 font-medium'>Connected wallet</span>
+            <span className='mb-1 ml-1 text-sm'>{swap.source_exchange ? "Connected account" : "Connected wallet"}</span>
         }
 
         <div onClick={handleOpenAccount} className={`${canOpenAccount ? 'cursor-pointer' : 'cursor-auto'} text-left min-h-12  space-x-2 border border-secondary-300 ea7df14a1597407f9f755f05e25bab42:bg-secondary-800/50 bg-secondary-700/70 shadow-xl flex text-sm rounded-md items-center w-full pl-4 pr-2 py-1.5`}>
@@ -276,12 +284,12 @@ const WalletTransferContent: FC = () => {
                         {shortenAddress(accountAddress)}
                     </span>}
                     {swap.source_exchange && <span>
-                        {shortenEmail(authorizedCoinbaseAccount?.note)}
+                        {shortenEmail(swap?.exchange_account_name)}
                     </span>}
                 </div>
             </div>
             <div onClick={handleDisconnect} className='cursor-pointer flex text-primary-text flex-row items-left p-2 rounded-md transform hover:bg-secondary-500 transition duration-200 hover:border-secondary-500 hover:shadow-xl'>
-                <X className='h-5' />
+                {isLoading ? <SpinIcon className="animate-spin h-5 w-5" /> : <X className='h-5' />}
             </div>
         </div>
     </div>

@@ -7,7 +7,7 @@ import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
 import { GetNetworkCurrency } from '../../../../helpers/settingsHelper';
 import AverageCompletionTime from '../../../Common/AverageCompletionTime';
-import { SwapItem, TransactionStatus, TransactionType } from '../../../../lib/layerSwapApiClient';
+import { SwapItem, Transaction, TransactionStatus, TransactionType } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
@@ -35,11 +35,11 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     const destinationNetworkCurrency = GetNetworkCurrency(destination_layer, swap?.destination_network_asset)
 
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))[swap?.id]
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id]
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
-    const nativeCurrency = swapRefuelTransaction?.amount && destination_layer?.isExchange === false && settings?.currencies?.find(c => c.asset === destination_layer?.native_currency)
+    const nativeCurrency = destination_layer?.isExchange === false && settings?.currencies?.find(c => c.asset === destination_layer?.native_currency)
     const truncatedRefuelAmount = truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision)
 
     const progressStatuses = getProgressStatuses(swap, swapStatus)
@@ -76,7 +76,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 description: <div>
                     <span>
                         Waiting for confirmations
-                        {swapInputTransaction && (
+                        {swapInputTransaction && swapInputTransaction.confirmations && (
                             <span className="text-white ml-1">
                                 {swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations
                                     ? swapInputTransaction.max_confirmations
@@ -108,12 +108,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             },
             delayed: {
                 name: `This swap is being delayed by Coinbase`,
-                description: <div className='flex space-x-1'>
-                    <span>Error: </span>
-                    <div className='space-x-1 text-white'>
-                        This usually means that the exchange needs additional verification
-                    </div>
-                </div>
+                description: null
             }
         },
         "output_transfer": {
@@ -139,7 +134,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             },
             failed: {
                 name: `Your transfer is failed`,
-                description: <div className='flex space-x-1'>
+                description: swap.message && <div className='flex space-x-1'>
                     <span>Error: </span>
                     <div className='space-x-1 text-white'>
                         {swap.message}
@@ -148,12 +143,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             },
             delayed: {
                 name: `This swap is being delayed by Coinbase`,
-                description: <div className='flex space-x-1'>
-                    <span>Error: </span>
-                    <div className='space-x-1 text-white'>
-                        This usually means that the exchange needs additional verification
-                    </div>
-                </div>
+                description: null
             }
         },
         "refuel": {
@@ -177,7 +167,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             },
             failed: {
                 name: `Your transfer is failed`,
-                description: <div className='flex space-x-1'>
+                description: swap.message && <div className='flex space-x-1'>
                     <span>Error: </span>
                     <div className='space-x-1 text-white'>
                         {swap.message}
@@ -185,89 +175,8 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 </div>
             },
             delayed: {
-                name: `This swap is being delayed by Coinbase`,
-                description: <div className='flex space-x-1'>
-                    <span>Error: </span>
-                    <div className='space-x-1 text-white'>
-                        This usually means that the exchange needs additional verification
-                    </div>
-                </div>
-            }
-        },
-        "failed": {
-            upcoming: {
-                name: `Sending ${nativeCurrency?.asset} to your wallet`,
-                description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
-            },
-            current: {
-                name: `Sending ${nativeCurrency?.asset} to your wallet`,
-                description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
-            },
-            complete: {
-                name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your wallet`,
-                description: <div className='flex items-center space-x-1'>
-                    <span>Explorer link: </span>
-                    <div className='underline hover:no-underline flex items-center space-x-1'>
-                        <a target={"_blank"} href={swapRefuelTransaction?.explorer_url}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
-                        <ExternalLink className='h-4' />
-                    </div>
-                </div>
-            },
-            failed: {
-                name: `Your transfer is failed`,
-                description: <div className='flex space-x-1'>
-                    <span>Error: </span>
-                    <div className='space-x-1 text-white'>
-                        {swap.message}
-                    </div>
-                </div>
-            },
-            delayed: {
-                name: `This swap is being delayed by Coinbase`,
-                description: <div className='flex space-x-1'>
-                    <span>Error: </span>
-                    <div className='space-x-1 text-white'>
-                        This usually means that the exchange needs additional verification
-                    </div>
-                </div>
-            }
-        },
-        "delayed": {
-            upcoming: {
-                name: `Sending ${nativeCurrency?.asset} to your wallet`,
-                description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
-            },
-            current: {
-                name: `Sending ${nativeCurrency?.asset} to your wallet`,
-                description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
-            },
-            complete: {
-                name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your wallet`,
-                description: <div className='flex items-center space-x-1'>
-                    <span>Explorer link: </span>
-                    <div className='underline hover:no-underline flex items-center space-x-1'>
-                        <a target={"_blank"} href={swapRefuelTransaction?.explorer_url}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
-                        <ExternalLink className='h-4' />
-                    </div>
-                </div>
-            },
-            failed: {
-                name: `Your transfer is failed`,
-                description: <div className='flex space-x-1'>
-                    <span>Error: </span>
-                    <div className='space-x-1 text-white'>
-                        {swap.message}
-                    </div>
-                </div>
-            },
-            delayed: {
-                name: `This swap is being delayed by Coinbase`,
-                description: <div className='flex space-x-1'>
-                    <span>Error: </span>
-                    <div className='space-x-1 text-white'>
-                        This usually means that the exchange needs additional verification
-                    </div>
-                </div>
+                name: `This transfers is being delayed`,
+                description: null
             }
         }
     }
@@ -278,44 +187,20 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             status: progressStatuses?.input_transfer,
             description: progressStates["input_transfer"][progressStatuses?.input_transfer]?.description,
             index: 1
-        }
-    ]
-
-    if (swapOutputTransaction) {
-        progress.push({
+        },
+        {
             name: progressStates["output_transfer"][progressStatuses?.output_transfer]?.name,
             status: progressStatuses?.output_transfer,
             description: progressStates["output_transfer"][progressStatuses?.output_transfer]?.description,
             index: 2
-        })
-    }
-
-    if (swap?.has_refuel) {
-        progress.push({
+        },
+        {
             name: progressStates["refuel"][progressStatuses?.refuel]?.name,
             status: progressStatuses?.refuel,
             description: progressStates["refuel"][progressStatuses?.refuel]?.description,
-            index: swapOutputTransaction ? 3 : 2
-        })
-    }
-
-    if (swap?.status == "failed") {
-        progress.push({
-            name: progressStates["failed"][progressStatuses?.failed]?.name,
-            status: progressStatuses?.failed,
-            description: progressStates["failed"][progressStatuses?.failed]?.description,
-            index: swap?.has_refuel && swapOutputTransaction ? 4 : !swap?.has_refuel && swapOutputTransaction || swap?.has_refuel && !swapOutputTransaction ? 3 : 2
-        })
-    }
-
-    if (swap?.status == "user_transfer_delayed") {
-        progress.push({
-            name: progressStates["delayed"][progressStatuses?.delayed]?.name,
-            status: progressStatuses?.delayed,
-            description: progressStates["delayed"][progressStatuses?.delayed]?.description,
-            index: swap?.has_refuel && swapOutputTransaction ? 4 : !swap?.has_refuel && swapOutputTransaction || swap?.has_refuel && !swapOutputTransaction ? 3 : 2
-        })
-    }
+            index: 3
+        }
+    ]
 
     if (!swap) return <></>
 
@@ -328,7 +213,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                             <SwapSummary />
                         }
                         <div className="w-full flex flex-col h-full space-y-5">
-                            <div className="text-left text-primary-text mt-4 space-y-2">
+                            <div className="text-left text-primary-text space-y-2">
                                 <p className="block sm:text-lg font-medium text-white">
                                     Transfer status
                                 </p>
@@ -350,9 +235,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 enum Progress {
     InputTransfer = 'input_transfer',
     Refuel = 'refuel',
-    OutputTransfer = 'output_transfer',
-    Failed = 'failed',
-    Delayed = 'delayed'
+    OutputTransfer = 'output_transfer'
 }
 enum ProgressStatus {
     Upcoming = 'upcoming',
@@ -370,32 +253,38 @@ type StatusStep = {
 
 
 const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { [key in Progress]: ProgressStatus } => {
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))[swap?.id];
+    const swapInputTransaction: Transaction | string = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id];
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
+    let inputIsCompleted = (swapInputTransaction as Transaction)?.status == TransactionStatus.Completed;
+    let input_transfer = inputIsCompleted ? ProgressStatus.Complete : ProgressStatus.Current;
 
-    const input_transfer = swapInputTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete : ProgressStatus.Current;
-    let output_transfer = swapOutputTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete : swapOutputTransaction?.status == TransactionStatus.Initiated ? ProgressStatus.Current : ProgressStatus.Upcoming;
-    let refuel_transfer = (swap.has_refuel && !swapRefuelTransaction) || swapRefuelTransaction?.status == TransactionStatus.Pending ? ProgressStatus.Upcoming : swapRefuelTransaction?.status == TransactionStatus.Initiated ? ProgressStatus.Current : swapRefuelTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete : null;
-    let failed = null;
-    let delayed = null;
+    let output_transfer =
+        (!swapOutputTransaction && inputIsCompleted) || swapOutputTransaction?.status == TransactionStatus.Pending ? ProgressStatus.Current
+            : swapOutputTransaction?.status == TransactionStatus.Initiated || swapOutputTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete
+                : ProgressStatus.Upcoming;
+
+    let refuel_transfer =
+        (swap.has_refuel && !swapRefuelTransaction) ? ProgressStatus.Upcoming
+            : swapRefuelTransaction?.status == TransactionStatus.Pending ? ProgressStatus.Current
+                : swapRefuelTransaction?.status == TransactionStatus.Initiated || swapRefuelTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete
+                    : null;
 
     if (swapStatus === SwapStatus.Failed) {
-        failed = ProgressStatus.Failed;
-        output_transfer = output_transfer !== ProgressStatus.Complete ? null : ProgressStatus.Complete;
-        refuel_transfer = refuel_transfer !== ProgressStatus.Complete ? null : ProgressStatus.Complete;
+        output_transfer = output_transfer !== ProgressStatus.Complete ? null : ProgressStatus.Failed;
+        refuel_transfer = refuel_transfer !== ProgressStatus.Complete ? null : ProgressStatus.Failed;
     }
 
     if (swapStatus === SwapStatus.UserTransferDelayed) {
-        delayed = ProgressStatus.Delayed;
+        input_transfer = ProgressStatus.Delayed;
+        output_transfer = null;
+        refuel_transfer = null;
     }
 
     return {
         "input_transfer": input_transfer,
         "output_transfer": output_transfer,
         "refuel": refuel_transfer,
-        "failed": failed,
-        "delayed": delayed
     };
 
 }
