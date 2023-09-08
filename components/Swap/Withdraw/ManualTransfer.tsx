@@ -118,12 +118,14 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
     const sourceChainId = sourceNetwork.chain_id
     let canWithdrawWithWallet = !source_exchange && sourceNetwork.address_type === "evm" && !!sourceChainId && source_network?.internal_name !== KnownInternalNames.Networks.ZksyncMainnet;
 
-    const EIP_681 = asset.contract_address ?
-        `ethereum:${asset.contract_address}@${sourceNetwork.chain_id}/transfer?address=${address}&uint256=${parseUnits(requested_amount.toString(), asset.decimals)}`
-        : `ethereum:${address}@${sourceNetwork.chain_id}?value=${requested_amount * 1000000000000000000}`
+    // Temprorary hotifx, possible argent qrcode issue
+    
+    // const EIP_681 = asset.contract_address ?
+    //     `ethereum:${asset.contract_address}@${sourceNetwork.chain_id}/transfer?address=${address}&uint256=${parseUnits(requested_amount.toString(), asset.decimals)}`
+    //     : `ethereum:${address}@${sourceNetwork.chain_id}?value=${requested_amount * 1000000000000000000}`
 
     const depositAddress = address || generatedDeposit?.data?.address
-    const qrData = canWithdrawWithWallet ? EIP_681 : depositAddress
+    const qrData = depositAddress
 
     const handleChangeSelectedNetwork = useCallback((n: BaseL2Asset) => {
         setSelectedAssetNetwork(n)
