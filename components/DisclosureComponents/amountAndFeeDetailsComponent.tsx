@@ -11,8 +11,8 @@ import { ApiResponse } from '../../Models/ApiResponse';
 import LayerSwapApiClient, { Campaigns } from '../../lib/layerSwapApiClient';
 import useSWR from 'swr'
 import AverageCompletionTime from '../Common/AverageCompletionTime';
-import { NetworkAddressType } from '../../Models/CryptoNetwork';
 import { useWalletState } from '../../context/wallet';
+import { NetworkType } from '../../Models/CryptoNetwork';
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
     const { networks, currencies, resolveImgSrc } = useSettingsState()
@@ -101,7 +101,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                             }
                             {
                                 from?.isExchange === false 
-                                && from?.address_type === NetworkAddressType.evm 
+                                && from?.address_type === NetworkType.EVM 
                                 && (networkGas || isGasLoading) &&
                                 <div className="mt-2 flex flex-row items-baseline justify-between">
                                     <label className="inline-flex items-center text-left text-primary-text-placeholder">
