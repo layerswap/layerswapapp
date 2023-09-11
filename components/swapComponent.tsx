@@ -11,11 +11,11 @@ const Swap: FC = () => {
     <div className="text-white">
       <MenuProvider>
         <SwapDataProvider >
-            <TimerProvider>
-              <WalletDataProvider>
-                <SwapForm />
-              </WalletDataProvider>
-            </TimerProvider>
+          <TimerProvider>
+            <WalletDataProvider>
+              <SwapForm />
+            </WalletDataProvider>
+          </TimerProvider>
         </SwapDataProvider >
       </MenuProvider>
     </div >
