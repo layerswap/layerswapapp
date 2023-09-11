@@ -12,7 +12,7 @@ const GasDetails = ({ network, currency }: { network: Layer, currency: Currency 
         if (!networkGas) getGas(network, currency)
     }, [networkGas])
 
-    if (!networkGas) return
+    if (!networkGas?.gasDetails) return
 
     return (
         <div className='grid grid-cols-1 gap-2 px-3 py-2 rounded-lg border-2 border-secondary-500 bg-secondary-800 mt-2 w-[350px] fixed top-0 left-2'>
@@ -22,7 +22,7 @@ const GasDetails = ({ network, currency }: { network: Layer, currency: Currency 
                 </label>
                 <span className="text-right">
                     {
-                        networkGas.gasDetails.gasLimit
+                        networkGas.gasDetails?.gasLimit
                     }
                 </span>
             </div>
@@ -32,7 +32,7 @@ const GasDetails = ({ network, currency }: { network: Layer, currency: Currency 
                 </label>
                 <span className="text-right">
                     {
-                        networkGas.gasDetails.gasPrice
+                        networkGas.gasDetails?.gasPrice
                     }
                 </span>
             </div>
@@ -42,7 +42,7 @@ const GasDetails = ({ network, currency }: { network: Layer, currency: Currency 
                 </label>
                 <span className="text-right">
                     {
-                        networkGas.gasDetails.maxFeePerGas
+                        networkGas.gasDetails?.maxFeePerGas
                     }
                 </span>
             </div>
@@ -52,7 +52,7 @@ const GasDetails = ({ network, currency }: { network: Layer, currency: Currency 
                 </label>
                 <span className="text-right">
                     {
-                        networkGas.gasDetails.maxPriorityFeePerGas
+                        networkGas.gasDetails?.maxPriorityFeePerGas
                     }
                 </span>
             </div>

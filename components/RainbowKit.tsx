@@ -17,10 +17,11 @@ type Props = {
 
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
-
     const settingsChains: Chain[] = settings.networks.filter(net => net.address_type === 'evm' && net.nodes?.some(n => n.url?.length > 0)).map(n => {
+
         const nativeCurrency = n.currencies.find(c => c.asset === n.native_currency);
         const blockExplorersBaseURL = new URL(n.transaction_explorer_template).origin;
+
         return {
             id: Number(n.chain_id),
             name: n.display_name,
@@ -45,16 +46,14 @@ function RainbowKitComponent({ children }: Props) {
             },
             fees: {
                 baseFeeMultiplier: 5,
-                defaultPriorityFee: parseGwei('1.6')
+                defaultPriorityFee: '1600000000n' as unknown as bigint
             }
         }
     })
 
     const { chains, publicClient } = configureChains(
         settingsChains,
-        [
-            publicProvider()
-        ]
+        [publicProvider()]
     );
 
     const projectId = WALLETCONNECT_PROJECT_ID;
