@@ -11,6 +11,8 @@ import { SwapItem, Transaction, TransactionStatus, TransactionType } from '../..
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
+import resolveFailError from '../Wallet/WalletTransfer/resolveFailError';
+import { SwapFailReasons } from '../../../../Models/RangeError';
 
 type Props = {
     settings: LayerSwapAppSettings;
@@ -43,6 +45,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const truncatedRefuelAmount = truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision)
 
     const progressStatuses = getProgressStatuses(swap, swapStatus)
+    const failReason = swap.fail_reason as SwapFailReasons;
 
     type ProgressStates = {
         [key in Progress]: {
@@ -99,10 +102,10 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             },
             failed: {
                 name: `Your transfer is failed`,
-                description: <div className='flex space-x-1'>
+                description: failReason && <div className='flex space-x-1'>
                     <span>Error: </span>
                     <div className='space-x-1 text-white'>
-                        {swap.message}
+                        {resolveFailError(failReason)}
                     </div>
                 </div>
             },
@@ -134,10 +137,10 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             },
             failed: {
                 name: `Your transfer is failed`,
-                description: swap.message && <div className='flex space-x-1'>
+                description: failReason && <div className='flex space-x-1'>
                     <span>Error: </span>
                     <div className='space-x-1 text-white'>
-                        {swap.message}
+                        {resolveFailError(failReason)}
                     </div>
                 </div>
             },
@@ -167,10 +170,10 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             },
             failed: {
                 name: `Your transfer is failed`,
-                description: swap.message && <div className='flex space-x-1'>
+                description: failReason && <div className='flex space-x-1'>
                     <span>Error: </span>
                     <div className='space-x-1 text-white'>
-                        {swap.message}
+                        {resolveFailError(failReason)}
                     </div>
                 </div>
             },

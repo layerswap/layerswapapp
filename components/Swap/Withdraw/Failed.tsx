@@ -11,12 +11,15 @@ import { MessageSquare, Home } from 'lucide-react';
 import { TrackEvent } from '../../../pages/_document';
 import SwapSummary from '../Summary';
 import Widget from '../../Wizard/Widget';
+import resolveFailError from './Wallet/WalletTransfer/resolveFailError';
+import { SwapFailReasons } from '../../../Models/RangeError';
 
 const Failed: FC = () => {
     const { swap } = useSwapDataState()
     const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } })
+
 
     useEffect(() => {
         plausible(TrackEvent.SwapFailed)
@@ -51,6 +54,8 @@ type Props = {
 }
 
 const Expired = ({ swap, onGetHelp }: Props) => {
+    const failReason = swap.fail_reason as SwapFailReasons;
+
     return (
         <Widget.Content>
             <SwapSummary />
@@ -61,8 +66,8 @@ const Expired = ({ swap, onGetHelp }: Props) => {
                     </MessageComponent.Header>
                     <MessageComponent.Description>
                         {
-                            swap?.message ?
-                                swap.message
+                            swap?.fail_reason ?
+                                resolveFailError(failReason)
                                 :
                                 <>
                                     <p>
@@ -105,6 +110,8 @@ const Expired = ({ swap, onGetHelp }: Props) => {
 }
 
 const Canceled = ({ swap, onGetHelp }: Props) => {
+    const failReason = swap.fail_reason as SwapFailReasons;
+
     return (
         <Widget.Content>
             <SwapSummary />
@@ -115,8 +122,8 @@ const Canceled = ({ swap, onGetHelp }: Props) => {
                     </MessageComponent.Header>
                     <MessageComponent.Description>
                         {
-                            swap?.message ?
-                                swap.message
+                            swap?.fail_reason ?
+                                resolveFailError(failReason)
                                 :
                                 <p>
                                     You've either canceled this swap manually, or you've created a swap without completing this one.

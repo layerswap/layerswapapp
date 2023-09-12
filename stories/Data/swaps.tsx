@@ -21,6 +21,7 @@ export const swap: SwapItem = {
     "destination_network": "ARBITRUM_GOERLI",
     "destination_exchange": null,
     "has_refuel": true,
+    "fail_reason": "",
     "transactions": [
         {
             "from": "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
@@ -90,6 +91,7 @@ export const failedSwap: SwapItem = {
     "destination_network": "ARBITRUM_GOERLI",
     "destination_exchange": null,
     "has_refuel": false,
+    "fail_reason": "",
     "transactions": [
         {
             "account_explorer_url": '',
@@ -144,6 +146,7 @@ export const failedSwapOutOfRange: SwapItem = {
     "destination_network": "ARBITRUM_GOERLI",
     "destination_exchange": null,
     "has_refuel": true,
+    "fail_reason": "received_more_than_valid_range",
     "transactions": [
         {
             "account_explorer_url": '',
