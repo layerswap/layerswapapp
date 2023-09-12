@@ -74,7 +74,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
             setIsGasLoading(true)
             try {
                 const publicClient = createPublicClient({
-                    chain: resolveChain(from),
+                    chain: resolveChain(from.assets?.[0].network),
                     transport: http()
                 })
 

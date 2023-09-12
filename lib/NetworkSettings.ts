@@ -56,17 +56,12 @@ const sourceOrder = [
 ];
 
 export default class NetworkSettings {
-    ConfirmationWarningMessage?: string;
-    UserGuideUrlForDesktop?: string;
-    UserGuideUrlForMobile?: string;
-    WithdrawalWarningMessage?: string;
     ChainId?: number | string;
-    EstimatedTransferTime?: number;
+    DefaultPriorityFee?: number;
     AddressPlaceholder?: string;
     OrderInDestination?: number;
     OrderInSource?: number;
     AccountExplorerTemplate?: string;
-    Refuel?: boolean = false;
     DepositType?: DepositType = DepositType.Manual
 
     public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean, crossChain: boolean } }
@@ -84,8 +79,6 @@ export default class NetworkSettings {
         NetworkSettings.ForceDisable = JSON.parse(process.env.NEXT_PUBLIC_NETWORK_FORCE_SETTINGS || "{}")
 
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.LoopringMainnet] = {
-            UserGuideUrlForDesktop: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/loopring",
-            ConfirmationWarningMessage: "You can now transfer funds directly from the GameStop wallet.",
             AccountExplorerTemplate: 'https://explorer.loopring.io/account/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumRinkeby] = {
@@ -118,6 +111,7 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumMainnet] = {
             ChainId: 42161,
             AccountExplorerTemplate: 'https://arbiscan.io/address/{0}',
+            DefaultPriorityFee: 0
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumNova] = {
             ChainId: 42170,
@@ -148,6 +142,7 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumMainnet] = {
             ChainId: 1,
             AccountExplorerTemplate: 'https://etherscan.io/address/{0}',
+            DefaultPriorityFee: 0.1,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BobaMainnet] = {
             ChainId: 288,
@@ -167,7 +162,6 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BNBChainMainnet] = {
             AccountExplorerTemplate: 'https://bscscan.com/address/{0}',
-            Refuel: true,
             ChainId: 56
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetMainnet] = {

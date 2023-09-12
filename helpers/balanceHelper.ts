@@ -1,5 +1,5 @@
 import { erc20ABI } from 'wagmi';
-import { parseEther, encodeFunctionData, PublicClient } from 'viem'
+import { parseEther, encodeFunctionData, PublicClient, parseGwei, formatGwei } from 'viem'
 import { multicall, fetchBalance, FetchBalanceResult } from '@wagmi/core'
 import { BaseL2Asset, Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
@@ -36,13 +36,14 @@ export type Gas = {
     }
 }
 
-export const resolveFeeData = async (publicClient: PublicClient, chainId: number) => {
+export const resolveFeeData = async (publicClient: PublicClient) => {
     try {
 
         const gasPrice = await publicClient.getGasPrice()
         const feesPerGas = await publicClient.estimateFeesPerGas()
+        const maxPriorityFeePerGas = await publicClient.estimateMaxPriorityFeePerGas()
 
-        return { gasPrice, maxFeePerGas: feesPerGas.maxFeePerGas, maxPriorityFeePerGas: feesPerGas.maxPriorityFeePerGas }
+        return { gasPrice, maxFeePerGas: feesPerGas.maxFeePerGas, maxPriorityFeePerGas: maxPriorityFeePerGas }
     } catch (e) {
         //TODO: log the error to our logging service
         console.log(e)
@@ -138,15 +139,10 @@ export const estimateNativeGasLimit = async (publicClient: PublicClient, account
         ]
     });
 
-    const hexed_sequence_number = (99999999).toString(16)
-    const sequence_number_even = hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number
-
-    encodedData = encodedData ? `${encodedData}${sequence_number_even}` as `0x${string}` : null;
-
     const gasEstimate = await publicClient.estimateGas({
         account: account,
         to: to,
-        data: encodedData,
+        data: null,
     })
 
     return gasEstimate
@@ -175,7 +171,7 @@ export const resolveGas = async (publicClient: PublicClient, chainId: number, co
             fee = await GetOptimismGas(publicClient, chainId, account, nativeToken, currency)
             break;
         default:
-            fee = await GetGas(publicClient, chainId, account, nativeToken, currency, contract_address)
+            fee = await GetGas(publicClient, account, nativeToken, currency, contract_address)
     }
 
     return fee
@@ -199,9 +195,9 @@ const GetOptimismGas = async (publicClient: PublicClient, chainId: number, accou
     return { gas: formatAmount(fee, nativeToken?.decimals), token: currency?.asset }
 }
 
-const GetGas = async (publicClient: PublicClient, chainId: number, account: `0x${string}`, nativeBalance: BaseL2Asset, currency: Currency, contract_address: `0x${string}`) => {
+const GetGas = async (publicClient: PublicClient, account: `0x${string}`, nativeBalance: BaseL2Asset, currency: Currency, contract_address: `0x${string}`) => {
 
-    const feeData = await resolveFeeData(publicClient, Number(chainId))
+    const feeData = await resolveFeeData(publicClient)
 
     const estimatedGasLimit = contract_address ?
         await estimateERC20GasLimit(publicClient, account, contract_address)
@@ -218,9 +214,9 @@ const GetGas = async (publicClient: PublicClient, chainId: number, account: `0x$
         token: currency?.asset,
         gasDetails: {
             gasLimit: Number(estimatedGasLimit),
-            maxFeePerGas: Number(feeData?.maxFeePerGas),
-            gasPrice: Number(feeData?.gasPrice),
-            maxPriorityFeePerGas: Number(feeData?.maxPriorityFeePerGas),
+            maxFeePerGas: Number(formatGwei(feeData?.maxFeePerGas)),
+            gasPrice: Number(formatGwei(feeData?.gasPrice)),
+            maxPriorityFeePerGas: Number(formatGwei(feeData?.maxPriorityFeePerGas)),
         }
     }
 }
