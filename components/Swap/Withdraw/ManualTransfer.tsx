@@ -16,6 +16,7 @@ import { BaseL2Asset } from "../../../Models/Layer";
 import { DepositType } from "../../../lib/NetworkSettings";
 import SpinIcon from "../../icons/spinIcon";
 import { parseUnits } from 'viem'
+import { NetworkType } from "../../../Models/CryptoNetwork";
 
 const ManualTransfer: FC = () => {
     const { layers } = useSettingsState()
@@ -115,8 +116,7 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
     const requested_amount = manualTransferFee?.min_amount > swap?.requested_amount ? manualTransferFee?.min_amount : swap?.requested_amount
 
     const sourceNetwork = source_network?.isExchange == false && source_network
-    const sourceChainId = sourceNetwork.chain_id
-    let canWithdrawWithWallet = !source_exchange && sourceNetwork.address_type === "evm" && !!sourceChainId && source_network?.internal_name !== KnownInternalNames.Networks.ZksyncMainnet;
+    let canWithdrawWithWallet = !source_exchange && sourceNetwork.type === NetworkType.EVM && source_network?.internal_name !== KnownInternalNames.Networks.ZksyncMainnet;
 
     const EIP_681 = asset.contract_address ?
         `ethereum:${asset.contract_address}@${sourceNetwork.chain_id}/transfer?address=${address}&uint256=${parseUnits(requested_amount.toString(), asset.decimals)}`

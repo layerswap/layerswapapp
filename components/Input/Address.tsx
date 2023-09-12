@@ -57,7 +57,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const placeholder = "Enter your address here"
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
         const [validInputAddress, setValidInputAddress] = useState<string>()
-        const [autofilledWallet, setAutofilledWallet] = useState<NetworkType>()
+        const [autofilledWalletNetworkType, setAutofilledWalletNetworkType] = useState<NetworkType>()
         const [canAutofillStarknet, setCanAutofillStarknet] = useState(true)
         const starknet = getStarknet()
         const destinationIsStarknet = destination?.internal_name === KnownInternalNames.Networks.StarkNetGoerli
@@ -78,7 +78,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         useEffect(() => {
             if (isRainbowKitConnected && destinationNetwork?.type) {
-                setAutofilledWallet(destinationNetwork?.type)
+                setAutofilledWalletNetworkType(destinationNetwork?.type)
             }
         }, [isRainbowKitConnected, destinationNetwork?.type])
 
@@ -104,12 +104,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setDepositeAddressIsfromAccount(false)
             setFieldValue("destination_address", '')
             try {
-                if (autofilledWallet === "starknet") {
+                if (autofilledWalletNetworkType === NetworkType.Starknet) {
                     starknetDisconnect({ clearLastWallet: true })
                     setStarknetAccount(null)
                     setWrongNetwork(false)
                 }
-                else if (autofilledWallet === "evm") {
+                else if (autofilledWalletNetworkType === NetworkType.EVM) {
                     wagmiDisconnect()
                 }
             }
@@ -117,7 +117,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 toast(e.message)
             }
             setInputValue("")
-        }, [depositeAddressIsfromAccount, autofilledWallet])
+        }, [depositeAddressIsfromAccount, autofilledWalletNetworkType])
 
         const handleSelectAddress = useCallback((value: string) => {
             setAddressConfirmed(true)
@@ -166,14 +166,14 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 setWrongNetwork(true)
                 starknetDisconnect({ clearLastWallet: true })
                 setStarknetAccount(null)
-                setAutofilledWallet(null)
+                setAutofilledWalletNetworkType(null)
                 return
             }
             setWrongNetwork(false)
             setInputValue(res?.account?.address)
             setAddressConfirmed(true)
             setFieldValue("destination_address", res?.account?.address)
-            setAutofilledWallet(NetworkType.Starknet)
+            setAutofilledWalletNetworkType(NetworkType.Starknet)
             setStarknetAccount(res)
         }, [destinationChainId])
 

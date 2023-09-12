@@ -101,7 +101,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                             }
                             {
                                 from?.isExchange === false 
-                                && from?.address_type === NetworkType.EVM 
+                                && from?.type === NetworkType.EVM 
                                 && (networkGas || isGasLoading) &&
                                 <div className="mt-2 flex flex-row items-baseline justify-between">
                                     <label className="inline-flex items-center text-left text-primary-text-placeholder">

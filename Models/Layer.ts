@@ -21,7 +21,7 @@ type LayerData = ({
     native_currency?: string;
     average_completion_time?: string;
     chain_id?: string;
-    address_type?: NetworkType
+    type?: NetworkType
 })
 
 export type BaseL2Asset = {
