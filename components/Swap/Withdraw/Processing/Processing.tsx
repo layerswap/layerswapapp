@@ -99,7 +99,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             },
             failed: {
                 name: `Your transfer is failed`,
-                description: <div className='flex space-x-1'>
+                description: swap.message && <div className='flex space-x-1'>
                     <span>Error: </span>
                     <div className='space-x-1 text-white'>
                         {swap.message}

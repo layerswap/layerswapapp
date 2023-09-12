@@ -1,5 +1,7 @@
 import { FC } from "react";
 import FailIcon from "../../../../icons/FailIcon";
+import * as Accordion from '@radix-ui/react-accordion';
+import { AccordionContent, AccordionTrigger } from "@radix-ui/react-accordion";
 
 type WalletMessageProps = {
     header: string;
@@ -25,7 +27,18 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
                 {header}
             </p>
             <p className="text-sm text-primary-text break-all">
-                {details}
+                {header == "Unexpected error" ?
+                    <Accordion.Root className="AccordionRoot" type="single" defaultValue="item-1" collapsible>
+                        <Accordion.Item className="AccordionItem" value="item-1">
+                            <AccordionTrigger>Read more</AccordionTrigger>
+                            <Accordion.Content className="AccordionContent">
+                                <div className="AccordionContentText">
+                                    {details}
+                                </div>
+                            </Accordion.Content>
+                        </Accordion.Item>
+                    </Accordion.Root> :
+                    details}
             </p>
         </div>
     </div>

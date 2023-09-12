@@ -10,7 +10,6 @@ import {
 import { parseEther, createPublicClient, http, encodeFunctionData } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
 import { PublishedSwapTransactionStatus } from "../../../../../lib/layerSwapApiClient";
-import { useSwapDataUpdate } from "../../../../../context/swap";
 import { toast } from "react-hot-toast";
 import WalletIcon from "../../../../icons/WalletIcon";
 import Modal from '../../../../modal/modal';
@@ -18,6 +17,7 @@ import MessageComponent from "../../../../MessageComponent";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import TransactionMessage from "./transactionMessage";
 import { ButtonWrapper } from "./buttons";
+import { useSwapTransactionStore } from "../../../../store/zustandStore";
 
 type TransferNativeTokenButtonProps = BaseTransferButtonProps & {
     chainId: number,
@@ -33,11 +33,11 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     sequenceNumber
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
-    const { setSwapPublishedTx } = useSwapDataUpdate()
     const [buttonClicked, setButtonClicked] = useState(false)
     const [openChangeAmount, setOpenChangeAmount] = useState(false)
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
     const { address } = useAccount();
+    const { setSwapTransaction } = useSwapTransactionStore();
 
     const depositAddress = managedDepositAddress
 
@@ -92,7 +92,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     useEffect(() => {
         try {
             if (transaction?.data?.hash) {
-                setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Pending, transaction?.data?.hash)
+                setSwapTransaction(swapId, PublishedSwapTransactionStatus.Pending, transaction?.data?.hash)
             }
         }
         catch (e) {
@@ -105,12 +105,11 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         hash: transaction?.data?.hash || savedTransactionHash,
         onSuccess: async (trxRcpt) => {
             setApplyingTransaction(true)
-            setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
+            setSwapTransaction(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
             setApplyingTransaction(false)
         },
         onError: async (err) => {
-            setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Error, "");
-            toast.error(err.message)
+            setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, "", err.message);
         }
     })
 
