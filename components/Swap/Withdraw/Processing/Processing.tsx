@@ -48,8 +48,8 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const failReason = swap.fail_reason as SwapFailReasons;
 
     type ProgressStates = {
-        [key in Progress]: {
-            [key in ProgressStatus]: {
+        [key in Progress]?: {
+            [key in ProgressStatus]?: {
                 name: string;
                 description: string | JSX.Element;
             }
@@ -97,15 +97,6 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                     <div className='underline hover:no-underline flex items-center space-x-1'>
                         <a target={"_blank"} href={input_tx_explorer.replace("{0}", swapInputTransaction?.transaction_id)}>{shortenAddress(swapInputTransaction?.transaction_id)}</a>
                         <ExternalLink className='h-4' />
-                    </div>
-                </div>
-            },
-            failed: {
-                name: `Your transfer is failed`,
-                description: failReason && <div className='flex space-x-1'>
-                    <span>Error: </span>
-                    <div className='space-x-1 text-white'>
-                        {resolveFailError(failReason)}
                     </div>
                 </div>
             },
@@ -165,15 +156,6 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                     <div className='underline hover:no-underline flex items-center space-x-1'>
                         <a target={"_blank"} href={swapRefuelTransaction?.explorer_url}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
                         <ExternalLink className='h-4' />
-                    </div>
-                </div>
-            },
-            failed: {
-                name: `Your transfer is failed`,
-                description: failReason && <div className='flex space-x-1'>
-                    <span>Error: </span>
-                    <div className='space-x-1 text-white'>
-                        {resolveFailError(failReason)}
                     </div>
                 </div>
             },
