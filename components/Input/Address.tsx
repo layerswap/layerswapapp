@@ -21,8 +21,8 @@ import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import { connect, disconnect as starknetDisconnect } from "get-starknet";
 import WalletIcon from "../icons/WalletIcon";
-import { NetworkAddressType } from "../../Models/CryptoNetwork";
 import { useWalletState, useWalletUpdate } from "../../context/wallet";
+import { NetworkType } from "../../Models/CryptoNetwork";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -57,7 +57,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const placeholder = "Enter your address here"
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
         const [validInputAddress, setValidInputAddress] = useState<string>()
-        const [autofilledWallet, setAutofilledWallet] = useState<'evm' | 'starknet'>()
+        const [autofilledWalletNetworkType, setAutofilledWalletNetworkType] = useState<NetworkType>()
         const [canAutofillStarknet, setCanAutofillStarknet] = useState(true)
         const starknet = getStarknet()
         const destinationIsStarknet = destination?.internal_name === KnownInternalNames.Networks.StarkNetGoerli
@@ -77,10 +77,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         });
 
         useEffect(() => {
-            if (isRainbowKitConnected && destinationNetwork?.address_type) {
-                setAutofilledWallet('evm')
+            if (isRainbowKitConnected && destinationNetwork?.type) {
+                setAutofilledWalletNetworkType(destinationNetwork?.type)
             }
-        }, [isRainbowKitConnected, destinationNetwork?.address_type])
+        }, [isRainbowKitConnected, destinationNetwork?.type])
 
         useEffect(() => {
             if (!destination?.isExchange && isValidAddress(walletAddress, destination) && !values?.destination_address) {
@@ -104,12 +104,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setDepositeAddressIsfromAccount(false)
             setFieldValue("destination_address", '')
             try {
-                if (autofilledWallet === "starknet") {
+                if (autofilledWalletNetworkType === NetworkType.Starknet) {
                     starknetDisconnect({ clearLastWallet: true })
                     setStarknetAccount(null)
                     setWrongNetwork(false)
                 }
-                else if (autofilledWallet === "evm") {
+                else if (autofilledWalletNetworkType === NetworkType.EVM) {
                     wagmiDisconnect()
                 }
             }
@@ -117,7 +117,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 toast(e.message)
             }
             setInputValue("")
-        }, [depositeAddressIsfromAccount, autofilledWallet])
+        }, [depositeAddressIsfromAccount, autofilledWalletNetworkType])
 
         const handleSelectAddress = useCallback((value: string) => {
             setAddressConfirmed(true)
@@ -166,14 +166,14 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 setWrongNetwork(true)
                 starknetDisconnect({ clearLastWallet: true })
                 setStarknetAccount(null)
-                setAutofilledWallet(null)
+                setAutofilledWalletNetworkType(null)
                 return
             }
             setWrongNetwork(false)
             setInputValue(res?.account?.address)
             setAddressConfirmed(true)
             setFieldValue("destination_address", res?.account?.address)
-            setAutofilledWallet("starknet")
+            setAutofilledWalletNetworkType(NetworkType.Starknet)
             setStarknetAccount(res)
         }, [destinationChainId])
 
@@ -279,7 +279,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         }
                         {
                             !disabled && !inputValue && !destination?.isExchange
-                            && (destinationNetwork?.address_type === NetworkAddressType.evm || destinationNetwork?.address_type === NetworkAddressType.immutable_x)
+                            && ([NetworkType.EVM, NetworkType.StarkEx, NetworkType.ZkSyncLite].includes(destinationNetwork?.type))
                             &&
                             <RainbowKit>
                                 <div className={`min-h-12 text-left space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
