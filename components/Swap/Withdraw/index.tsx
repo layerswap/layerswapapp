@@ -20,20 +20,19 @@ import { useAccountModal } from '@rainbow-me/rainbowkit';
 import { disconnect as wagmiDisconnect } from '@wagmi/core'
 import { useWalletState, useWalletUpdate } from '../../../context/wallet';
 import { GetDefaultNetwork } from '../../../helpers/settingsHelper';
-import { NetworkAddressType } from '../../../Models/CryptoNetwork';
 import { disconnect as starknetDisconnect } from "get-starknet";
 import Image from 'next/image';
 import { ResolveWalletIcon } from '../../HeaderWithMenu/ConnectedWallets';
 import toast from 'react-hot-toast';
 import SpinIcon from '../../icons/spinIcon';
+import { NetworkType } from '../../../Models/CryptoNetwork';
 
 const Withdraw: FC = () => {
 
     const { swap } = useSwapDataState()
     const { setWithdrawType } = useSwapDataUpdate()
-    const { layers, networks } = useSettingsState()
+    const { layers } = useSettingsState()
     const { addressSource, signature } = useQueryState()
-    const source_network = networks?.find(n => n.internal_name === swap?.source_network)
     const source_internal_name = swap?.source_exchange ?? swap.source_network
     const source = layers.find(n => n.internal_name === source_internal_name)
 
@@ -47,14 +46,13 @@ const Withdraw: FC = () => {
     const sourceIsCoinbase = swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
 
     const source_layer = layers.find(n => n.internal_name === swap?.source_network)
-    const sourceAddressType = GetDefaultNetwork(source_layer, swap?.source_network_asset)?.address_type
+    const sourceNetworkType = GetDefaultNetwork(source_layer, swap?.source_network_asset)?.type
     const manualIsAvailable = !(sourceIsStarknet || sourceIsImmutableX || isFiat)
     const walletIsAvailable = !isFiat
         && !swap?.source_exchange
-        && !isNaN(Number(source_network?.chain_id))
-        && (sourceAddressType === NetworkAddressType.evm
-            || sourceAddressType === NetworkAddressType.starknet
-            || sourceAddressType === NetworkAddressType.immutable_x)
+        && (sourceNetworkType === NetworkType.EVM
+            || sourceNetworkType === NetworkType.Starknet
+            || sourceIsImmutableX)
 
     const isImtblMarketplace = (signature && addressSource === "imxMarketplace" && sourceIsImmutableX)
     const sourceIsSynquote = addressSource === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
@@ -187,7 +185,7 @@ const WalletTransferContent: FC = () => {
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
-    const sourceAddressType = GetDefaultNetwork(source_network, source_network_asset)?.address_type
+    const sourceNetworkType = GetDefaultNetwork(source_network, source_network_asset)?.type
 
     const handleDisconnectCoinbase = useCallback(async () => {
         const apiClient = new LayerSwapApiClient()
@@ -201,10 +199,10 @@ const WalletTransferContent: FC = () => {
             if (swap.source_exchange) {
                 await handleDisconnectCoinbase()
             }
-            else if (sourceAddressType === NetworkAddressType.evm) {
+            else if (sourceNetworkType === NetworkType.EVM) {
                 await wagmiDisconnect()
             }
-            else if (sourceAddressType === NetworkAddressType.starknet) {
+            else if (sourceNetworkType === NetworkType.Starknet) {
                 await starknetDisconnect({ clearLastWallet: true })
                 setStarknetAccount(null)
             }
@@ -216,20 +214,20 @@ const WalletTransferContent: FC = () => {
             setIsloading(false);
         }
         e?.stopPropagation();
-    }, [sourceAddressType, swap.source_exchange])
+    }, [sourceNetworkType, swap.source_exchange])
 
     let accountAddress = ""
     if (swap.source_exchange) {
         accountAddress = swap.exchange_account_name
     }
-    else if (sourceAddressType === NetworkAddressType.evm) {
+    else if (sourceNetworkType === NetworkType.EVM) {
         accountAddress = address;
     }
-    else if (sourceAddressType === NetworkAddressType.starknet) {
+    else if (sourceNetworkType === NetworkType.Starknet) {
         accountAddress = starknetAccount?.account?.address;
     }
 
-    const canOpenAccount = sourceAddressType === NetworkAddressType.evm && !swap.source_exchange
+    const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap.source_exchange
 
     const handleOpenAccount = useCallback(() => {
         if (canOpenAccount)
@@ -253,7 +251,7 @@ const WalletTransferContent: FC = () => {
             <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-1'>
                 {
                     !swap.source_exchange
-                    && sourceAddressType === NetworkAddressType.starknet
+                    && sourceNetworkType === NetworkType.Starknet
                     && <Image
                         src={starknetAccount?.icon}
                         alt={accountAddress}
@@ -262,7 +260,7 @@ const WalletTransferContent: FC = () => {
                 }
                 {
                     !swap.source_exchange
-                    && sourceAddressType === NetworkAddressType.evm
+                    && sourceNetworkType === NetworkType.EVM
                     && <ResolveWalletIcon
                         connector={connector?.name}
                         className="w-6 h-6 rounded-full"

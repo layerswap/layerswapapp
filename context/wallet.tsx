@@ -1,12 +1,12 @@
 import React, { FC, useState } from 'react'
 import { StarknetWindowObject } from 'get-starknet';
 import { useAccount, usePublicClient } from 'wagmi';
-import { NetworkAddressType } from '../Models/CryptoNetwork';
 import { Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
 import { Balance, Gas, getErc20Balances, getNativeBalance, resolveERC20Balances, resolveGas, resolveNativeBalance } from '../helpers/balanceHelper';
 import { createPublicClient, http } from 'viem';
 import resolveChain from '../lib/resolveChain';
+import { NetworkType } from '../Models/CryptoNetwork';
 
 export const WalletStateContext = React.createContext(null);
 const WalletStateUpdateContext = React.createContext(null);
@@ -41,7 +41,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
 
     async function getBalance(from: Layer) {
         const isBalanceOutDated = new Date().getTime() - (new Date(allBalances[address]?.find(b => b?.network === from?.internal_name)?.request_time).getTime() || 0) > 60000
-        if (from && isBalanceOutDated && address && from?.isExchange === false && from?.address_type === NetworkAddressType.evm && !isNaN(Number(from?.chain_id))) {
+        if (from && isBalanceOutDated && address && from?.isExchange === false && from?.type === NetworkType.EVM) {
             setIsBalanceLoading(true)
 
             const erc20BalancesContractRes = await getErc20Balances(

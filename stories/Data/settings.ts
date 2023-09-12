@@ -1,4 +1,4 @@
-import { NetworkAddressType } from "../../Models/CryptoNetwork";
+import { NetworkType } from "../../Models/CryptoNetwork";
 import { LayerSwapSettings } from "../../Models/LayerSwapSettings";
 
 export const Settings: LayerSwapSettings = {
@@ -147,7 +147,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:00:00",
             "chain_id": "testnet",
             "status": "active",
-            "address_type": NetworkAddressType.evm,
+            "type": NetworkType.EVM,
             "refuel_amount_in_usd": 0,
             "transaction_explorer_template": "https://testnet.brine.finance/history",
             "fee_multiplier": 89,
@@ -195,7 +195,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:09:29.7050560",
             "chain_id": "5",
             "status": "active",
-            "address_type": NetworkAddressType.evm,
+            "type": NetworkType.EVM,
             "refuel_amount_in_usd": 0.5,
             "transaction_explorer_template": "https://goerli.etherscan.io/tx/{0}",
             "currencies": [
@@ -274,7 +274,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:01:52.0070860",
             "chain_id": "0x534e5f474f45524c49",
             "status": "active",
-            "address_type": NetworkAddressType.evm,
+            "type": NetworkType.EVM,
             "refuel_amount_in_usd": 0.5,
             "transaction_explorer_template": "https://goerli.voyager.online/tx/{0}",
             "currencies": [
@@ -322,7 +322,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:13:58.3918070",
             "chain_id": "5",
             "status": "active",
-            "address_type": NetworkAddressType.immutable_x,
+            "type": NetworkType.StarkEx,
             "refuel_amount_in_usd": 0.5,
             "transaction_explorer_template": "https://immutascan.io/tx/{0}",
             "fee_multiplier": 89,
@@ -402,7 +402,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:05:19.5912930",
             "chain_id": null,
             "status": "inactive",
-            "address_type": NetworkAddressType.loopring,
+            "type": NetworkType.ZkSyncLite,
             "refuel_amount_in_usd": 0.5,
             "transaction_explorer_template": "https://explorer.loopring.io/tx/{0}-transfer",
             "currencies": [
@@ -447,7 +447,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:10:42.1351060",
             "chain_id": "421613",
             "status": "active",
-            "address_type": NetworkAddressType.evm,
+            "type": NetworkType.EVM,
             "refuel_amount_in_usd": 0.5,
             "transaction_explorer_template": "https://goerli.arbiscan.io/tx/{0}",
             "currencies": [
@@ -510,7 +510,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:18:17.1275430",
             "chain_id": null,
             "status": "inactive",
-            "address_type": NetworkAddressType.evm,
+            "type": NetworkType.EVM,
             "refuel_amount_in_usd": 0.5,
             "transaction_explorer_template": "https://trade.stage.dydx.exchange/portfolio/history/transfers",
             "fee_multiplier": 89,
@@ -556,7 +556,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:01:01.2422360",
             "chain_id": null,
             "status": "inactive",
-            "address_type": NetworkAddressType.solana,
+            "type": NetworkType.Solana,
             "refuel_amount_in_usd": 0.5,
             "transaction_explorer_template": "https://explorer.solana.com/tx/{0}?cluster=testnet",
             "currencies": [
@@ -601,7 +601,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:00:00",
             "chain_id": null,
             "status": "inactive",
-            "address_type": NetworkAddressType.evm,
+            "type": NetworkType.EVM,
             "refuel_amount_in_usd": 0.5,
             "transaction_explorer_template": "https://goerli.lineascan.build/tx/{0}",
             "currencies": [
@@ -645,7 +645,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:00:00",
             "chain_id": null,
             "status": "inactive",
-            "address_type": NetworkAddressType.evm,
+            "type": NetworkType.EVM,
             "refuel_amount_in_usd": 1.0,
             "transaction_explorer_template": "https://explorer.sepolia.publicgoods.network/tx/{0}",
             "fee_multiplier": 89,
@@ -691,7 +691,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:00:00",
             "chain_id": null,
             "status": "inactive",
-            "address_type": NetworkAddressType.evm,
+            "type": NetworkType.EVM,
             "refuel_amount_in_usd": 1.0,
             "transaction_explorer_template": "https://goerli.basescan.org/tx/{0}",
             "currencies": [
@@ -736,7 +736,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:00:00",
             "chain_id": null,
             "status": "inactive",
-            "address_type": NetworkAddressType.evm,
+            "type": NetworkType.EVM,
             "refuel_amount_in_usd": 1.0,
             "transaction_explorer_template": "https://testnet.escan.live/tx/{0}",
             "currencies": [
@@ -796,7 +796,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:00:00",
             "chain_id": null,
             "status": "inactive",
-            "address_type": NetworkAddressType.evm,
+            "type": NetworkType.EVM,
             "refuel_amount_in_usd": 1.0,
             "transaction_explorer_template": "https://explorer.mantle.xyz/tx/{0}",
             "currencies": [
@@ -856,7 +856,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:00:00",
             "chain_id": null,
             "status": "inactive",
-            "address_type": NetworkAddressType.evm,
+            "type": NetworkType.EVM,
             "refuel_amount_in_usd": 1,
             "transaction_explorer_template": "https://testnet.explorer.zora.energy/tx/{0}",
             "currencies": [
@@ -901,7 +901,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:00:00",
             "chain_id": null,
             "status": "inactive",
-            "address_type": NetworkAddressType.evm,
+            "type": NetworkType.EVM,
             "refuel_amount_in_usd": 1.0,
             "transaction_explorer_template": "http://opbnbscan.com/tx/{0}",
             "currencies": [
@@ -961,7 +961,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:00:00",
             "chain_id": "420",
             "status": "active",
-            "address_type": NetworkAddressType.evm,
+            "type": NetworkType.EVM,
             "refuel_amount_in_usd": 0,
             "transaction_explorer_template": "https://goerli-optimism.etherscan.io/tx/{0}",
             "currencies": [

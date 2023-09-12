@@ -42,13 +42,12 @@ const SwapSummary: FC = () => {
     const apiClient = new LayerSwapApiClient()
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([params], selectedAssetNetwork ? ([params]) => apiClient.GetFee(params) : null, { dedupingInterval: 60000 })
 
-
     let fee: number
 
     const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Wallet)
     const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
 
-    if (swap?.fee && swapInputTransaction) {
+    if (swap?.fee && swapOutputTransaction) {
         fee = swap?.fee
     } else if (withdrawType === WithdrawType.Wallet && (isConnected && address?.toLowerCase() === destination_address?.toLowerCase())) {
         fee = walletTransferFee?.fee_amount;

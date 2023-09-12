@@ -13,9 +13,9 @@ import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import useSWR from 'swr'
 import { GetDefaultNetwork } from "../../../helpers/settingsHelper";
-import { NetworkAddressType } from "../../../Models/CryptoNetwork";
 import { useWalletState } from "../../../context/wallet";
 import KnownInternalNames from "../../../lib/knownIds";
+import { NetworkType } from "../../../Models/CryptoNetwork";
 
 type SwapInfoProps = {
     currency: Currency,
@@ -58,17 +58,16 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     const nativeCurrency = refuelAmount && to?.isExchange === false && currencies.find(c => c.asset === to?.native_currency)
     const truncatedRefuelAmount = hasRefuel && truncateDecimals(refuelAmount, nativeCurrency?.precision)
 
-    const sourceNetworkChainId = networks?.find(n => n.internal_name === from?.internal_name)?.chain_id
-    const sourceAddressType = GetDefaultNetwork(from, currency?.asset)?.address_type
+    const sourceNetworkType = GetDefaultNetwork(from, currency?.asset)?.type
 
     let sourceAccountAddress = ""
     if (hideFrom && account) {
         sourceAccountAddress = shortenAddress(account);
     }
-    else if (sourceAddressType === NetworkAddressType.evm && evmAddress && !from?.isExchange && !isNaN(Number(sourceNetworkChainId))) {
+    else if (sourceNetworkType === NetworkType.EVM && evmAddress && !from?.isExchange) {
         sourceAccountAddress = shortenAddress(evmAddress);
     }
-    else if (sourceAddressType === NetworkAddressType.starknet && starknetAccount && !from?.isExchange) {
+    else if (sourceNetworkType === NetworkType.Starknet && starknetAccount && !from?.isExchange) {
         sourceAccountAddress = shortenAddress(starknetAccount?.account?.address);
     }
     else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {

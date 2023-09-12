@@ -10,6 +10,7 @@ import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bit
 import { useSettingsState } from "../context/settings";
 import { Chain, parseGwei } from "viem";
 import { WagmiConfig, configureChains, createConfig } from "wagmi";
+import { NetworkType } from "../Models/CryptoNetwork";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -17,8 +18,8 @@ type Props = {
 
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
-    const settingsChains: Chain[] = settings.networks.filter(net => net.address_type === 'evm' && net.nodes?.some(n => n.url?.length > 0)).map(n => {
 
+    const settingsChains = settings.networks.filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0)).map(n => {
         const nativeCurrency = n.currencies.find(c => c.asset === n.native_currency);
         const blockExplorersBaseURL = new URL(n.transaction_explorer_template).origin;
 
