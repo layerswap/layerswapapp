@@ -8,6 +8,7 @@ import LayerSwapApiClient, { Fee, TransactionType, WithdrawType } from "../../..
 import { useAccount } from "wagmi"
 import { DepositType } from "../../../lib/NetworkSettings"
 import { truncateDecimals } from "../../utils/RoundDecimals"
+import { CanDoSweeplessTransfer } from "../../../lib/fees"
 
 const SwapSummary: FC = () => {
     const { isConnected, address } = useAccount()
@@ -49,7 +50,7 @@ const SwapSummary: FC = () => {
 
     if (swap?.fee && swapOutputTransaction) {
         fee = swap?.fee
-    } else if (withdrawType === WithdrawType.Wallet && (isConnected && address?.toLowerCase() === destination_address?.toLowerCase())) {
+    } else if (withdrawType === WithdrawType.Wallet && CanDoSweeplessTransfer(source_layer, address, destination_address)) {
         fee = walletTransferFee?.fee_amount;
     } else {
         fee = manualTransferFee?.fee_amount;

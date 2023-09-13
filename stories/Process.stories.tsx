@@ -48,7 +48,7 @@ const settingsChains = settings.networks.filter(net => net.type === NetworkType.
             },
         },
         contracts: {
-            multicall3: n?.metadata?.contracts?.multicall3
+            multicall3: n?.metadata?.multicall3
         },
     }
 })
