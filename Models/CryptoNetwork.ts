@@ -21,7 +21,7 @@ export class CryptoNetwork {
     currencies: NetworkCurrency[];
     refuel_amount_in_usd: number;
     chain_id: string;
-    address_type: NetworkAddressType;
+    type: NetworkAddressType;
     created_date: string;
     is_featured: boolean;
     nodes: NetworkNode[];

@@ -58,7 +58,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             native_currency: n.native_currency,
             average_completion_time: n.average_completion_time,
             chain_id: n.chain_id,
-            address_type: n.address_type,
+            address_type: n.type,
             nodes: n.nodes,
             is_featured: n?.is_featured,
             assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n)

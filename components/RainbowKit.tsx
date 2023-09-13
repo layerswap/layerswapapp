@@ -17,7 +17,7 @@ type Props = {
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
 
-    const settingsChains = settings.networks.filter(net => net.address_type === 'evm' && net.nodes?.some(n => n.url?.length > 0)).map(n => {
+    const settingsChains = settings.networks.filter(net => net.type === 'evm' && net.nodes?.some(n => n.url?.length > 0)).map(n => {
         const nativeCurrency = n.currencies.find(c => c.asset === n.native_currency);
         const blockExplorersBaseURL = new URL(n.transaction_explorer_template).origin;
         return {
