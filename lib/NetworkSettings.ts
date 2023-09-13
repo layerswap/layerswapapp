@@ -100,7 +100,7 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumGoerli] = {
             ChainId: 5,
-            AccountExplorerTemplate: 'https://goerli.etherscan.io/address/{0}',
+            AccountExplorerTemplate: 'ht tps://goerli.etherscan.io/address/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.MoonbeamMainnet] = {
             ChainId: 1284,
@@ -116,6 +116,7 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumNova] = {
             ChainId: 42170,
             AccountExplorerTemplate: 'https://nova.arbiscan.io/address/{0}',
+            DefaultPriorityFee: 0
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumGoerli] = {
             ChainId: 421613,

@@ -43,12 +43,17 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         const isBalanceOutDated = new Date().getTime() - (new Date(allBalances[address]?.find(b => b?.network === from?.internal_name)?.request_time).getTime() || 0) > 60000
         if (from && isBalanceOutDated && address && from?.isExchange === false && from?.type === NetworkType.EVM) {
             setIsBalanceLoading(true)
-
-            const erc20BalancesContractRes = await getErc20Balances(
+            const publicClient = createPublicClient({
+                chain: resolveChain(from.assets?.[0].network),
+                transport: http()
+            })
+            const erc20BalancesContractRes = await getErc20Balances({
                 address,
-                Number(from?.chain_id),
-                from.assets
-            );
+                chainId: Number(from?.chain_id),
+                assets: from.assets,
+                publicClient,
+                hasMulticall: !!from.metadata?.multicall3
+            });
 
             const erc20Balances = await resolveERC20Balances(
                 erc20BalancesContractRes,

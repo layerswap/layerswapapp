@@ -1,7 +1,6 @@
 import { LayerStatus } from "./Layer";
 
-export enum NetworkType
-{
+export enum NetworkType {
     EVM = "evm",
     Starknet = "starknet",
     Solana = "solana",
@@ -52,10 +51,14 @@ export class ManagedAccount {
     address: string;
 }
 export class Metadata {
-    contracts: {
-        multicall3: {
-            address: `0x${string}`;
-            blockCreated: number
-        }
+    multicall3: {
+        address: `0x${string}`;
+        blockCreated: number
+    };
+    ensRegistry: {
+        address: `0x${string}`;
+    }
+    ensUniversalResolver: {
+        address: `0x${string}`;
     }
 }

@@ -27,7 +27,9 @@ export default function resolveChain (network: CryptoNetwork): Chain {
             },
         },
         contracts: {
-            multicall3: network?.metadata?.contracts?.multicall3
+            multicall3: network?.metadata?.multicall3,
+            ensRegistry: network?.metadata?.ensRegistry,
+            ensUniversalResolver: network?.metadata?.ensUniversalResolver,
         },
         fees: {
             defaultPriorityFee: () => parseGwei(NetworkSettings.KnownSettings[network.internal_name].DefaultPriorityFee.toString()),

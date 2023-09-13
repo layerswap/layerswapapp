@@ -68,8 +68,20 @@ export const resolveERC20Balances = async (
     })
     return contractBalances
 }
-
-export const getErc20Balances = async (address: string, chainId: number, assets: BaseL2Asset[]): Promise<ERC20ContractRes[] | null> => {
+type GetBalanceArgs = {
+    address: string,
+    chainId: number,
+    assets: BaseL2Asset[],
+    publicClient: PublicClient,
+    hasMulticall: boolean
+}
+export const getErc20Balances = async ({
+    address,
+    chainId,
+    assets,
+    publicClient,
+    hasMulticall = false
+}: GetBalanceArgs): Promise<ERC20ContractRes[] | null> => {
 
     const contracts = assets?.filter(a => a.contract_address && a.status !== 'inactive').map(a => ({
         address: a?.contract_address as `0x${string}`,
@@ -79,11 +91,41 @@ export const getErc20Balances = async (address: string, chainId: number, assets:
     }))
 
     try {
-        const contractRes = await multicall({
-            chainId: chainId,
-            contracts: contracts
-        })
-        return contractRes
+        if (hasMulticall) {
+            const contractRes = await multicall({
+                chainId: chainId,
+                contracts: contracts
+            })
+            return contractRes
+        }
+        else {
+            const balances: ERC20ContractRes[] = []
+            for (let i = 0; i < contracts.length; i++) {
+                try {
+                    const contract = contracts[i]
+                    const balance = await publicClient.readContract({
+                        address: contract?.address as `0x${string}`,
+                        abi: erc20ABI,
+                        functionName: 'balanceOf',
+                        args: [address as `0x${string}`]
+                    })
+                    balances.push({
+                        status: "success",
+                        result: balance,
+                        error: null
+                    })
+                }
+                catch (e) {
+                    balances.push({
+                        status: "failure",
+                        result: null,
+                        error: e?.message
+                    })
+                }
+            }
+            debugger
+            return balances
+        }
     }
     catch (e) {
         //TODO: log the error to our logging service
