@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import Processing from '../components/Swap/Withdraw/Processing';
-import LayerSwapApiClient, { SwapItem, TransactionStatus, TransactionType } from '../lib/layerSwapApiClient';
+import { SwapItem, TransactionStatus, TransactionType } from '../lib/layerSwapApiClient';
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapDataStateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
@@ -20,11 +20,12 @@ import Widget from '../components/Wizard/Widget';
 import MessageComponent from '../components/MessageComponent';
 import SubmitButton, { DoubleLineText } from '../components/buttons/submitButton';
 import { MessageSquare } from 'lucide-react';
+import { NetworkType } from '../Models/CryptoNetwork';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 let settings = new LayerSwapAppSettings(Settings)
 
-const settingsChains = settings.networks.filter(net => net.type === 'evm' && net.nodes?.some(n => n.url?.length > 0)).map(n => {
+const settingsChains = settings.networks.filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0)).map(n => {
     const nativeCurrency = n.currencies.find(c => c.asset === n.native_currency);
     const blockExplorersBaseURL = new URL(n.transaction_explorer_template).origin;
     return {

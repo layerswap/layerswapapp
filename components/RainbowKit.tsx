@@ -9,6 +9,7 @@ const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 import { publicProvider } from 'wagmi/providers/public';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 import { useSettingsState } from "../context/settings";
+import { NetworkType } from "../Models/CryptoNetwork";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -17,7 +18,7 @@ type Props = {
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
 
-    const settingsChains = settings.networks.filter(net => net.type === 'evm' && net.nodes?.some(n => n.url?.length > 0)).map(n => {
+    const settingsChains = settings.networks.filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0)).map(n => {
         const nativeCurrency = n.currencies.find(c => c.asset === n.native_currency);
         const blockExplorersBaseURL = new URL(n.transaction_explorer_template).origin;
         return {

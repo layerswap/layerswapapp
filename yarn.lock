@@ -5456,10 +5456,10 @@
     "bs58" "^4.0.0"
     "text-encoding-utf-8" "^1.0.2"
 
-"bowser@^2.11.0":
-  "integrity" "sha512-AlcaJBi/pqqJBIQ8U9Mcpc9i8Aqxn88Skv5d+xBX006BY5u8N3mGLHa5Lgppa7L/HfwgwLgZ6NYs+Ag6uUmJRA=="
-  "resolved" "https://registry.npmjs.org/bowser/-/bowser-2.11.0.tgz"
-  "version" "2.11.0"
+bowser@^2.11.0:
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/bowser/-/bowser-2.11.0.tgz#5ca3c35757a7aa5771500c70a73a9f91ef420a8f"
+  integrity sha512-AlcaJBi/pqqJBIQ8U9Mcpc9i8Aqxn88Skv5d+xBX006BY5u8N3mGLHa5Lgppa7L/HfwgwLgZ6NYs+Ag6uUmJRA==
 
 "bplist-parser@^0.2.0":
   "integrity" "sha512-z0M+byMThzQmD9NILRniCUXYsYpjwnlO8N5uCFaCqIOpqRsJCrQL9NK3JsD67CN5a08nF5oIL2bD6loTdHOuKw=="
@@ -7664,10 +7664,10 @@
   "resolved" "https://registry.npmjs.org/get-starknet-core/-/get-starknet-core-2.1.0.tgz"
   "version" "2.1.0"
 
-"get-starknet@^2.1.0":
-  "integrity" "sha512-cJX1M/IsFYBpMI/oyn05CPiM3a/95RLesYkc4pCeuO6x3upSaJDa6kanWi294qPRBnhwanAIB3zeGhVZ9ymBMg=="
-  "resolved" "https://registry.npmjs.org/get-starknet/-/get-starknet-2.1.0.tgz"
-  "version" "2.1.0"
+get-starknet@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/get-starknet/-/get-starknet-2.1.0.tgz#990e275dd1ce3b531b9b8a8a51f9699beba8951b"
+  integrity sha512-cJX1M/IsFYBpMI/oyn05CPiM3a/95RLesYkc4pCeuO6x3upSaJDa6kanWi294qPRBnhwanAIB3zeGhVZ9ymBMg==
   dependencies:
     "bowser" "^2.11.0"
     "get-starknet-core" "^2.1.0"

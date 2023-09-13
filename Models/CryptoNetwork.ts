@@ -1,12 +1,13 @@
 import { LayerStatus } from "./Layer";
 
-export enum NetworkAddressType {
-    "evm" = "evm",
-    'starknet' = "starknet",
-    'solana' = "solana",
-    'osmosis' = "osmosis",
-    'immutable_x' = "immutable_x",
-    'loopring' = "loopring"
+export enum NetworkType
+{
+    EVM = "evm",
+    Starknet = "starknet",
+    Solana = "solana",
+    Cosmos = "cosmos",
+    StarkEx = "starkex",
+    ZkSyncLite = "zksynclite",
 }
 
 
@@ -21,7 +22,7 @@ export class CryptoNetwork {
     currencies: NetworkCurrency[];
     refuel_amount_in_usd: number;
     chain_id: string;
-    type: NetworkAddressType;
+    type: NetworkType;
     created_date: string;
     is_featured: boolean;
     nodes: NetworkNode[];
