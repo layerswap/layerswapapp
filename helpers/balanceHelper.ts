@@ -123,7 +123,6 @@ export const getErc20Balances = async ({
                     })
                 }
             }
-            debugger
             return balances
         }
     }
@@ -197,7 +196,7 @@ export const estimateERC20GasLimit = async (publicClient: PublicClient, contract
         abi: erc20ABI,
         functionName: 'transfer',
         account,
-        args: [destination || account, BigInt(10000000)]
+        args: [destination || account, parseEther('0.1')]
     });
 
     return estimatedERC20GasLimit;
@@ -242,7 +241,7 @@ const GetGas = async (publicClient: PublicClient, account: `0x${string}`, native
     const feeData = await resolveFeeData(publicClient)
 
     const estimatedGasLimit = contract_address ?
-        await estimateERC20GasLimit(publicClient, account, contract_address)
+        await estimateERC20GasLimit(publicClient, contract_address, account)
         : await estimateNativeGasLimit(publicClient, account)
 
     const totalGas = feeData.maxFeePerGas
