@@ -1,5 +1,4 @@
 import "@rainbow-me/rainbowkit/styles.css";
-import { configureChains, WagmiConfig, createConfig } from 'wagmi';
 import {
     darkTheme,
     connectorsForWallets,
@@ -9,7 +8,9 @@ const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 import { publicProvider } from 'wagmi/providers/public';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 import { useSettingsState } from "../context/settings";
+import { WagmiConfig, configureChains, createConfig } from "wagmi";
 import { NetworkType } from "../Models/CryptoNetwork";
+import resolveChain from "../lib/resolveChain";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -19,38 +20,12 @@ function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
 
     const settingsChains = settings.networks.filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0)).map(n => {
-        const nativeCurrency = n.currencies.find(c => c.asset === n.native_currency);
-        const blockExplorersBaseURL = new URL(n.transaction_explorer_template).origin;
-        return {
-            id: Number(n.chain_id),
-            name: n.display_name,
-            network: n.internal_name,
-            nativeCurrency: { name: nativeCurrency?.name, symbol: nativeCurrency?.asset, decimals: nativeCurrency?.decimals },
-            rpcUrls: {
-                default: {
-                    http: n.nodes.map(n => n?.url),
-                },
-                public: {
-                    http: n.nodes.map(n => n?.url),
-                },
-            },
-            blockExplorers: {
-                default: {
-                    name: 'name',
-                    url: blockExplorersBaseURL,
-                },
-            },
-            contracts: {
-                multicall3 : n?.metadata?.multicall3
-            },
-        }
+        return resolveChain(n)
     })
 
     const { chains, publicClient } = configureChains(
         settingsChains,
-        [
-            publicProvider()
-        ]
+        [publicProvider()]
     );
 
     const projectId = WALLETCONNECT_PROJECT_ID;

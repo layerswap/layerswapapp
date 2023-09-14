@@ -1,7 +1,6 @@
 import { LayerStatus } from "./Layer";
 
-export enum NetworkType
-{
+export enum NetworkType {
     EVM = "evm",
     Starknet = "starknet",
     Solana = "solana",

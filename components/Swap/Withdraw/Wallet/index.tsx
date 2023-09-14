@@ -43,7 +43,7 @@ const WalletTransfer: FC = () => {
     }
 
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
-    const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
+    const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Wallet)
     const requested_amount = walletTransferFee?.min_amount > swap?.requested_amount ? walletTransferFee?.min_amount : swap?.requested_amount
 
     if (sourceIsImmutableX)

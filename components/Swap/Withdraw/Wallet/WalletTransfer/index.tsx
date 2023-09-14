@@ -76,7 +76,6 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     }
     else if (tokenContractAddress) {
         return <TransferErc20Button
-            asset={asset}
             swapId={swapId}
             sequenceNumber={sequence_number_even}
             amount={amount}

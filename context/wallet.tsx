@@ -1,9 +1,11 @@
 import React, { FC, useState } from 'react'
 import { StarknetWindowObject } from 'get-starknet';
-import { useAccount, usePublicClient } from 'wagmi';
+import { useAccount, usePrepareContractWrite, usePublicClient } from 'wagmi';
 import { Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
 import { Balance, Gas, getErc20Balances, getNativeBalance, resolveERC20Balances, resolveGas, resolveNativeBalance } from '../helpers/balanceHelper';
+import { createPublicClient, createWalletClient, http, publicActions } from 'viem';
+import resolveChain from '../lib/resolveChain';
 import { NetworkType } from '../Models/CryptoNetwork';
 
 export const WalletStateContext = React.createContext(null);
@@ -20,7 +22,7 @@ export type WizardProvider = {
 type UpdateInterface = {
     setStarknetAccount: (account: StarknetWindowObject) => void,
     getBalance: (from: Layer) => Promise<void>,
-    getGas: (from: Layer, currency: Currency) => Promise<void>
+    getGas: (from: Layer, currency: Currency, userDestinationAddress: string) => Promise<void>,
 }
 
 type Props = {
@@ -36,18 +38,21 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
     const { address } = useAccount()
     const balances = allBalances[address]
     const gases = allGases
-    const publicClient = usePublicClient()
-
     async function getBalance(from: Layer) {
-        const isBalanceOutDated = new Date().getTime() - (new Date(allBalances[address]?.find(b => b?.network === from?.internal_name)?.request_time).getTime() || 0) > 60000
+        const isBalanceOutDated = new Date().getTime() - (new Date(allBalances[address]?.find(b => b?.network === from?.internal_name)?.request_time).getTime() || 0) > 10000
         if (from && isBalanceOutDated && address && from?.isExchange === false && from?.type === NetworkType.EVM) {
             setIsBalanceLoading(true)
-
-            const erc20BalancesContractRes = await getErc20Balances(
+            const publicClient = createPublicClient({
+                chain: resolveChain(from.assets?.[0].network),
+                transport: http()
+            })
+            const erc20BalancesContractRes = await getErc20Balances({
                 address,
-                Number(from?.chain_id),
-                from.assets
-            );
+                chainId: Number(from?.chain_id),
+                assets: from.assets,
+                publicClient,
+                hasMulticall: !!from.metadata?.multicall3
+            });
 
             const erc20Balances = await resolveERC20Balances(
                 erc20BalancesContractRes,
@@ -64,25 +69,36 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         }
     }
 
-    async function getGas(from: Layer, currency: Currency) {
+    async function getGas(from: Layer, currency: Currency, userDestinationAddress: string) {
         const contract_address = from?.assets?.find(a => a?.asset === currency?.asset)?.contract_address as `0x${string}`
-        const shouldNotFetchGas = allGases[from?.internal_name]?.some(g => g.token === currency?.asset && g.gas && !isNaN(g.gas))
         const chainId = from?.isExchange === false && Number(from?.chain_id)
+        const destination_address = from?.assets?.find(c => c.asset.toLowerCase() === currency?.asset?.toLowerCase())?.network?.managed_accounts?.[0]?.address as `0x${string}`
 
-        if (!shouldNotFetchGas && chainId && currency) {
-            (async () => {
-                setIsGasLoading(true)
-                try {
+        if (chainId && currency && destination_address) {
+            setIsGasLoading(true)
+            try {
+                const publicClient = createPublicClient({
+                    chain: resolveChain(from.assets?.[0].network),
+                    transport: http(),
+                });
 
-                    const gas = await resolveGas(publicClient, chainId, contract_address, address, balances, from.internal_name, currency)
-                    const filteredGases = allGases[from.internal_name]?.some(b => b?.token === currency?.asset) ? allGases[from.internal_name].filter(g => g.token !== currency.asset) : allGases[from.internal_name] || []
-                    if (gas) {
-                        setAllGases((data) => ({ ...data, [from.internal_name]: filteredGases.concat(gas) }))
-                    }
+                const gas = await resolveGas({
+                    publicClient,
+                    chainId,
+                    contract_address,
+                    account: address,
+                    from,
+                    currency,
+                    destination: destination_address,
+                    userDestinationAddress: userDestinationAddress as `0x${string}`
+                })
+                const filteredGases = allGases[from.internal_name]?.some(b => b?.token === currency?.asset) ? allGases[from.internal_name].filter(g => g.token !== currency.asset) : allGases[from.internal_name] || []
+                if (gas) {
+                    setAllGases((data) => ({ ...data, [from.internal_name]: filteredGases.concat(gas) }))
                 }
-                catch (e) { console.log(e) }
-                finally { setIsGasLoading(false) }
-            })()
+            }
+            catch (e) { console.log(e) }
+            finally { setIsGasLoading(false) }
         }
     }
 
@@ -97,7 +113,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
             <WalletStateUpdateContext.Provider value={{
                 setStarknetAccount,
                 getBalance,
-                getGas
+                getGas,
             }}>
                 {children}
             </WalletStateUpdateContext.Provider>

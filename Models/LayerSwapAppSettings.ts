@@ -60,6 +60,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             chain_id: n.chain_id,
             type: n.type,
             nodes: n.nodes,
+            metadata: n.metadata,
             is_featured: n?.is_featured,
             assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n)
         }))

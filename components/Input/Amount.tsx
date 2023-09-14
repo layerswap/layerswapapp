@@ -7,7 +7,7 @@ import CurrencyFormField from "./CurrencyFormField";
 import NumericInput from "./NumericInput";
 import SecondaryButton from "../buttons/secondaryButton";
 import { useQueryState } from "../../context/query";
-import { useWalletState } from "../../context/wallet";
+import { useWalletState, useWalletUpdate } from "../../context/wallet";
 import { roundDecimals } from "../utils/RoundDecimals";
 
 const AmountField = forwardRef((_, ref: any) => {
@@ -18,6 +18,7 @@ const AmountField = forwardRef((_, ref: any) => {
     const { currency, from, to, amount } = values
 
     const { balances, isBalanceLoading } = useWalletState()
+    const { getBalance } = useWalletUpdate()
     const name = "amount"
     const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
     const walletBalanceAmount = roundDecimals(walletBalance?.amount, currency?.precision)
@@ -35,6 +36,7 @@ const AmountField = forwardRef((_, ref: any) => {
 
     const handleSetMaxAmount = () => {
         setFieldValue(name, maxAllowedAmount)
+        getBalance(from)
     }
 
     return (<>
