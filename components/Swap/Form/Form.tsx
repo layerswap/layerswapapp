@@ -162,7 +162,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
 
     useEffect(() => {
         getGas(values.from, values.currency, values.destination_address)
-    }, [contract_address, values.from, address])
+    }, [contract_address, values.from, values.currency, address])
 
     const destinationNetwork = GetDefaultNetwork(destination, values?.currency?.asset)
     const destination_native_currency = !destination?.isExchange && destinationNetwork?.native_currency
