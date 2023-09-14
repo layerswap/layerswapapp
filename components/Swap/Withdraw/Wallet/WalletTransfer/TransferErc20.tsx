@@ -76,7 +76,6 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
                     to: tokenContractAddress,
                     account: address,
                 })
-                debugger
                 setEstimatedGas(estimate)
             }
         })()
