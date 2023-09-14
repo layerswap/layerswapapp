@@ -19,7 +19,3 @@ export class ExchangeCurrency {
     is_default: boolean;
     status: LayerStatus
 }
-
-export class NetworkNodes {
-    url: string;
-}
