@@ -24,7 +24,7 @@ type TransferNativeTokenButtonProps = BaseTransferButtonProps & {
 }
 
 const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
-    managedDepositAddress,
+    depositAddress,
     chainId,
     amount,
     savedTransactionHash,
@@ -38,8 +38,6 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     const [openChangeAmount, setOpenChangeAmount] = useState(false)
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
     const { address } = useAccount();
-
-    const depositAddress = managedDepositAddress
 
     const sendTransactionPrepare = usePrepareSendTransaction({
         to: depositAddress,

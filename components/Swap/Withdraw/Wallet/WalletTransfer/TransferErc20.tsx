@@ -20,7 +20,7 @@ type TransferERC20ButtonProps = BaseTransferButtonProps & {
     tokenDecimals: number,
 }
 const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
-    managedDepositAddress,
+    depositAddress,
     amount,
     tokenContractAddress,
     tokenDecimals,
@@ -35,7 +35,6 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     const [buttonClicked, setButtonClicked] = useState(false)
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
 
-    const depositAddress = managedDepositAddress
     const contractWritePrepare = usePrepareContractWrite({
         enabled: !!depositAddress,
         address: tokenContractAddress,
