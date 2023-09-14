@@ -9,17 +9,14 @@ import GoHomeButton from '../../utils/GoHome';
 import { SwapItem } from '../../../lib/layerSwapApiClient';
 import { MessageSquare, Home } from 'lucide-react';
 import { TrackEvent } from '../../../pages/_document';
-import SwapSummary from '../Summary';
 import Widget from '../../Wizard/Widget';
-import resolveFailError from './Wallet/WalletTransfer/resolveFailError';
-import { SwapFailReasons } from '../../../Models/RangeError';
+import Cancell from '../../icons/Cancell';
 
 const Failed: FC = () => {
     const { swap } = useSwapDataState()
     const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } })
-
 
     useEffect(() => {
         plausible(TrackEvent.SwapFailed)
@@ -53,35 +50,30 @@ type Props = {
     onGetHelp: () => void
 }
 
-const Expired = ({ swap, onGetHelp }: Props) => {
-    const failReason = swap.fail_reason as SwapFailReasons;
-
+const Expired = ({ onGetHelp }: Props) => {
     return (
         <Widget.Content>
-            <SwapSummary />
             <MessageComponent>
-                <MessageComponent.Content icon='red'>
-                    <MessageComponent.Header>
-                        Swap expired
-                    </MessageComponent.Header>
-                    <MessageComponent.Description>
-                        {
-                            swap?.fail_reason ?
-                                resolveFailError(failReason)
-                                :
-                                <>
-                                    <p>
-                                        The transfer wasn’t completed during the allocated timeframe.
-                                    </p>
-                                    <p>
-                                        If you’ve already sent crypto for this swap, your funds are safe, please contact our support.
-                                    </p>
-                                </>
-                        }
-                    </MessageComponent.Description>
-                </MessageComponent.Content>
+                <MessageComponent.Description>
+                    {
+                        <>
+                            <div className='p-3 bg-secondary-700 text-white rounded-lg border border-secondary-500'>
+                                <div className="flex items-center">
+                                    <Cancell />
+                                    <label className="block text-sm md:text-base font-medium">Swap expired</label>
+                                </div>
+                                <div className='mt-4 ml-1 text-xs md:text-sm text-white'>
+                                    <p className='text-md text-left'>The transfer wasn’t completed during the allocated timeframe.</p>
+                                    <ul className="list-inside font-light space-y-1 mt-2 text-left ">
+                                        <li>If you’ve already sent crypto for this swap, your funds are safe, please contact our support.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </>
+                    }
+                </MessageComponent.Description>
                 <MessageComponent.Buttons>
-                    <div className="flex flex-row text-white text-base space-x-2">
+                    <div className="flex flex-row text-white text-base space-x-2 mt-2">
                         <div className='basis-1/3'>
                             <SubmitButton text_align='left' onClick={onGetHelp} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
                                 <DoubleLineText
@@ -109,30 +101,27 @@ const Expired = ({ swap, onGetHelp }: Props) => {
     )
 }
 
-const Canceled = ({ swap, onGetHelp }: Props) => {
-    const failReason = swap.fail_reason as SwapFailReasons;
-
+const Canceled = ({ onGetHelp }: Props) => {
     return (
         <Widget.Content>
-            <SwapSummary />
             <MessageComponent>
-                <MessageComponent.Content icon='gray'>
-                    <MessageComponent.Header>
-                        Swap canceled
-                    </MessageComponent.Header>
-                    <MessageComponent.Description>
-                        {
-                            swap?.fail_reason ?
-                                resolveFailError(failReason)
-                                :
-                                <p>
-                                    You've either canceled this swap manually, or you've created a swap without completing this one.
-                                </p>
-                        }
-                    </MessageComponent.Description>
-                </MessageComponent.Content>
+                <MessageComponent.Description>
+                    {
+                        <>
+                            <div className='p-3 bg-secondary-700 text-white rounded-lg border border-secondary-500'>
+                                <div className="flex items-center">
+                                    <Cancell />
+                                    <label className="block text-sm md:text-base font-medium">Swap cancelled</label>
+                                </div>
+                                <div className='mt-4 ml-1 text-xs md:text-sm text-white'>
+                                    <p className='text-md text-left'>The transaction was cancelled by your request. If you have already sent funds, please contact support.</p>
+                                </div>
+                            </div>
+                        </>
+                    }
+                </MessageComponent.Description>
                 <MessageComponent.Buttons>
-                    <div className="flex flex-row text-white text-base space-x-2">
+                    <div className="flex flex-row text-white text-base space-x-2 mt-2">
                         <div className='basis-1/3'>
                             <SubmitButton text_align='left' onClick={onGetHelp} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
                                 <DoubleLineText
@@ -159,7 +148,7 @@ const Canceled = ({ swap, onGetHelp }: Props) => {
         </Widget.Content>
     )
 }
-const SwapFailed = ({ swap, onGetHelp }: Props) => {
+const SwapFailed = ({ onGetHelp }: Props) => {
     return (
         <Widget.Content>
             <MessageComponent.Buttons>

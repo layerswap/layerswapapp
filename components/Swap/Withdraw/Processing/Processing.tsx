@@ -46,8 +46,8 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const progressStatuses = getProgressStatuses(swap, swapStatus)
 
     type ProgressStates = {
-        [key in Progress]: {
-            [key in ProgressStatus]: {
+        [key in Progress]?: {
+            [key in ProgressStatus]?: {
                 name: string;
                 description: string | JSX.Element;
             }
@@ -163,36 +163,20 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         },
         "refuel": {
             upcoming: {
-                name: `Sending ${nativeCurrency?.asset} to your address (Refuel)`,
+                name: `Sending ${nativeCurrency?.asset} to your address`,
                 description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
             },
             current: {
-                name: `Sending ${nativeCurrency?.asset} to your address (Refuel)`,
+                name: `Sending ${nativeCurrency?.asset} to your address`,
                 description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
             },
             complete: {
-                name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your address (Refuel)`,
+                name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your address`,
                 description: <div className='flex items-center space-x-1'>
                     <span>Transaction: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
                         <a target={"_blank"} href={swapRefuelTransaction?.explorer_url}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
                         <ExternalLink className='h-4' />
-                    </div>
-                </div>
-            },
-            failed: {
-                name: `The transfer failed`,
-                description: <div className='flex space-x-1'>
-                    <span>Error: </span>
-                    <div className='space-x-1 text-white'>
-                        {swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
-                            "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
-                            :
-                            swap?.fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
-                                "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
-                                :
-                                "Something went wrong while processing the transfer. Please contact support"
-                        }
                     </div>
                 </div>
             },
@@ -228,25 +212,27 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     return (
         <Widget.Content>
-            <div className="w-full min-h-[422px] space-y-5 flex flex-col justify-between h-full text-primary-text">
+            <div className={`w-full ${swap?.status != SwapStatus.Cancelled && swap?.status != SwapStatus.Expired ? "min-h-[422px]" : ""} space-y-5 flex flex-col justify-between h-full text-primary-text`}>
                 <div className='space-y-4'>
                     <div className='grid grid-cols-1 gap-4 space-y-4'>
                         {
                             <SwapSummary />
                         }
-                        <div className="w-full flex flex-col h-full space-y-5">
-                            <div className="text-left text-primary-text space-y-2">
-                                <p className="block sm:text-lg font-medium text-white">
-                                    Transfer status
-                                </p>
-                                <p className='text-sm flex space-x-1'>
-                                    You’ll see live updates on the transfer progress below
-                                </p>
+                        {swap?.status != SwapStatus.Cancelled && swap?.status != SwapStatus.Expired &&
+                            <div className="w-full flex flex-col h-full space-y-5">
+                                <div className="text-left text-primary-text space-y-2">
+                                    <p className="block sm:text-lg font-medium text-white">
+                                        Transfer status
+                                    </p>
+                                    <p className='text-sm flex space-x-1'>
+                                        You’ll see live updates on the transfer progress below
+                                    </p>
+                                </div>
+                                <div className='flex flex-col h-full justify-center'>
+                                    <Steps steps={progress} />
+                                </div>
                             </div>
-                            <div className='flex flex-col h-full justify-center'>
-                                <Steps steps={progress} />
-                            </div>
-                        </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -293,8 +279,8 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { [key in 
                     : null;
 
     if (swapStatus === SwapStatus.Failed) {
-        output_transfer = output_transfer !== ProgressStatus.Complete ? null : ProgressStatus.Failed;
-        refuel_transfer = refuel_transfer !== ProgressStatus.Complete ? null : ProgressStatus.Failed;
+        output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed ;
+        refuel_transfer = refuel_transfer !== ProgressStatus.Complete && null;
     }
 
     if (swapStatus === SwapStatus.UserTransferDelayed) {
