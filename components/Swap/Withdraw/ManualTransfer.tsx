@@ -107,8 +107,8 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
     const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
 
-    const requested_amount = manualTransferFee?.min_amount > swap?.requested_amount ? manualTransferFee?.min_amount : swap?.requested_amount
 
+    const requested_amount = manualTransferFee?.min_amount > swap?.requested_amount ? manualTransferFee?.min_amount : swap?.requested_amount
     const depositAddress = existingDepositAddress || generatedDeposit?.data?.address
 
     const handleChangeSelectedNetwork = useCallback((n: BaseL2Asset) => {
