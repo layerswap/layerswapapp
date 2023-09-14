@@ -78,7 +78,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         useEffect(() => {
             if (isRainbowKitConnected && destinationNetwork?.type) {
-                setAutofilledWalletNetworkType(destinationNetwork?.type)
+                setAutofilledWalletNetworkType(NetworkType.EVM)
             }
         }, [isRainbowKitConnected, destinationNetwork?.type])
 
