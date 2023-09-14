@@ -10,10 +10,10 @@ import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
 
 type Props = {
-    generatedDepositAddress: string
+    depositAddress: string
 }
 
-const ImtblxWalletWithdrawStep: FC<Props> = ({ generatedDepositAddress }) => {
+const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
     const { walletAddress, swap } = useSwapDataState()
@@ -45,7 +45,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ generatedDepositAddress }) => {
         try {
             const imtblClient = new ImtblClient(source_network?.internal_name)
             const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
-            const res = await imtblClient.Transfer(swap, source_currency, generatedDepositAddress)
+            const res = await imtblClient.Transfer(swap, source_currency, depositAddress)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
                 toast('Transfer failed or terminated')

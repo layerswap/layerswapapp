@@ -22,8 +22,8 @@ const WalletTransfer: FC = () => {
 
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
-
-    const shouldGetGeneratedAddress = !CanDoSweeplessTransfer(source_network, address, destination_address)
+    const canDoSweeplessTransfer = CanDoSweeplessTransfer(source_network, address, destination_address)
+    const shouldGetGeneratedAddress = !canDoSweeplessTransfer
     const layerswapApiClient = new LayerSwapApiClient()
     const generateDepositParams = shouldGetGeneratedAddress ? [source_network_internal_name] : null
     const {
@@ -32,6 +32,9 @@ const WalletTransfer: FC = () => {
 
     const managedDepositAddress = sourceAsset?.network?.managed_accounts?.[0]?.address;
     const generatedDepositAddress = generatedDeposit?.data?.address
+
+    const depositAddress = canDoSweeplessTransfer ? managedDepositAddress : generatedDepositAddress
+
     const sourceChainId = source_network.isExchange === false && Number(source_network.chain_id)
     const feeParams = {
         source: source_network_internal_name,
@@ -47,11 +50,11 @@ const WalletTransfer: FC = () => {
 
     if (sourceIsImmutableX)
         return <Wrapper>
-            <ImtblxWalletWithdrawStep generatedDepositAddress={generatedDepositAddress} />
+            <ImtblxWalletWithdrawStep depositAddress={depositAddress} />
         </Wrapper>
     else if (sourceIsStarknet)
         return <Wrapper>
-            <StarknetWalletWithdrawStep amount={requested_amount} managedDepositAddress={managedDepositAddress} />
+            <StarknetWalletWithdrawStep amount={requested_amount} depositAddress={depositAddress} />
         </Wrapper>
     return <Wrapper>
         <TransferFromWallet
@@ -61,8 +64,7 @@ const WalletTransfer: FC = () => {
             tokenDecimals={sourceAsset?.decimals}
             tokenContractAddress={sourceAsset?.contract_address as `0x${string}`}
             chainId={sourceChainId as number}
-            generatedDepositAddress={generatedDepositAddress as `0x${string}`}
-            managedDepositAddress={managedDepositAddress as `0x${string}`}
+            depositAddress={depositAddress as `0x${string}`}
             userDestinationAddress={swap.destination_address as `0x${string}`}
             amount={requested_amount}
             asset={sourceAsset?.asset}
