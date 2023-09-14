@@ -271,19 +271,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                 <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
                             </WarningMessage>
                         }
-                        {
-                            walletBalance?.isNativeCurrency && Number(values.amount) + networkGas?.gas > walletBalance.amount && walletBalance.amount > minAllowedAmount &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <div className="font-normal text-white">
-                                    <div>
-                                        You might not be able to complete the transaction.
-                                    </div>
-                                    <div onClick={handleReserveGas} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
-                                        Reserve {truncateDecimals(networkGas?.gas, values.currency.precision)} {values.currency.asset} for gas.
-                                    </div>
-                                </div>
-                            </WarningMessage>
-                        }
                     </div>
                 </Widget.Content>
                 <Widget.Footer>

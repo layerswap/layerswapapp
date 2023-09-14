@@ -12,7 +12,6 @@ import LayerSwapApiClient, { Campaigns } from '../../lib/layerSwapApiClient';
 import useSWR from 'swr'
 import AverageCompletionTime from '../Common/AverageCompletionTime';
 import { useWalletState } from '../../context/wallet';
-import { NetworkType } from '../../Models/CryptoNetwork';
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
     const { networks, currencies, resolveImgSrc } = useSettingsState()
@@ -43,8 +42,6 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const currencyName = currency?.asset || " "
 
     const destinationNetwork = GetDefaultNetwork(to, currency?.asset)
-    const { gases, isGasLoading } = useWalletState()
-    const networkGas = gases?.[values.from?.internal_name]?.find(g => g.token === values.currency?.asset)?.gas
 
     return (
         <>
@@ -97,19 +94,6 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                     <span className="text-right">
                                         {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {currency?.asset}</>}
                                     </span>
-                                </div>
-                            }
-                            {
-                                from?.isExchange === false 
-                                && from?.type === NetworkType.EVM 
-                                && networkGas &&
-                                <div className="mt-2 flex flex-row items-baseline justify-between">
-                                    <label className="inline-flex items-center text-left text-primary-text-placeholder">
-                                        Estimated gas
-                                    </label>
-                                    <div className="text-right flex items-center gap-1">
-                                        {isGasLoading ? <div className='h-[10px] w-10 bg-gray-500 rounded-sm animate-pulse' /> : truncateDecimals(networkGas, currencies.find(a => a.asset === from.native_currency).precision)} <span>{from?.native_currency}</span>
-                                    </div>
                                 </div>
                             }
                             <div className="mt-2 flex flex-row items-baseline justify-between">
