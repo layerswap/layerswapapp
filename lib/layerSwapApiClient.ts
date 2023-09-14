@@ -8,7 +8,6 @@ import { NextRouter } from "next/router";
 import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
-import { DepositType } from "./NetworkSettings";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
@@ -155,6 +154,7 @@ export type SwapItem = {
     fiat_session_id?: string;
     has_pending_deposit: boolean;
     sequence_number: number;
+    fail_reason: string;
 }
 
 export type AddressBookItem = {
@@ -190,6 +190,11 @@ export enum TransactionStatus {
     Completed = 'completed',
     Initiated = 'initiated',
     Pending = 'pending'
+}
+
+export enum DepositType {
+    Manual = 'manual',
+    Wallet = 'wallet'
 }
 
 export type Fee = {

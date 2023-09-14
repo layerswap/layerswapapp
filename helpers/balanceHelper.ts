@@ -183,21 +183,10 @@ export const estimateNativeGasLimit = async ({ publicClient, account, destinatio
 
     const to = destination;
 
-    let encodedData = encodeFunctionData({
-        abi: erc20ABI,
-        functionName: 'transfer',
-        args: [
-            to,
-            parseEther("0.1"),
-        ]
-    });
 
     const hexed_sequence_number = (99999999).toString(16)
     const sequence_number_even = hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number
-
-    if (encodedData && account !== userDestinationAddress) {
-        encodedData = encodedData ? `${encodedData}${sequence_number_even}` as `0x${string}` : null;
-    }
+    let encodedData = account !== userDestinationAddress ? `0x${sequence_number_even}` : null
 
     const gasEstimate = await publicClient.estimateGas({
         account: account,

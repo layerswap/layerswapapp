@@ -41,7 +41,6 @@ export const Settings: LayerSwapSettings = {
                 },
             ],
             authorization_flow: "api_credentials",
-            nodes: [],
         },
         {
             "display_name": "Fake CEX (for testing)",
@@ -106,7 +105,6 @@ export const Settings: LayerSwapSettings = {
                 },
             ],
             authorization_flow: "api_credentials",
-            nodes: [],
         },
         {
             "display_name": "Stripe (Only US)",
@@ -135,7 +133,6 @@ export const Settings: LayerSwapSettings = {
                 },
             ],
             authorization_flow: "api_credentials",
-            nodes: [],
         }
     ],
     "networks": [
