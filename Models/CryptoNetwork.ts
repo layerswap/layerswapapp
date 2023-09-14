@@ -52,13 +52,13 @@ export class ManagedAccount {
 }
 export class Metadata {
     multicall3: {
-        address: `0x${string}`;
+        address: `0x${string}`
         blockCreated: number
-    };
-    ensRegistry: {
-        address: `0x${string}`;
     }
-    ensUniversalResolver: {
-        address: `0x${string}`;
+    ensRegistry?: {
+        address: `0x${string}`
+    }
+    ensUniversalResolver?: {
+        address: `0x${string}`
     }
 }
