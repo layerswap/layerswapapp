@@ -7,7 +7,6 @@ export type Layer = {
     status: LayerStatus;
     is_featured: boolean;
     created_date?: string;
-    nodes: NetworkNodes[];
 } & LayerData
 
 type LayerData = ({
@@ -23,6 +22,7 @@ type LayerData = ({
     chain_id?: string;
     type?: NetworkType,
     metadata: Metadata;
+    nodes: NetworkNodes[];
 })
 
 export type BaseL2Asset = {
