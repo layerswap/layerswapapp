@@ -46,7 +46,6 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,
     })
-
     let encodedData = depositAddress && encodeFunctionData({
         abi: erc20ABI,
         functionName: 'transfer',

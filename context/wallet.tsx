@@ -1,10 +1,10 @@
 import React, { FC, useState } from 'react'
 import { StarknetWindowObject } from 'get-starknet';
-import { useAccount, usePublicClient } from 'wagmi';
+import { useAccount, usePrepareContractWrite, usePublicClient } from 'wagmi';
 import { Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
 import { Balance, Gas, getErc20Balances, getNativeBalance, resolveERC20Balances, resolveGas, resolveNativeBalance } from '../helpers/balanceHelper';
-import { createPublicClient, http } from 'viem';
+import { createPublicClient, createWalletClient, http, publicActions } from 'viem';
 import resolveChain from '../lib/resolveChain';
 import { NetworkType } from '../Models/CryptoNetwork';
 
@@ -73,16 +73,18 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         const contract_address = from?.assets?.find(a => a?.asset === currency?.asset)?.contract_address as `0x${string}`
         const shouldNotFetchGas = allGases[from?.internal_name]?.some(g => g.token === currency?.asset && g.gas && !isNaN(g.gas))
         const chainId = from?.isExchange === false && Number(from?.chain_id)
+        const destination_address = from?.assets?.find(c => c.asset.toLowerCase() === currency.asset.toLowerCase())?.network?.managed_accounts?.[0]?.address as `0x${string}`
 
         if (!shouldNotFetchGas && chainId && currency) {
             setIsGasLoading(true)
             try {
-                const publicClient = createPublicClient({
+                const publicClient = createWalletClient({
+                    account: address,
                     chain: resolveChain(from.assets?.[0].network),
-                    transport: http()
-                })
+                    transport: http(),
+                }).extend(publicActions);
 
-                const gas = await resolveGas(publicClient, chainId, contract_address, address, from, currency)
+                const gas = await resolveGas(publicClient, chainId, contract_address, address, from, currency, destination_address)
                 const filteredGases = allGases[from.internal_name]?.some(b => b?.token === currency?.asset) ? allGases[from.internal_name].filter(g => g.token !== currency.asset) : allGases[from.internal_name] || []
                 if (gas) {
                     setAllGases((data) => ({ ...data, [from.internal_name]: filteredGases.concat(gas) }))

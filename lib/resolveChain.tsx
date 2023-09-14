@@ -7,7 +7,7 @@ export default function resolveChain(network: CryptoNetwork): Chain {
     const nativeCurrency = network.currencies.find(c => c.asset === network.native_currency);
     const blockExplorersBaseURL = new URL(network.transaction_explorer_template).origin;
 
-    const res = {
+    const res: Chain = {
         id: Number(network.chain_id),
         name: network.display_name,
         network: network.internal_name,
@@ -31,8 +31,6 @@ export default function resolveChain(network: CryptoNetwork): Chain {
             ensRegistry: network?.metadata?.ensRegistry,
             ensUniversalResolver: network?.metadata?.ensUniversalResolver,
         },
-        fees: {
-        }
     }
     const defaultPriorityFee = NetworkSettings.KnownSettings[network.internal_name]?.DefaultPriorityFee?.toString()
     if (defaultPriorityFee) {

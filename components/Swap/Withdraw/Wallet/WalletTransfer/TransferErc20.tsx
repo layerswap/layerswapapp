@@ -18,7 +18,6 @@ import { ButtonWrapper } from "./buttons";
 type TransferERC20ButtonProps = BaseTransferButtonProps & {
     tokenContractAddress: `0x${string}`,
     tokenDecimals: number,
-    asset: string,
 }
 const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     managedDepositAddress,
@@ -29,7 +28,6 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     swapId,
     sequenceNumber,
     userDestinationAddress,
-    asset
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { setSwapPublishedTx } = useSwapDataUpdate()
@@ -44,7 +42,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         abi: erc20ABI,
         functionName: 'transfer',
         gas: estimatedGas,
-        args: [depositAddress, parseUnits(amount.toString(), tokenDecimals)],
+        args: [depositAddress, parseUnits('2'.toString(), tokenDecimals)],
     });
 
     let encodedData = depositAddress && contractWritePrepare?.config?.request
@@ -78,6 +76,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
                     to: tokenContractAddress,
                     account: address,
                 })
+                debugger
                 setEstimatedGas(estimate)
             }
         })()

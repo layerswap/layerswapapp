@@ -31,7 +31,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
 
     const campaignAsset = currencies.find(c => c?.asset === campaign?.asset)
     const feeinUsd = fee * currency?.usd_price
-    const reward = truncateDecimals(((feeinUsd * campaign?.percentage / 100) / campaignAsset?.usd_price), campaignAsset?.precision) as unknown as number
+    const reward = truncateDecimals(((feeinUsd * campaign?.percentage / 100) / campaignAsset?.usd_price), campaignAsset?.precision)
     const isCampaignEnded = Math.round(((new Date(campaign?.end_date).getTime() - new Date().getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
 
     const destination_native_currency = !to?.isExchange
@@ -39,7 +39,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
 
     const destinationNetworkCurrency = GetNetworkCurrency(to, currency?.asset)
     const refuel_native_currency = currencies.find(c => c.asset === destination_native_currency)
-    const refuel = truncateDecimals(CaluclateRefuelAmount(values, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision) as unknown as number
+    const refuel = truncateDecimals(CaluclateRefuelAmount(values, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision)
     const currencyName = currency?.asset || " "
 
     const destinationNetwork = GetDefaultNetwork(to, currency?.asset)
@@ -67,7 +67,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                                     </span>
                                                 </p>
                                                 {
-                                                    refuel > 0 &&
+                                                    Number(refuel) > 0 &&
                                                     <p className='text-[12px] text-slate-300'>
                                                         + {refuel} {destination_native_currency}
                                                     </p>
@@ -102,7 +102,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                             {
                                 from?.isExchange === false 
                                 && from?.type === NetworkType.EVM 
-                                && (networkGas || isGasLoading) &&
+                                && networkGas &&
                                 <div className="mt-2 flex flex-row items-baseline justify-between">
                                     <label className="inline-flex items-center text-left text-primary-text-placeholder">
                                         Estimated gas
@@ -146,7 +146,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                         <ClickTooltip text={<span>The amount of onboarding reward that you’ll earn. <a target='_blank' href='/campaigns' className='text-primary underline hover:no-underline decoration-primary cursor-pointer'>Learn more</a></span>} />
                     </div>
                     {
-                        reward > 0 &&
+                        Number(reward) > 0 &&
                         <div className="flex items-center space-x-1">
                             <span>+</span>
                             <div className="h-5 w-5 relative">
