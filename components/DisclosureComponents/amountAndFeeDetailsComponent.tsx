@@ -108,7 +108,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                         Estimated gas
                                     </label>
                                     <div className="text-right flex items-center gap-1">
-                                        {isGasLoading ? <div className='h-3 w-10 bg-gray-500 rounded-sm animate-pulse' /> : truncateDecimals(networkGas, currencies.find(a => a.asset === from.native_currency).precision)} <span>{from?.native_currency}</span>
+                                        {isGasLoading ? <div className='h-[10px] w-10 bg-gray-500 rounded-sm animate-pulse' /> : truncateDecimals(networkGas, currencies.find(a => a.asset === from.native_currency).precision)} <span>{from?.native_currency}</span>
                                     </div>
                                 </div>
                             }

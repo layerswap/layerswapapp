@@ -6,11 +6,7 @@ import { useWalletState, useWalletUpdate } from "../context/wallet"
 const GasDetails = ({ network, currency }: { network: Layer, currency: Currency }) => {
 
     const { gases } = useWalletState()
-    const { getGas } = useWalletUpdate()
     const networkGas = gases?.[network?.internal_name]?.find(g => g.token === currency?.asset)
-    useEffect(() => {
-        if (!networkGas) getGas(network, currency)
-    }, [networkGas])
 
     if (!networkGas?.gasDetails) return
 

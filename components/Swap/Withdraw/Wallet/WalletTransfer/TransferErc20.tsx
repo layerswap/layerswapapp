@@ -42,7 +42,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         abi: erc20ABI,
         functionName: 'transfer',
         gas: estimatedGas,
-        args: [depositAddress, parseUnits('2'.toString(), tokenDecimals)],
+        args: [depositAddress, parseUnits(amount.toString(), tokenDecimals)],
     });
 
     let encodedData = depositAddress && contractWritePrepare?.config?.request

@@ -22,7 +22,7 @@ export type WizardProvider = {
 type UpdateInterface = {
     setStarknetAccount: (account: StarknetWindowObject) => void,
     getBalance: (from: Layer) => Promise<void>,
-    getGas: (from: Layer, currency: Currency) => Promise<void>,
+    getGas: (from: Layer, currency: Currency, userDestinationAddress: string) => Promise<void>,
 }
 
 type Props = {
@@ -69,13 +69,12 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         }
     }
 
-    async function getGas(from: Layer, currency: Currency) {
+    async function getGas(from: Layer, currency: Currency, userDestinationAddress: string) {
         const contract_address = from?.assets?.find(a => a?.asset === currency?.asset)?.contract_address as `0x${string}`
-        const shouldNotFetchGas = allGases[from?.internal_name]?.some(g => g.token === currency?.asset && g.gas && !isNaN(g.gas))
         const chainId = from?.isExchange === false && Number(from?.chain_id)
-        const destination_address = from?.assets?.find(c => c.asset.toLowerCase() === currency.asset.toLowerCase())?.network?.managed_accounts?.[0]?.address as `0x${string}`
+        const destination_address = from?.assets?.find(c => c.asset.toLowerCase() === currency?.asset?.toLowerCase())?.network?.managed_accounts?.[0]?.address as `0x${string}`
 
-        if (!shouldNotFetchGas && chainId && currency) {
+        if (chainId && currency && destination_address) {
             setIsGasLoading(true)
             try {
                 const publicClient = createWalletClient({
@@ -84,7 +83,16 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
                     transport: http(),
                 }).extend(publicActions);
 
-                const gas = await resolveGas(publicClient, chainId, contract_address, address, from, currency, destination_address)
+                const gas = await resolveGas({
+                    publicClient,
+                    chainId,
+                    contract_address,
+                    account: address,
+                    from,
+                    currency,
+                    destination: destination_address,
+                    userDestinationAddress: userDestinationAddress as `0x${string}`
+                })
                 const filteredGases = allGases[from.internal_name]?.some(b => b?.token === currency?.asset) ? allGases[from.internal_name].filter(g => g.token !== currency.asset) : allGases[from.internal_name] || []
                 if (gas) {
                     setAllGases((data) => ({ ...data, [from.internal_name]: filteredGases.concat(gas) }))
