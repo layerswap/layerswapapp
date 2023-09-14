@@ -12,7 +12,6 @@ import ClickTooltip from "../Tooltips/ClickTooltip"
 import shortenAddress from "../utils/ShortenAddress"
 import { useAccount } from "wagmi"
 import RainbowKit from "../Swap/Withdraw/Wallet/RainbowKit"
-import { Progress } from "../ProgressBar"
 import NetworkSettings from "../../lib/NetworkSettings"
 import { truncateDecimals } from "../utils/RoundDecimals"
 import HeaderWithMenu from "../HeaderWithMenu"
@@ -50,12 +49,10 @@ function RewardComponent() {
     const now = new Date()
     const difference_in_days = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600 * 24)))
     const difference_in_hours = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600) - (difference_in_days * 24)))
-    const period = campaign?.reward_limit_period
     const campaignEndDate = new Date(campaign?.end_date)
     const isCampaignEnded = Math.round(((campaignEndDate.getTime() - now.getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
 
     const network = networks.find(n => n.internal_name === campaign?.network)
-    const periodRewardClaimed = (rewards?.user_reward?.period_pending_amount / campaign?.reward_limit_for_period) * 100
     const campaignAsset = currencies.find(c => c?.asset === campaign?.asset)
 
     const handleOpenTopModal = () => {
@@ -157,17 +154,6 @@ function RewardComponent() {
                                                             </div>
                                                         </BackgroundField>
                                                     </div>
-                                                    {!isCampaignEnded && <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
-                                                        <BackgroundField header='Weekly Reward Earned' withoutBorder>
-                                                            <div className="flex flex-col w-full gap-2">
-                                                                <Progress value={periodRewardClaimed === Infinity ? 0 : periodRewardClaimed} />
-                                                                <div className="flex justify-between w-full font-semibold text-sm ">
-                                                                    <div className="text-primary"><span className="text-white">{rewards.user_reward.period_pending_amount}</span> / {campaign?.reward_limit_for_period} {campaign?.asset}</div>
-                                                                    <p className="text-primary-text">Refreshes every {period > 1 ? `${period} days` : 'day'}</p>
-                                                                </div>
-                                                            </div>
-                                                        </BackgroundField>
-                                                    </div>}
                                                 </div>
                                                 {
                                                     payouts.length > 0 &&
