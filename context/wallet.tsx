@@ -77,11 +77,10 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         if (chainId && currency && destination_address) {
             setIsGasLoading(true)
             try {
-                const publicClient = createWalletClient({
-                    account: address,
+                const publicClient = createPublicClient({
                     chain: resolveChain(from.assets?.[0].network),
                     transport: http(),
-                }).extend(publicActions);
+                });
 
                 const gas = await resolveGas({
                     publicClient,

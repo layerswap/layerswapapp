@@ -99,7 +99,7 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumGoerli] = {
             ChainId: 5,
-            AccountExplorerTemplate: 'ht tps://goerli.etherscan.io/address/{0}',
+            AccountExplorerTemplate: 'https://goerli.etherscan.io/address/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.MoonbeamMainnet] = {
             ChainId: 1284,

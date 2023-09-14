@@ -37,7 +37,7 @@ export type Gas = {
 }
 
 type ResolveGasArguments = {
-    publicClient: any,
+    publicClient: PublicClient,
     chainId?: number,
     contract_address?: `0x${string}`,
     account?: `0x${string}`,
