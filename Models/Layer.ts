@@ -1,10 +1,12 @@
-import { CryptoNetwork, NetworkAddressType } from "./CryptoNetwork";
+import { CryptoNetwork, Metadata, NetworkType } from "./CryptoNetwork";
 
 export type LayerStatus = "active" | "inactive" | 'insufficient_liquidity';
 export type Layer = {
     display_name: string;
     internal_name: string;
     status: LayerStatus;
+    is_featured: boolean;
+    created_date?: string;
 } & LayerData
 
 type LayerData = ({
@@ -18,7 +20,9 @@ type LayerData = ({
     native_currency?: string;
     average_completion_time?: string;
     chain_id?: string;
-    address_type?: NetworkAddressType
+    type?: NetworkType,
+    metadata: Metadata;
+    nodes: NetworkNodes[];
 })
 
 export type BaseL2Asset = {
@@ -35,3 +39,7 @@ export type ExchangeL2Asset = {
     withdrawal_fee: number;
     min_deposit_amount: number;
 } & BaseL2Asset
+
+export type NetworkNodes = {
+    url: string;
+}

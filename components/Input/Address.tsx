@@ -1,6 +1,6 @@
 import { useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
-import { AddressBookItem, UserExchangesData } from "../../lib/layerSwapApiClient";
+import { AddressBookItem } from "../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
@@ -8,8 +8,6 @@ import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
 import { getStarknet } from "get-starknet-core"
 import { Info } from "lucide-react";
 import KnownInternalNames from "../../lib/knownIds";
-import { useAuthState } from "../../context/authContext";
-import ExchangeSettings from "../../lib/ExchangeSettings";
 import { useSettingsState } from "../../context/settings";
 import { isValidAddress } from "../../lib/addressValidator";
 import { RadioGroup } from "@headlessui/react";
@@ -19,13 +17,12 @@ import RainbowKit from "../Swap/Withdraw/Wallet/RainbowKit";
 import { useAccount } from "wagmi";
 import { disconnect as wagmiDisconnect } from '@wagmi/core'
 import shortenAddress from "../utils/ShortenAddress";
-import { isBlacklistedAddress } from "../../lib/mainStepValidator";
 import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import { connect, disconnect as starknetDisconnect } from "get-starknet";
 import WalletIcon from "../icons/WalletIcon";
-import { NetworkAddressType } from "../../Models/CryptoNetwork";
 import { useWalletState, useWalletUpdate } from "../../context/wallet";
+import { NetworkType } from "../../Models/CryptoNetwork";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -33,8 +30,6 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     name: string;
     children?: JSX.Element | JSX.Element[];
     ref?: any;
-    onSetExchangeDepoisteAddress?: () => Promise<void>;
-    exchangeAccount?: UserExchangesData;
     close: () => void,
     isPartnerWallet: boolean,
     partnerImage: string,
@@ -44,7 +39,7 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
 }
 
 const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    ({ exchangeAccount, name, canFocus, onSetExchangeDepoisteAddress, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
+    ({ name, canFocus, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) => {
         const {
             values,
             setFieldValue
@@ -62,7 +57,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const placeholder = "Enter your address here"
         const [inputValue, setInputValue] = useState(values?.destination_address || "")
         const [validInputAddress, setValidInputAddress] = useState<string>()
-        const [autofilledWallet, setAutofilledWallet] = useState<'evm' | 'starknet'>()
+        const [autofilledWalletNetworkType, setAutofilledWalletNetworkType] = useState<NetworkType>()
         const [canAutofillStarknet, setCanAutofillStarknet] = useState(true)
         const starknet = getStarknet()
         const destinationIsStarknet = destination?.internal_name === KnownInternalNames.Networks.StarkNetGoerli
@@ -71,7 +66,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const { starknetAccount } = useWalletState()
         const { setStarknetAccount } = useWalletUpdate()
 
-        const { authData } = useAuthState()
         const settings = useSettingsState()
 
         const { isConnected: isRainbowKitConnected, address: walletAddress } = useAccount({
@@ -83,10 +77,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         });
 
         useEffect(() => {
-            if (isRainbowKitConnected && destinationNetwork?.address_type) {
-                setAutofilledWallet('evm')
+            if (isRainbowKitConnected && destinationNetwork?.type) {
+                setAutofilledWalletNetworkType(NetworkType.EVM)
             }
-        }, [isRainbowKitConnected, destinationNetwork?.address_type])
+        }, [isRainbowKitConnected, destinationNetwork?.type])
 
         useEffect(() => {
             if (!destination?.isExchange && isValidAddress(walletAddress, destination) && !values?.destination_address) {
@@ -95,15 +89,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 setFieldValue("destination_address", walletAddress)
             }
         }, [walletAddress, destination?.isExchange])
-
-        const handleUseDepositeAddress = async () => {
-            try {
-                await onSetExchangeDepoisteAddress()
-            }
-            catch (e) {
-                toast(e.message)
-            }
-        }
 
         useEffect(() => {
             if (canFocus) {
@@ -119,12 +104,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
             setDepositeAddressIsfromAccount(false)
             setFieldValue("destination_address", '')
             try {
-                if (autofilledWallet === "starknet") {
+                if (autofilledWalletNetworkType === NetworkType.Starknet) {
                     starknetDisconnect({ clearLastWallet: true })
                     setStarknetAccount(null)
                     setWrongNetwork(false)
                 }
-                else if (autofilledWallet === "evm") {
+                else if (autofilledWalletNetworkType === NetworkType.EVM) {
                     wagmiDisconnect()
                 }
             }
@@ -132,7 +117,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 toast(e.message)
             }
             setInputValue("")
-        }, [depositeAddressIsfromAccount, autofilledWallet])
+        }, [depositeAddressIsfromAccount, autofilledWalletNetworkType])
 
         const handleSelectAddress = useCallback((value: string) => {
             setAddressConfirmed(true)
@@ -144,9 +129,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
         let errorMessage = '';
         if (inputValue && !isValidAddress(inputValue, destination)) {
             errorMessage = `Enter a valid ${values.to?.display_name} address`
-        }
-        else if (inputValue && destination?.isExchange && isBlacklistedAddress(settings.blacklisted_addresses, destination, inputValue)) {
-            errorMessage = `You can not transfer to this address`
         }
 
         const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -184,14 +166,14 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 setWrongNetwork(true)
                 starknetDisconnect({ clearLastWallet: true })
                 setStarknetAccount(null)
-                setAutofilledWallet(null)
+                setAutofilledWalletNetworkType(null)
                 return
             }
             setWrongNetwork(false)
             setInputValue(res?.account?.address)
             setAddressConfirmed(true)
             setFieldValue("destination_address", res?.account?.address)
-            setAutofilledWallet("starknet")
+            setAutofilledWalletNetworkType(NetworkType.Starknet)
             setStarknetAccount(res)
         }, [destinationChainId])
 
@@ -226,29 +208,18 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                                         className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4  block font-semibold w-full bg-secondary-700 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
                                     />
                                     {
-                                        inputValue &&
+                                        inputValue && !disabled &&
                                         <span className="inline-flex items-center mr-2">
                                             <div className="text-xs flex items-center space-x-2 md:ml-5 bg-secondary-500 rounded-md border border-secondary-500">
-                                                {
-                                                    values?.to?.internal_name?.toLowerCase() === KnownInternalNames.Exchanges.Coinbase &&
-                                                    <span className="inline-flex items-center mr-2">
-                                                        <div className="text-sm flex items-center space-x-2 ml-3 md:ml-5">
-                                                            {exchangeAccount?.note}
-                                                        </div>
-                                                    </span>
-                                                }
-                                                {
-                                                    !disabled &&
-                                                    <button
-                                                        type="button"
-                                                        className="p-0.5 duration-200 transition  hover:bg-secondary-400  rounded-md border border-secondary-500 hover:border-secondary-200"
-                                                        onClick={handleRemoveDepositeAddress}
-                                                    >
-                                                        <div className="flex items-center px-2 text-sm py-1 font-semibold">
-                                                            Clear
-                                                        </div>
-                                                    </button>
-                                                }
+                                                <button
+                                                    type="button"
+                                                    className="p-0.5 duration-200 transition  hover:bg-secondary-400  rounded-md border border-secondary-500 hover:border-secondary-200"
+                                                    onClick={handleRemoveDepositeAddress}
+                                                >
+                                                    <div className="flex items-center px-2 text-sm py-1 font-semibold">
+                                                        Clear
+                                                    </div>
+                                                </button>
                                             </div>
                                         </span>
                                     }
@@ -291,27 +262,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                             </div>
                         }
                         {
-                            !disabled
-                            && !inputValue
-                            && destination?.isExchange
-                            && authData?.access_token && values.to
-                            && ExchangeSettings.KnownSettings[destination?.internal_name]?.EnableDepositAddressConnect
-                            && !depositeAddressIsfromAccount &&
-                            <div onClick={handleUseDepositeAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform hover:bg-secondary-700 transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:shadow-xl`}>
-                                <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
-                                    <WalletIcon className="h-6 w-6 text-primary-text" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <div className="block text-sm font-medium">
-                                        Autofill from {values?.to?.display_name}
-                                    </div>
-                                    <div className="text-gray-500">
-                                        Connect your account to fetch the address
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                        {
                             !disabled && !inputValue && destinationIsStarknet && canAutofillStarknet &&
                             <div onClick={handleConnectStarknet} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
                                 <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
@@ -329,7 +279,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(
                         }
                         {
                             !disabled && !inputValue && !destination?.isExchange
-                            && (destinationNetwork?.address_type === NetworkAddressType.evm || destinationNetwork?.address_type === NetworkAddressType.immutable_x)
+                            && ([NetworkType.EVM, NetworkType.StarkEx, NetworkType.ZkSyncLite].includes(destinationNetwork?.type))
                             &&
                             <RainbowKit>
                                 <div className={`min-h-12 text-left space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>

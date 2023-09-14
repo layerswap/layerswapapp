@@ -2,11 +2,10 @@ import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { roundDecimals } from "../components/utils/RoundDecimals";
 import upperCaseKeys from "../components/utils/upperCaseKeys";
 import { GetDefaultAsset, GetDefaultNetwork, GetNetworkCurrency } from "../helpers/settingsHelper";
-import { CryptoNetwork } from "../Models/CryptoNetwork";
+import { CryptoNetwork, NetworkType } from "../Models/CryptoNetwork";
 import { Currency } from "../Models/Currency";
 import { Layer } from "../Models/Layer";
 import KnownInternalNames from "./knownIds";
-import NetworkSettings, { DepositType } from "./NetworkSettings";
 
 export function GetExchangeFee(asset?: string, layer?: Layer): number {
     if (!layer?.isExchange)
@@ -46,6 +45,17 @@ export function CaluclateRefuelAmount(
 
     return { refuelAmountInSelectedCurrency, refuelAmountInNativeCurrency };
 }
+
+export function CanDoSweeplessTransfer(sourceLayer: Layer, sourceAddress?: string, destinationAddress?: string): boolean {
+    if (sourceLayer?.isExchange == false
+        && ([NetworkType.EVM, NetworkType.Starknet].includes(sourceLayer.type) || sourceAddress?.toLowerCase() === destinationAddress?.toLowerCase())
+    ) {
+        return true;
+    }
+
+    return false;
+}
+
 export function CalculateFee(values: SwapFormValues, allNetworks: CryptoNetwork[]): number {
     const { currency, from, to } = values || {}
 
@@ -62,7 +72,7 @@ export function CalculateFee(values: SwapFormValues, allNetworks: CryptoNetwork[
     let baseFee = (sourceNetworkCurrency?.source_base_fee + destinationNetworkCurrency?.destination_base_fee)
     let withdrawalFee = destinationNetworkCurrency.withdrawal_fee
     let depoistFee = sourceNetworkCurrency.deposit_fee;
-    if (NetworkSettings.KnownSettings[sourceLayer.internal_name]?.DepositType === DepositType.Wallet)
+    if (CanDoSweeplessTransfer(sourceLayer))
         depoistFee = 0
 
 
@@ -93,7 +103,7 @@ export function CalculateReceiveAmount(values: SwapFormValues, allNetworks: Cryp
     return 0;
 }
 
-export function CalculateMaxAllowedAmount(values: SwapFormValues, balances?: string, minAllowedAmount?: number) {
+export function CalculateMaxAllowedAmount(values: SwapFormValues, balances?: string, walletBalance?: number, minAllowedAmount?: number) {
     const { currency, from, to } = values || {}
 
     if (!currency || !from || !to) return 0
@@ -109,6 +119,8 @@ export function CalculateMaxAllowedAmount(values: SwapFormValues, balances?: str
         }
         // in case the query parameter had bad formatting just ignoe
         catch { }
+    } else if (walletBalance && (walletBalance >= minAllowedAmount && walletBalance <= maxAmount)) {
+        return maxAmount = roundDecimals(walletBalance, currency?.precision)
     }
     return roundDecimals(maxAmount, currency?.usd_price?.toFixed()?.length) || 0
 }

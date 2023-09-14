@@ -11,7 +11,7 @@ import { ApiResponse } from '../../Models/ApiResponse';
 import LayerSwapApiClient, { Campaigns } from '../../lib/layerSwapApiClient';
 import useSWR from 'swr'
 import AverageCompletionTime from '../Common/AverageCompletionTime';
-import KnownInternalNames from '../../lib/knownIds';
+import { useWalletState } from '../../context/wallet';
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
     const { networks, currencies, resolveImgSrc } = useSettingsState()
@@ -24,7 +24,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const asset = currency?.asset
     const apiClient = new LayerSwapApiClient()
     //handle error case
-    const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaigns[]>>('/campaigns', apiClient.fetcher)
+    const { data: campaignsData } = useSWR<ApiResponse<Campaigns[]>>('/campaigns', apiClient.fetcher)
     const campaign = campaignsData?.data?.find(c => c?.network === to?.internal_name)
     const parsedReceiveAmount = parseFloat(receive_amount.toFixed(currency?.precision))
 
@@ -64,7 +64,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                                     </span>
                                                 </p>
                                                 {
-                                                    refuel > 0 &&
+                                                    Number(refuel) > 0 &&
                                                     <p className='text-[12px] text-slate-300'>
                                                         + {refuel} {destination_native_currency}
                                                     </p>
@@ -76,41 +76,39 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                             </div>
                         </AccordionTrigger>
                         <AccordionContent className="text-sm text-primary-text font-normal">
-                            <>
-                                <div className="mt-2 flex flex-row items-baseline justify-between">
-                                    <label className="inline-flex items-center text-left text-primary-text-placeholder">
-                                        Layerswap fee
+                            <div className="mt-2 flex flex-row items-baseline justify-between">
+                                <label className="inline-flex items-center text-left text-primary-text-placeholder">
+                                    Layerswap fee
+                                </label>
+                                <div className="text-right">
+                                    <span>{parsedFee}</span> <span>{currencyName}</span>
+                                </div>
+                            </div>
+                            {
+                                from?.isExchange &&
+                                <div className="mt-2 flex flex-row justify-between">
+                                    <label className="flex items-center text-left grow text-primary-text-placeholder">
+                                        Exchange fee
+                                        <ClickTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
                                     </label>
                                     <span className="text-right">
-                                        <>{parsedFee}</> <>{currencyName}</>
+                                        {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {currency?.asset}</>}
                                     </span>
                                 </div>
-                                {
-                                    from?.isExchange &&
-                                    <div className="mt-2 flex flex-row justify-between">
-                                        <label className="flex items-center text-left grow text-primary-text-placeholder">
-                                            Exchange Fee
-                                            <ClickTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
-                                        </label>
-                                        <span className="text-right">
-                                            {exchangeFee === 0 ? 'Check at the exchange' : <>{exchangeFee} {currency?.asset}</>}
-                                        </span>
-                                    </div>
-                                }
-                                <div className="mt-2 flex flex-row items-baseline justify-between">
-                                    <label className="block text-left text-primary-text-placeholder">
-                                        Estimated arrival
-                                    </label>
-                                    <span className="text-right">
-                                        {
-                                            from?.internal_name === KnownInternalNames.Networks.PolygonMainnet ?
-                                                "Up to 1 hour"
-                                                :
-                                                destinationNetworkCurrency?.status == 'insufficient_liquidity' ? "Up to 2 hours (delayed)" : <AverageCompletionTime time={destinationNetwork?.average_completion_time} />
-                                        }
-                                    </span>
-                                </div>
-                            </>
+                            }
+                            <div className="mt-2 flex flex-row items-baseline justify-between">
+                                <label className="block text-left text-primary-text-placeholder">
+                                    Estimated arrival
+                                </label>
+                                <span className="text-right">
+                                    {
+                                        destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
+                                            "Up to 2 hours (delayed)"
+                                            :
+                                            <AverageCompletionTime time={destinationNetwork?.average_completion_time} />
+                                    }
+                                </span>
+                            </div>
                         </AccordionContent>
                     </AccordionItem>
                 </Accordion>
@@ -132,7 +130,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                         <ClickTooltip text={<span>The amount of onboarding reward that you’ll earn. <a target='_blank' href='/campaigns' className='text-primary underline hover:no-underline decoration-primary cursor-pointer'>Learn more</a></span>} />
                     </div>
                     {
-                        reward > 0 &&
+                        Number(reward) > 0 &&
                         <div className="flex items-center space-x-1">
                             <span>+</span>
                             <div className="h-5 w-5 relative">

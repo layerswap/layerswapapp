@@ -1,21 +1,19 @@
 import Layout from '../components/layout'
-import { MenuProvider } from '../context/menu'
 import { FormWizardProvider } from '../context/formWizardProvider'
 import { AuthStep } from '../Models/Wizard'
 import AuthWizard from '../components/Wizard/AuthWizard'
-import { InferGetServerSidePropsType } from 'next'
-import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
-import { SettingsProvider } from '../context/settings'
 import { useEffect, useState } from 'react'
 import inIframe from '../components/utils/inIframe'
 import { SwapDataProvider } from '../context/swap'
+import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
+import { getServerSideProps } from '../helpers/getSettings'
+import { InferGetServerSidePropsType } from 'next'
 
 export default function AuthPage({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
   let appSettings = new LayerSwapAppSettings(settings)
-
+  LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
   const [embedded, setEmbedded] = useState<boolean>()
 
   useEffect(() => {
@@ -23,36 +21,14 @@ export default function AuthPage({ settings }: InferGetServerSidePropsType<typeo
   }, [])
 
   return (
-    <Layout>
-      <SettingsProvider data={appSettings}>
-        <SwapDataProvider>
-          <MenuProvider>
-            <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
-              <AuthWizard />
-            </FormWizardProvider >
-          </MenuProvider>
-        </SwapDataProvider>
-      </SettingsProvider>
+    <Layout settings={appSettings}>
+      <SwapDataProvider>
+        <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
+          <AuthWizard />
+        </FormWizardProvider >
+      </SwapDataProvider>
     </Layout>
   )
 }
-export async function getServerSideProps(context) {
 
-  context.res.setHeader(
-    'Cache-Control',
-    's-maxage=60, stale-while-revalidate'
-  );
-
-  var apiClient = new LayerSwapApiClient();
-  const { data: settings } = await apiClient.GetSettingsAsync()
-
-  const resource_storage_url = settings.discovery.resource_storage_url
-  if (resource_storage_url[resource_storage_url.length - 1] === "/")
-    settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
-
-  LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
-
-  return {
-    props: { settings }
-  }
-}
+export { getServerSideProps };

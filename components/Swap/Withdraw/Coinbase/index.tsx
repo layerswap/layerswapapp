@@ -1,17 +1,15 @@
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import Modal from '../../../modal/modal';
 import Authorize from './Authorize';
 import Coinbase2FA from './Coinbase2FA';
 import { ArrowLeftRight, Link } from 'lucide-react';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
-import LayerSwapApiClient, { PublishedSwapTransactionStatus, UserExchangesData } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { KnownErrorCode } from '../../../../Models/ApiError';
 import toast from 'react-hot-toast';
 import { useSettingsState } from '../../../../context/settings';
 import { TimerProvider, useTimerState } from '../../../../context/timerContext';
-import { useRouter } from 'next/router';
-import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 const TIMER_SECONDS = 120
 
 const Coinbase: FC = () => {
@@ -20,50 +18,21 @@ const Coinbase: FC = () => {
     </TimerProvider>
 }
 
-
 const TransferElements: FC = () => {
     const { swap, codeRequested } = useSwapDataState()
-    const { setCodeRequested, setSwapPublishedTx } = useSwapDataUpdate()
+    const { setCodeRequested, setSwapPublishedTx, mutateSwap } = useSwapDataUpdate()
     const { networks } = useSettingsState()
     const {
         destination_network: destination_network_internal_name,
     } = swap
     const { start: startTimer } = useTimerState()
-    const { setAuthorizedCoinbaseAccount } = useWalletUpdate()
-    const { authorizedCoinbaseAccount } = useWalletState()
-
-    const router = useRouter();
 
     const [showCoinbaseConnectModal, setShowCoinbaseConnectModal] = useState(false)
     const [openCoinbase2FA, setOpenCoinbase2FA] = useState(false)
 
     const [loading, setLoading] = useState(false)
-    const [ready, setReady] = useState(false)
 
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
-
-    useEffect(() => {
-        (async () => {
-            setReady(false)
-            try {
-                const layerswapApiClient = new LayerSwapApiClient(router)
-                const res = await layerswapApiClient.GetExchangeAccount(swap?.source_exchange, 1)
-                if (res?.data) {
-                    setAuthorizedCoinbaseAccount(res.data)
-                }
-                else {
-                    setAuthorizedCoinbaseAccount(null)
-                }
-            }
-            catch (e) {
-                if (e?.response?.data?.error?.code === KnownErrorCode.NOT_FOUND)
-                    setAuthorizedCoinbaseAccount(null)
-                else
-                    toast(e?.response?.data?.error?.message || e.message)
-            }
-            setReady(true)
-        })()
-    }, [])
 
     const handleTransfer = useCallback(async () => {
         setLoading(true)
@@ -81,7 +50,6 @@ const TransferElements: FC = () => {
                     setOpenCoinbase2FA(true)
                 }
                 else if (e?.response?.data?.error?.code === KnownErrorCode.INVALID_CREDENTIALS || e?.response?.data?.error?.code === KnownErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
-                    setAuthorizedCoinbaseAccount(null)
                     setCodeRequested(false)
                     setShowCoinbaseConnectModal(true)
                 }
@@ -104,9 +72,11 @@ const TransferElements: FC = () => {
         setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, "_")
     }, [])
 
-    const handleAuthorized = (data: UserExchangesData) => {
-        setAuthorizedCoinbaseAccount(data)
+    const handleAuthorized = async () => {
+        setLoading(true);
         setShowCoinbaseConnectModal(false)
+        await mutateSwap()
+        setLoading(false);
     }
 
     return (
@@ -136,9 +106,9 @@ const TransferElements: FC = () => {
                 <div className='space-y-4'>
                     <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
                         {
-                            authorizedCoinbaseAccount ?
+                            swap.exchange_account_connected ?
                                 <SubmitButton
-                                    isDisabled={loading || !ready}
+                                    isDisabled={loading}
                                     isSubmitting={loading}
                                     onClick={handleTransfer}
                                     icon={<ArrowLeftRight
@@ -150,7 +120,7 @@ const TransferElements: FC = () => {
                                 </SubmitButton>
                                 :
                                 <SubmitButton
-                                    isDisabled={loading || !ready}
+                                    isDisabled={loading}
                                     isSubmitting={loading}
                                     onClick={openConnect}
                                     icon={<Link
