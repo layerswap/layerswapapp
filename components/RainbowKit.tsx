@@ -41,7 +41,7 @@ function RainbowKitComponent({ children }: Props) {
                 },
             },
             contracts: {
-                multicall3 : n?.metadata?.contracts?.multicall3
+                multicall3 : n?.metadata?.multicall3
             },
         }
     })
