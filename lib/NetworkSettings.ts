@@ -1,10 +1,5 @@
 import KnownInternalNames from "./knownIds";
 
-export enum DepositType {
-    Manual = 'manual',
-    Wallet = 'wallet'
-}
-
 type NetworkItemSettings = {
     [network: string]: {
         apiUri: string,
