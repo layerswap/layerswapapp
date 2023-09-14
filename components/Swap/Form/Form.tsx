@@ -181,8 +181,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         && isValidAddress(query?.destAddress, destination)
 
     const handleReserveGas = useCallback(() => {
-        setFieldValue('amount', walletBalance.amount - networkGas?.gas)
-    }, [values.amount, walletBalance])
+        setFieldValue('amount', walletBalance.amount - networkGas.gas)
+    }, [values.amount, walletBalance, networkGas])
 
     return <>
         <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >

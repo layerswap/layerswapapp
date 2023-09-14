@@ -63,6 +63,7 @@ const sourceOrder = [
 export default class NetworkSettings {
     ChainId?: number | string;
     DefaultPriorityFee?: number;
+    BaseFeeMultiplier?: number;
     AddressPlaceholder?: string;
     OrderInDestination?: number;
     OrderInSource?: number;
@@ -98,6 +99,7 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZksyncEraMainnet] = {
             ChainId: 324,
+            BaseFeeMultiplier: 3
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZkspaceMainnet] = {
             ChainId: 13,

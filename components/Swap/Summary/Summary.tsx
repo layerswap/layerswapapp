@@ -93,7 +93,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                         </div>
                     </div>
                     <div className="flex flex-col">
-                        <p className="text-white text-lg">{requestedAmount} {sourceCurrencyName}</p>
+                        <p className="text-white text-lg">{truncateDecimals(requestedAmount, currency.precision)} {sourceCurrencyName}</p>
                         <p className="text-primary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
                     </div>
                 </div>
@@ -109,7 +109,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                     {
                         fee ?
                             <div className="flex flex-col justify-end">
-                                <p className="text-white text-lg">{receiveAmount} {destCurrencyName}</p>
+                                <p className="text-white text-lg">{truncateDecimals(receiveAmount, currency.precision)} {destCurrencyName}</p>
                                 <p className="text-primary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
                             </div>
                             :

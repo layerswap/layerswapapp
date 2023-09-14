@@ -1,5 +1,5 @@
 import { erc20ABI } from 'wagmi';
-import { parseEther, encodeFunctionData, PublicClient, formatGwei, Client } from 'viem'
+import { parseEther, encodeFunctionData, PublicClient, formatGwei } from 'viem'
 import { multicall, fetchBalance, FetchBalanceResult } from '@wagmi/core'
 import { BaseL2Asset, Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
@@ -246,7 +246,8 @@ export const resolveGas = async ({ publicClient, chainId, contract_address, acco
                 chainId,
                 account,
                 nativeToken,
-                currency
+                currency,
+                destination: destination
             })
             break;
         default:
@@ -264,19 +265,18 @@ export const resolveGas = async ({ publicClient, chainId, contract_address, acco
     return fee
 }
 
-const GetOptimismGas = async ({ publicClient, account, nativeToken, currency, chainId }: ResolveGasArguments): Promise<Gas> => {
+const GetOptimismGas = async ({ publicClient, account, nativeToken, currency, chainId, destination }: ResolveGasArguments): Promise<Gas> => {
 
-    var dummyAddress = "0x3535353535353535353535353535353535353535" as const;
     const amount = BigInt(1000000000)
 
     const fee = await estimateFees({
         client: publicClient,
         functionName: 'transfer',
         abi: erc20ABI,
-        args: [dummyAddress, amount],
+        args: [destination, amount],
         account: account,
         chainId: chainId,
-        to: dummyAddress,
+        to: destination,
     })
 
     const gas = formatAmount(fee, nativeToken?.decimals)
