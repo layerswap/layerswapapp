@@ -3,8 +3,8 @@ import { parseEther, encodeFunctionData, PublicClient, formatGwei, Client } from
 import { multicall, fetchBalance, FetchBalanceResult } from '@wagmi/core'
 import { BaseL2Asset, Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
-import KnownInternalNames from '../lib/knownIds';
 import { estimateFees } from '../lib/optimism/estimateFees';
+import NetworkSettings, { GasCalculation } from '../lib/NetworkSettings';
 
 export type ERC20ContractRes = ({
     error: Error;
@@ -235,10 +235,12 @@ export const estimateERC20GasLimit = async ({ publicClient, contract_address, ac
 export const resolveGas = async ({ publicClient, chainId, contract_address, account, from, currency, destination, userDestinationAddress }: ResolveGasArguments) => {
     const nativeToken = from.isExchange === false && from.assets.find(a => a.asset === from.native_currency)
 
+    const gasCalculationType = NetworkSettings.KnownSettings[from.internal_name].GasCalculationType
+
     let fee: Gas
 
-    switch (from.internal_name) {
-        case KnownInternalNames.Networks.OptimismMainnet:
+    switch (gasCalculationType) {
+        case GasCalculation.OptimismType:
             fee = await GetOptimismGas({
                 publicClient,
                 chainId,
@@ -274,7 +276,7 @@ const GetOptimismGas = async ({ publicClient, account, nativeToken, currency, ch
         args: [dummyAddress, amount],
         account: account,
         chainId: chainId,
-        to: dummyAddress
+        to: dummyAddress,
     })
 
     const gas = formatAmount(fee, nativeToken?.decimals)
