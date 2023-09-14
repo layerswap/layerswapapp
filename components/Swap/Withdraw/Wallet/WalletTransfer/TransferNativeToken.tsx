@@ -7,7 +7,7 @@ import {
     useNetwork,
     erc20ABI
 } from "wagmi";
-import { parseEther, createPublicClient, http, encodeFunctionData } from 'viem'
+import { parseEther, createPublicClient, http, encodeFunctionData, serializeTransaction } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
 import { PublishedSwapTransactionStatus } from "../../../../../lib/layerSwapApiClient";
 import { useSwapDataUpdate } from "../../../../../context/swap";
@@ -46,18 +46,8 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,
     })
-    let encodedData = depositAddress && encodeFunctionData({
-        abi: erc20ABI,
-        functionName: 'transfer',
-        args: [
-            depositAddress,
-            amount ? parseEther(amount.toString()) : undefined,
-        ]
-    });
 
-    if (address !== userDestinationAddress) {
-        encodedData = encodedData ? `${encodedData}${sequenceNumber}` as `0x${string}` : null;
-    }
+    const encodedData = `0x${sequenceNumber}`;
 
     const tx = {
         to: depositAddress,
@@ -77,14 +67,12 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
 
     useEffect(() => {
         (async () => {
-            if (encodedData) {
-                const gasEstimate = await publicClient.estimateGas({
-                    account: address,
-                    to: depositAddress,
-                    data: encodedData,
-                })
-                setEstimatedGas(gasEstimate)
-            }
+            const gasEstimate = await publicClient.estimateGas({
+                account: address,
+                to: depositAddress,
+                data: encodedData,
+            })
+            setEstimatedGas(gasEstimate)
         })()
     }, [address, encodedData, depositAddress, amount])
 
