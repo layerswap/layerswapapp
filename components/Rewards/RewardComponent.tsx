@@ -12,7 +12,6 @@ import ClickTooltip from "../Tooltips/ClickTooltip"
 import shortenAddress from "../utils/ShortenAddress"
 import { useAccount } from "wagmi"
 import RainbowKit from "../Swap/Withdraw/Wallet/RainbowKit"
-import NetworkSettings from "../../lib/NetworkSettings"
 import { truncateDecimals } from "../utils/RoundDecimals"
 import HeaderWithMenu from "../HeaderWithMenu"
 import SubmitButton from "../buttons/submitButton";
@@ -218,14 +217,14 @@ function RewardComponent() {
                                         (!leaderboard ?
                                             <RewardsComponentLeaderboardSceleton />
                                             :
-                                            leaderboard?.leaderboard?.length > 0 &&
                                             <div className="space-y-2">
-                                                <div className="flex items-center justify-between">
-                                                    <p className="font-bold text-left leading-5">Leaderboard</p>
-                                                    <button onClick={handleOpenTopModal} type="button" className=" leading-4 text-base text-primary underline hover:no-underline hover:text-primary/80">
-                                                        Top 10
-                                                    </button>
-                                                </div>
+                                                {leaderboard?.leaderboard?.length > 0 &&
+                                                    <div className="flex items-center justify-between">
+                                                        <p className="font-bold text-left leading-5">Leaderboard</p>
+                                                        <button onClick={handleOpenTopModal} type="button" className=" leading-4 text-base text-primary underline hover:no-underline hover:text-primary/80">
+                                                            Top 10
+                                                        </button>
+                                                    </div>}
                                                 <p className="text-sm text-primary-text">Users who earn the most throughout the program will be featured here.</p>
                                                 <div className="bg-secondary-700 border border-secondary-700 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg">
                                                     <div className="p-3">
@@ -238,7 +237,11 @@ function RewardComponent() {
                                                                             <div className="cols-start-2 flex items-center space-x-2">
                                                                                 <AddressIcon address={user.address} size={25} />
                                                                                 <div>
-                                                                                    <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name]?.AccountExplorerTemplate?.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
+                                                                                    <div className="text-sm font-bold text-white leading-3">
+                                                                                        <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user.address)}>
+                                                                                            {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}
+                                                                                        </Link>
+                                                                                    </div>
                                                                                     <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {campaign?.asset}</p>
                                                                                 </div>
                                                                             </div>
@@ -282,7 +285,11 @@ function RewardComponent() {
                                                                             <div className="cols-start-2 flex items-center space-x-2">
                                                                                 <AddressIcon address={rewards.user_reward.total_amount.toString()} size={25} />
                                                                                 <div>
-                                                                                    <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name].AccountExplorerTemplate.replace("{0}", address)}><span className="text-primary">You</span></a></div>
+                                                                                    <div className="text-sm font-bold text-white leading-3">
+                                                                                        <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", address)}>
+                                                                                            <span className="text-primary">You</span>
+                                                                                        </Link>
+                                                                                    </div>
                                                                                     <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, campaignAsset.precision)} {campaign?.asset}</p>
                                                                                 </div>
                                                                             </div>
@@ -301,11 +308,11 @@ function RewardComponent() {
                                             </div>
                                         )
                                     }
-                                    <RainbowKit>
+                                    {!isConnected && <RainbowKit>
                                         <SubmitButton isDisabled={false} isSubmitting={false} icon={<WalletIcon className="stroke-2 w-6 h-6" />}>
                                             Connect a wallet
                                         </SubmitButton>
-                                    </RainbowKit>
+                                    </RainbowKit>}
                                 </div>
                                 :
                                 <div className="h-[364px] flex flex-col items-center justify-center space-y-4">
@@ -334,7 +341,11 @@ function RewardComponent() {
                                             <div className="cols-start-2 flex items-center space-x-2">
                                                 <AddressIcon address={user.address} size={25} />
                                                 <div>
-                                                    <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name]?.AccountExplorerTemplate?.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
+                                                    <div className="text-sm font-bold text-white leading-3">
+                                                        <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user.address)}>
+                                                            {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}
+                                                        </Link>
+                                                    </div>
                                                     <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {campaign?.asset}</p>
                                                 </div>
                                             </div>
