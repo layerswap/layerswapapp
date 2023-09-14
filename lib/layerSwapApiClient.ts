@@ -265,9 +265,7 @@ export type Campaigns = {
     percentage: number,
     start_date: string,
     end_date: string,
-    reward_limit_for_period: number,
     min_payout_amount: number,
-    reward_limit_period: number
 }
 
 export type Reward = {
