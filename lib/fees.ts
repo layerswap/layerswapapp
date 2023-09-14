@@ -6,7 +6,6 @@ import { CryptoNetwork, NetworkType } from "../Models/CryptoNetwork";
 import { Currency } from "../Models/Currency";
 import { Layer } from "../Models/Layer";
 import KnownInternalNames from "./knownIds";
-import NetworkSettings, { DepositType } from "./NetworkSettings";
 
 export function GetExchangeFee(asset?: string, layer?: Layer): number {
     if (!layer?.isExchange)
@@ -49,7 +48,7 @@ export function CaluclateRefuelAmount(
 
 export function CanDoSweeplessTransfer(sourceLayer: Layer, sourceAddress?: string, destinationAddress?: string): boolean {
     if (sourceLayer?.isExchange == false
-        && ([NetworkType.EVM, NetworkType.Starknet].includes(sourceLayer.type) || sourceAddress === destinationAddress)
+        && ([NetworkType.EVM, NetworkType.Starknet].includes(sourceLayer.type) || sourceAddress?.toLowerCase() === destinationAddress?.toLowerCase())
     ) {
         return true;
     }
