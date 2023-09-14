@@ -11,7 +11,6 @@ import { SwapItem, Transaction, TransactionStatus, TransactionType } from '../..
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
-import resolveFailError from '../Wallet/WalletTransfer/resolveFailError';
 import { SwapFailReasons } from '../../../../Models/RangeError';
 
 type Props = {
@@ -45,11 +44,10 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const truncatedRefuelAmount = truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision)
 
     const progressStatuses = getProgressStatuses(swap, swapStatus)
-    const failReason = swap.fail_reason as SwapFailReasons;
 
     type ProgressStates = {
-        [key in Progress]?: {
-            [key in ProgressStatus]?: {
+        [key in Progress]: {
+            [key in ProgressStatus]: {
                 name: string;
                 description: string | JSX.Element;
             }
@@ -75,7 +73,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
             },
             current: {
-                name: 'Your transfer is in progress',
+                name: 'Processing your deposit',
                 description: <div>
                     <span>
                         Waiting for confirmations
@@ -91,34 +89,50 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 </div>
             },
             complete: {
-                name: `Your transfer is completed`,
+                name: `Your deposit is detected`,
                 description: <div className='flex items-center space-x-1'>
-                    <span>Explorer link: </span>
+                    <span>Transaction: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
                         <a target={"_blank"} href={input_tx_explorer.replace("{0}", swapInputTransaction?.transaction_id)}>{shortenAddress(swapInputTransaction?.transaction_id)}</a>
                         <ExternalLink className='h-4' />
                     </div>
                 </div>
             },
+            failed: {
+                name: `The transfer failed`,
+                description: <div className='flex space-x-1'>
+                    <span>Error: </span>
+                    <div className='space-x-1 text-white'>
+                        {swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
+                            "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
+                            :
+                            swap?.fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
+                                "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
+                                :
+                                "Something went wrong while processing the transfer. Please contact support"
+                        }
+                    </div>
+                </div>
+            },
             delayed: {
-                name: `This swap is being delayed by Coinbase`,
+                name: `This transfer is being delayed by Coinbase`,
                 description: null
             }
         },
         "output_transfer": {
             upcoming: {
-                name: `Sending ${destinationNetworkCurrency?.name} to your wallet`,
+                name: `Sending ${destinationNetworkCurrency?.name} to your address`,
                 description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
             },
             current: {
-                name: `Sending ${destinationNetworkCurrency?.name} to your wallet`,
+                name: `Sending ${destinationNetworkCurrency?.name} to your address`,
                 description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
             },
             complete: {
-                name: `${swapOutputTransaction?.amount} ${swap?.destination_network_asset} was sent to your wallet`,
+                name: `${swapOutputTransaction?.amount} ${swap?.destination_network_asset} was sent to your address`,
                 description: swapOutputTransaction ? <div className="flex flex-col">
                     <div className='flex items-center space-x-1'>
-                        <span>Explorer link: </span>
+                        <span>Transaction: </span>
                         <div className='underline hover:no-underline flex items-center space-x-1'>
                             <a target={"_blank"} href={output_tx_explorer.replace("{0}", swapOutputTransaction.transaction_id)}>{shortenAddress(swapOutputTransaction.transaction_id)}</a>
                             <ExternalLink className='h-4' />
@@ -127,11 +141,18 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 </div> : outputPendingDetails,
             },
             failed: {
-                name: `Your transfer is failed`,
-                description: failReason && <div className='flex space-x-1'>
+                name: `The transfer failed`,
+                description: <div className='flex space-x-1'>
                     <span>Error: </span>
                     <div className='space-x-1 text-white'>
-                        {resolveFailError(failReason)}
+                        {swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
+                            "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
+                            :
+                            swap?.fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
+                                "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
+                                :
+                                "Something went wrong while processing the transfer. Please contact support"
+                        }
                     </div>
                 </div>
             },
@@ -142,20 +163,36 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         },
         "refuel": {
             upcoming: {
-                name: `Sending ${nativeCurrency?.asset} to your wallet (Refuel)`,
+                name: `Sending ${nativeCurrency?.asset} to your address (Refuel)`,
                 description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
             },
             current: {
-                name: `Sending ${nativeCurrency?.asset} to your wallet (Refuel)`,
+                name: `Sending ${nativeCurrency?.asset} to your address (Refuel)`,
                 description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
             },
             complete: {
-                name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your wallet (Refuel)`,
+                name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your address (Refuel)`,
                 description: <div className='flex items-center space-x-1'>
-                    <span>Explorer link: </span>
+                    <span>Transaction: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
                         <a target={"_blank"} href={swapRefuelTransaction?.explorer_url}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
                         <ExternalLink className='h-4' />
+                    </div>
+                </div>
+            },
+            failed: {
+                name: `The transfer failed`,
+                description: <div className='flex space-x-1'>
+                    <span>Error: </span>
+                    <div className='space-x-1 text-white'>
+                        {swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
+                            "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
+                            :
+                            swap?.fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
+                                "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
+                                :
+                                "Something went wrong while processing the transfer. Please contact support"
+                        }
                     </div>
                 </div>
             },
@@ -203,7 +240,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                                     Transfer status
                                 </p>
                                 <p className='text-sm flex space-x-1'>
-                                    Assets will be sent as soon as the transfer is confirmed
+                                    You’ll see live updates on the transfer progress below
                                 </p>
                             </div>
                             <div className='flex flex-col h-full justify-center'>
