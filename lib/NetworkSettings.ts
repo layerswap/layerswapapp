@@ -1,5 +1,15 @@
 import KnownInternalNames from "./knownIds";
 
+export enum DepositType {
+    Manual = 'manual',
+    Wallet = 'wallet'
+}
+
+export enum GasCalculation {
+    Classic = 'classic',
+    OptimismType = 'optimismType'
+}
+
 type NetworkItemSettings = {
     [network: string]: {
         apiUri: string,
@@ -53,11 +63,13 @@ const sourceOrder = [
 export default class NetworkSettings {
     ChainId?: number | string;
     DefaultPriorityFee?: number;
+    BaseFeeMultiplier?: number;
     AddressPlaceholder?: string;
     OrderInDestination?: number;
     OrderInSource?: number;
     AccountExplorerTemplate?: string;
-    Refuel?: boolean = false;
+    GasCalculationType?: GasCalculation
+
     public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean, crossChain: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
 
@@ -87,6 +99,7 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZksyncEraMainnet] = {
             ChainId: 324,
+            BaseFeeMultiplier: 3
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZkspaceMainnet] = {
             ChainId: 13,
@@ -130,6 +143,10 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OptimismMainnet] = {
             ChainId: 10,
             AccountExplorerTemplate: 'https://optimistic.etherscan.io/address/{0}',
+            GasCalculationType: GasCalculation.OptimismType
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.OptimismGoerli] = {
+            GasCalculationType: GasCalculation.OptimismType
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.AstarMainnet] = {
             ChainId: 592,
@@ -190,12 +207,19 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.LineaMainnet] = {
             ChainId: 59144,
         };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.BaseTestnet] = {
+            GasCalculationType: GasCalculation.OptimismType
+        };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BaseMainnet] = {
             ChainId: 8453,
-            DefaultPriorityFee: 0.027
+            GasCalculationType: GasCalculation.OptimismType
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.PGNMainnet] = {
             ChainId: 424,
+            GasCalculationType: GasCalculation.OptimismType
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.PGNTestnet] = {
+            GasCalculationType: GasCalculation.OptimismType
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.MantleMainnet] = {
             ChainId: 5000,
@@ -207,6 +231,9 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.PolygonZkMainnet] = {
             ChainId: 1101,
             AccountExplorerTemplate: "https://zkevm.polygonscan.com/address//{0}"
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZoraMainnet] = {
+            GasCalculationType: GasCalculation.OptimismType
         };
 
         NetworkSettings.ImmutableXSettings = {

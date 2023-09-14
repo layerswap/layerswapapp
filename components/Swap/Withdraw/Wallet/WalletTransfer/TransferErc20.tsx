@@ -10,7 +10,7 @@ import {
 import { PublishedSwapTransactionStatus } from "../../../../../lib/layerSwapApiClient";
 import { useSwapDataUpdate } from "../../../../../context/swap";
 import WalletIcon from "../../../../icons/WalletIcon";
-import { encodeFunctionData, http, parseUnits, createWalletClient, publicActions, ContractFunctionConfig } from 'viem'
+import { encodeFunctionData, http, parseUnits, createWalletClient, publicActions } from 'viem'
 import TransactionMessage from "./transactionMessage";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import { ButtonWrapper } from "./buttons";
