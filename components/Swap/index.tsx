@@ -43,7 +43,7 @@ const SwapDetails: FC = () => {
                     <Success />
                 }
                 {
-                    swapStatus === SwapStatus.Failed &&
+                    (swapStatus === SwapStatus.Failed || swapStatus === SwapStatus.Cancelled || swapStatus === SwapStatus.Expired) &&
                     <Failed />
                 }
                 {
