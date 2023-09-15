@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, SwapType, SwapItem, PublishedSwapTransactions, PublishedSwapTransactionStatus, SwapTransaction, WithdrawType, Fee } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, SwapItem, PublishedSwapTransactions, PublishedSwapTransactionStatus, SwapTransaction, WithdrawType } from '../lib/layerSwapApiClient';
 import { useRouter } from 'next/router';
 import { useSettingsState } from './settings';
 import { QueryParams } from '../Models/QueryParams';
@@ -12,7 +12,7 @@ import { useAccount } from 'wagmi';
 import { getStarknet } from 'get-starknet-core';
 import { BaseL2Asset, ExchangeL2Asset } from '../Models/Layer';
 
-export const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined });
+export const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined });
 const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 type UpdateInterface = {
@@ -35,7 +35,6 @@ type SwapData = {
     swapApiError?: ApiError,
     addressConfirmed: boolean,
     depositeAddressIsfromAccount: boolean,
-    walletAddress: string,
     withdrawType: WithdrawType,
     swapTransaction: SwapTransaction,
     selectedAssetNetwork: ExchangeL2Asset | BaseL2Asset
@@ -142,7 +141,7 @@ export function SwapDataProvider({ children }) {
         setSelectedAssetNetwork
     };
     return (
-        <SwapDataStateContext.Provider value={{ withdrawType, depositeAddressIsfromAccount, swap: swapResponse?.data, swapApiError: error, codeRequested, addressConfirmed, walletAddress, swapTransaction, selectedAssetNetwork }}>
+        <SwapDataStateContext.Provider value={{ withdrawType, depositeAddressIsfromAccount, swap: swapResponse?.data, swapApiError: error, codeRequested, addressConfirmed, swapTransaction, selectedAssetNetwork }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
             </SwapDataUpdateContext.Provider>
