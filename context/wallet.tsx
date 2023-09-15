@@ -1,26 +1,28 @@
 import React, { FC, useState } from 'react'
 import { StarknetWindowObject } from 'get-starknet';
-import { useAccount, usePrepareContractWrite, usePublicClient } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
 import { Balance, Gas, getErc20Balances, getNativeBalance, resolveERC20Balances, resolveGas, resolveNativeBalance } from '../helpers/balanceHelper';
-import { createPublicClient, createWalletClient, http, publicActions } from 'viem';
+import { createPublicClient, http } from 'viem';
 import resolveChain from '../lib/resolveChain';
 import { NetworkType } from '../Models/CryptoNetwork';
 
-export const WalletStateContext = React.createContext(null);
-const WalletStateUpdateContext = React.createContext(null);
+export const WalletStateContext = React.createContext<WalletState>(null);
+const WalletStateUpdateContext = React.createContext<WalletStateUpdate>(null);
 
-export type WizardProvider = {
+export type WalletState = {
     starknetAccount: StarknetWindowObject,
+    imxAccount: string,
     balances: Balance[],
     gases: { [network: string]: Gas[] },
     isBalanceLoading: boolean,
     isGasLoading: boolean
 }
 
-type UpdateInterface = {
+type WalletStateUpdate = {
     setStarknetAccount: (account: StarknetWindowObject) => void,
+    setImxAccount: (account: string) => void;
     getBalance: (from: Layer) => Promise<void>,
     getGas: (from: Layer, currency: Currency, userDestinationAddress: string) => Promise<void>,
 }
@@ -31,6 +33,7 @@ type Props = {
 
 export const WalletDataProvider: FC<Props> = ({ children }) => {
     const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject>()
+    const [imxAccount, setImxAccount] = useState<string>()
     const [allBalances, setAllBalances] = useState<{ [address: string]: Balance[] }>({})
     const [allGases, setAllGases] = useState<{ [network: string]: Gas[] }>({})
     const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
@@ -105,6 +108,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
     return (
         <WalletStateContext.Provider value={{
             starknetAccount,
+            imxAccount,
             balances,
             gases,
             isBalanceLoading,
@@ -112,6 +116,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         }}>
             <WalletStateUpdateContext.Provider value={{
                 setStarknetAccount,
+                setImxAccount,
                 getBalance,
                 getGas,
             }}>
@@ -122,7 +127,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
 }
 
 export function useWalletState<T>() {
-    const data = React.useContext<WizardProvider>(WalletStateContext);
+    const data = React.useContext<WalletState>(WalletStateContext);
     if (data === undefined) {
         throw new Error('useWalletStateContext must be used within a WalletStateContext');
     }
@@ -131,7 +136,7 @@ export function useWalletState<T>() {
 }
 
 export function useWalletUpdate<T>() {
-    const updateFns = React.useContext<UpdateInterface>(WalletStateUpdateContext);
+    const updateFns = React.useContext<WalletStateUpdate>(WalletStateUpdateContext);
 
     if (updateFns === undefined) {
         throw new Error('useWalletStateUpdateContext must be used within a WalletStateUpdateContext');
