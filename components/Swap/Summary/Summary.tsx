@@ -34,7 +34,7 @@ type SwapInfoProps = {
 const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name }) => {
     const { resolveImgSrc, currencies, networks } = useSettingsState()
     const { address: evmAddress } = useAccount();
-    const { starknetAccount } = useWalletState()
+    const { starknetAccount, imxAccount } = useWalletState()
     const {
         hideFrom,
         hideTo,
@@ -59,6 +59,8 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     const truncatedRefuelAmount = hasRefuel && truncateDecimals(refuelAmount, nativeCurrency?.precision)
 
     const sourceNetworkType = GetDefaultNetwork(from, currency?.asset)?.type
+    const sourceIsImmutableX = from?.internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
+        || from?.internal_name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
 
     let sourceAccountAddress = ""
     if (hideFrom && account) {
@@ -72,6 +74,9 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     }
     else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
         sourceAccountAddress = shortenEmail(exchange_account_name, 10);
+    }
+    else if (sourceIsImmutableX && imxAccount) {
+        sourceAccountAddress = shortenAddress(imxAccount);
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
@@ -107,7 +112,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                         </div>
                     </div>
                     {
-                        fee ?
+                        fee >= 0 ?
                             <div className="flex flex-col justify-end">
                                 <p className="text-white text-lg">{truncateDecimals(receiveAmount, currency.precision)} {destCurrencyName}</p>
                                 <p className="text-primary-text text-sm flex justify-end">${receiveAmountInUsd}</p>

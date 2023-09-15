@@ -1,10 +1,9 @@
-import { BookOpen, ExternalLink, Link as LinkIcon, Gift, MenuIcon, ChevronRight, Map, Home, LogIn, LogOut, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus, Bell } from "lucide-react";
+import { BookOpen, ExternalLink, Gift, MenuIcon, ChevronRight, Map, Home, LogIn, LogOut, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus, Bell } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
 import TokenService from "../../lib/TokenService";
-import shortenAddress from "../utils/ShortenAddress";
-import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
@@ -23,7 +22,6 @@ import SendFeedback from "../sendFeedback";
 import IconButton from "../buttons/iconButton";
 import YoutubeLogo from "../icons/YoutubeLogo";
 import { shortenEmail } from '../utils/ShortenAddress';
-``
 
 export default function () {
     const { email, userType, userId } = useAuthState()
@@ -346,22 +344,4 @@ export default function () {
             }
         </span>
     </>
-}
-
-const WalletAddress = (isMobile, isConnected) => {
-    return <ConnectButton.Custom>
-        {({ account, mounted, chain, openAccountModal }) => {
-            if (mounted && account && chain)
-                return <button
-                    type="button"
-                    onClick={openAccountModal}
-                    className={`${!isMobile?.isMobile ? "px-[30px] py-5" : "px-[25px] py-6"} border-2 border-secondary-500 menu-link flex flex-col mb-2 relative cursor-pointer select-none items-center rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}
-                >
-                    <WalletIcon className="h-6 w-6" strokeWidth={2} />
-                    <p>{shortenAddress(account.address)}</p>
-                </button>
-            else
-                return <></>
-        }}
-    </ConnectButton.Custom>
 }
