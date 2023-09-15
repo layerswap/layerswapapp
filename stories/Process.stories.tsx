@@ -114,7 +114,7 @@ const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: S
         <SettingsStateContext.Provider value={appSettings}>
             <QueryStateContext.Provider value={{}}>
                 <SwapDataStateContext.Provider value={swapContextInitialValues}>
-                    <WalletStateContext.Provider value={undefined}>
+                    <WalletStateContext.Provider value={{ balances: null, gases: null, imxAccount: null, isBalanceLoading: null, isGasLoading: null, starknetAccount: null }}>
                         <div className={`flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg`}>
                             <div className={`flex flex-col w-full text-white`}>
                                 <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
