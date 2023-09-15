@@ -13,10 +13,13 @@ export const useSwapTransactionStore = create(
             swapTransactions: {},
             setSwapTransaction: (Id, status, txHash, failReason) => {
                 set((state) => {
-                    const txForSwap = state.swapTransactions[Id] || {
-                        hash: txHash,
-                        status: status,
-                        failReason: failReason
+                    const txForSwap = {
+                        ...state.swapTransactions,
+                        [Id]: {
+                            hash: txHash,
+                            status: status,
+                            failReason: failReason
+                        }
                     };
                     return { swapTransactions: txForSwap };
                 });
