@@ -20,6 +20,7 @@ import Modal from "../modal/modal";
 import SpinIcon from "../icons/spinIcon";
 import WalletIcon from "../icons/WalletIcon";
 import Link from "next/link";
+import { Progress } from "../ProgressBar";
 
 function RewardComponent() {
 
@@ -43,6 +44,8 @@ function RewardComponent() {
     const rewards = rewardsData?.data
     const leaderboard = leaderboardData?.data
     const payouts = payoutsData?.data
+    const totalBudget = campaign?.total_budget ?? 1000
+    const DistributedAmount = ((campaign?.distributed_amount / campaign?.total_budget) * 100) || 100 / 1000 * 100
 
     const next = new Date(rewards?.next_airdrop_date)
     const now = new Date()
@@ -154,6 +157,16 @@ function RewardComponent() {
                                                         </BackgroundField>
                                                     </div>
                                                 </div>
+                                                {!isCampaignEnded && <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
+                                                    <BackgroundField header='$OP pool' withoutBorder>
+                                                        <div className="flex flex-col w-full gap-2">
+                                                            <Progress value={DistributedAmount === Infinity ? 0 : DistributedAmount} />
+                                                            <div className="flex justify-between w-full font-semibold text-sm ">
+                                                                <div className="text-primary"><span className="text-white">{DistributedAmount}</span> / {totalBudget} {campaign?.asset}</div>
+                                                            </div>
+                                                        </div>
+                                                    </BackgroundField>
+                                                </div>}
                                                 {
                                                     payouts.length > 0 &&
                                                     <div className="space-y-1">
