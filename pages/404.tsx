@@ -14,6 +14,7 @@ export default function Custom404() {
     return (
         <div className="styled-scroll">
             <main className="styled-scroll">
+                <div><span>asd</span>{false || <div>asd</div> }</div>
                 <div className="min-h-screen overflow-hidden relative font-robo">
                     <Navbar />
                     <div className="mx-auto max-w-xl bg-darkblue-900 md:shadow-card rounded-lg w-full overflow-hidden relative px-6 py-6 h-[500px] min-h-[550px]">
@@ -22,7 +23,7 @@ export default function Custom404() {
                                 <div className="text-center">
                                     <p className="text-base font-semibold text-primary">404</p>
                                     <h1 className="mt-2 text-4xl font-bold tracking-tight text-white sm:text-5xl">Page not found.</h1>
-                                    <p className="mt-2 text-base text-primary-text">Sorry, we couldn't find the page you're looking for.</p>
+                                    <p className="mt-2 text-base text-primary-text">Sorry, we couldn&apos;t find the page you&apos;re looking for.</p>
                                 </div>
                             </MessageComponent.Content>
                             <MessageComponent.Buttons>

@@ -10,7 +10,7 @@ import { useQueryState } from "../../context/query";
 import { useWalletState, useWalletUpdate } from "../../context/wallet";
 import { roundDecimals } from "../utils/RoundDecimals";
 
-const AmountField = forwardRef((_, ref: any) => {
+const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
     const { networks, currencies } = useSettingsState()

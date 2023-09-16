@@ -115,7 +115,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                         </p>
                                     </div>
                                     <p className='mt-2 text-left'>
-                                        Please enter the 6 digit code sent to <span className='font-medium text-white'>{tempEmail}</span>
+                                        <span>Please enter the 6 digit code sent to </span><span className='font-medium text-white'>{tempEmail}</span>
                                     </p>
                                 </div>
                                 <div className="text-sm text-primary-text font-normal mt-5">
@@ -148,7 +148,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                     <span className="flex text-sm leading-6 items-center mt-0.5">
                                         <TimerWithContext isStarted={started} seconds={timerCountdown} waitingComponent={(remainingTime) => (
                                             <span className={classNames(userLockedOut && 'text-xl leading-6')}>
-                                                Resend in
+                                                <span>Resend in</span>
                                                 <span className='ml-1'>
                                                     {remainingTime}
                                                 </span>
@@ -198,7 +198,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                 </Widget.Content>
                                 <Widget.Footer>
                                     <p className='text-primary-text text-xs sm:text-sm mb-3 md:mb-5'>
-                                        By clicking Confirm you agree to Layerswap's <span
+                                        By clicking Confirm you agree to Layerswap&apos;s <span
                                             onClick={handleOpenTerms}
                                             className='decoration decoration-primary underline-offset-1 underline hover:no-underline cursor-pointer'> Terms of Service
                                         </span> and&nbsp;

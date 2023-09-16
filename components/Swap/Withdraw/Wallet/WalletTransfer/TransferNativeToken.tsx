@@ -147,7 +147,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
                         Insufficient funds for gas
                     </div>
                     <div className="text-base font-medium space-y-6 text-primary-text text-center">
-                        This transfer can't be processed because you don't have enough gas.
+                        This transfer can&apos;t be processed because you don&apos;t have enough gas.
                     </div>
                 </div>
                 <div className="text-base">
