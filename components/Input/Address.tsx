@@ -307,7 +307,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                             <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-primary-text">
                                 <li>Go to the Deposits page</li>
                                 <li>
-                                    Select
+                                    <span>Select</span>
                                     <span className="inline-block mx-1">
                                         <span className='flex gap-1 items-baseline text-sm '>
                                             <Image src={settings.resolveImgSrc(values.currency)}
@@ -319,10 +319,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                             <span className="text-white">{values.currency.asset}</span>
                                         </span>
                                     </span>
-                                    as asset
+                                    <span>as asset</span>
                                 </li>
                                 <li>
-                                    Select
+                                    <span>Select</span>
                                     <span className="inline-block mx-1">
                                         <span className='flex gap-1 items-baseline text-sm '>
                                             <Image src={settings.resolveImgSrc(destinationNetwork)}
@@ -334,7 +334,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                             <span className="text-white">{destinationNetwork?.display_name}</span>
                                         </span>
                                     </span>
-                                    as network
+                                    <span>as network</span>
                                 </li>
                             </ul>
                         </div>

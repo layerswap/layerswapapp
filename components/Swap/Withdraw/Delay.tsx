@@ -11,7 +11,7 @@ const Delay: FC = () => {
                     <label className="block text-sm md:text-base font-medium">What&apos;s happening?</label>
                 </div>
                 <div className='mt-4 text-xs md:text-sm text-white'>
-                    <p className='text-md '>This usually means that the exchange needs additional verification.
+                    <p className='text-md '><span>This usually means that the exchange needs additional verification.</span>
                         <Link target='_blank' href="https://docs.layerswap.io/user-docs/why-is-coinbase-transfer-taking-so-long"
                             className='disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed ml-1 underline hover:no-underline cursor-pointer'>Learn More</Link></p>
                     <ul className="list-inside list-decimal font-light space-y-1 mt-2 text-left ">

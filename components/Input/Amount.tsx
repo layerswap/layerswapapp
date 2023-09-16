@@ -91,7 +91,7 @@ const AmountLabel = ({
             {
                 detailsAvailable &&
                 <div className="text-xs text-primary-text flex items-center space-x-1">
-                    (Min: {minAllowedAmount} - Max: {isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : maxAllowedAmount})
+                    <span>(Min:&nbsp;</span>{minAllowedAmount}<span>&nbsp;- Max:&nbsp;</span>{isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : maxAllowedAmount}<span>)</span>
                 </div>
             }
         </div>

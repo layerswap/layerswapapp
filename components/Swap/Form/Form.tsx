@@ -235,7 +235,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                             <ClickTooltip text={`You will get a small amount of ${destination_native_currency} that you can use to pay for gas fees.`} />
                                         </p>
                                         <p className="font-light text-xs">
-                                            Get <span className="font-semibold">{destination_native_currency}</span> to pay fees in {values.to?.display_name}
+                                            <span>Get&nbsp;</span><span className="font-semibold">{destination_native_currency}</span><span>&nbsp;to pay fees in&nbsp;</span>{values.to?.display_name}
                                         </p>
                                     </div>
                                 </div>

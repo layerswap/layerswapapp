@@ -179,7 +179,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                             carouselFinished ? "Connect" : "Next"
                         }
                     </SubmitButton>
-                    <p className='text-sm mt-2 font-lighter text-primary-text text-left'>Don&apos;t want to connect Coinbase account? <span onClick={handleTransferMannually} className='cursor-pointer underline'>Transfer manually</span></p>
+                    <p className='text-sm mt-2 font-lighter text-primary-text text-left'><span>Don&apos;t want to connect Coinbase account?&nbsp;</span><span onClick={handleTransferMannually} className='cursor-pointer underline'>Transfer manually</span></p>
                 </div>
             </Widget.Footer>
         </Widget>

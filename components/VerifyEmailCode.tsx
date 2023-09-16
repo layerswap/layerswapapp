@@ -166,7 +166,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                 <Widget.Content center={true}>
                                     <MailOpen className='w-16 h-16 mt-auto text-primary self-center' />
                                     <div className='text-center mt-5'>
-                                        <p className='text-lg'>Please enter the 6 digit code sent to <span className='font-medium text-white'>{tempEmail}</span></p>
+                                        <p className='text-lg'><span>Please enter the 6 digit code sent to&nbsp;</span><span className='font-medium text-white'>{tempEmail}</span></p>
                                     </div>
                                     <div className="relative rounded-md shadow-sm mt-5">
                                         <NumericInput
@@ -183,7 +183,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                         <span className="flex text-sm leading-6 items-center mt-1.5">
                                             <TimerWithContext isStarted={started} seconds={timerCountdown} waitingComponent={(remainingTime) => (
                                                 <span className={classNames(userLockedOut && 'text-xl leading-6')}>
-                                                    Resend in
+                                                    <span>Resend in</span>
                                                     <span className='ml-1'>
                                                         {remainingTime}
                                                     </span>
@@ -198,10 +198,10 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                 </Widget.Content>
                                 <Widget.Footer>
                                     <p className='text-primary-text text-xs sm:text-sm mb-3 md:mb-5'>
-                                        By clicking Confirm you agree to Layerswap&apos;s <span
+                                        <span>By clicking Confirm you agree to Layerswap&apos;s&nbsp;</span><span
                                             onClick={handleOpenTerms}
                                             className='decoration decoration-primary underline-offset-1 underline hover:no-underline cursor-pointer'> Terms of Service
-                                        </span> and&nbsp;
+                                        </span><span>&nbsp;and&nbsp;</span>
                                         <span
                                             onClick={handleOpenPrivacyPolicy}
                                             className='decoration decoration-primary underline-offset-1 underline hover:no-underline cursor-pointer'>Privacy Policy

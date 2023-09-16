@@ -175,7 +175,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
                                     <TimerWithContext seconds={120}
                                         waitingComponent={(remainingTime) => (
                                             <span>
-                                                Resend in
+                                                <span>Resend in</span>
                                                 <span className='ml-1'>
                                                     {remainingTime}
                                                 </span>

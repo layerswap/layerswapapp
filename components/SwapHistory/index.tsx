@@ -277,7 +277,7 @@ function TransactionsHistory() {
                             <SpinIcon className="animate-spin h-5 w-5" />
                             : null}
                         </span>
-                        Load more
+                        <span>Load more</span>
                       </button>
                     }
                   </div>
