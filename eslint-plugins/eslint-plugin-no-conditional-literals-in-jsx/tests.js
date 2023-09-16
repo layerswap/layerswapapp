@@ -85,13 +85,15 @@ ruleTester.run('no-conditional-literals-in-jsx', noConditionalLiterals, {
 ruleTester.run('no-unwrapped-jsx-text', noUnwrappedJsxText, {
   valid: [
     {
-      code: `<div>{conditional && 'string'} text</div>`
+      code: `<div>{conditional && <img></img>} <span>'string'</span></div>`,
+      errors: [{'messageId': "noUnwrappedJSX"}]
     }
   ],
   invalid: [
     {
-      code: `<div>'string' {conditional && <div>string</div>}</div>`,
-      errors,
+      code: `<div>{conditional && <img></img>} 'text'</div>`,
+      errors: [{'messageId': "noUnwrappedJSX"}],
+      output: `<div>{conditional && <img></img>}<span>&nbsp;'text'</span></div>`
     },
   ],
 })
