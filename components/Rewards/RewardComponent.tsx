@@ -47,7 +47,7 @@ function RewardComponent() {
     const next = new Date(rewards?.next_airdrop_date)
     const now = new Date()
     const difference_in_days = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600 * 24)))
-    const difference_in_hours = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600) - (difference_in_days * 24)))
+    const difference_in_hours = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600) - (difference_in_days * 24)) + 20)
     const campaignEndDate = new Date(campaign?.end_date)
     const isCampaignEnded = Math.round(((campaignEndDate.getTime() - now.getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
 
