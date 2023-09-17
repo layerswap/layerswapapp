@@ -1,3 +1,4 @@
+// From https://github.com/sayari-analytics/eslint-plugin-sayari/tree/main
 'use strict'
 
 const {

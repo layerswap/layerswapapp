@@ -45,7 +45,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         chainId: chainId,
     })
 
-    const encodedData = address !== userDestinationAddress ? `0x${sequenceNumber}` : null
+    const encodedData : `0x${string}` = address !== userDestinationAddress ? `0x${sequenceNumber}` : null
 
     const tx = {
         to: depositAddress,
