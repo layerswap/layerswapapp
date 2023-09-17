@@ -88,7 +88,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                 from?.isExchange &&
                                 <div className="mt-2 flex flex-row justify-between">
                                     <label className="flex items-center text-left grow text-primary-text-placeholder">
-                                        Exchange fee
+                                        <span>Exchange fee</span>
                                         <ClickTooltip text="Some exchanges charge a fee to cover gas fees of on-chain transfers." />
                                     </label>
                                     <span className="text-right">
@@ -127,7 +127,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                     className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700  relative bottom-2 z-0 pt-4 pb-2 px-3.5 text-right'>
                     <div className='flex items-center'>
                         <p>Est. {campaignAsset?.asset} Reward</p>
-                        <ClickTooltip text={<span>The amount of onboarding reward that you’ll earn. <a target='_blank' href='/campaigns' className='text-primary underline hover:no-underline decoration-primary cursor-pointer'>Learn more</a></span>} />
+                        <ClickTooltip text={<span><span>The amount of onboarding reward that you’ll earn.&nbsp;</span><a target='_blank' href='/campaigns' className='text-primary underline hover:no-underline decoration-primary cursor-pointer'>Learn more</a></span>} />
                     </div>
                     {
                         Number(reward) > 0 &&

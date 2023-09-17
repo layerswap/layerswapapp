@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "lint": "next lint"
   },
   "dependencies": {
     "@eth-optimism/contracts-ts": "^0.15.0",
@@ -80,6 +81,9 @@
     "@web3-react/types": "^6.0.7",
     "autoprefixer": "^10.4.5",
     "chromatic": "^6.24.1",
+    "eslint": "8.49.0",
+    "eslint-config-next": "13.4.19",
+    "eslint-plugin-no-conditional-literals-in-jsx": "file:eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx",
     "postcss": "^8.4.13",
     "storybook": "^7.3.2",
     "storybook-addon-mock": "^4.2.1",

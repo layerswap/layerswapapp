@@ -12,7 +12,7 @@ const AverageCompletionTime: FC<AverageCompletionTimeProps> = ({ time }) => {
     const minutes = averageTimeInMinutes % 60;
 
     if (averageTimeInMinutes > 1 && averageTimeInMinutes < 60) return <span>~{averageTimeInMinutes.toFixed()} minutes</span>
-    else if (averageTimeInMinutes >= 60) return <span>~{hours} {hours > 1 ? 'hours' : 'hour'} {minutes > 0 ? ` ${minutes?.toFixed()} minutes` : ''}</span>
+    else if (averageTimeInMinutes >= 60) return <span><span>~</span>{hours} <span>{hours > 1 ? 'hours' : 'hour'}</span> <span>{minutes > 0 ? ` ${minutes?.toFixed()} minutes` : ''}</span></span>
     else return <span>~1-2 minutes</span>
 }
 

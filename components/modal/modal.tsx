@@ -25,7 +25,7 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
             window.document.body.style.overflow = 'hidden'
         }
         return () => { window.document.body.style.overflow = '' }
-    }, [show])
+    }, [isMobile, show])
 
     return (
         <>

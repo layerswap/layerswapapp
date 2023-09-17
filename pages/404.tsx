@@ -22,7 +22,7 @@ export default function Custom404() {
                                 <div className="text-center">
                                     <p className="text-base font-semibold text-primary">404</p>
                                     <h1 className="mt-2 text-4xl font-bold tracking-tight text-white sm:text-5xl">Page not found.</h1>
-                                    <p className="mt-2 text-base text-primary-text">Sorry, we couldn't find the page you're looking for.</p>
+                                    <p className="mt-2 text-base text-primary-text">Sorry, we couldn&apos;t find the page you&apos;re looking for.</p>
                                 </div>
                             </MessageComponent.Content>
                             <MessageComponent.Buttons>

@@ -1,5 +1,4 @@
 import { Dispatch, SetStateAction, ReactNode, useEffect } from "react";
-import * as PopoverPrimitive from "@radix-ui/react-popover";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { Leaflet } from "./leaflet";
 import { AnimatePresence } from "framer-motion";
@@ -21,14 +20,14 @@ export default function Popover({
     setShow: Dispatch<SetStateAction<boolean>>;
     header?: ReactNode;
 }) {
-    const { isMobile, isDesktop } = useWindowDimensions();
+    const { isMobile } = useWindowDimensions();
 
     useEffect(() => {
         if (isMobile && show) {
             window.document.body.style.overflow = 'hidden'
         }
         return () => { window.document.body.style.overflow = '' }
-    }, [show])
+    }, [isMobile, show])
 
     return (
         <>

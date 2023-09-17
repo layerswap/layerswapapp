@@ -23,7 +23,7 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
                                         Sorry, but we were unable to complete this request. We are informed, and are now investigating the issue.
                                     </p>
                                     <p>
-                                        Please try again. If the issue keeps happening, <span className="underline cursor-pointer text-primary "><ContactSupport>contact our support team.</ContactSupport></span>
+                                        <span>Please try again. If the issue keeps happening,&nbsp;</span><span className="underline cursor-pointer text-primary "><ContactSupport>contact our support team.</ContactSupport></span>
                                     </p>
                                 </MessageComponent.Description>
                             </MessageComponent.Content>
