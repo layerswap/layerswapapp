@@ -1,4 +1,4 @@
-import React, { forwardRef, ReactNode, useImperativeHandle, useState } from "react";
+import React, { forwardRef, ReactNode, useCallback, useImperativeHandle, useState } from "react";
 import { useSwipeable } from "react-swipeable";
 
 
@@ -25,18 +25,18 @@ export type CarouselRef = {
     hasNext: boolean;
 };
 
-const Carousel = forwardRef<CarouselRef, CarouselProps>((props, ref) => {
+const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel(props, ref) {
     const [activeIndex, setActiveIndex] = useState(0);
     const [paused, setPaused] = useState(false);
     const children: any = props.children
-    const updateIndex = (newIndex) => {
+    const updateIndex = useCallback((newIndex) => {
         props.onLast(false)
         if (newIndex >= 0 && newIndex <= React.Children.count(children) - 1) {
             setActiveIndex(newIndex);
         }
         if (newIndex >= React.Children.count(children) - 1)
             props.onLast(true)
-    };
+    }, [children, props]);
 
     useImperativeHandle(ref, () => ({
         next: () => {
@@ -44,21 +44,7 @@ const Carousel = forwardRef<CarouselRef, CarouselProps>((props, ref) => {
         },
         hasNext: activeIndex < React.Children.count(children) - 1
 
-    }), [activeIndex]);
-
-    // useEffect(() => {
-    //     const interval = setInterval(() => {
-    //         if (!paused) {
-    //             updateIndex(activeIndex + 1);
-    //         }
-    //     }, 3000);
-
-    //     return () => {
-    //         if (interval) {
-    //             clearInterval(interval);
-    //         }
-    //     };
-    // });
+    }), [activeIndex, children, updateIndex]);
 
     const handlers = useSwipeable({
         onSwipedLeft: () => updateIndex(activeIndex + 1),

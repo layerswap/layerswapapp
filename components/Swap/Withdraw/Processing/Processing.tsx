@@ -70,19 +70,19 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         "input_transfer": {
             upcoming: {
                 name: 'Waiting for your transfer',
-                description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
+                description: <span><span>Estimated time:&nbsp;</span><span className='text-white'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
             },
             current: {
                 name: 'Processing your deposit',
                 description: <div>
                     <span>
-                        Waiting for confirmations
+                        <span>Waiting for confirmations</span>
                         {swapInputTransaction && swapInputTransaction.confirmations && (
                             <span className="text-white ml-1">
-                                {swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations
+                                <span>{swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations
                                     ? swapInputTransaction.max_confirmations
-                                    : swapInputTransaction.confirmations}
-                                /{swapInputTransaction.max_confirmations}
+                                    : swapInputTransaction.confirmations}</span>
+                                <span>/</span>{swapInputTransaction.max_confirmations}
                             </span>
                         )}
                     </span>
@@ -122,11 +122,11 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         "output_transfer": {
             upcoming: {
                 name: `Sending ${destinationNetworkCurrency?.name} to your address`,
-                description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
+                description: <span><span>Estimated time:&nbsp;</span><span className='text-white'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
             },
             current: {
                 name: `Sending ${destinationNetworkCurrency?.name} to your address`,
-                description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
+                description: <span><span>Estimated time:&nbsp;</span><span className='text-white'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
             },
             complete: {
                 name: `${swapOutputTransaction?.amount} ${swap?.destination_network_asset} was sent to your address`,
@@ -164,11 +164,11 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         "refuel": {
             upcoming: {
                 name: `Sending ${nativeCurrency?.asset} to your address`,
-                description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
+                description: <span><span>Estimated time:&nbsp;</span><span className='text-white'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
             },
             current: {
                 name: `Sending ${nativeCurrency?.asset} to your address`,
-                description: <span>Estimated time: <span className='text-white'>less than {(swap?.source_exchange || isStarknet) ? '10' : '3'} minutes</span></span>
+                description: <span><span>Estimated time:&nbsp;</span><span className='text-white'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
             },
             complete: {
                 name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your address`,

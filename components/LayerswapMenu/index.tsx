@@ -23,7 +23,7 @@ import IconButton from "../buttons/iconButton";
 import YoutubeLogo from "../icons/YoutubeLogo";
 import { shortenEmail } from '../utils/ShortenAddress';
 
-export default function () {
+export default function LayerswapMenu() {
     const { email, userType, userId } = useAuthState()
     const { setUserType } = useAuthDataUpdate()
     const router = useRouter();
@@ -267,7 +267,7 @@ export default function () {
                                     className="menu-link flex rounded-t-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-primary-text hover:text-white"
                                 >
                                     <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Bell className="h-5 w-5" strokeWidth={3} /></div>
-                                    <p>We're live on Base!</p>
+                                    <p>We&apos;re live on Base!</p>
                                     <ChevronRight className="h-4 w-4 absolute right-3" />
                                 </Link>
                                 <Popover

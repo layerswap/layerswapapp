@@ -14,11 +14,13 @@ import { FC, useCallback } from "react"
 
 
 export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { isButton?: boolean, isMobile?: boolean, isConnected?: boolean }) => {
+
+    const { connector } = useAccount()
+
     return <ConnectButton.Custom>
         {({ openConnectModal, account, mounted, chain, openAccountModal, openChainModal }) => {
             const connected = !!(mounted && account && chain)
-            const { connector } = useAccount()
-            const handleClick = useCallback(() => {
+            const handleClick = () => {
                 if (chain?.unsupported) {
                     return openChainModal()
                 } else if (connected) {
@@ -26,7 +28,7 @@ export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { i
                 } else {
                     openConnectModal()
                 }
-            }, [openConnectModal, openChainModal, openAccountModal, connected, chain])
+            }
 
             return <button onClick={handleClick} type="button" className={`-mx-2 p-1.5 justify-self-start text-primary-text hover:bg-secondary-500 hover:text-white focus:outline-none inline-flex rounded-lg items-center`}>
                 {connected ?
@@ -50,11 +52,12 @@ export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { i
 }
 
 export const MenuRainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { isButton?: boolean, isMobile?: boolean, isConnected?: boolean }) => {
+    const { connector } = useAccount()
+    
     return <ConnectButton.Custom>
         {({ openConnectModal, account, mounted, chain, openAccountModal, openChainModal }) => {
             const connected = !!(mounted && account && chain)
-            const { connector } = useAccount()
-            const handleClick = useCallback(() => {
+            const handleClick = () => {
                 if (chain?.unsupported) {
                     return openChainModal()
                 } else if (connected) {
@@ -62,7 +65,7 @@ export const MenuRainbowKitConnectWallet = ({ isButton, isMobile, isConnected }:
                 } else {
                     openConnectModal()
                 }
-            }, [openConnectModal, openChainModal, openAccountModal, connected, chain])
+            }
 
             return <button onClick={handleClick} type="button" className={`${!isMobile ? "h-24 w-24" : "h-20 w-14"} mx-2 w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
                 {connected ?

@@ -235,7 +235,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                             <ClickTooltip text={`You will get a small amount of ${destination_native_currency} that you can use to pay for gas fees.`} />
                                         </p>
                                         <p className="font-light text-xs">
-                                            Get <span className="font-semibold">{destination_native_currency}</span> to pay fees in {values.to?.display_name}
+                                            <span>Get&nbsp;</span><span className="font-semibold">{destination_native_currency}</span><span>&nbsp;to pay fees in&nbsp;</span>{values.to?.display_name}
                                         </p>
                                     </div>
                                 </div>
@@ -247,7 +247,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                             //TODO refactor
                             GetNetworkCurrency(destination, asset)?.status == 'insufficient_liquidity' &&
                             <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal">We're experiencing delays for transfers of {values?.currency?.asset} to {values?.to?.display_name}. Estimated arrival time can take up to 2 hours.</span>
+                                <span className="font-normal">We&apos;re experiencing delays for transfers of {values?.currency?.asset} to {values?.to?.display_name}. Estimated arrival time can take up to 2 hours.</span>
                             </WarningMessage>
                         }
                         {

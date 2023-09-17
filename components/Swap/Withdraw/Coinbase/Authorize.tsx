@@ -51,7 +51,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const handleTransferMannually = useCallback(() => {
         setWithdrawType(WithdrawType.Manually)
         onDoNotConnect()
-    }, [])
+    }, [onDoNotConnect, setWithdrawType])
 
 
     const checkShouldStartPolling = useCallback(() => {
@@ -83,7 +83,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                 onAuthorized()
             }
         }
-    }, [authorizedAmount, minimalAuthorizeAmount])
+    }, [authorizedAmount, minimalAuthorizeAmount, onAuthorized])
 
     const handleConnect = useCallback(() => {
         try {
@@ -100,7 +100,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
         catch (e) {
             toast.error(e.message)
         }
-    }, [oauth_authorize_url, carouselRef, carouselFinished, query, swap])
+    }, [carouselFinished, localConfigs.alreadyFamiliarWithCoinbaseConnect, swap?.id, oauth_authorize_url, query])
 
     const exchange_name = exchange?.display_name
 
@@ -149,7 +149,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                         </div>
                 }
                 <div className="flex font-normal text-sm text-primary-text">
-                    <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
+                    <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can&apos;t initiate a withdrawal without your explicit confirmation.</label>
                 </div>
             </Widget.Content>
             <Widget.Footer sticky={stickyFooter}>
@@ -170,7 +170,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                                     checked={localConfigs.alreadyFamiliarWithCoinbaseConnect}
                                 />
                                 <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
-                                    I'm already familiar with the process.
+                                    I&apos;m already familiar with the process.
                                 </label>
                             </div>
                     }
@@ -179,7 +179,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                             carouselFinished ? "Connect" : "Next"
                         }
                     </SubmitButton>
-                    <p className='text-sm mt-2 font-lighter text-primary-text text-left'>Don't want to connect Coinbase account? <span onClick={handleTransferMannually} className='cursor-pointer underline'>Transfer manually</span></p>
+                    <p className='text-sm mt-2 font-lighter text-primary-text text-left'><span>Don&apos;t want to connect Coinbase account?&nbsp;</span><span onClick={handleTransferMannually} className='cursor-pointer underline'>Transfer manually</span></p>
                 </div>
             </Widget.Footer>
         </Widget>

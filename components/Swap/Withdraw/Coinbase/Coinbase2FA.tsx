@@ -97,7 +97,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
                         Transfer failed
                     </MessageComponent.Header>
                     <MessageComponent.Description>
-                        This transfer can't be processed because you don't have enough available funds on Coinbase.
+                        This transfer can&apos;t be processed because you don&apos;t have enough available funds on Coinbase.
                     </MessageComponent.Description>
                 </MessageComponent.Content>
                 <MessageComponent.Buttons>
@@ -116,7 +116,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
                         Transfer failed
                     </MessageComponent.Header>
                     <MessageComponent.Description>
-                        This transfer can't be processed because your funds might be on hold on Coinbase. This usually happens when you want to cash out immediately after completeing a purchare or adding cash.
+                        This transfer can&apos;t be processed because your funds might be on hold on Coinbase. This usually happens when you want to cash out immediately after completeing a purchare or adding cash.
                     </MessageComponent.Description>
                 </MessageComponent.Content>
                 <MessageComponent.Buttons>
@@ -175,7 +175,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
                                     <TimerWithContext seconds={120}
                                         waitingComponent={(remainingTime) => (
                                             <span>
-                                                Resend in
+                                                <span>Resend in</span>
                                                 <span className='ml-1'>
                                                     {remainingTime}
                                                 </span>
