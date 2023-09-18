@@ -44,7 +44,7 @@ function RewardComponent() {
     const leaderboard = leaderboardData?.data
     const payouts = payoutsData?.data
 
-    const next = new Date('Mon Sep 18 2023 23:00:00 GMT+0400')
+    const next = new Date(rewards?.next_airdrop_date)
     const now = new Date()
     const difference_in_days = Math.floor(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600 * 24)))
     const difference_in_hours = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600) - (difference_in_days * 24)))
