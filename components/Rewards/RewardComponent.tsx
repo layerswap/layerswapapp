@@ -44,8 +44,8 @@ function RewardComponent() {
     const rewards = rewardsData?.data
     const leaderboard = leaderboardData?.data
     const payouts = payoutsData?.data
-    const totalBudget = campaign?.total_budget ?? 1000
-    const DistributedAmount = ((campaign?.distributed_amount / campaign?.total_budget) * 100) || 100 / 1000 * 100
+    const totalBudget = campaign?.total_budget
+    const DistributedAmount = ((campaign?.distributed_amount / campaign?.total_budget) * 100)
 
     const next = new Date(rewards?.next_airdrop_date)
     const now = new Date()
