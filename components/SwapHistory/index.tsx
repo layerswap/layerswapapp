@@ -29,7 +29,6 @@ function TransactionsHistory() {
   const router = useRouter();
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
-  const canCompleteCancelSwap = selectedSwap?.status == SwapStatus.UserTransferPending
   const [showAllSwaps, setShowAllSwaps] = useState(false)
   const [showToggleButton, setShowToggleButton] = useState(false)
 
@@ -285,7 +284,7 @@ function TransactionsHistory() {
                     <div className="mt-2">
                       <SwapDetails id={selectedSwap?.id} />
                       {
-                        canCompleteCancelSwap &&
+                        selectedSwap?.status == SwapStatus.UserTransferPending || selectedSwap?.status === SwapStatus.LsTransferPending &&
                         <div className="text-white text-sm mt-6 space-y-3">
                           <div className="flex flex-row text-white text-base space-x-2">
                             <SubmitButton
@@ -299,6 +298,25 @@ function TransactionsHistory() {
                               }
                             >
                               View swap
+                            </SubmitButton>
+                          </div>
+                        </div>
+                      }
+                      {
+                        selectedSwap?.status == SwapStatus.Completed &&
+                        <div className="text-white text-sm mt-6 space-y-3">
+                          <div className="flex flex-row text-white text-base space-x-2">
+                            <SubmitButton
+                              text_align="center"
+                              onClick={() => router.push(`/explorer/${selectedSwap?.transactions?.find(t => t?.type === TransactionType.Input)?.transaction_id}`)}
+                              isDisabled={false}
+                              isSubmitting={false}
+                              icon={
+                                <ExternalLink
+                                  className='h-5 w-5' />
+                              }
+                            >
+                              View in explorer
                             </SubmitButton>
                           </div>
                         </div>
