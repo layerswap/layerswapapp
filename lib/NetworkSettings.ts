@@ -99,7 +99,8 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZksyncEraMainnet] = {
             ChainId: 324,
-            BaseFeeMultiplier: 3
+            BaseFeeMultiplier: 1.35,
+            DefaultPriorityFee: 0
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZkspaceMainnet] = {
             ChainId: 13,
@@ -118,7 +119,8 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumMainnet] = {
             ChainId: 42161,
             AccountExplorerTemplate: 'https://arbiscan.io/address/{0}',
-            DefaultPriorityFee: 0
+            DefaultPriorityFee: 0,
+            BaseFeeMultiplier: 1.35
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumNova] = {
             ChainId: 42170,
@@ -155,6 +157,7 @@ export default class NetworkSettings {
             ChainId: 1,
             AccountExplorerTemplate: 'https://etherscan.io/address/{0}',
             DefaultPriorityFee: 0.1,
+            BaseFeeMultiplier: 1.36
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BobaMainnet] = {
             ChainId: 288,

@@ -284,7 +284,7 @@ function TransactionsHistory() {
                     <div className="mt-2">
                       <SwapDetails id={selectedSwap?.id} />
                       {
-                        selectedSwap?.status == SwapStatus.UserTransferPending || selectedSwap?.status === SwapStatus.LsTransferPending &&
+                        (selectedSwap?.status == SwapStatus.UserTransferPending || selectedSwap?.status === SwapStatus.LsTransferPending) &&
                         <div className="text-white text-sm mt-6 space-y-3">
                           <div className="flex flex-row text-white text-base space-x-2">
                             <SubmitButton
