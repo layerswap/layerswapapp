@@ -20,6 +20,7 @@ import Modal from "../modal/modal";
 import SpinIcon from "../icons/spinIcon";
 import WalletIcon from "../icons/WalletIcon";
 import Link from "next/link";
+import { Progress } from "../ProgressBar";
 
 function RewardComponent() {
 
@@ -43,6 +44,8 @@ function RewardComponent() {
     const rewards = rewardsData?.data
     const leaderboard = leaderboardData?.data
     const payouts = payoutsData?.data
+    const totalBudget = campaign?.total_budget
+    const DistributedAmount = ((campaign?.distributed_amount / campaign?.total_budget) * 100)
 
     const next = new Date(rewards?.next_airdrop_date)
     const now = new Date()
@@ -103,9 +106,18 @@ function RewardComponent() {
                                                                 width="40"
                                                                 loading="eager"
                                                                 className="rounded-md object-contain" />
-                                                        </div>
-                                                        <p className="font-bold text-xl text-left flex items-center">{network?.display_name}<span>&nbsp;Rewards&nbsp;</span><ClickTooltip text={<span><span>Onboarding incentives that are earned by transferring to&nbsp;</span>{network?.display_name}<span>.&nbsp;</span><a target='_blank' href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></span>} /></p>
+                                                        </div>  <p className="font-bold text-xl text-left flex items-center">{network?.display_name} Rewards </p>
                                                     </div>
+                                                    <p className="text-primary-text">
+                                                        <span>
+                                                            <span>Onboarding incentives that are earned by transferring to&nbsp;</span>{network?.display_name}<span>.&nbsp;</span>
+                                                            <a
+                                                                target='_blank'
+                                                                href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards"
+                                                                className="text-white underline hover:no-underline decoration-white cursor-pointer"
+                                                            >Learn more</a>
+                                                        </span>
+                                                    </p>
                                                     <div className="bg-secondary-700 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
                                                         {!isCampaignEnded && <BackgroundField header={<span className="flex justify-between"><span className="flex items-center"><span>Pending Earnings&nbsp;</span><ClickTooltip text={`${campaign?.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
                                                             <div className="flex justify-between w-full text-2xl">
@@ -154,6 +166,22 @@ function RewardComponent() {
                                                         </BackgroundField>
                                                     </div>
                                                 </div>
+                                                {!isCampaignEnded && <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
+                                                    <BackgroundField header={
+                                                        <>
+                                                            <p className="flex items-center"><span>{campaign?.asset} pool</span>
+                                                                <ClickTooltip text={`The amount of ${campaign?.asset} to be distributed during this round of the campaign.`} />
+                                                            </p>
+                                                        </>
+                                                    } withoutBorder>
+                                                        <div className="flex flex-col w-full gap-2">
+                                                            <Progress value={DistributedAmount === Infinity ? 0 : DistributedAmount} />
+                                                            <div className="flex justify-between w-full font-semibold text-sm ">
+                                                                <div className="text-primary"><span className="text-white">{campaign?.distributed_amount.toFixed(0)}</span> / {totalBudget} {campaign?.asset}</div>
+                                                            </div>
+                                                        </div>
+                                                    </BackgroundField>
+                                                </div>}
                                                 {
                                                     payouts.length > 0 &&
                                                     <div className="space-y-1">
