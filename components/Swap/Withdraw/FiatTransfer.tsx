@@ -5,7 +5,7 @@ import { PublishedSwapTransactionStatus } from "../../../lib/layerSwapApiClient"
 
 const FiatTransfer: FC = () => {
     const { swap } = useSwapDataState()
-    const stripeSessionId = swap?.metadata?.['STRIPE:SessionId']
+    const stripeSessionId = swap?.fiat_session_id
     const stripeOnrampPromise = loadStripeOnramp(process.env.NEXT_PUBLIC_STRIPE_SECRET);
 
     return <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500'>
@@ -17,7 +17,7 @@ const FiatTransfer: FC = () => {
 
 const CryptoElementsContext = createContext(null);
 
-export const CryptoElements: FC<{ stripeOnramp: Promise<StripeOnramp> }> = ({
+export const CryptoElements: FC<{ stripeOnramp: Promise<StripeOnramp>, children?: React.ReactNode }> = ({
     stripeOnramp,
     children
 }) => {

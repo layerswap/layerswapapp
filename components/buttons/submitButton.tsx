@@ -16,7 +16,8 @@ export class SubmitButtonProps {
     size?: buttonSize = 'medium';
     text_align?: text_align = 'center'
     button_align?: button_align = 'left';
-    className?: string
+    className?: string;
+    children?: React.ReactNode;
 }
 
 function constructClassNames(size: buttonSize, buttonStyle: buttonStyle) {

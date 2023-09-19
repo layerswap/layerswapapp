@@ -1,16 +1,21 @@
 import KnownInternalNames from "./knownIds";
 
+export enum DepositType {
+    Manual = 'manual',
+    Wallet = 'wallet'
+}
+
+export enum GasCalculation {
+    Classic = 'classic',
+    OptimismType = 'optimismType'
+}
+
 type NetworkItemSettings = {
     [network: string]: {
         apiUri: string,
         appUri?: string,
         linkUri?: string
     }
-}
-
-export enum DepositType {
-    Manual = 'manual',
-    Wallet = 'wallet'
 }
 
 const destinationOrder = [
@@ -56,27 +61,19 @@ const sourceOrder = [
 ];
 
 export default class NetworkSettings {
-    ConfirmationWarningMessage?: string;
-    UserGuideUrlForDesktop?: string;
-    UserGuideUrlForMobile?: string;
-    WithdrawalWarningMessage?: string;
     ChainId?: number | string;
-    EstimatedTransferTime?: number;
+    DefaultPriorityFee?: number;
+    BaseFeeMultiplier?: number;
     AddressPlaceholder?: string;
     OrderInDestination?: number;
     OrderInSource?: number;
     AccountExplorerTemplate?: string;
-    Refuel?: boolean = false;
-    DepositType?: DepositType = DepositType.Manual
+    GasCalculationType?: GasCalculation
 
     public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean, crossChain: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
 
     public static ImmutableXSettings: NetworkItemSettings
-
-    public static RhinoFiSettings: NetworkItemSettings
-
-    public static DydxSettings: NetworkItemSettings
 
     private static _isInitialized = false;
     public static Initialize() {
@@ -88,8 +85,6 @@ export default class NetworkSettings {
         NetworkSettings.ForceDisable = JSON.parse(process.env.NEXT_PUBLIC_NETWORK_FORCE_SETTINGS || "{}")
 
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.LoopringMainnet] = {
-            UserGuideUrlForDesktop: "https://docs.layerswap.io/user-docs/using-layerswap/withdrawals/loopring",
-            ConfirmationWarningMessage: "You can now transfer funds directly from the GameStop wallet.",
             AccountExplorerTemplate: 'https://explorer.loopring.io/account/{0}',
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumRinkeby] = {
@@ -104,6 +99,7 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZksyncEraMainnet] = {
             ChainId: 324,
+            BaseFeeMultiplier: 3
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZkspaceMainnet] = {
             ChainId: 13,
@@ -122,10 +118,12 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumMainnet] = {
             ChainId: 42161,
             AccountExplorerTemplate: 'https://arbiscan.io/address/{0}',
+            DefaultPriorityFee: 0
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumNova] = {
             ChainId: 42170,
             AccountExplorerTemplate: 'https://nova.arbiscan.io/address/{0}',
+            DefaultPriorityFee: 0
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumGoerli] = {
             ChainId: 421613,
@@ -145,6 +143,10 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OptimismMainnet] = {
             ChainId: 10,
             AccountExplorerTemplate: 'https://optimistic.etherscan.io/address/{0}',
+            GasCalculationType: GasCalculation.OptimismType
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.OptimismGoerli] = {
+            GasCalculationType: GasCalculation.OptimismType
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.AstarMainnet] = {
             ChainId: 592,
@@ -152,6 +154,7 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumMainnet] = {
             ChainId: 1,
             AccountExplorerTemplate: 'https://etherscan.io/address/{0}',
+            DefaultPriorityFee: 0.1,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BobaMainnet] = {
             ChainId: 288,
@@ -171,13 +174,11 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BNBChainMainnet] = {
             AccountExplorerTemplate: 'https://bscscan.com/address/{0}',
-            Refuel: true,
             ChainId: 56
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetMainnet] = {
             AccountExplorerTemplate: 'https://starkscan.co/contract/{0}',
             ChainId: "0x534e5f4d41494e",
-            DepositType: DepositType.Wallet
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetGoerli] = {
             AccountExplorerTemplate: 'https://goerli.voyager.online/contract/{0}',
@@ -206,21 +207,33 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.LineaMainnet] = {
             ChainId: 59144,
         };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.BaseTestnet] = {
+            GasCalculationType: GasCalculation.OptimismType
+        };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BaseMainnet] = {
             ChainId: 8453,
+            GasCalculationType: GasCalculation.OptimismType
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.PGNMainnet] = {
             ChainId: 424,
+            GasCalculationType: GasCalculation.OptimismType
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.PGNTestnet] = {
+            GasCalculationType: GasCalculation.OptimismType
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.MantleMainnet] = {
             ChainId: 5000,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.AvalancheMainnet] = {
             ChainId: 43114,
+            DefaultPriorityFee: 1.5
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.PolygonZkMainnet] = {
             ChainId: 1101,
             AccountExplorerTemplate: "https://zkevm.polygonscan.com/address//{0}"
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZoraMainnet] = {
+            GasCalculationType: GasCalculation.OptimismType
         };
 
         NetworkSettings.ImmutableXSettings = {
@@ -231,23 +244,6 @@ export default class NetworkSettings {
             [KnownInternalNames.Networks.ImmutableXGoerli]: {
                 apiUri: "https://api.sandbox.x.immutable.com/v1",
                 linkUri: "https://link.sandbox.x.immutable.com"
-            }
-        }
-        NetworkSettings.RhinoFiSettings = {
-            [KnownInternalNames.Networks.RhinoFiMainnet]: {
-                apiUri: "https://api.rhino.fi/v1/trading/registrations",
-                appUri: "https://app.rhinofi.com/",
-            }
-        }
-
-        NetworkSettings.DydxSettings = {
-            [KnownInternalNames.Networks.DydxMainnet]: {
-                apiUri: "https://api.dydx.exchange/v3/users/exists?ethereumAddress=",
-                appUri: "https://trade.dydx.exchange/",
-            },
-            [KnownInternalNames.Networks.DydxGoerli]: {
-                apiUri: "https://api.stage.dydx.exchange/v3/users/exists?ethereumAddress=",
-                appUri: "https://trade.stage.dydx.exchange/",
             }
         }
 

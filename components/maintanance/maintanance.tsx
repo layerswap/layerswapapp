@@ -14,7 +14,7 @@ function MaintananceContent(props) {
     useEffect(()=>{
         boot()
         updateWithProps()
-    },[])
+    })
     
     const twitterLogo = <TwitterLogo className="text-primary-text h-6 w-6" />
     return (
@@ -24,9 +24,9 @@ function MaintananceContent(props) {
                 <div className="flex flex-col justify-center space-y-12 p-10 text-primary-text md:min-h-fit min-h-[400px]">
                     <h1 className="text-xl tracking-tight text-gray-200">
                         <p className="mb-4 text-primary-text">
-                            We're upgrading our systems and infrastructure to give you the best experience yet. 
+                            We&apos;re upgrading our systems and infrastructure to give you the best experience yet. 
                         </p>
-                        <span className="block font-bold text-3xl xl:inline">We'll be back at 19:00 UTC</span>
+                        <span className="block font-bold text-3xl xl:inline">We&apos;ll be back at 16:00 UTC</span>
                         <p className="mt-4 text-primary-text">
                             Any pending swaps will be completed after maintenance.
                         </p>

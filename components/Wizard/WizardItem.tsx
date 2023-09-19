@@ -21,7 +21,7 @@ const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent, f
             setGoBack(GoBack)
             setPositionPercent(PositionPercent)
         }
-    }, [currentStepName, GoBack, PositionPercent, StepName])
+    }, [currentStepName, GoBack, PositionPercent, StepName, setGoBack, setPositionPercent])
 
     return currentStepName === StepName ?
         <motion.div

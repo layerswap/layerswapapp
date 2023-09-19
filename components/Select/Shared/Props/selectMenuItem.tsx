@@ -11,14 +11,16 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
         disabledReason: LayerDisabledReason | CurrencyDisabledReason | null
     };
     group?: string;
+    details?: string;
     baseObject: T;
-    constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, group?: string) {
+    constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, group?: string, details?: string) {
         this.baseObject = baseObject;
         this.id = id;
         this.name = name;
         this.order = order;
         this.imgSrc = imgSrc;
         this.group = group;
+        this.details = details
         this.isAvailable = {
             value: true,
             disabledReason: null
@@ -35,4 +37,5 @@ export interface ISelectMenuItem {
         value: boolean;
         disabledReason: LayerDisabledReason | CurrencyDisabledReason | null
     };
+    details?: string;
 }

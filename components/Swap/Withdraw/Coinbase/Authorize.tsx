@@ -1,6 +1,5 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
-import useSWR from 'swr';
 import { useQueryState } from '../../../../context/query';
 import { useSettingsState } from '../../../../context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
@@ -8,10 +7,9 @@ import { useInterval } from '../../../../hooks/useInterval';
 import { Configs, usePersistedState } from '../../../../hooks/usePersistedState';
 import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
 import { parseJwt } from '../../../../lib/jwtParser';
-import LayerSwapApiClient, { UserExchangesData, WithdrawType } from '../../../../lib/layerSwapApiClient';
+import { WithdrawType } from '../../../../lib/layerSwapApiClient';
 import { OpenLink } from '../../../../lib/openLink';
 import TokenService from '../../../../lib/TokenService';
-import { ApiResponse } from '../../../../Models/ApiResponse';
 import SubmitButton from '../../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../../Carousel';
 import Widget from '../../../Wizard/Widget';
@@ -20,7 +18,7 @@ import KnownInternalNames from '../../../../lib/knownIds';
 import { Layer } from '../../../../Models/Layer';
 
 type Props = {
-    onAuthorized: (authorizedExchange: UserExchangesData) => void,
+    onAuthorized: () => void,
     onDoNotConnect: () => void,
     stickyFooter: boolean,
     hideHeader?: boolean,
@@ -50,14 +48,10 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount))
 
-    const layerswapApiClient = new LayerSwapApiClient()
-    const exchange_accounts_endpoint = `/exchange_accounts`
-    const { data: exchange_accounts } = useSWR<ApiResponse<UserExchangesData[]>>(authorizedAmount ? exchange_accounts_endpoint : null, layerswapApiClient.fetcher)
-
     const handleTransferMannually = useCallback(() => {
         setWithdrawType(WithdrawType.Manually)
         onDoNotConnect()
-    }, [])
+    }, [onDoNotConnect, setWithdrawType])
 
 
     const checkShouldStartPolling = useCallback(() => {
@@ -82,17 +76,14 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     )
 
     useEffect(() => {
-        if (exchange_accounts && authorizedAmount) {
-            const authorizedExchange = exchange_accounts?.data?.find(e => e.exchange === exchange?.internal_name && e.type === 'authorize')
-            if (authorizedExchange) {
-                if (Number(authorizedAmount) < minimalAuthorizeAmount)
-                    toast.error("You did not authorize enough")
-                else {
-                    onAuthorized(authorizedExchange)
-                }
+        if (authorizedAmount) {
+            if (Number(authorizedAmount) < minimalAuthorizeAmount)
+                toast.error("You did not authorize enough")
+            else {
+                onAuthorized()
             }
         }
-    }, [exchange_accounts, authorizedAmount, minimalAuthorizeAmount])
+    }, [authorizedAmount, minimalAuthorizeAmount, onAuthorized])
 
     const handleConnect = useCallback(() => {
         try {
@@ -102,14 +93,14 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
             }
             const access_token = TokenService.getAuthData()?.access_token
             const { sub } = parseJwt(access_token) || {}
-            const encoded = btoa(JSON.stringify({ UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
-            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, swapId: swap?.id, query: query })
+            const encoded = btoa(JSON.stringify({ SwapId: swap?.id, UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
+            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, query: query })
             setAuthWindow(authWindow)
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [oauth_authorize_url, carouselRef, carouselFinished, query, swap])
+    }, [carouselFinished, localConfigs.alreadyFamiliarWithCoinbaseConnect, swap?.id, oauth_authorize_url, query])
 
     const exchange_name = exchange?.display_name
 
@@ -158,7 +149,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                         </div>
                 }
                 <div className="flex font-normal text-sm text-secondary-text">
-                    <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
+                    <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can&apos;t initiate a withdrawal without your explicit confirmation.</label>
                 </div>
             </Widget.Content>
             <Widget.Footer sticky={stickyFooter}>
@@ -179,7 +170,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                                     checked={localConfigs.alreadyFamiliarWithCoinbaseConnect}
                                 />
                                 <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-primary-text">
-                                    I'm already familiar with the process.
+                                    I&apos;m already familiar with the process.
                                 </label>
                             </div>
                     }
@@ -188,10 +179,10 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                             carouselFinished ? "Connect" : "Next"
                         }
                     </SubmitButton>
-                    <p className='text-sm mt-2 font-lighter text-secondary-text text-left'>Don't want to connect Coinbase account? <span onClick={handleTransferMannually} className='cursor-pointer underline'>Transfer manually</span></p>
-                </div>
-            </Widget.Footer>
-        </Widget>
+                    <p className='text-sm mt-2 font-lighter text-secondary-text text-left'><span>Don&apos;t want to connect Coinbase account?&nbsp;</span><span onClick={handleTransferMannually} className='cursor-pointer underline'>Transfer manually</span></p>
+                </div >
+            </Widget.Footer >
+        </Widget >
     )
 }
 

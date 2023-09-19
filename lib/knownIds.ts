@@ -50,6 +50,8 @@ export default class KnownInternalNames {
 
         public static readonly OptimismMainnet: string = "OPTIMISM_MAINNET";
 
+        public static readonly OptimismGoerli: string = "OPTIMISM_GOERLI";
+
         public static readonly OptimismKovan: string = "OPTIMISM_KOVAN";
 
         public static readonly RoninMainnet: string = "RONIN_MAINNET";
@@ -104,6 +106,8 @@ export default class KnownInternalNames {
 
         public static readonly SolanaTestnet: string = "SOLANA_TESTNET";
 
+        public static readonly SolanaDevnet: string = "SOLANA_DEVNET";
+
         public static readonly SorareStage: string = "SORARE_MAINNET";
 
         public static readonly KCCMainnet: string = "KCC_MAINNET";
@@ -116,11 +120,17 @@ export default class KnownInternalNames {
 
         public static readonly BaseMainnet: string = "BASE_MAINNET";
 
+        public static readonly BaseTestnet: string = "BASE_TESTNET";
+
         public static readonly AvalancheMainnet: string = "AVAX_MAINNET";
 
         public static readonly PGNMainnet: string = "PGN_MAINNET";
 
+        public static readonly PGNTestnet: string = "PGN_TESTNET";
+
         public static readonly MantleMainnet: string = "MANTLE_MAINNET";
+
+        public static readonly ZoraMainnet: string = "ZORA_MAINNET";
 
     }
 

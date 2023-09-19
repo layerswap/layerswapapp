@@ -6,7 +6,7 @@ import { LayerSwapSettings } from "./LayerSwapSettings";
 import { Partner } from "./Partner";
 
 export class LayerSwapAppSettings extends LayerSwapSettings {
-    constructor(settings: LayerSwapSettings) {
+    constructor(settings: LayerSwapSettings | any) {
         super();
         Object.assign(this, settings)
 
@@ -16,19 +16,25 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
     layers?: Layer[]
 
     resolveImgSrc = (item: Layer | Currency | Pick<Layer, 'internal_name'> | { asset: string } | Partner) => {
+
         if (!item) {
             return "/images/logo_placeholder.png";
         }
+
+        const basePath = new URL(this.discovery.resource_storage_url);
+
         // Shitty way to check for partner
-        else if ((item as Partner).is_wallet != undefined) {
-            return `${this.discovery.resource_storage_url}/layerswap/partners/${(item as Partner)?.organization_name?.toLowerCase()}.png`
+        if ((item as Partner).is_wallet != undefined) {
+            basePath.pathname = `/layerswap/partners/${(item as Partner)?.organization_name?.toLowerCase()}.png`;
         }
         else if ((item as any)?.internal_name != undefined) {
-            return `${this.discovery.resource_storage_url}/layerswap/networks/${(item as any)?.internal_name?.toLowerCase()}.png`;
+            basePath.pathname = `/layerswap/networks/${(item as any)?.internal_name?.toLowerCase()}.png`;
         }
         else if ((item as any)?.asset != undefined) {
-            return `${this.discovery.resource_storage_url}/layerswap/currencies/${(item as any)?.asset?.toLowerCase()}.png`;
+            basePath.pathname = `/layerswap/currencies/${(item as any)?.asset?.toLowerCase()}.png`;
         }
+
+        return basePath.href;
     }
 
     static ResolveLayers(exchanges: Exchange[], networks: CryptoNetwork[]): Layer[] {
@@ -40,7 +46,6 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             authorization_flow: e.authorization_flow,
             type: e.type,
             is_featured: e.is_featured,
-            nodes: e.nodes,
             assets: LayerSwapAppSettings.ResolveExchangeL2Assets(e.currencies, networks)
         }))
         const networkLayers: Layer[] = networks.map((n): Layer =>
@@ -52,8 +57,9 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             native_currency: n.native_currency,
             average_completion_time: n.average_completion_time,
             chain_id: n.chain_id,
-            address_type: n.address_type,
+            type: n.type,
             nodes: n.nodes,
+            metadata: n.metadata,
             is_featured: n?.is_featured,
             assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n)
         }))

@@ -4,7 +4,7 @@ import {
     ConnectButton,
 } from '@rainbow-me/rainbowkit';
 
-const RainbowKit: FC = ({ children }) => {
+const RainbowKit: FC<{ children?: React.ReactNode }> = ({ children }) => {
     return (
         <ConnectButton.Custom>
             {({

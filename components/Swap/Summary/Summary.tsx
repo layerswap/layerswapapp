@@ -13,9 +13,9 @@ import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import useSWR from 'swr'
 import { GetDefaultNetwork } from "../../../helpers/settingsHelper";
-import { NetworkAddressType } from "../../../Models/CryptoNetwork";
 import { useWalletState } from "../../../context/wallet";
 import KnownInternalNames from "../../../lib/knownIds";
+import { NetworkType } from "../../../Models/CryptoNetwork";
 
 type SwapInfoProps = {
     currency: Currency,
@@ -26,13 +26,15 @@ type SwapInfoProps = {
     destinationAddress: string;
     hasRefuel?: boolean;
     refuelAmount?: number;
-    fee: number
+    fee: number,
+    exchange_account_connected: boolean;
+    exchange_account_name?: string;
 }
 
-const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee }) => {
+const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name }) => {
     const { resolveImgSrc, currencies, networks } = useSettingsState()
     const { address: evmAddress } = useAccount();
-    const { starknetAccount, authorizedCoinbaseAccount } = useWalletState()
+    const { starknetAccount, imxAccount } = useWalletState()
     const {
         hideFrom,
         hideTo,
@@ -56,33 +58,37 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     const nativeCurrency = refuelAmount && to?.isExchange === false && currencies.find(c => c.asset === to?.native_currency)
     const truncatedRefuelAmount = hasRefuel && truncateDecimals(refuelAmount, nativeCurrency?.precision)
 
-    const sourceNetworkChainId = networks?.find(n => n.internal_name === from?.internal_name)?.chain_id
-    const sourceAddressType = GetDefaultNetwork(from, currency?.asset)?.address_type
+    const sourceNetworkType = GetDefaultNetwork(from, currency?.asset)?.type
+    const sourceIsImmutableX = from?.internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
+        || from?.internal_name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
 
     let sourceAccountAddress = ""
     if (hideFrom && account) {
         sourceAccountAddress = shortenAddress(account);
     }
-    else if (sourceAddressType === NetworkAddressType.evm && evmAddress && !from?.isExchange && !isNaN(Number(sourceNetworkChainId))) {
+    else if (sourceNetworkType === NetworkType.EVM && evmAddress && !from?.isExchange) {
         sourceAccountAddress = shortenAddress(evmAddress);
     }
-    else if (sourceAddressType === NetworkAddressType.starknet && starknetAccount && !from?.isExchange) {
+    else if (sourceNetworkType === NetworkType.Starknet && starknetAccount && !from?.isExchange) {
         sourceAccountAddress = shortenAddress(starknetAccount?.account?.address);
     }
-    else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && authorizedCoinbaseAccount) {
-        sourceAccountAddress = shortenEmail(authorizedCoinbaseAccount?.note);
+    else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
+        sourceAccountAddress = shortenEmail(exchange_account_name, 10);
+    }
+    else if (sourceIsImmutableX && imxAccount) {
+        sourceAccountAddress = shortenAddress(imxAccount);
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
-    const sourceCurrencyName = networks?.find(n => n.internal_name === from?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset).name || currency.asset
-    const destCurrencyName = networks?.find(n => n.internal_name === to?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset).name || currency.asset
+    const sourceCurrencyName = networks?.find(n => n.internal_name === from?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset).name || currency?.asset
+    const destCurrencyName = networks?.find(n => n.internal_name === to?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset).name || currency?.asset
 
     return (
         <div className="pb-8 border-b border-secondary-500">
             <div className="bg-secondary-700 font-normal rounded-lg flex flex-col border border-secondary-500 w-full relative z-10">
                 <div className="flex items-center justify-between w-full px-3 py-2 border-b border-secondary-500">
-                    <div className="flex items-center gap-2">
-                        <Image src={resolveImgSrc(source)} alt={sourceDisplayName} width={30} height={30} className="rounded-md" />
+                    <div className="flex items-center gap-3">
+                        <Image src={resolveImgSrc(source)} alt={sourceDisplayName} width={36} height={36} className="rounded-md" />
                         <div>
                             <p className="text-secondary-text text-lg leading-5">{sourceDisplayName}</p>
                             {
@@ -92,25 +98,25 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                         </div>
                     </div>
                     <div className="flex flex-col">
-                        <p className="text-primary-text text-lg">{requestedAmount} {sourceCurrencyName}</p>
+                        <p className="text-primary-text text-lg">{truncateDecimals(requestedAmount, currency.precision)} {sourceCurrencyName}</p>
                         <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
                     </div>
                 </div>
                 <ArrowDown className="h-4 w-4 text-secondary-text absolute top-[calc(50%-8px)] left-[calc(50%-8px)]" />
                 <div className="flex items-center justify-between w-full px-3 py-2">
-                    <div className="flex items-center gap-2">
-                        <Image src={resolveImgSrc(destination)} alt={destinationDisplayName} width={30} height={30} className="rounded-md" />
+                    <div className="flex items-center gap-3">
+                        <Image src={resolveImgSrc(destination)} alt={destinationDisplayName} width={36} height={36} className="rounded-md" />
                         <div>
-                            <p className="text-secondary-text text-lg leading-5">{destinationDisplayName}</p>
+                            <p className="text-primary-text text-lg leading-5">{destinationDisplayName}</p>
                             <p className="text-sm text-secondary-text">{shortenAddress(destAddress)}</p>
                         </div>
                     </div>
                     {
-                        fee ?
+                        fee >= 0 ?
                             <div className="flex flex-col justify-end">
-                                <p className="text-primary-text text-lg">{receiveAmount} {destCurrencyName}</p>
+                                <p className="text-primary-text text-lg">{truncateDecimals(receiveAmount, currency.precision)} {destCurrencyName}</p>
                                 <p className="text-secondary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
-                            </div>
+                            </div >
                             :
                             <div className="flex flex-col justify-end">
                                 <div className="h-[18px] my-[5px] w-20 animate-pulse rounded bg-gray-500" />
@@ -118,8 +124,8 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                             </div>
                     }
 
-                </div>
-            </div>
+                </div >
+            </div >
             {
                 refuelAmount &&
                 <div
@@ -133,7 +139,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                     </div>
                 </div>
             }
-        </div>
+        </div >
     )
 }
 

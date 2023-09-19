@@ -9,23 +9,18 @@ import { useSettingsState } from "../../../context/settings";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import KnownInternalNames from "../../../lib/knownIds";
 import BackgroundField from "../../backgroundField";
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource, Fee } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { DepositAddress, DepositAddressSource, DepositType, Fee } from "../../../lib/layerSwapApiClient";
 import SubmitButton from "../../buttons/submitButton";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../../shadcn/select";
 import { BaseL2Asset } from "../../../Models/Layer";
-import { DepositType } from "../../../lib/NetworkSettings";
 import SpinIcon from "../../icons/spinIcon";
-import { parseUnits } from 'viem'
 
 const ManualTransfer: FC = () => {
-    const { layers } = useSettingsState()
     const { swap } = useSwapDataState()
-    const {
-        source_network: source_network_internal_name,
-        destination_network_asset } = swap
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name)
+    const [messageClicked, setMessageClicked] = useState(false)
 
-    const asset = source_network?.assets?.find(currency => currency?.asset === destination_network_asset)
+    const {
+        source_network: source_network_internal_name } = swap
 
     const layerswapApiClient = new LayerSwapApiClient()
     const {
@@ -40,7 +35,7 @@ const ManualTransfer: FC = () => {
     )
 
     let generatedDepositAddress = generatedDeposit?.data?.address
-    const [messageClicked, setMessageClicked] = useState(false)
+    let shouldGenerateAddress = !generatedDepositAddress && messageClicked
 
     const handleCloseNote = useCallback(async () => {
         setMessageClicked(true)
@@ -69,12 +64,12 @@ const ManualTransfer: FC = () => {
                 </SubmitButton>
             </div>
             :
-            <TransferInvoice address={generatedDepositAddress} />
+            <TransferInvoice address={generatedDepositAddress} shouldGenerateAddress={shouldGenerateAddress} />
     )
 
 }
 
-const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
+const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> = ({ address: existingDepositAddress, shouldGenerateAddress }) => {
 
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap, selectedAssetNetwork } = useSwapDataState()
@@ -94,8 +89,7 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
     const asset = source_network?.assets?.find(currency => currency?.asset === destination_network_asset)
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const generateDepositParams = (!address
-        || selectedAssetNetwork?.network_internal_name !== source_network?.assets?.[0]?.network_internal_name) ? [selectedAssetNetwork?.network_internal_name ?? null] : null
+    const generateDepositParams = shouldGenerateAddress ? [selectedAssetNetwork?.network_internal_name ?? null] : null
 
     const {
         data: generatedDeposit
@@ -111,19 +105,10 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
 
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
     const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
-    
+
+
     const requested_amount = manualTransferFee?.min_amount > swap?.requested_amount ? manualTransferFee?.min_amount : swap?.requested_amount
-
-    const sourceNetwork = source_network?.isExchange == false && source_network
-    const sourceChainId = sourceNetwork.chain_id
-    let canWithdrawWithWallet = !source_exchange && sourceNetwork.address_type === "evm" && !!sourceChainId && source_network?.internal_name !== KnownInternalNames.Networks.ZksyncMainnet;
-
-    const EIP_681 = asset.contract_address ?
-        `ethereum:${asset.contract_address}@${sourceNetwork.chain_id}/transfer?address=${address}&uint256=${parseUnits(requested_amount.toString(), asset.decimals)}`
-        : `ethereum:${address}@${sourceNetwork.chain_id}?value=${requested_amount * 1000000000000000000}`
-
-    const depositAddress = address || generatedDeposit?.data?.address
-    const qrData = canWithdrawWithWallet ? EIP_681 : depositAddress
+    const depositAddress = existingDepositAddress || generatedDeposit?.data?.address
 
     const handleChangeSelectedNetwork = useCallback((n: BaseL2Asset) => {
         setSelectedAssetNetwork(n)
@@ -136,10 +121,10 @@ const TransferInvoice: FC<{ address?: string }> = ({ address }) => {
                 <ExchangeNetworkPicker onChange={handleChangeSelectedNetwork} />
             }
             <div className='p-2 bg-primary-text/30 bg-opacity-30 rounded-xl'>
-                <div className='p-2 bg-primary-text/40 bg-opacity-70 rounded-lg'>
-                    {qrData ? <QRCode
+                <div className='p-2 bg-primary-text/70 bg-opacity-70 rounded-lg'>
+                    {depositAddress ? <QRCode
                         className="p-2 bg-primary-text rounded-md"
-                        value={qrData}
+                        value={depositAddress}
                         size={120}
                         bgColor={colors.white}
                         fgColor="#000000"

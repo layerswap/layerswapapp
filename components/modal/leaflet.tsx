@@ -19,7 +19,7 @@ export interface LeafletProps {
     position: LeafletPosition;
 }
 
-export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(({ show, setShow, children, title, className, height, description, position}, topmostRef) => {
+export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, description, position}, topmostRef) {
     const mobileModalRef = useRef(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 33 };
@@ -43,7 +43,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 transition: transitionProps,
             });
         }
-    }, [show]);
+    }, [controls, show, transitionProps]);
 
     const handleCloseModal = () => {
         setShow(false)

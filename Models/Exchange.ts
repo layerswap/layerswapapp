@@ -9,7 +9,6 @@ export class Exchange {
     status: LayerStatus;
     type: "cex" | "fiat";
     is_featured: boolean;
-    nodes: NetworkNodes[];
 }
 
 export class ExchangeCurrency {
@@ -19,8 +18,4 @@ export class ExchangeCurrency {
     network: string;
     is_default: boolean;
     status: LayerStatus
-}
-
-export class NetworkNodes {
-    url: string;
 }

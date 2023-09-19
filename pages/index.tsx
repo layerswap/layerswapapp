@@ -69,10 +69,6 @@ export async function getServerSideProps(context) {
   // settings.exchanges = mapNetworkCurrencies(settings.exchanges.filter(e => e.status === 'active'), settings.networks)
   settings.exchanges = mapNetworkCurrencies(settings.exchanges, settings.networks)
 
-  const resource_storage_url = settings.discovery.resource_storage_url
-  if (resource_storage_url[resource_storage_url.length - 1] === "/")
-    settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
-
   result.settings = settings;
   result.settings.validSignatureisPresent = validSignatureIsPresent;
   if (!result.settings.networks.some(x => x.status === "active") || process.env.IN_MAINTANANCE == 'true') {

@@ -5,13 +5,11 @@ import SwapButton from "../../buttons/swapButton";
 import React from "react";
 import NetworkFormField from "../../Input/NetworkFormField";
 import AmountField from "../../Input/Amount";
-import LayerSwapApiClient, { AddressBookItem, UserExchangesData } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
 import AmountAndFeeDetails from "../../DisclosureComponents/amountAndFeeDetailsComponent";
 import Modal from "../../modal/modal";
-import toast from "react-hot-toast";
-import { useRouter } from "next/router";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
@@ -31,6 +29,9 @@ import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetw
 import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
+import { useWalletUpdate } from "../../../context/wallet";
+import { useAccount } from "wagmi";
+import GasDetails from "../../gasDetails";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -51,13 +52,14 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const source = values.from
     const asset = values.currency?.asset
     const { authData } = useAuthState()
+    const { getBalance } = useWalletUpdate()
+    const { address } = useAccount()
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies);
     const partnerImage = partner?.organization_name ? settings.resolveImgSrc(partner) : null
-    const router = useRouter();
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()
     const query = useQueryState();
@@ -73,7 +75,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const handleConfirmToggleChange = (value: boolean) => {
         setFieldValue('refuel', value)
     }
-
     const depositeAddressIsfromAccountRef = useRef(depositeAddressIsfromAccount);
 
     useEffect(() => {
@@ -81,23 +82,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         return () => depositeAddressIsfromAccountRef.current = null
     }, [depositeAddressIsfromAccount])
 
-    const handleExchangeConnected = useCallback(async () => {
-        if (!destination || !values.currency)
-            return
-        try {
-            const layerswapApiClient = new LayerSwapApiClient(router)
-            const deposit_address = await layerswapApiClient.GetExchangeDepositAddress(destination?.internal_name, values?.currency?.asset)
-            setFieldValue("destination_address", deposit_address.data)
-            setDepositeAddressIsfromAccount(true)
-        }
-        catch (e) {
-            toast(e?.response?.data?.error?.message || e.message)
-        }
-    }, [values])
-
     useEffect(() => {
-        if (depositeAddressIsfromAccountRef.current)
-            handleExchangeConnected()
         if (!destination?.isExchange && !GetNetworkCurrency(source, asset)?.is_refuel_enabled) {
             handleConfirmToggleChange(false)
         }
@@ -163,6 +148,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
 
     }, [source, destination, query, settings, lockedCurrency])
 
+    useEffect(() => {
+        getBalance(values.from)
+    }, [values.from, values.destination_address, address])
+
     const destinationNetwork = GetDefaultNetwork(destination, values?.currency?.asset)
     const destination_native_currency = !destination?.isExchange && destinationNetwork?.native_currency
 
@@ -178,6 +167,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         && query?.destAddress
         && (query?.lockTo || query?.hideTo)
         && isValidAddress(query?.destAddress, destination)
+
 
     return <>
         <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
@@ -245,7 +235,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                             <ClickTooltip text={`You will get a small amount of ${destination_native_currency} that you can use to pay for gas fees.`} />
                                         </p>
                                         <p className="font-light text-xs">
-                                            Get <span className="font-semibold">{destination_native_currency}</span> to pay fees in {values.to?.display_name}
+                                            <span>Get&nbsp;</span><span className="font-semibold">{destination_native_currency}</span><span>&nbsp;to pay fees in&nbsp;</span>{values.to?.display_name}
                                         </p>
                                     </div>
                                 </div>
@@ -257,7 +247,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                             //TODO refactor
                             GetNetworkCurrency(destination, asset)?.status == 'insufficient_liquidity' &&
                             <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal">We're experiencing delays for transfers of {values?.currency?.asset} to {values?.to?.display_name}. Estimated arrival time can take up to 2 hours.</span>
+                                <span className="font-normal">We&apos;re experiencing delays for transfers of {values?.currency?.asset} to {values?.to?.display_name}. Estimated arrival time can take up to 2 hours.</span>
                             </WarningMessage>
                         }
                         {
@@ -279,6 +269,11 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                 </Widget.Footer>
             </Widget>
         </Form >
+
+        {
+            process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true' &&
+            <GasDetails network={values.from} currency={values.currency} />
+        }
     </>
 }
 

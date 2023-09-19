@@ -20,7 +20,7 @@ const External: FC = () => {
                 </div>
                 <div className="flex flex-col text-center place-content-center mt-1 text-lg font-lighter text-secondary-text">
                     <p className="text-base font-medium space-y-6 text-secondary-text text-center">
-                        The withdrawal has been initiated, please don't close this screen.
+                        The withdrawal has been initiated, please don&apos;t close this screen.
                     </p>
                 </div>
             </div>

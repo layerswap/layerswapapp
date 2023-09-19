@@ -13,7 +13,6 @@ import { SortingByOrder } from "../../lib/sorting"
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
-import KnownInternalNames from "../../lib/knownIds";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -43,7 +42,7 @@ const getGroupName = (layer: Layer) => {
     }
 }
 
-const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
+const NetworkFormField = forwardRef(function NetworkFormField({ direction, label }: Props, ref: any) {
     const {
         values,
         setFieldValue,
@@ -133,7 +132,6 @@ function GenerateMenuItems(layers: Layer[], resolveImgSrc: (item: Layer | Curren
 
     return layers.map(l => {
         let orderProp: keyof NetworkSettings | keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
-
         return {
             baseObject: l,
             id: l.internal_name,

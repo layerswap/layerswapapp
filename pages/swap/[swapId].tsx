@@ -4,7 +4,6 @@ import { LayerSwapSettings } from '../../Models/LayerSwapSettings';
 import { InferGetServerSidePropsType } from 'next';
 import React from 'react';
 import { SwapDataProvider } from '../../context/swap';
-import { UserExchangeProvider } from '../../context/userExchange';
 import SwapWithdrawal from '../../components/SwapWithdrawal';
 import LayerSwapAuthApiClient from '../../lib/userAuthApiClient';
 import { validateSignature } from '../../helpers/validateSignature';
@@ -20,18 +19,14 @@ const SwapDetails = ({ settings, themeData }: InferGetServerSidePropsType<typeof
   return (<>
     <Layout settings={appSettings}>
       <SwapDataProvider >
-        <UserExchangeProvider>
           <TimerProvider>
             <SwapWithdrawal />
           </TimerProvider>
-        </UserExchangeProvider>
       </SwapDataProvider >
     </Layout>
     <ColorSchema themeData={themeData} />
   </>)
 }
-
-const CACHE_PATH = ".settings";
 
 export const getServerSideProps = async (ctx) => {
   const params = ctx.params;
@@ -52,10 +47,6 @@ export const getServerSideProps = async (ctx) => {
   if (!settings) {
     var apiClient = new LayerSwapApiClient();
     const { data } = await apiClient.GetSettingsAsync()
-
-    const resource_storage_url = data.discovery.resource_storage_url
-    if (resource_storage_url[resource_storage_url.length - 1] === "/")
-      data.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
 
     settings = data
   }

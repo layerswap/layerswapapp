@@ -19,6 +19,7 @@ const Command = React.forwardRef<
 ))
 Command.displayName = CommandPrimitive.displayName
 
+// eslint-disable-next-line react/display-name
 const CommandWrapper = React.forwardRef<
   React.ElementRef<typeof Command>,
   React.ComponentPropsWithoutRef<typeof Command>

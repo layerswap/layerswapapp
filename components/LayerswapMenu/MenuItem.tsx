@@ -16,7 +16,7 @@ type MenuLinkProps = {
     className?: string
 }
 
-const MenuLink = forwardRef<HTMLAnchorElement, MenuLinkProps>(({ children, className }) => {
+const MenuLink = forwardRef<HTMLAnchorElement, MenuLinkProps>(function MenuLink({ children, className }) {
     return (
         <span className={`px-4 py-2 text-left hover:bg-secondary-500 whitespace-nowrap flex items-center space-x-2 ${className}`}>
             {children}
@@ -34,7 +34,7 @@ type MenuIemProps = {
     className?: string;
 };
 
-const Item = forwardRef<HTMLAnchorElement, MenuIemProps>(({ type, children, pathname, onClick, icon, target = '_self', className }, ref) => {
+const Item = forwardRef<HTMLAnchorElement, MenuIemProps>(function Item({ type, children, pathname, onClick, icon, target = '_self', className }, ref) {
     const router = useRouter();
     return (
         type == ItemType.link ?

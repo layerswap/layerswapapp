@@ -37,7 +37,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
         catch (e) {
             toast.error(e.message)
         }
-    }, [])
+    }, [email, onSend])
 
     return (
         <Formik
