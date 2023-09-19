@@ -221,10 +221,10 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                         {swap?.status != SwapStatus.Cancelled && swap?.status != SwapStatus.Expired &&
                             <div className="w-full flex flex-col h-full space-y-5">
                                 <div className="text-left text-primary-text space-y-2">
-                                    <p className="block sm:text-lg font-medium text-white">
+                                    <p className="block sm:text-lg font-medium text-primary-text">
                                         Transfer status
                                     </p>
-                                    <p className='text-sm flex space-x-1'>
+                                    <p className='text-sm flex space-x-1 text-secondary-text '>
                                         You’ll see live updates on the transfer progress below
                                     </p>
                                 </div>

@@ -12,7 +12,6 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                 <style global jsx>{`
                     :root {
                     --ls-colors-backdrop:${themeData.backdrop};
-                    --ls-colors-actionButtonText: ${themeData.actionButtonText};
                     --ls-colors-logo: ${themeData.logo};
                     --ls-colors-primary: ${themeData.primary?.DEFAULT};
                     --ls-colors-primary-50: ${themeData.primary?.[50]};

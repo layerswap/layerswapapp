@@ -1,30 +1,27 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import Processing from '../components/Swap/Withdraw/Processing';
 import { SwapItem, TransactionStatus, TransactionType } from '../lib/layerSwapApiClient';
 import { SwapStatus } from '../Models/SwapStatus';
-import { SwapDataStateContext } from '../context/swap';
+import { SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
-import { WagmiConfig, configureChains, createConfig } from 'wagmi';
+import { configureChains, createConfig } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
-import { WalletState, WalletStateContext } from '../context/wallet';
+import { WalletStateContext } from '../context/wallet';
 import { QueryStateContext } from '../context/query';
 import { FC, useEffect, useState } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange, cancelled, expired } from './Data/swaps'
 import { Settings } from './Data/settings';
-import Success from '../components/Swap/Withdraw/Success';
-import Delay from '../components/Swap/Withdraw/Delay';
-import Widget from '../components/Wizard/Widget';
-import MessageComponent from '../components/MessageComponent';
-import SubmitButton, { DoubleLineText } from '../components/buttons/submitButton';
-import { Home, MessageSquare } from 'lucide-react';
-import GoHomeButton from '../components/utils/GoHome';
-import SwapSummary from '../components/Swap/Summary';
-import Cancell from '../components/icons/Cancell';
 import { NetworkType } from '../Models/CryptoNetwork';
-
+import SwapDetails from '../components/Swap';
+import { AuthDataUpdateContext, AuthStateContext } from '../context/authContext';
+import { IntercomProvider } from 'react-use-intercom';
+import RainbowKitComponent from '../components/RainbowKit';
+import Layout from '../components/layout';
+import ColorSchema from '../components/ColorSchema';
+import { THEME_COLORS } from '../Models/Theme';
+const INTERCOM_APP_ID = 'h5zisg78'
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 let settings = new LayerSwapAppSettings(Settings)
 
@@ -82,11 +79,9 @@ const connectors = connectorsForWallets([
         ],
     },
 ]);
-
-const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, }> = ({ swap, failedSwap, failedSwapOutOfRange }) => {
+window.plausible = () => { }
+const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, theme?: "default" | "light" }> = ({ swap, failedSwap, failedSwapOutOfRange, theme }) => {
     const [appSettings, setAppSettings] = useState(null);
-    const swapStatus = swap.status;
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id]
     const wagmiConfig = createConfig({
         autoConnect: true,
         connectors,
@@ -109,154 +104,29 @@ const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: S
     if (!appSettings) {
         return <div>Loading...</div>
     }
-
-    return <WagmiConfig config={wagmiConfig}>
+    const themeData = theme ? THEME_COLORS[theme] : THEME_COLORS["default"];
+    return <IntercomProvider appId={INTERCOM_APP_ID}>
         <SettingsStateContext.Provider value={appSettings}>
-            <QueryStateContext.Provider value={{}}>
-                <SwapDataStateContext.Provider value={swapContextInitialValues}>
-                    <WalletStateContext.Provider value={{ balances: null, gases: null, imxAccount: null, isBalanceLoading: null, isGasLoading: null, starknetAccount: null }}>
-                        <div className={`flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg`}>
-                            <div className={`flex flex-col w-full text-white`}>
-                                <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
-                                    <div className="relative px-6 py-4">
-                                        {
-                                            (swapInputTransaction
-                                                || swapStatus === SwapStatus.LsTransferPending)
-                                            &&
-                                            <Processing />
-                                        }
-                                        {
-                                            swapStatus === SwapStatus.Completed &&
-                                            <Success />
-                                        }
-                                        {
-                                            swapStatus === SwapStatus.Failed &&
-                                            <Widget.Content>
-                                                <MessageComponent.Buttons>
-                                                    <div className="flex text-white text-base space-x-2">
-                                                        <div className='basis-1/3 grow'>
-                                                            <SubmitButton text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='filled' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
-                                                                <DoubleLineText
-                                                                    colorStyle='mltln-text-light'
-                                                                    primaryText='Contact Support'
-                                                                    secondarytext=''
-                                                                />
-                                                            </SubmitButton>
-                                                        </div>
-                                                    </div>
-                                                </MessageComponent.Buttons>
-                                            </Widget.Content>
-                                        }
-                                        {
-                                            swapStatus === SwapStatus.UserTransferDelayed &&
-                                            <Delay />
-                                        }
-                                        {
-                                            swap?.status == SwapStatus.Cancelled &&
-                                            <Widget.Content>
-                                                <SwapSummary />
-                                                <MessageComponent>
-                                                    <MessageComponent.Description>
-                                                        {
-                                                            <>
-                                                                <div className='p-3 bg-secondary-700 text-white rounded-lg border border-secondary-500'>
-                                                                    <div className="flex items-center">
-                                                                        <Cancell />
-                                                                        <label className="block text-sm md:text-base font-medium">Swap cancelled</label>
-                                                                    </div>
-                                                                    <div className='mt-4 ml-1 text-xs md:text-sm text-white'>
-                                                                        <p className='text-md text-left'>The transaction was cancelled by your request. If you have already sent funds, please contact support.</p>
-                                                                    </div>
-                                                                </div>
-                                                            </>
-                                                        }
-                                                    </MessageComponent.Description>
-                                                    <MessageComponent.Buttons>
-                                                        <div className="flex flex-row text-white text-base space-x-2 mt-2">
-                                                            <div className='basis-1/3'>
-                                                                <SubmitButton text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
-                                                                    <DoubleLineText
-                                                                        colorStyle='mltln-text-dark'
-                                                                        primaryText='Support'
-                                                                        secondarytext='Contact'
-                                                                    />
-                                                                </SubmitButton>
-                                                            </div>
-                                                            <div className='basis-2/3'>
-                                                                <GoHomeButton>
-                                                                    <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
-                                                                        <DoubleLineText
-                                                                            colorStyle='mltln-text-dark'
-                                                                            primaryText='Swap'
-                                                                            secondarytext='Do another'
-                                                                        />
-                                                                    </SubmitButton>
-                                                                </GoHomeButton>
-                                                            </div>
-                                                        </div>
-                                                    </MessageComponent.Buttons>
-                                                </MessageComponent>
-                                            </Widget.Content>
-                                        }
-                                        {
-                                            swap?.status == SwapStatus.Expired &&
-                                            <Widget.Content>
-                                                <SwapSummary />
-                                                <MessageComponent>
-                                                    <MessageComponent.Description>
-                                                        {
-                                                            <>
-                                                                <div className='p-3 bg-secondary-700 text-white rounded-lg border border-secondary-500'>
-                                                                    <div className="flex items-center">
-                                                                        <Cancell />
-                                                                        <label className="block text-sm md:text-base font-medium">Swap expired</label>
-                                                                    </div>
-                                                                    <div className='mt-4 ml-1 text-xs md:text-sm text-white'>
-                                                                        <p className='text-md text-left'>The transfer wasn’t completed during the allocated timeframe.</p>
-                                                                        <ul className="list-inside font-light space-y-1 mt-2 text-left ">
-                                                                            <li>If you’ve already sent crypto for this swap, your funds are safe, please contact our support.</li>
-                                                                        </ul>
-                                                                    </div>
-                                                                </div>
-                                                            </>
-                                                        }
-                                                    </MessageComponent.Description>
-                                                    <MessageComponent.Buttons>
-                                                        <div className="flex flex-row text-white text-base space-x-2 mt-2">
-                                                            <div className='basis-1/3'>
-                                                                <SubmitButton text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
-                                                                    <DoubleLineText
-                                                                        colorStyle='mltln-text-dark'
-                                                                        primaryText='Support'
-                                                                        secondarytext='Contact'
-                                                                    />
-                                                                </SubmitButton>
-                                                            </div>
-                                                            <div className='basis-2/3'>
-                                                                <GoHomeButton>
-                                                                    <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
-                                                                        <DoubleLineText
-                                                                            colorStyle='mltln-text-dark'
-                                                                            primaryText='Swap'
-                                                                            secondarytext='Do another'
-                                                                        />
-                                                                    </SubmitButton>
-                                                                </GoHomeButton>
-                                                            </div>
-                                                        </div>
-                                                    </MessageComponent.Buttons>
-                                                </MessageComponent>
-                                            </Widget.Content>
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </WalletStateContext.Provider>
-                </SwapDataStateContext.Provider >
-            </QueryStateContext.Provider>
+            <Layout settings={appSettings}>
+                <RainbowKitComponent>
+                    <QueryStateContext.Provider value={{}}>
+                        <AuthStateContext.Provider value={{}}>
+                            <AuthDataUpdateContext.Provider value={{}}>
+                                <SwapDataStateContext.Provider value={swapContextInitialValues}>
+                                    <SwapDataUpdateContext.Provider value={{ setInterval: () => { } }}>
+                                        <WalletStateContext.Provider value={{ balances: null, gases: null, imxAccount: null, isBalanceLoading: null, isGasLoading: null, starknetAccount: null }}>
+                                            <SwapDetails />
+                                        </WalletStateContext.Provider>
+                                    </SwapDataUpdateContext.Provider>
+                                </SwapDataStateContext.Provider>
+                            </AuthDataUpdateContext.Provider>
+                        </AuthStateContext.Provider>
+                    </QueryStateContext.Provider>
+                </RainbowKitComponent>
+                <ColorSchema themeData={themeData} />
+            </Layout>
         </SettingsStateContext.Provider>
-    </WagmiConfig>
+    </IntercomProvider>
 }
 
 const DUMMY_TRANSACTION = {
@@ -280,7 +150,16 @@ const meta = {
     component: Comp,
     parameters: {
         layout: 'centered',
-    }
+    },
+    args: {
+        theme: 'default',
+    },
+    argTypes: {
+        theme: {
+          options: ['light', 'default'],
+          control: { type: 'select' },
+        },
+      },
 } satisfies Meta<typeof Comp>;
 
 export default meta;

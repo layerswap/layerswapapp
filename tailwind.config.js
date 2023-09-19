@@ -35,7 +35,7 @@ module.exports = {
           'text': 'rgb(var(--ls-colors-primary-text, 255, 255, 255), <alpha-value>)',
           'text-muted': 'var(--ls-colors-primary-text-muted, #56617B)',
           'text-placeholder': 'var(--ls-colors-text-placeholder, #8C98C0)',
-          'buttonTextColor': 'rgb(var(--ls-colors-actionButtonText, 255 255 255), <alpha-value>)',
+          'buttonTextColor': 'rgb(var(--ls-colors-actionButtonText, 255, 255, 255), <alpha-value>)',
           'logoColor': 'var(--ls-colors-logo, #FF0093)'
         },
         secondary: {

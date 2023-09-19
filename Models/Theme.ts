@@ -28,7 +28,7 @@ export type ThemeColor = {
 export const THEME_COLORS:{[key:string]:ThemeData} = {
     "imxMarketplace": {
         backdrop: "#007985",
-        actionButtonText: '#000000',
+        actionButtonText: '255 255 255',
         placeholderText: '#8C98C0',
         logo: '#ffffffff',
         primary: {
@@ -64,7 +64,7 @@ export const THEME_COLORS:{[key:string]:ThemeData} = {
     "ea7df14a1597407f9f755f05e25bab42": {
         backdrop: "#007985",
         placeholderText: '#C6F2F6',
-        actionButtonText: '#000000',
+        actionButtonText: '255 255 255',
         logo: '#ffffffff',
         primary: {
             DEFAULT: '#80E2EB',
@@ -156,8 +156,8 @@ export const THEME_COLORS:{[key:string]:ThemeData} = {
             DEFAULT: '#111D36',
             '50': '#313C9B',
             '100': '#2E3B93',
-            '200': '#868686',
-            '300': '#232A70',
+            '200': '#232A70',
+            '300': '#202965',
             '400': '#1C2759',
             '500': '22, 37, 70',
             '600': '#14213E',

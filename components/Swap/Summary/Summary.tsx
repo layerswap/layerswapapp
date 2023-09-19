@@ -90,7 +90,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                     <div className="flex items-center gap-3">
                         <Image src={resolveImgSrc(source)} alt={sourceDisplayName} width={36} height={36} className="rounded-md" />
                         <div>
-                            <p className="text-secondary-text text-lg leading-5">{sourceDisplayName}</p>
+                            <p className="text-primary-text text-lg leading-5">{sourceDisplayName}</p>
                             {
                                 sourceAccountAddress &&
                                 <p className="text-sm text-secondary-text">{sourceAccountAddress}</p>
