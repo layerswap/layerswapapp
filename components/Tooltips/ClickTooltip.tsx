@@ -15,7 +15,7 @@ const ClickTooltip: FC<Props> = (({ children, text, moreClassNames }) => {
                 {
                     children ??
                     <div className='text-primary-text hover:cursor-pointer hover:text-white ml-0.5 hover:bg-secondary-400 active:ring-2 active:ring-gray-200 active:bg-secondary-500 focus:outline-none cursor-default p-0.5 rounded'>
-                        <Info className="h-4" aria-hidden="true" strokeWidth={3} />
+                        <Info className="h-4" aria-hidden="true" strokeWidth={2.5} />
                     </div>
                 }
             </Popover.Trigger>

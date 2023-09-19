@@ -1,5 +1,6 @@
 import { Info } from "lucide-react";
 import { FC } from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../shadcn/tooltip";
 
 type Props = {
     text: string;
@@ -10,23 +11,34 @@ type Props = {
 
 const HoverTooltip: FC<Props> = (({ text, moreClassNames, positionClassnames, children }) => {
     return (
-        <>
-            <div className="ml-1 inset-y-0 -right-4 flex items-center group">
-                <div className="absolute flex flex-col items-center">
-                    <div className={`absolute min-w-full bottom-0 flex-col items-right text-xs text-left mb-3 hidden group-hover:flex ${moreClassNames}`}>
-                        <span className="leading-4 z-50 p-2 whitespace-no-wrap bg-secondary-400 shadow-lg rounded-md">
-                            {text}
-                        </span>
-                        <div className={`absolute right-0 bottom-0 origin-top-left w-3 h-3 -mt-2 rotate-45 bg-secondary-500 ${positionClassnames}`}></div>
-                    </div>
-                </div>
-                <div className="justify-self-end">
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger className="group">
                     {
-                        children ?? <Info className="h-5 w-5 opacity-30" aria-hidden="true" />
+                        children ?? <Info className="h-4 group-hover:text-primary" strokeWidth={2.5} aria-hidden="true" />
                     }
-                </div>
-            </div>
-        </>
+                </TooltipTrigger>
+                <TooltipContent>
+                    {text}
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+        // <>
+        //     <div className="ml-1 inset-y-0 -right-4 flex items-center group hover:cursor-pointer">
+        //         <div className="absolute flex flex-col items-center">
+        //             <div className={`absolute min-w-full bottom-0 flex-col items-right text-xs text-left mb-3 hidden group-hover:flex ${moreClassNames}`}>
+        //                 <span className="leading-4 z-50 text-white p-2 whitespace-no-wrap border-2 border-secondary-950 bg-secondary-700 shadow-lg rounded-md">
+        //                     {text}
+        //                 </span>
+        //             </div>
+        //         </div>
+        //         <div className="justify-self-end group-hover:text-primary">
+        //             {
+        //                 children ?? <Info className="h-4" strokeWidth={2.5} aria-hidden="true" />
+        //             }
+        //         </div>
+        //     </div>
+        // </>
     )
 })
 
