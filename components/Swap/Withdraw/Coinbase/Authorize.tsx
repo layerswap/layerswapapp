@@ -115,7 +115,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     return (
         <Widget>
-            <Widget.Content center>
+            <Widget.Content>
                 {
                     !hideHeader &&
                     <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>
@@ -128,7 +128,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                             <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
                         </div>
                         :
-                        <div className="w-full space-y-3">
+                        <div className="w-full space-y-3 flex flex-col self-center h-[80%]">
                             {swap && <Carousel onLast={onCarouselLast} ref={carouselRef}>
                                 <CarouselItem width={100} >
                                     <FirstScreen exchange_name={exchange_name} />

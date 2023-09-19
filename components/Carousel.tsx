@@ -9,7 +9,7 @@ interface CarouselItemProps {
 
 export const CarouselItem: React.FC<CarouselItemProps> = ({ children, width }) => {
     return (
-        <div className={`rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-secondary-900 to-secondary-700 h-full`} style={{ width: width }}>
+        <div className={`rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-secondary-900 to-secondary-700 h-full relative`} style={{ width: width }}>
             {children}
         </div>
     );
@@ -55,12 +55,12 @@ const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel(props,
     return (
         <div
             {...handlers}
-            className="overflow-hidden"
+            className="overflow-hidden h-full pb-7"
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
         >
             <div
-                className="whitespace-nowrap transition-transform duration-500 inner"
+                className="whitespace-nowrap transition-transform duration-500 inner h-full"
                 style={{ transform: `translateX(-${activeIndex * 100}%)` }}
             >
                 {children && React.Children.map(children, (child, index) => {
