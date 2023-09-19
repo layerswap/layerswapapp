@@ -8,7 +8,7 @@ export default function PopoverSelect({ values, value, setValue }: SelectProps) 
         <CommandWrapper>
             <CommandList>
                 {values.map(item =>
-                    <CommandItem disabled={!item.isAvailable.value} value={item.id} key={item.id} onSelect={(currentValue) => {
+                    <CommandItem disabled={!item.isAvailable.value} value={item.id} key={item.id} onSelect={() => {
                         setValue(item)
                     }}>
                         <SelectItem item={item} />
