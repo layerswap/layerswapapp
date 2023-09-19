@@ -128,7 +128,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                             <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
                         </div>
                         :
-                        <div className="w-full space-y-3 flex flex-col self-center h-[80%]">
+                        <div className="w-full space-y-3 flex flex-col self-center h-[100%]">
                             {swap && <Carousel onLast={onCarouselLast} ref={carouselRef}>
                                 <CarouselItem width={100} >
                                     <FirstScreen exchange_name={exchange_name} />
@@ -148,9 +148,6 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                             </Carousel>}
                         </div>
                 }
-                <div className="flex font-normal text-sm text-primary-text">
-                    <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can&apos;t initiate a withdrawal without your explicit confirmation.</label>
-                </div>
             </Widget.Content>
             <Widget.Footer sticky={stickyFooter}>
                 <div>
@@ -179,7 +176,10 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                             carouselFinished ? "Connect" : "Next"
                         }
                     </SubmitButton>
-                    <p className='text-sm mt-2 font-lighter text-primary-text text-left'><span>Don&apos;t want to connect Coinbase account?&nbsp;</span><span onClick={handleTransferMannually} className='cursor-pointer underline'>Transfer manually</span></p>
+                    <div className="pt-2 font-normal text-sm text-primary-text">
+                        <label className="block font-lighter text-left"> Even after authorization Layerswap can&apos;t initiate a withdrawal without your explicit confirmation.</label>
+                        <p className='text-sm mt-1 font-lighter text-primary-text text-left'><span>Don&apos;t want to connect Coinbase account?&nbsp;</span><span onClick={handleTransferMannually} className='cursor-pointer underline'>Transfer manually</span></p>
+                    </div>
                 </div>
             </Widget.Footer>
         </Widget>
