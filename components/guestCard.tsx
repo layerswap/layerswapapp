@@ -1,5 +1,4 @@
 import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/router';
 import { useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { useFormWizardaUpdate, useFormWizardState } from '../context/formWizardProvider';
@@ -12,14 +11,12 @@ import WizardItem from './Wizard/WizardItem';
 function GuestCard() {
     const { goToStep } = useFormWizardaUpdate()
     const { goBack, noToolBar } = useFormWizardState()
-    const router = useRouter();
-    const { redirect } = router.query;
 
-    const CodeOnNext = useCallback(async () => {
+    const CodeOnNext = async () => {
         toast.success("You are successfully logged in.")
-    }, [redirect]);
-    const GoBackToEmailStep = useCallback(() => goToStep(AuthStep.Email, "back"), [])
-    const GoToCodeStep = useCallback(() => goToStep(AuthStep.Code), [])
+    };
+    const GoBackToEmailStep = () => goToStep(AuthStep.Email, "back")
+    const GoToCodeStep = () => goToStep(AuthStep.Code)
 
     return (
         <div className='mt-10'>

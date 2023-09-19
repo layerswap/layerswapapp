@@ -8,7 +8,7 @@ import { WagmiConfig, configureChains, createConfig } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
-import { WalletStateContext } from '../context/wallet';
+import { WalletState, WalletStateContext } from '../context/wallet';
 import { QueryStateContext } from '../context/query';
 import { FC, useEffect, useState } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
@@ -114,7 +114,7 @@ const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: S
         <SettingsStateContext.Provider value={appSettings}>
             <QueryStateContext.Provider value={{}}>
                 <SwapDataStateContext.Provider value={swapContextInitialValues}>
-                    <WalletStateContext.Provider value={{}}>
+                    <WalletStateContext.Provider value={{ balances: null, gases: null, imxAccount: null, isBalanceLoading: null, isGasLoading: null, starknetAccount: null }}>
                         <div className={`flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg`}>
                             <div className={`flex flex-col w-full text-white`}>
                                 <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>

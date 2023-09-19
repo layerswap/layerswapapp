@@ -10,7 +10,7 @@ import { useQueryState } from "../../context/query";
 import { useWalletState, useWalletUpdate } from "../../context/wallet";
 import { roundDecimals } from "../utils/RoundDecimals";
 
-const AmountField = forwardRef((_, ref: any) => {
+const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
     const { networks, currencies } = useSettingsState()
@@ -91,7 +91,7 @@ const AmountLabel = ({
             {
                 detailsAvailable &&
                 <div className="text-xs text-primary-text flex items-center space-x-1">
-                    (Min: {minAllowedAmount} - Max: {isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : maxAllowedAmount})
+                    <span>(Min:&nbsp;</span>{minAllowedAmount}<span>&nbsp;- Max:&nbsp;</span>{isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{maxAllowedAmount}</span>}<span>)</span>
                 </div>
             }
         </div>

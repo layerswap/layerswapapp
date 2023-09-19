@@ -19,4 +19,5 @@ class TokenService {
     }
 }
 
-export default new TokenService();
+let tokenService = new TokenService();
+export default tokenService;
