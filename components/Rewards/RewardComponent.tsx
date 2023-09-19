@@ -21,7 +21,6 @@ import SpinIcon from "../icons/spinIcon";
 import WalletIcon from "../icons/WalletIcon";
 import Link from "next/link";
 import { Progress } from "../ProgressBar";
-import HoverTooltip from "../Tooltips/HoverTooltip";
 
 function RewardComponent() {
 
@@ -112,7 +111,7 @@ function RewardComponent() {
                                                     </div>
                                                     <p className="text-primary-text">Onboarding incentives that are earned by transferring to {network?.display_name}. <a target='_blank' href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards" className="text-white underline hover:no-underline decoration-white cursor-pointer">Learn more</a></p>
                                                     <div className="bg-secondary-700 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
-                                                        {!isCampaignEnded && <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <HoverTooltip text={`${campaign?.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
+                                                        {!isCampaignEnded && <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={`${campaign?.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
                                                             <div className="flex justify-between w-full text-2xl">
                                                                 <div className="flex items-center space-x-1">
                                                                     <div className="h-5 w-5 relative">
@@ -160,11 +159,17 @@ function RewardComponent() {
                                                     </div>
                                                 </div>
                                                 {!isCampaignEnded && <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
-                                                    <BackgroundField header={`${campaign?.asset} pool`} withoutBorder>
+                                                    <BackgroundField header={
+                                                        <>
+                                                            <p className="flex items-center"><span>{campaign?.asset} pool</span>
+                                                                <ClickTooltip text={`The amount of ${campaign?.asset} to be distributed during this round of the campaign.`} />
+                                                            </p>
+                                                        </>
+                                                    } withoutBorder>
                                                         <div className="flex flex-col w-full gap-2">
                                                             <Progress value={DistributedAmount === Infinity ? 0 : DistributedAmount} />
                                                             <div className="flex justify-between w-full font-semibold text-sm ">
-                                                                <div className="text-primary"><span className="text-white">{DistributedAmount}</span> / {totalBudget} {campaign?.asset}</div>
+                                                                <div className="text-primary"><span className="text-white">{campaign?.distributed_amount.toFixed(0)}</span> / {totalBudget} {campaign?.asset}</div>
                                                             </div>
                                                         </div>
                                                     </BackgroundField>
