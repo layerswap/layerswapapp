@@ -177,7 +177,7 @@ function RewardComponent() {
                                                         <div className="flex flex-col w-full gap-2">
                                                             <Progress value={DistributedAmount === Infinity ? 0 : DistributedAmount} />
                                                             <div className="flex justify-between w-full font-semibold text-sm ">
-                                                                <div className="text-primary"><span className="text-white">{campaign?.distributed_amount.toFixed(0)}</span> / {totalBudget} {campaign?.asset}</div>
+                                                                <div className="text-primary"><span className="text-white">{campaign?.distributed_amount.toFixed(0)}</span> <span>/</span> {totalBudget} {campaign?.asset}</div>
                                                             </div>
                                                         </div>
                                                     </BackgroundField>
@@ -237,7 +237,7 @@ function RewardComponent() {
                                                     </div>
                                                     <p className="font-bold text-xl text-left flex items-center">{network?.display_name} Rewards </p>
                                                 </div>
-                                                <p className="text-primary-text text-base"><span>You can earn $</span>{campaign?.asset}<span>&nbsp;tokens by transferring assets to&nbsp;</span>{network?.display_name}<span>. For each transaction, you’ll receive&nbsp;</span>{campaign?.percentage}<span>% of Layerswap fee back.&nbsp;</span><Link target='_blank' href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</Link></p>
+                                                <p className="text-primary-text text-base"><span>You can earn $</span>{campaign?.asset}<span>&nbsp;tokens by transferring assets to&nbsp;</span>{network?.display_name}<span>. For each transaction, you&amp;ll receive&nbsp;</span>{campaign?.percentage}<span>% of Layerswap fee back.&nbsp;</span><Link target='_blank' href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</Link></p>
                                             </div>
                                         </div>
                                     }
@@ -266,9 +266,9 @@ function RewardComponent() {
                                                                                 <AddressIcon address={user.address} size={25} />
                                                                                 <div>
                                                                                     <div className="text-sm font-bold text-white leading-3">
-                                                                                        <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user.address)}>
-                                                                                            {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}
-                                                                                        </Link>
+                                                                                        {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user?.address)}>
+                                                                                            {user?.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user?.address)}
+                                                                                        </Link>}
                                                                                     </div>
                                                                                     <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {campaign?.asset}</p>
                                                                                 </div>
@@ -314,9 +314,9 @@ function RewardComponent() {
                                                                                 <AddressIcon address={rewards.user_reward.total_amount.toString()} size={25} />
                                                                                 <div>
                                                                                     <div className="text-sm font-bold text-white leading-3">
-                                                                                        <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", address)}>
+                                                                                        {address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", address)}>
                                                                                             <span className="text-primary">You</span>
-                                                                                        </Link>
+                                                                                        </Link>}
                                                                                     </div>
                                                                                     <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, campaignAsset.precision)} {campaign?.asset}</p>
                                                                                 </div>
@@ -370,9 +370,9 @@ function RewardComponent() {
                                                 <AddressIcon address={user.address} size={25} />
                                                 <div>
                                                     <div className="text-sm font-bold text-white leading-3">
-                                                        <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user.address)}>
+                                                        {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user?.address)}>
                                                             {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}
-                                                        </Link>
+                                                        </Link>}
                                                     </div>
                                                     <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {campaign?.asset}</p>
                                                 </div>
