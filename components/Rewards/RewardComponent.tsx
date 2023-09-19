@@ -109,7 +109,16 @@ function RewardComponent() {
                                                         </div>  <p className="font-bold text-xl text-left flex items-center">{network?.display_name} Rewards </p>
 
                                                     </div>
-                                                    <p className="text-primary-text">Onboarding incentives that are earned by transferring to {network?.display_name}. <a target='_blank' href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards" className="text-white underline hover:no-underline decoration-white cursor-pointer">Learn more</a></p>
+                                                    <p className="text-primary-text">
+                                                        <span>
+                                                            <span>Onboarding incentives that are earned by transferring to&nbsp;</span>{network?.display_name}<span>.&nbsp;</span>
+                                                            <a
+                                                                target='_blank'
+                                                                href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards"
+                                                                className="text-white underline hover:no-underline decoration-white cursor-pointer"
+                                                            >Learn more</a>
+                                                        </span>
+                                                    </p>
                                                     <div className="bg-secondary-700 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
                                                         {!isCampaignEnded && <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={`${campaign?.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
                                                             <div className="flex justify-between w-full text-2xl">
