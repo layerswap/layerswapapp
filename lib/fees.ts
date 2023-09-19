@@ -1,5 +1,5 @@
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
-import { roundDecimals } from "../components/utils/RoundDecimals";
+import { roundDecimals, truncateDecimals } from "../components/utils/RoundDecimals";
 import upperCaseKeys from "../components/utils/upperCaseKeys";
 import { GetDefaultAsset, GetDefaultNetwork, GetNetworkCurrency } from "../helpers/settingsHelper";
 import { CryptoNetwork, NetworkType } from "../Models/CryptoNetwork";
@@ -120,9 +120,9 @@ export function CalculateMaxAllowedAmount(values: SwapFormValues, balances?: str
         // in case the query parameter had bad formatting just ignoe
         catch { }
     } else if (walletBalance && (walletBalance >= minAllowedAmount && walletBalance <= maxAmount)) {
-        return maxAmount = roundDecimals(walletBalance, currency?.precision)
+        return walletBalance
     }
-    return roundDecimals(maxAmount, currency?.usd_price?.toFixed()?.length) || 0
+    return maxAmount || 0
 }
 
 export function CalculateMinAllowedAmount(values: SwapFormValues, allNetworks: CryptoNetwork[], allCurrencies: Currency[]) {
