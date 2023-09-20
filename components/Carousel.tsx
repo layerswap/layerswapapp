@@ -1,4 +1,4 @@
-import React, { forwardRef, ReactNode, useCallback, useImperativeHandle, useState } from "react";
+import React, { forwardRef, ReactNode, useCallback, useEffect, useImperativeHandle, useState } from "react";
 import { useSwipeable } from "react-swipeable";
 
 
@@ -9,41 +9,54 @@ interface CarouselItemProps {
 
 export const CarouselItem: React.FC<CarouselItemProps> = ({ children, width }) => {
     return (
-        <div className={`rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-secondary-900 to-secondary-700 h-full`} style={{ width: width }}>
+        <div className={`rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-secondary-900 to-secondary-700 h-full relative`} style={{ width: width }}>
             {children}
         </div>
     );
 };
 
 interface CarouselProps {
-    children?: ReactNode;
+    children?: JSX.Element | JSX.Element[];
     onLast: (value) => void;
+    onFirst: (value: boolean) => void;
 }
 
 export type CarouselRef = {
     next: () => void;
     hasNext: boolean;
+    prev: () => void;
+    hasPrev: boolean;
 };
 
-const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel(props, ref) {
+const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel({onFirst, onLast, children}, ref) {
     const [activeIndex, setActiveIndex] = useState(0);
     const [paused, setPaused] = useState(false);
-    const children: any = props.children
+
+    useEffect(() => {
+        onFirst(true);
+    }, [onFirst]);
+
     const updateIndex = useCallback((newIndex) => {
-        props.onLast(false)
+        onFirst(false)
+        onLast(false)
         if (newIndex >= 0 && newIndex <= React.Children.count(children) - 1) {
             setActiveIndex(newIndex);
         }
         if (newIndex >= React.Children.count(children) - 1)
-            props.onLast(true)
-    }, [children, props]);
+            onLast(true)
+        if (newIndex == 0)
+            onFirst(true)
+    }, [children, onFirst, onLast]);
 
     useImperativeHandle(ref, () => ({
         next: () => {
             updateIndex(activeIndex + 1)
         },
-        hasNext: activeIndex < React.Children.count(children) - 1
-
+        prev: () => {
+            updateIndex(activeIndex - 1);
+        },
+        hasNext: activeIndex < React.Children.count(children) - 1,
+        hasPrev: activeIndex < React.Children.count(children) + 1,
     }), [activeIndex, children, updateIndex]);
 
     const handlers = useSwipeable({
@@ -51,35 +64,20 @@ const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel(props,
         onSwipedRight: () => updateIndex(activeIndex - 1),
     });
 
-
     return (
         <div
             {...handlers}
-            className="overflow-hidden"
+            className="overflow-hidden h-full pb-7"
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
         >
             <div
-                className="whitespace-nowrap transition-transform duration-500 inner"
+                className="whitespace-nowrap transition-transform duration-500 inner h-full"
                 style={{ transform: `translateX(-${activeIndex * 100}%)` }}
             >
                 {children && React.Children.map(children, (child, index) => {
                     return React.cloneElement(child, { width: "100%" });
                 })}
-            </div>
-            <div className="flex justify-center">
-                {children && React.Children.map(children, (child, index) => {
-                    return (
-                        <button
-                            className={`${index === activeIndex ? "bg-primary" : "bg-primary-text"} w-3 h-3 m-3 rounded-full`}
-                            onClick={() => {
-                                updateIndex(index);
-                            }}
-                        >
-                        </button>
-                    );
-                })}
-
             </div>
         </div>
     );

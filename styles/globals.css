@@ -91,18 +91,18 @@ hr.horizontal-gradient {
   opacity: 1;
   z-index: 1;
   display: inline-block;
-  margin: 0 1%;
+  margin: 0 3px;
 }
 
 .strong-highlight::after {
   /* Highlight color */
-  background-color: theme('colors.secondary.200');
+  background-color: theme('colors.secondary.500');
   content: "";
   position: absolute;
-  width: calc(100% + 8px);
+  width: calc(100% + 10px);
   height: 110%;
-  border-radius: 3px;
-  left: -4px;
+  border-radius: 5px;
+  left: -5px;
   bottom: -5%;
   z-index: -1;
 }
