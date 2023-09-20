@@ -1,27 +1,27 @@
 export const FirstScreen = ({ exchange_name }) => {
     return <div className="inline-flex items-center justify-center flex-col absolute top-0 left-0 h-full">
-        <div className='whitespace-normal text-primary-text text-md font-normal'><span className='font-medium text-primary'>.01</span><span>&nbsp;After this guide, you&apos;ll be redirected to &nbsp;</span>{exchange_name}<span>&nbsp;to connect your account. You might be prompted to log in to the account first.</span></div>
+        <div className='whitespace-normal text-primary-text text-md font-normal pb-2'><span className='font-medium text-primary'>.01</span><span>&nbsp;After this guide, you&apos;ll be redirected to &nbsp;</span>{exchange_name}<span>&nbsp;to connect your account. You might be prompted to log in to the account first.</span></div>
         <FirstScreenImage />
     </div>
 }
 
 export const SecondScreen = () => {
     return <div className="inline-flex items-center justify-center flex-col absolute top-0 left-0 h-full">
-        <div className='whitespace-normal text-primary-text text-md font-normal'><span className='font-medium text-primary'>.02</span><span>&nbsp;When prompted to authorize Layerswap, click&nbsp;</span><span className='strong-highlight font-medium'>Change this amount</span></div>
+        <div className='whitespace-normal text-primary-text text-md font-normal pb-2'><span className='font-medium text-primary'>.02</span><span>&nbsp;When prompted to authorize Layerswap, click&nbsp;</span><span className='strong-highlight font-medium'>Change this amount</span></div>
         <SecondScreenImage />
     </div>
 }
 
 export const ThirdScreen = ({ minimalAuthorizeAmount }) => {
     return <div className="inline-flex items-center justify-center flex-col absolute top-0 left-0 h-full">
-        <div className='whitespace-normal text-primary-text text-md font-normal w-full'><span className='font-medium text-primary'>.03</span><span>&nbsp;Change the existing 1.0 value to&nbsp;</span><span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span><span>&nbsp;and click Save</span></div>
+        <div className='whitespace-normal text-primary-text text-md font-normal pb-2 w-full'><span className='font-medium text-primary'>.03</span><span>&nbsp;Change the existing 1.0 value to&nbsp;</span><span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span><span>&nbsp;and click Save</span></div>
         <ThirdScreenImage minimalAuthorizeAmount={minimalAuthorizeAmount} />
     </div>
 }
 
 export const FourthScreen = ({ minimalAuthorizeAmount }) => {
     return <div className="inline-flex items-center justify-center flex-col absolute top-0 left-0 h-full">
-        <div className='whitespace-normal text-primary-text text-md font-normal w-full'><span className='font-medium text-primary'>.04</span><span>&nbsp;Please make sure that the allowed amount is&nbsp;</span><span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span><span>&nbsp;and click&nbsp;</span><span className='strong-highlight font-medium'>Authorize</span></div>
+        <div className='whitespace-normal text-primary-text text-md font-normal pb-2 w-full'><span className='font-medium text-primary'>.04</span><span>&nbsp;Please make sure that the allowed amount is&nbsp;</span><span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span><span>&nbsp;and click&nbsp;</span><span className='strong-highlight font-medium'>Authorize</span></div>
         <FourthScreenImage minimalAuthorizeAmount={minimalAuthorizeAmount} />
     </div>
 }
@@ -29,7 +29,7 @@ export const FourthScreen = ({ minimalAuthorizeAmount }) => {
 export const LastScreen = ({ minimalAuthorizeAmount, number }: { minimalAuthorizeAmount: number, number?: boolean }) => {
     return (
         number ? (
-            <div className="inline-flex items-center justify-center flex-col absolute top-0 number left-0 h-full">
+            <div className="inline-flex items-center justify-center flex-col absolute top-0 number left-0 pb-2 h-full">
                 <div className='text-primary-text text-md font-normal w-full'>
                     <span className='font-medium text-primary'>.05</span>
                     <span>&nbsp;Make sure to change the allowed amount to&nbsp;</span>
