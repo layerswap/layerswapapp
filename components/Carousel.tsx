@@ -16,7 +16,7 @@ export const CarouselItem: React.FC<CarouselItemProps> = ({ children, width }) =
 };
 
 interface CarouselProps {
-    children?: ReactNode;
+    children?: JSX.Element | JSX.Element[];
     onLast: (value) => void;
     onFirst: (value: boolean) => void;
 }
@@ -28,26 +28,25 @@ export type CarouselRef = {
     hasPrev: boolean;
 };
 
-const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel(props, ref) {
+const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel({onFirst, onLast, children}, ref) {
     const [activeIndex, setActiveIndex] = useState(0);
     const [paused, setPaused] = useState(false);
-    const children: any = props.children;
 
     useEffect(() => {
-        props.onFirst(true);
-    }, []);
+        onFirst(true);
+    }, [onFirst]);
 
     const updateIndex = useCallback((newIndex) => {
-        props.onFirst(false)
-        props.onLast(false)
+        onFirst(false)
+        onLast(false)
         if (newIndex >= 0 && newIndex <= React.Children.count(children) - 1) {
             setActiveIndex(newIndex);
         }
         if (newIndex >= React.Children.count(children) - 1)
-            props.onLast(true)
+            onLast(true)
         if (newIndex == 0)
-            props.onFirst(true)
-    }, [children, props]);
+            onFirst(true)
+    }, [children, onFirst, onLast]);
 
     useImperativeHandle(ref, () => ({
         next: () => {
