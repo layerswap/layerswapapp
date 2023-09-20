@@ -1,27 +1,27 @@
 export const FirstScreen = ({ exchange_name }) => {
-    return <div className="inline-flex items-center justify-center flex-col absolute top-0 left-0 h-full">
-        <div className='whitespace-normal text-primary-text text-md font-normal pb-2'><span className='font-medium text-primary'>.01</span><span>&nbsp;After this guide, you&apos;ll be redirected to &nbsp;</span>{exchange_name}<span>&nbsp;to connect your account. You might be prompted to log in to the account first.</span></div>
+    return <div className="inline-flex flex-col absolute top-0 left-0 h-full w-full">
+        <div className='whitespace-normal text-primary-text text-md font-normal pb-4'><span className='font-medium text-primary'>.01</span><span>&nbsp;After this guide you&apos;ll be redirected to </span>{exchange_name}<span></span></div>
         <FirstScreenImage />
     </div>
 }
 
 export const SecondScreen = () => {
-    return <div className="inline-flex items-center justify-center flex-col absolute top-0 left-0 h-full">
-        <div className='whitespace-normal text-primary-text text-md font-normal pb-2'><span className='font-medium text-primary'>.02</span><span>&nbsp;When prompted to authorize Layerswap, click&nbsp;</span><span className='strong-highlight font-medium'>Change this amount</span></div>
+    return <div className="inline-flex flex-col absolute top-0 left-0 h-full w-full">
+        <div className='whitespace-normal text-primary-text text-md font-normal pb-4'><span className='font-medium text-primary'>.02</span><span>&nbsp;When in Coinbase, click&nbsp;</span><span className='strong-highlight font-medium'>Change this amount</span></div>
         <SecondScreenImage />
     </div>
 }
 
 export const ThirdScreen = ({ minimalAuthorizeAmount }) => {
-    return <div className="inline-flex items-center justify-center flex-col absolute top-0 left-0 h-full">
-        <div className='whitespace-normal text-primary-text text-md font-normal pb-2 w-full'><span className='font-medium text-primary'>.03</span><span>&nbsp;Change the existing 1.0 value to&nbsp;</span><span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span><span>&nbsp;and click Save</span></div>
+    return <div className="inline-flex flex-col absolute top-0 left-0 h-full w-full">
+        <div className='whitespace-normal text-primary-text text-md font-normal pb-4 w-full'><span className='font-medium text-primary'>.03</span><span>&nbsp;Change the existing 1.0 value to&nbsp;</span><span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span><span>&nbsp;and click Save</span></div>
         <ThirdScreenImage minimalAuthorizeAmount={minimalAuthorizeAmount} />
     </div>
 }
 
 export const FourthScreen = ({ minimalAuthorizeAmount }) => {
-    return <div className="inline-flex items-center justify-center flex-col absolute top-0 left-0 h-full">
-        <div className='whitespace-normal text-primary-text text-md font-normal pb-2 w-full'><span className='font-medium text-primary'>.04</span><span>&nbsp;Please make sure that the allowed amount is&nbsp;</span><span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span><span>&nbsp;and click&nbsp;</span><span className='strong-highlight font-medium'>Authorize</span></div>
+    return <div className="inline-flex flex-col absolute top-0 left-0 h-full w-full">
+        <div className='whitespace-normal text-primary-text text-md font-normal pb-4 w-full'><span className='font-medium text-primary'>.04</span><span>&nbsp;Make sure that the amount is&nbsp;</span><span className='strong-highlight font-medium'>{minimalAuthorizeAmount}</span><span>&nbsp;and click&nbsp;</span><span className='strong-highlight font-medium'>Authorize</span></div>
         <FourthScreenImage minimalAuthorizeAmount={minimalAuthorizeAmount} />
     </div>
 }
@@ -29,8 +29,8 @@ export const FourthScreen = ({ minimalAuthorizeAmount }) => {
 export const LastScreen = ({ minimalAuthorizeAmount, number }: { minimalAuthorizeAmount: number, number?: boolean }) => {
     return (
         number ? (
-            <div className="inline-flex items-center justify-center flex-col absolute top-0 number left-0 pb-2 h-full">
-                <div className='text-primary-text text-md font-normal w-full'>
+            <div className="inline-flex flex-col left-0 w-full absolute top-0 h-full">
+                <div className='text-primary-text text-md font-normal w-full pb-4 '>
                     <span className='font-medium text-primary'>.05</span>
                     <span>&nbsp;Make sure to change the allowed amount to&nbsp;</span>
                     <span className='strong-highlight'>{minimalAuthorizeAmount}</span>
@@ -38,7 +38,12 @@ export const LastScreen = ({ minimalAuthorizeAmount, number }: { minimalAuthoriz
                 <LastScreenImage minimalAuthorizeAmount={minimalAuthorizeAmount} />
             </div>
         ) : (
-            <div className="inline-flex items-center justify-center flex-col absolute top-0 left-[20%] h-full">
+            <div className="inline-flex flex-col left-0 w-full absolute top-0 h-full">
+                <div className='text-primary-text text-md font-normal w-full pb-4 '>
+                    <span className='font-medium text-primary'>.05</span>
+                    <span>&nbsp;Make sure to change the allowed amount to&nbsp;</span>
+                    <span className='strong-highlight'>{minimalAuthorizeAmount}</span>
+                </div>
                 <LastScreenImage minimalAuthorizeAmount={minimalAuthorizeAmount} />
             </div>
         )

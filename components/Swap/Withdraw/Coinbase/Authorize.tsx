@@ -136,7 +136,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                             <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
                         </div>
                         :
-                        <div className="w-full space-y-3 flex flex-col self-center h-[100%]">
+                        <div className="w-full flex flex-col self-center h-[100%]">
                             {swap && <Carousel onLast={onCarouselLast} onFirst={setFirstScreen} ref={carouselRef}>
                                 <CarouselItem width={100} >
                                     <FirstScreen exchange_name={exchange_name} />
@@ -160,24 +160,19 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
             <Widget.Footer sticky={stickyFooter}>
                 <div>
                     {
-                        localConfigs.alreadyFamiliarWithCoinbaseConnect && carouselFinished ?
-                            <button onClick={() => handleToggleChange(false)} className="p-1.5 text-white bg-secondary-500 hover:bg-secondary-400 rounded-md border border-secondary-500 hover:border-secondary-200 w-full mb-3">
-                                Show me full guide
-                            </button>
-                            :
-                            <div className="flex items-center mb-3">
-                                <input
-                                    name="alreadyFamiliar"
-                                    id='alreadyFamiliar'
-                                    type="checkbox"
-                                    className="h-4 w-4 bg-secondary-600 rounded border-secondary-400 text-priamry focus:ring-secondary-600"
-                                    onChange={() => handleToggleChange(true)}
-                                    checked={localConfigs.alreadyFamiliarWithCoinbaseConnect}
-                                />
-                                <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
-                                    I&apos;m already familiar with the process.
-                                </label>
-                            </div>
+                        <div className="flex items-center mb-3">
+                            <input
+                                name="alreadyFamiliar"
+                                id='alreadyFamiliar'
+                                type="checkbox"
+                                className="h-4 w-4 bg-secondary-600 cursor-pointer rounded border-secondary-400 text-priamry"
+                                onChange={() => handleToggleChange(!localConfigs.alreadyFamiliarWithCoinbaseConnect)}
+                                checked={localConfigs.alreadyFamiliarWithCoinbaseConnect}
+                            />
+                            <label htmlFor="alreadyFamiliar" className="ml-2 cursor-pointer block text-sm text-primary-text">
+                                I&apos;m already familiar with the process.
+                            </label>
+                        </div>
                     }
                     {
                         <div className='flex items-center'>
@@ -201,7 +196,9 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                         </div>
                     }
                     <div className="pt-2 font-normal text-xs text-primary-text">
-                        <p className="block font-lighter text-left">Even after authorization Layerswap can&apos;t initiate a withdrawal without your explicit confirmation.</p>
+                        <p className="block font-lighter text-left">
+                            <span>Even after authorization Layerswap can&apos;t initiate a withdrawal without your explicit confirmation.&nbsp;</span>
+                            <a target='_blank' href='https://docs.layerswap.io/user-docs/connect-a-coinbase-account' className='text-white underline hover:no-underline decoration-white cursor-pointer'>Learn more</a></p>
                     </div>
                 </div>
             </Widget.Footer>
