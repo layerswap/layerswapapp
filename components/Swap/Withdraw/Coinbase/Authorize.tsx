@@ -187,7 +187,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ duration: 0.5 }}
                                 >
-                                    <IconButton onClick={handlePrev} className='mr-4' icon={
+                                    <IconButton onClick={handlePrev} className='mr-4 py-3 px-3' icon={
                                         <ArrowLeft strokeWidth="3" />
                                     }>
                                     </IconButton>
