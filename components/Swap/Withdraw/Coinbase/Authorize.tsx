@@ -200,9 +200,8 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                             </SubmitButton>
                         </div>
                     }
-                    <div className="pt-2 font-normal text-sm text-primary-text">
-                        <label className="block font-lighter text-left"> Even after authorization Layerswap can&apos;t initiate a withdrawal without your explicit confirmation.</label>
-                        <p className='text-sm mt-1 font-lighter text-primary-text text-left'><span>Don&apos;t want to connect Coinbase account?&nbsp;</span><span onClick={handleTransferMannually} className='cursor-pointer underline'>Transfer manually</span></p>
+                    <div className="pt-2 font-normal text-xs text-primary-text">
+                        <p className="block font-lighter text-left">Even after authorization Layerswap can&apos;t initiate a withdrawal without your explicit confirmation.</p>
                     </div>
                 </div>
             </Widget.Footer>
