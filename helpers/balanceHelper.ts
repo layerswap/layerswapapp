@@ -1,5 +1,5 @@
 import { erc20ABI } from 'wagmi';
-import { parseEther, encodeFunctionData, PublicClient, formatGwei } from 'viem'
+import { encodeFunctionData, PublicClient, formatGwei, EstimateFeesPerGasReturnType } from 'viem'
 import { multicall, fetchBalance, FetchBalanceResult } from '@wagmi/core'
 import { BaseL2Asset, Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
@@ -49,18 +49,23 @@ type ResolveGasArguments = {
 }
 
 export const resolveFeeData = async (publicClient: PublicClient) => {
+
+    let gasPrice: bigint
+    let feesPerGas: EstimateFeesPerGasReturnType
+    let maxPriorityFeePerGas: bigint
+
     try {
 
-        const gasPrice = await publicClient.getGasPrice()
-        const feesPerGas = await publicClient.estimateFeesPerGas()
-        const maxPriorityFeePerGas = await publicClient.estimateMaxPriorityFeePerGas()
+        gasPrice = await publicClient.getGasPrice()
+        feesPerGas = await publicClient.estimateFeesPerGas()
+        maxPriorityFeePerGas = await publicClient.estimateMaxPriorityFeePerGas()
 
-        return { gasPrice, maxFeePerGas: feesPerGas.maxFeePerGas, maxPriorityFeePerGas: maxPriorityFeePerGas }
     } catch (e) {
         //TODO: log the error to our logging service
         console.log(e)
-        return null;
     }
+
+    return { gasPrice: gasPrice, maxFeePerGas: feesPerGas?.maxFeePerGas , maxPriorityFeePerGas: maxPriorityFeePerGas }
 }
 
 export const resolveERC20Balances = async (
@@ -265,7 +270,7 @@ const GetOptimismGas = async ({ publicClient, account, nativeToken, currency, ch
         args: [destination, amount],
         account: account,
         chainId: chainId,
-        to: destination,
+        to: destination
     })
 
     const gas = formatAmount(fee, nativeToken?.decimals)
@@ -281,7 +286,7 @@ const GetGas = async ({ publicClient, account, nativeToken, currency, contract_a
         await estimateERC20GasLimit({ publicClient, contract_address, account, destination, userDestinationAddress })
         : await estimateNativeGasLimit({ publicClient, account, destination, userDestinationAddress })
 
-    const totalGas = feeData.maxFeePerGas
+    const totalGas = feeData?.maxFeePerGas
         ? (feeData?.maxFeePerGas * estimatedGasLimit)
         : (feeData?.gasPrice * estimatedGasLimit)
 
@@ -292,9 +297,9 @@ const GetGas = async ({ publicClient, account, nativeToken, currency, contract_a
         token: currency?.asset,
         gasDetails: {
             gasLimit: Number(estimatedGasLimit),
-            maxFeePerGas: Number(formatGwei(feeData?.maxFeePerGas)),
-            gasPrice: Number(formatGwei(feeData?.gasPrice)),
-            maxPriorityFeePerGas: Number(formatGwei(feeData?.maxPriorityFeePerGas)),
+            maxFeePerGas: Number(formatGwei(feeData?.maxFeePerGas)) || null,
+            gasPrice: Number(formatGwei(feeData?.gasPrice)) || null,
+            maxPriorityFeePerGas: Number(formatGwei(feeData?.maxPriorityFeePerGas)) || null,
         }
     }
 }
