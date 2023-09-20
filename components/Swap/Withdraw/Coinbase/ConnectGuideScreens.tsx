@@ -27,8 +27,8 @@ export const FourthScreen = ({ minimalAuthorizeAmount }) => {
 }
 
 export const LastScreen = ({ minimalAuthorizeAmount, number }: { minimalAuthorizeAmount: number, number?: boolean }) => {
-    return <div className="inline-flex items-center justify-center flex-col absolute top-0 left-0 h-full">
-        {number && <div className='whitespace-normal text-primary-text text-md font-normal w-full'> <span className='font-medium text-primary'>.05</span><span>&nbsp;Make sure to change the allowed amount to&nbsp;</span><span className='strong-highlight'>{minimalAuthorizeAmount}</span></div>}
+    return <div className={`inline-flex items-center justify-center flex-col absolute top-0 ${number ? "left-0" : "left-[5%]"} h-full`}>
+        {number && <div className='text-primary-text text-md font-normal w-full '> <span className='font-medium text-primary'>.05</span><span>&nbsp;Make sure to change the allowed amount to&nbsp;</span><span className='strong-highlight'>{minimalAuthorizeAmount}</span></div>}
         <LastScreenImage minimalAuthorizeAmount={minimalAuthorizeAmount} />
     </div>
 }
@@ -504,7 +504,7 @@ export const FourthScreenImage = ({ minimalAuthorizeAmount }) => {
 }
 
 export const LastScreenImage = ({ minimalAuthorizeAmount }) => {
-    return <svg viewBox="0 0 447 484" fill="none" xmlns="http://www.w3.org/2000/svg">
+    return <svg viewBox="0 0 447 484" fill="none" className="h-full" xmlns="http://www.w3.org/2000/svg">
         <g clipPath="url(#clip0_1743_2866)">
             <rect x="3" width="407" height="844" rx="50" fill="url(#paint0_linear_1743_2866)" />
             <g clipPath="url(#clip1_1743_2866)">

@@ -1,4 +1,4 @@
-import React, { forwardRef, ReactNode, useCallback, useImperativeHandle, useState } from "react";
+import React, { forwardRef, ReactNode, useCallback, useEffect, useImperativeHandle, useState } from "react";
 import { useSwipeable } from "react-swipeable";
 
 
@@ -18,39 +18,52 @@ export const CarouselItem: React.FC<CarouselItemProps> = ({ children, width }) =
 interface CarouselProps {
     children?: ReactNode;
     onLast: (value) => void;
+    onFirst: (value: boolean) => void;
 }
 
 export type CarouselRef = {
     next: () => void;
     hasNext: boolean;
+    prev: () => void;
+    hasPrev: boolean;
 };
 
 const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel(props, ref) {
     const [activeIndex, setActiveIndex] = useState(0);
     const [paused, setPaused] = useState(false);
-    const children: any = props.children
+    const children: any = props.children;
+
+    useEffect(() => {
+        props.onFirst(true);
+    }, []);
+
     const updateIndex = useCallback((newIndex) => {
+        props.onFirst(false)
         props.onLast(false)
         if (newIndex >= 0 && newIndex <= React.Children.count(children) - 1) {
             setActiveIndex(newIndex);
         }
         if (newIndex >= React.Children.count(children) - 1)
             props.onLast(true)
+        if (newIndex == 0)
+            props.onFirst(true)
     }, [children, props]);
 
     useImperativeHandle(ref, () => ({
         next: () => {
             updateIndex(activeIndex + 1)
         },
-        hasNext: activeIndex < React.Children.count(children) - 1
-
+        prev: () => {
+            updateIndex(activeIndex - 1);
+        },
+        hasNext: activeIndex < React.Children.count(children) - 1,
+        hasPrev: activeIndex < React.Children.count(children) + 1,
     }), [activeIndex, children, updateIndex]);
 
     const handlers = useSwipeable({
         onSwipedLeft: () => updateIndex(activeIndex + 1),
         onSwipedRight: () => updateIndex(activeIndex - 1),
     });
-
 
     return (
         <div
@@ -66,20 +79,6 @@ const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel(props,
                 {children && React.Children.map(children, (child, index) => {
                     return React.cloneElement(child, { width: "100%" });
                 })}
-            </div>
-            <div className="flex justify-center">
-                {children && React.Children.map(children, (child, index) => {
-                    return (
-                        <button
-                            className={`${index === activeIndex ? "bg-primary" : "bg-primary-text"} w-3 h-3 m-3 rounded-full`}
-                            onClick={() => {
-                                updateIndex(index);
-                            }}
-                        >
-                        </button>
-                    );
-                })}
-
             </div>
         </div>
     );
