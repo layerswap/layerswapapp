@@ -193,7 +193,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                                     </IconButton>
                                 </motion.div>
                             }
-                            <SubmitButton className='transition-all duration-100 ease-out' isDisabled={false} isSubmitting={false} onClick={handleConnect}>
+                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
                                 {
                                     carouselFinished ? "Connect" : "Next"
                                 }
