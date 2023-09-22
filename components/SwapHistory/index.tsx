@@ -308,8 +308,8 @@ function TransactionsHistory() {
                       }
                       {
                         selectedSwap?.status == SwapStatus.Completed &&
-                        <div className="text-white text-sm mt-6 space-y-3">
-                          <div className="flex flex-row text-white text-base space-x-2">
+                        <div className="text-primary-text text-sm mt-6 space-y-3">
+                          <div className="flex flex-row text-primary-text text-base space-x-2">
                             <SubmitButton
                               text_align="center"
                               onClick={() => router.push(`/explorer/${selectedSwap?.transactions?.find(t => t?.type === TransactionType.Input)?.transaction_id}`)}

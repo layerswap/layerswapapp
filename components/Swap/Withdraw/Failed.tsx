@@ -57,12 +57,12 @@ const Expired = ({ onGetHelp }: Props) => {
                 <MessageComponent.Description>
                     {
                         <>
-                            <div className='p-3 bg-secondary-700 text-white rounded-lg border border-secondary-500'>
+                            <div className='p-3 bg-secondary-700 text-primary-text rounded-lg border border-secondary-500'>
                                 <div className="flex items-center">
                                     <Cancell />
                                     <label className="block text-sm md:text-base font-medium">Swap expired</label>
                                 </div>
-                                <div className='mt-4 ml-1 text-xs md:text-sm text-white'>
+                                <div className='mt-4 ml-1 text-xs md:text-sm text-primary-text'>
                                     <p className='text-md text-left'>The transfer wasn’t completed during the allocated timeframe.</p>
                                     <ul className="list-inside font-light space-y-1 mt-2 text-left ">
                                         <li>If you’ve already sent crypto for this swap, your funds are safe, please contact our support.</li>
@@ -108,12 +108,12 @@ const Canceled = ({ onGetHelp }: Props) => {
                 <MessageComponent.Description>
                     {
                         <>
-                            <div className='p-3 bg-secondary-700 text-white rounded-lg border border-secondary-500'>
+                            <div className='p-3 bg-secondary-700 text-primary-text rounded-lg border border-secondary-500'>
                                 <div className="flex items-center">
                                     <Cancell />
                                     <label className="block text-sm md:text-base font-medium">Swap cancelled</label>
                                 </div>
-                                <div className='mt-4 ml-1 text-xs md:text-sm text-white'>
+                                <div className='mt-4 ml-1 text-xs md:text-sm text-primary-text'>
                                     <p className='text-md text-left'>The transaction was cancelled by your request. If you have already sent funds, please contact support.</p>
                                 </div>
                             </div>

@@ -6,7 +6,7 @@ function renderStepIcon(step) {
         case "complete":
             return (
                 <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary">
-                    <Check className="h-5 w-5 text-white" aria-hidden="true" />
+                    <Check className="h-5 w-5 text-primary-text" aria-hidden="true" />
                 </span>
             );
 

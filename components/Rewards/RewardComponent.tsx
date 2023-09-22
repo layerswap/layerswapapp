@@ -115,7 +115,7 @@ function RewardComponent() {
                                                             <a
                                                                 target='_blank'
                                                                 href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards"
-                                                                className="text-white underline hover:no-underline decoration-white cursor-pointer"
+                                                                className="text-primary-text underline hover:no-underline decoration-white cursor-pointer"
                                                             >Learn more</a>
                                                         </span>
                                                     </p>
@@ -294,7 +294,7 @@ function RewardComponent() {
                                                                                             <span>{leaderboardReward(user.position)} {campaign?.asset}</span>
                                                                                         </p>
                                                                                     </div>}>
-                                                                                    <div className='text-primary-text hover:cursor-pointer hover:text-white ml-0.5 hover:bg-secondary-200 active:ring-2 active:ring-gray-200 active:bg-secondary-400 focus:outline-none cursor-default p-1 rounded'>
+                                                                                    <div className='text-primary-text hover:cursor-pointer hover:text-primary-text ml-0.5 hover:bg-secondary-200 active:ring-2 active:ring-gray-200 active:bg-secondary-400 focus:outline-none cursor-default p-1 rounded'>
                                                                                         <Trophy className="h-4 w-4" aria-hidden="true" />
                                                                                     </div>
                                                                                 </ClickTooltip>

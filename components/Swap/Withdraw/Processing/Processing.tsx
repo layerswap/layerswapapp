@@ -56,7 +56,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     const outputPendingDetails = <div className='flex items-center space-x-1'>
         <span>Estimated arrival:</span>
-        <div className='text-white'>
+        <div className='text-primary-text'>
             {
                 destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
                     <span>Up to 2 hours (delayed)</span>
@@ -70,7 +70,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         "input_transfer": {
             upcoming: {
                 name: 'Waiting for your transfer',
-                description: <span><span>Estimated time:&nbsp;</span><span className='text-white'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
+                description: <span><span>Estimated time:&nbsp;</span><span className='text-primary-text'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
             },
             current: {
                 name: 'Processing your deposit',
@@ -78,7 +78,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                     <span>
                         <span>Waiting for confirmations</span>
                         {swapInputTransaction && swapInputTransaction.confirmations && (
-                            <span className="text-white ml-1">
+                            <span className="text-primary-text ml-1">
                                 <span>{swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations
                                     ? swapInputTransaction.max_confirmations
                                     : swapInputTransaction.confirmations}</span>
@@ -102,7 +102,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 name: `The transfer failed`,
                 description: <div className='flex space-x-1'>
                     <span>Error: </span>
-                    <div className='space-x-1 text-white'>
+                    <div className='space-x-1 text-primary-text'>
                         {swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
                             "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
                             :
@@ -122,11 +122,11 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         "output_transfer": {
             upcoming: {
                 name: `Sending ${destinationNetworkCurrency?.name} to your address`,
-                description: <span><span>Estimated time:&nbsp;</span><span className='text-white'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
+                description: <span><span>Estimated time:&nbsp;</span><span className='text-primary-text'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
             },
             current: {
                 name: `Sending ${destinationNetworkCurrency?.name} to your address`,
-                description: <span><span>Estimated time:&nbsp;</span><span className='text-white'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
+                description: <span><span>Estimated time:&nbsp;</span><span className='text-primary-text'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
             },
             complete: {
                 name: `${swapOutputTransaction?.amount} ${swap?.destination_network_asset} was sent to your address`,
@@ -144,7 +144,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 name: `The transfer failed`,
                 description: <div className='flex space-x-1'>
                     <span>Error: </span>
-                    <div className='space-x-1 text-white'>
+                    <div className='space-x-1 text-primary-text'>
                         {swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
                             "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
                             :
@@ -164,11 +164,11 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         "refuel": {
             upcoming: {
                 name: `Sending ${nativeCurrency?.asset} to your address`,
-                description: <span><span>Estimated time:&nbsp;</span><span className='text-white'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
+                description: <span><span>Estimated time:&nbsp;</span><span className='text-primary-text'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
             },
             current: {
                 name: `Sending ${nativeCurrency?.asset} to your address`,
-                description: <span><span>Estimated time:&nbsp;</span><span className='text-white'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
+                description: <span><span>Estimated time:&nbsp;</span><span className='text-primary-text'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
             },
             complete: {
                 name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your address`,

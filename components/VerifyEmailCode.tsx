@@ -115,7 +115,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                         </p>
                                     </div>
                                     <p className='mt-2 text-left'>
-                                        <span>Please enter the 6 digit code sent to </span><span className='font-medium text-white'>{tempEmail}</span>
+                                        <span>Please enter the 6 digit code sent to </span><span className='font-medium text-primary-text'>{tempEmail}</span>
                                     </p>
                                 </div>
                                 <div className="text-sm text-secondary-text font-normal mt-5">

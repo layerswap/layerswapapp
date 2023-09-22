@@ -10,7 +10,7 @@ const Delay: FC = () => {
                     <HelpCircle className='h-8 w-8 text-primary-500 mr-4' />
                     <label className="block text-sm md:text-base font-medium">What&apos;s happening?</label>
                 </div>
-                <div className='mt-4 text-xs md:text-sm text-white'>
+                <div className='mt-4 text-xs md:text-sm text-primary-text'>
                     <p className='text-md '><span>This usually means that the exchange needs additional verification.</span>
                         <Link target='_blank' href="https://docs.layerswap.io/user-docs/why-is-coinbase-transfer-taking-so-long"
                             className='disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed ml-1 underline hover:no-underline cursor-pointer'>Learn More</Link></p>
