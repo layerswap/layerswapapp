@@ -149,7 +149,7 @@ export default class NetworkSettings {
             AccountExplorerTemplate: 'https://optimistic.etherscan.io/address/{0}',
             GasCalculationType: GasCalculation.OptimismType,
             BaseFeeMultiplier: 1.7,
-            DefaultPriorityFee: 2
+            DefaultPriorityFee: 1
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OptimismGoerli] = {
             GasCalculationType: GasCalculation.OptimismType
@@ -213,17 +213,41 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.LineaMainnet] = {
             ChainId: 59144,
+            BaseFeeMultiplier: 1.7,
+            DefaultPriorityFee: 1
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BaseTestnet] = {
             GasCalculationType: GasCalculation.OptimismType
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BaseMainnet] = {
             ChainId: 8453,
-            GasCalculationType: GasCalculation.OptimismType
+            GasCalculationType: GasCalculation.OptimismType,
+            BaseFeeMultiplier: 1.7,
+            DefaultPriorityFee: 1
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.MantaMainnet] = {
+            ChainId: 169,
+            GasCalculationType: GasCalculation.OptimismType,
+            BaseFeeMultiplier: 1.7,
+            DefaultPriorityFee: 1
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.RolluxMainnet] = {
+            ChainId: 570,
+            GasCalculationType: GasCalculation.OptimismType,
+            BaseFeeMultiplier: 1.7,
+            DefaultPriorityFee: 1
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.OpBNBMainnet] = {
+            ChainId: 204,
+            GasCalculationType: GasCalculation.OptimismType,
+            BaseFeeMultiplier: 1.7,
+            DefaultPriorityFee: 1
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.PGNMainnet] = {
             ChainId: 424,
-            GasCalculationType: GasCalculation.OptimismType
+            GasCalculationType: GasCalculation.OptimismType,
+            BaseFeeMultiplier: 2.1,
+            DefaultPriorityFee: 2.1
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.PGNTestnet] = {
             GasCalculationType: GasCalculation.OptimismType
@@ -233,7 +257,7 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.AvalancheMainnet] = {
             ChainId: 43114,
-            DefaultPriorityFee: 2,
+            DefaultPriorityFee: 2.1,
             BaseFeeMultiplier: 1.7
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.PolygonZkMainnet] = {
@@ -241,7 +265,9 @@ export default class NetworkSettings {
             AccountExplorerTemplate: "https://zkevm.polygonscan.com/address//{0}"
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZoraMainnet] = {
-            GasCalculationType: GasCalculation.OptimismType
+            GasCalculationType: GasCalculation.OptimismType,
+            BaseFeeMultiplier: 1.7,
+            DefaultPriorityFee: 1
         };
 
         NetworkSettings.ImmutableXSettings = {
