@@ -89,7 +89,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 </div>
             },
             complete: {
-                name: `Your deposit is detected`,
+                name: `Your deposit is confirmed`,
                 description: <div className='flex items-center space-x-1'>
                     <span>Transaction: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
@@ -264,7 +264,7 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { [key in 
     const swapInputTransaction: Transaction | string = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id];
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
-    let inputIsCompleted = (swapInputTransaction as Transaction)?.status == TransactionStatus.Completed;
+    let inputIsCompleted = (swapInputTransaction as Transaction)?.status == TransactionStatus.Completed && (swapInputTransaction as Transaction).confirmations >= (swapInputTransaction as Transaction).max_confirmations;
     let input_transfer = inputIsCompleted ? ProgressStatus.Complete : ProgressStatus.Current;
 
     let output_transfer =
