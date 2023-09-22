@@ -176,7 +176,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                     }
                     {
                         <div className='flex items-center'>
-                            {!firstScreen && !localConfigs.alreadyFamiliarWithCoinbaseConnect &&
+                            {!localConfigs.alreadyFamiliarWithCoinbaseConnect && !firstScreen && 
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.5 }}
                                     animate={{ opacity: 1, scale: 1 }}
