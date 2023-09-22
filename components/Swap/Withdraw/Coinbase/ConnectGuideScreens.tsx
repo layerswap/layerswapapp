@@ -28,25 +28,16 @@ export const FourthScreen = ({ minimalAuthorizeAmount }) => {
 
 export const LastScreen = ({ minimalAuthorizeAmount, number }: { minimalAuthorizeAmount: number, number?: boolean }) => {
     return (
-        number ? (
-            <div className="inline-flex flex-col left-0 w-full absolute top-0 h-full">
-                <div className='text-primary-text text-md font-normal w-full pb-4 '>
+        <div className="inline-flex flex-col left-0 w-full absolute top-0 h-full">
+            <div className='text-primary-text text-md font-normal w-full pb-4 '>
+                {number &&
                     <span className='font-medium text-primary'>.05</span>
-                    <span>&nbsp;Make sure to change the allowed amount to&nbsp;</span>
-                    <span className='strong-highlight'>{minimalAuthorizeAmount}</span>
-                </div>
-                <LastScreenImage minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                }
+                <span>&nbsp;Make sure to change the allowed amount to&nbsp;</span>
+                <span className='strong-highlight'>{minimalAuthorizeAmount}</span>
             </div>
-        ) : (
-            <div className="inline-flex flex-col left-0 w-full absolute top-0 h-full">
-                <div className='text-primary-text text-md font-normal w-full pb-4 '>
-                    <span className='font-medium text-primary'>.05</span>
-                    <span>&nbsp;Make sure to change the allowed amount to&nbsp;</span>
-                    <span className='strong-highlight'>{minimalAuthorizeAmount}</span>
-                </div>
-                <LastScreenImage minimalAuthorizeAmount={minimalAuthorizeAmount} />
-            </div>
-        )
+            <LastScreenImage minimalAuthorizeAmount={minimalAuthorizeAmount} />
+        </div>
     );
 }
 
