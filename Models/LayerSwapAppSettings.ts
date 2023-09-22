@@ -40,28 +40,14 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
     static ResolveLayers(exchanges: Exchange[], networks: CryptoNetwork[]): Layer[] {
         const exchangeLayers: Layer[] = exchanges.map((e): Layer => ({
             isExchange: true,
-            internal_name: e.internal_name,
-            display_name: e.display_name,
-            status: e.status,
-            authorization_flow: e.authorization_flow,
-            type: e.type,
-            is_featured: e.is_featured,
-            assets: LayerSwapAppSettings.ResolveExchangeL2Assets(e.currencies, networks)
+            assets: LayerSwapAppSettings.ResolveExchangeL2Assets(e.currencies, networks),
+            ...e
         }))
         const networkLayers: Layer[] = networks.map((n): Layer =>
         ({
             isExchange: false,
-            internal_name: n.internal_name,
-            display_name: n.display_name,
-            status: n.status,
-            native_currency: n.native_currency,
-            average_completion_time: n.average_completion_time,
-            chain_id: n.chain_id,
-            type: n.type,
-            nodes: n.nodes,
-            metadata: n.metadata,
-            is_featured: n?.is_featured,
-            assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n)
+            assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n),
+            ...n
         }))
         const result = exchangeLayers.concat(networkLayers)
         return result

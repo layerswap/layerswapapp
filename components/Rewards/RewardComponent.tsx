@@ -21,6 +21,7 @@ import SpinIcon from "../icons/spinIcon";
 import WalletIcon from "../icons/WalletIcon";
 import Link from "next/link";
 import LinkWrapper from "../LinkWraapper";
+import { Progress } from "../ProgressBar";
 
 function RewardComponent() {
 
@@ -44,6 +45,8 @@ function RewardComponent() {
     const rewards = rewardsData?.data
     const leaderboard = leaderboardData?.data
     const payouts = payoutsData?.data
+    const totalBudget = campaign?.total_budget
+    const DistributedAmount = ((campaign?.distributed_amount / campaign?.total_budget) * 100)
 
     const next = new Date(rewards?.next_airdrop_date)
     const now = new Date()
@@ -104,9 +107,18 @@ function RewardComponent() {
                                                                 width="40"
                                                                 loading="eager"
                                                                 className="rounded-md object-contain" />
-                                                        </div>
-                                                        <p className="font-bold text-xl text-left flex items-center">{network?.display_name}<span>&nbsp;Rewards&nbsp;</span><ClickTooltip text={<span><span>Onboarding incentives that are earned by transferring to&nbsp;</span>{network?.display_name}<span>.&nbsp;</span><a target='_blank' href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></span>} /></p>
+                                                        </div>  <p className="font-bold text-xl text-left flex items-center">{network?.display_name} Rewards </p>
                                                     </div>
+                                                    <p className="text-primary-text">
+                                                        <span>
+                                                            <span>Onboarding incentives that are earned by transferring to&nbsp;</span>{network?.display_name}<span>.&nbsp;</span>
+                                                            <a
+                                                                target='_blank'
+                                                                href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards"
+                                                                className="text-white underline hover:no-underline decoration-white cursor-pointer"
+                                                            >Learn more</a>
+                                                        </span>
+                                                    </p>
                                                     <div className="bg-secondary-700 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
                                                         {!isCampaignEnded && <BackgroundField header={<span className="flex justify-between"><span className="flex items-center"><span>Pending Earnings&nbsp;</span><ClickTooltip text={`${campaign?.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
                                                             <div className="flex justify-between w-full text-2xl">
@@ -154,7 +166,23 @@ function RewardComponent() {
                                                             </div>
                                                         </BackgroundField>
                                                     </div>
-                                                </div >
+                                                </div>
+                                                {!isCampaignEnded && <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
+                                                    <BackgroundField header={
+                                                        <>
+                                                            <p className="flex items-center"><span>{campaign?.asset} pool</span>
+                                                                <ClickTooltip text={`The amount of ${campaign?.asset} to be distributed during this round of the campaign.`} />
+                                                            </p>
+                                                        </>
+                                                    } withoutBorder>
+                                                        <div className="flex flex-col w-full gap-2">
+                                                            <Progress value={DistributedAmount === Infinity ? 0 : DistributedAmount} />
+                                                            <div className="flex justify-between w-full font-semibold text-sm ">
+                                                                <div className="text-primary"><span className="text-primary-text">{campaign?.distributed_amount.toFixed(0)}</span> <span>/</span> {totalBudget} {campaign?.asset}</div>
+                                                            </div>
+                                                        </div>
+                                                    </BackgroundField>
+                                                </div>}
                                                 {
                                                     payouts.length > 0 &&
                                                     <div className="space-y-1">
@@ -211,7 +239,7 @@ function RewardComponent() {
                                                     </div>
                                                     <p className="font-bold text-xl text-left flex items-center">{network?.display_name} Rewards </p>
                                                 </div>
-                                                <p className="text-secondary-text text-base"><span>You can earn $</span>{campaign?.asset}<span>&nbsp;tokens by transferring assets to&nbsp;</span>{network?.display_name}<span>. For each transaction, you’ll receive&nbsp;</span>{campaign?.percentage}<span>% of Layerswap fee back.&nbsp;</span><Link target='_blank' href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</Link></p>
+                                                <p className="text-secondary-text text-base"><span>You can earn $</span>{campaign?.asset}<span>&nbsp;tokens by transferring assets to&nbsp;</span>{network?.display_name}<span>. For each transaction, you&amp;ll receive&nbsp;</span>{campaign?.percentage}<span>% of Layerswap fee back.&nbsp;</span><Link target='_blank' href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</Link></p>
                                             </div>
                                         </div>
                                     }
@@ -240,14 +268,14 @@ function RewardComponent() {
                                                                                 <AddressIcon address={user.address} size={25} />
                                                                                 <div>
                                                                                     <div className="text-sm font-bold text-primary-text leading-3">
-                                                                                        <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user.address)}>
-                                                                                            {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}
-                                                                                        </Link>
+                                                                                        {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user?.address)}>
+                                                                                            {user?.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user?.address)}
+                                                                                        </Link>}
                                                                                     </div>
                                                                                     <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {campaign?.asset}</p>
                                                                                 </div>
-                                                                            </div>
-                                                                        </div>
+                                                                            </div >
+                                                                        </div >
                                                                         {
                                                                             leaderboard.leaderboard_budget > 0 && <div className="text-right flex items-center space-x-2">
                                                                                 <ClickTooltip text={
@@ -272,11 +300,12 @@ function RewardComponent() {
                                                                                 </ClickTooltip>
                                                                             </div>
                                                                         }
-                                                                    </div>
+                                                                    </div >
                                                                 ))
 
                                                             }
-                                                            {rewards?.user_reward.position >= 4 &&
+                                                            {
+                                                                rewards?.user_reward.position >= 4 &&
                                                                 <div className={rewards.user_reward.position > 4 && "!mt-0 !pt-0"}>
                                                                     {rewards.user_reward.position > 4 && < div className="text-2xl text-center leading-3 text-secondary-text my-3">
                                                                         ...
@@ -288,26 +317,26 @@ function RewardComponent() {
                                                                                 <AddressIcon address={rewards.user_reward.total_amount.toString()} size={25} />
                                                                                 <div>
                                                                                     <div className="text-sm font-bold text-primary-text leading-3">
-                                                                                        <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", address)}>
+                                                                                        {address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", address)}>
                                                                                             <span className="text-primary">You</span>
-                                                                                        </Link>
+                                                                                        </Link>}
                                                                                     </div>
                                                                                     <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, campaignAsset.precision)} {campaign?.asset}</p>
                                                                                 </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
+                                                                            </div >
+                                                                        </div >
+                                                                    </div >
+                                                                </div >
                                                             }
-                                                        </div>
+                                                        </div >
                                                             :
                                                             <div className="h-8 flex flex-col justify-center items-center text-sm">
                                                                 Here will be leaderboard.
                                                             </div>
                                                         }
-                                                    </div>
-                                                </div>
-                                            </div>
+                                                    </div >
+                                                </div >
+                                            </div >
                                         )
                                     }
                                     {
@@ -346,14 +375,14 @@ function RewardComponent() {
                                                 <AddressIcon address={user.address} size={25} />
                                                 <div>
                                                     <div className="text-sm font-bold text-primary-text leading-3">
-                                                        <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user.address)}>
+                                                        {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user?.address)}>
                                                             {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}
-                                                        </Link>
+                                                        </Link>}
                                                     </div>
                                                     <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {campaign?.asset}</p>
                                                 </div>
-                                            </div>
-                                        </div>
+                                            </div >
+                                        </div >
                                         {
                                             user.position < 4 && leaderboard.leaderboard_budget > 0 &&
                                             <div className="text-right flex items-center space-x-2">
@@ -380,13 +409,13 @@ function RewardComponent() {
                                                 </ClickTooltip>
                                             </div>
                                         }
-                                    </div>
+                                    </div >
                                 ))
                             }
-                        </div>
-                    </div>
-                </div>
-            </Modal>
+                        </div >
+                    </div >
+                </div >
+            </Modal >
         </>
     )
 }

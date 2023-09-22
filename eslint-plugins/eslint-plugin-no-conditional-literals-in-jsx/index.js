@@ -5,6 +5,5 @@ const plugin = {
         "no-conditional-literals-in-jsx": noConditionalLiterals,
         "no-unwrapped-jsx-text": noUnwrappedJsxText
     },
-    recomme
 };
 module.exports = plugin;

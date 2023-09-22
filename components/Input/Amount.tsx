@@ -8,7 +8,7 @@ import NumericInput from "./NumericInput";
 import SecondaryButton from "../buttons/secondaryButton";
 import { useQueryState } from "../../context/query";
 import { useWalletState, useWalletUpdate } from "../../context/wallet";
-import { roundDecimals } from "../utils/RoundDecimals";
+import { truncateDecimals } from "../utils/RoundDecimals";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
@@ -21,12 +21,13 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { getBalance } = useWalletUpdate()
     const name = "amount"
     const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
-    const walletBalanceAmount = roundDecimals(walletBalance?.amount, currency?.precision)
+    const walletBalanceAmount = truncateDecimals(walletBalance?.amount, currency?.precision)
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
     const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances, walletBalance?.amount, minAllowedAmount)
+    const maxAllowedDisplayAmont = truncateDecimals(maxAllowedAmount, currency?.precision)
 
-    const placeholder = (currency && from && to && !isBalanceLoading) ? `${minAllowedAmount} - ${maxAllowedAmount}` : '0.01234'
+    const placeholder = (currency && from && to && !isBalanceLoading) ? `${minAllowedAmount} - ${maxAllowedDisplayAmont}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.precision)
     const amountRef = useRef(ref)
 
@@ -42,7 +43,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     return (<>
         <NumericInput
             label={<AmountLabel detailsAvailable={!!(from && to && amount)}
-                maxAllowedAmount={maxAllowedAmount}
+                maxAllowedAmount={maxAllowedDisplayAmont}
                 minAllowedAmount={minAllowedAmount}
                 isBalanceLoading={isBalanceLoading}
                 walletBalance={walletBalanceAmount}

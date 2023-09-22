@@ -25,7 +25,7 @@ const getGroupName = (layer: Layer) => {
     if (layer?.is_featured) {
         return "Popular";
     }
-    else if (new Date(layer?.created_date) >= new Date(new Date().setMonth(new Date().getMonth() - 1))) {
+    else if (new Date(layer?.created_date).getTime() >= (new Date().getTime() - 2629800000)) {
         return "New";
     }
     else if (!layer.isExchange) {

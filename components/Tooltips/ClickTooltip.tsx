@@ -1,6 +1,6 @@
 import { Info } from 'lucide-react';
-import * as Popover from '@radix-ui/react-popover';
 import { FC } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from '../shadcn/popover';
 
 type Props = {
     children?: JSX.Element | JSX.Element[],
@@ -10,23 +10,12 @@ type Props = {
 
 const ClickTooltip: FC<Props> = (({ children, text, moreClassNames }) => {
     return (
-        <Popover.Root>
-            <Popover.Trigger>
-                {
-                    children ??
-                    <div className='text-secondary-text hover:cursor-pointer hover:text-primary-text ml-0.5 hover:bg-secondary-400 active:ring-2 active:ring-gray-200 active:bg-secondary-500 focus:outline-none cursor-default p-0.5 rounded'>
-                        <Info className="h-4" aria-hidden="true" strokeWidth={3} />
-                    </div>
-                }
-            </Popover.Trigger>
-            <Popover.Portal>
-                <Popover.Content className='bg-secondary-700 border-2 border-secondary-400 z-50 shadow-lg rounded-md p-2 w-fit max-w-[192px] leading-4 text-sm mt-1'>
-                    <span className={`text-secondary-text whitespace-no-wrap word-break ${moreClassNames}`}>
-                        {text}
-                    </span>
-                </Popover.Content>
-            </Popover.Portal>
-        </Popover.Root>
+        <Popover>
+            <PopoverTrigger>
+                <Info className="h-4 hover:text-primary-text" aria-hidden="true" strokeWidth={2.5} />
+            </PopoverTrigger>
+            <PopoverContent className='text-sm'>{text}</PopoverContent>
+        </Popover>
     )
 })
 
