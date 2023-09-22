@@ -119,7 +119,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
         }
         setChecked(e.target.checked);
     }
-    console.log("carouselRef?.current", carouselRef?.current)
+    
     return (
         <Widget>
             <Widget.Content>
