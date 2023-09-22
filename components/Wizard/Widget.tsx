@@ -19,7 +19,7 @@ const Content = ({ children, center }: ContetProps) => {
                 </div>
             </div>
         </div>
-        : <div className='space-y-4 py-3'>{children}</div>
+        : <div className='space-y-4 py-3 h-full'>{children}</div>
 }
 export let variants = {
     enter: ({ direction, width }) => {
