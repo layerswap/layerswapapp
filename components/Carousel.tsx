@@ -17,7 +17,7 @@ export const CarouselItem: React.FC<CarouselItemProps> = ({ children, width }) =
 
 interface CarouselProps {
     children?: JSX.Element | JSX.Element[];
-    onLast: (value) => void;
+    onLast: (value: boolean) => void;
     onFirst: (value: boolean) => void;
 }
 
@@ -30,7 +30,6 @@ export type CarouselRef = {
 
 const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel({onFirst, onLast, children}, ref) {
     const [activeIndex, setActiveIndex] = useState(0);
-    const [paused, setPaused] = useState(false);
 
     useEffect(() => {
         onFirst(true);
@@ -68,8 +67,6 @@ const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel({onFir
         <div
             {...handlers}
             className="overflow-hidden h-full pb-7"
-            onMouseEnter={() => setPaused(true)}
-            onMouseLeave={() => setPaused(false)}
         >
             <div
                 className="whitespace-nowrap transition-transform duration-500 inner h-full"
