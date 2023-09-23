@@ -7,7 +7,7 @@ import { useInterval } from '../../../../hooks/useInterval';
 import { Configs, usePersistedState } from '../../../../hooks/usePersistedState';
 import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
 import { parseJwt } from '../../../../lib/jwtParser';
-import { WithdrawType } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { WithdrawType } from '../../../../lib/layerSwapApiClient';
 import { OpenLink } from '../../../../lib/openLink';
 import TokenService from '../../../../lib/TokenService';
 import SubmitButton from '../../../buttons/submitButton';
@@ -78,10 +78,18 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
         authWindow && !authWindow.closed ? 1000 : null,
     )
 
+    const handleDisconnectCoinbase = useCallback(async () => {
+        const apiClient = new LayerSwapApiClient()
+        await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
+    }, [])
+
     useEffect(() => {
         if (authorizedAmount) {
-            if (Number(authorizedAmount) < minimalAuthorizeAmount)
-                toast.error("You did not authorize enough")
+            if (Number(authorizedAmount) < minimalAuthorizeAmount) {
+                toast.dismiss();
+                toast.error("You have not authorized enough to be able to complete the transfer. Please authorize again.");
+                handleDisconnectCoinbase();
+            }
             else {
                 onAuthorized()
             }
@@ -97,7 +105,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
             const access_token = TokenService.getAuthData()?.access_token
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ SwapId: swap?.id, UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
-            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, query: query })
+            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, query: query, swapId: swap.id })
             setAuthWindow(authWindow)
         }
         catch (e) {
@@ -176,7 +184,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                     }
                     {
                         <div className='flex items-center'>
-                            {!localConfigs.alreadyFamiliarWithCoinbaseConnect && !firstScreen && 
+                            {!localConfigs.alreadyFamiliarWithCoinbaseConnect && !firstScreen &&
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.5 }}
                                     animate={{ opacity: 1, scale: 1 }}
