@@ -25,7 +25,7 @@ export type LinkTempData = {
 }
 
 export function OpenLink({ link, swapId, query }: OpenLinkArgs): (Window | null) {
-  if (true) {
+  if (isMobile()) {
     const link_temp_data: LinkTempData = { query, date: new Date(), swap_id: swapId }
     setTempData(link_temp_data)
     window.location.href = link;
