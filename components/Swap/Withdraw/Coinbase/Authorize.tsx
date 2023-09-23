@@ -81,7 +81,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     useEffect(() => {
         if (authorizedAmount) {
             if (Number(authorizedAmount) < minimalAuthorizeAmount)
-                toast.error("You did not authorize enough")
+                alert("You have not authorized enough to be able to complete the transfer. Please authorize again.")
             else {
                 onAuthorized()
             }
