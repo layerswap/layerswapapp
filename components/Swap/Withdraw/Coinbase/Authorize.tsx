@@ -97,7 +97,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
             const access_token = TokenService.getAuthData()?.access_token
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ SwapId: swap?.id, UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
-            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, query: query })
+            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, query: query, swapId: swap.id })
             setAuthWindow(authWindow)
         }
         catch (e) {
