@@ -12,6 +12,8 @@ import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { SwapFailReasons } from '../../../../Models/RangeError';
+import { Gauge } from '../../../gauge';
+import SuccessIcon from '../../../icons/SuccessIcon';
 
 type Props = {
     settings: LayerSwapAppSettings;
@@ -187,7 +189,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         }
     }
 
-    const progress: StatusStep[] = [
+    const allSteps: StatusStep[] = [
         {
             name: progressStates["input_transfer"][progressStatuses?.input_transfer]?.name,
             status: progressStatuses?.input_transfer,
@@ -208,8 +210,10 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         }
     ]
 
+    let currentSteps = allSteps.filter((s) => s.status);
+    let stepsProgressPercentage = currentSteps.filter(x => x.status == ProgressStatus.Complete).length / currentSteps.length * 100;
+    console.log(currentSteps.length, currentSteps.filter(x => x.status == ProgressStatus.Complete).length)
     if (!swap) return <></>
-
     return (
         <Widget.Content>
             <div className={`w-full ${swap?.status != SwapStatus.Cancelled && swap?.status != SwapStatus.Expired ? "min-h-[422px]" : ""} space-y-5 flex flex-col justify-between h-full text-primary-text`}>
@@ -220,16 +224,22 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                         }
                         {swap?.status != SwapStatus.Cancelled && swap?.status != SwapStatus.Expired &&
                             <div className="w-full flex flex-col h-full space-y-5">
-                                <div className="text-left text-primary-text space-y-2">
-                                    <p className="block sm:text-lg font-medium text-white">
-                                        Transfer status
-                                    </p>
-                                    <p className='text-sm flex space-x-1'>
-                                        You’ll see live updates on the transfer progress below
-                                    </p>
+                                <div className='grid grid-cols-7'>
+                                    <div className='flex items-start'>
+                                        {stepsProgressPercentage < 100 ? <Gauge value={stepsProgressPercentage} size="small" showValue={false} /> :
+                                            <SuccessIcon className='w-12 h-12' />}
+                                    </div>
+                                    <div className="text-left flex-col text-primary-text col-span-6">
+                                        <span className="font-medium text-white">
+                                            Transfer in progress
+                                        </span>
+                                        <span className='text-sm flex space-x-1'>
+                                            You&apos;ll see live updates on the transfer progress below
+                                        </span>
+                                    </div>
                                 </div>
                                 <div className='flex flex-col h-full justify-center'>
-                                    <Steps steps={progress} />
+                                    <Steps steps={currentSteps} />
                                 </div>
                             </div>
                         }
@@ -279,7 +289,7 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { [key in 
                     : null;
 
     if (swapStatus === SwapStatus.Failed) {
-        output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed ;
+        output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed;
         refuel_transfer = refuel_transfer !== ProgressStatus.Complete && null;
     }
 

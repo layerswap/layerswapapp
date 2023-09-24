@@ -19,7 +19,7 @@ function constructIcons(icon: iconStyle) {
             iconStyle = <FailIcon />;
             break;
         case 'green':
-            iconStyle = SuccessIcon;
+            iconStyle = <SuccessIcon />;
             break;
         case 'yellow':
             iconStyle = DelayIcon
