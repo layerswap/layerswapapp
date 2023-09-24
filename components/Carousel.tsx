@@ -17,6 +17,7 @@ export const CarouselItem: React.FC<CarouselItemProps> = ({ children, width }) =
 
 interface CarouselProps {
     children?: JSX.Element | JSX.Element[];
+    starAtLast: boolean;
     onLast: (value: boolean) => void;
     onFirst: (value: boolean) => void;
 }
@@ -28,8 +29,8 @@ export type CarouselRef = {
     goToFirst: () => void;
 };
 
-const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel({ onFirst, onLast, children }, ref) {
-    const [activeIndex, setActiveIndex] = useState(0);
+const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel({ onFirst, onLast, children, starAtLast }, ref) {
+    const [activeIndex, setActiveIndex] = useState(starAtLast ? React.Children.count(children) - 1 : 0);
 
     const updateIndex = useCallback((newIndex) => {
         onFirst(false)
