@@ -122,7 +122,7 @@ export function CalculateMaxAllowedAmount(values: SwapFormValues, balances?: str
     } else if (walletBalance && (walletBalance >= minAllowedAmount && walletBalance <= maxAmount)) {
         return walletBalance
     }
-    return roundDecimals(maxAmount, currency?.usd_price?.toFixed()?.length) || 0
+    return maxAmount || 0
 }
 
 export function CalculateMinAllowedAmount(values: SwapFormValues, allNetworks: CryptoNetwork[], allCurrencies: Currency[]) {

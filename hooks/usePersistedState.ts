@@ -3,16 +3,6 @@ import { checkStorageIsAvailable, storageType } from '../helpers/storageAvailabl
 
 type PersistedState<T> = [T, Dispatch<SetStateAction<T>>];
 
-export type Configs = {
-  alreadyFamiliarWithCoinbaseConnect?: boolean,
-  connectedWallet?: {
-    isConnected?: boolean;
-    address?: string;
-    icon?: string;
-    balance?: number
-  }
-}
-
 function usePersistedState<T>(defaultValue: T, key: string, type: storageType = 'localStorage'): PersistedState<T> {
   const [value, setValue] = useState<T>(() => {
     const value = checkStorageIsAvailable(type) && window[type]?.getItem(key);
