@@ -32,7 +32,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const { layers, currencies, discovery } = useSettingsState()
 
     let alreadyFamiliar = useCoinbaseStore((state) => state.alreadyFamiliar);
-    let toggleAlreadyFamiliar = useCoinbaseStore((state) => state.tickAlreadyFamiliar);
+    let toggleAlreadyFamiliar = useCoinbaseStore((state) => state.toggleAlreadyFamiliar);
     const [carouselFinished, setCarouselFinished] = useState(alreadyFamiliar)
 
     const [authWindow, setAuthWindow] = useState<Window>()
