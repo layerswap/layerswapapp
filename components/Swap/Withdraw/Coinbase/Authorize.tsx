@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useQueryState } from '../../../../context/query';
 import { useSettingsState } from '../../../../context/settings';
-import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
+import { useSwapDataState } from '../../../../context/swap';
 import { useInterval } from '../../../../hooks/useInterval';
 import { Configs, usePersistedState } from '../../../../hooks/usePersistedState';
 import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
@@ -29,14 +29,15 @@ type Props = {
 
 const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
     const { swap } = useSwapDataState()
-    const { setWithdrawType } = useSwapDataUpdate()
     const { layers, currencies, discovery } = useSettingsState()
+    const [checked, setChecked] = useState(false)
     let [localConfigs, setLocalConfigs] = usePersistedState<Configs>({}, 'configs')
 
     const [carouselFinished, setCarouselFinished] = useState(localConfigs.alreadyFamiliarWithCoinbaseConnect)
+
     const [authWindow, setAuthWindow] = useState<Window>()
     const [authorizedAmount, setAuthorizedAmount] = useState<number>()
-    const [firstScreen, setFirstScreen] = useState<boolean>()
+    const [firstScreen, setFirstScreen] = useState<boolean>(true)
 
     const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
@@ -51,11 +52,6 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const { oauth_authorize_url } = coinbaseOauthProvider || {}
 
     const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount))
-
-    const handleTransferMannually = useCallback(() => {
-        setWithdrawType(WithdrawType.Manually)
-        onDoNotConnect()
-    }, [onDoNotConnect, setWithdrawType])
 
     const checkShouldStartPolling = useCallback(() => {
         let authWindowHref = ""
@@ -124,11 +120,15 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
         setCarouselFinished(value)
     }
 
-    const handleToggleChange = (value: boolean) => {
-        setLocalConfigs({ ...localConfigs, alreadyFamiliarWithCoinbaseConnect: value })
-        onCarouselLast(value)
+    const handleToggleChange = (e) => {
+        if (e.target.checked) {
+            carouselRef?.current?.goToLast();
+        } else {
+            carouselRef?.current?.goToFirst();
+        }
+        setChecked(e.target.checked);
     }
-
+    
     return (
         <Widget>
             <Widget.Content>
@@ -139,30 +139,25 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                     </h3>
                 }
                 {
-                    localConfigs.alreadyFamiliarWithCoinbaseConnect ?
-                        <div className={`w-full rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-secondary-900 to-secondary-700 h-full relative`} style={{ width: '100%' }}>
-                            <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                        </div>
-                        :
-                        <div className="w-full flex flex-col self-center h-[100%]">
-                            {swap && <Carousel onLast={onCarouselLast} onFirst={setFirstScreen} ref={carouselRef}>
-                                <CarouselItem width={100} >
-                                    <FirstScreen exchange_name={exchange_name} />
-                                </CarouselItem>
-                                <CarouselItem width={100}>
-                                    <SecondScreen />
-                                </CarouselItem>
-                                <CarouselItem width={100}>
-                                    <ThirdScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                                </CarouselItem>
-                                <CarouselItem width={100}>
-                                    <FourthScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                                </CarouselItem>
-                                <CarouselItem width={100}>
-                                    <LastScreen number minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                                </CarouselItem>
-                            </Carousel>}
-                        </div>
+                    <div className="w-full flex flex-col self-center h-[100%]">
+                        {swap && <Carousel onLast={onCarouselLast} onFirst={setFirstScreen} ref={carouselRef}>
+                            <CarouselItem width={100} >
+                                <FirstScreen exchange_name={exchange_name} />
+                            </CarouselItem>
+                            <CarouselItem width={100}>
+                                <SecondScreen />
+                            </CarouselItem>
+                            <CarouselItem width={100}>
+                                <ThirdScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                            </CarouselItem>
+                            <CarouselItem width={100}>
+                                <FourthScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                            </CarouselItem>
+                            <CarouselItem width={100}>
+                                <LastScreen number={!checked} minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                            </CarouselItem>
+                        </Carousel>}
+                    </div>
                 }
             </Widget.Content>
             <Widget.Footer sticky={stickyFooter}>
@@ -174,8 +169,8 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                                 id='alreadyFamiliar'
                                 type="checkbox"
                                 className="h-4 w-4 bg-secondary-600 cursor-pointer rounded border-secondary-400 text-priamry"
-                                onChange={() => handleToggleChange(!localConfigs.alreadyFamiliarWithCoinbaseConnect)}
-                                checked={localConfigs.alreadyFamiliarWithCoinbaseConnect}
+                                onChange={handleToggleChange}
+                                checked={checked}
                             />
                             <label htmlFor="alreadyFamiliar" className="ml-2 cursor-pointer block text-sm text-primary-text">
                                 I&apos;m already familiar with the process.
@@ -184,16 +179,13 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                     }
                     {
                         <div className='flex items-center'>
-                            {!localConfigs.alreadyFamiliarWithCoinbaseConnect && !firstScreen &&
+                            {(!firstScreen && !checked) &&
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.5 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ duration: 0.5 }}
                                 >
-                                    <IconButton onClick={handlePrev} className='mr-4 py-3 px-3' icon={
-                                        <ArrowLeft strokeWidth="3" />
-                                    }>
-                                    </IconButton>
+                                    <IconButton onClick={handlePrev} className='mr-4 py-3 px-3' icon={<ArrowLeft strokeWidth="3" />} />
                                 </motion.div>
                             }
                             <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
