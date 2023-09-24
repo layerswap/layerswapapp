@@ -1,4 +1,4 @@
-import { ExternalLink, Fuel } from 'lucide-react';
+import { Check, ExternalLink, Fuel } from 'lucide-react';
 import { FC } from 'react'
 import KnownInternalNames from '../../../../lib/knownIds';
 import Widget from '../../../Wizard/Widget';
@@ -224,12 +224,14 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                         }
                         {swap?.status != SwapStatus.Cancelled && swap?.status != SwapStatus.Expired &&
                             <div className="w-full flex flex-col h-full space-y-5">
-                                <div className='grid grid-cols-7'>
+                                <div className='flex gap-4'>
                                     <div className='flex items-start'>
                                         {stepsProgressPercentage < 100 ? <Gauge value={stepsProgressPercentage} size="small" showValue={false} /> :
-                                            <SuccessIcon className='w-12 h-12' />}
+                                            <span className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
+                                                <Check className="h-7 w-7 text-primary" aria-hidden="true" />
+                                            </span>}
                                     </div>
-                                    <div className="text-left flex-col text-primary-text col-span-6">
+                                    <div className="text-left flex-col text-primary-text ">
                                         <span className="font-medium text-white">
                                             Transfer in progress
                                         </span>

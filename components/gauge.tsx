@@ -4,7 +4,7 @@ export const Gauge = ({
     showValue = true,
 }: {
     value: number;
-    size: "small" | "medium" | "large";
+    size: "verySmall" | "small" | "medium" | "large";
     showValue: boolean;
 }) => {
     const circumference = 332; //2 * Math.PI * 53; // 2 * pi * radius
@@ -14,9 +14,14 @@ export const Gauge = ({
     const strokeDashoffset = initialOffset - valueInCircumference;
 
     const sizes = {
+        verySmall: {
+            width: "32",
+            height: "32",
+            textSize: "text-xs",
+        },
         small: {
-            width: "46",
-            height: "46",
+            width: "48",
+            height: "48",
             textSize: "text-xs",
         },
         medium: {
@@ -43,7 +48,7 @@ export const Gauge = ({
                 className="transform -rotate-90"
             >
                 <circle
-                    className="text-[#333]"
+                    className="text-primary/20"
                     strokeWidth="12"
                     stroke="currentColor"
                     fill="transparent"

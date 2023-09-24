@@ -1,21 +1,27 @@
 import { Check, X, XCircle } from "lucide-react";
 import { classNames } from "../utils/classNames";
+import SpinIcon from "../icons/spinIcon";
+import { Gauge } from "../gauge";
 
 function renderStepIcon(step) {
     switch (step.status) {
         case "complete":
             return (
-                <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary">
-                    <Check className="h-5 w-5 text-white" aria-hidden="true" />
+                <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
+                    <Check className="h-5 w-5 text-primary" aria-hidden="true" />
                 </span>
             );
 
         case "current":
             return (
-                <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary">
-                    <span className="h-2.5 w-2.5 rounded-full bg-primary" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-primary animate-ping absolute" />
+                <span className="animate-spin">
+                    <Gauge showValue={false} value={40} size="verySmall" />
                 </span>
+
+                // <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary">
+                //     <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+                //     <span className="h-2.5 w-2.5 rounded-full bg-primary animate-ping absolute" />
+                // </span>
             );
 
         case "failed":
@@ -41,7 +47,7 @@ function Step({ step, isLastStep }) {
         <li className={classNames(isLastStep ? '' : 'pb-10', 'relative')} key={step?.name}>
             <div className="flex items-center justify-between w-full">
                 {!isLastStep && (
-                    <div className={`absolute top-1/2 left-4 -ml-px mt-0.5 h-[40%] w-0.5 ${step.status === "complete" ? "bg-primary" : "bg-gray-300"} opacity-60`} aria-hidden="true" />
+                    <div className={`absolute top-1/2 left-4 -ml-px mt-0.5 h-[40%] w-0.5 ${step.status === "complete" ? "bg-primary" : "bg-primary/20"} `} aria-hidden="true" />
                 )}
                 <div className={`group relative flex ${step?.description ? "items-start" : "items-center"}`}>
                     <span className="flex h-9 items-center" aria-hidden="true">
