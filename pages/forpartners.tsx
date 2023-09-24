@@ -17,7 +17,7 @@ import Image from 'next/image'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
 
 const ResponsiveImage = (props) => {
-    
+
     const router = useRouter();
     return <Image
         alt={props.alt}
@@ -42,11 +42,11 @@ export default function ForPartners(props) {
 
     return (
         <Layout settings={appSettings}>
-            <div className="bg-secondary-900 shadow-card rounded-lg w-full flex content-center items-center justify-center mb-5 space-y-5 flex-col  container">
+            <div className="shadow-card rounded-lg w-full flex content-center items-center justify-center mb-5 space-y-5 flex-col container bg-secondary-900 md:shadow-card sm:overflow-hidden relative">
                 <Head>
                     <title>Layerswap Partners</title>
                 </Head>
-                <main className='w-full'>
+                <main className='w-full h-full sm:max-h-[70vh] max-h-[100vh] overflow-auto styled-scroll'>
                     <MenuProvider>
                         <HeaderWithMenu goBack={handleGoBack} />
                     </MenuProvider>
