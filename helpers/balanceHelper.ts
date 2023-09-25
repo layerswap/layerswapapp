@@ -215,20 +215,22 @@ export const estimateERC20GasLimit = async ({ publicClient, contract_address, ac
     return estimatedERC20GasLimit
 }
 
-const GetOpL1Fee = async ({ publicClient, account, nativeToken, currency, chainId, destination, contract_address, isSweeplessTx }: ResolveGasArguments): Promise<bigint> => {
+const GetOpL1Fee = async ({ publicClient, chainId, destination, contract_address, isSweeplessTx }: ResolveGasArguments): Promise<bigint> => {
     const amount = BigInt(1000)
-    let fee: bigint;
+    let serializedTransaction: TransactionSerializedEIP1559
+
     if (contract_address) {
         let encodedData = encodeFunctionData({
             abi: erc20ABI,
             functionName: "transfer",
             args: [destination, amount]
         })
-    
+
         if (encodedData && isSweeplessTx) {
             encodedData = constructSweeplessTxData(encodedData)
         }
-        const serializedTransaction = serializeTransaction({
+
+        serializedTransaction = serializeTransaction({
             client: publicClient,
             abi: erc20ABI,
             functionName: "transfer",
@@ -237,27 +239,22 @@ const GetOpL1Fee = async ({ publicClient, account, nativeToken, currency, chainI
             to: contract_address,
             data: encodedData,
             type: 'eip1559',
-          }) as TransactionSerializedEIP1559
-
-        fee = await getL1Fee({
-            data: serializedTransaction,
-            client :publicClient,
-        })
+        }) as TransactionSerializedEIP1559
     }
     else {
-        const serializedTransaction = serializeTransaction({
+        serializedTransaction = serializeTransaction({
             client: publicClient,
             chainId: chainId,
             to: destination,
             data: constructSweeplessTxData(),
             type: 'eip1559',
-          }) as TransactionSerializedEIP1559
-
-        fee = await getL1Fee({
-            data: serializedTransaction,
-            client :publicClient,
-        })
+        }) as TransactionSerializedEIP1559
     }
+
+    const fee = await getL1Fee({
+        data: serializedTransaction,
+        client: publicClient,
+    })
 
     return fee;
 }
