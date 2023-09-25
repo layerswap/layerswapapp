@@ -11,11 +11,12 @@ import { useAccount } from "wagmi"
 import TransferFromWallet from "./WalletTransfer"
 import { CanDoSweeplessTransfer } from "../../../../lib/fees"
 import { useWalletState } from "../../../../context/wallet"
+import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw"
 
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
-    const { starknetAccount, imxAccount } = useWalletState();
+    const { starknetAccount, imxAccount, zkSyncAccount } = useWalletState();
     const { address } = useAccount()
     const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_network_asset } = swap
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
@@ -23,8 +24,9 @@ const WalletTransfer: FC = () => {
     const sourceAsset = source_network.assets.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
 
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+    const sourceIsZkSync = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
-    let connectedWalletAddress = sourceIsImmutableX ? imxAccount : sourceIsStarknet ? starknetAccount?.account?.address : address;
+    let connectedWalletAddress = sourceIsImmutableX ? imxAccount : sourceIsStarknet ? starknetAccount?.account?.address : sourceIsZkSync ? zkSyncAccount : address;
     const canDoSweeplessTransfer = CanDoSweeplessTransfer(source_network, connectedWalletAddress, destination_address)
     const layerswapApiClient = new LayerSwapApiClient()
     const shouldGetGeneratedAddress = !canDoSweeplessTransfer
@@ -58,6 +60,10 @@ const WalletTransfer: FC = () => {
     else if (sourceIsStarknet)
         return <Wrapper>
             <StarknetWalletWithdrawStep amount={requested_amount} depositAddress={depositAddress} />
+        </Wrapper>
+    else if (sourceIsZkSync)
+        return <Wrapper>
+            <ZkSyncWalletWithdrawStep depositAddress={depositAddress} />
         </Wrapper>
     return <Wrapper>
         <TransferFromWallet

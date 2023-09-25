@@ -14,6 +14,7 @@ const WalletStateUpdateContext = React.createContext<WalletStateUpdate>(null);
 export type WalletState = {
     starknetAccount: StarknetWindowObject,
     imxAccount: string,
+    zkSyncAccount: string,
     balances: Balance[],
     gases: { [network: string]: Gas[] },
     isBalanceLoading: boolean,
@@ -23,6 +24,7 @@ export type WalletState = {
 type WalletStateUpdate = {
     setStarknetAccount: (account: StarknetWindowObject) => void,
     setImxAccount: (account: string) => void;
+    setZkSyncAccount: (account: string) => void;
     getBalance: (from: Layer) => Promise<void>,
     getGas: (from: Layer, currency: Currency, userDestinationAddress: string) => Promise<void>,
 }
@@ -34,6 +36,7 @@ type Props = {
 export const WalletDataProvider: FC<Props> = ({ children }) => {
     const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject>()
     const [imxAccount, setImxAccount] = useState<string>()
+    const [zkSyncAccount, setZkSyncAccount] = useState<string>()
     const [allBalances, setAllBalances] = useState<{ [address: string]: Balance[] }>({})
     const [allGases, setAllGases] = useState<{ [network: string]: Gas[] }>({})
     const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
@@ -109,6 +112,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         <WalletStateContext.Provider value={{
             starknetAccount,
             imxAccount,
+            zkSyncAccount,
             balances,
             gases,
             isBalanceLoading,
@@ -117,6 +121,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
             <WalletStateUpdateContext.Provider value={{
                 setStarknetAccount,
                 setImxAccount,
+                setZkSyncAccount,
                 getBalance,
                 getGas,
             }}>
