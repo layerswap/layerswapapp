@@ -26,7 +26,7 @@ type NetworkToConnect = {
     AppURL: string;
 }
 
-export default function () {
+export default function Form () {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
@@ -86,7 +86,7 @@ export default function () {
                 toast.error(error.message)
             }
         }
-    }, [swap, settings, query, partner])
+    }, [createSwap, query, partner, router, updateAuthData, setUserType])
 
     const destAddress: string = query.destAddress;
 

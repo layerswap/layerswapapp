@@ -17,7 +17,7 @@ import { parseUnits } from 'viem'
 import { useSwapTransactionStore } from '../../../store/zustandStore';
 
 type Props = {
-    managedDepositAddress: string;
+    depositAddress: string;
     amount: number
 }
 
@@ -31,7 +31,7 @@ export function parseInputAmountToUint256(
     return getUint256CalldataFromBN(parseUnits(input, decimals).toString())
 }
 
-const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress, amount }) => {
+const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
@@ -92,7 +92,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress, amount }
 
             const call = erc20Contract.populate(
                 "transfer",
-                [managedDepositAddress,
+                [depositAddress,
                     parseInputAmountToUint256(amount.toString(), sourceCurrency.decimals)]
                 ,
             );
@@ -121,7 +121,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress, amount }
                 toast(e.message)
         }
         setLoading(false)
-    }, [starknetAccount, swap, source_network, managedDepositAddress, userId, sourceCurrency])
+    }, [starknetAccount, swap, source_network, depositAddress, userId, sourceCurrency])
 
     return (
         <>
@@ -160,7 +160,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ managedDepositAddress, amount }
                     }
                     {
                         starknetAccount
-                        && managedDepositAddress
+                        && depositAddress
                         && !isWrongNetwork
                         && <div className="flex flex-row
                         text-white text-base space-x-2">

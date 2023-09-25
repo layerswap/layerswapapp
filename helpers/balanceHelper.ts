@@ -1,10 +1,10 @@
-import { PublicClient, erc20ABI, usePublicClient } from 'wagmi';
-import { parseEther, encodeFunctionData } from 'viem'
-import { multicall, fetchBalance, fetchFeeData, FetchBalanceResult } from '@wagmi/core'
+import { erc20ABI } from 'wagmi';
+import { parseEther, encodeFunctionData, PublicClient, formatGwei } from 'viem'
+import { multicall, fetchBalance, FetchBalanceResult } from '@wagmi/core'
 import { BaseL2Asset, Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
-import KnownInternalNames from '../lib/knownIds';
 import { estimateFees } from '../lib/optimism/estimateFees';
+import NetworkSettings, { GasCalculation } from '../lib/NetworkSettings';
 
 export type ERC20ContractRes = ({
     error: Error;
@@ -28,14 +28,34 @@ export type Balance = {
 export type Gas = {
     token: string,
     gas: number,
+    gasDetails?: {
+        gasLimit: number,
+        maxFeePerGas: number,
+        gasPrice: number,
+        maxPriorityFeePerGas: number
+    }
 }
 
-export const resolveFeeData = async (chainId: number) => {
+type ResolveGasArguments = {
+    publicClient: PublicClient,
+    chainId?: number,
+    contract_address?: `0x${string}`,
+    account?: `0x${string}`,
+    from?: Layer,
+    currency?: Currency,
+    destination?: `0x${string}`
+    nativeToken?: BaseL2Asset,
+    userDestinationAddress?: `0x${string}`
+}
+
+export const resolveFeeData = async (publicClient: PublicClient) => {
     try {
-        const feeData = await fetchFeeData({
-            chainId,
-        })
-        return feeData
+
+        const gasPrice = await publicClient.getGasPrice()
+        const feesPerGas = await publicClient.estimateFeesPerGas()
+        const maxPriorityFeePerGas = await publicClient.estimateMaxPriorityFeePerGas()
+
+        return { gasPrice, maxFeePerGas: feesPerGas.maxFeePerGas, maxPriorityFeePerGas: maxPriorityFeePerGas }
     } catch (e) {
         //TODO: log the error to our logging service
         console.log(e)
@@ -60,8 +80,20 @@ export const resolveERC20Balances = async (
     })
     return contractBalances
 }
-
-export const getErc20Balances = async (address: string, chainId: number, assets: BaseL2Asset[]): Promise<ERC20ContractRes[] | null> => {
+type GetBalanceArgs = {
+    address: string,
+    chainId: number,
+    assets: BaseL2Asset[],
+    publicClient: PublicClient,
+    hasMulticall: boolean
+}
+export const getErc20Balances = async ({
+    address,
+    chainId,
+    assets,
+    publicClient,
+    hasMulticall = false
+}: GetBalanceArgs): Promise<ERC20ContractRes[] | null> => {
 
     const contracts = assets?.filter(a => a.contract_address && a.status !== 'inactive').map(a => ({
         address: a?.contract_address as `0x${string}`,
@@ -71,11 +103,40 @@ export const getErc20Balances = async (address: string, chainId: number, assets:
     }))
 
     try {
-        const contractRes = await multicall({
-            chainId: chainId,
-            contracts: contracts
-        })
-        return contractRes
+        if (hasMulticall) {
+            const contractRes = await multicall({
+                chainId: chainId,
+                contracts: contracts
+            })
+            return contractRes
+        }
+        else {
+            const balances: ERC20ContractRes[] = []
+            for (let i = 0; i < contracts.length; i++) {
+                try {
+                    const contract = contracts[i]
+                    const balance = await publicClient.readContract({
+                        address: contract?.address as `0x${string}`,
+                        abi: erc20ABI,
+                        functionName: 'balanceOf',
+                        args: [address as `0x${string}`]
+                    })
+                    balances.push({
+                        status: "success",
+                        result: balance,
+                        error: null
+                    })
+                }
+                catch (e) {
+                    balances.push({
+                        status: "failure",
+                        result: null,
+                        error: e?.message
+                    })
+                }
+            }
+            return balances
+        }
     }
     catch (e) {
         //TODO: log the error to our logging service
@@ -118,23 +179,14 @@ export const resolveNativeBalance = async (
     return nativeBalance
 }
 
-export const estimateNativeGas = async (publicClient: PublicClient, account: `0x${string}`, destination?: `0x${string}`) => {
+export const estimateNativeGasLimit = async ({ publicClient, account, destination, userDestinationAddress }: ResolveGasArguments) => {
 
-    const to = destination || account;
+    const to = destination;
 
-    let encodedData = encodeFunctionData({
-        abi: erc20ABI,
-        functionName: 'transfer',
-        args: [
-            to,
-            parseEther("0.1"),
-        ]
-    });
 
     const hexed_sequence_number = (99999999).toString(16)
     const sequence_number_even = hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number
-
-    encodedData = encodedData ? `${encodedData}${sequence_number_even}` as `0x${string}` : null;
+    let encodedData = account !== userDestinationAddress ? `0x${sequence_number_even}` : null
 
     const gasEstimate = await publicClient.estimateGas({
         account: account,
@@ -145,66 +197,106 @@ export const estimateNativeGas = async (publicClient: PublicClient, account: `0x
     return gasEstimate
 }
 
-export const estimateGas = async (publicClient: PublicClient, contract_address: `0x${string}`, account: `0x${string}`, destination?: `0x${string}`) => {
+export const estimateERC20GasLimit = async ({ publicClient, contract_address, account, destination, userDestinationAddress }: ResolveGasArguments) => {
 
-    const estimatedERC20GasLimit = await publicClient.estimateContractGas({
-        address: contract_address,
+    let encodedData = encodeFunctionData({
         abi: erc20ABI,
-        functionName: 'transfer',
-        account,
-        args: [destination || account, BigInt(0)]
+        functionName: "transfer",
+        args: [destination, BigInt(1000)]
+    })
+
+    const hexed_sequence_number = (99999999).toString(16)
+    const sequence_number_even = hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number
+
+    if (encodedData && account !== userDestinationAddress) {
+        encodedData = encodedData ? `${encodedData}${sequence_number_even}` as `0x${string}` : null;
+    }
+
+    const estimatedERC20GasLimit = await publicClient.estimateGas({
+        data: encodedData,
+        to: contract_address,
+        account
     });
 
-    return estimatedERC20GasLimit;
+    return estimatedERC20GasLimit
 }
 
-export const resolveGas = async (publicClient: PublicClient, chainId: number, contract_address: `0x${string}`, account: `0x${string}`, balances: Balance[], from: string, currency: Currency) => {
-    const nativeBalance = balances?.find(b =>
-        b.network === from
-        && b.isNativeCurrency)
+export const resolveGas = async ({ publicClient, chainId, contract_address, account, from, currency, destination, userDestinationAddress }: ResolveGasArguments) => {
+    const nativeToken = from.isExchange === false && from.assets.find(a => a.asset === from.native_currency)
+
+    const gasCalculationType = NetworkSettings.KnownSettings[from.internal_name].GasCalculationType
 
     let fee: Gas
 
-    switch (from) {
-        case KnownInternalNames.Networks.OptimismMainnet:
-            fee = await GetOptimismGas(publicClient, chainId, account, nativeBalance, currency)
+    switch (gasCalculationType) {
+        case GasCalculation.OptimismType:
+            fee = await GetOptimismGas({
+                publicClient,
+                chainId,
+                account,
+                nativeToken,
+                currency,
+                destination: destination
+            })
             break;
         default:
-            fee = await GetGas(publicClient, chainId, account, nativeBalance, currency, contract_address)
+            fee = await GetGas({
+                publicClient,
+                account,
+                nativeToken,
+                currency,
+                contract_address,
+                destination,
+                userDestinationAddress
+            })
     }
 
     return fee
 }
 
-const GetOptimismGas = async (publicClient: PublicClient, chainId: number, account: `0x${string}`, nativeBalance: Balance, currency: Currency) => {
+const GetOptimismGas = async ({ publicClient, account, nativeToken, currency, chainId, destination }: ResolveGasArguments): Promise<Gas> => {
 
-    var dummyAddress = "0x3535353535353535353535353535353535353535" as const;
-    const amount = BigInt(100000000)
+    const amount = BigInt(1000000000)
 
     const fee = await estimateFees({
         client: publicClient,
         functionName: 'transfer',
         abi: erc20ABI,
-        args: [dummyAddress, amount],
+        args: [destination, amount],
         account: account,
         chainId: chainId,
-        to: dummyAddress
+        to: destination,
     })
 
-    return { gas: formatAmount(fee, nativeBalance?.decimals), token: currency?.asset }
+    const gas = formatAmount(fee, nativeToken?.decimals)
+
+    return { gas: gas, token: currency?.asset }
 }
 
-const GetGas = async (publicClient: PublicClient, chainId: number, account: `0x${string}`, nativeBalance: Balance, currency: Currency, contract_address: `0x${string}`) => {
-    const feeData = await resolveFeeData(Number(chainId))
-    const estimatedGas = contract_address ?
-        await estimateGas(publicClient, account, contract_address)
-        : await estimateNativeGas(publicClient, account)
+const GetGas = async ({ publicClient, account, nativeToken, currency, contract_address, destination, userDestinationAddress }: ResolveGasArguments) => {
 
-    const gasBigint = feeData.maxFeePerGas
-        ? (feeData?.maxFeePerGas * estimatedGas)
-        : (feeData?.gasPrice * estimatedGas)
+    const feeData = await resolveFeeData(publicClient)
 
-    return { gas: formatAmount(gasBigint, nativeBalance?.decimals), token: currency?.asset }
+    const estimatedGasLimit = contract_address ?
+        await estimateERC20GasLimit({ publicClient, contract_address, account, destination, userDestinationAddress })
+        : await estimateNativeGasLimit({ publicClient, account, destination, userDestinationAddress })
+
+    const totalGas = feeData.maxFeePerGas
+        ? (feeData?.maxFeePerGas * estimatedGasLimit)
+        : (feeData?.gasPrice * estimatedGasLimit)
+
+    const formattedGas = formatAmount(totalGas, nativeToken?.decimals)
+
+    return {
+        gas: formattedGas,
+        token: currency?.asset,
+        gasDetails: {
+            gasLimit: Number(estimatedGasLimit),
+            maxFeePerGas: Number(formatGwei(feeData?.maxFeePerGas)),
+            gasPrice: Number(formatGwei(feeData?.gasPrice)),
+            maxPriorityFeePerGas: Number(formatGwei(feeData?.maxPriorityFeePerGas)),
+        }
+    }
 }
 
 export const formatAmount = (unformattedAmount: bigint | unknown, decimals: number) => {

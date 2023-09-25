@@ -2,12 +2,11 @@ import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useQueryState } from '../../../../context/query';
 import { useSettingsState } from '../../../../context/settings';
-import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
+import { useSwapDataState } from '../../../../context/swap';
 import { useInterval } from '../../../../hooks/useInterval';
-import { Configs, usePersistedState } from '../../../../hooks/usePersistedState';
 import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
 import { parseJwt } from '../../../../lib/jwtParser';
-import { WithdrawType } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { WithdrawType } from '../../../../lib/layerSwapApiClient';
 import { OpenLink } from '../../../../lib/openLink';
 import TokenService from '../../../../lib/TokenService';
 import SubmitButton from '../../../buttons/submitButton';
@@ -16,6 +15,10 @@ import Widget from '../../../Wizard/Widget';
 import { FirstScreen, FourthScreen, LastScreen, SecondScreen, ThirdScreen } from './ConnectGuideScreens';
 import KnownInternalNames from '../../../../lib/knownIds';
 import { Layer } from '../../../../Models/Layer';
+import { ArrowLeft } from 'lucide-react';
+import IconButton from '../../../buttons/iconButton';
+import { motion } from 'framer-motion';
+import { useCoinbaseStore } from './CoinbaseStore';
 
 type Props = {
     onAuthorized: () => void,
@@ -26,13 +29,15 @@ type Props = {
 
 const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
     const { swap } = useSwapDataState()
-    const { setWithdrawType } = useSwapDataUpdate()
     const { layers, currencies, discovery } = useSettingsState()
-    let [localConfigs, setLocalConfigs] = usePersistedState<Configs>({}, 'configs')
 
-    const [carouselFinished, setCarouselFinished] = useState(localConfigs.alreadyFamiliarWithCoinbaseConnect)
+    let alreadyFamiliar = useCoinbaseStore((state) => state.alreadyFamiliar);
+    let toggleAlreadyFamiliar = useCoinbaseStore((state) => state.toggleAlreadyFamiliar);
+    const [carouselFinished, setCarouselFinished] = useState(alreadyFamiliar)
+
     const [authWindow, setAuthWindow] = useState<Window>()
     const [authorizedAmount, setAuthorizedAmount] = useState<number>()
+    const [firstScreen, setFirstScreen] = useState<boolean>(true)
 
     const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
@@ -47,12 +52,6 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const { oauth_authorize_url } = coinbaseOauthProvider || {}
 
     const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount))
-
-    const handleTransferMannually = useCallback(() => {
-        setWithdrawType(WithdrawType.Manually)
-        onDoNotConnect()
-    }, [])
-
 
     const checkShouldStartPolling = useCallback(() => {
         let authWindowHref = ""
@@ -75,32 +74,45 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
         authWindow && !authWindow.closed ? 1000 : null,
     )
 
+    const handleDisconnectCoinbase = useCallback(async () => {
+        const apiClient = new LayerSwapApiClient()
+        await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
+    }, [])
+
     useEffect(() => {
         if (authorizedAmount) {
-            if (Number(authorizedAmount) < minimalAuthorizeAmount)
-                toast.error("You did not authorize enough")
+            if (Number(authorizedAmount) < minimalAuthorizeAmount) {
+                toast.dismiss();
+                toast.error("You have not authorized enough to be able to complete the transfer. Please authorize again.");
+                handleDisconnectCoinbase();
+            }
             else {
                 onAuthorized()
             }
         }
-    }, [authorizedAmount, minimalAuthorizeAmount])
+    }, [authorizedAmount, minimalAuthorizeAmount, onAuthorized])
 
     const handleConnect = useCallback(() => {
         try {
-            if (!carouselFinished && !localConfigs.alreadyFamiliarWithCoinbaseConnect) {
+            if (!carouselFinished && !alreadyFamiliar) {
                 carouselRef?.current?.next()
                 return;
             }
             const access_token = TokenService.getAuthData()?.access_token
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ SwapId: swap?.id, UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
-            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, query: query })
+            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, query: query, swapId: swap.id })
             setAuthWindow(authWindow)
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [oauth_authorize_url, carouselRef, carouselFinished, query, swap])
+    }, [carouselFinished, alreadyFamiliar, swap?.id, oauth_authorize_url, query])
+
+    const handlePrev = useCallback(() => {
+        carouselRef?.current?.prev()
+        return;
+    }, [])
 
     const exchange_name = exchange?.display_name
 
@@ -108,14 +120,18 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
         setCarouselFinished(value)
     }
 
-    const handleToggleChange = (value: boolean) => {
-        setLocalConfigs({ ...localConfigs, alreadyFamiliarWithCoinbaseConnect: value })
-        onCarouselLast(value)
+    const handleToggleChange = (e) => {
+        if (e.target.checked) {
+            carouselRef?.current?.goToLast();
+        } else {
+            carouselRef?.current?.goToFirst();
+        }
+        toggleAlreadyFamiliar();
     }
 
     return (
         <Widget>
-            <Widget.Content center>
+            <Widget.Content>
                 {
                     !hideHeader &&
                     <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>
@@ -123,66 +139,70 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                     </h3>
                 }
                 {
-                    localConfigs.alreadyFamiliarWithCoinbaseConnect ?
-                        <div className={`w-full rounded-xl inline-flex items-center justify-center flex-col pb-0 bg-gradient-to-b from-secondary-900 to-secondary-700 h-100%`} style={{ width: '100%' }}>
-                            <LastScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                        </div>
-                        :
-                        <div className="w-full space-y-3">
-                            {swap && <Carousel onLast={onCarouselLast} ref={carouselRef}>
-                                <CarouselItem width={100} >
-                                    <FirstScreen exchange_name={exchange_name} />
-                                </CarouselItem>
-                                <CarouselItem width={100}>
-                                    <SecondScreen />
-                                </CarouselItem>
-                                <CarouselItem width={100}>
-                                    <ThirdScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                                </CarouselItem>
-                                <CarouselItem width={100}>
-                                    <FourthScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                                </CarouselItem>
-                                <CarouselItem width={100}>
-                                    <LastScreen number minimalAuthorizeAmount={minimalAuthorizeAmount} />
-                                </CarouselItem>
-                            </Carousel>}
-                        </div>
+                    <div className="w-full flex flex-col self-center h-[100%]">
+                        {swap && <Carousel onLast={onCarouselLast} onFirst={setFirstScreen} ref={carouselRef} starAtLast={alreadyFamiliar}>
+                            <CarouselItem width={100} >
+                                <FirstScreen exchange_name={exchange_name} />
+                            </CarouselItem>
+                            <CarouselItem width={100}>
+                                <SecondScreen />
+                            </CarouselItem>
+                            <CarouselItem width={100}>
+                                <ThirdScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                            </CarouselItem>
+                            <CarouselItem width={100}>
+                                <FourthScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                            </CarouselItem>
+                            <CarouselItem width={100}>
+                                <LastScreen number={!alreadyFamiliar} minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                            </CarouselItem>
+                        </Carousel>}
+                    </div>
                 }
-                <div className="flex font-normal text-sm text-primary-text">
-                    <label className="block font-lighter text-left mb-2"> Even after authorization Layerswap can't initiate a withdrawal without your explicit confirmation.</label>
-                </div>
             </Widget.Content>
             <Widget.Footer sticky={stickyFooter}>
                 <div>
                     {
-                        localConfigs.alreadyFamiliarWithCoinbaseConnect && carouselFinished ?
-                            <button onClick={() => handleToggleChange(false)} className="p-1.5 text-white bg-secondary-500 hover:bg-secondary-400 rounded-md border border-secondary-500 hover:border-secondary-200 w-full mb-3">
-                                Show me full guide
-                            </button>
-                            :
-                            <div className="flex items-center mb-3">
-                                <input
-                                    name="alreadyFamiliar"
-                                    id='alreadyFamiliar'
-                                    type="checkbox"
-                                    className="h-4 w-4 bg-secondary-600 rounded border-secondary-400 text-priamry focus:ring-secondary-600"
-                                    onChange={() => handleToggleChange(true)}
-                                    checked={localConfigs.alreadyFamiliarWithCoinbaseConnect}
-                                />
-                                <label htmlFor="alreadyFamiliar" className="ml-2 block text-sm text-white">
-                                    I'm already familiar with the process.
-                                </label>
-                            </div>
+                        <div className="flex items-center mb-3">
+                            <input
+                                name="alreadyFamiliar"
+                                id='alreadyFamiliar'
+                                type="checkbox"
+                                className="h-4 w-4 bg-secondary-600 cursor-pointer rounded border-secondary-400 text-priamry"
+                                onChange={handleToggleChange}
+                                checked={alreadyFamiliar}
+                            />
+                            <label htmlFor="alreadyFamiliar" className="ml-2 cursor-pointer block text-sm text-primary-text">
+                                I&apos;m already familiar with the process.
+                            </label>
+                        </div>
                     }
-                    <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
-                        {
-                            carouselFinished ? "Connect" : "Next"
-                        }
-                    </SubmitButton>
-                    <p className='text-sm mt-2 font-lighter text-primary-text text-left'>Don't want to connect Coinbase account? <span onClick={handleTransferMannually} className='cursor-pointer underline'>Transfer manually</span></p>
+                    {
+                        <div className='flex items-center'>
+                            {(!firstScreen && !alreadyFamiliar) &&
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.5 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 0.5 }}
+                                >
+                                    <IconButton onClick={handlePrev} className='mr-4 py-3 px-3' icon={<ArrowLeft strokeWidth="3" />} />
+                                </motion.div>
+                            }
+                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>
+                                {
+                                    carouselFinished ? "Connect" : "Next"
+                                }
+                            </SubmitButton>
+                        </div>
+                    }
+                    <div className="pt-2 font-normal text-xs text-primary-text">
+                        <p className="block font-lighter text-left">
+                            <span>Even after authorization Layerswap can&apos;t initiate a withdrawal without your explicit confirmation.&nbsp;</span>
+                            <a target='_blank' href='https://docs.layerswap.io/user-docs/connect-a-coinbase-account' className='text-white underline hover:no-underline decoration-white cursor-pointer'>Learn more</a></p>
+                    </div>
                 </div>
             </Widget.Footer>
-        </Widget>
+        </Widget >
     )
 }
 

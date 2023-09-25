@@ -12,8 +12,7 @@ import TransferErc20Button from "./TransferErc20";
 type Props = {
     sequenceNumber: number,
     chainId: number,
-    generatedDepositAddress: `0x${string}`,
-    managedDepositAddress: `0x${string}`,
+    depositAddress: `0x${string}`,
     tokenContractAddress: `0x${string}`,
     userDestinationAddress: `0x${string}`,
     amount: number,
@@ -25,8 +24,7 @@ type Props = {
 
 const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     chainId,
-    generatedDepositAddress,
-    managedDepositAddress,
+    depositAddress,
     userDestinationAddress,
     amount,
     tokenContractAddress,
@@ -76,12 +74,10 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     }
     else if (tokenContractAddress) {
         return <TransferErc20Button
-            asset={asset}
             swapId={swapId}
             sequenceNumber={sequence_number_even}
             amount={amount}
-            generatedDepositAddress={generatedDepositAddress}
-            managedDepositAddress={managedDepositAddress}
+            depositAddress={depositAddress}
             userDestinationAddress={userDestinationAddress}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
             tokenContractAddress={tokenContractAddress}
@@ -93,8 +89,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
             swapId={swapId}
             sequenceNumber={sequence_number_even}
             amount={amount}
-            generatedDepositAddress={generatedDepositAddress}
-            managedDepositAddress={managedDepositAddress}
+            depositAddress={depositAddress}
             userDestinationAddress={userDestinationAddress}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
             chainId={chainId}

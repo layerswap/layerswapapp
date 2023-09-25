@@ -47,7 +47,7 @@ export default function GlobalTable(props, { settings }: InferGetServerSideProps
                                                         </th>
                                                         {
                                                             props?.networks?.map((n) => (
-                                                                <th scope="col" className="px-4 py-3.5 text-left text-sm font-semibold text-primary-text">
+                                                                <th key={(n as CryptoNetwork).internal_name} scope="col" className="px-4 py-3.5 text-left text-sm font-semibold text-primary-text">
                                                                     {n.display_name}
                                                                 </th>
                                                             ))
@@ -62,7 +62,7 @@ export default function GlobalTable(props, { settings }: InferGetServerSideProps
                                                                 {e.display_name}
                                                             </td>
                                                             {props?.networks?.map((n) => (
-                                                                <td className="whitespace-nowrap p-4 text-sm text-white">{e?.currencies.map((currency) => currency.asset).filter(e => n?.currencies.map((c) => c.asset).includes(e)).filter((v, i, a) => a.indexOf(v) === i).join(', ')}</td>
+                                                                <td key={(n as CryptoNetwork).internal_name} className="whitespace-nowrap p-4 text-sm text-white">{e?.currencies.map((currency) => currency.asset).filter(e => n?.currencies.map((c) => c.asset).includes(e)).filter((v, i, a) => a.indexOf(v) === i).join(', ')}</td>
                                                             ))}
                                                         </tr>
                                                     ))}

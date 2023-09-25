@@ -9,7 +9,7 @@ import {
 } from "wagmi";
 import { PublishedSwapTransactionStatus } from "../../../../../lib/layerSwapApiClient";
 import WalletIcon from "../../../../icons/WalletIcon";
-import { encodeFunctionData, http, parseUnits, createWalletClient, publicActions, ContractFunctionConfig } from 'viem'
+import { encodeFunctionData, http, parseUnits, createWalletClient, publicActions } from 'viem'
 import TransactionMessage from "./transactionMessage";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import { ButtonWrapper } from "./buttons";
@@ -19,10 +19,9 @@ import toast from "react-hot-toast";
 type TransferERC20ButtonProps = BaseTransferButtonProps & {
     tokenContractAddress: `0x${string}`,
     tokenDecimals: number,
-    asset: string,
 }
 const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
-    managedDepositAddress,
+    depositAddress,
     amount,
     tokenContractAddress,
     tokenDecimals,
@@ -30,7 +29,6 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     swapId,
     sequenceNumber,
     userDestinationAddress,
-    asset
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { address } = useAccount();
@@ -38,7 +36,6 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
     const { setSwapTransaction } = useSwapTransactionStore();
 
-    const depositAddress = managedDepositAddress
     const contractWritePrepare = usePrepareContractWrite({
         enabled: !!depositAddress,
         address: tokenContractAddress,

@@ -13,7 +13,6 @@ import { SortingByOrder } from "../../lib/sorting"
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
-import KnownInternalNames from "../../lib/knownIds";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -26,7 +25,7 @@ const getGroupName = (layer: Layer) => {
     if (layer?.is_featured) {
         return "Popular";
     }
-    else if (new Date(layer?.created_date) >= new Date(new Date().setMonth(new Date().getMonth() - 1))) {
+    else if (new Date(layer?.created_date).getTime() >= (new Date().getTime() - 2629800000)) {
         return "New";
     }
     else if (!layer.isExchange) {
@@ -43,7 +42,7 @@ const getGroupName = (layer: Layer) => {
     }
 }
 
-const NetworkFormField = forwardRef(({ direction, label }: Props, ref: any) => {
+const NetworkFormField = forwardRef(function NetworkFormField({ direction, label }: Props, ref: any) {
     const {
         values,
         setFieldValue,

@@ -41,7 +41,6 @@ export const Settings: LayerSwapSettings = {
                 },
             ],
             authorization_flow: "api_credentials",
-            nodes: [],
         },
         {
             "display_name": "Fake CEX (for testing)",
@@ -106,7 +105,6 @@ export const Settings: LayerSwapSettings = {
                 },
             ],
             authorization_flow: "api_credentials",
-            nodes: [],
         },
         {
             "display_name": "Stripe (Only US)",
@@ -135,7 +133,6 @@ export const Settings: LayerSwapSettings = {
                 },
             ],
             authorization_flow: "api_credentials",
-            nodes: [],
         }
     ],
     "networks": [
@@ -169,11 +166,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [
@@ -246,11 +241,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [
@@ -295,11 +288,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [
@@ -374,11 +365,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [
@@ -423,11 +412,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [
@@ -483,11 +470,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [
@@ -532,11 +517,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [
@@ -577,11 +560,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [
@@ -622,11 +603,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [
@@ -667,11 +646,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [
@@ -712,11 +689,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [
@@ -772,11 +747,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [
@@ -832,11 +805,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [
@@ -877,11 +848,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [
@@ -937,11 +906,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [
@@ -997,11 +964,9 @@ export const Settings: LayerSwapSettings = {
                 }
             ],
             "metadata": {
-                "contracts": {
-                    "multicall3": {
-                        "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                        "blockCreated": 1746963
-                    }
+                "multicall3": {
+                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                    "blockCreated": 1746963
                 }
             },
             "managed_accounts": [

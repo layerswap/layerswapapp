@@ -1,7 +1,6 @@
 import { LayerStatus } from "./Layer";
 
-export enum NetworkType
-{
+export enum NetworkType {
     EVM = "evm",
     Starknet = "starknet",
     Solana = "solana",
@@ -18,6 +17,7 @@ export class CryptoNetwork {
     average_completion_time: string;
     fee_multiplier: number;
     transaction_explorer_template: string;
+    account_explorer_template?: string;
     status: LayerStatus;
     currencies: NetworkCurrency[];
     refuel_amount_in_usd: number;
@@ -52,10 +52,14 @@ export class ManagedAccount {
     address: string;
 }
 export class Metadata {
-    contracts: {
-        multicall3: {
-            address: `0x${string}`;
-            blockCreated: number
-        }
+    multicall3: {
+        address: `0x${string}`
+        blockCreated: number
+    }
+    ensRegistry?: {
+        address: `0x${string}`
+    }
+    ensUniversalResolver?: {
+        address: `0x${string}`
     }
 }

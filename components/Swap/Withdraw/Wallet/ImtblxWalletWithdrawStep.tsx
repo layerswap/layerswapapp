@@ -8,17 +8,19 @@ import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClie
 import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
+import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 import { useSwapTransactionStore } from '../../../store/zustandStore';
 
 type Props = {
-    generatedDepositAddress: string
+    depositAddress: string
 }
 
-const ImtblxWalletWithdrawStep: FC<Props> = ({ generatedDepositAddress }) => {
+const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { walletAddress, swap } = useSwapDataState()
-    const { setWalletAddress } = useSwapDataUpdate()
+    const { setImxAccount } = useWalletUpdate()
+    const { imxAccount } = useWalletState()
+    const { swap } = useSwapDataState()
     const { networks } = useSettingsState()
     const { setSwapTransaction } = useSwapTransactionStore();
 
@@ -28,13 +30,10 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ generatedDepositAddress }) => {
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
-            let address: string = walletAddress
-            if (!address) {
+          
                 const imtblClient = new ImtblClient(source_network?.internal_name)
-                const res = await imtblClient.ConnectWallet()
-                setWalletAddress(res.address)
-                address = res.address
-            }
+                const res = await imtblClient.ConnectWallet();
+                setImxAccount(res.address);
         }
         catch (e) {
             toast(e.message)
@@ -47,7 +46,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ generatedDepositAddress }) => {
         try {
             const imtblClient = new ImtblClient(source_network?.internal_name)
             const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
-            const res = await imtblClient.Transfer(swap, source_currency, generatedDepositAddress)
+            const res = await imtblClient.Transfer(swap, source_currency, depositAddress)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
                 toast('Transfer failed or terminated')
@@ -64,7 +63,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ generatedDepositAddress }) => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [walletAddress, swap, source_network])
+    }, [imxAccount, swap, source_network])
 
     return (
         <>
@@ -77,13 +76,13 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ generatedDepositAddress }) => {
                         <GuideLink text={source_network?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex' />
                     </WarningMessage>
                     {
-                        !walletAddress &&
+                        !imxAccount &&
                         <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Connect
                         </SubmitButton>
                     }
                     {
-                        walletAddress &&
+                        imxAccount &&
                         <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>

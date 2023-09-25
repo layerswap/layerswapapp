@@ -7,7 +7,7 @@ import {
     useNetwork,
     erc20ABI
 } from "wagmi";
-import { parseEther, createPublicClient, http, encodeFunctionData } from 'viem'
+import { parseEther, createPublicClient, http, encodeFunctionData, serializeTransaction } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
 import { PublishedSwapTransactionStatus } from "../../../../../lib/layerSwapApiClient";
 import { toast } from "react-hot-toast";
@@ -24,7 +24,7 @@ type TransferNativeTokenButtonProps = BaseTransferButtonProps & {
 }
 
 const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
-    managedDepositAddress,
+    depositAddress,
     chainId,
     amount,
     savedTransactionHash,
@@ -39,26 +39,13 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     const { address } = useAccount();
     const { setSwapTransaction } = useSwapTransactionStore();
 
-    const depositAddress = managedDepositAddress
-
     const sendTransactionPrepare = usePrepareSendTransaction({
         to: depositAddress,
         value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,
     })
 
-    let encodedData = depositAddress && encodeFunctionData({
-        abi: erc20ABI,
-        functionName: 'transfer',
-        args: [
-            depositAddress,
-            amount ? parseEther(amount.toString()) : undefined,
-        ]
-    });
-
-    if (address !== userDestinationAddress) {
-        encodedData = encodedData ? `${encodedData}${sequenceNumber}` as `0x${string}` : null;
-    }
+    const encodedData : `0x${string}` = address !== userDestinationAddress ? `0x${sequenceNumber}` : null
 
     const tx = {
         to: depositAddress,
@@ -78,14 +65,12 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
 
     useEffect(() => {
         (async () => {
-            if (encodedData) {
-                const gasEstimate = await publicClient.estimateGas({
-                    account: address,
-                    to: depositAddress,
-                    data: encodedData,
-                })
-                setEstimatedGas(gasEstimate)
-            }
+            const gasEstimate = await publicClient.estimateGas({
+                account: address,
+                to: depositAddress,
+                data: encodedData,
+            })
+            setEstimatedGas(gasEstimate)
         })()
     }, [address, encodedData, depositAddress, amount])
 
@@ -161,7 +146,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
                         Insufficient funds for gas
                     </div>
                     <div className="text-base font-medium space-y-6 text-primary-text text-center">
-                        This transfer can't be processed because you don't have enough gas.
+                        This transfer can&apos;t be processed because you don&apos;t have enough gas.
                     </div>
                 </div>
                 <div className="text-base">

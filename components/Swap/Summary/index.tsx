@@ -4,10 +4,10 @@ import { useSettingsState } from "../../../context/settings"
 import { useSwapDataState } from "../../../context/swap"
 import Summary from "./Summary"
 import { ApiResponse } from "../../../Models/ApiResponse"
-import LayerSwapApiClient, { Fee, TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { DepositType, Fee, TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
 import { useAccount } from "wagmi"
-import { DepositType } from "../../../lib/NetworkSettings"
 import { truncateDecimals } from "../../utils/RoundDecimals"
+import { CanDoSweeplessTransfer } from "../../../lib/fees"
 
 const SwapSummary: FC = () => {
     const { isConnected, address } = useAccount()
@@ -49,7 +49,7 @@ const SwapSummary: FC = () => {
 
     if (swap?.fee && swapOutputTransaction) {
         fee = swap?.fee
-    } else if (withdrawType === WithdrawType.Wallet && (isConnected && address?.toLowerCase() === destination_address?.toLowerCase())) {
+    } else if (withdrawType === WithdrawType.Wallet && CanDoSweeplessTransfer(source_layer, address, destination_address)) {
         fee = walletTransferFee?.fee_amount;
     } else {
         fee = manualTransferFee?.fee_amount;
@@ -63,7 +63,7 @@ const SwapSummary: FC = () => {
     const refuelAmountInNativeCurrency = swap?.has_refuel && (swapRefuelTransaction?.amount ?? (networks.find(n => n.internal_name === destination_layer?.internal_name)?.refuel_amount_in_usd / destinationNetworkNativeAsset?.usd_price));
     const refuelAmountInSelectedCurrency = swap?.has_refuel && (networks.find(n => n.internal_name === destination_layer?.internal_name)?.refuel_amount_in_usd / currency?.usd_price) || 0;
 
-    const receive_amount = swapOutputTransaction?.amount ?? truncateDecimals(requested_amount - fee - refuelAmountInSelectedCurrency, currency?.precision)
+    const receive_amount = swapOutputTransaction?.amount ?? (requested_amount - fee - refuelAmountInSelectedCurrency)
 
     return <Summary
         currency={currency}

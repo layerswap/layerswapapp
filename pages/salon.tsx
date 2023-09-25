@@ -29,7 +29,7 @@ export default function Salon({ settings }: InferGetServerSidePropsType<typeof g
                 query: { ...(temp_data?.query || {}), coinbase_redirect: true }
             })
         }
-    }, [])
+    }, [router])
 
     return (
         <Layout hideFooter={true} hideNavbar={true} settings={appSettings}>

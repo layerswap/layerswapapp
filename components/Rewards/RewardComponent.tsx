@@ -12,8 +12,6 @@ import ClickTooltip from "../Tooltips/ClickTooltip"
 import shortenAddress from "../utils/ShortenAddress"
 import { useAccount } from "wagmi"
 import RainbowKit from "../Swap/Withdraw/Wallet/RainbowKit"
-import { Progress } from "../ProgressBar"
-import NetworkSettings from "../../lib/NetworkSettings"
 import { truncateDecimals } from "../utils/RoundDecimals"
 import HeaderWithMenu from "../HeaderWithMenu"
 import SubmitButton from "../buttons/submitButton";
@@ -22,6 +20,7 @@ import Modal from "../modal/modal";
 import SpinIcon from "../icons/spinIcon";
 import WalletIcon from "../icons/WalletIcon";
 import Link from "next/link";
+import { Progress } from "../ProgressBar";
 
 function RewardComponent() {
 
@@ -45,17 +44,17 @@ function RewardComponent() {
     const rewards = rewardsData?.data
     const leaderboard = leaderboardData?.data
     const payouts = payoutsData?.data
+    const totalBudget = campaign?.total_budget
+    const DistributedAmount = ((campaign?.distributed_amount / campaign?.total_budget) * 100)
 
     const next = new Date(rewards?.next_airdrop_date)
     const now = new Date()
-    const difference_in_days = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600 * 24)))
+    const difference_in_days = Math.floor(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600 * 24)))
     const difference_in_hours = Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600) - (difference_in_days * 24)))
-    const period = campaign?.reward_limit_period
     const campaignEndDate = new Date(campaign?.end_date)
     const isCampaignEnded = Math.round(((campaignEndDate.getTime() - now.getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
 
     const network = networks.find(n => n.internal_name === campaign?.network)
-    const periodRewardClaimed = (rewards?.user_reward?.period_pending_amount / campaign?.reward_limit_for_period) * 100
     const campaignAsset = currencies.find(c => c?.asset === campaign?.asset)
 
     const handleOpenTopModal = () => {
@@ -107,11 +106,20 @@ function RewardComponent() {
                                                                 width="40"
                                                                 loading="eager"
                                                                 className="rounded-md object-contain" />
-                                                        </div>
-                                                        <p className="font-bold text-xl text-left flex items-center">{network?.display_name} Rewards <ClickTooltip text={<span>Onboarding incentives that are earned by transferring to {network?.display_name}. <a target='_blank' href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></span>} /></p>
+                                                        </div>  <p className="font-bold text-xl text-left flex items-center">{network?.display_name} Rewards </p>
                                                     </div>
+                                                    <p className="text-primary-text">
+                                                        <span>
+                                                            <span>Onboarding incentives that are earned by transferring to&nbsp;</span>{network?.display_name}<span>.&nbsp;</span>
+                                                            <a
+                                                                target='_blank'
+                                                                href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards"
+                                                                className="text-white underline hover:no-underline decoration-white cursor-pointer"
+                                                            >Learn more</a>
+                                                        </span>
+                                                    </p>
                                                     <div className="bg-secondary-700 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
-                                                        {!isCampaignEnded && <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Pending Earnings <ClickTooltip text={`${campaign?.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
+                                                        {!isCampaignEnded && <BackgroundField header={<span className="flex justify-between"><span className="flex items-center"><span>Pending Earnings&nbsp;</span><ClickTooltip text={`${campaign?.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
                                                             <div className="flex justify-between w-full text-2xl">
                                                                 <div className="flex items-center space-x-1">
                                                                     <div className="h-5 w-5 relative">
@@ -135,7 +143,7 @@ function RewardComponent() {
                                                                 </div>
                                                             </div>
                                                         </BackgroundField>}
-                                                        <BackgroundField header={<span className="flex justify-between"><span className="flex items-center">Total Earnings <ClickTooltip text={`${campaign?.asset} tokens that you’ve earned so far (including Pending Earnings).`} /></span><span>Current Value</span></span>} withoutBorder>
+                                                        <BackgroundField header={<span className="flex justify-between"><span className="flex items-center"><span>Total Earnings&nbsp;</span><ClickTooltip text={`${campaign?.asset} tokens that you’ve earned so far (including Pending Earnings).`} /></span><span>Current Value</span></span>} withoutBorder>
                                                             <div className="flex justify-between w-full text-slate-300 text-2xl">
                                                                 <div className="flex items-center space-x-1">
                                                                     <div className="h-5 w-5 relative">
@@ -157,18 +165,23 @@ function RewardComponent() {
                                                             </div>
                                                         </BackgroundField>
                                                     </div>
-                                                    {!isCampaignEnded && <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
-                                                        <BackgroundField header='Weekly Reward Earned' withoutBorder>
-                                                            <div className="flex flex-col w-full gap-2">
-                                                                <Progress value={periodRewardClaimed === Infinity ? 0 : periodRewardClaimed} />
-                                                                <div className="flex justify-between w-full font-semibold text-sm ">
-                                                                    <div className="text-primary"><span className="text-white">{rewards.user_reward.period_pending_amount}</span> / {campaign?.reward_limit_for_period} {campaign?.asset}</div>
-                                                                    <p className="text-primary-text">Refreshes every {period > 1 ? `${period} days` : 'day'}</p>
-                                                                </div>
-                                                            </div>
-                                                        </BackgroundField>
-                                                    </div>}
                                                 </div>
+                                                {!isCampaignEnded && <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
+                                                    <BackgroundField header={
+                                                        <>
+                                                            <p className="flex items-center"><span>{campaign?.asset} pool</span>
+                                                                <ClickTooltip text={`The amount of ${campaign?.asset} to be distributed during this round of the campaign.`} />
+                                                            </p>
+                                                        </>
+                                                    } withoutBorder>
+                                                        <div className="flex flex-col w-full gap-2">
+                                                            <Progress value={DistributedAmount === Infinity ? 0 : DistributedAmount} />
+                                                            <div className="flex justify-between w-full font-semibold text-sm ">
+                                                                <div className="text-primary"><span className="text-white">{campaign?.distributed_amount.toFixed(0)}</span> <span>/</span> {totalBudget} {campaign?.asset}</div>
+                                                            </div>
+                                                        </div>
+                                                    </BackgroundField>
+                                                </div>}
                                                 {
                                                     payouts.length > 0 &&
                                                     <div className="space-y-1">
@@ -224,7 +237,7 @@ function RewardComponent() {
                                                     </div>
                                                     <p className="font-bold text-xl text-left flex items-center">{network?.display_name} Rewards </p>
                                                 </div>
-                                                <p className="text-primary-text text-base">You can earn ${campaign?.asset} tokens by transferring assets to {network?.display_name}. For each transaction, you’ll receive {campaign?.percentage}% of Layerswap fee back. <a target='_blank' href="https://docs.layerswap.io/user-docs/using-layerswap/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</a></p>
+                                                <p className="text-primary-text text-base"><span>You can earn $</span>{campaign?.asset}<span>&nbsp;tokens by transferring assets to&nbsp;</span>{network?.display_name}<span>. For each transaction, you&amp;ll receive&nbsp;</span>{campaign?.percentage}<span>% of Layerswap fee back.&nbsp;</span><Link target='_blank' href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards" className="text-primary underline hover:no-underline decoration-primary cursor-pointer">Learn more</Link></p>
                                             </div>
                                         </div>
                                     }
@@ -232,14 +245,14 @@ function RewardComponent() {
                                         (!leaderboard ?
                                             <RewardsComponentLeaderboardSceleton />
                                             :
-                                            leaderboard?.leaderboard?.length > 0 &&
                                             <div className="space-y-2">
-                                                <div className="flex items-center justify-between">
-                                                    <p className="font-bold text-left leading-5">Leaderboard</p>
-                                                    <button onClick={handleOpenTopModal} type="button" className=" leading-4 text-base text-primary underline hover:no-underline hover:text-primary/80">
-                                                        Top 10
-                                                    </button>
-                                                </div>
+                                                {leaderboard?.leaderboard?.length > 0 &&
+                                                    <div className="flex items-center justify-between">
+                                                        <p className="font-bold text-left leading-5">Leaderboard</p>
+                                                        <button onClick={handleOpenTopModal} type="button" className=" leading-4 text-base text-primary underline hover:no-underline hover:text-primary/80">
+                                                            Top 10
+                                                        </button>
+                                                    </div>}
                                                 <p className="text-sm text-primary-text">Users who earn the most throughout the program will be featured here.</p>
                                                 <div className="bg-secondary-700 border border-secondary-700 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg">
                                                     <div className="p-3">
@@ -252,7 +265,11 @@ function RewardComponent() {
                                                                             <div className="cols-start-2 flex items-center space-x-2">
                                                                                 <AddressIcon address={user.address} size={25} />
                                                                                 <div>
-                                                                                    <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name]?.AccountExplorerTemplate?.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
+                                                                                    <div className="text-sm font-bold text-white leading-3">
+                                                                                        {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user?.address)}>
+                                                                                            {user?.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user?.address)}
+                                                                                        </Link>}
+                                                                                    </div>
                                                                                     <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {campaign?.asset}</p>
                                                                                 </div>
                                                                             </div>
@@ -296,7 +313,11 @@ function RewardComponent() {
                                                                             <div className="cols-start-2 flex items-center space-x-2">
                                                                                 <AddressIcon address={rewards.user_reward.total_amount.toString()} size={25} />
                                                                                 <div>
-                                                                                    <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name].AccountExplorerTemplate.replace("{0}", address)}><span className="text-primary">You</span></a></div>
+                                                                                    <div className="text-sm font-bold text-white leading-3">
+                                                                                        {address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", address)}>
+                                                                                            <span className="text-primary">You</span>
+                                                                                        </Link>}
+                                                                                    </div>
                                                                                     <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, campaignAsset.precision)} {campaign?.asset}</p>
                                                                                 </div>
                                                                             </div>
@@ -315,11 +336,11 @@ function RewardComponent() {
                                             </div>
                                         )
                                     }
-                                    <RainbowKit>
+                                    {!isConnected && <RainbowKit>
                                         <SubmitButton isDisabled={false} isSubmitting={false} icon={<WalletIcon className="stroke-2 w-6 h-6" />}>
                                             Connect a wallet
                                         </SubmitButton>
-                                    </RainbowKit>
+                                    </RainbowKit>}
                                 </div>
                                 :
                                 <div className="h-[364px] flex flex-col items-center justify-center space-y-4">
@@ -348,7 +369,11 @@ function RewardComponent() {
                                             <div className="cols-start-2 flex items-center space-x-2">
                                                 <AddressIcon address={user.address} size={25} />
                                                 <div>
-                                                    <div className="text-sm font-bold text-white leading-3"><a target="_blank" className="hover:opacity-80" href={NetworkSettings.KnownSettings[network?.internal_name]?.AccountExplorerTemplate?.replace("{0}", user.address)}>{user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}</a></div>
+                                                    <div className="text-sm font-bold text-white leading-3">
+                                                        {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user?.address)}>
+                                                            {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}
+                                                        </Link>}
+                                                    </div>
                                                     <p className="mt-1 text-sm font-medium text-primary-text leading-3">{truncateDecimals(user.amount, campaignAsset.precision)} {campaign?.asset}</p>
                                                 </div>
                                             </div>

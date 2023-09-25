@@ -17,21 +17,20 @@ import Modal from "../modal/modal";
 import HeaderWithMenu from "../HeaderWithMenu";
 import Link from "next/link";
 import AppSettings from "../../lib/AppSettings";
+import { truncateDecimals } from "../utils/RoundDecimals";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
   const settings = useSettingsState()
-  const { exchanges, networks, resolveImgSrc } = settings
+  const { exchanges, networks, currencies, resolveImgSrc } = settings
   const [isLastPage, setIsLastPage] = useState(false)
   const [swaps, setSwaps] = useState<SwapItem[]>()
   const [loading, setLoading] = useState(false)
   const router = useRouter();
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
-  const canCompleteCancelSwap = selectedSwap?.status == SwapStatus.UserTransferPending
   const [showAllSwaps, setShowAllSwaps] = useState(false)
   const [showToggleButton, setShowToggleButton] = useState(false)
-  const [openCancelConfirmModal, setOpenCancelConfirmModal] = useState(false)
 
   const PAGE_SIZE = 20
 
@@ -180,15 +179,12 @@ function TransactionsHistory() {
                               destination_network: destination_network_internal_name,
                               source_network: source_network_internal_name,
                               destination_exchange: destination_exchange_internal_name,
-                              source_network_asset: source_network_asset
+                              source_network_asset
                             } = swap
 
                             const source = source_exchange_internal_name ? exchanges.find(e => e.internal_name === source_exchange_internal_name) : networks.find(e => e.internal_name === source_network_internal_name)
+                            const source_currency = currencies?.find(c => c.asset === source_network_asset)
                             const destination_exchange = destination_exchange_internal_name && exchanges.find(e => e.internal_name === destination_exchange_internal_name)
-                            const exchange_currency = destination_exchange_internal_name && destination_exchange.currencies?.find(c => swap?.source_network_asset?.toUpperCase() === c?.asset?.toUpperCase() && c?.is_default)
-
-                            const destination_network = destination_network_internal_name ? networks.find(n => n.internal_name === destination_network_internal_name) : networks?.find(e => e?.internal_name?.toUpperCase() === exchange_currency?.network?.toUpperCase())
-
                             const destination = destination_exchange_internal_name ? destination_exchange : networks.find(n => n.internal_name === destination_network_internal_name)
 
                             return <tr onClick={() => handleopenSwapDetails(swap)} key={swap.id}>
@@ -246,11 +242,11 @@ function TransactionsHistory() {
                                     {
                                       swap?.status == 'completed' ?
                                         <span className="ml-1 md:ml-0">
-                                          {swap.transactions.find(t => t.type === TransactionType.Output)?.amount}
+                                          {truncateDecimals(swap.transactions.find(t => t.type === TransactionType.Output)?.amount, source_currency?.precision)}
                                         </span>
                                         :
                                         <span>
-                                          {swap.requested_amount}
+                                          {truncateDecimals(swap.requested_amount, source_currency?.precision)}
                                         </span>
                                     }
                                     <span className="ml-1">{swap.destination_network_asset}</span>
@@ -280,7 +276,7 @@ function TransactionsHistory() {
                             <SpinIcon className="animate-spin h-5 w-5" />
                             : null}
                         </span>
-                        Load more
+                        <span>Load more</span>
                       </button>
                     }
                   </div>
@@ -288,7 +284,7 @@ function TransactionsHistory() {
                     <div className="mt-2">
                       <SwapDetails id={selectedSwap?.id} />
                       {
-                        canCompleteCancelSwap &&
+                        (selectedSwap?.status == SwapStatus.UserTransferPending || selectedSwap?.status === SwapStatus.LsTransferPending) &&
                         <div className="text-white text-sm mt-6 space-y-3">
                           <div className="flex flex-row text-white text-base space-x-2">
                             <SubmitButton
@@ -306,13 +302,32 @@ function TransactionsHistory() {
                           </div>
                         </div>
                       }
+                      {
+                        selectedSwap?.status == SwapStatus.Completed &&
+                        <div className="text-white text-sm mt-6 space-y-3">
+                          <div className="flex flex-row text-white text-base space-x-2">
+                            <SubmitButton
+                              text_align="center"
+                              onClick={() => router.push(`/explorer/${selectedSwap?.transactions?.find(t => t?.type === TransactionType.Input)?.transaction_id}`)}
+                              isDisabled={false}
+                              isSubmitting={false}
+                              icon={
+                                <ExternalLink
+                                  className='h-5 w-5' />
+                              }
+                            >
+                              View in explorer
+                            </SubmitButton>
+                          </div>
+                        </div>
+                      }
                     </div>
                   </Modal>
                 </div>
                 :
                 <div className="absolute top-1/4 right-0 text-center w-full">
                   <Scroll className='h-40 w-40 text-secondary-700 mx-auto' />
-                  <p className="my-2 text-xl">It's empty here</p>
+                  <p className="my-2 text-xl">It&apos;s empty here</p>
                   <p className="px-14 text-primary-text">You can find all your transactions by searching with address in</p>
                   <Link target="_blank" href={AppSettings.ExplorerURl} className="underline hover:no-underline cursor-pointer hover:text-primary-text text-white font-light">
                     <span>Layerswap Explorer</span>

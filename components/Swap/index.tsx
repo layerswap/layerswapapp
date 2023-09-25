@@ -9,10 +9,13 @@ import Failed from './Withdraw/Failed';
 import Delay from './Withdraw/Delay';
 import { TransactionType } from '../../lib/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
+import GasDetails from '../gasDetails';
+import { useSettingsState } from '../../context/settings';
 
 
 const SwapDetails: FC = () => {
     const { swap } = useSwapDataState()
+    const settings = useSettingsState()
     const swapStatus = swap.status;
     const { setInterval } = useSwapDataUpdate()
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id]
@@ -40,7 +43,7 @@ const SwapDetails: FC = () => {
                     <Success />
                 }
                 {
-                    swapStatus === SwapStatus.Failed &&
+                    (swapStatus === SwapStatus.Failed || swapStatus === SwapStatus.Cancelled || swapStatus === SwapStatus.Expired) &&
                     <Failed />
                 }
                 {
@@ -48,6 +51,11 @@ const SwapDetails: FC = () => {
                     <Delay />
                 }
             </Widget>
+
+            {
+                process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true' &&
+                <GasDetails network={settings.layers.find(l => l.internal_name === swap.source_network)} currency={settings.currencies.find(c => c.asset === swap.source_network_asset)} />
+            }
         </>
     )
 }

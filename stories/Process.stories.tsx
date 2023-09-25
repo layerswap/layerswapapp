@@ -8,18 +8,21 @@ import { WagmiConfig, configureChains, createConfig } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
-import { WalletStateContext } from '../context/wallet';
+import { WalletState, WalletStateContext } from '../context/wallet';
 import { QueryStateContext } from '../context/query';
 import { FC, useEffect, useState } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
-import { swap, failedSwap, failedSwapOutOfRange } from './Data/swaps'
+import { swap, failedSwap, failedSwapOutOfRange, cancelled, expired } from './Data/swaps'
 import { Settings } from './Data/settings';
 import Success from '../components/Swap/Withdraw/Success';
 import Delay from '../components/Swap/Withdraw/Delay';
 import Widget from '../components/Wizard/Widget';
 import MessageComponent from '../components/MessageComponent';
 import SubmitButton, { DoubleLineText } from '../components/buttons/submitButton';
-import { MessageSquare } from 'lucide-react';
+import { Home, MessageSquare } from 'lucide-react';
+import GoHomeButton from '../components/utils/GoHome';
+import SwapSummary from '../components/Swap/Summary';
+import Cancell from '../components/icons/Cancell';
 import { NetworkType } from '../Models/CryptoNetwork';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
@@ -48,7 +51,7 @@ const settingsChains = settings.networks.filter(net => net.type === NetworkType.
             },
         },
         contracts: {
-            multicall3: n?.metadata?.contracts?.multicall3
+            multicall3: n?.metadata?.multicall3
         },
     }
 })
@@ -111,7 +114,7 @@ const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: S
         <SettingsStateContext.Provider value={appSettings}>
             <QueryStateContext.Provider value={{}}>
                 <SwapDataStateContext.Provider value={swapContextInitialValues}>
-                    <WalletStateContext.Provider value={{}}>
+                    <WalletStateContext.Provider value={{ balances: null, gases: null, imxAccount: null, isBalanceLoading: null, isGasLoading: null, starknetAccount: null }}>
                         <div className={`flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg`}>
                             <div className={`flex flex-col w-full text-white`}>
                                 <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
@@ -147,6 +150,103 @@ const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: S
                                         {
                                             swapStatus === SwapStatus.UserTransferDelayed &&
                                             <Delay />
+                                        }
+                                        {
+                                            swap?.status == SwapStatus.Cancelled &&
+                                            <Widget.Content>
+                                                <SwapSummary />
+                                                <MessageComponent>
+                                                    <MessageComponent.Description>
+                                                        {
+                                                            <>
+                                                                <div className='p-3 bg-secondary-700 text-white rounded-lg border border-secondary-500'>
+                                                                    <div className="flex items-center">
+                                                                        <Cancell />
+                                                                        <label className="block text-sm md:text-base font-medium">Swap cancelled</label>
+                                                                    </div>
+                                                                    <div className='mt-4 ml-1 text-xs md:text-sm text-white'>
+                                                                        <p className='text-md text-left'>The transaction was cancelled by your request. If you have already sent funds, please contact support.</p>
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        }
+                                                    </MessageComponent.Description>
+                                                    <MessageComponent.Buttons>
+                                                        <div className="flex flex-row text-white text-base space-x-2 mt-2">
+                                                            <div className='basis-1/3'>
+                                                                <SubmitButton text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
+                                                                    <DoubleLineText
+                                                                        colorStyle='mltln-text-dark'
+                                                                        primaryText='Support'
+                                                                        secondarytext='Contact'
+                                                                    />
+                                                                </SubmitButton>
+                                                            </div>
+                                                            <div className='basis-2/3'>
+                                                                <GoHomeButton>
+                                                                    <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
+                                                                        <DoubleLineText
+                                                                            colorStyle='mltln-text-dark'
+                                                                            primaryText='Swap'
+                                                                            secondarytext='Do another'
+                                                                        />
+                                                                    </SubmitButton>
+                                                                </GoHomeButton>
+                                                            </div>
+                                                        </div>
+                                                    </MessageComponent.Buttons>
+                                                </MessageComponent>
+                                            </Widget.Content>
+                                        }
+                                        {
+                                            swap?.status == SwapStatus.Expired &&
+                                            <Widget.Content>
+                                                <SwapSummary />
+                                                <MessageComponent>
+                                                    <MessageComponent.Description>
+                                                        {
+                                                            <>
+                                                                <div className='p-3 bg-secondary-700 text-white rounded-lg border border-secondary-500'>
+                                                                    <div className="flex items-center">
+                                                                        <Cancell />
+                                                                        <label className="block text-sm md:text-base font-medium">Swap expired</label>
+                                                                    </div>
+                                                                    <div className='mt-4 ml-1 text-xs md:text-sm text-white'>
+                                                                        <p className='text-md text-left'>The transfer wasn’t completed during the allocated timeframe.</p>
+                                                                        <ul className="list-inside font-light space-y-1 mt-2 text-left ">
+                                                                            <li>If you’ve already sent crypto for this swap, your funds are safe, please contact our support.</li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        }
+                                                    </MessageComponent.Description>
+                                                    <MessageComponent.Buttons>
+                                                        <div className="flex flex-row text-white text-base space-x-2 mt-2">
+                                                            <div className='basis-1/3'>
+                                                                <SubmitButton text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
+                                                                    <DoubleLineText
+                                                                        colorStyle='mltln-text-dark'
+                                                                        primaryText='Support'
+                                                                        secondarytext='Contact'
+                                                                    />
+                                                                </SubmitButton>
+                                                            </div>
+                                                            <div className='basis-2/3'>
+                                                                <GoHomeButton>
+                                                                    <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
+                                                                        <DoubleLineText
+                                                                            colorStyle='mltln-text-dark'
+                                                                            primaryText='Swap'
+                                                                            secondarytext='Do another'
+                                                                        />
+                                                                    </SubmitButton>
+                                                                </GoHomeButton>
+                                                            </div>
+                                                        </div>
+                                                    </MessageComponent.Buttons>
+                                                </MessageComponent>
+                                            </Widget.Content>
                                         }
                                     </div>
                                 </div>
@@ -316,8 +416,6 @@ export const Failed: Story = {
             status: SwapStatus.Failed,
             transactions: [
                 { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
-                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
-                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Refuel },
             ]
         }
     }
@@ -330,8 +428,28 @@ export const FailedOutOfRangeAmount: Story = {
             status: SwapStatus.Failed,
             transactions: [
                 { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
-                { ...DUMMY_TRANSACTION, status: TransactionStatus.Initiated, type: TransactionType.Output },
-                { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Refuel },
+            ]
+        }
+    }
+};
+
+export const Cancelled: Story = {
+    args: {
+        swap: {
+            ...cancelled,
+            status: SwapStatus.Cancelled,
+            transactions: [
+            ]
+        }
+    }
+};
+
+export const Expired: Story = {
+    args: {
+        swap: {
+            ...expired,
+            status: SwapStatus.Expired,
+            transactions: [
             ]
         }
     }

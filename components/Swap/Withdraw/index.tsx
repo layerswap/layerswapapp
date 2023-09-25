@@ -137,7 +137,7 @@ const Withdraw: FC = () => {
                             {
                                 showTabsHeader &&
                                 <>
-                                    <div className="mb-4 ml-1 text-md">Choose how you'd like to complete the swap</div>
+                                    <div className="mb-4 ml-1 text-md">Choose how you&apos;d like to complete the swap</div>
                                     <div className="flex space-x-3 w-full">
                                         {tabs.filter(t => t.enabled).map((tab) => (
                                             <TabHeader
@@ -169,13 +169,15 @@ const Withdraw: FC = () => {
 const WalletTransferContent: FC = () => {
     const { address, connector } = useAccount();
     const { openAccountModal } = useAccountModal();
-    const { starknetAccount } = useWalletState()
-    const { setStarknetAccount } = useWalletUpdate()
+    const { starknetAccount, imxAccount } = useWalletState()
+    const { setStarknetAccount, setImxAccount } = useWalletUpdate()
 
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
     const { mutateSwap } = useSwapDataUpdate()
     const [isLoading, setIsloading] = useState(false);
+    const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
+    || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
 
     const {
         source_network: source_network_internal_name,
@@ -206,6 +208,9 @@ const WalletTransferContent: FC = () => {
                 await starknetDisconnect({ clearLastWallet: true })
                 setStarknetAccount(null)
             }
+            else if (sourceIsImmutableX) {
+                setImxAccount(null)
+            }
         }
         catch {
             toast.error("Couldn't disconnect the account")
@@ -225,6 +230,10 @@ const WalletTransferContent: FC = () => {
     }
     else if (sourceNetworkType === NetworkType.Starknet) {
         accountAddress = starknetAccount?.account?.address;
+    }
+    else if (sourceIsImmutableX)
+    {
+        accountAddress = imxAccount;
     }
 
     const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap.source_exchange
@@ -254,6 +263,15 @@ const WalletTransferContent: FC = () => {
                     && sourceNetworkType === NetworkType.Starknet
                     && <Image
                         src={starknetAccount?.icon}
+                        alt={accountAddress}
+                        width={25}
+                        height={25} />
+                }
+                {
+                    !swap.source_exchange
+                    && sourceIsImmutableX
+                    && <Image
+                        src={resolveImgSrc(source_network)}
                         alt={accountAddress}
                         width={25}
                         height={25} />

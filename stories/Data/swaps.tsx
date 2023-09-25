@@ -21,6 +21,7 @@ export const swap: SwapItem = {
     "destination_network": "ARBITRUM_GOERLI",
     "destination_exchange": null,
     "has_refuel": true,
+    "fail_reason": "",
     "transactions": [
         {
             "from": "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
@@ -90,6 +91,7 @@ export const failedSwap: SwapItem = {
     "destination_network": "ARBITRUM_GOERLI",
     "destination_exchange": null,
     "has_refuel": false,
+    "fail_reason": "",
     "transactions": [
         {
             "account_explorer_url": '',
@@ -106,21 +108,6 @@ export const failedSwap: SwapItem = {
             "status": TransactionStatus.Pending,
             "usd_value": 3.093156
         },
-        {
-            "account_explorer_url": '',
-            "from": "0x5da5c2a98e26fd28914b91212b1232d58eb9bbab",
-            "to": "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
-            "created_date": "2023-08-30T09:08:28.42928+00:00",
-            "transaction_id": "0x715f2285e98f743023a63056fa2052ad3fad71d3cc3aaa9c41c19ac6d342e2a0",
-            "explorer_url": "https://goerli.arbiscan.io/tx/0x715f2285e98f743023a63056fa2052ad3fad71d3cc3aaa9c41c19ac6d342e2a0",
-            "confirmations": 34,
-            "max_confirmations": 12,
-            "amount": 0.00123,
-            "usd_price": 1718.42,
-            "type": TransactionType.Output,
-            "status": TransactionStatus.Pending,
-            "usd_value": 2.1136566
-        }
     ]
 }
 
@@ -144,6 +131,7 @@ export const failedSwapOutOfRange: SwapItem = {
     "destination_network": "ARBITRUM_GOERLI",
     "destination_exchange": null,
     "has_refuel": true,
+    "fail_reason": "received_more_than_valid_range",
     "transactions": [
         {
             "account_explorer_url": '',
@@ -175,5 +163,57 @@ export const failedSwapOutOfRange: SwapItem = {
             "usd_value": 0.49864542,
             "account_explorer_url": ''
         }
+    ]
+}
+
+export const cancelled: SwapItem = {
+    "id": "343a77b7-6a38-4918-9e10-866784b77d9f",
+    "sequence_number": 2570,
+    "requested_amount": 0.0015,
+    "exchange_account_connected": false,
+    "fee": 0.000633,
+    "message": "",
+    "reference_id": null,
+    "app_name": "Layerswap",
+    "has_pending_deposit": false,
+    "created_date": "2023-08-29T14:16:02.389108+00:00",
+    "status": SwapStatus.Cancelled,
+    "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
+    "source_network_asset": "ETH",
+    "source_network": "ETHEREUM_GOERLI",
+    "source_exchange": null,
+    "destination_network_asset": "ETH",
+    "destination_network": "ARBITRUM_GOERLI",
+    "destination_exchange": null,
+    "has_refuel": true,
+    "fail_reason": "",
+    "transactions": [
+        
+    ]
+}
+
+export const expired: SwapItem = {
+    "id": "343a77b7-6a38-4918-9e10-866784b77d9f",
+    "sequence_number": 2570,
+    "requested_amount": 0.0015,
+    "exchange_account_connected": false,
+    "fee": 0.000633,
+    "message": "",
+    "reference_id": null,
+    "app_name": "Layerswap",
+    "has_pending_deposit": false,
+    "created_date": "2023-08-29T14:16:02.389108+00:00",
+    "status": SwapStatus.Expired,
+    "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
+    "source_network_asset": "ETH",
+    "source_network": "ETHEREUM_GOERLI",
+    "source_exchange": null,
+    "destination_network_asset": "ETH",
+    "destination_network": "ARBITRUM_GOERLI",
+    "destination_exchange": null,
+    "has_refuel": true,
+    "fail_reason": "",
+    "transactions": [
+        
     ]
 }

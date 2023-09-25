@@ -16,7 +16,7 @@ const AddressIcon: FC<Props> = ({ address, size }) => {
                 ref.current.appendChild(iconElement);
             }
         }
-    }, [address]);
+    }, [address, size]);
 
     return <div ref={ref as any} />
 }
