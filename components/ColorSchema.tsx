@@ -25,10 +25,10 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                     --ls-colors-primary-800: ${themeData.primary?.[800]};
                     --ls-colors-primary-900: ${themeData.primary?.[900]};
 
+                    --ls-colors-actionButtonText: ${themeData.actionButtonText};
                     --ls-colors-text-placeholder: ${themeData.placeholderText};
                     --ls-colors-primary-text: ${themeData.primary?.text};
                     --ls-colors-primary-text-muted: ${themeData.primary?.textMuted};
-                    --ls-colors-primary-button-text: ${themeData.actionButtonText};
                     --ls-colors-primary-logoColor: ${themeData.logo};
 
                     --ls-colors-secondary: ${themeData.secondary?.DEFAULT};

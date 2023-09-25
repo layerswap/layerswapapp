@@ -42,7 +42,7 @@ export default function ThemeWrapper ({ hideNavbar, children }: Props) {
     // }, [addressSource])
 
     return <div className='styled-scroll'>
-        <div className="invisible imxMarketplace  light"></div>
+        <div className="invisible light"></div>
         <main className="styled-scroll">
             <div className={`${isDesktop ? "flex flex-col items-center" : ""} min-h-screen overflow-hidden relative font-robo`}>
                 <Toaster position="top-center" toastOptions={{

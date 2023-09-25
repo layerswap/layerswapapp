@@ -156,10 +156,10 @@ const meta = {
     },
     argTypes: {
         theme: {
-          options: ['light', 'default'],
-          control: { type: 'select' },
+            options: ['light', 'default', 'evmos', 'imxMarketplace', 'ea7df14a1597407f9f755f05e25bab42'],
+            control: { type: 'select' },
         },
-      },
+    },
 } satisfies Meta<typeof Comp>;
 
 export default meta;
