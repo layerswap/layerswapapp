@@ -33,7 +33,8 @@ export type Gas = {
         maxFeePerGas: number,
         gasPrice: number,
         maxPriorityFeePerGas: number
-    }
+    },
+    request_time: string
 }
 
 type ResolveGasArguments = {
@@ -285,7 +286,8 @@ export const resolveGas = async (options: ResolveGasArguments) => {
             maxFeePerGas: feeData?.maxFeePerGas ? Number(formatGwei(feeData?.maxFeePerGas)) : null,
             gasPrice: feeData?.gasPrice ? Number(formatGwei(feeData?.gasPrice)) : null,
             maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas ? Number(formatGwei(feeData?.maxPriorityFeePerGas)) : null,
-        }
+        },
+        request_time: new Date().toJSON()
     }
 }
 

@@ -15,19 +15,20 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
     const { networks, currencies } = useSettingsState()
     const query = useQueryState();
-    const { currency, from, to, amount } = values
+    const { currency, from, to, amount, destination_address } = values
 
-    const { balances, isBalanceLoading } = useWalletState()
-    const { getBalance } = useWalletUpdate()
+    const { balances, isBalanceLoading, gases, isGasLoading } = useWalletState()
+    const gasAmount = gases[from?.internal_name]?.find(g => g?.token === currency?.asset)?.gas || 0
+    const { getBalance, getGas } = useWalletUpdate()
     const name = "amount"
     const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
     const walletBalanceAmount = truncateDecimals(walletBalance?.amount, currency?.precision)
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
-    const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances, walletBalance?.amount, minAllowedAmount)
+    const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances, walletBalance?.amount, gasAmount, minAllowedAmount)
     const maxAllowedDisplayAmont = truncateDecimals(maxAllowedAmount, currency?.precision)
 
-    const placeholder = (currency && from && to && !isBalanceLoading) ? `${minAllowedAmount} - ${maxAllowedDisplayAmont}` : '0.01234'
+    const placeholder = (currency && from && to && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAllowedDisplayAmont}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.precision)
     const amountRef = useRef(ref)
 
@@ -38,6 +39,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const handleSetMaxAmount = () => {
         setFieldValue(name, maxAllowedAmount)
         getBalance(from)
+        getGas(from, currency, destination_address)
     }
 
     return (<>
@@ -45,7 +47,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
             label={<AmountLabel detailsAvailable={!!(from && to && amount)}
                 maxAllowedAmount={maxAllowedDisplayAmont}
                 minAllowedAmount={minAllowedAmount}
-                isBalanceLoading={isBalanceLoading}
+                isBalanceLoading={(isBalanceLoading || isGasLoading)}
                 walletBalance={walletBalanceAmount}
             />}
             disabled={!currency}
@@ -92,7 +94,7 @@ const AmountLabel = ({
             {
                 detailsAvailable &&
                 <div className="text-xs text-primary-text flex items-center space-x-1">
-                    <span>(Min:&nbsp;</span>{minAllowedAmount}<span>&nbsp;- Max:&nbsp;</span>{isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{maxAllowedAmount}</span>}<span>)</span>
+                    <span>(Min:&nbsp;</span>{minAllowedAmount}<span>&nbsp;- Max:&nbsp;</span>{isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{maxAllowedAmount}</span>})<span></span>
                 </div>
             }
         </div>
