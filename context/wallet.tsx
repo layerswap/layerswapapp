@@ -36,7 +36,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
     const { address } = useAccount()
     const balances = allBalances[address]
     const gases = allGases
-    const publicClient = usePublicClient()
+    const publicClient = usePublicClient();
 
     async function getBalance(from: Layer) {
         const isBalanceOutDated = new Date().getTime() - (new Date(allBalances[address]?.find(b => b?.network === from?.internal_name)?.request_time).getTime() || 0) > 60000
