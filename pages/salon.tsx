@@ -29,9 +29,7 @@ export default function Salon({ settings }: InferGetServerSidePropsType<typeof g
                 query: { ...(temp_data?.query || {}), coinbase_redirect: true }
             })
         }
-        // Probably left empty because needs to run only on mount
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [router])
 
     return (
         <Layout hideFooter={true} hideNavbar={true} settings={appSettings}>

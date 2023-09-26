@@ -51,7 +51,7 @@ const TransferElements: FC = () => {
                 }
                 else if (e?.response?.data?.error?.code === KnownErrorCode.INVALID_CREDENTIALS || e?.response?.data?.error?.code === KnownErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
                     setCodeRequested(false)
-                    setShowCoinbaseConnectModal(true)
+                    alert("You have not authorized enough to be able to complete the transfer. Please authorize again.")
                 }
                 else if (e?.response?.data?.error?.message) {
                     toast(e?.response?.data?.error?.message)

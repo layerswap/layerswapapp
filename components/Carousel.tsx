@@ -17,23 +17,20 @@ export const CarouselItem: React.FC<CarouselItemProps> = ({ children, width }) =
 
 interface CarouselProps {
     children?: JSX.Element | JSX.Element[];
+    starAtLast: boolean;
     onLast: (value: boolean) => void;
     onFirst: (value: boolean) => void;
 }
 
 export type CarouselRef = {
     next: () => void;
-    hasNext: boolean;
     prev: () => void;
-    hasPrev: boolean;
+    goToLast: () => void;
+    goToFirst: () => void;
 };
 
-const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel({onFirst, onLast, children}, ref) {
-    const [activeIndex, setActiveIndex] = useState(0);
-
-    useEffect(() => {
-        onFirst(true);
-    }, [onFirst]);
+const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel({ onFirst, onLast, children, starAtLast }, ref) {
+    const [activeIndex, setActiveIndex] = useState(starAtLast ? React.Children.count(children) - 1 : 0);
 
     const updateIndex = useCallback((newIndex) => {
         onFirst(false)
@@ -54,8 +51,12 @@ const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel({onFir
         prev: () => {
             updateIndex(activeIndex - 1);
         },
-        hasNext: activeIndex < React.Children.count(children) - 1,
-        hasPrev: activeIndex < React.Children.count(children) + 1,
+        goToLast: () => {
+            updateIndex(React.Children.count(children) - 1);
+        },
+        goToFirst: () => {
+            updateIndex(0);
+        }
     }), [activeIndex, children, updateIndex]);
 
     const handlers = useSwipeable({
