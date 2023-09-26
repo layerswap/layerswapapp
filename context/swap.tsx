@@ -16,17 +16,17 @@ export const SwapDataStateContext = React.createContext<SwapData>({ codeRequeste
 export const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 export type UpdateInterface = {
-    createSwap: (values: SwapFormValues, query: QueryParams, partner: Partner) => Promise<string>,
-    setCodeRequested(codeSubmitted: boolean): void;
-    cancelSwap: (swapId: string) => Promise<void>;
-    setAddressConfirmed: (value: boolean) => void;
-    setInterval: (value: number) => void,
-    mutateSwap: KeyedMutator<ApiResponse<SwapItem>>
-    setWalletAddress: (value: string) => void,
-    setDepositeAddressIsfromAccount: (value: boolean) => void,
-    setWithdrawType: (value: WithdrawType) => void
-    setSwapPublishedTx: (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => void;
-    setSelectedAssetNetwork: (assetNetwork: ExchangeL2Asset | BaseL2Asset) => void
+    createSwap?: (values: SwapFormValues, query: QueryParams, partner: Partner) => Promise<string>,
+    setCodeRequested?: (codeSubmitted: boolean)=> void;
+    cancelSwap?: (swapId: string) => Promise<void>;
+    setAddressConfirmed?: (value: boolean) => void;
+    setInterval?: (value: number) => void,
+    mutateSwap?: KeyedMutator<ApiResponse<SwapItem>>
+    setWalletAddress?: (value: string) => void,
+    setDepositeAddressIsfromAccount?: (value: boolean) => void,
+    setWithdrawType?: (value: WithdrawType) => void
+    setSwapPublishedTx?: (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => void;
+    setSelectedAssetNetwork?: (assetNetwork: ExchangeL2Asset | BaseL2Asset) => void
 }
 
 export type SwapData = {
