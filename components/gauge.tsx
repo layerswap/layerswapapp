@@ -1,11 +1,13 @@
+import { Check } from "lucide-react";
+
 export const Gauge = ({
     value,
     size = "small",
-    showValue = true,
+    completeOnFinish = false
 }: {
     value: number;
     size: "verySmall" | "small" | "medium" | "large";
-    showValue: boolean;
+    completeOnFinish?: boolean;
 }) => {
     const circumference = 332; //2 * Math.PI * 53; // 2 * pi * radius
     const valueInCircumference = (value / 100) * circumference;
@@ -75,9 +77,9 @@ export const Gauge = ({
                     }}
                 />
             </svg>
-            {showValue ? (
+            {completeOnFinish && value == 100 ? (
                 <div className="absolute flex opacity-0 animate-gauge_fadeIn">
-                    <p className={`text-gray-100 ${sizes[size].textSize}`}>{value}</p>
+                   <Check className="h-6 w-6 text-primary" aria-hidden="true" />
                 </div>
             ) : null}
         </div>

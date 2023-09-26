@@ -13,9 +13,9 @@ import { getStarknet } from 'get-starknet-core';
 import { BaseL2Asset, ExchangeL2Asset } from '../Models/Layer';
 
 export const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined });
-const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
+export const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
-type UpdateInterface = {
+export type UpdateInterface = {
     createSwap: (values: SwapFormValues, query: QueryParams, partner: Partner) => Promise<string>,
     setCodeRequested(codeSubmitted: boolean): void;
     cancelSwap: (swapId: string) => Promise<void>;
@@ -29,7 +29,7 @@ type UpdateInterface = {
     setSelectedAssetNetwork: (assetNetwork: ExchangeL2Asset | BaseL2Asset) => void
 }
 
-type SwapData = {
+export type SwapData = {
     codeRequested: boolean,
     swap?: SwapItem,
     swapApiError?: ApiError,

@@ -1,4 +1,4 @@
-const DelayIcon = <svg xmlns="http://www.w3.org/2000/svg" width="116" height="116" viewBox="0 0 116 116" fill="none">
+const DelayIcon = (props) => <svg xmlns="http://www.w3.org/2000/svg" {...props} viewBox="0 0 116 116" fill="none">
     <g clipPath="url(#clip0_1021_821)">
         <path d="M58 116C90.0325 116 116 90.0325 116 58C116 25.9675 90.0325 0 58 0C25.9675 0 0 25.9675 0 58C0 90.0325 25.9675 116 58 116Z" fill="#E3D557" fillOpacity="0.1" />
         <path d="M58 103C82.8528 103 103 82.8528 103 58C103 33.1472 82.8528 13 58 13C33.1472 13 13 33.1472 13 58C13 82.8528 33.1472 103 58 103Z" fill="#E3D557" fillOpacity="0.3" />

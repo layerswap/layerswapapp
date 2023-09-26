@@ -22,7 +22,7 @@ function constructIcons(icon: iconStyle) {
             iconStyle = <SuccessIcon />;
             break;
         case 'yellow':
-            iconStyle = DelayIcon
+            iconStyle = <DelayIcon />
             break
         case 'gray':
             iconStyle = CancelIcon
@@ -63,7 +63,7 @@ const Header = ({ children }) => {
 }
 
 const Description = ({ children }) => {
-    return <div className="text-base font-medium space-y-6 text-primary-text text-center">
+    return <div className="text-base font-medium space-y-6 text-primary-text text-center mb-6">
         {children}
     </div>
 }

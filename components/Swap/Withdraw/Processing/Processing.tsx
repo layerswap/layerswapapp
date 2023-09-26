@@ -1,4 +1,4 @@
-import { Check, ExternalLink, Fuel } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { FC } from 'react'
 import KnownInternalNames from '../../../../lib/knownIds';
 import Widget from '../../../Wizard/Widget';
@@ -13,7 +13,6 @@ import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { SwapFailReasons } from '../../../../Models/RangeError';
 import { Gauge } from '../../../gauge';
-import SuccessIcon from '../../../icons/SuccessIcon';
 
 type Props = {
     settings: LayerSwapAppSettings;
@@ -46,6 +45,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const truncatedRefuelAmount = truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision)
 
     const progressStatuses = getProgressStatuses(swap, swapStatus)
+    const stepStatuses = progressStatuses.stepStatuses;
 
     type ProgressStates = {
         [key in Progress]?: {
@@ -143,10 +143,9 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 </div> : outputPendingDetails,
             },
             failed: {
-                name: `The transfer failed`,
+                name: swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? `The transfer is on hold` : "The transfer is failed",
                 description: <div className='flex space-x-1'>
-                    <span>Error: </span>
-                    <div className='space-x-1 text-white'>
+                    <div className='space-x-1 text-primary-text'>
                         {swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
                             "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
                             :
@@ -191,28 +190,28 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     const allSteps: StatusStep[] = [
         {
-            name: progressStates["input_transfer"][progressStatuses?.input_transfer]?.name,
-            status: progressStatuses?.input_transfer,
-            description: progressStates["input_transfer"][progressStatuses?.input_transfer]?.description,
+            name: progressStates["input_transfer"][stepStatuses?.input_transfer]?.name,
+            status: stepStatuses?.input_transfer,
+            description: progressStates["input_transfer"][stepStatuses?.input_transfer]?.description,
             index: 1
         },
         {
-            name: progressStates["output_transfer"][progressStatuses?.output_transfer]?.name,
-            status: progressStatuses?.output_transfer,
-            description: progressStates["output_transfer"][progressStatuses?.output_transfer]?.description,
+            name: progressStates["output_transfer"][stepStatuses?.output_transfer]?.name,
+            status: stepStatuses?.output_transfer,
+            description: progressStates["output_transfer"][stepStatuses?.output_transfer]?.description,
             index: 2
         },
         {
-            name: progressStates["refuel"][progressStatuses?.refuel]?.name,
-            status: progressStatuses?.refuel,
-            description: progressStates["refuel"][progressStatuses?.refuel]?.description,
+            name: progressStates["refuel"][stepStatuses?.refuel]?.name,
+            status: stepStatuses?.refuel,
+            description: progressStates["refuel"][stepStatuses?.refuel]?.description,
             index: 3
         }
     ]
 
     let currentSteps = allSteps.filter((s) => s.status);
     let stepsProgressPercentage = currentSteps.filter(x => x.status == ProgressStatus.Complete).length / currentSteps.length * 100;
-    console.log(currentSteps.length, currentSteps.filter(x => x.status == ProgressStatus.Complete).length)
+
     if (!swap) return <></>
     return (
         <Widget.Content>
@@ -226,17 +225,14 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                             <div className="w-full flex flex-col h-full space-y-5">
                                 <div className='flex gap-4'>
                                     <div className='flex items-start'>
-                                        {stepsProgressPercentage < 100 ? <Gauge value={stepsProgressPercentage} size="small" showValue={false} /> :
-                                            <span className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
-                                                <Check className="h-7 w-7 text-primary" aria-hidden="true" />
-                                            </span>}
+                                        <Gauge value={stepsProgressPercentage} size="small" completeOnFinish={true} />
                                     </div>
                                     <div className="text-left flex-col text-primary-text ">
                                         <span className="font-medium text-white">
-                                            Transfer in progress
+                                            {progressStatuses.generalStatus.title}
                                         </span>
-                                        <span className='text-sm flex space-x-1'>
-                                            You&apos;ll see live updates on the transfer progress below
+                                        <span className='text-sm block space-x-1'>
+                                            <span>{progressStatuses.generalStatus.subTitle}</span>
                                         </span>
                                     </div>
                                 </div>
@@ -272,11 +268,14 @@ type StatusStep = {
 }
 
 
-const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { [key in Progress]: ProgressStatus } => {
+const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string } } => {
+    let generalTitle = "Transfer in progress";
+    let subtitle = "View in explorer";
     const swapInputTransaction: Transaction | string = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id];
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
     let inputIsCompleted = (swapInputTransaction as Transaction)?.status == TransactionStatus.Completed && (swapInputTransaction as Transaction).confirmations >= (swapInputTransaction as Transaction).max_confirmations;
+
     let input_transfer = inputIsCompleted ? ProgressStatus.Complete : ProgressStatus.Current;
 
     let output_transfer =
@@ -293,18 +292,31 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { [key in 
     if (swapStatus === SwapStatus.Failed) {
         output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed;
         refuel_transfer = refuel_transfer !== ProgressStatus.Complete && null;
+        generalTitle = "Transfer failed"
     }
 
     if (swapStatus === SwapStatus.UserTransferDelayed) {
         input_transfer = ProgressStatus.Delayed;
         output_transfer = null;
         refuel_transfer = null;
+        generalTitle = "Transfer delayed"
+    }
+
+    if (swapStatus == SwapStatus.Completed)
+    {
+        generalTitle = "Transfer completed"
     }
 
     return {
-        "input_transfer": input_transfer,
-        "output_transfer": output_transfer,
-        "refuel": refuel_transfer,
+        stepStatuses: {
+            "input_transfer": input_transfer,
+            "output_transfer": output_transfer,
+            "refuel": refuel_transfer,
+        },
+        generalStatus: {
+            title: generalTitle,
+            subTitle: subtitle
+        }
     };
 
 }
