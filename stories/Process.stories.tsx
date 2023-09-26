@@ -9,14 +9,13 @@ import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 import { WalletStateContext } from '../context/wallet';
 import { QueryStateContext } from '../context/query';
-import { FC, useEffect, useState } from 'react';
+import { FC } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange, cancelled, expired } from './Data/swaps'
 import { Settings } from './Data/settings';
 import { NetworkType } from '../Models/CryptoNetwork';
 import { AuthDataUpdateContext, AuthStateContext, UserType } from '../context/authContext';
 import { IntercomProvider } from 'react-use-intercom';
-import Processing from '../components/Swap/Withdraw/Processing';
 import ColorSchema from '../components/ColorSchema';
 import { THEME_COLORS } from '../Models/Theme';
 import Layout from '../components/layout';
@@ -80,32 +79,18 @@ const connectors = connectorsForWallets([
     },
 ]);
 window.plausible = () => { }
-const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, theme?: "default" | "light" }> = ({ swap, failedSwap, failedSwapOutOfRange, theme }) => {
-    const [appSettings, setAppSettings] = useState(null);
+const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, theme?: "default" | "light" }> = ({ settings, swap, failedSwap, failedSwapOutOfRange, theme }) => {
     const wagmiConfig = createConfig({
         autoConnect: true,
         connectors,
         publicClient,
     })
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const res = await (await fetch(`https://bridge-api-dev.layerswap.cloud/api/settings?version=sandbox`)).json();
-                let appSettings = new LayerSwapAppSettings(res.data)
-                setAppSettings(appSettings);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        }
-        fetchData();
-    }, []);
+    const appSettings = new LayerSwapAppSettings(settings?.data)
     const swapContextInitialValues: SwapData = { codeRequested: false, swap, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
-
     if (!appSettings) {
         return <div>Loading...</div>
     }
     const themeData = theme ? THEME_COLORS[theme] : THEME_COLORS["default"];
-
     return <WagmiConfig config={wagmiConfig}>
         <IntercomProvider appId='123'>
             <SettingsStateContext.Provider value={appSettings}>
@@ -163,6 +148,7 @@ const meta = {
             control: { type: 'select' },
         },
     },
+    render: (args, { loaded: { settings } }) => <Comp {...args} settings={settings} />,
 } satisfies Meta<typeof Comp>;
 
 export default meta;
