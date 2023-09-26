@@ -27,7 +27,7 @@ const Banner: FC<BannerProps> = ({ localStorageId, desktopMessage, mobileMessage
                         <span className="flex p-1 text-lg rounded-lg bg-primary-900">
                             🥳
                         </span>
-                        <p className="ml-3 font-medium text-white truncate">
+                        <p className="ml-3 font-medium text-primary-text truncate">
                             <span className="md:hidden">{mobileMessage}</span>
                             <span className="hidden md:inline">{desktopMessage}</span>
                         </p>
@@ -39,7 +39,7 @@ const Banner: FC<BannerProps> = ({ localStorageId, desktopMessage, mobileMessage
                             className="-mr-1 flex p-2 rounded-md hover:bg-primary-400 focus:outline-none focus:ring-2 focus:ring-white"
                         >
                             <span className="sr-only">Dismiss</span>
-                            <X className="h-4 w-5 text-white" aria-hidden="true" />
+                            <X className="h-4 w-5 text-primary-text" aria-hidden="true" />
                         </button>
                     </div>
                 </div>

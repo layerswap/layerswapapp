@@ -127,7 +127,7 @@ const Withdraw: FC = () => {
     return (
         <>
             <Widget.Content>
-                <div className="w-full flex flex-col justify-between h-full text-primary-text">
+                <div className="w-full flex flex-col justify-between h-full text-secondary-text">
                     <div className='grid grid-cols-1 gap-4 '>
                         {
                             !isFiat && <SwapSummary />
@@ -177,7 +177,7 @@ const WalletTransferContent: FC = () => {
     const { mutateSwap } = useSwapDataUpdate()
     const [isLoading, setIsloading] = useState(false);
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-    || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+        || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
 
     const {
         source_network: source_network_internal_name,
@@ -231,8 +231,7 @@ const WalletTransferContent: FC = () => {
     else if (sourceNetworkType === NetworkType.Starknet) {
         accountAddress = starknetAccount?.account?.address;
     }
-    else if (sourceIsImmutableX)
-    {
+    else if (sourceIsImmutableX) {
         accountAddress = imxAccount;
     }
 
@@ -257,7 +256,7 @@ const WalletTransferContent: FC = () => {
         }
 
         <div onClick={handleOpenAccount} className={`${canOpenAccount ? 'cursor-pointer' : 'cursor-auto'} text-left min-h-12  space-x-2 border border-secondary-300 ea7df14a1597407f9f755f05e25bab42:bg-secondary-800/50 bg-secondary-700/70 shadow-xl flex text-sm rounded-md items-center w-full pl-4 pr-2 py-1.5`}>
-            <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-1'>
+            <div className='flex text-secondary-text bg-secondary-400 flex-row items-left rounded-md p-1'>
                 {
                     !swap.source_exchange
                     && sourceNetworkType === NetworkType.Starknet
@@ -295,7 +294,7 @@ const WalletTransferContent: FC = () => {
                 }
             </div>
             <div className="flex flex-col grow">
-                <div className="block text-md font-medium text-white">
+                <div className="block text-md font-medium text-primary-text">
                     {!swap.source_exchange && <span>
                         {shortenAddress(accountAddress)}
                     </span>}
@@ -304,7 +303,7 @@ const WalletTransferContent: FC = () => {
                     </span>}
                 </div>
             </div>
-            <div onClick={handleDisconnect} className='cursor-pointer flex text-primary-text flex-row items-left p-2 rounded-md transform hover:bg-secondary-500 transition duration-200 hover:border-secondary-500 hover:shadow-xl'>
+            <div onClick={handleDisconnect} className='cursor-pointer flex text-secondary-text flex-row items-left p-2 rounded-md transform hover:bg-secondary-500 transition duration-200 hover:border-secondary-500 hover:shadow-xl'>
                 {isLoading ? <SpinIcon className="animate-spin h-5 w-5" /> : <X className='h-5' />}
             </div>
         </div>

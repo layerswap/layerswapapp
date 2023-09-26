@@ -29,7 +29,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
 
         return <>
             {label &&
-                <label htmlFor={name} className="block font-semibold text-primary-text text-sm mb-1.5 w-full">
+                <label htmlFor={name} className="block font-semibold text-secondary-text text-sm mb-1.5 w-full">
                     {label}
                 </label>
             }

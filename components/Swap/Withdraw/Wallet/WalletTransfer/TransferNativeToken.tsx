@@ -143,7 +143,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         >
             <MessageComponent>
                 <div className="space-y-4">
-                    <div className='md:text-2xl text-lg font-bold text-white leading-6 text-center'>
+                    <div className='md:text-2xl text-lg font-bold text-primary-text leading-6 text-center'>
                         Insufficient funds for gas
                     </div>
                     <div className="text-base font-medium space-y-6 text-primary-text text-center">
@@ -154,7 +154,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
                     You have requested swap with {amount}
                 </div>
                 <MessageComponent.Buttons>
-                    <div className="flex flex-row text-white text-base space-x-2">
+                    <div className="flex flex-row text-primary-text text-base space-x-2">
                         <div className='basis-1/3'>
                             <SubmitButton onClick={() => { setOpenChangeAmount(false); clickHandler() }} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='filled' >
                                 Transfer

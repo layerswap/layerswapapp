@@ -55,7 +55,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                     }}
                     custom={{ direction: "back" ? -1 : 1, width: 100 }}
                     variants={variants}
-                    className={`text-white text-base mt-3        
+                    className={`text-primary-text text-base mt-3        
                         max-sm:fixed
                         max-sm:inset-x-0
                         max-sm:bottom-0 
@@ -64,7 +64,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                 </motion.div>
                 <ReactPortal wrapperId='offset-for-stickyness'>
                     <div style={{ height: `${height}px` }}
-                        className={`text-white text-base mt-3        
+                        className={`text-primary-text text-base mt-3        
                              max-sm:inset-x-0
                              max-sm:bottom-0 
                              max-sm:p-4 max-sm:w-full invisible`}>

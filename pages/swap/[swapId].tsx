@@ -8,13 +8,15 @@ import SwapWithdrawal from '../../components/SwapWithdrawal';
 import LayerSwapAuthApiClient from '../../lib/userAuthApiClient';
 import { validateSignature } from '../../helpers/validateSignature';
 import { TimerProvider } from '../../context/timerContext';
+import { THEME_COLORS } from '../../Models/Theme';
+import ColorSchema from '../../components/ColorSchema';
 import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings';
 
-const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+const SwapDetails = ({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
   let appSettings = new LayerSwapAppSettings(settings)
-  
-  return (
+
+  return (<>
     <Layout settings={appSettings}>
       <SwapDataProvider >
           <TimerProvider>
@@ -22,7 +24,8 @@ const SwapDetails = ({ settings }: InferGetServerSidePropsType<typeof getServerS
           </TimerProvider>
       </SwapDataProvider >
     </Layout>
-  )
+    <ColorSchema themeData={themeData} />
+  </>)
 }
 
 export const getServerSideProps = async (ctx) => {
@@ -49,10 +52,22 @@ export const getServerSideProps = async (ctx) => {
   }
 
   settings.validSignatureisPresent = validSignatureIsPresent
+  let themeData = null
+  try {
+    const theme_name = ctx.query.theme || ctx.query.addressSource
+    // const internalApiClient = new InternalApiClient()
+    // const themeData = await internalApiClient.GetThemeData(theme_name);
+    // result.themeData = themeData as ThemeData;
+    themeData = THEME_COLORS[theme_name] || null;
+  }
+  catch (e) {
+    console.log(e)
+  }
 
   return {
     props: {
-      settings
+      settings,
+      themeData
     }
   }
 }

@@ -49,14 +49,21 @@ function RainbowKitComponent({ children }: Props) {
     ]);
 
     const theme = darkTheme({
-        accentColor: 'rgb(var(--colors-primary-500))',
-        accentColorForeground: 'white',
+        accentColor: 'rgb(var(--ls-colors-primary-500))',
+        accentColorForeground: 'rgb(var(--ls-colors-primary-text))',
         borderRadius: 'small',
         fontStack: 'system',
         overlayBlur: 'small',
     })
 
-    theme.colors.modalBackground = 'rgb(var(--colors-secondary-900))'
+    theme.colors.modalBackground = 'rgb(var(--ls-colors-secondary-900))'
+    theme.colors.modalText = 'rgb(var(--ls-colors-primary-text))'
+    theme.colors.modalTextSecondary = 'rgb(var(--ls-colors-secondary-text))'
+    theme.colors.actionButtonBorder = 'rgb(var(--ls-colors-secondary-500))'
+    theme.colors.actionButtonBorderMobile = 'rgb(var(--ls-colors-secondary-500))'
+    theme.colors.closeButton = 'rgb(var(--ls-colors-secondary-text))'
+    theme.colors.closeButtonBackground = 'rgb(var(--ls-colors-secondary-500))'
+    theme.colors.generalBorder = 'rgb(var(--ls-colors-secondary-500))'
 
     const wagmiConfig = createConfig({
         autoConnect: true,

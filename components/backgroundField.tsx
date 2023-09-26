@@ -23,7 +23,7 @@ const BackgroundField: FC<Props> = (({ Copiable, toCopy, header, children, QRabl
             }
             <div className={`w-full relative px-3 py-3 shadow-sm ${withoutBorder ? 'border-secondary-700' : 'border-secondary-500 rounded-md border bg-secondary-700'}`}>
                 {
-                    header && <p className="block font-bold text-sm text-slate-300">
+                    header && <p className="block font-bold text-sm text-secondary-text">
                         {header}
                     </p>
                 }
@@ -32,11 +32,11 @@ const BackgroundField: FC<Props> = (({ Copiable, toCopy, header, children, QRabl
                     <div className="space-x-2 flex self-start">
                         {
                             QRable &&
-                            <QRCodeModal qrUrl={toCopy?.toLocaleString()} iconHeight={17} iconWidth={17} className='p-1 hover:text-white rounded' />
+                            <QRCodeModal qrUrl={toCopy?.toLocaleString()} iconHeight={17} iconWidth={17} className='p-1 hover:text-primary-text rounded' />
                         }
                         {
                             Copiable &&
-                            <CopyButton iconHeight={17} iconWidth={17} toCopy={toCopy} className='p-1 hover:text-white rounded' />
+                            <CopyButton iconHeight={17} iconWidth={17} toCopy={toCopy} className='p-1 hover:text-primary-text rounded' />
                         }
                     </div>
                 </div>

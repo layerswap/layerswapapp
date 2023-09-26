@@ -49,7 +49,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                 <Accordion type="single" collapsible>
                     <AccordionItem value={'item-1'}>
                         <AccordionTrigger className="items-center flex w-full relative gap-2 rounded-lg text-left text-base font-medium">
-                            <span className="md:font-semibold text-sm md:text-base text-primary-text leading-8 md:leading-8 flex-1">You will receive</span>
+                            <span className="md:font-semibold text-sm md:text-base text-secondary-text leading-8 md:leading-8 flex-1">You will receive</span>
                             <div className='flex items-center space-x-2'>
                                 <span className="text-sm md:text-base">
                                     {
@@ -75,7 +75,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                 </span>
                             </div>
                         </AccordionTrigger>
-                        <AccordionContent className="text-sm text-primary-text font-normal">
+                        <AccordionContent className="text-sm text-secondary-text font-normal">
                             <div className="mt-2 flex flex-row items-baseline justify-between">
                                 <label className="inline-flex items-center text-left text-primary-text-placeholder">
                                     Layerswap fee

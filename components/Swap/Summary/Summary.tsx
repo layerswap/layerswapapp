@@ -90,33 +90,33 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                     <div className="flex items-center gap-3">
                         <Image src={resolveImgSrc(source)} alt={sourceDisplayName} width={36} height={36} className="rounded-md" />
                         <div>
-                            <p className="text-white text-lg leading-5">{sourceDisplayName}</p>
+                            <p className="text-primary-text text-lg leading-5">{sourceDisplayName}</p>
                             {
                                 sourceAccountAddress &&
-                                <p className="text-sm text-primary-text">{sourceAccountAddress}</p>
+                                <p className="text-sm text-secondary-text">{sourceAccountAddress}</p>
                             }
                         </div>
                     </div>
                     <div className="flex flex-col">
-                        <p className="text-white text-lg">{truncateDecimals(requestedAmount, currency.precision)} {sourceCurrencyName}</p>
-                        <p className="text-primary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
+                        <p className="text-primary-text text-lg">{truncateDecimals(requestedAmount, currency.precision)} {sourceCurrencyName}</p>
+                        <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
                     </div>
                 </div>
-                <ArrowDown className="h-4 w-4 text-primary-text absolute top-[calc(50%-8px)] left-[calc(50%-8px)]" />
+                <ArrowDown className="h-4 w-4 text-secondary-text absolute top-[calc(50%-8px)] left-[calc(50%-8px)]" />
                 <div className="flex items-center justify-between w-full px-3 py-2">
                     <div className="flex items-center gap-3">
                         <Image src={resolveImgSrc(destination)} alt={destinationDisplayName} width={36} height={36} className="rounded-md" />
                         <div>
-                            <p className="text-white text-lg leading-5">{destinationDisplayName}</p>
-                            <p className="text-sm text-primary-text">{shortenAddress(destAddress)}</p>
+                            <p className="text-primary-text text-lg leading-5">{destinationDisplayName}</p>
+                            <p className="text-sm text-secondary-text">{shortenAddress(destAddress)}</p>
                         </div>
                     </div>
                     {
                         fee >= 0 ?
                             <div className="flex flex-col justify-end">
-                                <p className="text-white text-lg">{truncateDecimals(receiveAmount, currency.precision)} {destCurrencyName}</p>
-                                <p className="text-primary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
-                            </div>
+                                <p className="text-primary-text text-lg">{truncateDecimals(receiveAmount, currency.precision)} {destCurrencyName}</p>
+                                <p className="text-secondary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
+                            </div >
                             :
                             <div className="flex flex-col justify-end">
                                 <div className="h-[18px] my-[5px] w-20 animate-pulse rounded bg-gray-500" />
@@ -124,8 +124,8 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                             </div>
                     }
 
-                </div>
-            </div>
+                </div >
+            </div >
             {
                 refuelAmount &&
                 <div
@@ -134,12 +134,12 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                         <Fuel className='h-4 w-4 text-primary' />
                         <p>Refuel</p>
                     </div>
-                    <div className="text-white">
+                    <div className="text-primary-text">
                         + {truncatedRefuelAmount} {nativeCurrency.asset}
                     </div>
                 </div>
             }
-        </div>
+        </div >
     )
 }
 

@@ -20,6 +20,7 @@ import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
 import { ApiError, KnownErrorCode } from "../../../Models/ApiError";
+import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -68,7 +69,10 @@ export default function Form () {
             }
 
             const swapId = await createSwap(values, query, partner);
-            await router.push(`/swap/${swapId}`)
+            await router.push({
+                pathname: `/swap/${swapId}`,
+                query: resolvePersistantQueryParams(router.query)
+            })
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error

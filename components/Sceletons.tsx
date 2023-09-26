@@ -77,7 +77,7 @@ export const SwapHistoryComponentSceleton = () => {
                     'relative py-4 pl-4 sm:pl-6 pr-3 text-sm'
                   )}
                 >
-                  <div className="text-white hidden lg:block">
+                  <div className="text-primary-text hidden lg:block">
                     <div className="grid grid-cols-1 gap-4">
                       <div className="h-2 w-16 bg-slate-700 rounded col-span-1"></div>
                     </div>
@@ -87,7 +87,7 @@ export const SwapHistoryComponentSceleton = () => {
                 <td
                   className={classNames(
                     index === 0 ? '' : 'border-t border-secondary-500',
-                    'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
+                    'hidden px-3 py-3.5 text-sm text-primary-text lg:table-cell'
                   )}
                 >
                   <div className="flex space-x-2">
@@ -101,7 +101,7 @@ export const SwapHistoryComponentSceleton = () => {
                 <td
                   className={classNames(
                     index === 0 ? '' : 'border-t border-secondary-500',
-                    'px-3 py-3.5 text-sm text-white table-cell'
+                    'px-3 py-3.5 text-sm text-primary-text table-cell'
                   )}
                 >
                   <div className="flex space-x-2">
@@ -114,7 +114,7 @@ export const SwapHistoryComponentSceleton = () => {
                 <td
                   className={classNames(
                     index === 0 ? '' : 'border-t border-secondary-500',
-                    'hidden px-3 py-3.5 text-sm text-white lg:table-cell'
+                    'hidden px-3 py-3.5 text-sm text-primary-text lg:table-cell'
                   )}
                 >
                   <div className="grid grid-cols-1 gap-4">
@@ -124,7 +124,7 @@ export const SwapHistoryComponentSceleton = () => {
                 <td
                   className={classNames(
                     index === 0 ? '' : 'border-t border-secondary-500',
-                    'relative px-3 py-3.5 text-sm text-white'
+                    'relative px-3 py-3.5 text-sm text-primary-text'
                   )}
                 >
                   <div className="grid grid-cols-1 gap-4">
@@ -134,7 +134,7 @@ export const SwapHistoryComponentSceleton = () => {
                 <td
                   className={classNames(
                     index === 0 ? '' : 'border-t border-secondary-500',
-                    'px-3 py-3.5 text-sm text-white  hidden lg:table-cell'
+                    'px-3 py-3.5 text-sm text-primary-text  hidden lg:table-cell'
                   )}
                 >
                   <div className="flex space-x-2">
@@ -147,7 +147,7 @@ export const SwapHistoryComponentSceleton = () => {
                 <td
                   className={classNames(
                     index === 0 ? '' : 'border-t border-secondary-500',
-                    'px-3 py-3.5 text-sm text-white  hidden lg:table-cell'
+                    'px-3 py-3.5 text-sm text-primary-text  hidden lg:table-cell'
                   )}
                 >
                   <div className="grid grid-cols-2 gap-4">
@@ -158,7 +158,7 @@ export const SwapHistoryComponentSceleton = () => {
                 <td
                   className={classNames(
                     index === 0 ? '' : 'border-t border-secondary-500',
-                    'px-3 py-3.5 text-sm text-white  hidden lg:table-cell'
+                    'px-3 py-3.5 text-sm text-primary-text  hidden lg:table-cell'
                   )}
                 >
                   <div className="grid grid-cols-1 gap-4">
@@ -179,7 +179,7 @@ export const SwapHistoryComponentSceleton = () => {
 export const SwapDetailsComponentSceleton = () => {
   return <div className="animate-pulse"><div className="w-full grid grid-flow-row">
     <div className="rounded-md bg-secondary-900 w-full grid grid-flow-row">
-      <div className="items-center block text-base font-lighter leading-6 text-primary-text">
+      <div className="items-center block text-base font-lighter leading-6 text-secondary-text">
         <div className="flex justify-between items-baseline">
           <div className="h-2 m-2 w-1/4 bg-slate-400 rounded col-span-1"></div>
           <div className="h-2 m-2 w-1/4 bg-slate-700 rounded col-span-1"></div>
