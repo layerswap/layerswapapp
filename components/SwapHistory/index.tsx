@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers, TransactionType } from "../../lib/layerSwapApiClient"
 import SpinIcon from "../icons/spinIcon"
-import { ArrowRight, ChevronRight, ExternalLink, RefreshCcw, Scroll, X } from 'lucide-react';
+import { ArrowRight, ChevronRight, ExternalLink, Eye, RefreshCcw, Scroll, X } from 'lucide-react';
 import SwapDetails from "./SwapDetailsComponent"
 import { useSettingsState } from "../../context/settings"
 import Image from 'next/image'
@@ -285,7 +285,6 @@ function TransactionsHistory() {
                     <div className="mt-2">
                       <SwapDetails id={selectedSwap?.id} />
                       {
-                        (selectedSwap?.status == SwapStatus.UserTransferPending || selectedSwap?.status === SwapStatus.LsTransferPending) &&
                         <div className="text-primary-text text-sm mt-6 space-y-3">
                           <div className="flex flex-row text-primary-text text-base space-x-2">
                             <SubmitButton
@@ -297,20 +296,12 @@ function TransactionsHistory() {
                               isDisabled={false}
                               isSubmitting={false}
                               icon={
-                                <ExternalLink
+                                <Eye
                                   className='h-5 w-5' />
                               }
                             >
                               View swap
                             </SubmitButton>
-                          </div>
-                        </div>
-                      }
-                      {
-                        selectedSwap?.status == SwapStatus.Completed &&
-                        <div className="text-primary-text text-sm mt-6 space-y-3">
-                          <div className="flex flex-row text-primary-text text-base space-x-2">
-                            <a target="_blank" className=" border border-primary disabled:border-primary-900 shadowed-button items-center space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200 ease-in-out bg-primary text-primary-buttonTextColor py-3 px-2 md:px-3" href={`${AppSettings.ExplorerURl}/${selectedSwap?.transactions?.find(t => t?.type === TransactionType.Input)?.transaction_id}`}> View in explorer</a>
                           </div>
                         </div>
                       }
