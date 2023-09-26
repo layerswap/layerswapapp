@@ -13,6 +13,7 @@ import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { SwapFailReasons } from '../../../../Models/RangeError';
 import { Gauge } from '../../../gauge';
+import Failed from '../Failed';
 
 type Props = {
     settings: LayerSwapAppSettings;
@@ -216,31 +217,37 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     return (
         <Widget.Content>
             <div className={`w-full ${swap?.status != SwapStatus.Cancelled && swap?.status != SwapStatus.Expired ? "min-h-[422px]" : ""} space-y-5 flex flex-col justify-between h-full text-primary-text`}>
-                <div className='space-y-4'>
-                    <div className='grid grid-cols-1 gap-4 space-y-4'>
-                        {
-                            <SwapSummary />
-                        }
-                        {swap?.status != SwapStatus.Cancelled && swap?.status != SwapStatus.Expired &&
-                            <div className="w-full flex flex-col h-full space-y-5">
-                                <div className='flex gap-4'>
-                                    <div className='flex items-start'>
-                                        <Gauge value={stepsProgressPercentage} size="small" completeOnFinish={true} />
-                                    </div>
-                                    <div className="text-left flex-col">
-                                        <span className="font-medium text-primary-text">
-                                            {progressStatuses.generalStatus.title}
-                                        </span>
-                                        <span className='text-sm block space-x-1 text-secondary-text'>
-                                            <span>{progressStatuses.generalStatus.subTitle}</span>
-                                        </span>
-                                    </div>
-                                </div>
+                <div className='space-y-5'>
+                    <SwapSummary />
+                    <div className="w-full flex flex-col h-full space-y-5">
+                        <div className="bg-secondary-700 font-normal px-3 py-4 rounded-lg flex flex-col border border-secondary-500 w-full relative z-10">
+                            {
+                                swap?.status != SwapStatus.Cancelled && swap?.status != SwapStatus.Expired && currentSteps.find(x => x.status != null) &&
                                 <div className='flex flex-col h-full justify-center'>
                                     <Steps steps={currentSteps} />
                                 </div>
+                            }
+                            {
+                                ([SwapStatus.Expired, SwapStatus.Cancelled, SwapStatus.UserTransferDelayed].includes(swap?.status)) &&
+                                <Failed />
+                            }
+
+                        </div>
+                    </div>
+                    <div className="bg-secondary-700 font-normal px-3 py-4 rounded-lg flex flex-col border border-secondary-500 w-full relative z-10">
+                        <div className='flex flex-col gap-2 items-center'>
+                            <div className='flex items-center'>
+                                <Gauge value={stepsProgressPercentage} size="small" completeOnFinish={true} />
                             </div>
-                        }
+                            <div className="flex-col text-center ">
+                                <span className="font-medium text-primary-text">
+                                    {progressStatuses.generalStatus.title}
+                                </span>
+                                <span className='text-sm block space-x-1 text-secondary-text'>
+                                    <span>{progressStatuses.generalStatus.subTitle}</span>
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -270,7 +277,8 @@ type StatusStep = {
 
 const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string } } => {
     let generalTitle = "Transfer in progress";
-    let subtitle = "View in explorer";
+    let subtitle = "You can view individual transactions above";
+
     const swapInputTransaction: Transaction | string = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id];
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
@@ -292,18 +300,28 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStat
     if (swapStatus === SwapStatus.Failed) {
         output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed;
         refuel_transfer = refuel_transfer !== ProgressStatus.Complete && null;
-        generalTitle = "Transfer failed"
+        generalTitle = swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? "Transfer on hold" : "Transfer failed";
+        subtitle = "View instructions above"
     }
 
     if (swapStatus === SwapStatus.UserTransferDelayed) {
-        input_transfer = ProgressStatus.Delayed;
+        input_transfer = null;
         output_transfer = null;
         refuel_transfer = null;
         generalTitle = "Transfer delayed"
+        subtitle = "View instructions above"
     }
 
     if (swapStatus == SwapStatus.Completed) {
         generalTitle = "Transfer completed"
+    }
+    if (swapStatus == SwapStatus.Cancelled) {
+        generalTitle = "Transfer cancelled"
+        subtitle = ""
+    }
+    if (swapStatus == SwapStatus.Expired) {
+        generalTitle = "Transfer expired"
+        subtitle = ""
     }
 
     return {

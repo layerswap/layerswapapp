@@ -2,12 +2,11 @@ import { FC, useCallback, useEffect } from 'react'
 import { useSwapDataState } from '../../../context/swap';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
-import MessageComponent from '../../MessageComponent';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { SwapItem } from '../../../lib/layerSwapApiClient';
 import { TrackEvent } from '../../../pages/_document';
-import Widget from '../../Wizard/Widget';
-import Cancell from '../../icons/Cancell';
+import QuestionIcon from '../../icons/Question';
+import Link from 'next/link';
 
 const Failed: FC = () => {
     const { swap } = useSwapDataState()
@@ -27,14 +26,29 @@ const Failed: FC = () => {
 
     return (
         <>
-            {
-                swap?.status == SwapStatus.Cancelled &&
-                <Canceled onGetHelp={startIntercom} swap={swap} />
-            }
-            {
-                swap?.status == SwapStatus.Expired &&
-                <Expired onGetHelp={startIntercom} swap={swap} />
-            }
+            <div>
+                <div className="flex items-center gap-2">
+                    <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
+                        <QuestionIcon className="h-7 w-7 text-primary" aria-hidden="true" />
+                    </span>
+                    <label className="block text-sm md:text-base text-primary-text font-medium">What&apos;s happening?</label>
+                </div>
+                <div className='mt-4 text-xs md:text-sm text-primary-text'>
+                    {
+                        swap?.status == SwapStatus.Cancelled &&
+                        <Canceled onGetHelp={startIntercom} swap={swap} />
+                    }
+                    {
+                        swap?.status == SwapStatus.Expired &&
+                        <Expired onGetHelp={startIntercom} swap={swap} />
+                    }
+                    {
+                        swap?.status == SwapStatus.UserTransferDelayed &&
+                        <Delay />
+                    }
+                </div>
+            </div>
+
         </>
     )
 }
@@ -45,52 +59,33 @@ type Props = {
 
 const Expired = ({ onGetHelp }: Props) => {
     return (
-        <Widget.Content>
-            <MessageComponent>
-                <MessageComponent.Description>
-                    {
-                        <>
-                            <div className='p-3 bg-secondary-700 text-primary-text rounded-lg text-left border border-secondary-500'>
-                                <div className="flex items-center gap-2">
-                                    <Cancell className="h-10 w-10" />
-                                    <label className="block text-sm md:text-base font-medium">Swap expired</label>
-                                </div>
-                                <div className='mt-4 ml-1 text-left text-xs md:text-sm'>
-                                    <span className='text-md text-left text-xs md:text-sm text-primary-text'>The transfer wasn&apos;t completed during the allocated timeframe.</span>
-                                    <span className='text-secondary-text'><span> If you&apos;ve already sent crypto for this swap, your funds are safe, </span><a className='underline hover:cursor-pointer' onClick={() => onGetHelp()}>please contact our support.</a></span>
-                                </div>
-                            </div>
-                        </>
-                    }
-                </MessageComponent.Description>
-            </MessageComponent >
-        </Widget.Content >
+        <div>
+            <span className='text-md text-left text-xs md:text-sm text-primary-text'>The transfer wasn&apos;t completed during the allocated timeframe.</span>
+            <span className='text-secondary-text'><span> If you&apos;ve already sent crypto for this swap, your funds are safe, </span><a className='underline hover:cursor-pointer' onClick={() => onGetHelp()}>please contact our support.</a></span>
+        </div>
+    )
+}
+const Delay: FC = () => {
+    return (
+        <div>
+            <p className='text-md '><span>This usually means that the exchange needs additional verification.</span>
+                <Link target='_blank' href="https://docs.layerswap.io/user-docs/why-is-coinbase-transfer-taking-so-long"
+                    className='disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed ml-1 underline hover:no-underline cursor-pointer'>Learn More</Link></p>
+            <ul className="list-inside list-decimal font-light space-y-1 mt-2 text-left text-primary-text ">
+                <li>Check your email for details from Coinbase</li>
+                <li>Check your Coinbase account&apos;s transfer history</li>
+            </ul>
+        </div>
     )
 }
 
 const Canceled = ({ onGetHelp }: Props) => {
     return (
-        <Widget.Content>
-            <MessageComponent>
-                <MessageComponent.Description>
-                    {
-                        <>
-                            <div className='p-3 bg-secondary-700 text-primary-text rounded-lg border border-secondary-500'>
-                                <div className="flex items-center gap-2">
-                                    <Cancell className="h-10 w-10" />
-                                    <label className="block text-sm md:text-base font-medium">Swap cancelled</label>
-                                </div>
-                                <div className='mt-4 ml-1 text-xs md:text-sm text-primary-text'>
-                                    <p className='text-md text-left'><span>The transaction was cancelled by your request.</span>
-                                        <span className='text-secondary-text'><span> If you&apos;ve already sent crypto for this swap, your funds are safe,</span><a className='underline hover:cursor-pointer' onClick={() => onGetHelp()}> please contact our support.</a></span>
-                                    </p>
-                                </div>
-                            </div>
-                        </>
-                    }
-                </MessageComponent.Description>
-            </MessageComponent >
-        </Widget.Content >
+        <div>
+            <p className='text-md text-left text-primary-text'><span>The transaction was cancelled by your request.</span>
+                <span className='text-secondary-text'><span> If you&apos;ve already sent crypto for this swap, your funds are safe,</span><a className='underline hover:cursor-pointer' onClick={() => onGetHelp()}> please contact our support.</a></span>
+            </p>
+        </div>
     )
 }
 

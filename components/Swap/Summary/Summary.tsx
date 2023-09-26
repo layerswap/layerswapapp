@@ -57,6 +57,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     const receiveAmountInUsd = (currency?.usd_price * receiveAmount).toFixed(2)
     const nativeCurrency = refuelAmount && to?.isExchange === false && currencies.find(c => c.asset === to?.native_currency)
     const truncatedRefuelAmount = hasRefuel && truncateDecimals(refuelAmount, nativeCurrency?.precision)
+    const refuelAmountInUsd = (nativeCurrency?.usd_price * truncatedRefuelAmount).toFixed(2)
 
     const sourceNetworkType = GetDefaultNetwork(from, currency?.asset)?.type
     const sourceIsImmutableX = from?.internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
@@ -78,19 +79,25 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     else if (sourceIsImmutableX && imxAccount) {
         sourceAccountAddress = shortenAddress(imxAccount);
     }
+    else if (from?.isExchange) {
+        sourceAccountAddress = "Exchange"
+    }
+    else {
+        sourceAccountAddress = "Network"
+    }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
     const sourceCurrencyName = networks?.find(n => n.internal_name === from?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset).name || currency?.asset
     const destCurrencyName = networks?.find(n => n.internal_name === to?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset).name || currency?.asset
 
     return (
-        <div className="pb-8 border-b border-secondary-500">
-            <div className="bg-secondary-700 font-normal rounded-lg flex flex-col border border-secondary-500 w-full relative z-10">
-                <div className="flex items-center justify-between w-full px-3 py-2 border-b border-secondary-500">
+        <div>
+            <div className="bg-secondary-700 font-normal rounded-lg px-3 py-4 flex flex-col border border-secondary-500 w-full relative z-10 space-y-4">
+                <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3">
-                        <Image src={resolveImgSrc(source)} alt={sourceDisplayName} width={36} height={36} className="rounded-md" />
+                        <Image src={resolveImgSrc(source)} alt={sourceDisplayName} width={32} height={32} className="rounded-full" />
                         <div>
-                            <p className="text-primary-text text-lg leading-5">{sourceDisplayName}</p>
+                            <p className="text-primary-text text-sm leading-5">{sourceDisplayName}</p>
                             {
                                 sourceAccountAddress &&
                                 <p className="text-sm text-secondary-text">{sourceAccountAddress}</p>
@@ -98,25 +105,24 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                         </div>
                     </div>
                     <div className="flex flex-col">
-                        <p className="text-primary-text text-lg">{truncateDecimals(requestedAmount, currency.precision)} {sourceCurrencyName}</p>
+                        <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, currency.precision)} {sourceCurrencyName}</p>
                         <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
                     </div>
                 </div>
-                <ArrowDown className="h-4 w-4 text-secondary-text absolute top-[calc(50%-8px)] left-[calc(50%-8px)]" />
-                <div className="flex items-center justify-between w-full px-3 py-2">
+                <div className="flex items-center justify-between  w-full ">
                     <div className="flex items-center gap-3">
-                        <Image src={resolveImgSrc(destination)} alt={destinationDisplayName} width={36} height={36} className="rounded-md" />
+                        <Image src={resolveImgSrc(destination)} alt={destinationDisplayName} width={32} height={32} className="rounded-full" />
                         <div>
-                            <p className="text-primary-text text-lg leading-5">{destinationDisplayName}</p>
+                            <p className="text-primary-text text-sm leading-5">{destinationDisplayName}</p>
                             <p className="text-sm text-secondary-text">{shortenAddress(destAddress)}</p>
                         </div>
                     </div>
                     {
                         fee >= 0 ?
                             <div className="flex flex-col justify-end">
-                                <p className="text-primary-text text-lg">{truncateDecimals(receiveAmount, currency.precision)} {destCurrencyName}</p>
+                                <p className="text-primary-text text-sm">{truncateDecimals(receiveAmount, currency.precision)} {destCurrencyName}</p>
                                 <p className="text-secondary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
-                            </div >
+                            </div>
                             :
                             <div className="flex flex-col justify-end">
                                 <div className="h-[18px] my-[5px] w-20 animate-pulse rounded bg-gray-500" />
@@ -124,22 +130,25 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                             </div>
                     }
 
-                </div >
-            </div >
-            {
-                refuelAmount &&
-                <div
-                    className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700 relative bottom-2 z-[1] pt-4 pb-2 px-3.5 text-right'>
-                    <div className='flex items-center gap-2'>
-                        <Fuel className='h-4 w-4 text-primary' />
-                        <p>Refuel</p>
-                    </div>
-                    <div className="text-primary-text">
-                        + {truncatedRefuelAmount} {nativeCurrency.asset}
-                    </div>
                 </div>
-            }
-        </div >
+                {
+                    refuelAmount &&
+                    <div
+                        className="flex items-center justify-between w-full ">
+                        <div className='flex items-center gap-3 text-sm'>
+                            <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full p-2 bg-primary/20">
+                                <Fuel className="h-5 w-5 text-primary" aria-hidden="true" />
+                            </span>
+                            <p>Refuel</p>
+                        </div>
+                        <div className="flex flex-col">
+                            <p className="text-primary-text text-sm">{truncatedRefuelAmount} {nativeCurrency.asset}</p>
+                            <p className="text-secondary-text text-sm flex justify-end">${refuelAmountInUsd}</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
     )
 }
 
