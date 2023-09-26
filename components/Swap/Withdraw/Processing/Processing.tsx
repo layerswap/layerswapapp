@@ -73,7 +73,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         "input_transfer": {
             upcoming: {
                 name: 'Waiting for your transfer',
-                description: <span><span>Estimated time:&nbsp;</span><span className='text-primary-text'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
+                description: null
             },
             current: {
                 name: 'Processing your deposit',
@@ -125,11 +125,11 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         "output_transfer": {
             upcoming: {
                 name: `Sending ${destinationNetworkCurrency?.name} to your address`,
-                description: <span><span>Estimated time:&nbsp;</span><span className='text-primary-text'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
+                description: null
             },
             current: {
                 name: `Sending ${destinationNetworkCurrency?.name} to your address`,
-                description: <span><span>Estimated time:&nbsp;</span><span className='text-primary-text'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
+                description: null
             },
             complete: {
                 name: `${swapOutputTransaction?.amount} ${swap?.destination_network_asset} was sent to your address`,
@@ -141,12 +141,12 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                             <ExternalLink className='h-4' />
                         </div>
                     </div>
-                </div> : outputPendingDetails,
+                </div> : null,
             },
             failed: {
-                name: swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? `The transfer is on hold` : "The transfer is failed",
+                name: swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? `The transfer is on hold` : "The transfer has failed",
                 description: <div className='flex space-x-1'>
-                    <div className='space-x-1 text-primary-text'>
+                    <div className='space-x-1 text-secondary-text'>
                         {swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
                             "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
                             :
@@ -166,11 +166,11 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         "refuel": {
             upcoming: {
                 name: `Sending ${nativeCurrency?.asset} to your address`,
-                description: <span><span>Estimated time:&nbsp;</span><span className='text-primary-text'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
+                description: null
             },
             current: {
                 name: `Sending ${nativeCurrency?.asset} to your address`,
-                description: <span><span>Estimated time:&nbsp;</span><span className='text-primary-text'><span>less than&nbsp;</span><span>{(swap?.source_exchange || isStarknet) ? '10' : '3'}</span><span>&nbsp;minutes</span></span></span>
+                description: null
             },
             complete: {
                 name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your address`,
@@ -216,11 +216,29 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     if (!swap) return <></>
     return (
         <Widget.Content>
-            <div className={`w-full ${swap?.status != SwapStatus.Cancelled && swap?.status != SwapStatus.Expired ? "min-h-[422px]" : ""} space-y-5 flex flex-col justify-between h-full text-primary-text`}>
+            <div className={`w-full min-h-[422px] space-y-5 flex flex-col justify-between h-full text-primary-text`}>
                 <div className='space-y-5'>
-                    <SwapSummary />
                     <div className="w-full flex flex-col h-full space-y-5">
                         <div className="bg-secondary-700 font-normal px-3 py-4 rounded-lg flex flex-col border border-secondary-500 w-full relative z-10">
+                            <SwapSummary></SwapSummary>
+                        </div>
+                    </div>
+                    <div className="bg-secondary-700 font-normal px-3 py-6 rounded-lg flex flex-col border border-secondary-500 w-full relative z-10 divide-y-2 divide-secondary-500 divide-dashed">
+                        <div className='pb-4'>
+                            <div className='flex flex-col gap-2 items-center'>
+                                <div className='flex items-center'>
+                                    <Gauge value={stepsProgressPercentage} size="small" showCheckmark={swap?.status === SwapStatus.Completed} />
+                                </div>
+                                <div className="flex-col text-center ">
+                                    <span className="font-medium text-primary-text">
+                                        {progressStatuses.generalStatus.title}
+                                    </span>
+                                    <span className='text-sm block space-x-1 text-secondary-text'>
+                                        <span>{progressStatuses.generalStatus.subTitle ?? outputPendingDetails}</span>
+                                    </span>
+                                </div>
+                            </div></div>
+                        <div className='pt-4'>
                             {
                                 swap?.status != SwapStatus.Cancelled && swap?.status != SwapStatus.Expired && currentSteps.find(x => x.status != null) &&
                                 <div className='flex flex-col h-full justify-center'>
@@ -234,21 +252,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
                         </div>
                     </div>
-                    <div className="bg-secondary-700 font-normal px-3 py-4 rounded-lg flex flex-col border border-secondary-500 w-full relative z-10">
-                        <div className='flex flex-col gap-2 items-center'>
-                            <div className='flex items-center'>
-                                <Gauge value={stepsProgressPercentage} size="small" completeOnFinish={true} />
-                            </div>
-                            <div className="flex-col text-center ">
-                                <span className="font-medium text-primary-text">
-                                    {progressStatuses.generalStatus.title}
-                                </span>
-                                <span className='text-sm block space-x-1 text-secondary-text'>
-                                    <span>{progressStatuses.generalStatus.subTitle}</span>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </Widget.Content>
@@ -277,13 +281,17 @@ type StatusStep = {
 
 const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string } } => {
     let generalTitle = "Transfer in progress";
-    let subtitle = "You can view individual transactions above";
+    let subtitle: string;
 
     const swapInputTransaction: Transaction | string = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id];
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
     let inputIsCompleted = (swapInputTransaction as Transaction)?.status == TransactionStatus.Completed && (swapInputTransaction as Transaction).confirmations >= (swapInputTransaction as Transaction).max_confirmations;
-
+    if (!inputIsCompleted)
+    {
+        // Magic case, shows estimated time
+        subtitle = null
+    }
     let input_transfer = inputIsCompleted ? ProgressStatus.Complete : ProgressStatus.Current;
 
     let output_transfer =
@@ -301,7 +309,7 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStat
         output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed;
         refuel_transfer = refuel_transfer !== ProgressStatus.Complete && null;
         generalTitle = swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? "Transfer on hold" : "Transfer failed";
-        subtitle = "View instructions above"
+        subtitle = "View instructions below"
     }
 
     if (swapStatus === SwapStatus.UserTransferDelayed) {
@@ -309,21 +317,21 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStat
         output_transfer = null;
         refuel_transfer = null;
         generalTitle = "Transfer delayed"
-        subtitle = "View instructions above"
+        subtitle = "View instructions below"
     }
 
     if (swapStatus == SwapStatus.Completed) {
         generalTitle = "Transfer completed"
+        subtitle = "Thanks for using Layerswap"
     }
     if (swapStatus == SwapStatus.Cancelled) {
         generalTitle = "Transfer cancelled"
-        subtitle = ""
+        subtitle = "..."
     }
     if (swapStatus == SwapStatus.Expired) {
         generalTitle = "Transfer expired"
-        subtitle = ""
+        subtitle = "..."
     }
-
     return {
         stepStatuses: {
             "input_transfer": input_transfer,

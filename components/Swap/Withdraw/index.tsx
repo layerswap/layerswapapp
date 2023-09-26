@@ -130,14 +130,17 @@ const Withdraw: FC = () => {
                 <div className="w-full flex flex-col justify-between h-full text-secondary-text">
                     <div className='grid grid-cols-1 gap-4 '>
                         {
-                            !isFiat && <SwapSummary />
+                            !isFiat &&
+                            <div className="bg-secondary-700 rounded-lg px-3 py-4 border border-secondary-500 w-full relative z-10 space-y-4">
+                                <SwapSummary />
+                            </div>
                         }
                         <span>
 
                             {
                                 showTabsHeader &&
                                 <>
-                                    <div className="mb-4 ml-1 text-md">Choose how you&apos;d like to complete the swap</div>
+                                    <div className="mb-4 ml-1 text-base">Choose how you&apos;d like to complete the swap</div>
                                     <div className="flex space-x-3 w-full">
                                         {tabs.filter(t => t.enabled).map((tab) => (
                                             <TabHeader
@@ -255,7 +258,7 @@ const WalletTransferContent: FC = () => {
             <span className='mb-1 ml-1 text-sm'>{swap.source_exchange ? "Connected account" : "Connected wallet"}</span>
         }
 
-        <div onClick={handleOpenAccount} className={`${canOpenAccount ? 'cursor-pointer' : 'cursor-auto'} text-left min-h-12  space-x-2 border border-secondary-300 ea7df14a1597407f9f755f05e25bab42:bg-secondary-800/50 bg-secondary-700/70 shadow-xl flex text-sm rounded-md items-center w-full pl-4 pr-2 py-1.5`}>
+        <div onClick={handleOpenAccount} className={`${canOpenAccount ? 'cursor-pointer' : 'cursor-auto'} text-left min-h-12  space-x-2 border border-secondary-700 ea7df14a1597407f9f755f05e25bab42:bg-secondary-800/50 bg-secondary-700/70 shadow-xl flex text-sm rounded-md items-center w-full pl-4 pr-2 py-1.5`}>
             <div className='flex text-secondary-text bg-secondary-400 flex-row items-left rounded-md p-1'>
                 {
                     !swap.source_exchange
