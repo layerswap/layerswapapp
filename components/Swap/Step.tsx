@@ -20,8 +20,11 @@ function renderStepIcon(step) {
             );
 
         case "failed":
-            return <XCircle className="h-8 w-8 text-primary" aria-hidden="true" />;
-
+            return (
+                <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
+                    <X className="h-5 w-5 text-primary" aria-hidden="true" />
+                </span>
+            );
         case "delayed":
             return (
             <span className="animate-spin opacity-50">
@@ -47,7 +50,7 @@ function Step({ step, isLastStep }) {
                     <span className="flex h-9 items-center" aria-hidden="true">
                         {renderStepIcon(step)}
                     </span>
-                    <span className="ml-4 flex min-w-0 flex-col">
+                    <span className="ml-3 flex min-w-0 flex-col">
                         <span className={`text-sm font-medium ${step.status === "current" ? "text-primary" : "text-gray-300"}`}>{step.name}</span>
                         {step?.description &&
                             <span className="text-sm text-primary-text">{step?.description}</span>}

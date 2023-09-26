@@ -9,11 +9,6 @@ export const parameters = {
 };
 
 const preview: Preview = {
-  loaders: [
-    async () => ({
-      settings: await (await fetch('https://jsonplaceholder.typicode.com/users/1')).json(),
-    }),
-  ],
   parameters: {
     actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {

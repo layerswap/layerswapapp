@@ -254,7 +254,7 @@ export const OnlyRefuelCompleted: Story = {
     args: {
         swap: {
             ...swap,
-            status: SwapStatus.Completed,
+            status: SwapStatus.LsTransferPending,
             transactions: [
                 { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
                 { ...DUMMY_TRANSACTION, status: TransactionStatus.Pending, type: TransactionType.Output },
