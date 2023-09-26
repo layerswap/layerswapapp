@@ -30,8 +30,7 @@ const SwapDetails: FC = () => {
                     <Withdraw />
                 }
                 {
-                    (swapInputTransaction
-                        || swapStatus === SwapStatus.LsTransferPending)
+                    (swapInputTransaction)
                     &&
                     <Processing />
                 }

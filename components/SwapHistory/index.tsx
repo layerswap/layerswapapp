@@ -312,7 +312,7 @@ function TransactionsHistory() {
                           <div className="flex flex-row text-primary-text text-base space-x-2">
                             <SubmitButton
                               text_align="center"
-                              onClick={() => router.push(`/explorer/${selectedSwap?.transactions?.find(t => t?.type === TransactionType.Input)?.transaction_id}`)}
+                              onClick={() => router.push(`${AppSettings.ExplorerURl}/${selectedSwap?.transactions?.find(t => t?.type === TransactionType.Input)?.transaction_id}`)}
                               isDisabled={false}
                               isSubmitting={false}
                               icon={
