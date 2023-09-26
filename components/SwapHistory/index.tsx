@@ -310,18 +310,7 @@ function TransactionsHistory() {
                         selectedSwap?.status == SwapStatus.Completed &&
                         <div className="text-primary-text text-sm mt-6 space-y-3">
                           <div className="flex flex-row text-primary-text text-base space-x-2">
-                            <SubmitButton
-                              text_align="center"
-                              onClick={() => router.push(`${AppSettings.ExplorerURl}/${selectedSwap?.transactions?.find(t => t?.type === TransactionType.Input)?.transaction_id}`)}
-                              isDisabled={false}
-                              isSubmitting={false}
-                              icon={
-                                <ExternalLink
-                                  className='h-5 w-5' />
-                              }
-                            >
-                              View in explorer
-                            </SubmitButton>
+                            <a target="_blank" className=" border border-primary disabled:border-primary-900 shadowed-button items-center space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200 ease-in-out bg-primary text-primary-buttonTextColor py-3 px-2 md:px-3" href={`${AppSettings.ExplorerURl}/${selectedSwap?.transactions?.find(t => t?.type === TransactionType.Input)?.transaction_id}`}> View in explorer</a>
                           </div>
                         </div>
                       }
