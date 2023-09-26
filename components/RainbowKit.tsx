@@ -50,7 +50,7 @@ function RainbowKitComponent({ children }: Props) {
 
     const theme = darkTheme({
         accentColor: 'rgb(var(--ls-colors-primary-500))',
-        accentColorForeground: 'red',
+        accentColorForeground: 'rgb(var(--ls-colors-primary-text))',
         borderRadius: 'small',
         fontStack: 'system',
         overlayBlur: 'small',
