@@ -30,14 +30,14 @@ export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { i
                 }
             }
 
-            return <button onClick={handleClick} type="button" className={`-mx-2 p-1.5 justify-self-start text-primary-text hover:bg-secondary-500 hover:text-white focus:outline-none inline-flex rounded-lg items-center`}>
+            return <button onClick={handleClick} type="button" className={`-mx-2 p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center`}>
                 {connected ?
                     <div className="mx-0.5">
                         <div className="font-bold grow flex space-x-2">
                             <div className="inline-flex items-center relative">
                                 <AddressIcon address={account.address} size={25} />
                                 {
-                                    connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+                                    connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-secondary-text">
                                         <ResolveWalletIcon connector={connector?.name} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
                                     </span>
                                 }
@@ -67,14 +67,14 @@ export const MenuRainbowKitConnectWallet = ({ isButton, isMobile, isConnected }:
                 }
             }
 
-            return <button onClick={handleClick} type="button" className={`${!isMobile ? "h-24 w-24" : "h-20 w-14"} mx-2 w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-primary-text hover:text-white`}>
+            return <button onClick={handleClick} type="button" className={`${!isMobile ? "h-24 w-24" : "h-20 w-14"} mx-2 w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text`}>
                 {connected ?
                     <div className="mx-0.5">
                         <div className="flex-col items-center">
                             <div className="inline-flex items-center relative">
                                 <AddressIcon address={account.address} size={25} />
                                 {
-                                    connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-white">
+                                    connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-primary-text">
                                         <ResolveWalletIcon connector={connector?.name} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
                                     </span>
                                 }

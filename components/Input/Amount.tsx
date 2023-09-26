@@ -56,14 +56,14 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
             name={name}
             ref={amountRef}
             precision={currency?.precision}
-            className="rounded-r-none text-white"
+            className="rounded-r-none text-primary-text"
         >
             {
                 from && to && currency && < div className="text-xs flex items-center space-x-1 md:space-x-2 ml-2 md:ml-5">
-                    <SecondaryButton onClick={handleSetMinAmount} size="xs" className="text-primary-text">
+                    <SecondaryButton onClick={handleSetMinAmount} size="xs">
                         MIN
                     </SecondaryButton>
-                    <SecondaryButton onClick={handleSetMaxAmount} size="xs" className="text-primary-text">
+                    <SecondaryButton onClick={handleSetMaxAmount} size="xs">
                         MAX
                     </SecondaryButton>
                 </div>
@@ -91,7 +91,7 @@ const AmountLabel = ({
             <p>Amount</p>
             {
                 detailsAvailable &&
-                <div className="text-xs text-primary-text flex items-center space-x-1">
+                <div className="text-xs text-secondary-text flex items-center space-x-1">
                     <span>(Min:&nbsp;</span>{minAllowedAmount}<span>&nbsp;- Max:&nbsp;</span>{isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{maxAllowedAmount}</span>}<span>)</span>
                 </div>
             }

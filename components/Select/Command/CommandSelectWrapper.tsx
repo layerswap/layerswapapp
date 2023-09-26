@@ -41,7 +41,7 @@ export default function CommandSelectWrapper<T>({
                     type="button"
                     onClick={openModal}
                     disabled={disabled}
-                    className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-secondary-600 ea7df14a1597407f9f755f05e25bab42:bg-secondary-700 border border-secondary-500 font-semibold"
+                    className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-secondary-600 border border-secondary-500 font-semibold"
                 >
                     <span className='flex grow text-left items-center'>
                         {
@@ -64,7 +64,7 @@ export default function CommandSelectWrapper<T>({
                         }
                         {value
                             ?
-                            <span className="ml-3 block font-medium text-white flex-auto items-center">
+                            <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
                                 {value?.name}
                             </span>
                             :
@@ -72,7 +72,7 @@ export default function CommandSelectWrapper<T>({
                                 {placeholder}
                             </span>}
                     </span>
-                    <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-white">
+                    <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-primary-text">
                         <ChevronDown className="h-4 w-4" aria-hidden="true" />
                     </span>
                 </button>

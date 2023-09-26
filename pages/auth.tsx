@@ -8,10 +8,11 @@ import inIframe from '../components/utils/inIframe'
 import { SwapDataProvider } from '../context/swap'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
-import { getServerSideProps } from '../helpers/getSettings'
 import { InferGetServerSidePropsType } from 'next'
+import ColorSchema from '../components/ColorSchema'
+import { getServerSideProps } from '../helpers/getSettings'
 
-export default function AuthPage({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function AuthPage({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   let appSettings = new LayerSwapAppSettings(settings)
   LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
   const [embedded, setEmbedded] = useState<boolean>()
@@ -20,7 +21,7 @@ export default function AuthPage({ settings }: InferGetServerSidePropsType<typeo
     setEmbedded(inIframe())
   }, [])
 
-  return (
+  return (<>
     <Layout settings={appSettings}>
       <SwapDataProvider>
         <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
@@ -28,6 +29,8 @@ export default function AuthPage({ settings }: InferGetServerSidePropsType<typeo
         </FormWizardProvider >
       </SwapDataProvider>
     </Layout>
+    <ColorSchema themeData={themeData} />
+  </>
   )
 }
 

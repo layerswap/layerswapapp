@@ -100,6 +100,7 @@ export default function Layout({ hideNavbar, children, settings }: Props) {
       <meta name="twitter:title" content="Layerswap" />
       <meta name="twitter:description" content="Move crypto across exchanges, blockchains, and wallets." />
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
+
     </Head>
     {
       storageAvailable === true &&

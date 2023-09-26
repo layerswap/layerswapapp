@@ -8,6 +8,7 @@ import CodeStep from "./Steps/CodeStep";
 import EmailStep from "./Steps/EmailStep";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
+import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 
 
 const AuthWizard: FC = () => {
@@ -16,10 +17,13 @@ const AuthWizard: FC = () => {
     const { redirect } = router.query;
 
     const CodeOnNext = useCallback(async () => {
-        await router.push(redirect?.toString() || '/')
+        await router.push({
+            pathname: redirect?.toString() || '/',
+            query: resolvePersistantQueryParams(router.query)
+        })
         plausible(TrackEvent.SignedIn)
     }, [redirect]);
-    
+
     const GoBackToEmailStep = useCallback(() => goToStep(AuthStep.Email, "back"), [])
     const GoToCodeStep = useCallback(() => goToStep(AuthStep.Code), [])
 

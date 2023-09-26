@@ -11,7 +11,7 @@ export const parameters = {
 const preview: Preview = {
   loaders: [
     async () => ({
-      settings: await (await fetch('https://jsonplaceholder.typicode.com/users/1')).json(),
+      settings: await (await fetch(`https://bridge-api-dev.layerswap.cloud/api/settings?version=sandbox`)).json(),
     }),
   ],
   parameters: {

@@ -7,9 +7,12 @@ const Component: FC = () => {
 
     const { swap } = useSwapDataState()
     const settings = useSettingsState()
-    
+
     return (
-        <Processing settings={settings} swap={swap}/>
+        <>
+            <Processing settings={settings} swap={swap} />
+        </>
+
     )
 }
 

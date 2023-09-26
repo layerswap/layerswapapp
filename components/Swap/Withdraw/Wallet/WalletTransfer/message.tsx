@@ -21,7 +21,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
             }
         </div>
         <div className="text-left space-y-1">
-            <p className="text-md font-semibold self-center text-white">
+            <p className="text-md font-semibold self-center text-primary-text">
                 {header}
             </p>
             <p className="text-sm text-primary-text break-all">
