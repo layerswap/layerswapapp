@@ -44,6 +44,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '800': '0, 121, 133',
             '900': '0, 70, 77',
             'text': '255, 255, 255',
+            'textMuted': '86, 97, 123',
         },
         secondary: {
             DEFAULT: '17, 29, 54',
@@ -80,6 +81,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '900': '19, 111, 120',
             '950': '15, 89, 96',
             'text': '255, 255, 255',
+            'textMuted': '86, 97, 123',
         },
         secondary: {
             DEFAULT: '46, 89, 112',

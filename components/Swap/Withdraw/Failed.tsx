@@ -31,9 +31,9 @@ const Failed: FC = () => {
                     <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
                         <QuestionIcon className="h-7 w-7 text-primary" aria-hidden="true" />
                     </span>
-                    <label className="block text-sm md:text-base text-white font-medium">What&apos;s happening?</label>
+                    <label className="block text-sm md:text-base text-primary-text font-medium">What&apos;s happening?</label>
                 </div>
-                <div className='mt-4 text-xs md:text-sm text-white'>
+                <div className='mt-4 text-xs md:text-sm text-primary-text'>
                     {
                         swap?.status == SwapStatus.Cancelled &&
                         <Canceled onGetHelp={startIntercom} swap={swap} />
