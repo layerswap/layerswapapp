@@ -13,23 +13,23 @@ import { getStarknet } from 'get-starknet-core';
 import { BaseL2Asset, ExchangeL2Asset } from '../Models/Layer';
 
 export const SwapDataStateContext = React.createContext<SwapData>({ codeRequested: false, swap: undefined, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined });
-export const SwapDataUpdateContext = React.createContext<UpdateInterface | null>({});
+export const SwapDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
-type UpdateInterface = {
-    createSwap?: (values: SwapFormValues, query: QueryParams, partner: Partner) => Promise<string>,
-    setCodeRequested?: (codeSubmitted: boolean) => void;
-    cancelSwap?: (swapId: string) => Promise<void>;
-    setAddressConfirmed?: (value: boolean) => void;
-    setInterval?: (value: number) => void,
-    mutateSwap?: KeyedMutator<ApiResponse<SwapItem>>
-    setWalletAddress?: (value: string) => void,
-    setDepositeAddressIsfromAccount?: (value: boolean) => void,
-    setWithdrawType?: (value: WithdrawType) => void
-    setSwapPublishedTx?: (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => void;
-    setSelectedAssetNetwork?: (assetNetwork: ExchangeL2Asset | BaseL2Asset) => void
+export type UpdateInterface = {
+    createSwap: (values: SwapFormValues, query: QueryParams, partner: Partner) => Promise<string>,
+    setCodeRequested(codeSubmitted: boolean): void;
+    cancelSwap: (swapId: string) => Promise<void>;
+    setAddressConfirmed: (value: boolean) => void;
+    setInterval: (value: number) => void,
+    mutateSwap: KeyedMutator<ApiResponse<SwapItem>>
+    setWalletAddress: (value: string) => void,
+    setDepositeAddressIsfromAccount: (value: boolean) => void,
+    setWithdrawType: (value: WithdrawType) => void
+    setSwapPublishedTx: (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => void;
+    setSelectedAssetNetwork: (assetNetwork: ExchangeL2Asset | BaseL2Asset) => void
 }
 
-type SwapData = {
+export type SwapData = {
     codeRequested: boolean,
     swap?: SwapItem,
     swapApiError?: ApiError,

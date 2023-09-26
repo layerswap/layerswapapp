@@ -38,18 +38,6 @@ const SwapDetails: FC = () => {
                     &&
                     <Processing />
                 }
-                {
-                    swapStatus === SwapStatus.Completed &&
-                    <Success />
-                }
-                {
-                    (swapStatus === SwapStatus.Failed || swapStatus === SwapStatus.Cancelled || swapStatus === SwapStatus.Expired) &&
-                    <Failed />
-                }
-                {
-                    swapStatus === SwapStatus.UserTransferDelayed &&
-                    <Delay />
-                }
             </Widget>
 
             {

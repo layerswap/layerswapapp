@@ -77,6 +77,10 @@ module.exports = {
         // Tooltip
         "slide-up-fade": "slide-up-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         "slide-down-fade": "slide-down-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+
+        // Gauge
+        gauge_fadeIn: "gauge_fadeIn 1s ease forwards",
+        gauge_fill: "gauge_fill 1s ease forwards",
       },
       keyframes: {
         "accordion-down": {
@@ -143,6 +147,14 @@ module.exports = {
             "0%": { opacity: 0, transform: "translateY(-6px)" },
             "100%": { opacity: 1, transform: "translateY(0)" },
           },
+        },
+        gauge_fadeIn: {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        gauge_fill: {
+          from: { "stroke-dashoffset": "332", opacity: "0" },
+          to: { opacity: "1" },
         },
       },
       letterSpacing: {

@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { SwapItem, TransactionStatus, TransactionType } from '../lib/layerSwapApiClient';
 import { SwapStatus } from '../Models/SwapStatus';
-import { SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
+import { SwapData, SwapDataStateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
-import { configureChains, createConfig } from 'wagmi';
+import { WagmiConfig, configureChains, createConfig } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
-import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
+import { walletConnectWallet, rainbowWallet, metaMaskWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 import { WalletStateContext } from '../context/wallet';
 import { QueryStateContext } from '../context/query';
 import { FC, useEffect, useState } from 'react';
@@ -14,14 +14,12 @@ import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange, cancelled, expired } from './Data/swaps'
 import { Settings } from './Data/settings';
 import { NetworkType } from '../Models/CryptoNetwork';
-import SwapDetails from '../components/Swap';
-import { AuthDataUpdateContext, AuthStateContext } from '../context/authContext';
+import { AuthStateContext, UserType } from '../context/authContext';
 import { IntercomProvider } from 'react-use-intercom';
-import RainbowKitComponent from '../components/RainbowKit';
-import Layout from '../components/layout';
+import Processing from '../components/Swap/Withdraw/Processing';
 import ColorSchema from '../components/ColorSchema';
 import { THEME_COLORS } from '../Models/Theme';
-const INTERCOM_APP_ID = 'h5zisg78'
+
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 let settings = new LayerSwapAppSettings(Settings)
 
@@ -72,7 +70,6 @@ const connectors = connectorsForWallets([
     {
         groupName: 'Wallets',
         wallets: [
-            coinbaseWallet({ chains, appName: 'Layerswap' }),
             argentWallet({ projectId, chains }),
             bitKeepWallet({ projectId, chains }),
             rainbowWallet({ projectId, chains }),
@@ -99,34 +96,37 @@ const Comp: FC<{ swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: S
         }
         fetchData();
     }, []);
-    const swapContextInitialValues = { codeRequested: false, swap, failedSwap, failedSwapOutOfRange, addressConfirmed: false, walletAddress: "", depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
+    const swapContextInitialValues: SwapData = { codeRequested: false, swap, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
 
     if (!appSettings) {
         return <div>Loading...</div>
     }
     const themeData = theme ? THEME_COLORS[theme] : THEME_COLORS["default"];
-    return <IntercomProvider appId={INTERCOM_APP_ID}>
-        <SettingsStateContext.Provider value={appSettings}>
-            <Layout settings={appSettings}>
-                <RainbowKitComponent>
-                    <QueryStateContext.Provider value={{}}>
-                        <AuthStateContext.Provider value={{}}>
-                            <AuthDataUpdateContext.Provider value={{}}>
-                                <SwapDataStateContext.Provider value={swapContextInitialValues}>
-                                    <SwapDataUpdateContext.Provider value={{ setInterval: () => { } }}>
-                                        <WalletStateContext.Provider value={{ balances: null, gases: null, imxAccount: null, isBalanceLoading: null, isGasLoading: null, starknetAccount: null }}>
-                                            <SwapDetails />
-                                        </WalletStateContext.Provider>
-                                    </SwapDataUpdateContext.Provider>
-                                </SwapDataStateContext.Provider>
-                            </AuthDataUpdateContext.Provider>
+    
+    return <WagmiConfig config={wagmiConfig}>
+        <IntercomProvider appId='123'>
+            <SettingsStateContext.Provider value={appSettings}>
+                <QueryStateContext.Provider value={{}}>
+                    <SwapDataStateContext.Provider value={swapContextInitialValues}>
+                        <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
+                            <WalletStateContext.Provider value={{ balances: null, gases: null, imxAccount: null, isBalanceLoading: null, isGasLoading: null, starknetAccount: null }}>
+                                <div className={`flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg`}>
+                                    <div className={`flex flex-col w-full text-white`}>
+                                        <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
+                                            <div className="relative px-6 py-4">
+                                                <Processing />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </WalletStateContext.Provider>
                         </AuthStateContext.Provider>
-                    </QueryStateContext.Provider>
-                </RainbowKitComponent>
-                <ColorSchema themeData={themeData} />
-            </Layout>
-        </SettingsStateContext.Provider>
-    </IntercomProvider>
+                    </SwapDataStateContext.Provider >
+                </QueryStateContext.Provider>
+            </SettingsStateContext.Provider>
+        </IntercomProvider>
+        <ColorSchema themeData={themeData} />
+    </WagmiConfig >
 }
 
 const DUMMY_TRANSACTION = {

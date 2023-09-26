@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { parseJwt } from '../lib/jwtParser';
 import TokenService from '../lib/TokenService';
 
-export const AuthStateContext = React.createContext<AuthState>(null);
+export const AuthStateContext = React.createContext<AuthState>({ authData: undefined, email: undefined, codeRequested: undefined, guestAuthData: undefined, tempEmail: undefined, userId: undefined, userLockedOut: false, userType: undefined });
 export const AuthDataUpdateContext = React.createContext<UpdateInterface>(null);
 
 type AuthState = {
