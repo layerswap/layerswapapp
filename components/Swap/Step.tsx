@@ -51,7 +51,7 @@ function Step({ step, isLastStep }) {
                         {renderStepIcon(step)}
                     </span>
                     <span className="ml-3 flex min-w-0 flex-col">
-                        <span className={`text-sm font-medium ${step.status === "current" ? "text-primary" : "text-primary-text"}`}>{step.name}</span>
+                        <span className={`text-sm font-medium ${step.status === "current" ? "text-primary" : step.status === "upcoming" ? "text-secondary-text/70" : "text-primary-text"}`}>{step.name}</span>
                         {step?.description &&
                             <span className="text-sm text-secondary-text">{step?.description}</span>}
                     </span>

@@ -92,7 +92,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
 
     return (
         <div>
-            <div className="bg-secondary-700 font-normal rounded-lg px-3 py-4 flex flex-col border border-secondary-500 w-full relative z-10 space-y-4">
+            <div className="font-normal flex flex-col w-full relative z-10 space-y-4">
                 <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3">
                         <Image src={resolveImgSrc(source)} alt={sourceDisplayName} width={32} height={32} className="rounded-full" />
