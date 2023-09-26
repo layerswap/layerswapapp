@@ -32,3 +32,4 @@ yarn-error.log*
 
 # Moving to yarn
 package-lock.json
+storybook-static/*
