@@ -16,7 +16,8 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const [transferDone, setTransferDone] = useState<boolean>()
     const { zkSyncAccount } = useWalletState()
     const { setZkSyncAccount } = useWalletUpdate()
-    let syncWallet:zksync.Wallet;
+    let syncWallet: zksync.Wallet;
+
     const signer = useEthersSigner()
 
     const handleConnect = async () => {
@@ -25,7 +26,6 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
             const syncProvider = await zksync.getDefaultProvider('mainnet');
             syncWallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
             setZkSyncAccount(syncWallet.cachedAddress);
-            console.log(syncWallet)
         }
         catch (e) {
             toast(e.message)
@@ -35,7 +35,6 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
 
     const handleTransfer = async () => {
         setLoading(true)
-        console.log(syncWallet)
         try {
             const syncProvider = await zksync.getDefaultProvider('mainnet');
             const syncWallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
@@ -65,8 +64,14 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                         </span>
                         <GuideLink text={source_network?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex' />
                     </WarningMessage> */}
-
                     {
+                        !zkSyncAccount &&
+                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                            Connect
+                        </SubmitButton>
+                    }
+                    {
+                        zkSyncAccount &&
                         <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>
