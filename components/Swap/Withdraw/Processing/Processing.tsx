@@ -144,9 +144,9 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 </div> : null,
             },
             failed: {
-                name: swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? `The transfer is on hold` : "The transfer is failed",
+                name: swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? `The transfer is on hold` : "The transfer has failed",
                 description: <div className='flex space-x-1'>
-                    <div className='space-x-1 text-primary-text'>
+                    <div className='space-x-1 text-secondary-text'>
                         {swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
                             "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
                             :
@@ -227,7 +227,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                         <div className='pb-4'>
                             <div className='flex flex-col gap-2 items-center'>
                                 <div className='flex items-center'>
-                                    <Gauge value={stepsProgressPercentage} size="small" completeOnFinish={true} />
+                                    <Gauge value={stepsProgressPercentage} size="small" showCheckmark={swap?.status === SwapStatus.Completed} />
                                 </div>
                                 <div className="flex-col text-center ">
                                     <span className="font-medium text-primary-text">
@@ -287,7 +287,11 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStat
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
     let inputIsCompleted = (swapInputTransaction as Transaction)?.status == TransactionStatus.Completed && (swapInputTransaction as Transaction).confirmations >= (swapInputTransaction as Transaction).max_confirmations;
-
+    if (!inputIsCompleted)
+    {
+        // Magic case, shows estimated time
+        subtitle = null
+    }
     let input_transfer = inputIsCompleted ? ProgressStatus.Complete : ProgressStatus.Current;
 
     let output_transfer =
@@ -305,7 +309,7 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStat
         output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed;
         refuel_transfer = refuel_transfer !== ProgressStatus.Complete && null;
         generalTitle = swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? "Transfer on hold" : "Transfer failed";
-        subtitle = "View instructions above"
+        subtitle = "View instructions below"
     }
 
     if (swapStatus === SwapStatus.UserTransferDelayed) {
@@ -313,7 +317,7 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStat
         output_transfer = null;
         refuel_transfer = null;
         generalTitle = "Transfer delayed"
-        subtitle = "View instructions above"
+        subtitle = "View instructions below"
     }
 
     if (swapStatus == SwapStatus.Completed) {
@@ -322,16 +326,11 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStat
     }
     if (swapStatus == SwapStatus.Cancelled) {
         generalTitle = "Transfer cancelled"
-        subtitle = ""
+        subtitle = "..."
     }
     if (swapStatus == SwapStatus.Expired) {
         generalTitle = "Transfer expired"
-        subtitle = ""
-    }
-    if (!inputIsCompleted)
-    {
-        // Magic case, shows estimated time
-        subtitle = null
+        subtitle = "..."
     }
     return {
         stepStatuses: {
