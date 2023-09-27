@@ -1,11 +1,14 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 import * as zksync from 'zksync';
 import { ethers } from 'ethers';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
+import { useSwapTransactionStore } from '../../../store/zustandStore';
+import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { useSwapDataState } from '../../../../context/swap';
 
 type Props = {
     depositAddress: string
@@ -16,16 +19,29 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const [transferDone, setTransferDone] = useState<boolean>()
     const { zkSyncAccount } = useWalletState()
     const { setZkSyncAccount } = useWalletUpdate()
-    let syncWallet: zksync.Wallet;
-
+    const { setSwapTransaction } = useSwapTransactionStore()
+    const { swap } = useSwapDataState()
+    const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>(null);
+    const [depositReceipt, setDepositReceipt] = useState<any>(null);
+    const [transfer, setTransfer] = useState<any>(null);
     const signer = useEthersSigner()
+
+    useEffect(() => {
+        if (depositReceipt?.success) {
+            setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Completed, transfer?.txHash?.replace('sync-tx:', ''));
+            setTransferDone(true)
+        } else {
+            setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, transfer?.txHash?.replace('sync-tx:', ''), depositReceipt?.failReason);
+        }
+    }, [depositReceipt])
 
     const handleConnect = async () => {
         setLoading(true)
         try {
             const syncProvider = await zksync.getDefaultProvider('mainnet');
-            syncWallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
-            setZkSyncAccount(syncWallet.cachedAddress);
+            const wallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
+            setSyncWallet(wallet);
+            setZkSyncAccount(wallet.cachedAddress);
         }
         catch (e) {
             toast(e.message)
@@ -36,16 +52,32 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const handleTransfer = async () => {
         setLoading(true)
         try {
-            const syncProvider = await zksync.getDefaultProvider('mainnet');
-            const syncWallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
-            setZkSyncAccount(syncWallet.cachedAddress);
-            const transfer = await syncWallet.syncTransfer({
-                to: depositAddress,
-                token: 'ETH',
-                amount: ethers.utils.parseEther('0.0000002')
-            });
+            if (syncWallet) {
+                setZkSyncAccount(syncWallet.cachedAddress);
+                const tf = await syncWallet.syncTransfer({
+                    to: depositAddress,
+                    token: 'ETH',
+                    amount: ethers.utils.parseEther('0.0000002')
+                });
+                setTransfer(tf)
 
-            const depositReceipt = await transfer.awaitReceipt();
+                const res = await tf.awaitReceipt();
+                setDepositReceipt(res);
+            } else {
+                const syncProvider = await zksync.getDefaultProvider('mainnet');
+                const sw = await zksync.Wallet.fromEthSigner(signer, syncProvider);
+
+                setZkSyncAccount(sw.cachedAddress);
+                const tf = await syncWallet.syncTransfer({
+                    to: depositAddress,
+                    token: 'ETH',
+                    amount: ethers.utils.parseEther('0.0000002')
+                });
+                setTransfer(tf)
+
+                const res = await tf.awaitReceipt();
+                setDepositReceipt(res);
+            }
         }
         catch (e) {
             if (e?.message)
@@ -81,6 +113,4 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
         </>
     )
 }
-
-
 export default ZkSyncWalletWithdrawStep;
