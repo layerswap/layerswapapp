@@ -26,6 +26,7 @@ import { ResolveWalletIcon } from '../../HeaderWithMenu/ConnectedWallets';
 import toast from 'react-hot-toast';
 import SpinIcon from '../../icons/spinIcon';
 import { NetworkType } from '../../../Models/CryptoNetwork';
+import { useWalletStore } from './Wallet/WalletTransfer/WalletStore';
 
 const Withdraw: FC = () => {
 
@@ -177,7 +178,7 @@ const WalletTransferContent: FC = () => {
     const { mutateSwap } = useSwapDataUpdate()
     const [isLoading, setIsloading] = useState(false);
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-    || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+        || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
 
     const {
         source_network: source_network_internal_name,
@@ -221,20 +222,12 @@ const WalletTransferContent: FC = () => {
         e?.stopPropagation();
     }, [sourceNetworkType, swap.source_exchange])
 
-    let accountAddress = ""
-    if (swap.source_exchange) {
-        accountAddress = swap.exchange_account_name
-    }
-    else if (sourceNetworkType === NetworkType.EVM) {
-        accountAddress = address;
-    }
-    else if (sourceNetworkType === NetworkType.Starknet) {
-        accountAddress = starknetAccount?.account?.address;
-    }
-    else if (sourceIsImmutableX)
-    {
-        accountAddress = imxAccount;
-    }
+    const accountAddress = useWalletStore((state) => state.networks[source_network?.internal_name])?.address
+    const addNetwork = useWalletStore((state) => state.addNetwork)
+
+    useEffect(() => {
+        addNetwork(swap, address, starknetAccount, imxAccount, source_network)
+    }, [accountAddress])
 
     const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap.source_exchange
 

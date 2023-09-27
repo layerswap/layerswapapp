@@ -1,11 +1,13 @@
+import { createPublicClient, http, parseAbi } from "viem";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
-import { roundDecimals, truncateDecimals } from "../components/utils/RoundDecimals";
+import { roundDecimals } from "../components/utils/RoundDecimals";
 import upperCaseKeys from "../components/utils/upperCaseKeys";
 import { GetDefaultAsset, GetDefaultNetwork, GetNetworkCurrency } from "../helpers/settingsHelper";
 import { CryptoNetwork, NetworkType } from "../Models/CryptoNetwork";
 import { Currency } from "../Models/Currency";
 import { Layer } from "../Models/Layer";
 import KnownInternalNames from "./knownIds";
+import resolveChain from "./resolveChain";
 
 export function GetExchangeFee(asset?: string, layer?: Layer): number {
     if (!layer?.isExchange)
@@ -47,9 +49,37 @@ export function CaluclateRefuelAmount(
 }
 
 export function CanDoSweeplessTransfer(sourceLayer: Layer, sourceAddress?: string, destinationAddress?: string): boolean {
+
+    const publicClient = createPublicClient({
+        chain: resolveChain(sourceLayer?.assets?.[0].network),
+        transport: http()
+    })
+
+    const isArgentWallet = async () => {
+        const walletDetectorAddress = "0xeca4B0bDBf7c55E9b7925919d03CbF8Dc82537E8";
+        const walletDetectorABI = parseAbi([
+            "function isArgentWallet(address _wallet) external view returns (bool)"
+        ]);
+        const result = await publicClient.readContract({
+            address: walletDetectorAddress,
+            abi: walletDetectorABI,
+            functionName: 'isArgentWallet',
+            args: [sourceAddress as `0x${string}`]
+        })
+        const data: boolean = result
+        return data
+    }
+
     if (sourceLayer?.isExchange == false
         && ([NetworkType.EVM, NetworkType.Starknet].includes(sourceLayer.type) || sourceAddress?.toLowerCase() === destinationAddress?.toLowerCase())
     ) {
+        if (sourceLayer.internal_name === KnownInternalNames.Networks.EthereumMainnet) {
+            (async () => {
+                const is = await isArgentWallet()
+                return !is
+            })()
+        }
+
         return true;
     }
 
