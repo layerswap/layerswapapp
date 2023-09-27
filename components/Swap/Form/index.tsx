@@ -19,7 +19,7 @@ import { Partner } from "../../../Models/Partner";
 import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
-import { ApiError, KnownErrorCode } from "../../../Models/ApiError";
+import { ApiError, LSAPIKnownErrorCode } from "../../../Models/ApiError";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -72,13 +72,13 @@ export default function Form () {
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error
-            if (data?.code === KnownErrorCode.BLACKLISTED_ADDRESS) {
+            if (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS) {
                 toast.error("You can't transfer to that address. Please double check.")
             }
-            else if (data?.code === KnownErrorCode.INVALID_ADDRESS_ERROR) {
+            else if (data?.code === LSAPIKnownErrorCode.INVALID_ADDRESS_ERROR) {
                 toast.error(`Enter a valid ${values.to?.display_name} address`)
             }
-            else if (data?.code === KnownErrorCode.UNACTIVATED_ADDRESS_ERROR) {
+            else if (data?.code === LSAPIKnownErrorCode.UNACTIVATED_ADDRESS_ERROR) {
                 setNetworkToConnect({ DisplayName: values.to?.display_name, AppURL: data.message })
                 setShowConnectNetworkModal(true);
             }

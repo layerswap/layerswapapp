@@ -1,9 +1,9 @@
 export type ApiError = {
-    code: KnownErrorCode | string,
+    code: LSAPIKnownErrorCode | string,
     message: string;
 }
 
-export enum KnownErrorCode {
+export enum LSAPIKnownErrorCode {
     NOT_FOUND = "NOT_FOUND",
     INVALID_CREDENTIALS = "INVALID_CREDENTIALS",
     INSUFFICIENT_FUNDS = "INSUFFICIENT_FUNDS",

@@ -9,6 +9,7 @@ import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
 import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
+import { useSwapTransactionStore } from '../../../store/zustandStore';
 
 type Props = {
     depositAddress: string
@@ -20,8 +21,8 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const { setImxAccount } = useWalletUpdate()
     const { imxAccount } = useWalletState()
     const { swap } = useSwapDataState()
-    const { setSwapPublishedTx } = useSwapDataUpdate()
     const { networks } = useSettingsState()
+    const { setSwapTransaction } = useSwapTransactionStore();
 
     const { source_network: source_network_internal_name } = swap
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
@@ -52,7 +53,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                 toast(transactionRes.message)
             }
             else if (transactionRes.status == "success") {
-                setSwapPublishedTx(swap.id, PublishedSwapTransactionStatus.Completed, transactionRes.txId.toString());
+                setSwapTransaction(swap.id, PublishedSwapTransactionStatus.Completed, transactionRes.txId.toString());
                 setTransferDone(true)
             }
         }

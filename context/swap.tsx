@@ -25,7 +25,6 @@ type UpdateInterface = {
     setWalletAddress: (value: string) => void,
     setDepositeAddressIsfromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
-    setSwapPublishedTx: (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => void;
     setSelectedAssetNetwork: (assetNetwork: ExchangeL2Asset | BaseL2Asset) => void
 }
 
@@ -117,16 +116,6 @@ export function SwapDataProvider({ children }) {
         await layerswapApiClient.CancelSwapAsync(swapId)
     }, [router])
 
-    const setSwapPublishedTx = useCallback(async (Id: string, status: PublishedSwapTransactionStatus, txHash: string) => {
-        const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-        const txForSwap = data?.[Id] ?? { hash: txHash, status: PublishedSwapTransactionStatus.Pending };
-        txForSwap.status = status;
-        data[Id] = txForSwap;
-        localStorage.setItem('swapTransactions', JSON.stringify(data))
-        setSwapTransaction(txForSwap)
-    }, [swapResponse])
-
-
     const updateFns: UpdateInterface = {
         createSwap: createSwap,
         setCodeRequested: setCodeRequested,
@@ -137,7 +126,6 @@ export function SwapDataProvider({ children }) {
         setDepositeAddressIsfromAccount,
         setWalletAddress,
         setWithdrawType,
-        setSwapPublishedTx,
         setSelectedAssetNetwork
     };
     return (
