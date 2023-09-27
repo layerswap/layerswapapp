@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers, TransactionType } from "../../lib/layerSwapApiClient"
 import SpinIcon from "../icons/spinIcon"
-import { ArrowRight, ChevronRight, ExternalLink, RefreshCcw, Scroll, X } from 'lucide-react';
+import { ArrowRight, ChevronRight, ExternalLink, Eye, RefreshCcw, Scroll, X } from 'lucide-react';
 import SwapDetails from "./SwapDetailsComponent"
 import { useSettingsState } from "../../context/settings"
 import Image from 'next/image'
@@ -285,7 +285,6 @@ function TransactionsHistory() {
                     <div className="mt-2">
                       <SwapDetails id={selectedSwap?.id} />
                       {
-                        (selectedSwap?.status == SwapStatus.UserTransferPending || selectedSwap?.status === SwapStatus.LsTransferPending) &&
                         <div className="text-primary-text text-sm mt-6 space-y-3">
                           <div className="flex flex-row text-primary-text text-base space-x-2">
                             <SubmitButton
@@ -297,30 +296,11 @@ function TransactionsHistory() {
                               isDisabled={false}
                               isSubmitting={false}
                               icon={
-                                <ExternalLink
+                                <Eye
                                   className='h-5 w-5' />
                               }
                             >
                               View swap
-                            </SubmitButton>
-                          </div>
-                        </div>
-                      }
-                      {
-                        selectedSwap?.status == SwapStatus.Completed &&
-                        <div className="text-primary-text text-sm mt-6 space-y-3">
-                          <div className="flex flex-row text-primary-text text-base space-x-2">
-                            <SubmitButton
-                              text_align="center"
-                              onClick={() => router.push(`${AppSettings.ExplorerURl}/${selectedSwap?.transactions?.find(t => t?.type === TransactionType.Input)?.transaction_id}`)}
-                              isDisabled={false}
-                              isSubmitting={false}
-                              icon={
-                                <ExternalLink
-                                  className='h-5 w-5' />
-                              }
-                            >
-                              View in explorer
                             </SubmitButton>
                           </div>
                         </div>

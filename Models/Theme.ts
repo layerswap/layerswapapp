@@ -102,7 +102,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     "light": {
         placeholderText: '134, 134, 134',
         actionButtonText: '255, 255, 255',
-        logo: '226, 49, 115',
+        logo: '255, 0, 147',
         primary: {
             DEFAULT: '228, 37, 117',
             '50': '248, 200, 220',
@@ -138,7 +138,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         backdrop: "62, 18, 64",
         placeholderText: '140, 152, 192',
         actionButtonText: '255, 255, 255',
-        logo: '226, 49, 115',
+        logo: '255, 0, 147',
         primary: {
             DEFAULT: '228, 37, 117',
             '50': '248, 200, 220',
