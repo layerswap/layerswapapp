@@ -25,7 +25,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
 
         // Shitty way to check for partner
         if ((item as Partner).is_wallet != undefined) {
-            basePath.pathname = `/layerswap/partners/${(item as Partner)?.organization_name?.toLowerCase()}.png`;
+            return (item as Partner)?.logo_url;
         }
         else if ((item as any)?.internal_name != undefined) {
             basePath.pathname = `/layerswap/networks/${(item as any)?.internal_name?.toLowerCase()}.png`;
