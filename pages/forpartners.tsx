@@ -51,10 +51,10 @@ export default function ForPartners(props) {
                         <HeaderWithMenu goBack={handleGoBack} />
                     </MenuProvider>
                     <div className="flex-col justify-center py-4 md:px-8 px-6">
-                        <div className="prose md:prose-xl text-primary-text">
+                        <div className="prose md:prose-xl text-secondary-text">
                             <MDXRemote components={components} {...props.mdxSource} />
                         </div>
-                        <p id='bottom' className='text-white text-lg md:text-xl text-left font-bold my-10'>Available values for the destNetwork parameter</p>
+                        <p id='bottom' className='text-prymary-text text-lg md:text-xl text-left font-bold my-10'>Available values for the destNetwork parameter</p>
                         <div>
                             <div className="mt-8 flex flex-col">
                                 <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -63,10 +63,10 @@ export default function ForPartners(props) {
                                             <table className="min-w-full divide-y divide-secondary-500">
                                                 <thead className="bg-secondary-500">
                                                     <tr>
-                                                        <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-primary-text sm:pl-6">
+                                                        <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-secondary-text sm:pl-6">
                                                             Network Name
                                                         </th>
-                                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-primary-text">
+                                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-secondary-text">
                                                             Query parameter value
                                                         </th>
                                                     </tr>
@@ -74,10 +74,10 @@ export default function ForPartners(props) {
                                                 <tbody className="divide-y divide-secondary-700 bg-secondary-600">
                                                     {props?.networks?.map((n) => (
                                                         <tr key={n.display_name}>
-                                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-white font-medium sm:pl-6">
+                                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-prymary-text font-medium sm:pl-6">
                                                                 {n.display_name}
                                                             </td>
-                                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-white italic">{n.internal_name}</td>
+                                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-prymary-text italic">{n.internal_name}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -87,7 +87,7 @@ export default function ForPartners(props) {
                                 </div>
                             </div>
                         </div>
-                        <p id='bottom2' className='text-white text-lg md:text-xl text-left font-bold my-10'>Available values for the sourceExchangeName parameter</p>
+                        <p id='bottom2' className='text-prymary-text text-lg md:text-xl text-left font-bold my-10'>Available values for the sourceExchangeName parameter</p>
                         <div>
                             <div className="mt-8 flex flex-col">
                                 <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -96,10 +96,10 @@ export default function ForPartners(props) {
                                             <table className="min-w-full divide-y divide-secondary-500">
                                                 <thead className="bg-secondary-500">
                                                     <tr>
-                                                        <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-primary-text sm:pl-6">
+                                                        <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-secondary-text sm:pl-6">
                                                             Exchange Name
                                                         </th>
-                                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-primary-text">
+                                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-secondary-text">
                                                             Query parameter value
                                                         </th>
                                                     </tr>
@@ -107,10 +107,10 @@ export default function ForPartners(props) {
                                                 <tbody className="divide-y divide-secondary-700 bg-secondary-600">
                                                     {props?.exchanges?.map((e) => (
                                                         <tr key={e.display_name}>
-                                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-white font-medium sm:pl-6">
+                                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-prymary-text font-medium sm:pl-6">
                                                                 {e.display_name}
                                                             </td>
-                                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-white italic">{e.internal_name}</td>
+                                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-prymary-text italic">{e.internal_name}</td>
                                                         </tr>
                                                     ))}
                                                 </tbody>

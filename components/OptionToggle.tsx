@@ -26,7 +26,7 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, dis
 
     return (
         <RadioGroup value={items.find(i => i.value === value)} disabled={disabled} onChange={onchange} className="mt-2 w-full my-4">
-            <RadioGroup.Label className="font-normal text-primary-text text-sm">{label}</RadioGroup.Label>
+            <RadioGroup.Label className="font-normal text-secondary-text text-sm">{label}</RadioGroup.Label>
             <div className={`grid grid-cols-${items?.length} gap-1 md:gap-2 p-0.5 md:p-2 rounded-lg bg-secondary-700 border-secondary-500 border`}>
                 {items.map((option) => (
                     <RadioGroup.Option
@@ -36,7 +36,7 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, dis
                             classNames(
                                 option.isEnabled ? 'cursor-pointer focus:outline-none' : 'opacity-25 cursor-not-allowed',
                                 checked
-                                    ? 'bg-secondary-500 border-transparent text-white'
+                                    ? 'bg-secondary-500 border-transparent text-primary-text'
                                     : 'bg-transparent border-transparent text-gray-400 hover:text-gray-200',
                                 `border rounded-md p-1 flex items-center justify-center text-sm font-medium sm:flex-1 relative`
                             )
@@ -60,7 +60,7 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, dis
                                 <span className="flex items-center space-x-1 md:p-0 p-1.5 text-xs md:text-base">
                                     Cross-Chain
                                 </span>
-                                <span className="absolute ml-1 -top-1 -right-2 shadow-sm rounded bg-primary px-2 text-[10px] leading-4 font-semibold text-white"> New </span>
+                                <span className="absolute ml-1 -top-1 -right-2 shadow-sm rounded bg-primary px-2 text-[10px] leading-4 font-semibold text-primary-text"> New </span>
                             </div>
 
                         }

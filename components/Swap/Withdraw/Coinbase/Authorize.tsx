@@ -134,7 +134,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
             <Widget.Content>
                 {
                     !hideHeader &&
-                    <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-white font-semibold'>
+                    <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-primary-text font-semibold'>
                         Please connect your {exchange_name} account
                     </h3>
                 }
@@ -195,10 +195,10 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                             </SubmitButton>
                         </div>
                     }
-                    <div className="pt-2 font-normal text-xs text-primary-text">
+                    <div className="pt-2 font-normal text-xs text-secondary-text">
                         <p className="block font-lighter text-left">
                             <span>Even after authorization Layerswap can&apos;t initiate a withdrawal without your explicit confirmation.&nbsp;</span>
-                            <a target='_blank' href='https://docs.layerswap.io/user-docs/connect-a-coinbase-account' className='text-white underline hover:no-underline decoration-white cursor-pointer'>Learn more</a></p>
+                            <a target='_blank' href='https://docs.layerswap.io/user-docs/connect-a-coinbase-account' className='text-primary-text underline hover:no-underline decoration-white cursor-pointer'>Learn more</a></p>
                     </div>
                 </div>
             </Widget.Footer>

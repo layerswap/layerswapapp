@@ -252,7 +252,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                 }
                             </div>
                             <div className="flex flex-col grow">
-                                <div className="block text-md font-medium text-white">
+                                <div className="block text-md font-medium text-primary-text">
                                     {shortenAddress(validInputAddress)}
                                 </div>
                             </div>
@@ -299,7 +299,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                     }
                     {
                         destination?.isExchange && !inputAddressIsValid &&
-                        <div className='text-left p-4 bg-secondary-800 text-white rounded-lg border border-secondary-500'>
+                        <div className='text-left p-4 bg-secondary-800 text-primary-text rounded-lg border border-secondary-500'>
                             <div className="flex items-center">
                                 <Info className='h-5 w-5 text-primary-600 mr-3' />
                                 <label className="block text-sm md:text-base font-medium leading-6">How to find your {destination?.display_name} deposit address</label>
@@ -316,7 +316,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                                 width="15"
                                                 className='rounded-sm'
                                             />
-                                            <span className="text-white">{values.currency.asset}</span>
+                                            <span className="text-primary-text">{values.currency.asset}</span>
                                         </span>
                                     </span>
                                     <span>as asset</span>
@@ -331,7 +331,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                                 width="15"
                                                 className='rounded-sm'
                                             />
-                                            <span className="text-white">{destinationNetwork?.display_name}</span>
+                                            <span className="text-primary-text">{destinationNetwork?.display_name}</span>
                                         </span>
                                     </span>
                                     <span>as network</span>
@@ -362,7 +362,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                                 return (
                                                     <RadioGroup.Description
                                                         as="span"
-                                                        className={`space-x-2 flex text-sm rounded-md items-center w-full transform hover:bg-secondary-300 transition duration-200 px-2 py-1.5 border border-secondary-900 hover:border-secondary-500 hover:bg-secondary-700/70 hover:shadow-xl ${checked && 'border-secondary-700'}`}
+                                                        className={`space-x-2 flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 border border-secondary-900 hover:border-secondary-500 hover:bg-secondary-700/70 hover:shadow-xl ${checked && 'border-secondary-700'}`}
                                                     >
                                                         <div className='flex bg-secondary-400 text-primary-text flex-row items-left  rounded-md p-2'>
                                                             <AddressIcon address={a.address} size={20} />

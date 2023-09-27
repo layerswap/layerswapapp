@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers, TransactionType } from "../../lib/layerSwapApiClient"
 import SpinIcon from "../icons/spinIcon"
-import { ArrowRight, ChevronRight, ExternalLink, RefreshCcw, Scroll, X } from 'lucide-react';
+import { ArrowRight, ChevronRight, ExternalLink, Eye, RefreshCcw, Scroll, X } from 'lucide-react';
 import SwapDetails from "./SwapDetailsComponent"
 import { useSettingsState } from "../../context/settings"
 import Image from 'next/image'
@@ -16,6 +16,7 @@ import ToggleButton from "../buttons/toggleButton";
 import Modal from "../modal/modal";
 import HeaderWithMenu from "../HeaderWithMenu";
 import Link from "next/link";
+import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import AppSettings from "../../lib/AppSettings";
 import { truncateDecimals } from "../utils/RoundDecimals";
 
@@ -131,7 +132,7 @@ function TransactionsHistory() {
   }
 
   return (
-    <div className='bg-secondary-900 sm:shadow-card rounded-lg mb-6 w-full text-white overflow-hidden relative min-h-[620px]'>
+    <div className='bg-secondary-900 sm:shadow-card rounded-lg mb-6 w-full text-primary-text overflow-hidden relative min-h-[620px]'>
       <HeaderWithMenu goBack={handleGoBack} />
       {
         page == 0 && loading ?
@@ -139,7 +140,7 @@ function TransactionsHistory() {
           : <>
             {
               swaps?.length > 0 ?
-                <div className="w-full flex flex-col justify-between h-full px-6 space-y-5 text-primary-text">
+                <div className="w-full flex flex-col justify-between h-full px-6 space-y-5 text-secondary-text">
                   <div className="mt-4">
                     {showToggleButton && <div className="flex justify-end mb-2">
                       <div className='flex space-x-2'>
@@ -151,7 +152,7 @@ function TransactionsHistory() {
                     </div>}
                     <div className="max-h-[450px] styled-scroll overflow-y-auto ">
                       <table className="w-full divide-y divide-secondary-500">
-                        <thead className="text-primary-text">
+                        <thead className="text-secondary-text">
                           <tr>
                             <th scope="col" className="text-left text-sm font-semibold">
                               <div className="block">
@@ -192,10 +193,10 @@ function TransactionsHistory() {
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-secondary-500',
-                                  'relative text-sm text-white table-cell'
+                                  'relative text-sm text-primary-text table-cell'
                                 )}
                               >
-                                <div className="text-white flex items-center">
+                                <div className="text-primary-text flex items-center">
                                   <div className="flex-shrink-0 h-5 w-5 relative">
                                     {
                                       <Image
@@ -234,7 +235,7 @@ function TransactionsHistory() {
                               <td
                                 className={classNames(
                                   index === 0 ? '' : 'border-t border-secondary-500',
-                                  'px-3 py-3.5 text-sm text-white table-cell'
+                                  'px-3 py-3.5 text-sm text-primary-text table-cell'
                                 )}
                               >
                                 <div className="flex justify-between items-center cursor-pointer" onClick={(e) => { handleopenSwapDetails(swap); e.preventDefault() }}>
@@ -260,7 +261,7 @@ function TransactionsHistory() {
                       </table>
                     </div>
                   </div>
-                  <div className="text-white text-sm flex justify-center">
+                  <div className="text-primary-text text-sm flex justify-center">
                     {
                       !isLastPage &&
                       <button
@@ -284,39 +285,22 @@ function TransactionsHistory() {
                     <div className="mt-2">
                       <SwapDetails id={selectedSwap?.id} />
                       {
-                        (selectedSwap?.status == SwapStatus.UserTransferPending || selectedSwap?.status === SwapStatus.LsTransferPending) &&
-                        <div className="text-white text-sm mt-6 space-y-3">
-                          <div className="flex flex-row text-white text-base space-x-2">
+                        <div className="text-primary-text text-sm mt-6 space-y-3">
+                          <div className="flex flex-row text-primary-text text-base space-x-2">
                             <SubmitButton
                               text_align="center"
-                              onClick={() => router.push(`/swap/${selectedSwap.id}`)}
+                              onClick={() => router.push({
+                                pathname: `/swap/${selectedSwap.id}`,
+                                query: resolvePersistantQueryParams(router.query)
+                              })}
                               isDisabled={false}
                               isSubmitting={false}
                               icon={
-                                <ExternalLink
+                                <Eye
                                   className='h-5 w-5' />
                               }
                             >
                               View swap
-                            </SubmitButton>
-                          </div>
-                        </div>
-                      }
-                      {
-                        selectedSwap?.status == SwapStatus.Completed &&
-                        <div className="text-white text-sm mt-6 space-y-3">
-                          <div className="flex flex-row text-white text-base space-x-2">
-                            <SubmitButton
-                              text_align="center"
-                              onClick={() => router.push(`/explorer/${selectedSwap?.transactions?.find(t => t?.type === TransactionType.Input)?.transaction_id}`)}
-                              isDisabled={false}
-                              isSubmitting={false}
-                              icon={
-                                <ExternalLink
-                                  className='h-5 w-5' />
-                              }
-                            >
-                              View in explorer
                             </SubmitButton>
                           </div>
                         </div>
@@ -329,7 +313,7 @@ function TransactionsHistory() {
                   <Scroll className='h-40 w-40 text-secondary-700 mx-auto' />
                   <p className="my-2 text-xl">It&apos;s empty here</p>
                   <p className="px-14 text-primary-text">You can find all your transactions by searching with address in</p>
-                  <Link target="_blank" href={AppSettings.ExplorerURl} className="underline hover:no-underline cursor-pointer hover:text-primary-text text-white font-light">
+                  <Link target="_blank" href={AppSettings.ExplorerURl} className="underline hover:no-underline cursor-pointer hover:text-secondary-text text-primary-text font-light">
                     <span>Layerswap Explorer</span>
                   </Link>
                 </div>

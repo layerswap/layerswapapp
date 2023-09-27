@@ -66,7 +66,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
 
     return (
         <>
-            <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
+            <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
                 <div className='space-y-4'>
                     <WarningMessage messageType='informing'>
                         <span className='flex-none'>

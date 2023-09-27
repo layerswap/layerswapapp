@@ -1,11 +1,14 @@
 {
-  "extends": "next/core-web-vitals",
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:storybook/recommended"
+  ],
   "plugins": [
     "no-conditional-literals-in-jsx"
   ],
   "rules": {
     "no-conditional-literals-in-jsx/no-conditional-literals-in-jsx": "error",
     "no-conditional-literals-in-jsx/no-unwrapped-jsx-text": "error",
-    "react-hooks/exhaustive-deps":"off"
+    "react-hooks/exhaustive-deps": "off"
   }
 }
