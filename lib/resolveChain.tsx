@@ -32,14 +32,20 @@ export default function resolveChain(network: CryptoNetwork): Chain {
             ensUniversalResolver: network?.metadata?.ensUniversalResolver,
         },
     }
-    
+
     const defaultPriorityFee = NetworkSettings.KnownSettings[network.internal_name]?.DefaultPriorityFee?.toString()
     const baseFeeMultiplier = NetworkSettings.KnownSettings[network.internal_name]?.BaseFeeMultiplier ?? 1.2
 
     if (defaultPriorityFee) {
         res.fees = {
+            ...res.fees,
             defaultPriorityFee: () => parseGwei(defaultPriorityFee),
-            baseFeeMultiplier: baseFeeMultiplier
+        }
+    }
+    if (baseFeeMultiplier) {
+        res.fees = {
+            ...res.fees,
+            baseFeeMultiplier: () => baseFeeMultiplier
         }
     }
     return res

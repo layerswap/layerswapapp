@@ -7,7 +7,7 @@ import {
     useNetwork,
     erc20ABI
 } from "wagmi";
-import { parseEther, createPublicClient, http, encodeFunctionData, serializeTransaction } from 'viem'
+import { parseEther, createPublicClient, http } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
 import { PublishedSwapTransactionStatus } from "../../../../../lib/layerSwapApiClient";
 import { useSwapDataUpdate } from "../../../../../context/swap";
@@ -44,8 +44,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,
     })
-
-    const encodedData : `0x${string}` = address !== userDestinationAddress ? `0x${sequenceNumber}` : null
+    const encodedData : `0x${string}` = address !== userDestinationAddress ? `0x${sequenceNumber}` : "0x"
 
     const tx = {
         to: depositAddress,
