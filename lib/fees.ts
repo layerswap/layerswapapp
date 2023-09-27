@@ -103,7 +103,7 @@ export function CalculateReceiveAmount(values: SwapFormValues, allNetworks: Cryp
     return 0;
 }
 
-export function CalculateMaxAllowedAmount(values: SwapFormValues, balances?: string, walletBalance?: number, minAllowedAmount?: number) {
+export function CalculateMaxAllowedAmount(values: SwapFormValues, balances?: string, walletBalance?: number, gas?: number, minAllowedAmount?: number) {
     const { currency, from, to } = values || {}
 
     if (!currency || !from || !to) return 0
@@ -120,7 +120,7 @@ export function CalculateMaxAllowedAmount(values: SwapFormValues, balances?: str
         // in case the query parameter had bad formatting just ignoe
         catch { }
     } else if (walletBalance && (walletBalance >= minAllowedAmount && walletBalance <= maxAmount)) {
-        return walletBalance
+        return walletBalance - gas
     }
     return maxAmount || 0
 }
