@@ -24,6 +24,7 @@ import YoutubeLogo from "../icons/YoutubeLogo";
 import { shortenEmail } from '../utils/ShortenAddress';
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import LinkWrapper from "../LinkWraapper";
+import Menu from "./Menu";
 
 
 export default function LayerswapMenu() {
@@ -128,208 +129,119 @@ export default function LayerswapMenu() {
 
                     </div>
                     <Modal show={openTopModal} setShow={setOpenTopModal} header={title}>
-                        <div className="text-sm font-medium text-left origin-top-right mt-2 focus:outline-none flex flex-col h-full">
-                            <div className="relative py-1">
-                                {
-                                    userType == UserType.AuthenticatedUser ?
-                                        null
-                                        :
-                                        <>
-                                            <div className="flex mb-3">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        boot();
-                                                        show();
-                                                        updateWithProps();
-                                                    }}
-                                                    className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
-                                                >
-                                                    <ChatIcon className="h-6 w-6" strokeWidth={2} />
-                                                    <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Help</p>
-                                                </button>
-                                                {isConnected ? (
-                                                    <MenuRainbowKitConnectWallet
-                                                        isMobile={isMobile}
-                                                        isConnected={isConnected}
-                                                    />
-                                                ) : (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => openConnectModal()}
-                                                        className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
-                                                    >
-                                                        <WalletIcon className="h-6 w-6" strokeWidth={2} />
-                                                        <p className="text-base font-semibold">Wallet</p>
-                                                    </button>
-                                                )}
-                                                <LinkWrapper
-                                                    href="/transactions"
-                                                    className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
-                                                >
-                                                    <ScrollText className="h-6 w-6" />
-                                                    <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Transfers</p>
-                                                </LinkWrapper>
-                                            </div>
-                                            {
-                                                router.pathname != '/' &&
-                                                <LinkWrapper href="/" className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text">
-                                                    <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><Home className="h-5 w-5" /></div>
-                                                    <p className="text-base font-semibold">Home</p>
-                                                    <ChevronRight className="h-4 w-4 absolute right-3" />
-                                                </LinkWrapper>
-                                            }
-                                            {!embedded && router.pathname != '/campaigns' &&
-                                                <LinkWrapper href="/campaigns" className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text">
-                                                    <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><Gift className="h-5 w-5" /></div>
-                                                    <p className="text-base font-semibold">Campaigns</p>
-                                                    <ChevronRight className="h-4 w-4 absolute right-3" />
-                                                </LinkWrapper>
-                                            }
-                                            {router.pathname != '/auth' && <LinkWrapper
-                                                href="/auth"
-                                                className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text">
-                                                <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><LogIn className="h-5 w-5" /></div>
-                                                <p className="text-base font-semibold">Login</p>
-                                                <ChevronRight className="h-4 w-4 absolute right-3" />
-                                            </LinkWrapper>
-                                            }
-                                        </>
-                                }
-                                {
-                                    userType == UserType.AuthenticatedUser &&
-                                    <>
-                                        <div className="flex mb-3">
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    boot();
-                                                    show();
-                                                    updateWithProps();
-                                                }}
-                                                className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
-                                            >
-                                                <ChatIcon className="h-6 w-6" strokeWidth={2} />
-                                                <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Help</p>
-                                            </button>
-                                            {isConnected ? (
-                                                <MenuRainbowKitConnectWallet
-                                                    isMobile={isMobile}
-                                                    isConnected={isConnected}
-                                                />
-                                            ) : (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => openConnectModal()}
-                                                    className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
-                                                >
-                                                    <WalletIcon className="h-6 w-6" strokeWidth={2} />
-                                                    <p className="text-base font-semibold">Wallet</p>
-                                                </button>
-                                            )}
-                                            <LinkWrapper
-                                                href="/transactions"
-                                                className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
-                                            >
-                                                <ScrollText className="h-6 w-6" />
-                                                <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Transfers</p>
-                                            </LinkWrapper>
-                                        </div>
-                                        {
-                                            router.pathname != '/' &&
-                                            <LinkWrapper
-                                                href="/"
-                                                className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text">
-                                                <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><Home className="h-5 w-5" /></div>
-                                                <p className="text-base font-semibold">Home</p>
-                                                <ChevronRight className="h-4 w-4 absolute right-3" />
-                                            </LinkWrapper>
-                                        }
-                                        {!embedded && router.pathname != '/campaigns' &&
-                                            <LinkWrapper
-                                                href="/campaigns"
-                                                className="border-2 border-secondary-500 menu-link my-1.5 flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text">
-                                                <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><Gift className="h-5 w-5" /></div>
-                                                <p className="text-base font-semibold">Campaigns</p>
-                                                <ChevronRight className="h-4 w-4 absolute right-3" />
-                                            </LinkWrapper>
-                                        }
+                        <div className="text-sm font-medium text-left origin-top-right focus:outline-none flex flex-col justify-between h-full">
+                            <div className="my-1">
+                                <div className="flex mb-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            boot();
+                                            show();
+                                            updateWithProps();
+                                        }}
+                                        className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
+                                    >
+                                        <ChatIcon className="h-6 w-6" strokeWidth={2} />
+                                        <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Help</p>
+                                    </button>
+                                    {isConnected ? (
+                                        <MenuRainbowKitConnectWallet
+                                            isMobile={isMobile}
+                                            isConnected={isConnected}
+                                        />
+                                    ) : (
                                         <button
                                             type="button"
-                                            onClick={handleLogout}
-                                            className="border-2 border-secondary-500 menu-link my-1.5 mb-4 w-full flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text"
+                                            onClick={() => openConnectModal()}
+                                            className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
                                         >
-                                            <div className="px-1.5 py-2 bg-secondary-500 rounded-md mr-4"><LogOut className="h-5 w-5" /></div>
-                                            <p className="text-base font-semibold">Sign Out</p>
-                                            <ChevronRight className="h-4 w-4 absolute right-3" />
+                                            <WalletIcon className="h-6 w-6" strokeWidth={2} />
+                                            <p className="text-base font-semibold">Wallet</p>
                                         </button>
-                                    </>
-                                }
-                            </div>
-                            <p className="text-secondary-text font-medium mt-1.5">New</p>
-                            <div className="relative py-1">
-                                <Popover
-                                    opener={
-                                        <button onClick={() => setOpenFeedbackModal(true)} className="menu-link border-secondary-500 w-full flex relative cursor-pointer select-none items-center rounded-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text">
-                                            <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><MessageSquarePlus className="h-5 w-5" /></div>
-                                            <p>Suggest a Feature</p>
-                                            <ChevronRight className="h-4 w-4 absolute right-3" />
-                                        </button>
-                                    }
-                                    isNested={true}
-                                    show={openFeedbackModal}
-                                    header="Suggest a Feature"
-                                    setShow={setOpenFeedbackModal} >
-                                    <div className="p-0 md:max-w-md">
-                                        <SendFeedback onSend={handleCloseFeedback} />
-                                    </div>
-                                </Popover>
-                            </div>
-                            <p className="text-secondary-text font-medium mt-1.5">Docs</p>
-                            <div className="relative py-1">
-                                <Link
-                                    href="https://docs.layerswap.io/"
-                                    target="_blank"
-                                    className="menu-link flex rounded-t-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text"
-                                >
-                                    <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><BookOpen className="h-5 w-5" /></div>
-                                    <p>For Users</p>
-                                    <ExternalLink className="h-4 w-4 absolute right-3" />
-                                </Link>
-                                <LinkWrapper
-                                    href="/forpartners"
-                                    target={embedded ? "_blank" : "_self"}
-                                    className="menu-link flex rounded-b-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text border-t border-secondary-500"
-                                >
-                                    <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Users className="h-5 w-5" /></div>
-                                    <p>For Partners</p>
-                                    <ChevronRight className="h-4 w-4 absolute right-3" />
-                                </LinkWrapper>
-                            </div>
-                            <p className="text-secondary-text font-medium mt-1.5">Legal</p>
-                            <div className="relative py-1">
-                                <Link
-                                    href="https://docs.layerswap.io/user-docs/information/privacy-policy"
-                                    target="_blank"
-                                    className="menu-link flex relative cursor-pointer select-none items-center rounded-t-md px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text"
-                                >
-                                    <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Shield className="h-5 w-5" /></div>
-                                    <p>Privacy Policy</p>
-                                    <ExternalLink className="h-4 w-4 absolute right-3" />
-                                </Link>
-                                <Link
-                                    href="https://docs.layerswap.io/user-docs/information/terms-of-services"
-                                    target="_blank"
-                                    className="menu-link flex rounded-b-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text border-t border-secondary-500"
-                                >
-                                    <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><LibraryIcon className="h-5 w-5" /></div>
-                                    <p>Terms of Service</p>
-                                    <ExternalLink className="h-4 w-4 absolute right-3" />
-                                </Link>
+                                    )}
+                                    <LinkWrapper
+                                        href="/transactions"
+                                        className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
+                                    >
+                                        <ScrollText className="h-6 w-6" />
+                                        <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Transfers</p>
+                                    </LinkWrapper>
+                                </div>
+                                <Menu>
+
+                                    <Menu.Group>
+                                        {
+                                            router.pathname != '/' &&
+                                            <Menu.Item pathname='/' icon={<Home className="h-5 w-5" />} >
+                                                Home
+                                            </Menu.Item>
+                                        }
+                                        {!embedded && router.pathname != '/campaigns' &&
+                                            <Menu.Item pathname='/campaigns' icon={<Gift className="h-5 w-5" />} >
+                                                Campaigns
+                                            </Menu.Item>
+                                        }
+                                        {
+                                            userType == UserType.AuthenticatedUser ?
+
+                                                <Menu.Item
+                                                    onClick={handleLogout}
+                                                    icon={<LogOut className="h-5 w-5" />}
+                                                >
+                                                    Sign Out
+                                                </Menu.Item>
+                                                :
+
+                                                router.pathname != '/auth' &&
+                                                <Menu.Item pathname='/auth' icon={<LogIn className="h-5 w-5" />} >
+                                                    Login
+                                                </Menu.Item>
+
+                                        }
+                                    </Menu.Group>
+
+                                    <Menu.Group>
+
+                                        <Popover
+                                            opener={
+                                                <Menu.Item onClick={() => setOpenFeedbackModal(true)} target="_blank" icon={<MessageSquarePlus className="h-5 w-5" />} >
+                                                    Suggest a Feature
+                                                </Menu.Item>
+                                            }
+                                            isNested={true}
+                                            show={openFeedbackModal}
+                                            header="Suggest a Feature"
+                                            setShow={setOpenFeedbackModal} >
+                                            <div className="p-0 md:max-w-md">
+                                                <SendFeedback onSend={handleCloseFeedback} />
+                                            </div>
+                                        </Popover>
+                                    </Menu.Group>
+
+                                    <Menu.Group>
+                                        <Menu.Item pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
+                                            For Users
+                                        </Menu.Item>
+                                        <Menu.Item pathname='/forpartners' target={embedded ? "_blank" : "_self"} icon={<Users className="h-5 w-5" />} >
+                                            For Partners
+                                        </Menu.Item>
+
+                                    </Menu.Group>
+
+                                    <Menu.Group>
+                                        <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/privacy-policy' target="_blank" icon={<Shield className="h-5 w-5" />} >
+                                            Privacy Policy
+                                        </Menu.Item>
+                                        <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/terms-of-services' target="_blank" icon={<LibraryIcon className="h-5 w-5" />} >
+                                            Terms of Service
+                                        </Menu.Item>
+                                    </Menu.Group>
+
+                                </Menu>
                             </div>
                             <div className="flex justify-center mt-5">
                                 {navigation.social.map((item) => (
-                                    <Link key={item.name} target="_blank" href={item.href} className={`menu-link flex relative cursor-pointer select-none items-center py-1.5 outline-none text-secondary-text hover:text-primary-text ${item.className}`}>
+                                    <Link key={item.name} target="_blank" href={item.href} className={`flex relative cursor-pointer select-none items-center py-1.5 outline-none text-secondary-text hover:text-primary-text ${item.className}`}>
                                         <div className="flex items-center">
                                             <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><item.icon className="h-5 w-5" aria-hidden="true" /></div>
                                         </div>
