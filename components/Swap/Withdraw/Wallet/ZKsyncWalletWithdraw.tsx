@@ -11,10 +11,11 @@ import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClie
 import { useSwapDataState } from '../../../../context/swap';
 
 type Props = {
-    depositAddress: string
+    depositAddress: string,
+    amount: number
 }
 
-const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
+const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
     const { zkSyncAccount } = useWalletState()
@@ -57,7 +58,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                 const tf = await syncWallet.syncTransfer({
                     to: depositAddress,
                     token: 'ETH',
-                    amount: ethers.utils.parseEther('0.0000002')
+                    amount: amount
                 });
                 setTransfer(tf)
 
@@ -68,10 +69,10 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                 const sw = await zksync.Wallet.fromEthSigner(signer, syncProvider);
 
                 setZkSyncAccount(sw.cachedAddress);
-                const tf = await syncWallet.syncTransfer({
+                const tf = await sw.syncTransfer({
                     to: depositAddress,
                     token: 'ETH',
-                    amount: ethers.utils.parseEther('0.0000002')
+                    amount: amount
                 });
                 setTransfer(tf)
 

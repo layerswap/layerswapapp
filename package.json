@@ -35,7 +35,7 @@
     "clsx": "^1.2.1",
     "cmdk": "^0.2.0",
     "crypto-js": "^4.1.1",
-    "ethers": "5.4.4",
+    "ethers": "^5.4.4",
     "formik": "^2.2.9",
     "framer-motion": "^6.5.1",
     "get-starknet": "^2.1.0",

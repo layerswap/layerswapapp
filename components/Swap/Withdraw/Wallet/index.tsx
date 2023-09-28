@@ -63,7 +63,7 @@ const WalletTransfer: FC = () => {
         </Wrapper>
     else if (sourceIsZkSync)
         return <Wrapper>
-            <ZkSyncWalletWithdrawStep depositAddress={depositAddress} />
+            <ZkSyncWalletWithdrawStep depositAddress={depositAddress} amount={requested_amount} />
         </Wrapper>
     return <Wrapper>
         <TransferFromWallet
