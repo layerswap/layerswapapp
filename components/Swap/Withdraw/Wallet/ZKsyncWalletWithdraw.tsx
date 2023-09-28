@@ -1,10 +1,10 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 import * as zksync from 'zksync';
-import { ethers } from 'ethers';
+import { utils } from 'ethers';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
 import { useSwapTransactionStore } from '../../../store/zustandStore';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
@@ -58,10 +58,11 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 const tf = await syncWallet.syncTransfer({
                     to: depositAddress,
                     token: 'ETH',
-                    amount: amount
+                    amount: zksync.closestPackableTransactionAmount(utils.parseEther(amount.toString())),
+                    validUntil: zksync.utils.MAX_TIMESTAMP - swap.sequence_number,
                 });
                 setTransfer(tf)
-
+console.log(tf,"tf")
                 const res = await tf.awaitReceipt();
                 setDepositReceipt(res);
             } else {
@@ -72,7 +73,8 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 const tf = await sw.syncTransfer({
                     to: depositAddress,
                     token: 'ETH',
-                    amount: amount
+                    amount: zksync.closestPackableTransactionAmount(utils.parseEther(amount.toString())),
+                    validUntil: zksync.utils.MAX_TIMESTAMP - swap.sequence_number,
                 });
                 setTransfer(tf)
 
