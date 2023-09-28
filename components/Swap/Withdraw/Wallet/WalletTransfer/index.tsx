@@ -11,6 +11,7 @@ import TransferErc20Button from "./TransferErc20";
 import { useSettingsState } from "../../../../../context/settings";
 import { useSwapDataState } from "../../../../../context/swap";
 import { CanDoSweeplessTransfer } from "../../../../../lib/fees";
+import { useWalletStore } from "../../WalletStore";
 
 type Props = {
     sequenceNumber: number,
@@ -49,7 +50,8 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
 
     const sourceLayer = layers?.find(l => l.internal_name === swap?.source_network)
-    const isSweeplessTx = CanDoSweeplessTransfer(sourceLayer, address, userDestinationAddress)
+    const networkAccount = useWalletStore((state) => state.networks[sourceLayer?.internal_name])
+    const isSweeplessTx = CanDoSweeplessTransfer(sourceLayer, networkAccount?.metadata, address, userDestinationAddress)
 
     useEffect(() => {
         if (activeChain?.id === chainId)

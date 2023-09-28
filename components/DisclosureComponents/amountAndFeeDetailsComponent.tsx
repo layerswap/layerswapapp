@@ -11,16 +11,18 @@ import { ApiResponse } from '../../Models/ApiResponse';
 import LayerSwapApiClient, { Campaigns } from '../../lib/layerSwapApiClient';
 import useSWR from 'swr'
 import AverageCompletionTime from '../Common/AverageCompletionTime';
-import { useWalletState } from '../../context/wallet';
+import { useWalletStore } from '../Swap/Withdraw/WalletStore';
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
     const { networks, currencies, resolveImgSrc } = useSettingsState()
     const { currency, from, to } = values || {}
 
     let exchangeFee = parseFloat(GetExchangeFee(currency?.asset, from).toFixed(currency?.precision))
-    let fee = CalculateFee(values, networks);
+    const networkAccount = useWalletStore((state) => state.networks[from?.internal_name])
+
+    let fee = CalculateFee(values, networkAccount?.metadata);
     const parsedFee = parseFloat(fee.toFixed(currency?.precision))
-    let receive_amount = CalculateReceiveAmount(values, networks, currencies);
+    let receive_amount = CalculateReceiveAmount(values, networks, currencies, networkAccount?.metadata);
     const asset = currency?.asset
     const apiClient = new LayerSwapApiClient()
     //handle error case

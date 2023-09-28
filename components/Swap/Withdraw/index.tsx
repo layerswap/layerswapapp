@@ -26,7 +26,7 @@ import { ResolveWalletIcon } from '../../HeaderWithMenu/ConnectedWallets';
 import toast from 'react-hot-toast';
 import SpinIcon from '../../icons/spinIcon';
 import { NetworkType } from '../../../Models/CryptoNetwork';
-import { useWalletStore } from './Wallet/WalletTransfer/WalletStore';
+import { useWalletStore } from './WalletStore';
 
 const Withdraw: FC = () => {
 
@@ -222,11 +222,12 @@ const WalletTransferContent: FC = () => {
         e?.stopPropagation();
     }, [sourceNetworkType, swap.source_exchange])
 
-    const accountAddress = useWalletStore((state) => state.networks[source_network?.internal_name])?.address
+    const networkAccount = useWalletStore((state) => state.networks[source_network?.internal_name])
+    const accountAddress = networkAccount?.address
     const addNetwork = useWalletStore((state) => state.addNetwork)
 
     useEffect(() => {
-        addNetwork(swap, address, starknetAccount, imxAccount, source_network)
+        addNetwork(address, source_network, swap, starknetAccount, imxAccount)
     }, [accountAddress])
 
     const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap.source_exchange

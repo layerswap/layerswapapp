@@ -1,5 +1,5 @@
-import { createPublicClient, http, parseAbi } from "viem";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
+import { Metadata } from "../components/Swap/Withdraw/WalletStore";
 import { roundDecimals } from "../components/utils/RoundDecimals";
 import upperCaseKeys from "../components/utils/upperCaseKeys";
 import { GetDefaultAsset, GetDefaultNetwork, GetNetworkCurrency } from "../helpers/settingsHelper";
@@ -7,7 +7,6 @@ import { CryptoNetwork, NetworkType } from "../Models/CryptoNetwork";
 import { Currency } from "../Models/Currency";
 import { Layer } from "../Models/Layer";
 import KnownInternalNames from "./knownIds";
-import resolveChain from "./resolveChain";
 
 export function GetExchangeFee(asset?: string, layer?: Layer): number {
     if (!layer?.isExchange)
@@ -48,45 +47,19 @@ export function CaluclateRefuelAmount(
     return { refuelAmountInSelectedCurrency, refuelAmountInNativeCurrency };
 }
 
-export function CanDoSweeplessTransfer(sourceLayer: Layer, sourceAddress?: string, destinationAddress?: string): boolean {
-
-    const publicClient = createPublicClient({
-        chain: resolveChain(sourceLayer?.assets?.[0].network),
-        transport: http()
-    })
-
-    const isArgentWallet = async () => {
-        const walletDetectorAddress = "0xeca4B0bDBf7c55E9b7925919d03CbF8Dc82537E8";
-        const walletDetectorABI = parseAbi([
-            "function isArgentWallet(address _wallet) external view returns (bool)"
-        ]);
-        const result = await publicClient.readContract({
-            address: walletDetectorAddress,
-            abi: walletDetectorABI,
-            functionName: 'isArgentWallet',
-            args: [sourceAddress as `0x${string}`]
-        })
-        const data: boolean = result
-        return data
-    }
+export function CanDoSweeplessTransfer(sourceLayer: Layer, networkMetadata?: Metadata, sourceAddress?: string, destinationAddress?: string): boolean {
 
     if (sourceLayer?.isExchange == false
         && ([NetworkType.EVM, NetworkType.Starknet].includes(sourceLayer.type) || sourceAddress?.toLowerCase() === destinationAddress?.toLowerCase())
+        && !(sourceLayer.internal_name === KnownInternalNames.Networks.EthereumMainnet && networkMetadata?.isArgent === true)
     ) {
-        if (sourceLayer.internal_name === KnownInternalNames.Networks.EthereumMainnet) {
-            (async () => {
-                const is = await isArgentWallet()
-                return !is
-            })()
-        }
-
         return true;
     }
 
     return false;
 }
 
-export function CalculateFee(values: SwapFormValues, allNetworks: CryptoNetwork[]): number {
+export function CalculateFee(values: SwapFormValues, networkMetadata: Metadata): number {
     const { currency, from, to } = values || {}
 
     if (!currency || !from || !to)
@@ -102,22 +75,22 @@ export function CalculateFee(values: SwapFormValues, allNetworks: CryptoNetwork[
     let baseFee = (sourceNetworkCurrency?.source_base_fee + destinationNetworkCurrency?.destination_base_fee)
     let withdrawalFee = destinationNetworkCurrency.withdrawal_fee
     let depoistFee = sourceNetworkCurrency.deposit_fee;
-    if (CanDoSweeplessTransfer(sourceLayer))
+    if (CanDoSweeplessTransfer(sourceLayer, networkMetadata))
         depoistFee = 0
 
 
     return (withdrawalFee + depoistFee + baseFee);
 }
 
-export function CalculateReceiveAmount(values: SwapFormValues, allNetworks: CryptoNetwork[], allCurrencies: Currency[]) {
+export function CalculateReceiveAmount(values: SwapFormValues, allNetworks: CryptoNetwork[], allCurrencies: Currency[], networkMetadata: Metadata) {
 
     const amount = Number(values?.amount)
     if (!amount) return 0;
 
-    let minAllowedAmount = CalculateMinAllowedAmount(values, allNetworks, allCurrencies);
+    let minAllowedAmount = CalculateMinAllowedAmount(values, allNetworks, allCurrencies, networkMetadata);
 
     if (amount >= minAllowedAmount) {
-        let fee = CalculateFee(values, allNetworks);
+        let fee = CalculateFee(values, networkMetadata);
         const { refuelAmountInSelectedCurrency } = CaluclateRefuelAmount(values, allCurrencies)
         var result = amount - fee - refuelAmountInSelectedCurrency;
         const sourceLayer = values?.from
@@ -155,7 +128,7 @@ export function CalculateMaxAllowedAmount(values: SwapFormValues, balances?: str
     return maxAmount || 0
 }
 
-export function CalculateMinAllowedAmount(values: SwapFormValues, allNetworks: CryptoNetwork[], allCurrencies: Currency[]) {
+export function CalculateMinAllowedAmount(values: SwapFormValues, allNetworks: CryptoNetwork[], allCurrencies: Currency[], networkMetadata: Metadata) {
 
     const { currency, from, to } = values || {}
     if (!currency || !from || !to) return 0
@@ -163,7 +136,7 @@ export function CalculateMinAllowedAmount(values: SwapFormValues, allNetworks: C
     const destinationLayer = to
     const asset = currency?.asset
 
-    let minAmount = CalculateFee(values, allNetworks)
+    let minAmount = CalculateFee(values, networkMetadata)
     if (from.internal_name === KnownInternalNames.Exchanges.Coinbase
         && sourceLayer.isExchange) {
         const exchangeAsset = GetDefaultAsset(sourceLayer, asset)

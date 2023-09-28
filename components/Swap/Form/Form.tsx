@@ -29,9 +29,10 @@ import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetw
 import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
-import { useWalletUpdate } from "../../../context/wallet";
+import { useWalletState, useWalletUpdate } from "../../../context/wallet";
 import { useAccount } from "wagmi";
 import GasDetails from "../../gasDetails";
+import { useWalletStore } from "../Withdraw/WalletStore";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -54,11 +55,13 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const { authData } = useAuthState()
     const { getBalance } = useWalletUpdate()
     const { address } = useAccount()
+    const { starknetAccount, imxAccount } = useWalletState()
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
+    const networkAccount = useWalletStore((state) => state.networks[source?.internal_name])
 
-    const minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies);
+    const minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies, networkAccount?.metadata);
     const partnerImage = partner?.organization_name ? settings.resolveImgSrc(partner) : null
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()
@@ -168,6 +171,11 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         && (query?.lockTo || query?.hideTo)
         && isValidAddress(query?.destAddress, destination)
 
+    const addNetwork = useWalletStore((state) => state.addNetwork)
+
+    useEffect(() => {
+        addNetwork(address, source, undefined, starknetAccount, imxAccount)
+    }, [address, source, starknetAccount, imxAccount])
 
     return <>
         <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >

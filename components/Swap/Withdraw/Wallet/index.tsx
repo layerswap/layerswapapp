@@ -11,6 +11,7 @@ import { useAccount } from "wagmi"
 import TransferFromWallet from "./WalletTransfer"
 import { CanDoSweeplessTransfer } from "../../../../lib/fees"
 import { useWalletState } from "../../../../context/wallet"
+import { useWalletStore } from "../WalletStore"
 
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
@@ -25,7 +26,9 @@ const WalletTransfer: FC = () => {
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
     let connectedWalletAddress = sourceIsImmutableX ? imxAccount : sourceIsStarknet ? starknetAccount?.account?.address : address;
-    const canDoSweeplessTransfer = CanDoSweeplessTransfer(source_network, connectedWalletAddress, destination_address)
+    const networkAccount = useWalletStore((state) => state.networks[source_network?.internal_name])
+
+    const canDoSweeplessTransfer = CanDoSweeplessTransfer(source_network, networkAccount?.metadata, connectedWalletAddress, destination_address)
     const layerswapApiClient = new LayerSwapApiClient()
     const shouldGetGeneratedAddress = !canDoSweeplessTransfer
     const generateDepositParams = shouldGetGeneratedAddress ? [source_network_internal_name] : null

@@ -6,8 +6,8 @@ import Summary from "./Summary"
 import { ApiResponse } from "../../../Models/ApiResponse"
 import LayerSwapApiClient, { DepositType, Fee, TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
 import { useAccount } from "wagmi"
-import { truncateDecimals } from "../../utils/RoundDecimals"
 import { CanDoSweeplessTransfer } from "../../../lib/fees"
+import { useWalletStore } from "../Withdraw/WalletStore"
 
 const SwapSummary: FC = () => {
     const { isConnected, address } = useAccount()
@@ -46,10 +46,11 @@ const SwapSummary: FC = () => {
 
     const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Wallet)
     const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
+    const networkAccount = useWalletStore((state) => state.networks[source_layer?.internal_name])
 
     if (swap?.fee && swapOutputTransaction) {
         fee = swap?.fee
-    } else if (withdrawType === WithdrawType.Wallet && CanDoSweeplessTransfer(source_layer, address, destination_address)) {
+    } else if (withdrawType === WithdrawType.Wallet && CanDoSweeplessTransfer(source_layer, networkAccount?.metadata, address, destination_address)) {
         fee = walletTransferFee?.fee_amount;
     } else {
         fee = manualTransferFee?.fee_amount;
