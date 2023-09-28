@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useRef } from "react";
+import { forwardRef, useRef } from "react";
 import { useSettingsState } from "../../context/settings";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -9,11 +9,12 @@ import SecondaryButton from "../buttons/secondaryButton";
 import { useQueryState } from "../../context/query";
 import { useWalletState, useWalletUpdate } from "../../context/wallet";
 import { truncateDecimals } from "../utils/RoundDecimals";
+import { useWalletStore } from "../Swap/Withdraw/WalletStore";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
-    const { networks, currencies } = useSettingsState()
+    const { currencies } = useSettingsState()
     const query = useQueryState();
     const { currency, from, to, amount } = values
 
@@ -22,8 +23,9 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const name = "amount"
     const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
     const walletBalanceAmount = truncateDecimals(walletBalance?.amount, currency?.precision)
+    const networkAccount = useWalletStore((state) => state.networks[from?.internal_name])
 
-    const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
+    const minAllowedAmount = CalculateMinAllowedAmount(values, currencies, networkAccount?.metadata);
     const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances, walletBalance?.amount, minAllowedAmount)
     const maxAllowedDisplayAmont = truncateDecimals(maxAllowedAmount, currency?.precision)
 

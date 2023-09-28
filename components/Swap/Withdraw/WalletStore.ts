@@ -12,7 +12,7 @@ type Networks = {
     [network: string]: Network
 }
 
-type Network = {
+export type Network = {
     address: string,
     metadata?: Metadata
 }

@@ -61,7 +61,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
     const networkAccount = useWalletStore((state) => state.networks[source?.internal_name])
 
-    const minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies, networkAccount?.metadata);
+    const minAllowedAmount = CalculateMinAllowedAmount(values, settings.currencies, networkAccount?.metadata);
     const partnerImage = partner?.organization_name ? settings.resolveImgSrc(partner) : null
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()

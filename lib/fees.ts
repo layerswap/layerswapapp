@@ -87,7 +87,7 @@ export function CalculateReceiveAmount(values: SwapFormValues, allNetworks: Cryp
     const amount = Number(values?.amount)
     if (!amount) return 0;
 
-    let minAllowedAmount = CalculateMinAllowedAmount(values, allNetworks, allCurrencies, networkMetadata);
+    let minAllowedAmount = CalculateMinAllowedAmount(values, allCurrencies, networkMetadata);
 
     if (amount >= minAllowedAmount) {
         let fee = CalculateFee(values, networkMetadata);
@@ -128,7 +128,7 @@ export function CalculateMaxAllowedAmount(values: SwapFormValues, balances?: str
     return maxAmount || 0
 }
 
-export function CalculateMinAllowedAmount(values: SwapFormValues, allNetworks: CryptoNetwork[], allCurrencies: Currency[], networkMetadata: Metadata) {
+export function CalculateMinAllowedAmount(values: SwapFormValues, allCurrencies: Currency[], networkMetadata?: Metadata) {
 
     const { currency, from, to } = values || {}
     if (!currency || !from || !to) return 0
