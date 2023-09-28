@@ -9,6 +9,7 @@ import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
 import { useSwapTransactionStore } from '../../../store/zustandStore';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSwapDataState } from '../../../../context/swap';
+import { ConnectWalletButton } from './WalletTransfer/buttons';
 
 type Props = {
     depositAddress: string,
@@ -62,7 +63,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     validUntil: zksync.utils.MAX_TIMESTAMP - swap.sequence_number,
                 });
                 setTransfer(tf)
-console.log(tf,"tf")
+
                 const res = await tf.awaitReceipt();
                 setDepositReceipt(res);
             } else {
@@ -87,6 +88,10 @@ console.log(tf,"tf")
                 toast(e.message)
         }
         setLoading(false)
+    }
+
+    if (!signer) {
+        return <ConnectWalletButton />
     }
 
     return (
