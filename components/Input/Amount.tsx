@@ -16,20 +16,21 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
     const { currencies } = useSettingsState()
     const query = useQueryState();
-    const { currency, from, to, amount } = values
+    const { currency, from, to, amount, destination_address } = values
 
-    const { balances, isBalanceLoading } = useWalletState()
-    const { getBalance } = useWalletUpdate()
+    const { balances, isBalanceLoading, gases, isGasLoading } = useWalletState()
+    const gasAmount = gases[from?.internal_name]?.find(g => g?.token === currency?.asset)?.gas || 0
+    const { getBalance, getGas } = useWalletUpdate()
     const name = "amount"
     const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
     const walletBalanceAmount = truncateDecimals(walletBalance?.amount, currency?.precision)
     const networkAccount = useWalletStore((state) => state.networks[from?.internal_name])
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, currencies, networkAccount?.metadata);
-    const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances, walletBalance?.amount, minAllowedAmount)
+    const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances, walletBalance?.amount, gasAmount, minAllowedAmount)
     const maxAllowedDisplayAmont = truncateDecimals(maxAllowedAmount, currency?.precision)
 
-    const placeholder = (currency && from && to && !isBalanceLoading) ? `${minAllowedAmount} - ${maxAllowedDisplayAmont}` : '0.01234'
+    const placeholder = (currency && from && to && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAllowedDisplayAmont}` : '0.01234'
     const step = 1 / Math.pow(10, currency?.precision)
     const amountRef = useRef(ref)
 
@@ -40,6 +41,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const handleSetMaxAmount = () => {
         setFieldValue(name, maxAllowedAmount)
         getBalance(from)
+        getGas(from, currency, destination_address)
     }
 
     return (<>
@@ -47,7 +49,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
             label={<AmountLabel detailsAvailable={!!(from && to && amount)}
                 maxAllowedAmount={maxAllowedDisplayAmont}
                 minAllowedAmount={minAllowedAmount}
-                isBalanceLoading={isBalanceLoading}
+                isBalanceLoading={(isBalanceLoading || isGasLoading)}
                 walletBalance={walletBalanceAmount}
             />}
             disabled={!currency}
@@ -58,14 +60,14 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
             name={name}
             ref={amountRef}
             precision={currency?.precision}
-            className="rounded-r-none text-white"
+            className="rounded-r-none text-primary-text"
         >
             {
                 from && to && currency && < div className="text-xs flex items-center space-x-1 md:space-x-2 ml-2 md:ml-5">
-                    <SecondaryButton onClick={handleSetMinAmount} size="xs" className="text-primary-text">
+                    <SecondaryButton onClick={handleSetMinAmount} size="xs">
                         MIN
                     </SecondaryButton>
-                    <SecondaryButton onClick={handleSetMaxAmount} size="xs" className="text-primary-text">
+                    <SecondaryButton onClick={handleSetMaxAmount} size="xs">
                         MAX
                     </SecondaryButton>
                 </div>
@@ -93,7 +95,7 @@ const AmountLabel = ({
             <p>Amount</p>
             {
                 detailsAvailable &&
-                <div className="text-xs text-primary-text flex items-center space-x-1">
+                <div className="text-xs text-secondary-text flex items-center space-x-1">
                     <span>(Min:&nbsp;</span>{minAllowedAmount}<span>&nbsp;- Max:&nbsp;</span>{isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{maxAllowedAmount}</span>}<span>)</span>
                 </div>
             }

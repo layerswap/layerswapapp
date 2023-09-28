@@ -43,7 +43,7 @@ const NotFound: FC = () => {
         </MessageComponent.Content>
         <MessageComponent.Buttons>
             <MessageComponent.Buttons>
-                <div className="flex flex-row text-white text-base space-x-2">
+                <div className="flex flex-row text-primary-text text-base space-x-2">
                     <div className='basis-1/3'>
                         <SubmitButton text_align='left' onClick={startIntercom} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
                             <DoubleLineText

@@ -6,7 +6,6 @@ import SubmitButton from "./buttons/submitButton";
 import shortenAddress from "./utils/ShortenAddress";
 import CopyButton from "./buttons/copyButton";
 import colors from "tailwindcss/colors";
-import tailwindConfig from "./../tailwind.config";
 import Modal from "./modal/modal";
 
 type QRCodeModalProps = {
@@ -20,10 +19,9 @@ type QRCodeModalProps = {
 const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconHeight, iconWidth, iconClassName }) => {
     const qrCode = (
         <QRCode
-            className="p-4 bg-white rounded-lg"
+            className="p-4 bg-primary-text rounded-lg"
             value={qrUrl}
             size={250}
-            bgColor={colors.white}
             fgColor={'#000000'}
             level={"H"}
         />
@@ -45,7 +43,7 @@ const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconHeight, iconW
                     <div>
                         {qrCode}
                     </div>
-                    <div className="text-xl md:text-2xl text-primary-text">
+                    <div className="text-xl md:text-2xl text-secondary-text">
                         <CopyButton toCopy={qrUrl} iconHeight={22} iconWidth={22}>
                             <span>{shortenAddress(qrUrl)}</span>
                         </CopyButton>

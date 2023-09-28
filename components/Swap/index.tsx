@@ -4,9 +4,6 @@ import { useSwapDataState, useSwapDataUpdate } from '../../context/swap';
 import { ResolvePollingInterval } from '../utils/SwapStatus';
 import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
-import Success from './Withdraw/Success';
-import Failed from './Withdraw/Failed';
-import Delay from './Withdraw/Delay';
 import { TransactionType } from '../../lib/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
 import GasDetails from '../gasDetails';
@@ -29,26 +26,8 @@ const SwapDetails: FC = () => {
         <>
             <Widget>
                 {
-                    swapStatus === SwapStatus.UserTransferPending && !swapInputTransaction &&
-                    <Withdraw />
-                }
-                {
-                    (swapInputTransaction
-                        || swapStatus === SwapStatus.LsTransferPending)
-                    &&
-                    <Processing />
-                }
-                {
-                    swapStatus === SwapStatus.Completed &&
-                    <Success />
-                }
-                {
-                    (swapStatus === SwapStatus.Failed || swapStatus === SwapStatus.Cancelled || swapStatus === SwapStatus.Expired) &&
-                    <Failed />
-                }
-                {
-                    swapStatus === SwapStatus.UserTransferDelayed &&
-                    <Delay />
+                    (swapStatus === SwapStatus.UserTransferPending && !swapInputTransaction) ?
+                        <Withdraw /> : <Processing />
                 }
             </Widget>
 

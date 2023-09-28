@@ -2,27 +2,27 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { parseJwt } from '../lib/jwtParser';
 import TokenService from '../lib/TokenService';
 
-const AuthStateContext = React.createContext<AuthState>(null);
-const AuthDataUpdateContext = React.createContext<UpdateInterface>(null);
+export const AuthStateContext = React.createContext<AuthState>({ authData: undefined, email: undefined, codeRequested: undefined, guestAuthData: undefined, tempEmail: undefined, userId: undefined, userLockedOut: false, userType: undefined });
+export const AuthDataUpdateContext = React.createContext<UpdateInterface>(null);
 
 type AuthState = {
-    email: string,
-    authData: AuthData,
-    guestAuthData: AuthData,
-    codeRequested: boolean,
-    tempEmail: string,
-    userId: string,
-    userLockedOut: boolean,
-    userType: UserType
+    email?: string,
+    authData?: AuthData,
+    guestAuthData?: AuthData,
+    codeRequested?: boolean,
+    tempEmail?: string,
+    userId?: string,
+    userLockedOut?: boolean,
+    userType?: UserType
 }
 
 export type UpdateInterface = {
-    updateTempEmail: (email: string) => void,
-    updateAuthData: (data: any) => void,
-    getAuthData: () => (AuthData | undefined),
-    setCodeRequested(codeSubmitted: boolean): void;
-    setUserLockedOut(value: boolean): void;
-    setUserType(value: UserType): void
+    updateTempEmail?: (email: string) => void,
+    updateAuthData?: (data: any) => void,
+    getAuthData?: () => (AuthData | undefined),
+    setCodeRequested?: (codeSubmitted: boolean) => void;
+    setUserLockedOut?: (value: boolean) => void;
+    setUserType?: (value: UserType) => void
 }
 
 export function AuthProvider({ children }) {

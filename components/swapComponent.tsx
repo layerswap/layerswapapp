@@ -8,7 +8,7 @@ import { WalletDataProvider } from '../context/wallet';
 
 const Swap: FC = () => {
   return (
-    <div className="text-white">
+    <div className="text-primary-text">
       <MenuProvider>
         <SwapDataProvider >
           <TimerProvider>

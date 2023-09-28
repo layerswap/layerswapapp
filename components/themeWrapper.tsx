@@ -6,6 +6,8 @@ import { useQueryState } from "../context/query"
 import Navbar from "./navbar"
 import GlobalFooter from "./globalFooter";
 import useWindowDimensions from "../hooks/useWindowDimensions";
+import ColorSchema from "./ColorSchema";
+import { THEME_COLORS } from "../Models/Theme";
 
 type Props = {
     hideNavbar: boolean,
@@ -33,14 +35,14 @@ export default function ThemeWrapper ({ hideNavbar, children }: Props) {
 
     const { addressSource } = useQueryState()
 
-    useEffect(() => {
-        if (addressSource) window.document.body.className = addressSource
+    // useEffect(() => {
+    //     if (addressSource) window.document.body.className = addressSource
 
-        return () => { window.document.body.className = '' }
-    }, [addressSource])
+    //     return () => { window.document.body.className = '' }
+    // }, [addressSource])
 
     return <div className='styled-scroll'>
-        <div className="invisible imxMarketplace ea7df14a1597407f9f755f05e25bab42"></div>
+        <div className="invisible light"></div>
         <main className="styled-scroll">
             <div className={`${isDesktop ? "flex flex-col items-center" : ""} min-h-screen overflow-hidden relative font-robo`}>
                 <Toaster position="top-center" toastOptions={{
@@ -76,7 +78,7 @@ export default function ThemeWrapper ({ hideNavbar, children }: Props) {
                 </div>
                 <div>
                     <svg
-                        className="absolute inset-0 -z-10 h-full w-full stroke-white/5 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]"
+                        className="absolute inset-0 -z-10 h-full w-full stroke-secondary-500/60 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]"
                         aria-hidden="true"
                     >
                         <defs>
@@ -91,7 +93,7 @@ export default function ThemeWrapper ({ hideNavbar, children }: Props) {
                                 <path d="M.5 200V.5H200" fill="none" />
                             </pattern>
                         </defs>
-                        <svg x="50%" y={-1} className="overflow-visible fill-gray-800/20">
+                        <svg x="50%" y={-1} className="overflow-visible fill-secondary-800/60">
                             <path
                                 d="M-200 0h201v201h-201Z M600 0h201v201h-201Z M-400 600h201v201h-201Z M200 800h201v201h-201Z"
                                 strokeWidth={0}
@@ -103,7 +105,7 @@ export default function ThemeWrapper ({ hideNavbar, children }: Props) {
                 {hideNavbar ?? <Navbar />}
                 <div>
                     <div className="flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg">
-                        <div className="flex flex-col w-full text-white">
+                        <div className="flex flex-col w-full text-primary-text">
                             {children}
                         </div>
                     </div>

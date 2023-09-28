@@ -3,6 +3,7 @@ import { useRouter } from "next/router"
 import { default as Content } from './Content';
 import { default as Footer } from './Footer';
 import { useRef } from "react";
+import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 
 const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[], className?: string }) => {
    const router = useRouter()
@@ -10,7 +11,10 @@ const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[]
 
    const goBack = window?.['navigation']?.['canGoBack'] ?
       () => router.back()
-      : () => router.push("/")
+      : () => router.push({
+         pathname: "/",
+         query: resolvePersistantQueryParams(router.query)
+      })
 
    const handleBack = router.pathname === "/" ? null : goBack
 
@@ -35,7 +39,7 @@ const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[]
          <div className="relative px-6">
             <div className="flex items-start" ref={wrapper}>
                <div className={`flex flex-nowrap grow`}>
-                  <div className={`w-full pb-6 flex flex-col justify-between space-y-5 text-primary-text h-full ${className}`}>
+                  <div className={`w-full pb-6 flex flex-col justify-between space-y-5 text-secondary-text h-full ${className}`}>
                      {children}
                   </div>
                </div>

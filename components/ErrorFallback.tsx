@@ -28,7 +28,7 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
                                 </MessageComponent.Description>
                             </MessageComponent.Content>
                             <MessageComponent.Buttons>
-                                <div className="flex flex-row text-white text-xs sm:text-base space-x-2">
+                                <div className="flex flex-row text-primary-text text-xs sm:text-base space-x-2">
                                     <div className='basis-1/3'>
                                         {
                                             <GoHomeButton>

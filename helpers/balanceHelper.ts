@@ -1,9 +1,9 @@
 import { erc20ABI } from 'wagmi';
-import { parseEther, encodeFunctionData, PublicClient, formatGwei } from 'viem'
+import { encodeFunctionData, PublicClient, formatGwei, EstimateFeesPerGasReturnType, serializeTransaction, TransactionSerializedEIP1559 } from 'viem'
 import { multicall, fetchBalance, FetchBalanceResult } from '@wagmi/core'
 import { BaseL2Asset, Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
-import { estimateFees } from '../lib/optimism/estimateFees';
+import { getL1Fee } from '../lib/optimism/estimateFees';
 import NetworkSettings, { GasCalculation } from '../lib/NetworkSettings';
 
 export type ERC20ContractRes = ({
@@ -33,34 +33,39 @@ export type Gas = {
         maxFeePerGas: number,
         gasPrice: number,
         maxPriorityFeePerGas: number
-    }
+    },
+    request_time: string
 }
 
 type ResolveGasArguments = {
     publicClient: PublicClient,
-    chainId?: number,
+    chainId: number,
     contract_address?: `0x${string}`,
     account?: `0x${string}`,
-    from?: Layer,
+    from: Layer,
     currency?: Currency,
     destination?: `0x${string}`
-    nativeToken?: BaseL2Asset,
-    userDestinationAddress?: `0x${string}`
+    nativeToken: BaseL2Asset,
+    isSweeplessTx: boolean
 }
 
 export const resolveFeeData = async (publicClient: PublicClient) => {
+
+    let gasPrice: bigint
+    let feesPerGas: EstimateFeesPerGasReturnType
+    let maxPriorityFeePerGas: bigint
+
     try {
+        gasPrice = await publicClient.getGasPrice()
+        feesPerGas = await publicClient.estimateFeesPerGas()
+        maxPriorityFeePerGas = await publicClient.estimateMaxPriorityFeePerGas()
 
-        const gasPrice = await publicClient.getGasPrice()
-        const feesPerGas = await publicClient.estimateFeesPerGas()
-        const maxPriorityFeePerGas = await publicClient.estimateMaxPriorityFeePerGas()
-
-        return { gasPrice, maxFeePerGas: feesPerGas.maxFeePerGas, maxPriorityFeePerGas: maxPriorityFeePerGas }
     } catch (e) {
         //TODO: log the error to our logging service
         console.log(e)
-        return null;
     }
+
+    return { gasPrice: gasPrice, maxFeePerGas: feesPerGas?.maxFeePerGas, maxPriorityFeePerGas: maxPriorityFeePerGas }
 }
 
 export const resolveERC20Balances = async (
@@ -179,37 +184,26 @@ export const resolveNativeBalance = async (
     return nativeBalance
 }
 
-export const estimateNativeGasLimit = async ({ publicClient, account, destination, userDestinationAddress }: ResolveGasArguments) => {
-
+export const estimateNativeGasLimit = async ({ publicClient, account, destination }: ResolveGasArguments) => {
     const to = destination;
-
-
-    const hexed_sequence_number = (99999999).toString(16)
-    const sequence_number_even = hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number
-    let encodedData = account !== userDestinationAddress ? `0x${sequence_number_even}` : null
-
     const gasEstimate = await publicClient.estimateGas({
         account: account,
         to: to,
-        data: encodedData,
+        data: constructSweeplessTxData(),
     })
 
     return gasEstimate
 }
 
-export const estimateERC20GasLimit = async ({ publicClient, contract_address, account, destination, userDestinationAddress }: ResolveGasArguments) => {
-
+export const estimateERC20GasLimit = async ({ publicClient, contract_address, account, destination, isSweeplessTx }: ResolveGasArguments) => {
     let encodedData = encodeFunctionData({
         abi: erc20ABI,
         functionName: "transfer",
         args: [destination, BigInt(1000)]
     })
 
-    const hexed_sequence_number = (99999999).toString(16)
-    const sequence_number_even = hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number
-
-    if (encodedData && account !== userDestinationAddress) {
-        encodedData = encodedData ? `${encodedData}${sequence_number_even}` as `0x${string}` : null;
+    if (encodedData && isSweeplessTx) {
+        encodedData = constructSweeplessTxData(encodedData)
     }
 
     const estimatedERC20GasLimit = await publicClient.estimateGas({
@@ -221,84 +215,86 @@ export const estimateERC20GasLimit = async ({ publicClient, contract_address, ac
     return estimatedERC20GasLimit
 }
 
-export const resolveGas = async ({ publicClient, chainId, contract_address, account, from, currency, destination, userDestinationAddress }: ResolveGasArguments) => {
-    const nativeToken = from.isExchange === false && from.assets.find(a => a.asset === from.native_currency)
+const GetOpL1Fee = async ({ publicClient, chainId, destination, contract_address, isSweeplessTx }: ResolveGasArguments): Promise<bigint> => {
+    const amount = BigInt(1000)
+    let serializedTransaction: TransactionSerializedEIP1559
 
-    const gasCalculationType = NetworkSettings.KnownSettings[from.internal_name].GasCalculationType
+    if (contract_address) {
+        let encodedData = encodeFunctionData({
+            abi: erc20ABI,
+            functionName: "transfer",
+            args: [destination, amount]
+        })
 
-    let fee: Gas
+        if (encodedData && isSweeplessTx) {
+            encodedData = constructSweeplessTxData(encodedData)
+        }
 
-    switch (gasCalculationType) {
-        case GasCalculation.OptimismType:
-            fee = await GetOptimismGas({
-                publicClient,
-                chainId,
-                account,
-                nativeToken,
-                currency,
-                destination: destination
-            })
-            break;
-        default:
-            fee = await GetGas({
-                publicClient,
-                account,
-                nativeToken,
-                currency,
-                contract_address,
-                destination,
-                userDestinationAddress
-            })
+        serializedTransaction = serializeTransaction({
+            client: publicClient,
+            abi: erc20ABI,
+            functionName: "transfer",
+            chainId: chainId,
+            args: [destination, amount],
+            to: contract_address,
+            data: encodedData,
+            type: 'eip1559',
+        }) as TransactionSerializedEIP1559
+    }
+    else {
+        serializedTransaction = serializeTransaction({
+            client: publicClient,
+            chainId: chainId,
+            to: destination,
+            data: constructSweeplessTxData(),
+            type: 'eip1559',
+        }) as TransactionSerializedEIP1559
     }
 
-    return fee
-}
-
-const GetOptimismGas = async ({ publicClient, account, nativeToken, currency, chainId, destination }: ResolveGasArguments): Promise<Gas> => {
-
-    const amount = BigInt(1000000000)
-
-    const fee = await estimateFees({
+    const fee = await getL1Fee({
+        data: serializedTransaction,
         client: publicClient,
-        functionName: 'transfer',
-        abi: erc20ABI,
-        args: [destination, amount],
-        account: account,
-        chainId: chainId,
-        to: destination,
     })
 
-    const gas = formatAmount(fee, nativeToken?.decimals)
-
-    return { gas: gas, token: currency?.asset }
+    return fee;
 }
 
-const GetGas = async ({ publicClient, account, nativeToken, currency, contract_address, destination, userDestinationAddress }: ResolveGasArguments) => {
+export const resolveGas = async (options: ResolveGasArguments) => {
+    const feeData = await resolveFeeData(options.publicClient)
+    const estimatedGasLimit = options.contract_address ?
+        await estimateERC20GasLimit(options)
+        : await estimateNativeGasLimit(options)
 
-    const feeData = await resolveFeeData(publicClient)
-
-    const estimatedGasLimit = contract_address ?
-        await estimateERC20GasLimit({ publicClient, contract_address, account, destination, userDestinationAddress })
-        : await estimateNativeGasLimit({ publicClient, account, destination, userDestinationAddress })
-
-    const totalGas = feeData.maxFeePerGas
+    let totalGas = feeData?.maxFeePerGas
         ? (feeData?.maxFeePerGas * estimatedGasLimit)
         : (feeData?.gasPrice * estimatedGasLimit)
 
-    const formattedGas = formatAmount(totalGas, nativeToken?.decimals)
+    const gasCalculationType = NetworkSettings.KnownSettings[options.from.internal_name].GasCalculationType
 
+    if (gasCalculationType == GasCalculation.OptimismType) {
+        totalGas += await GetOpL1Fee(options);
+    }
+    const formattedGas = formatAmount(totalGas, options.nativeToken?.decimals)
     return {
         gas: formattedGas,
-        token: currency?.asset,
+        token: options.currency?.asset,
         gasDetails: {
             gasLimit: Number(estimatedGasLimit),
-            maxFeePerGas: Number(formatGwei(feeData?.maxFeePerGas)),
-            gasPrice: Number(formatGwei(feeData?.gasPrice)),
-            maxPriorityFeePerGas: Number(formatGwei(feeData?.maxPriorityFeePerGas)),
-        }
+            maxFeePerGas: feeData?.maxFeePerGas ? Number(formatGwei(feeData?.maxFeePerGas)) : null,
+            gasPrice: feeData?.gasPrice ? Number(formatGwei(feeData?.gasPrice)) : null,
+            maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas ? Number(formatGwei(feeData?.maxPriorityFeePerGas)) : null,
+        },
+        request_time: new Date().toJSON()
     }
 }
 
 export const formatAmount = (unformattedAmount: bigint | unknown, decimals: number) => {
     return (Number(BigInt(unformattedAmount?.toString() || 0)) / Math.pow(10, decimals))
+}
+
+// Data is just "0x" for a non-contract (native token) transaction
+const constructSweeplessTxData = (txData: string = "0x") => {
+    const hexed_sequence_number = (99999999).toString(16)
+    const sequence_number_even = hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number
+    return `${txData}${sequence_number_even}` as `0x${string}`;
 }

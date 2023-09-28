@@ -24,17 +24,17 @@ function NoCookies(props) {
                                     Sorry
                                 </MessageComponent.Header>
                                 <MessageComponent.Description>
-                                    <div className="text-primary-text space-y-5 text-left">
+                                    <div className="text-secondary-text space-y-5 text-left">
                                         <div className="space-y-2">
-                                            <p className="text-white">
+                                            <p className="text-primary-text">
                                                 It seems like you’ve either:
                                             </p>
-                                            <ul className="text-primary-text list-disc ml-4 mt-0 ">
+                                            <ul className="text-secondary-text list-disc ml-4 mt-0 ">
                                                 <li>Disabled cookies</li>
                                                 <li>Or using Layerswap in a partner’s page in Incognito mode</li>
                                             </ul>
                                         </div>
-                                        <p className="text-primary-text">Unforunately, we can’t run in those conditions 🙁</p>
+                                        <p className="text-secondary-text">Unforunately, we can’t run in those conditions 🙁</p>
                                     </div>
                                     {
                                         embedded &&

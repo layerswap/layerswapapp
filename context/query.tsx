@@ -18,7 +18,7 @@ const QueryProvider: FC<{ query: QueryParams, children?: React.ReactNode }> = ({
   }, [query])
 
   return (
-    <QueryStateContext.Provider value={data}>
+    <QueryStateContext.Provider value={mapLegacyQueryParams(query)}>
       {children}
     </QueryStateContext.Provider>
   );

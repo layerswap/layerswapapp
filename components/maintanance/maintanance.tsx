@@ -16,12 +16,12 @@ function MaintananceContent(props) {
         updateWithProps()
     })
     
-    const twitterLogo = <TwitterLogo className="text-white h-6 w-6" />
+    const twitterLogo = <TwitterLogo className="text-primary-text h-6 w-6" />
     return (
         <div className="flex items-stretch flex-col">
-            <LayerSwapLogo className="block md:hidden h-8 w-auto text-white mt-5"></LayerSwapLogo>
+            <LayerSwapLogo className="block md:hidden h-8 w-auto text-primary-text mt-5"></LayerSwapLogo>
             <CardContainer {...props} >
-                <div className="flex flex-col justify-center space-y-12 p-10 text-white md:min-h-fit min-h-[400px]">
+                <div className="flex flex-col justify-center space-y-12 p-10 text-primary-text md:min-h-fit min-h-[400px]">
                     <h1 className="text-xl tracking-tight text-gray-200">
                         <p className="mb-4 text-primary-text">
                             We&apos;re upgrading our systems and infrastructure to give you the best experience yet. 

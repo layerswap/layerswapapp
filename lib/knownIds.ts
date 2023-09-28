@@ -132,6 +132,11 @@ export default class KnownInternalNames {
 
         public static readonly ZoraMainnet: string = "ZORA_MAINNET";
 
+        public static readonly RolluxMainnet: string = "ROLLUX_MAINNET";
+
+        public static readonly OpBNBMainnet: string = "OPBNB_MAINNET";
+
+        public static readonly MantaMainnet: string = "MANTA_MAINNET";
     }
 
     static Currencies = class {
