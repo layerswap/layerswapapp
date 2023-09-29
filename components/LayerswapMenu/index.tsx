@@ -296,15 +296,15 @@ export default function LayerswapMenu() {
                                     <p>For Users</p>
                                     <ExternalLink className="h-4 w-4 absolute right-3" />
                                 </Link>
-                                <LinkWrapper
-                                    href="/forpartners"
-                                    target={embedded ? "_blank" : "_self"}
+                                <Link
+                                    href="https://docs.layerswap.io/user-docs/partners-and-integrations"
+                                    target="_blank"
                                     className="menu-link flex rounded-b-md relative cursor-pointer select-none items-center px-4 py-1.5 outline-none bg-secondary-700 text-secondary-text hover:text-primary-text border-t border-secondary-500"
                                 >
                                     <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><Users className="h-5 w-5" /></div>
                                     <p>For Partners</p>
-                                    <ChevronRight className="h-4 w-4 absolute right-3" />
-                                </LinkWrapper>
+                                    <ExternalLink className="h-4 w-4 absolute right-3" />
+                                </Link>
                             </div>
                             <p className="text-secondary-text font-medium mt-1.5">Legal</p>
                             <div className="relative py-1">
