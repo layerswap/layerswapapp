@@ -4,8 +4,8 @@ import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 import * as zksync from 'zksync';
-import { utils } from 'ethers';
-import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
+import { providers, utils } from 'ethers';
+import { useEthersProvider, useEthersSigner } from '../../../../lib/ethersToViem/ethers';
 import { useSwapTransactionStore } from '../../../store/zustandStore';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSwapDataState } from '../../../../context/swap';
@@ -23,10 +23,11 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const { setZkSyncAccount } = useWalletUpdate()
     const { setSwapTransaction } = useSwapTransactionStore()
     const { swap } = useSwapDataState()
-    const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>(null);
+    const [syncWallet, setSyncWallet] = useState<zksync.Wallet | zksync.RemoteWallet>(null);
     const [depositReceipt, setDepositReceipt] = useState<any>(null);
     const [transfer, setTransfer] = useState<any>(null);
     const signer = useEthersSigner()
+    const provider = useEthersProvider({chainId:1});
 
     useEffect(() => {
         if (depositReceipt?.success) {
@@ -41,11 +42,12 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         setLoading(true)
         try {
             const syncProvider = await zksync.getDefaultProvider('mainnet');
-            const wallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
+            const wallet = await zksync.RemoteWallet.fromEthSigner(signer.provider as providers.Web3Provider, syncProvider);
             setSyncWallet(wallet);
             setZkSyncAccount(wallet.cachedAddress);
         }
         catch (e) {
+            console.log(e)
             toast(e.message)
         }
         setLoading(false)
@@ -63,7 +65,6 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     validUntil: zksync.utils.MAX_TIMESTAMP - swap.sequence_number,
                 });
                 setTransfer(tf)
-
                 const res = await tf.awaitReceipt();
                 setDepositReceipt(res);
             } else {
@@ -78,7 +79,6 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     validUntil: zksync.utils.MAX_TIMESTAMP - swap.sequence_number,
                 });
                 setTransfer(tf)
-
                 const res = await tf.awaitReceipt();
                 setDepositReceipt(res);
             }

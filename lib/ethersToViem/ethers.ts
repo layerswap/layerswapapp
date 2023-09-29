@@ -16,7 +16,7 @@ export function publicClientToProvider(publicClient: PublicClient) {
                 ({ value }) => new providers.JsonRpcProvider(value?.url, network),
             ),
         )
-    return new providers.JsonRpcProvider(transport.url, network)
+    return new providers.Web3Provider(transport.url, network)
 }
 
 /** Hook to convert a viem Public Client to an ethers.js Provider. */
