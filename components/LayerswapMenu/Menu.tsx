@@ -3,15 +3,16 @@ import LinkWrapper from "../LinkWraapper"
 import { ReactNode } from "react"
 
 const Menu = ({ children }: { children: ReactNode }) => {
-    return <div className="flex flex-col gap-1">
+    return <div className="flex flex-col gap-3">
         {children}
+        <div style={{ height: '70px' }} />
     </div>
 }
 
 const Group = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     return (
         <div>
-            <div className="divide-y divide-secondary-500 my-1 rounded-md bg-secondary-700 overflow-hidden">
+            <div className="divide-y divide-secondary-500 rounded-md bg-secondary-700 overflow-hidden">
                 {children}
             </div>
         </div>
@@ -22,8 +23,8 @@ const Item = (function Item({ children, pathname, onClick, icon, target = '_self
 
     return (
         pathname ?
-            <LinkWrapper href={pathname} target={target} className="gap-4 flex relative cursor-pointer hover:bg-secondary-600 select-none w-full items-center px-4 py-3 outline-none text-secondary-text hover:text-primary-text">
-                <div className="text-primary-400/70">
+            <LinkWrapper href={pathname} target={target} className="gap-4 flex relative cursor-pointer hover:bg-secondary-600 select-none w-full items-center px-4 py-3 outline-none text-primary-text">
+                <div>
                     {icon}
                 </div>
                 <p className="text-primary-text">{children}</p>
@@ -37,9 +38,9 @@ const Item = (function Item({ children, pathname, onClick, icon, target = '_self
             :
             <button
                 onClick={onClick}
-                className={`gap-4 flex relative cursor-pointer hover:bg-secondary-600 select-none items-center px-4 py-3 outline-none w-full text-secondary-text hover:text-primary-text`}
+                className={`gap-4 flex relative cursor-pointer hover:bg-secondary-600 select-none items-center px-4 py-3 outline-none w-full text-primary-text`}
             >
-                <div className="text-primary-400/70">
+                <div>
                     {icon}
                 </div>
                 <p className="text-primary-text">{children}</p>
@@ -63,8 +64,18 @@ type MenuIemProps = {
     target?: Target;
 };
 
+const Footer = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
+    return (
+        <>
+            <div className={`text-primary-text text-base border-t border-secondary-500 fixed inset-x-0 bottom-0 z-30 bg-secondary-900 shadow-widget-footer px-6 py-4 md:py-6 w-full `}>
+                {children}
+            </div>
+        </>
+    )
+}
 
 Menu.Group = Group
 Menu.Item = Item
+Menu.Footer = Footer
 
 export default Menu

@@ -25,6 +25,7 @@ import { shortenEmail } from '../utils/ShortenAddress';
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import LinkWrapper from "../LinkWraapper";
 import Menu from "./Menu";
+import { ReactPortal } from "../Wizard/Widget";
 
 
 export default function LayerswapMenu() {
@@ -109,9 +110,9 @@ export default function LayerswapMenu() {
 
     const title = userType != UserType.AuthenticatedUser
         ?
-        <h2 className="font-normal leading-none tracking-tight md:text-2xl text-secondary-text">Menu</h2>
+        <h2 className="font-normal leading-none tracking-tight">Menu</h2>
         :
-        <span className="font-normal text-secondary-text">
+        <span className="font-normal">
             <UserEmail email={email} />
         </span>
 
@@ -129,43 +130,26 @@ export default function LayerswapMenu() {
 
                     </div>
                     <Modal show={openTopModal} setShow={setOpenTopModal} header={title}>
-                        <div className="text-sm font-medium text-left origin-top-right focus:outline-none flex flex-col justify-between h-full">
+                        <div className="text-sm font-medium focus:outline-none h-full">
                             <div className="my-1">
                                 <div className="flex mb-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            boot();
-                                            show();
-                                            updateWithProps();
-                                        }}
-                                        className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
-                                    >
-                                        <ChatIcon className="h-6 w-6" strokeWidth={2} />
-                                        <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Help</p>
-                                    </button>
+
                                     {isConnected ? (
-                                        <MenuRainbowKitConnectWallet
-                                            isMobile={isMobile}
-                                            isConnected={isConnected}
-                                        />
+                                        <MenuRainbowKitConnectWallet />
                                     ) : (
                                         <button
                                             type="button"
                                             onClick={() => openConnectModal()}
-                                            className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
+                                            className='w-full relative items-center gap-2 flex px-4 rounded-md outline-none bg-secondary-700 hover:bg-secondary-600 text-primary-text h-20'
                                         >
-                                            <WalletIcon className="h-6 w-6" strokeWidth={2} />
+                                            <div className="bg-secondary-500 p-3 rounded-full">
+                                                <WalletIcon className="h-6 w-6" strokeWidth={2} />
+                                            </div>
                                             <p className="text-base font-semibold">Wallet</p>
+                                            <ChevronRight className="h-4 w-4 absolute right-3" />
                                         </button>
                                     )}
-                                    <LinkWrapper
-                                        href="/transactions"
-                                        className={`w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
-                                    >
-                                        <ScrollText className="h-6 w-6" />
-                                        <p className={`${isConnected ? "mt-1" : ""} text-base font-semibold`}>Transfers</p>
-                                    </LinkWrapper>
+
                                 </div>
                                 <Menu>
 
@@ -176,31 +160,28 @@ export default function LayerswapMenu() {
                                                 Home
                                             </Menu.Item>
                                         }
+                                        {
+                                            router.pathname != '/transactions' &&
+                                            <Menu.Item pathname='/transactions' icon={<ScrollText className="h-5 w-5" />} >
+                                                Transfers
+                                            </Menu.Item>
+                                        }
                                         {!embedded && router.pathname != '/campaigns' &&
                                             <Menu.Item pathname='/campaigns' icon={<Gift className="h-5 w-5" />} >
                                                 Campaigns
                                             </Menu.Item>
                                         }
-                                        {
-                                            userType == UserType.AuthenticatedUser ?
-
-                                                <Menu.Item
-                                                    onClick={handleLogout}
-                                                    icon={<LogOut className="h-5 w-5" />}
-                                                >
-                                                    Sign Out
-                                                </Menu.Item>
-                                                :
-
-                                                router.pathname != '/auth' &&
-                                                <Menu.Item pathname='/auth' icon={<LogIn className="h-5 w-5" />} >
-                                                    Login
-                                                </Menu.Item>
-
-                                        }
                                     </Menu.Group>
 
                                     <Menu.Group>
+
+                                        <Menu.Item onClick={() => {
+                                            boot();
+                                            show();
+                                            updateWithProps();
+                                        }} target="_blank" icon={<ChatIcon strokeWidth={2} className="h-5 w-5" />} >
+                                            Help
+                                        </Menu.Item>
 
                                         <Popover
                                             opener={
@@ -237,19 +218,51 @@ export default function LayerswapMenu() {
                                         </Menu.Item>
                                     </Menu.Group>
 
+                                    <div className="space-y-3 w-full">
+                                        <hr className="border-secondary-500" />
+                                        <p className="text-primary-text-muted flex justify-center my-3">Media links & suggestions:</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2 justify-center">
+                                        {navigation.social.map((item, index) => (
+                                            <Link key={index} target="_blank" href={item.href} className={`flex relative bg-secondary-700 hover:bg-secondary-600 rounded-md cursor-pointer select-none items-center outline-none text-primary-text ${item.className}`}>
+                                                <div className="p-2 w-full flex justify-center gap-1">
+                                                    <item.icon className="h-5 w-5" aria-hidden="true" />
+                                                    <p>{item.name}</p>
+                                                </div>
+                                            </Link>
+                                        ))}
+                                    </div>
+
+                                    <Menu.Footer>
+                                        <Menu.Group>
+
+                                            {
+                                                userType == UserType.AuthenticatedUser ?
+
+                                                    <Menu.Item
+                                                        onClick={handleLogout}
+                                                        icon={<LogOut className="h-5 w-5" />}
+                                                    >
+                                                        Sign Out
+                                                    </Menu.Item>
+                                                    :
+
+                                                    router.pathname != '/auth' &&
+                                                    <Menu.Item pathname='/auth' icon={<LogIn className="h-5 w-5" />} >
+                                                        Login
+                                                    </Menu.Item>
+
+                                            }
+                                        </Menu.Group>
+                                    </Menu.Footer>
+
                                 </Menu>
                             </div>
-                            <div className="flex justify-center mt-5">
-                                {navigation.social.map((item) => (
-                                    <Link key={item.name} target="_blank" href={item.href} className={`flex relative cursor-pointer select-none items-center py-1.5 outline-none text-secondary-text hover:text-primary-text ${item.className}`}>
-                                        <div className="flex items-center">
-                                            <div className="p-1.5 bg-secondary-500 rounded-md mr-4"><item.icon className="h-5 w-5" aria-hidden="true" /></div>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
                         </div>
+
                     </Modal>
+
                 </>
             }
         </span >
