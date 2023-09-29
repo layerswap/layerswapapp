@@ -1,4 +1,4 @@
-import { BookOpen, ExternalLink, Gift, MenuIcon, ChevronRight, Map, Home, LogIn, LogOut, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus, Bell } from "lucide-react";
+import { BookOpen, Gift, MenuIcon, ChevronRight, Map, Home, LogIn, LogOut, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus, Mail, User } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
@@ -14,7 +14,6 @@ import DiscordLogo from "./../icons/DiscordLogo";
 import GitHubLogo from "./../icons/GitHubLogo";
 import SubstackLogo from "./../icons/SubstackLogo";
 import TwitterLogo from "./../icons/TwitterLogo";
-import useWindowDimensions from "../../hooks/useWindowDimensions";
 import Link from "next/link";
 import { MenuRainbowKitConnectWallet } from "../HeaderWithMenu/ConnectedWallets";
 import Popover from "../modal/popover";
@@ -23,9 +22,7 @@ import IconButton from "../buttons/iconButton";
 import YoutubeLogo from "../icons/YoutubeLogo";
 import { shortenEmail } from '../utils/ShortenAddress';
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
-import LinkWrapper from "../LinkWraapper";
 import Menu from "./Menu";
-import { ReactPortal } from "../Wizard/Widget";
 
 
 export default function LayerswapMenu() {
@@ -36,7 +33,6 @@ export default function LayerswapMenu() {
     const { boot, show, update } = useIntercom()
     const [embedded, setEmbedded] = useState<boolean>()
     const [openTopModal, setOpenTopModal] = useState(false);
-    const { isMobile } = useWindowDimensions()
     const { openConnectModal } = useConnectModal();
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
     const UserEmail = ({ email }: { email: string }) => {
@@ -108,14 +104,6 @@ export default function LayerswapMenu() {
         setOpenFeedbackModal(false)
     }
 
-    const title = userType != UserType.AuthenticatedUser
-        ?
-        <h2 className="font-normal leading-none tracking-tight">Menu</h2>
-        :
-        <span className="font-normal">
-            <UserEmail email={email} />
-        </span>
-
     return <>
         <span className="text-secondary-text cursor-pointer relative">
             {
@@ -129,18 +117,17 @@ export default function LayerswapMenu() {
                         </IconButton>
 
                     </div>
-                    <Modal show={openTopModal} setShow={setOpenTopModal} header={title}>
+                    <Modal show={openTopModal} setShow={setOpenTopModal} header={<h2 className="font-normal leading-none tracking-tight">Menu</h2>}>
                         <div className="text-sm font-medium focus:outline-none h-full">
-                            <div className="my-1">
-                                <div className="flex mb-3">
-
+                            <Menu>
+                                <div className="flex">
                                     {isConnected ? (
                                         <MenuRainbowKitConnectWallet />
                                     ) : (
                                         <button
                                             type="button"
                                             onClick={() => openConnectModal()}
-                                            className='w-full relative items-center gap-2 flex px-4 rounded-md outline-none bg-secondary-700 hover:bg-secondary-600 text-primary-text h-20'
+                                            className='w-full relative items-center gap-2 flex px-4 rounded-md outline-none bg-secondary-700 hover:bg-secondary-600 text-primary-text h-16'
                                         >
                                             <div className="bg-secondary-500 p-3 rounded-full">
                                                 <WalletIcon className="h-6 w-6" strokeWidth={2} />
@@ -151,114 +138,118 @@ export default function LayerswapMenu() {
                                     )}
 
                                 </div>
-                                <Menu>
 
-                                    <Menu.Group>
-                                        {
-                                            router.pathname != '/' &&
-                                            <Menu.Item pathname='/' icon={<Home className="h-5 w-5" />} >
-                                                Home
-                                            </Menu.Item>
-                                        }
-                                        {
-                                            router.pathname != '/transactions' &&
-                                            <Menu.Item pathname='/transactions' icon={<ScrollText className="h-5 w-5" />} >
-                                                Transfers
-                                            </Menu.Item>
-                                        }
-                                        {!embedded && router.pathname != '/campaigns' &&
-                                            <Menu.Item pathname='/campaigns' icon={<Gift className="h-5 w-5" />} >
-                                                Campaigns
-                                            </Menu.Item>
-                                        }
-                                    </Menu.Group>
-
-                                    <Menu.Group>
-
-                                        <Menu.Item onClick={() => {
-                                            boot();
-                                            show();
-                                            updateWithProps();
-                                        }} target="_blank" icon={<ChatIcon strokeWidth={2} className="h-5 w-5" />} >
-                                            Help
+                                <Menu.Group>
+                                    {
+                                        router.pathname != '/' &&
+                                        <Menu.Item pathname='/' icon={<Home className="h-5 w-5" />} >
+                                            Home
                                         </Menu.Item>
+                                    }
+                                    {
+                                        router.pathname != '/transactions' &&
+                                        <Menu.Item pathname='/transactions' icon={<ScrollText className="h-5 w-5" />} >
+                                            Transfers
+                                        </Menu.Item>
+                                    }
+                                    {!embedded && router.pathname != '/campaigns' &&
+                                        <Menu.Item pathname='/campaigns' icon={<Gift className="h-5 w-5" />} >
+                                            Campaigns
+                                        </Menu.Item>
+                                    }
+                                </Menu.Group>
 
-                                        <Popover
-                                            opener={
-                                                <Menu.Item onClick={() => setOpenFeedbackModal(true)} target="_blank" icon={<MessageSquarePlus className="h-5 w-5" />} >
-                                                    Suggest a Feature
-                                                </Menu.Item>
-                                            }
-                                            isNested={true}
-                                            show={openFeedbackModal}
-                                            header="Suggest a Feature"
-                                            setShow={setOpenFeedbackModal} >
-                                            <div className="p-0 md:max-w-md">
-                                                <SendFeedback onSend={handleCloseFeedback} />
+                                <Menu.Group>
+
+                                    <Menu.Item onClick={() => {
+                                        boot();
+                                        show();
+                                        updateWithProps();
+                                    }} target="_blank" icon={<ChatIcon strokeWidth={2} className="h-5 w-5" />} >
+                                        Help
+                                    </Menu.Item>
+
+                                    <Popover
+                                        opener={
+                                            <Menu.Item onClick={() => setOpenFeedbackModal(true)} target="_blank" icon={<MessageSquarePlus className="h-5 w-5" />} >
+                                                Suggest a Feature
+                                            </Menu.Item>
+                                        }
+                                        isNested={true}
+                                        show={openFeedbackModal}
+                                        header="Suggest a Feature"
+                                        setShow={setOpenFeedbackModal} >
+                                        <div className="p-0 md:max-w-md">
+                                            <SendFeedback onSend={handleCloseFeedback} />
+                                        </div>
+                                    </Popover>
+                                </Menu.Group>
+
+                                <Menu.Group>
+                                    <Menu.Item pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
+                                        For Users
+                                    </Menu.Item>
+                                    <Menu.Item pathname='/forpartners' target={embedded ? "_blank" : "_self"} icon={<Users className="h-5 w-5" />} >
+                                        For Partners
+                                    </Menu.Item>
+
+                                </Menu.Group>
+
+                                <Menu.Group>
+                                    <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/privacy-policy' target="_blank" icon={<Shield className="h-5 w-5" />} >
+                                        Privacy Policy
+                                    </Menu.Item>
+                                    <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/terms-of-services' target="_blank" icon={<LibraryIcon className="h-5 w-5" />} >
+                                        Terms of Service
+                                    </Menu.Item>
+                                </Menu.Group>
+
+                                <div className="space-y-3 w-full">
+                                    <hr className="border-secondary-500" />
+                                    <p className="text-primary-text-muted flex justify-center my-3">Media links & suggestions:</p>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2 justify-center">
+                                    {navigation.social.map((item, index) => (
+                                        <Link key={index} target="_blank" href={item.href} className={`flex relative bg-secondary-700 hover:bg-secondary-600 rounded-md cursor-pointer select-none items-center outline-none text-primary-text ${item.className}`}>
+                                            <div className="p-2 w-full flex justify-center gap-1">
+                                                <item.icon className="h-5 w-5" aria-hidden="true" />
+                                                <p>{item.name}</p>
                                             </div>
-                                        </Popover>
-                                    </Menu.Group>
-
-                                    <Menu.Group>
-                                        <Menu.Item pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
-                                            For Users
-                                        </Menu.Item>
-                                        <Menu.Item pathname='/forpartners' target={embedded ? "_blank" : "_self"} icon={<Users className="h-5 w-5" />} >
-                                            For Partners
-                                        </Menu.Item>
-
-                                    </Menu.Group>
-
-                                    <Menu.Group>
-                                        <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/privacy-policy' target="_blank" icon={<Shield className="h-5 w-5" />} >
-                                            Privacy Policy
-                                        </Menu.Item>
-                                        <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/terms-of-services' target="_blank" icon={<LibraryIcon className="h-5 w-5" />} >
-                                            Terms of Service
-                                        </Menu.Item>
-                                    </Menu.Group>
-
-                                    <div className="space-y-3 w-full">
-                                        <hr className="border-secondary-500" />
-                                        <p className="text-primary-text-muted flex justify-center my-3">Media links & suggestions:</p>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-2 justify-center">
-                                        {navigation.social.map((item, index) => (
-                                            <Link key={index} target="_blank" href={item.href} className={`flex relative bg-secondary-700 hover:bg-secondary-600 rounded-md cursor-pointer select-none items-center outline-none text-primary-text ${item.className}`}>
-                                                <div className="p-2 w-full flex justify-center gap-1">
-                                                    <item.icon className="h-5 w-5" aria-hidden="true" />
-                                                    <p>{item.name}</p>
-                                                </div>
-                                            </Link>
-                                        ))}
-                                    </div>
-
+                                        </Link>
+                                    ))}
+                                </div>
+                                {
+                                    router.pathname != '/auth' &&
                                     <Menu.Footer>
+                                        {
+                                            userType == UserType.AuthenticatedUser &&
+                                            <div className="font-normal flex gap-2 items-center mb-1">
+                                                <User className="h-5 w-5" />
+                                                <UserEmail email={email} />
+                                            </div>
+                                        }
                                         <Menu.Group>
-
                                             {
                                                 userType == UserType.AuthenticatedUser ?
-
-                                                    <Menu.Item
-                                                        onClick={handleLogout}
-                                                        icon={<LogOut className="h-5 w-5" />}
-                                                    >
-                                                        Sign Out
-                                                    </Menu.Item>
+                                                    <div>
+                                                        <Menu.Item
+                                                            onClick={handleLogout}
+                                                            icon={<LogOut className="h-5 w-5" />}
+                                                        >
+                                                            Sign Out
+                                                        </Menu.Item>
+                                                    </div>
                                                     :
-
-                                                    router.pathname != '/auth' &&
                                                     <Menu.Item pathname='/auth' icon={<LogIn className="h-5 w-5" />} >
                                                         Login
                                                     </Menu.Item>
-
                                             }
                                         </Menu.Group>
                                     </Menu.Footer>
+                                }
 
-                                </Menu>
-                            </div>
+                            </Menu>
                         </div>
 
                     </Modal>

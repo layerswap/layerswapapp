@@ -68,7 +68,7 @@ export const MenuRainbowKitConnectWallet = () => {
                 }
             }
 
-            return <button onClick={handleClick} type="button" className={`w-full relative items-center gap-2 flex px-4 rounded-md outline-none bg-secondary-700 hover:bg-secondary-600 text-primary-text h-20`}>
+            return <button onClick={handleClick} type="button" className={`w-full relative items-center gap-2 flex px-4 rounded-md outline-none bg-secondary-700 hover:bg-secondary-600 text-primary-text h-16`}>
                 {connected ?
                     <>
                         <div className="flex gap-3 items-center">
