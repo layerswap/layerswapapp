@@ -5,7 +5,7 @@ import { ReactNode } from "react"
 const Menu = ({ children }: { children: ReactNode }) => {
     return <div className="flex flex-col gap-3 mt-3">
         {children}
-        <div style={{ height: '100px' }} />
+        <div style={{ height: '70px' }} />
     </div>
 }
 
@@ -67,7 +67,7 @@ type MenuIemProps = {
 const Footer = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     return (
         <>
-            <div className={`text-primary-text text-base border-t border-secondary-500 fixed inset-x-0 bottom-0 z-30 bg-secondary-900 shadow-widget-footer px-6 py-4 md:pb-6 w-full `}>
+            <div className={`text-primary-text text-base border-t border-secondary-500 fixed inset-x-0 bottom-0 z-30 bg-secondary-900 shadow-widget-footer px-6 py-4 w-full `}>
                 {children}
             </div>
         </>

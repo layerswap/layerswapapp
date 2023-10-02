@@ -23,6 +23,7 @@ import YoutubeLogo from "../icons/YoutubeLogo";
 import { shortenEmail } from '../utils/ShortenAddress';
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import Menu from "./Menu";
+import SubmitButton from "../buttons/submitButton";
 
 
 export default function LayerswapMenu() {
@@ -124,17 +125,9 @@ export default function LayerswapMenu() {
                                     {isConnected ? (
                                         <MenuRainbowKitConnectWallet />
                                     ) : (
-                                        <button
-                                            type="button"
-                                            onClick={() => openConnectModal()}
-                                            className='w-full relative items-center gap-2 flex px-4 rounded-md outline-none bg-secondary-700 hover:bg-secondary-600 text-primary-text h-16'
-                                        >
-                                            <div className="bg-secondary-500 p-3 rounded-full">
-                                                <WalletIcon className="h-6 w-6" strokeWidth={2} />
-                                            </div>
-                                            <p className="text-base font-semibold">Wallet</p>
-                                            <ChevronRight className="h-4 w-4 absolute right-3" />
-                                        </button>
+                                        <SubmitButton text_align="left" className="space-x-3" onClick={openConnectModal} icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />} type="button" isDisabled={false} isSubmitting={false}>
+                                            Connect a wallet
+                                        </SubmitButton>
                                     )}
 
                                 </div>
@@ -222,27 +215,25 @@ export default function LayerswapMenu() {
                                 {
                                     router.pathname != '/auth' &&
                                     <Menu.Footer>
-                                        {
-                                            userType == UserType.AuthenticatedUser &&
-                                            <div className="font-normal flex gap-2 items-center mb-1">
-                                                <User className="h-5 w-5" />
-                                                <UserEmail email={email} />
-                                            </div>
-                                        }
                                         <Menu.Group>
                                             {
                                                 userType == UserType.AuthenticatedUser ?
                                                     <div>
-                                                        <Menu.Item
-                                                            onClick={handleLogout}
-                                                            icon={<LogOut className="h-5 w-5" />}
+                                                        <div
+                                                            className={`gap-4 flex justify-between items-center relative select-none px-4 py-3 outline-none w-full text-primary-text`}
                                                         >
-                                                            Sign Out
-                                                        </Menu.Item>
+                                                            <div className="font-normal flex gap-2 items-center mb-1">
+                                                                <User className="h-5 w-5" />
+                                                                <UserEmail email={email} />
+                                                            </div>
+                                                            <button className="text-primary hover:text-primary-600" onClick={handleLogout}>
+                                                                Sign out
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                     :
                                                     <Menu.Item pathname='/auth' icon={<LogIn className="h-5 w-5" />} >
-                                                        Login
+                                                        Sign in
                                                     </Menu.Item>
                                             }
                                         </Menu.Group>
