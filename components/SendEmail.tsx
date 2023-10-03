@@ -148,15 +148,15 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                         placeholder="john@example.com"
                                                         autoComplete="email"
                                                         type="email"
-                                                        className="h-12 pb-1 pl-5 pt-0 text-primary-text  focus:ring-primary focus:border-primary border-secondary-500 pr-42 block
+                                                        className="h-12 pb-1 pt-0 text-primary-text  focus:ring-primary focus:border-primary border-secondary-500 pr-42 block
                                                    placeholder:text-secondary-text placeholder:text-sm placeholder:font-normal placeholder:opacity-50 bg-secondary-700 w-full font-semibold rounded-md"
                                                     />
                                                 )}
                                             </Field>
                                         </div>
-                                        <div className='p-5 bg-secondary-700 rounded-md text-primary-text mt-3 border border-secondary-500'>
+                                        <div className='p-3 text-primary-text mt-3'>
                                             <ul className='space-y-3'>
-                                                <li className='flex gap-2'>
+                                                <li className='flex gap-3'>
                                                     <div>
                                                         <ScrollText className='h-6 w-6 mt-0.5 text-primary' />
                                                     </div>
@@ -167,7 +167,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                         </p>
                                                     </div>
                                                 </li>
-                                                <li className='flex gap-2'>
+                                                <li className='flex gap-3'>
                                                     <div>
                                                         <Mail className='h-6 w-6 mt-0.5 text-primary' />
                                                     </div>
@@ -178,7 +178,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                         </p>
                                                     </div>
                                                 </li>
-                                                <li className='flex gap-2'>
+                                                <li className='flex gap-3'>
                                                     <div>
                                                         <Album className='h-6 w-6 mt-0.5 text-primary' />
                                                     </div>
