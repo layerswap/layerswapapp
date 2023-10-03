@@ -1,4 +1,4 @@
-import { BookOpen, Gift, MenuIcon, ChevronRight, Map, Home, LogIn, LogOut, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus, Mail, User } from "lucide-react";
+import { BookOpen, Gift, MenuIcon, Map, Home, LogIn, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus, UserCircle2 } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
@@ -222,9 +222,9 @@ export default function LayerswapMenu() {
                                                         <div
                                                             className={`gap-4 flex justify-between items-center relative select-none px-4 py-3 outline-none w-full text-primary-text`}
                                                         >
-                                                            <div className="font-normal flex gap-2 items-center mb-1">
-                                                                <User className="h-5 w-5" />
-                                                                <UserEmail email={email} />
+                                                            <div className="font-normal flex gap-2 items-center">
+                                                                <UserCircle2 className="h-5 w-5" />
+                                                                <p><UserEmail email={email} /></p>
                                                             </div>
                                                             <button className="text-primary hover:text-primary-600" onClick={handleLogout}>
                                                                 Sign out
