@@ -6,11 +6,10 @@ import Summary from "./Summary"
 import { ApiResponse } from "../../../Models/ApiResponse"
 import LayerSwapApiClient, { DepositType, Fee, TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
 import { useAccount } from "wagmi"
-import { truncateDecimals } from "../../utils/RoundDecimals"
 import { CanDoSweeplessTransfer } from "../../../lib/fees"
 
 const SwapSummary: FC = () => {
-    const { isConnected, address } = useAccount()
+    const { address } = useAccount()
     const { layers, currencies, networks } = useSettingsState()
     const { swap, withdrawType, selectedAssetNetwork } = useSwapDataState()
     const {

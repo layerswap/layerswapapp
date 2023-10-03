@@ -5,7 +5,6 @@ import {
     useSendTransaction,
     useWaitForTransaction,
     useNetwork,
-    erc20ABI
 } from "wagmi";
 import { parseEther, createPublicClient, http } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
@@ -29,8 +28,8 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     amount,
     savedTransactionHash,
     swapId,
-    userDestinationAddress,
-    sequenceNumber
+    sequenceNumber,
+    isSweeplessTx
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { setSwapPublishedTx } = useSwapDataUpdate()
@@ -44,7 +43,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,
     })
-    const encodedData : `0x${string}` = address !== userDestinationAddress ? `0x${sequenceNumber}` : "0x"
+    const encodedData : `0x${string}` = isSweeplessTx ? `0x${sequenceNumber}` : "0x"
 
     const tx = {
         to: depositAddress,

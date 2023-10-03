@@ -27,7 +27,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     savedTransactionHash,
     swapId,
     sequenceNumber,
-    userDestinationAddress,
+    isSweeplessTx
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { setSwapPublishedTx } = useSwapDataUpdate()
@@ -49,7 +49,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             ...contractWritePrepare?.config?.request,
         });
 
-    if (encodedData && address !== userDestinationAddress) {
+    if (encodedData && isSweeplessTx) {
         encodedData = encodedData ? `${encodedData}${sequenceNumber}` as `0x${string}` : null;
     }
 

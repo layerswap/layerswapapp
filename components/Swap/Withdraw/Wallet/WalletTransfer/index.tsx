@@ -8,6 +8,9 @@ import { PublishedSwapTransactions } from "../../../../../lib/layerSwapApiClient
 import TransferNativeTokenButton from "./TransferNativeToken";
 import { ChangeNetworkButton, ConnectWalletButton } from "./buttons";
 import TransferErc20Button from "./TransferErc20";
+import { useSettingsState } from "../../../../../context/settings";
+import { useWalletStore } from "../../WalletStore";
+import { useSwapDataState } from "../../../../../context/swap";
 
 type Props = {
     sequenceNumber: number,
@@ -33,11 +36,12 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     swapId,
     asset
 }) => {
-    const { isConnected } = useAccount();
+    const { isConnected, address } = useAccount();
     const networkChange = useSwitchNetwork({
         chainId: chainId,
     });
-
+    const { layers } = useSettingsState()
+    const { swap } = useSwapDataState()
     const { chain: activeChain } = useNetwork();
 
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
@@ -63,6 +67,10 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     const hexed_sequence_number = sequenceNumber?.toString(16)
     const sequence_number_even = hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number
 
+    const sourceLayer = layers?.find(l => l.internal_name === swap?.source_network)
+    const networkAccount = useWalletStore((state) => state.networks[sourceLayer?.internal_name])
+    const isSweeplessTx = address !== userDestinationAddress && networkAccount?.metadata?.isArgent !== true
+
     if (!isConnected) {
         return <ConnectWalletButton />
     }
@@ -78,10 +86,10 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
             sequenceNumber={sequence_number_even}
             amount={amount}
             depositAddress={depositAddress}
-            userDestinationAddress={userDestinationAddress}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
             tokenContractAddress={tokenContractAddress}
             tokenDecimals={tokenDecimals}
+            isSweeplessTx={isSweeplessTx}
         />
     }
     else {
@@ -90,9 +98,9 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
             sequenceNumber={sequence_number_even}
             amount={amount}
             depositAddress={depositAddress}
-            userDestinationAddress={userDestinationAddress}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
             chainId={chainId}
+            isSweeplessTx={isSweeplessTx}
         />
     }
 }
