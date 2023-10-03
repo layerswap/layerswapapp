@@ -29,9 +29,10 @@ import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetw
 import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
-import { useWalletUpdate } from "../../../context/wallet";
+import { useWalletState, useWalletUpdate } from "../../../context/wallet";
 import { useAccount } from "wagmi";
 import GasDetails from "../../gasDetails";
+import { truncateDecimals } from "../../utils/RoundDecimals";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -52,14 +53,15 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const source = values.from
     const asset = values.currency?.asset
     const { authData } = useAuthState()
-    const { getBalance } = useWalletUpdate()
+    const { getBalance, getGas } = useWalletUpdate()
+    const { balances, gases } = useWalletState()
     const { address } = useAccount()
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies);
-    const partnerImage = partner?.organization_name ? settings.resolveImgSrc(partner) : null
+    const partnerImage = partner?.logo_url
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()
     const query = useQueryState();
@@ -152,6 +154,14 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         getBalance(values.from)
     }, [values.from, values.destination_address, address])
 
+    const contract_address = values.from?.assets?.find(a => a.asset === values?.currency?.asset)?.contract_address
+    const walletBalance = balances?.find(b => b?.network === values?.from?.internal_name && b?.token === values?.currency?.asset)
+    const networkGas = gases?.[values.from?.internal_name]?.find(g => g.token === values?.currency?.asset)
+
+    useEffect(() => {
+        getGas(values.from, values.currency, values.destination_address)
+    }, [contract_address, values.from, values.currency, address])
+
     const destinationNetwork = GetDefaultNetwork(destination, values?.currency?.asset)
     const destination_native_currency = !destination?.isExchange && destinationNetwork?.native_currency
 
@@ -168,6 +178,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
         && (query?.lockTo || query?.hideTo)
         && isValidAddress(query?.destAddress, destination)
 
+    const handleReserveGas = useCallback(() => {
+        setFieldValue('amount', walletBalance.amount - networkGas?.gas)
+    }, [values.amount, walletBalance])
 
     return <>
         <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
@@ -254,6 +267,19 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                             GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
                             <WarningMessage messageType="warning" className="mt-4">
                                 <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
+                            </WarningMessage>
+                        }
+                        {
+                            walletBalance?.isNativeCurrency && Number(values.amount) + networkGas?.gas > walletBalance.amount && walletBalance.amount > minAllowedAmount &&
+                            <WarningMessage messageType="warning" className="mt-4">
+                                <div className="font-normal text-white">
+                                    <div>
+                                        You might not be able to complete the transaction.
+                                    </div>
+                                    <div onClick={handleReserveGas} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
+                                        Reserve {truncateDecimals(networkGas?.gas, values.currency.precision)} {values.currency.asset} for gas.
+                                    </div>
+                                </div>
                             </WarningMessage>
                         }
                     </div>

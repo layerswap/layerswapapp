@@ -182,10 +182,6 @@ export default function LayerswapMenu() {
                                     <Menu.Item pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
                                         For Users
                                     </Menu.Item>
-                                    <Menu.Item pathname='/forpartners' target={embedded ? "_blank" : "_self"} icon={<Users className="h-5 w-5" />} >
-                                        For Partners
-                                    </Menu.Item>
-
                                 </Menu.Group>
 
                                 <Menu.Group>

@@ -33,7 +33,7 @@ module.exports = (phase, { defaultConfig }) => {
     },
     productionBrowserSourceMaps: true,
   }
-  if(process.env.APP_BASE_PATH){
+  if (process.env.APP_BASE_PATH) {
     nextConfig.basePath = process.env.APP_BASE_PATH
   }
   if (phase === PHASE_PRODUCTION_SERVER) {
