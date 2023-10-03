@@ -136,7 +136,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                 What&apos;s your email?
                                             </p>
                                             <p className='text-center text-base mb-6 px-2 text-secondary-text'>
-                                                By signing in to Layerswap you can use:
+                                                By signing in to Layerswap you get:
                                             </p>
                                         </div>
                                         <div className="relative rounded-md shadow-sm">
@@ -154,11 +154,11 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                 )}
                                             </Field>
                                         </div>
-                                        <div className='p-3 text-primary-text mt-3'>
+                                        <div className='text-primary-text mt-3'>
                                             <ul className='space-y-3'>
                                                 <li className='flex gap-3'>
                                                     <div>
-                                                        <ScrollText className='h-6 w-6 mt-0.5 text-primary' />
+                                                        <ScrollText className='h-6 w-6 mt-0.5' />
                                                     </div>
                                                     <div>
                                                         <p className='font-semibold'>History</p>
@@ -169,7 +169,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                 </li>
                                                 <li className='flex gap-3'>
                                                     <div>
-                                                        <Mail className='h-6 w-6 mt-0.5 text-primary' />
+                                                        <Mail className='h-6 w-6 mt-0.5' />
                                                     </div>
                                                     <div>
                                                         <p className='font-semibold'>Email notifications</p>
@@ -180,12 +180,12 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                 </li>
                                                 <li className='flex gap-3'>
                                                     <div>
-                                                        <Album className='h-6 w-6 mt-0.5 text-primary' />
+                                                        <Album className='h-6 w-6 mt-0.5' />
                                                     </div>
                                                     <div>
                                                         <p className='font-semibold'>Same deposit addresses</p>
                                                         <p className='text-secondary-text text-sm'>
-                                                            Get deposit addresses that stay the same across swaps and can be whitelisted in exchanges
+                                                            Get deposit addresses that stay the same across transactions and can be whitelisted in exchanges
                                                         </p>
                                                     </div>
                                                 </li>

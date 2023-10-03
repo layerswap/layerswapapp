@@ -153,7 +153,6 @@ export default function LayerswapMenu() {
                                 </Menu.Group>
 
                                 <Menu.Group>
-
                                     <Menu.Item onClick={() => {
                                         boot();
                                         show();
@@ -161,7 +160,24 @@ export default function LayerswapMenu() {
                                     }} target="_blank" icon={<ChatIcon strokeWidth={2} className="h-5 w-5" />} >
                                         Help
                                     </Menu.Item>
+                                    <Menu.Item pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
+                                        Docs for Users
+                                    </Menu.Item>
+                                    <Menu.Item pathname='https://docs.layerswap.io/user-docs/partners-and-integrations' target="_blank" icon={<Users className="h-5 w-5" />} >
+                                        Docs for Partners
+                                    </Menu.Item>
+                                </Menu.Group>
 
+                                <Menu.Group>
+                                    <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/privacy-policy' target="_blank" icon={<Shield className="h-5 w-5" />} >
+                                        Privacy Policy
+                                    </Menu.Item>
+                                    <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/terms-of-services' target="_blank" icon={<LibraryIcon className="h-5 w-5" />} >
+                                        Terms of Service
+                                    </Menu.Item>
+                                </Menu.Group>
+
+                                <Menu.Group>
                                     <Popover
                                         opener={
                                             <Menu.Item onClick={() => setOpenFeedbackModal(true)} target="_blank" icon={<MessageSquarePlus className="h-5 w-5" />} >
@@ -176,21 +192,6 @@ export default function LayerswapMenu() {
                                             <SendFeedback onSend={handleCloseFeedback} />
                                         </div>
                                     </Popover>
-                                </Menu.Group>
-
-                                <Menu.Group>
-                                    <Menu.Item pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
-                                        For Users
-                                    </Menu.Item>
-                                </Menu.Group>
-
-                                <Menu.Group>
-                                    <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/privacy-policy' target="_blank" icon={<Shield className="h-5 w-5" />} >
-                                        Privacy Policy
-                                    </Menu.Item>
-                                    <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/terms-of-services' target="_blank" icon={<LibraryIcon className="h-5 w-5" />} >
-                                        Terms of Service
-                                    </Menu.Item>
                                 </Menu.Group>
 
                                 <div className="space-y-3 w-full">
