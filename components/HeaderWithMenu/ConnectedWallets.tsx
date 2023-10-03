@@ -11,6 +11,7 @@ import shortenAddress from "../utils/ShortenAddress"
 import BitKeep from "../icons/Wallets/BitKeep"
 import Argent from "../icons/Wallets/Argent"
 import { FC, useCallback } from "react"
+import { ChevronRight } from "lucide-react"
 
 
 export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { isButton?: boolean, isMobile?: boolean, isConnected?: boolean }) => {
@@ -51,9 +52,9 @@ export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { i
     </ConnectButton.Custom >
 }
 
-export const MenuRainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { isButton?: boolean, isMobile?: boolean, isConnected?: boolean }) => {
+export const MenuRainbowKitConnectWallet = () => {
     const { connector } = useAccount()
-    
+
     return <ConnectButton.Custom>
         {({ openConnectModal, account, mounted, chain, openAccountModal, openChainModal }) => {
             const connected = !!(mounted && account && chain)
@@ -67,12 +68,12 @@ export const MenuRainbowKitConnectWallet = ({ isButton, isMobile, isConnected }:
                 }
             }
 
-            return <button onClick={handleClick} type="button" className={`${!isMobile ? "h-24 w-24" : "h-20 w-14"} mx-2 w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text`}>
+            return <button onClick={handleClick} type="button" className={`w-full relative items-center gap-2 flex px-4 rounded-md outline-none bg-secondary-700 hover:bg-secondary-600 text-primary-text h-16`}>
                 {connected ?
-                    <div className="mx-0.5">
-                        <div className="flex-col items-center">
+                    <>
+                        <div className="flex gap-3 items-center">
                             <div className="inline-flex items-center relative">
-                                <AddressIcon address={account.address} size={25} />
+                                <AddressIcon address={account.address} size={36} />
                                 {
                                     connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-primary-text">
                                         <ResolveWalletIcon connector={connector?.name} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
@@ -80,8 +81,12 @@ export const MenuRainbowKitConnectWallet = ({ isButton, isMobile, isConnected }:
                                 }
                             </div>
                             <p>{shortenAddress(account.address)}</p>
+
                         </div>
-                    </div>
+                        <ChevronRight className="h-4 w-4 absolute right-3" />
+                    </>
+
+
                     : <WalletIcon className="h-6 w-6 mx-0.5" strokeWidth="2" />
                 }
             </button>

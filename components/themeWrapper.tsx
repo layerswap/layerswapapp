@@ -16,7 +16,7 @@ type Props = {
 export default function ThemeWrapper ({ hideNavbar, children }: Props) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const { isDesktop } = useWindowDimensions()
+    const { isDesktop, windowSize } = useWindowDimensions()
 
     useEffect(() => {
         const handleStart = (url) => (url !== router.asPath) && setLoading(true);
@@ -32,14 +32,6 @@ export default function ThemeWrapper ({ hideNavbar, children }: Props) {
             router.events.off('routeChangeError', handleComplete)
         }
     })
-
-    const { addressSource } = useQueryState()
-
-    // useEffect(() => {
-    //     if (addressSource) window.document.body.className = addressSource
-
-    //     return () => { window.document.body.className = '' }
-    // }, [addressSource])
 
     return <div className='styled-scroll'>
         <div className="invisible light"></div>
@@ -111,7 +103,7 @@ export default function ThemeWrapper ({ hideNavbar, children }: Props) {
                     </div>
                 </div>
                 <div id="offset-for-stickyness"></div>
-                {isDesktop && <GlobalFooter />}
+                {windowSize.width >= 1024 && <GlobalFooter />}
             </div>
         </main>
     </div>
