@@ -173,7 +173,7 @@ const Withdraw: FC = () => {
 const WalletTransferContent: FC = () => {
     const { address, connector } = useAccount();
     const { openAccountModal } = useAccountModal();
-    const { starknetAccount, imxAccount } = useWalletState()
+    const { starknetAccount } = useWalletState()
     const { setStarknetAccount, setImxAccount } = useWalletUpdate()
 
     const { layers, resolveImgSrc } = useSettingsState()
@@ -227,11 +227,12 @@ const WalletTransferContent: FC = () => {
 
     const networkAccount = useWalletStore((state) => state.networks[source_network?.internal_name])
     const accountAddress = networkAccount?.address
+    console.log(networkAccount)
     const addNetwork = useWalletStore((state) => state.addNetwork)
 
     useEffect(() => {
-        addNetwork(address, source_network, swap, starknetAccount, imxAccount)
-    }, [accountAddress, address, source_network, swap, starknetAccount, imxAccount])
+        addNetwork(address, source_network, swap)
+    }, [accountAddress, address, source_network, swap])
 
     const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap.source_exchange
 
