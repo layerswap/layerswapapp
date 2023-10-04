@@ -154,11 +154,11 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                 )}
                                             </Field>
                                         </div>
-                                        <div className='text-primary-text mt-3'>
+                                        <div className='p-3 text-primary-text mt-3'>
                                             <ul className='space-y-3'>
                                                 <li className='flex gap-3'>
                                                     <div>
-                                                        <ScrollText className='h-6 w-6 mt-0.5' />
+                                                        <ScrollText className='h-5 w-5 mt-0.5 text-primary' />
                                                     </div>
                                                     <div>
                                                         <p className='font-semibold'>History</p>
@@ -169,7 +169,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                 </li>
                                                 <li className='flex gap-3'>
                                                     <div>
-                                                        <Mail className='h-6 w-6 mt-0.5' />
+                                                        <Mail className='h-5 w-5 mt-0.5 text-primary' />
                                                     </div>
                                                     <div>
                                                         <p className='font-semibold'>Email notifications</p>
@@ -180,7 +180,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                 </li>
                                                 <li className='flex gap-3'>
                                                     <div>
-                                                        <Album className='h-6 w-6 mt-0.5' />
+                                                        <Album className='h-5 w-5 mt-0.5 text-primary' />
                                                     </div>
                                                     <div>
                                                         <p className='font-semibold'>Same deposit addresses</p>
