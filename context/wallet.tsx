@@ -73,7 +73,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
     }
 
     async function getGas(from: Layer, currency: Currency, userDestinationAddress: string) {
-        if (!!!from){
+        if (!!!from) {
             return
         }
 
@@ -83,7 +83,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         const nativeToken = from.isExchange === false && from?.assets.find(a => a.asset === (from as { native_currency: string }).native_currency)
         const isGasOutDated = new Date().getTime() - (new Date(allGases[from.internal_name]?.find(g => g?.token === currency?.asset)?.request_time).getTime() || 0) > 10000
 
-        if (chainId && isGasOutDated && currency && destination_address) {
+        if (chainId && isGasOutDated && currency && destination_address && from?.isExchange === false && from?.type === NetworkType.EVM) {
             setIsGasLoading(true)
             try {
                 const publicClient = createPublicClient({
