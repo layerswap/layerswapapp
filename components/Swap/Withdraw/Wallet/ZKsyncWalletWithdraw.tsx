@@ -4,12 +4,14 @@ import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 import * as zksync from 'zksync';
-import { providers, utils } from 'ethers';
+import { ethers, providers, utils } from 'ethers';
 import { useEthersProvider, useEthersSigner } from '../../../../lib/ethersToViem/ethers';
 import { useSwapTransactionStore } from '../../../store/zustandStore';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSwapDataState } from '../../../../context/swap';
 import { ConnectWalletButton } from './WalletTransfer/buttons';
+import { useSettingsState } from '../../../../context/settings';
+import { Network } from 'zksync/build/types';
 
 type Props = {
     depositAddress: string,
@@ -26,8 +28,13 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [syncWallet, setSyncWallet] = useState<zksync.Wallet | zksync.RemoteWallet>(null);
     const [depositReceipt, setDepositReceipt] = useState<any>(null);
     const [transfer, setTransfer] = useState<any>(null);
-    const signer = useEthersSigner()
-    const provider = useEthersProvider({chainId:1});
+    const signer = useEthersSigner();
+
+    const { networks } = useSettingsState()
+    const { source_network: source_network_internal_name } = swap
+    const source_network = networks.find(n => n.internal_name === source_network_internal_name)
+    const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
+    const defaultProvider = swap?.source_network?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "georli";
 
     useEffect(() => {
         if (depositReceipt?.success) {
@@ -41,13 +48,13 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const handleConnect = async () => {
         setLoading(true)
         try {
-            const syncProvider = await zksync.getDefaultProvider('mainnet');
-            const wallet = await zksync.RemoteWallet.fromEthSigner(signer.provider as providers.Web3Provider, syncProvider);
+            const syncProvider = await zksync.getDefaultProvider(defaultProvider as Network);
+            const wallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
+            wallet.getAccountState()
             setSyncWallet(wallet);
             setZkSyncAccount(wallet.cachedAddress);
         }
         catch (e) {
-            console.log(e)
             toast(e.message)
         }
         setLoading(false)
@@ -56,32 +63,15 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const handleTransfer = async () => {
         setLoading(true)
         try {
-            if (syncWallet) {
-                setZkSyncAccount(syncWallet.cachedAddress);
-                const tf = await syncWallet.syncTransfer({
-                    to: depositAddress,
-                    token: 'ETH',
-                    amount: zksync.closestPackableTransactionAmount(utils.parseEther(amount.toString())),
-                    validUntil: zksync.utils.MAX_TIMESTAMP - swap.sequence_number,
-                });
-                setTransfer(tf)
-                const res = await tf.awaitReceipt();
-                setDepositReceipt(res);
-            } else {
-                const syncProvider = await zksync.getDefaultProvider('mainnet');
-                const sw = await zksync.Wallet.fromEthSigner(signer, syncProvider);
-
-                setZkSyncAccount(sw.cachedAddress);
-                const tf = await sw.syncTransfer({
-                    to: depositAddress,
-                    token: 'ETH',
-                    amount: zksync.closestPackableTransactionAmount(utils.parseEther(amount.toString())),
-                    validUntil: zksync.utils.MAX_TIMESTAMP - swap.sequence_number,
-                });
-                setTransfer(tf)
-                const res = await tf.awaitReceipt();
-                setDepositReceipt(res);
-            }
+            const tf = await syncWallet.syncTransfer({
+                to: depositAddress,
+                token: swap?.source_network_asset,
+                amount: zksync.closestPackableTransactionAmount(utils.parseUnits(amount.toString(), source_currency?.decimals)),
+                validUntil: zksync.utils.MAX_TIMESTAMP - swap?.sequence_number,
+            });
+            setTransfer(tf)
+            const res = await tf.awaitReceipt();
+            setDepositReceipt(res);
         }
         catch (e) {
             if (e?.message)
@@ -105,13 +95,13 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                         <GuideLink text={source_network?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex' />
                     </WarningMessage> */}
                     {
-                        !zkSyncAccount &&
+                        !syncWallet &&
                         <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Connect
                         </SubmitButton>
                     }
                     {
-                        zkSyncAccount &&
+                        syncWallet &&
                         <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>

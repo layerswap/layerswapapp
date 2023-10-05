@@ -65,20 +65,21 @@ const WalletTransfer: FC = () => {
         return <Wrapper>
             <ZkSyncWalletWithdrawStep depositAddress={depositAddress} amount={requested_amount} />
         </Wrapper>
-    return <Wrapper>
-        <TransferFromWallet
-            sequenceNumber={swap.sequence_number}
-            swapId={swap.id}
-            networkDisplayName={source_network?.display_name}
-            tokenDecimals={sourceAsset?.decimals}
-            tokenContractAddress={sourceAsset?.contract_address as `0x${string}`}
-            chainId={sourceChainId as number}
-            depositAddress={depositAddress as `0x${string}`}
-            userDestinationAddress={swap.destination_address as `0x${string}`}
-            amount={requested_amount}
-            asset={sourceAsset?.asset}
-        />
-    </Wrapper>
+    else
+        return <Wrapper>
+            <TransferFromWallet
+                sequenceNumber={swap.sequence_number}
+                swapId={swap.id}
+                networkDisplayName={source_network?.display_name}
+                tokenDecimals={sourceAsset?.decimals}
+                tokenContractAddress={sourceAsset?.contract_address as `0x${string}`}
+                chainId={sourceChainId as number}
+                depositAddress={depositAddress as `0x${string}`}
+                userDestinationAddress={swap.destination_address as `0x${string}`}
+                amount={requested_amount}
+                asset={sourceAsset?.asset}
+            />
+        </Wrapper>
 
 }
 
