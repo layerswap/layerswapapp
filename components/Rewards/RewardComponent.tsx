@@ -167,7 +167,7 @@ function RewardComponent() {
                                                         </BackgroundField>
                                                     </div>
                                                 </div>
-                                                {!isCampaignEnded && <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
+                                                <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
                                                     <BackgroundField header={
                                                         <>
                                                             <p className="flex items-center"><span>{campaign?.asset} pool</span>
@@ -182,7 +182,7 @@ function RewardComponent() {
                                                             </div>
                                                         </div>
                                                     </BackgroundField>
-                                                </div>}
+                                                </div>
                                                 {
                                                     payouts.length > 0 &&
                                                     <div className="space-y-1">
