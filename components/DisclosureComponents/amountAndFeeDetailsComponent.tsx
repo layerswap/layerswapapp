@@ -129,7 +129,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                     </AccordionItem>
                 </Accordion>
             </div>
-            {campaign && !isCampaignEnded &&
+            {campaign && campaign?.status === 'active' &&
                 <motion.div
                     initial={{ y: "-100%" }}
                     animate={{
