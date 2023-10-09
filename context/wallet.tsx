@@ -84,7 +84,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
     }
 
     async function getGas(from: Layer & { isExchange: false }, currency: Currency, userDestinationAddress: string) {
-        if (!!!from || !address) {
+        if (!from || !address) {
             return
         }
 
@@ -101,7 +101,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         const gas = allGases[from.internal_name]?.find(g => g?.token === currency?.asset)
         const isGasOutDated = !gas || new Date().getTime() - (new Date(gas.request_time).getTime() || 0) > 10000
 
-        if (chainId && isGasOutDated && currency && destination_address) {
+        if (chainId && isGasOutDated && currency && destination_address && from?.isExchange === false && from?.type === NetworkType.EVM) {
             setIsGasLoading(true)
             try {
                 const network = from.assets?.[0].network
