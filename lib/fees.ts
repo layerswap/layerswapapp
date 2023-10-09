@@ -7,7 +7,7 @@ import { Currency } from "../Models/Currency";
 import { Layer } from "../Models/Layer";
 import KnownInternalNames from "./knownIds";
 
-export function GetExchangeFee(asset?: string, layer?: Layer): number {
+export function GetExchangeFee(asset?: string, layer?: Layer | null): number {
     if (!layer?.isExchange)
         return 0
     return layer?.assets?.find(ec => ec.asset === asset)?.withdrawal_fee || 0
@@ -38,15 +38,15 @@ export function CaluclateRefuelAmount(
     let refuelAmountInSelectedCurrency = 0;
     let refuelAmountInNativeCurrency = 0;
 
-    if (!destinationLayer?.isExchange && destinationNetworkCurrency.is_refuel_enabled && destinationNetwork.refuel_amount_in_usd > 0 && currency.usd_price > 0 && destinationNetworkNativeAsset.usd_price > 0) {
-        refuelAmountInSelectedCurrency += destinationNetwork.refuel_amount_in_usd / currency.usd_price;
-        refuelAmountInNativeCurrency += destinationNetwork.refuel_amount_in_usd / destinationNetworkNativeAsset.usd_price;
+    if (!destinationLayer?.isExchange && destinationNetworkCurrency.is_refuel_enabled && Number(destinationNetwork?.refuel_amount_in_usd) > 0 && currency.usd_price > 0 && destinationNetworkNativeAsset.usd_price > 0) {
+        refuelAmountInSelectedCurrency += Number(destinationNetwork?.refuel_amount_in_usd) / currency.usd_price;
+        refuelAmountInNativeCurrency += Number(destinationNetwork?.refuel_amount_in_usd) / destinationNetworkNativeAsset.usd_price;
     }
 
     return { refuelAmountInSelectedCurrency, refuelAmountInNativeCurrency };
 }
 
-export function CanDoSweeplessTransfer(sourceLayer: Layer, sourceAddress?: string, destinationAddress?: string): boolean {
+export function CanDoSweeplessTransfer(sourceLayer: Layer, sourceAddress?: string | null, destinationAddress?: string | null): boolean {
     if (sourceLayer?.isExchange == false
         && ([NetworkType.EVM, NetworkType.Starknet].includes(sourceLayer.type) || sourceAddress?.toLowerCase() === destinationAddress?.toLowerCase())
     ) {
@@ -113,14 +113,14 @@ export function CalculateMaxAllowedAmount(values: SwapFormValues, balances?: str
     if (balances) {
         try {
             let balancesTyped = upperCaseKeys(JSON.parse(balances))
-            if (balancesTyped && balancesTyped[currency.asset] && balancesTyped[currency.asset] > minAllowedAmount) {
+            if (balancesTyped && balancesTyped[currency.asset] && balancesTyped[currency.asset] > Number(minAllowedAmount)) {
                 maxAmount = Math.min(maxAmount, balancesTyped[currency.asset]);
             }
         }
         // in case the query parameter had bad formatting just ignoe
         catch { }
-    } else if (walletBalance && (walletBalance >= minAllowedAmount && walletBalance <= maxAmount)) {
-        return walletBalance - gas
+    } else if (walletBalance && (walletBalance >= Number(minAllowedAmount) && walletBalance <= maxAmount)) {
+        return walletBalance - Number(gas)
     }
     return maxAmount || 0
 }
@@ -148,7 +148,7 @@ export function CalculateMinAllowedAmount(values: SwapFormValues, allNetworks: C
     const sourceNetworkCurrency = GetNetworkCurrency(sourceLayer, asset)
 
     const { refuelAmountInSelectedCurrency } = CaluclateRefuelAmount(values, allCurrencies);
-    minAmount += (sourceNetworkCurrency?.source_base_fee + destinationNetworkCurrency?.destination_base_fee) + refuelAmountInSelectedCurrency
+    minAmount += (Number(sourceNetworkCurrency?.source_base_fee) + Number(destinationNetworkCurrency?.destination_base_fee)) + refuelAmountInSelectedCurrency
 
     return roundDecimals(minAmount * 1.2, currency?.usd_price?.toFixed()?.length) || 0
 }

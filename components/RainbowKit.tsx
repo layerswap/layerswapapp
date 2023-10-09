@@ -2,7 +2,8 @@ import "@rainbow-me/rainbowkit/styles.css";
 import {
     darkTheme,
     connectorsForWallets,
-    RainbowKitProvider
+    RainbowKitProvider,
+    DisclaimerComponent
 } from '@rainbow-me/rainbowkit';
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 import { publicProvider } from 'wagmi/providers/public';
@@ -11,6 +12,8 @@ import { useSettingsState } from "../context/settings";
 import { WagmiConfig, configureChains, createConfig } from "wagmi";
 import { NetworkType } from "../Models/CryptoNetwork";
 import resolveChain from "../lib/resolveChain";
+import React from "react";
+import NoCookies from "./NoCookies";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -19,9 +22,11 @@ type Props = {
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
 
-    const settingsChains = settings.networks.sort((a, b) => Number(a.chain_id) - Number(b.chain_id)).filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0)).map(n => {
+
+
+    const settingsChains = settings?.networks?.sort((a, b) => Number(a.chain_id) - Number(b.chain_id)).filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0)).map(n => {
         return resolveChain(n)
-    })
+    }) || []
 
     const { chains, publicClient } = configureChains(
         settingsChains,
@@ -71,7 +76,7 @@ function RainbowKitComponent({ children }: Props) {
         publicClient,
     })
 
-    const disclaimer = ({ Text }) => (
+    const disclaimer: DisclaimerComponent = ({ Text }) => (
         <Text>
             Thanks for choosing Layerswap!
         </Text>

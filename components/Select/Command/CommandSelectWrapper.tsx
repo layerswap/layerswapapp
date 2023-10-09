@@ -7,7 +7,7 @@ import CommandSelect, { SelectMenuItemGroup } from './commandSelect'
 type CommandSelectWrapperProps = {
     setValue: (value: ISelectMenuItem) => void;
     values: ISelectMenuItem[];
-    value: ISelectMenuItem;
+    value?: ISelectMenuItem;
     placeholder: string;
     searchHint: string;
     disabled: boolean;

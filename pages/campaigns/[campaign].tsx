@@ -8,8 +8,9 @@ import { getServerSideProps } from '../../helpers/getSettings'
 import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings'
 
 export default function RewardsPage({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-    LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
+
     let appSettings = new LayerSwapAppSettings(settings)
+    LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
 
     return (<>
         <Layout settings={appSettings}>

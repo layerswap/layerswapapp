@@ -2,7 +2,7 @@ import { Gift } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback } from "react";
 import { ApiResponse } from "../../Models/ApiResponse";
-import LayerSwapApiClient, { Campaigns } from "../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { Campaign } from "../../lib/layerSwapApiClient";
 import HeaderWithMenu from "../HeaderWithMenu";
 import SpinIcon from "../icons/spinIcon";
 import useSWR from 'swr'
@@ -15,13 +15,12 @@ const Rewards = () => {
     const { layers, resolveImgSrc } = useSettingsState()
     const router = useRouter();
     const apiClient = new LayerSwapApiClient()
-    const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaigns[]>>('/campaigns', apiClient.fetcher)
+    const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
     const campaigns = campaignsData?.data
     const now = new Date()
 
-    const activeCampaigns = campaigns?.filter(c => Math.round(((new Date(c?.end_date).getTime() - now.getTime()) / (1000 * 3600 * 24))) < 0 ? false : true)
-    const inactiveCampaigns = campaigns?.filter(c => Math.round(((new Date(c?.end_date).getTime() - now.getTime()) / (1000 * 3600 * 24))) < 0 ? true : false)
-
+    const activeCampaigns = campaigns?.filter(c => Math.round(((new Date(c?.end_date).getTime() - now.getTime()) / (1000 * 3600 * 24))) < 0 ? false : true) || []
+    const inactiveCampaigns = campaigns?.filter(c => Math.round(((new Date(c?.end_date).getTime() - now.getTime()) / (1000 * 3600 * 24))) < 0 ? true : false) || []
     const handleGoBack = useCallback(() => {
         router.back()
     }, [router])
@@ -36,21 +35,21 @@ const Rewards = () => {
                         <div className="bg-secondary-700 border border-secondary-700 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg">
                             <div className="p-3">
                                 {
-                                    activeCampaigns?.length > 0 ?
+                                    activeCampaigns.length > 0 ?
                                         activeCampaigns.map(c => {
-                                            const campaignLayer = layers?.find(l => l.internal_name === c.network)
+                                            const campaignLayer = layers.find(l => l.internal_name === c.network)
                                             const campaignDaysLeft = ((new Date(c.end_date).getTime() - new Date().getTime()) / 86400000).toFixed()
                                             return (
                                                 <LinkWrapper href={`/campaigns/${c.name}`} className="flex justify-between items-center" key={c.name}>
                                                     <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
                                                         <span className="h-5 w-5 relative">
-                                                            <Image
+                                                            {campaignLayer && <Image
                                                                 src={resolveImgSrc(campaignLayer)}
                                                                 alt="Project Logo"
                                                                 height="40"
                                                                 width="40"
                                                                 loading="eager"
-                                                                className="rounded-md object-contain" />
+                                                                className="rounded-md object-contain" />}
                                                         </span>
                                                         <span className="font-semibold text-base text-left flex items-center">{c?.display_name} </span>
                                                     </span>
@@ -70,24 +69,24 @@ const Rewards = () => {
                         </div>
                     </div>
                     {
-                        inactiveCampaigns?.length > 0 &&
+                        inactiveCampaigns.length > 0 &&
                         <div className="space-y-2">
                             <p className="font-bold text-left leading-5">Old campaigns</p>
                             <div className="bg-secondary-700 border border-secondary-700 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg">
                                 <div className="p-3 flex flex-col space-y-2">
                                     {inactiveCampaigns.map(c => {
-                                        const campaignLayer = layers?.find(l => l.internal_name === c.network)
+                                        const campaignLayer = layers.find(l => l.internal_name === c.network)
                                         return (
                                             <LinkWrapper href={`/campaigns/${c.name}`} className="flex items-center justify-between" key={c.name}>
                                                 <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
                                                     <span className="h-5 w-5 relative">
-                                                        <Image
+                                                        {campaignLayer && <Image
                                                             src={resolveImgSrc(campaignLayer)}
                                                             alt="Project Logo"
                                                             height="40"
                                                             width="40"
                                                             loading="eager"
-                                                            className="rounded-md object-contain" />
+                                                            className="rounded-md object-contain" />}
                                                     </span>
                                                     <span className="font-semibold text-base text-left flex items-center">{c?.display_name} </span>
                                                 </span>

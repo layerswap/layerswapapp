@@ -1,21 +1,22 @@
-import React, { useEffect } from "react"
+import React from "react"
 import Head from "next/head"
 import { useRouter } from "next/router";
-import QueryProvider from "../context/query";
 import ThemeWrapper from "./themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";
-import { QueryParams } from "../Models/QueryParams";
 import MaintananceContent from "./maintanance/maintanance";
 import { AuthProvider } from "../context/authContext";
-import NoCookies from "./NoCookies";
-import useStorage from "../hooks/useStorage";
-import RainbowKitComponent from "./RainbowKit";
 import { SettingsProvider } from "../context/settings";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { MenuProvider } from "../context/menu";
 import ErrorFallback from "./ErrorFallback";
 import { SendErrorMessage } from "../lib/telegram";
+import dynamic from 'next/dynamic'
+import LayerSwapLogo from "./icons/layerSwapLogo";
+import CardContainer from "./cardContainer";
+import { QueryParams } from "../Models/QueryParams";
+import QueryProvider from "../context/query";
+import RainbowKit from "./RainbowKit";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -26,14 +27,7 @@ type Props = {
 
 export default function Layout({ hideNavbar, children, settings }: Props) {
   const router = useRouter();
-  const { storageAvailable } = useStorage();
   let appSettings = new LayerSwapAppSettings(settings);
-
-  function logErrorToService(error, info) {
-    if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
-      SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
-    }
-  }
 
   const query: QueryParams = {
     ...router.query,
@@ -61,20 +55,18 @@ export default function Layout({ hideNavbar, children, settings }: Props) {
     ...(router.query.lockAsset === 'false' ? { lockAsset: false } : {}),
   };
 
-  useEffect(() => {
-    function prepareUrl(params) {
-      const url = new URL(location.href)
-      const queryParams = new URLSearchParams(location.search)
-      let customUrl = url.protocol + "//" + url.hostname + url.pathname.replace(/\/$/, '')
-      for (const paramName of params) {
-        const paramValue = queryParams.get(paramName)
-        if (paramValue) customUrl = customUrl + '/' + paramValue
-      }
-      return customUrl
+  function logErrorToService(error, info) {
+    if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
+      SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
     }
-    plausible('pageview', { u: prepareUrl(['destNetwork', 'sourceExchangeName', 'addressSource', 'asset', 'amount']) })
-  }, [])
+  }
+
   const basePath = router?.basePath ?? ""
+
+  const DynamicRainbowKit = dynamic(() => import("./RainbowKit"), {
+    loading: () => <></>
+  })
+
   return (<>
     <Head>
       <title>Layerswap</title>
@@ -102,26 +94,22 @@ export default function Layout({ hideNavbar, children, settings }: Props) {
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
 
     </Head>
-    {
-      storageAvailable === true &&
+    <QueryProvider query={query}>
       <SettingsProvider data={appSettings}>
-        <RainbowKitComponent>
-          <MenuProvider>
-            <AuthProvider>
-              <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
-                <QueryProvider query={query}>
-                  <ThemeWrapper hideNavbar={hideNavbar}>
-                    {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ? <MaintananceContent /> : children}
-                  </ThemeWrapper>
-                </QueryProvider>
-              </ErrorBoundary>
-            </AuthProvider>
-          </MenuProvider>
-        </RainbowKitComponent>
-      </SettingsProvider>
-    }
-    {storageAvailable === false &&
-      <NoCookies />
-    }
+        <MenuProvider>
+          <AuthProvider>
+            <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+              <ThemeWrapper hideNavbar={false}>
+                <RainbowKit>
+                  {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                    <MaintananceContent />
+                    : children}
+                </RainbowKit>
+              </ThemeWrapper>
+            </ErrorBoundary>
+          </AuthProvider>
+        </MenuProvider>
+      </SettingsProvider >
+    </QueryProvider>
   </>)
 }

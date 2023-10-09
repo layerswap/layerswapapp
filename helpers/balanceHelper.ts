@@ -1,17 +1,17 @@
 import { erc20ABI } from 'wagmi';
-import { encodeFunctionData, PublicClient, formatGwei, EstimateFeesPerGasReturnType, serializeTransaction, TransactionSerializedEIP1559 } from 'viem'
+import { encodeFunctionData, PublicClient, formatGwei, serializeTransaction, TransactionSerializedEIP1559 } from 'viem'
 import { multicall, fetchBalance, FetchBalanceResult } from '@wagmi/core'
-import { BaseL2Asset, Layer } from '../Models/Layer';
+import { BaseL2Asset, Layer, NetworkAsset } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
 import { getL1Fee } from '../lib/optimism/estimateFees';
 import NetworkSettings, { GasCalculation } from '../lib/NetworkSettings';
 
 export type ERC20ContractRes = ({
     error: Error;
-    result?: undefined;
+    result?: undefined | null;
     status: "failure";
 } | {
-    error?: undefined;
+    error?: undefined | null;
     result: unknown;
     status: "success";
 })
@@ -29,10 +29,10 @@ export type Gas = {
     token: string,
     gas: number,
     gasDetails?: {
-        gasLimit: number,
-        maxFeePerGas: number,
-        gasPrice: number,
-        maxPriorityFeePerGas: number
+        gasLimit?: number | null | undefined,
+        maxFeePerGas?: number | null | undefined,
+        gasPrice?: number | null | undefined,
+        maxPriorityFeePerGas?: number | null | undefined
     },
     request_time: string
 }
@@ -40,44 +40,70 @@ export type Gas = {
 type ResolveGasArguments = {
     publicClient: PublicClient,
     chainId: number,
-    contract_address?: `0x${string}`,
-    account?: `0x${string}`,
-    from: Layer,
-    currency?: Currency,
-    destination?: `0x${string}`
-    nativeToken: BaseL2Asset,
+    contract_address: `0x${string}`,
+    account: `0x${string}`,
+    from: Layer & { isExchange: false },
+    currency: Currency,
+    destination: `0x${string}`
+    nativeToken: NetworkAsset | null | undefined,
     isSweeplessTx: boolean
 }
 
 export const resolveFeeData = async (publicClient: PublicClient) => {
 
-    let gasPrice: bigint
-    let feesPerGas: EstimateFeesPerGasReturnType
-    let maxPriorityFeePerGas: bigint
+    let gasPrice = await getGasPrice(publicClient);
+    let feesPerGas = await estimateFeesPerGas(publicClient)
+    let maxPriorityFeePerGas = await estimateMaxPriorityFeePerGas(publicClient)
 
+    return {
+        gasPrice,
+        maxFeePerGas: feesPerGas?.maxFeePerGas,
+        maxPriorityFeePerGas: maxPriorityFeePerGas
+    }
+}
+
+const getGasPrice = async (publicClient: PublicClient) => {
     try {
-        gasPrice = await publicClient.getGasPrice()
-        feesPerGas = await publicClient.estimateFeesPerGas()
-        maxPriorityFeePerGas = await publicClient.estimateMaxPriorityFeePerGas()
+        return await publicClient.getGasPrice()
 
     } catch (e) {
         //TODO: log the error to our logging service
         console.log(e)
     }
-
-    return { gasPrice: gasPrice, maxFeePerGas: feesPerGas?.maxFeePerGas, maxPriorityFeePerGas: maxPriorityFeePerGas }
 }
+const estimateFeesPerGas = async (publicClient: PublicClient) => {
+    try {
+        return await publicClient.estimateFeesPerGas()
+
+    } catch (e) {
+        //TODO: log the error to our logging service
+        console.log(e)
+    }
+}
+const estimateMaxPriorityFeePerGas = async (publicClient: PublicClient) => {
+    try {
+        return await publicClient.estimateMaxPriorityFeePerGas()
+
+    } catch (e) {
+        //TODO: log the error to our logging service
+        console.log(e)
+    }
+}
+
 
 export const resolveERC20Balances = async (
     multicallRes: ERC20ContractRes[],
     from: Layer & { isExchange: false },
 ) => {
+    const assets = from?.assets?.filter(a => a.contract_address && a.status !== 'inactive')
+    if (!assets)
+        return null
     const contractBalances = multicallRes?.map((d, index) => {
-        const currency = from?.assets?.filter(a => a.contract_address && a.status !== 'inactive')[index]
+        const currency = assets[index]
         return {
             network: from.internal_name,
             token: currency.asset,
-            amount: formatAmount(d.result, currency?.decimals),
+            amount: formatAmount(d.result, currency.decimals),
             request_time: new Date().toJSON(),
             decimals: currency.decimals,
             isNativeCurrency: false,
@@ -88,7 +114,7 @@ export const resolveERC20Balances = async (
 type GetBalanceArgs = {
     address: string,
     chainId: number,
-    assets: BaseL2Asset[],
+    assets: NetworkAsset[],
     publicClient: PublicClient,
     hasMulticall: boolean
 }
@@ -129,7 +155,7 @@ export const getErc20Balances = async ({
                     balances.push({
                         status: "success",
                         result: balance,
-                        error: null
+                        error: undefined
                     })
                 }
                 catch (e) {
@@ -172,9 +198,13 @@ export const resolveNativeBalance = async (
     nativeTokenRes: FetchBalanceResult
 ) => {
     const native_currency = from.assets.find(a => a.asset === from.native_currency)
+    if (!native_currency) {
+        return null
+    }
+
     const nativeBalance: Balance = {
         network: from.internal_name,
-        token: from.native_currency,
+        token: native_currency.asset,
         amount: formatAmount(nativeTokenRes?.value, native_currency?.decimals),
         request_time: new Date().toJSON(),
         decimals: native_currency.decimals,
@@ -267,7 +297,7 @@ export const resolveGas = async (options: ResolveGasArguments) => {
 
     let totalGas = feeData?.maxFeePerGas
         ? (feeData?.maxFeePerGas * estimatedGasLimit)
-        : (feeData?.gasPrice * estimatedGasLimit)
+        : ((feeData?.gasPrice || BigInt(1)) * estimatedGasLimit)
 
     const gasCalculationType = NetworkSettings.KnownSettings[options.from.internal_name].GasCalculationType
 
@@ -288,8 +318,8 @@ export const resolveGas = async (options: ResolveGasArguments) => {
     }
 }
 
-export const formatAmount = (unformattedAmount: bigint | unknown, decimals: number) => {
-    return (Number(BigInt(unformattedAmount?.toString() || 0)) / Math.pow(10, decimals))
+export const formatAmount = (unformattedAmount: bigint | unknown, decimals: number | null | undefined) => {
+    return (Number(BigInt(unformattedAmount?.toString() || 0)) / Math.pow(10, decimals || 1))
 }
 
 // Data is just "0x" for a non-contract (native token) transaction

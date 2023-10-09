@@ -9,8 +9,9 @@ import { getServerSideProps } from '../helpers/getSettings';
 
 export default function Salon({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const router = useRouter();
-    LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
     let appSettings = new LayerSwapAppSettings(settings)
+    LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
+  
 
     useEffect(() => {
         const temp_data = getTempData()

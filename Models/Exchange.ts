@@ -8,6 +8,7 @@ export class Exchange {
     currencies: (ExchangeCurrency & NetworkCurrency)[];
     status: LayerStatus;
     type: "cex" | "fiat";
+    created_date: string;
     is_featured: boolean;
 }
 

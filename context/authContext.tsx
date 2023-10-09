@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { Context, useCallback, useEffect, useState } from 'react'
 import { parseJwt } from '../lib/jwtParser';
 import TokenService from '../lib/TokenService';
 
 export const AuthStateContext = React.createContext<AuthState>({ authData: undefined, email: undefined, codeRequested: undefined, guestAuthData: undefined, tempEmail: undefined, userId: undefined, userLockedOut: false, userType: undefined });
-export const AuthDataUpdateContext = React.createContext<UpdateInterface>(null);
+export const AuthDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 type AuthState = {
     email?: string,
@@ -17,12 +17,12 @@ type AuthState = {
 }
 
 export type UpdateInterface = {
-    updateTempEmail?: (email: string) => void,
-    updateAuthData?: (data: any) => void,
-    getAuthData?: () => (AuthData | undefined),
-    setCodeRequested?: (codeSubmitted: boolean) => void;
-    setUserLockedOut?: (value: boolean) => void;
-    setUserType?: (value: UserType) => void
+    updateTempEmail: (email: string) => void,
+    updateAuthData: (data: any) => void,
+    getAuthData: () => (AuthData | null | undefined),
+    setCodeRequested: (codeSubmitted: boolean) => void;
+    setUserLockedOut: (value: boolean) => void;
+    setUserType: (value: UserType) => void
 }
 
 export function AuthProvider({ children }) {
@@ -104,7 +104,7 @@ export function useAuthState() {
 
 
 export function useAuthDataUpdate() {
-    const updateFns = React.useContext<UpdateInterface>(AuthDataUpdateContext);
+    const updateFns = React.useContext<UpdateInterface>(AuthDataUpdateContext as Context<UpdateInterface>);
 
     if (updateFns === undefined) {
         throw new Error('useAuthDataUpdate must be used within a AuthDataProvider');

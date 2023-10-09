@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { GetDefaultNetwork, GetNetworkCurrency } from '../../helpers/settingsHelper';
 import { ApiResponse } from '../../Models/ApiResponse';
-import LayerSwapApiClient, { Campaigns } from '../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { Campaign } from '../../lib/layerSwapApiClient';
 import useSWR from 'swr'
 import AverageCompletionTime from '../Common/AverageCompletionTime';
 import { useWalletState } from '../../context/wallet';
@@ -17,34 +17,47 @@ import { NetworkType } from '../../Models/CryptoNetwork';
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
     const { networks, currencies, resolveImgSrc } = useSettingsState()
     const { currency, from, to } = values || {}
+    const { gases, isGasLoading } = useWalletState()
+    const apiClient = new LayerSwapApiClient()
+    //handle error case
+    const { data: campaignsData } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
+
+    if (!(currency && from && to)) {
+        return <></>
+    }
 
     let exchangeFee = parseFloat(GetExchangeFee(currency?.asset, from).toFixed(currency?.precision))
     let fee = CalculateFee(values, networks);
     const parsedFee = parseFloat(fee.toFixed(currency?.precision))
     let receive_amount = CalculateReceiveAmount(values, networks, currencies);
     const asset = currency?.asset
-    const apiClient = new LayerSwapApiClient()
-    //handle error case
-    const { data: campaignsData } = useSWR<ApiResponse<Campaigns[]>>('/campaigns', apiClient.fetcher)
     const campaign = campaignsData?.data?.find(c => c?.network === to?.internal_name)
     const parsedReceiveAmount = parseFloat(receive_amount.toFixed(currency?.precision))
 
     const campaignAsset = currencies.find(c => c?.asset === campaign?.asset)
-    const feeinUsd = fee * currency?.usd_price
-    const reward = truncateDecimals(((feeinUsd * campaign?.percentage / 100) / campaignAsset?.usd_price), campaignAsset?.precision)
-    const isCampaignEnded = Math.round(((new Date(campaign?.end_date).getTime() - new Date().getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
+    const feeinUsd = fee * (currency?.usd_price || 1)
+    const reward = truncateDecimals(((feeinUsd * (campaign?.percentage || 0) / 100) / (campaignAsset?.usd_price || 1)), (campaignAsset?.precision || 0))
+    const isCampaignEnded = campaign?.end_date && Math.round(((new Date(campaign?.end_date).getTime() - new Date().getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
 
-    const destination_native_currency = !to?.isExchange
-        && GetDefaultNetwork(to, asset)?.native_currency
+    const destination_native_currency = GetDefaultNetwork(to, asset)?.native_currency
 
-    const destinationNetworkCurrency = GetNetworkCurrency(to, currency?.asset)
+    const destinationNetworkCurrency = GetNetworkCurrency(to, currency.asset)
+
     const refuel_native_currency = currencies.find(c => c.asset === destination_native_currency)
-    const refuel = truncateDecimals(CaluclateRefuelAmount(values, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision)
+    const refuel = refuel_native_currency && truncateDecimals(CaluclateRefuelAmount(values, currencies).refuelAmountInNativeCurrency, refuel_native_currency?.precision)
     const currencyName = currency?.asset || " "
 
     const destinationNetwork = GetDefaultNetwork(to, currency?.asset)
-    const { gases, isGasLoading } = useWalletState()
-    const networkGas = gases?.[values.from?.internal_name]?.find(g => g.token === values.currency?.asset)?.gas
+
+    const networkGas = values.from?.internal_name ?
+        gases?.[values.from?.internal_name]?.find(g => g.token === values.currency?.asset)?.gas : null
+
+    const source_native_currnecy = from?.isExchange === false
+        && from ?
+        currencies.find(a => a.asset === from.native_currency) : null
+
+    const estimatedGas = (from?.type === NetworkType.EVM && networkGas && source_native_currnecy) ?
+        truncateDecimals(networkGas, source_native_currnecy?.precision) : null
 
     return (
         <>
@@ -108,7 +121,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
                                         Estimated gas
                                     </label>
                                     <div className="text-right flex items-center gap-1">
-                                        {isGasLoading ? <div className='h-[10px] w-10 bg-gray-500 rounded-sm animate-pulse' /> : truncateDecimals(networkGas, currencies.find(a => a.asset === from.native_currency).precision)} <span>{from?.native_currency}</span>
+                                        {isGasLoading ? <div className='h-[10px] w-10 bg-gray-500 rounded-sm animate-pulse' /> : estimatedGas} <span>{from?.native_currency}</span>
                                     </div>
                                 </div>
                             }

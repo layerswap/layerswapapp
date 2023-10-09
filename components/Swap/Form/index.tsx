@@ -1,6 +1,5 @@
 import { Formik, FormikProps } from "formik";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
@@ -16,20 +15,23 @@ import { useRouter } from "next/router";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
-import TokenService from "../../../lib/TokenService";
-import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
 import { ApiError, KnownErrorCode } from "../../../Models/ApiError";
 import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
+import Withdraw from "../Withdraw";
+import { useQueryState } from "../../../context/query";
+import TokenService from "../../../lib/TokenService";
+import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 
 type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
 
-export default function Form () {
+export default function Form() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
+    const [showSwapModal, setShowSwapModal] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const { swap } = useSwapDataState()
     const router = useRouter();
@@ -37,20 +39,23 @@ export default function Form () {
     const { updateAuthData, setUserType } = useAuthDataUpdate()
 
     const settings = useSettingsState();
-    const query = useQueryState();
+    const query = useQueryState()
     const { createSwap } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?name=${query?.addressSource}`, layerswapApiClient.fetcher)
-    const partner = query?.addressSource && partnerData?.data?.name?.toLowerCase() === query?.addressSource?.toLowerCase() ? partnerData?.data : undefined
+    const partner = query?.addressSource && partnerData?.data?.name?.toLowerCase() === (query?.addressSource as string)?.toLowerCase() ? partnerData?.data : undefined
 
     useEffect(() => {
         const initialValues = generateSwapInitialValues(settings, query)
-        formikRef.current.resetForm({ values: initialValues })
-        formikRef.current.validateForm(initialValues)
-        setLoading(false)
-    }, [query, settings])
+        formikRef?.current?.resetForm({ values: initialValues })
+        formikRef?.current?.validateForm(initialValues)
+    }, [])
 
+    useEffect(() => {
+        setShowSwapModal(!!swap)
+        setLoading(false)
+    }, [swap])
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
@@ -82,8 +87,11 @@ export default function Form () {
             else if (data?.code === KnownErrorCode.INVALID_ADDRESS_ERROR) {
                 toast.error(`Enter a valid ${values.to?.display_name} address`)
             }
-            else if (data?.code === KnownErrorCode.UNACTIVATED_ADDRESS_ERROR) {
-                setNetworkToConnect({ DisplayName: values.to?.display_name, AppURL: data.message })
+            else if (data?.code === KnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.to) {
+                setNetworkToConnect({
+                    DisplayName: values.to?.display_name,
+                    AppURL: data.message
+                })
                 setShowConnectNetworkModal(true);
             }
             else {
@@ -92,7 +100,7 @@ export default function Form () {
         }
     }, [createSwap, query, partner, router, updateAuthData, setUserType])
 
-    const destAddress: string = query.destAddress;
+    const destAddress: string = query?.destAddress as string;
 
     const isPartnerAddress = partner && destAddress;
 
@@ -102,7 +110,10 @@ export default function Form () {
 
     return <>
         <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
-            <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
+            {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
+        </Modal>
+        <Modal height="full" show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`}>
+            <Withdraw />
         </Modal>
         <Formik
             innerRef={formikRef}
@@ -111,7 +122,7 @@ export default function Form () {
             validate={MainStepValidation({ settings, query })}
             onSubmit={handleSubmit}
         >
-            <SwapForm loading={loading} isPartnerWallet={isPartnerWallet} partner={partner} />
+            <SwapForm loading={loading} isPartnerWallet={!!isPartnerWallet} partner={partner} />
         </Formik>
     </>
 }

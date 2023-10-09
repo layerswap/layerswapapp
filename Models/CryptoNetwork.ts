@@ -27,7 +27,7 @@ export class CryptoNetwork {
     is_featured: boolean;
     nodes: NetworkNode[];
     managed_accounts: ManagedAccount[];
-    metadata: Metadata;
+    metadata: Metadata | null | undefined;
 }
 
 export class NetworkCurrency {

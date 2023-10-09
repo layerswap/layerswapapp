@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowDown, Fuel } from "lucide-react";
+import { Fuel } from "lucide-react";
 import { useAccount } from "wagmi";
 import { FC } from "react";
 import { Currency } from "../../../Models/Currency";
@@ -7,7 +7,6 @@ import { Layer } from "../../../Models/Layer";
 import { useSettingsState } from "../../../context/settings";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import shortenAddress, { shortenEmail } from "../../utils/ShortenAddress";
-import { useQueryState } from "../../../context/query";
 import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
@@ -16,6 +15,8 @@ import { GetDefaultNetwork } from "../../../helpers/settingsHelper";
 import { useWalletState } from "../../../context/wallet";
 import KnownInternalNames from "../../../lib/knownIds";
 import { NetworkType } from "../../../Models/CryptoNetwork";
+import { useRouter } from "next/router";
+import { useQueryState } from "../../../context/query";
 
 type SwapInfoProps = {
     currency: Currency,
@@ -50,14 +51,14 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     const source = hideFrom ? partner : from
     const destination = hideTo ? partner : to
 
-    const sourceDisplayName = source?.display_name
-    const destinationDisplayName = destination?.display_name
-
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
     const receiveAmountInUsd = (currency?.usd_price * receiveAmount).toFixed(2)
-    const nativeCurrency = refuelAmount && to?.isExchange === false && currencies.find(c => c.asset === to?.native_currency)
-    const truncatedRefuelAmount = hasRefuel && truncateDecimals(refuelAmount, nativeCurrency?.precision)
-    const refuelAmountInUsd = (nativeCurrency?.usd_price * truncatedRefuelAmount).toFixed(2)
+    const nativeCurrency = refuelAmount && to?.isExchange === false ?
+        currencies.find(c => c.asset === to?.native_currency) : null
+
+    const truncatedRefuelAmount = (hasRefuel && refuelAmount) ?
+        truncateDecimals(refuelAmount, nativeCurrency?.precision) : null
+    const refuelAmountInUsd = ((nativeCurrency?.usd_price || 1) * (truncatedRefuelAmount || 0)).toFixed(2)
 
     const sourceNetworkType = GetDefaultNetwork(from, currency?.asset)?.type
     const sourceIsImmutableX = from?.internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
@@ -65,13 +66,14 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
 
     let sourceAccountAddress = ""
     if (hideFrom && account) {
-        sourceAccountAddress = shortenAddress(account);
+        sourceAccountAddress = shortenAddress(account as string);
     }
     else if (sourceNetworkType === NetworkType.EVM && evmAddress && !from?.isExchange) {
         sourceAccountAddress = shortenAddress(evmAddress);
     }
     else if (sourceNetworkType === NetworkType.Starknet && starknetAccount && !from?.isExchange) {
-        sourceAccountAddress = shortenAddress(starknetAccount?.account?.address);
+        sourceAccountAddress = starknetAccount?.account?.address ?
+            shortenAddress(starknetAccount?.account?.address) : "";
     }
     else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
         sourceAccountAddress = shortenEmail(exchange_account_name, 10);
@@ -87,17 +89,17 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
-    const sourceCurrencyName = networks?.find(n => n.internal_name === from?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset).name || currency?.asset
-    const destCurrencyName = networks?.find(n => n.internal_name === to?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset).name || currency?.asset
+    const sourceCurrencyName = networks?.find(n => n.internal_name === from?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset)?.name || currency?.asset
+    const destCurrencyName = networks?.find(n => n.internal_name === to?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset)?.name || currency?.asset
 
     return (
         <div>
             <div className="font-normal flex flex-col w-full relative z-10 space-y-4">
                 <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3">
-                        <Image src={resolveImgSrc(source)} alt={sourceDisplayName} width={32} height={32} className="rounded-full" />
+                        {source && <Image src={resolveImgSrc(source)} alt={source.display_name} width={32} height={32} className="rounded-full" />}
                         <div>
-                            <p className="text-primary-text text-sm leading-5">{sourceDisplayName}</p>
+                            <p className="text-primary-text text-sm leading-5">{source?.display_name}</p>
                             {
                                 sourceAccountAddress &&
                                 <p className="text-sm text-secondary-text">{sourceAccountAddress}</p>
@@ -111,10 +113,10 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                 </div>
                 <div className="flex items-center justify-between  w-full ">
                     <div className="flex items-center gap-3">
-                        <Image src={resolveImgSrc(destination)} alt={destinationDisplayName} width={32} height={32} className="rounded-full" />
+                        {destination && <Image src={resolveImgSrc(destination)} alt={destination.display_name} width={32} height={32} className="rounded-full" />}
                         <div>
-                            <p className="text-primary-text text-sm leading-5">{destinationDisplayName}</p>
-                            <p className="text-sm text-secondary-text">{shortenAddress(destAddress)}</p>
+                            <p className="text-primary-text text-sm leading-5">{destination?.display_name}</p>
+                            <p className="text-sm text-secondary-text">{shortenAddress(destAddress as string)}</p>
                         </div>
                     </div>
                     {
@@ -129,7 +131,6 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                                 <div className="h-[10px] my-[5px] w-10 animate-pulse rounded bg-gray-500 ml-auto" />
                             </div>
                     }
-
                 </div>
                 {
                     refuelAmount &&
@@ -142,7 +143,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                             <p>Refuel</p>
                         </div>
                         <div className="flex flex-col">
-                            <p className="text-primary-text text-sm">{truncatedRefuelAmount} {nativeCurrency.asset}</p>
+                            <p className="text-primary-text text-sm">{truncatedRefuelAmount} {nativeCurrency?.asset}</p>
                             <p className="text-secondary-text text-sm flex justify-end">${refuelAmountInUsd}</p>
                         </div>
                     </div>

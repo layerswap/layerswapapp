@@ -50,7 +50,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         });
 
     if (encodedData && address !== userDestinationAddress) {
-        encodedData = encodedData ? `${encodedData}${sequenceNumber}` as `0x${string}` : null;
+        encodedData = encodedData ? `${encodedData}${sequenceNumber}` as `0x${string}` : encodedData;
     }
 
     const tx = {
@@ -69,7 +69,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
 
     useEffect(() => {
         (async () => {
-            if (encodedData) {
+            if (encodedData && address) {
                 const estimate = await publicClient.estimateGas({
                     data: encodedData,
                     to: tokenContractAddress,

@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { Context, FC } from 'react'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 
 export const SettingsStateContext = React.createContext<LayerSwapAppSettings | null>(null);
@@ -12,11 +12,11 @@ export const SettingsProvider: FC<{ data: LayerSwapAppSettings, children?: React
 }
 
 export function useSettingsState() {
-  const data = React.useContext(SettingsStateContext);
+  const data = React.useContext<LayerSwapAppSettings>(SettingsStateContext as Context<LayerSwapAppSettings>);
 
   if (data === undefined) {
     throw new Error('useSettingsState must be used within a SettingsProvider');
   }
 
-  return data;
+  return data as LayerSwapAppSettings;
 }

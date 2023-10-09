@@ -37,9 +37,7 @@ export default function LayerswapMenu() {
     const { isMobile } = useWindowDimensions()
     const { openConnectModal } = useConnectModal();
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
-    const UserEmail = ({ email }: { email: string }) => {
-        return shortenEmail(email, 22)
-    }
+
 
     useEffect(() => {
         setEmbedded(inIframe())
@@ -101,7 +99,6 @@ export default function LayerswapMenu() {
         ]
     }
 
-
     const handleCloseFeedback = () => {
         setOpenFeedbackModal(false)
     }
@@ -111,7 +108,7 @@ export default function LayerswapMenu() {
         <h2 className="font-normal leading-none tracking-tight md:text-2xl text-secondary-text">Menu</h2>
         :
         <span className="font-normal text-secondary-text">
-            <UserEmail email={email} />
+            {email && <UserEmail email={email} />}
         </span>
 
     return <>
@@ -156,7 +153,7 @@ export default function LayerswapMenu() {
                                                 ) : (
                                                     <button
                                                         type="button"
-                                                        onClick={() => openConnectModal()}
+                                                        onClick={() => openConnectModal && openConnectModal()}
                                                         className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
                                                     >
                                                         <WalletIcon className="h-6 w-6" strokeWidth={2} />
@@ -220,7 +217,7 @@ export default function LayerswapMenu() {
                                             ) : (
                                                 <button
                                                     type="button"
-                                                    onClick={() => openConnectModal()}
+                                                    onClick={() => openConnectModal && openConnectModal()}
                                                     className={`w-4/12 mx-2 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text ${!isMobile ? "h-24 w-24" : "h-20 w-14"}`}
                                                 >
                                                     <WalletIcon className="h-6 w-6" strokeWidth={2} />
@@ -342,4 +339,7 @@ export default function LayerswapMenu() {
             }
         </span >
     </>
+}
+const UserEmail = ({ email }: { email: string }) => {
+    return shortenEmail(email, 22)
 }

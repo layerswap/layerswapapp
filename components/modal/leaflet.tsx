@@ -19,15 +19,15 @@ export interface LeafletProps {
     position: LeafletPosition;
 }
 
-export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, description, position}, topmostRef) {
-    const mobileModalRef = useRef(null);
+export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, description, position }, topmostRef) {
+    const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 33 };
 
     async function handleDragEnd(_, info) {
         const offset = info.offset.y;
         const velocity = info.velocity.y;
-        const height = mobileModalRef.current.getBoundingClientRect().height;
+        const height = mobileModalRef.current?.getBoundingClientRect().height || 0;
         if (offset > height / 2 || velocity > 800) {
             await controls.start({ y: "100%", transition: transitionProps, });
             setShow(false);

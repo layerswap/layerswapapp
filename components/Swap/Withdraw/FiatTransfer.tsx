@@ -1,27 +1,31 @@
-import { FC, createContext, useContext, useEffect, useRef, useState } from "react";
+import { Context, FC, createContext, useContext, useEffect, useRef, useState } from "react";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import { StripeOnramp, loadStripeOnramp } from "@stripe/crypto";
 import { PublishedSwapTransactionStatus } from "../../../lib/layerSwapApiClient";
 
+type ContextState = {
+    onramp: StripeOnramp | null
+}
 const FiatTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const stripeSessionId = swap?.fiat_session_id
-    const stripeOnrampPromise = loadStripeOnramp(process.env.NEXT_PUBLIC_STRIPE_SECRET);
+    const secret = process.env.NEXT_PUBLIC_STRIPE_SECRET || ""
+    const stripeOnrampPromise = loadStripeOnramp(secret);
 
     return <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500'>
         <CryptoElements stripeOnramp={stripeOnrampPromise}>
-            <OnrampElement clientSecret={stripeSessionId} swapId={swap?.id} />
+            {stripeSessionId && <OnrampElement clientSecret={stripeSessionId} swapId={swap.id} />}
         </CryptoElements>
     </div>
 }
 
-const CryptoElementsContext = createContext(null);
+const CryptoElementsContext = createContext<ContextState | null>(null);
 
-export const CryptoElements: FC<{ stripeOnramp: Promise<StripeOnramp>, children?: React.ReactNode }> = ({
+export const CryptoElements: FC<{ stripeOnramp: Promise<StripeOnramp | null>, children?: React.ReactNode }> = ({
     stripeOnramp,
     children
 }) => {
-    const [ctx, setContext] = useState<{ onramp: StripeOnramp }>(() => ({ onramp: null }));
+    const [ctx, setContext] = useState<{ onramp: StripeOnramp | null }>(() => ({ onramp: null }));
     useEffect(() => {
         let isMounted = true;
 
@@ -45,7 +49,7 @@ export const CryptoElements: FC<{ stripeOnramp: Promise<StripeOnramp>, children?
 
 // React hook to get StripeOnramp from context
 export const useStripeOnramp = () => {
-    const context = useContext<{ onramp: StripeOnramp }>(CryptoElementsContext);
+    const context = useContext<ContextState>(CryptoElementsContext as Context<ContextState>);
     return context?.onramp;
 };
 type OnrampElementProps = {
@@ -58,7 +62,7 @@ export const OnrampElement: FC<OnrampElementProps> = ({
     swapId
 }) => {
     const stripeOnramp = useStripeOnramp();
-    const onrampElementRef = useRef(null);
+    const onrampElementRef = useRef<HTMLDivElement>(null);
     const { setSwapPublishedTx } = useSwapDataUpdate()
     const [loading, setLoading] = useState(false)
 

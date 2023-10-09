@@ -44,9 +44,9 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const { setSwapPublishedTx } = useSwapDataUpdate()
     const { networks } = useSettingsState()
 
-    const { source_network: source_network_internal_name } = swap
+    const { source_network: source_network_internal_name } = swap || {}
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
-    const sourceCurrency = source_network.currencies.find(c => c.asset?.toLowerCase() === swap.source_network_asset?.toLowerCase())
+    const sourceCurrency = source_network?.currencies.find(c => c.asset?.toLowerCase() === swap?.source_network_asset?.toLowerCase())
 
     const sourceChainId = source_network?.chain_id
 
@@ -71,6 +71,11 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     }, [sourceChainId])
 
     const handleTransfer = useCallback(async () => {
+        if (!process.env.NEXT_PUBLIC_WATCHDOG_CONTRACT)
+            throw new Error("Watchdog contract not configured")
+        if (!swap || !sourceCurrency) {
+            return
+        }
         setLoading(true)
         try {
             if (!starknetAccount) {
@@ -92,7 +97,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             const call = erc20Contract.populate(
                 "transfer",
                 [depositAddress,
-                    parseInputAmountToUint256(amount.toString(), sourceCurrency.decimals)]
+                    parseInputAmountToUint256(amount.toString(), sourceCurrency?.decimals)]
                 ,
             );
 
@@ -102,7 +107,8 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             );
 
             try {
-                const { transaction_hash: transferTxHash } = await starknetAccount.account.execute([call, watch]);
+
+                const { transaction_hash: transferTxHash } = (await starknetAccount.account?.execute([call, watch]) || {});
                 if (transferTxHash) {
                     setSwapPublishedTx(swap.id, PublishedSwapTransactionStatus.Completed, transferTxHash);
                     setTransferDone(true)
@@ -164,8 +170,8 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                         && <div className="flex flex-row
                         text-primary-text text-base space-x-2">
                             <SubmitButton
-                                isDisabled={loading || transferDone}
-                                isSubmitting={loading || transferDone}
+                                isDisabled={!!(loading || transferDone)}
+                                isSubmitting={!!(loading || transferDone)}
                                 onClick={handleTransfer}
                                 icon={
                                     <ArrowLeftRight

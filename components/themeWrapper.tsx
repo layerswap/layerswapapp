@@ -1,50 +1,18 @@
 import { X } from "lucide-react";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
 import toast, { ToastBar, Toaster } from "react-hot-toast"
-import { useQueryState } from "../context/query"
 import Navbar from "./navbar"
 import GlobalFooter from "./globalFooter";
-import useWindowDimensions from "../hooks/useWindowDimensions";
-import ColorSchema from "./ColorSchema";
-import { THEME_COLORS } from "../Models/Theme";
 
 type Props = {
     hideNavbar: boolean,
     children: JSX.Element | JSX.Element[]
 }
-export default function ThemeWrapper ({ hideNavbar, children }: Props) {
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const { isDesktop } = useWindowDimensions()
-
-    useEffect(() => {
-        const handleStart = (url) => (url !== router.asPath) && setLoading(true);
-        const handleComplete = (url) => (url === router.asPath) && setLoading(false);
-
-        router.events.on('routeChangeStart', handleStart)
-        router.events.on('routeChangeComplete', handleComplete)
-        router.events.on('routeChangeError', handleComplete)
-
-        return () => {
-            router.events.off('routeChangeStart', handleStart)
-            router.events.off('routeChangeComplete', handleComplete)
-            router.events.off('routeChangeError', handleComplete)
-        }
-    })
-
-    const { addressSource } = useQueryState()
-
-    // useEffect(() => {
-    //     if (addressSource) window.document.body.className = addressSource
-
-    //     return () => { window.document.body.className = '' }
-    // }, [addressSource])
+export default function ThemeWrapper({ hideNavbar, children }: Props) {
 
     return <div className='styled-scroll'>
         <div className="invisible light"></div>
         <main className="styled-scroll">
-            <div className={`${isDesktop ? "flex flex-col items-center" : ""} min-h-screen overflow-hidden relative font-robo`}>
+            <div className={`flex flex-col items-center min-h-screen overflow-hidden relative font-robo`}>
                 <Toaster position="top-center" toastOptions={{
                     duration: 5000,
                     style: {
@@ -102,7 +70,7 @@ export default function ThemeWrapper ({ hideNavbar, children }: Props) {
                         <rect width="100%" height="100%" strokeWidth={0} fill="url(#983e3e4c-de6d-4c3f-8d64-b9761d1534cc)" />
                     </svg>
                 </div>
-                {hideNavbar ?? <Navbar />}
+                <Navbar />
                 <div>
                     <div className="flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg">
                         <div className="flex flex-col w-full text-primary-text">
@@ -111,7 +79,7 @@ export default function ThemeWrapper ({ hideNavbar, children }: Props) {
                     </div>
                 </div>
                 <div id="offset-for-stickyness"></div>
-                {isDesktop && <GlobalFooter />}
+                <GlobalFooter />
             </div>
         </main>
     </div>
