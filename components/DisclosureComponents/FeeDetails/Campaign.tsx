@@ -30,7 +30,7 @@ const Campaign: FC<CampaignProps> = ({
         ?.find(c =>
             c?.network === destination?.internal_name
             && c.status == 'active'
-            && new Date(campaign?.asset).getTime() - now > 0)
+            && new Date(c?.asset).getTime() - now > 0)
 
     if (!campaign)
         return <></>
