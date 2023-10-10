@@ -2,10 +2,10 @@ import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useEffect, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
-import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
+import { useWalletUpdate } from '../../../../context/wallet';
 import * as zksync from 'zksync';
-import { ethers, providers, utils } from 'ethers';
-import { useEthersProvider, useEthersSigner } from '../../../../lib/ethersToViem/ethers';
+import { utils } from 'ethers';
+import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
 import { useSwapTransactionStore } from '../../../store/zustandStore';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSwapDataState } from '../../../../context/swap';
@@ -21,7 +21,6 @@ type Props = {
 const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { zkSyncAccount } = useWalletState()
     const { setZkSyncAccount } = useWalletUpdate()
     const { setSwapTransaction } = useSwapTransactionStore()
     const { swap } = useSwapDataState()
@@ -88,12 +87,6 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         <>
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
                 <div className='space-y-4'>
-                    {/* <WarningMessage messageType='informing'>
-                        <span className='flex-none'>
-                            Learn how to send from
-                        </span>
-                        <GuideLink text={source_network?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex' />
-                    </WarningMessage> */}
                     {
                         !syncWallet &&
                         <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
