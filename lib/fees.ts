@@ -15,35 +15,47 @@ export function GetExchangeFee(asset?: string, layer?: Layer | null): number {
 export function CalculateMinimalAuthorizeAmount(usd_price: number, amount: number) {
     return Math.ceil((usd_price * amount) + (usd_price * amount * 0.02))
 }
+type RefuelCalcResult = {
+    refuelAmountInSelectedCurrency: number,
+    refuelAmountInNativeCurrency: number
+}
+type CaluclateRefuelArgs = {
+    currency?: Currency | null,
+    to?: Layer | null,
+    refuelEnabled?: boolean,
+    allCurrencies?: Currency[]
+}
 
-export function CaluclateRefuelAmount(
-    values: SwapFormValues,
-    allCurrencies: Currency[]): {
-        refuelAmountInSelectedCurrency: number,
-        refuelAmountInNativeCurrency: number
-    } {
-    const { currency, to, refuel: refuelEnabled } = values || {}
+export function CaluclateRefuelAmount(args: CaluclateRefuelArgs): RefuelCalcResult {
+    const res = { refuelAmountInSelectedCurrency: 0, refuelAmountInNativeCurrency: 0 }
+    const refuelNetwork = ResolveRefuelNetwork(args)
+    if (!refuelNetwork)
+        return res
+    const nativeAsset = args.allCurrencies?.find(c => c.asset == refuelNetwork?.native_currency)
+    if (!nativeAsset || !args.currency)
+        return res
+    const refuel_amount_in_usd = Number(refuelNetwork.refuel_amount_in_usd)
+    res.refuelAmountInSelectedCurrency = refuel_amount_in_usd / args?.currency.usd_price || 0;
+    res.refuelAmountInNativeCurrency = (refuel_amount_in_usd / nativeAsset.usd_price) || 0
+    return res;
+}
+
+function ResolveRefuelNetwork(args: CaluclateRefuelArgs): CryptoNetwork | undefined {
+    const { currency, to, refuelEnabled, allCurrencies } = args
 
     if (!currency || !to || !refuelEnabled)
-        return { refuelAmountInSelectedCurrency: 0, refuelAmountInNativeCurrency: 0 }
-    const destinationLayer = to
-    const destinationNetwork = GetDefaultNetwork(destinationLayer, currency?.asset)
+        return
+    const destinationNetwork = GetDefaultNetwork(to, currency?.asset)
 
-    const destinationNetworkCurrency = GetNetworkCurrency(destinationLayer, currency?.asset)
+    const destinationNetworkCurrency = GetNetworkCurrency(to, currency?.asset)
     const destinationNetworkNativeAsset = allCurrencies?.find(c => c.asset == destinationNetwork?.native_currency);
 
     if (!destinationNetworkCurrency || !destinationNetworkNativeAsset)
-        return { refuelAmountInSelectedCurrency: 0, refuelAmountInNativeCurrency: 0 }
+        return
 
-    let refuelAmountInSelectedCurrency = 0;
-    let refuelAmountInNativeCurrency = 0;
-
-    if (!destinationLayer?.isExchange && destinationNetworkCurrency.is_refuel_enabled && Number(destinationNetwork?.refuel_amount_in_usd) > 0 && currency.usd_price > 0 && destinationNetworkNativeAsset.usd_price > 0) {
-        refuelAmountInSelectedCurrency += Number(destinationNetwork?.refuel_amount_in_usd) / currency.usd_price;
-        refuelAmountInNativeCurrency += Number(destinationNetwork?.refuel_amount_in_usd) / destinationNetworkNativeAsset.usd_price;
+    if (!to?.isExchange && destinationNetworkCurrency.is_refuel_enabled && Number(destinationNetwork?.refuel_amount_in_usd) > 0 && currency.usd_price > 0 && destinationNetworkNativeAsset.usd_price > 0) {
+        return destinationNetwork
     }
-
-    return { refuelAmountInSelectedCurrency, refuelAmountInNativeCurrency };
 }
 
 export function CanDoSweeplessTransfer(sourceLayer: Layer, sourceAddress?: string | null, destinationAddress?: string | null): boolean {
@@ -88,7 +100,12 @@ export function CalculateReceiveAmount(values: SwapFormValues, allNetworks: Cryp
 
     if (amount >= minAllowedAmount) {
         let fee = CalculateFee(values, allNetworks);
-        const { refuelAmountInSelectedCurrency } = CaluclateRefuelAmount(values, allCurrencies)
+        const { refuelAmountInSelectedCurrency } = CaluclateRefuelAmount({
+            allCurrencies,
+            currency: values?.currency,
+            to: values?.to,
+            refuelEnabled: !!values.refuel
+        })
         var result = amount - fee - refuelAmountInSelectedCurrency;
         const sourceLayer = values?.from
 
@@ -147,7 +164,12 @@ export function CalculateMinAllowedAmount(values: SwapFormValues, allNetworks: C
     const destinationNetworkCurrency = GetNetworkCurrency(destinationLayer, asset)
     const sourceNetworkCurrency = GetNetworkCurrency(sourceLayer, asset)
 
-    const { refuelAmountInSelectedCurrency } = CaluclateRefuelAmount(values, allCurrencies);
+    const { refuelAmountInSelectedCurrency } = CaluclateRefuelAmount({
+        allCurrencies,
+        currency: values?.currency,
+        to: values?.to,
+        refuelEnabled: !!values.refuel
+    });
     minAmount += (Number(sourceNetworkCurrency?.source_base_fee) + Number(destinationNetworkCurrency?.destination_base_fee)) + refuelAmountInSelectedCurrency
 
     return roundDecimals(minAmount * 1.2, currency?.usd_price?.toFixed()?.length) || 0

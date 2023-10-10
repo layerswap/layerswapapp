@@ -48,7 +48,7 @@ const GLobalFooter = () => {
     }
 
     return (
-        <footer className="overflow-hidden py-6 md:grid grid-cols-3 w-full px-6 lg:px-8 mt-auto">
+        <footer className="hidden md:grid grid-cols-3 w-full overflow-hidden py-6 px-6 lg:px-8 mt-auto">
             <div className="flex justify-center space-x-6 order-3 place-self-end">
                 {footerNavigation.social.map((item) => (
                     <Link target="_blank" key={item.name} href={item.href} className="text-gray-400 hover:text-gray-500">

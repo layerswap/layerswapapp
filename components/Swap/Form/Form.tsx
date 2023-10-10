@@ -8,7 +8,6 @@ import AmountField from "../../Input/Amount";
 import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
-import AmountAndFeeDetails from "../../DisclosureComponents/amountAndFeeDetailsComponent";
 import Modal from "../../modal/modal";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import { useSettingsState } from "../../../context/settings";
@@ -33,6 +32,7 @@ import { useAccount } from "wagmi";
 import GasDetails from "../../gasDetails";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { useQueryState } from "../../../context/query";
+import FeeDetails from "../../DisclosureComponents/FeeDetails";
 
 type Props = {
     isPartnerWallet: boolean,
@@ -264,7 +264,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                                 <ToggleButton name="refuel" value={!!values?.refuel} onChange={handleConfirmToggleChange} />
                             </div>
                         }
-                        <AmountAndFeeDetails values={values} />
+                        <FeeDetails values={values} />
                         {
                             //TODO refactor
                             destination && asset && GetNetworkCurrency(destination, asset)?.status == 'insufficient_liquidity' &&

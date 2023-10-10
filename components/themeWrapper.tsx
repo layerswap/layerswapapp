@@ -4,10 +4,9 @@ import Navbar from "./navbar"
 import GlobalFooter from "./globalFooter";
 
 type Props = {
-    hideNavbar: boolean,
     children: JSX.Element | JSX.Element[]
 }
-export default function ThemeWrapper({ hideNavbar, children }: Props) {
+export default function ThemeWrapper({ children }: Props) {
 
     return <div className='styled-scroll'>
         <div className="invisible light"></div>

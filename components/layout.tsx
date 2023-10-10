@@ -99,12 +99,12 @@ export default function Layout({ hideNavbar, children, settings }: Props) {
         <MenuProvider>
           <AuthProvider>
             <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
-              <ThemeWrapper hideNavbar={false}>
-                <RainbowKit>
+              <ThemeWrapper>
+                <DynamicRainbowKit>
                   {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
                     <MaintananceContent />
                     : children}
-                </RainbowKit>
+                </DynamicRainbowKit>
               </ThemeWrapper>
             </ErrorBoundary>
           </AuthProvider>
