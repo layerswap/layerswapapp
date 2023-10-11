@@ -27,7 +27,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const input_tx_explorer = swap?.source_network?.transaction_explorer_template
     const output_tx_explorer = swap.destination_network?.transaction_explorer_template
 
-    const destinationNetworkCurrency = GetNetworkCurrency(swap.destination_layer, swap?.destination_network_asset.asset)
+    const destinationNetworkCurrency = GetNetworkCurrency(swap.destination_layer, swap?.destination_network_asset?.asset)
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id]
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
@@ -87,7 +87,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 description: <div className='flex items-center space-x-1'>
                     <span>Transaction: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
-                        <a target={"_blank"} href={input_tx_explorer.replace("{0}", swapInputTransaction?.transaction_id)}>{shortenAddress(swapInputTransaction?.transaction_id)}</a>
+                        <a target={"_blank"} href={input_tx_explorer?.replace("{0}", swapInputTransaction?.transaction_id)}>{shortenAddress(swapInputTransaction?.transaction_id)}</a>
                         <ExternalLink className='h-4' />
                     </div>
                 </div>

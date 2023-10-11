@@ -41,7 +41,6 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
-    const exchange_internal_name = swap?.source_exchange
     const asset_name = swap?.source_network_asset?.asset
 
     const exchange = swap?.source_layer

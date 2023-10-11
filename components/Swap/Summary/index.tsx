@@ -29,8 +29,8 @@ const SwapSummary: FC = () => {
     const params = {
         source: selectedAssetNetwork?.network?.internal_name,
         destination: destination_layer?.internal_name,
-        source_asset: source_network_asset,
-        destination_asset: destination_network_asset,
+        source_asset: source_network_asset?.asset,
+        destination_asset: destination_network_asset?.asset,
         refuel: swap?.has_refuel
     }
 

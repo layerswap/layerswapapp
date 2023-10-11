@@ -56,17 +56,17 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
     static ResolveExchangeL2Assets(
         currencies: ExchangeCurrency[],
         networks: CryptoNetwork[]): ExchangeL2Asset[] {
-        return currencies.map(exchangecurrency => {
-            const network = networks.find(n => n.internal_name === exchangecurrency.network)
-            const networkCurrencies = network?.currencies.find(nc => nc.asset === exchangecurrency.asset)
+        return currencies.map(exchangeCurrency => {
+            const network = networks.find(n => n.internal_name === exchangeCurrency.network)
+            const networkCurrencies = network?.currencies.find(nc => nc.asset === exchangeCurrency.asset)
             return {
-                asset: exchangecurrency.asset,
-                status: exchangecurrency.status,
-                is_default: exchangecurrency.is_default,
-                network_internal_name: exchangecurrency.network,
+                asset: exchangeCurrency.asset,
+                status: exchangeCurrency.status,
+                is_default: exchangeCurrency.is_default,
+                network_internal_name: exchangeCurrency.network,
                 network: { ...network, currencies: [networkCurrencies] },
-                min_deposit_amount: exchangecurrency.min_deposit_amount,
-                withdrawal_fee: exchangecurrency.withdrawal_fee,
+                min_deposit_amount: exchangeCurrency.min_deposit_amount,
+                withdrawal_fee: exchangeCurrency.withdrawal_fee,
             }
         })
     }

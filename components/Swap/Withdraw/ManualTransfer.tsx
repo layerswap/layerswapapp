@@ -20,13 +20,14 @@ const ManualTransfer: FC = () => {
     const [messageClicked, setMessageClicked] = useState(false)
 
     const {
-        source_network: source_network_internal_name } = swap
+        source_network
+    } = swap
 
     const layerswapApiClient = new LayerSwapApiClient()
     const {
         data: generatedDeposit,
         isLoading
-    } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`,
+    } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network?.internal_name}?source=${DepositAddressSource.UserGenerated}`,
         layerswapApiClient.fetcher,
         {
             dedupingInterval: 60000,
@@ -94,8 +95,8 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
     const feeParams = {
         source: selectedAssetNetwork?.network?.internal_name,
         destination: destination_network?.internal_name,
-        source_asset: source_network_asset,
-        destination_asset: destination_network_asset,
+        source_asset: source_network_asset?.asset,
+        destination_asset: destination_network_asset?.asset,
         refuel: swap?.has_refuel
     }
 
