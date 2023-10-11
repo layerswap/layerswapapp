@@ -22,7 +22,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency,
         <div className='flex items-center space-x-2'>
             <span className="text-sm md:text-base">
                 {
-                    isNaN(parsedReceiveAmount) ?
+                    !isNaN(parsedReceiveAmount) ?
                         <div className="font-semibold md:font-bold text-right leading-4">
                             <p>
                                 <>{parsedReceiveAmount}</>
