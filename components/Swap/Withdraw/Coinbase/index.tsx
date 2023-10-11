@@ -21,9 +21,8 @@ const Coinbase: FC = () => {
 const TransferElements: FC = () => {
     const { swap, codeRequested } = useSwapDataState()
     const { setCodeRequested, setSwapPublishedTx, mutateSwap } = useSwapDataUpdate()
-    const { networks } = useSettingsState()
     const {
-        destination_network: destination_network_internal_name,
+        destination_network
     } = swap
     const { start: startTimer } = useTimerState()
 
@@ -32,7 +31,6 @@ const TransferElements: FC = () => {
 
     const [loading, setLoading] = useState(false)
 
-    const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
 
     const handleTransfer = useCallback(async () => {
         setLoading(true)
@@ -41,7 +39,7 @@ const TransferElements: FC = () => {
         else {
             try {
                 const layerswapApiClient = new LayerSwapApiClient()
-                await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange)
+                await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange.internal_name)
             }
             catch (e) {
                 if (e?.response?.data?.error?.code === KnownErrorCode.COINBASE_INVALID_2FA) {

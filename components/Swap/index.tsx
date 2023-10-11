@@ -33,7 +33,7 @@ const SwapDetails: FC = () => {
 
             {
                 process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true' &&
-                <GasDetails network={settings.layers.find(l => l.internal_name === swap.source_network)} currency={settings.currencies.find(c => c.asset === swap.source_network_asset)} />
+                <GasDetails network={swap?.source_layer} currency={settings.currencies.find(c => c.asset === swap.source_network_asset.asset)} />
             }
         </>
     )

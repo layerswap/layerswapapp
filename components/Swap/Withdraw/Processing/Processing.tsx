@@ -7,7 +7,7 @@ import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
 import { GetNetworkCurrency } from '../../../../helpers/settingsHelper';
 import AverageCompletionTime from '../../../Common/AverageCompletionTime';
-import { SwapItem, Transaction, TransactionStatus, TransactionType } from '../../../../lib/layerSwapApiClient';
+import { MappedSwapItem, SwapItem, Transaction, TransactionStatus, TransactionType } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
@@ -17,32 +17,23 @@ import Failed from '../Failed';
 
 type Props = {
     settings: LayerSwapAppSettings;
-    swap: SwapItem;
+    swap: MappedSwapItem;
 }
 
 const Processing: FC<Props> = ({ settings, swap }) => {
 
     const swapStatus = swap.status;
 
-    const source_network = settings.networks?.find(e => e.internal_name === swap.source_network)
-    const destination_network = settings.networks?.find(e => e.internal_name === swap.destination_network)
-    const destination_layer = settings.layers?.find(e => e.internal_name === swap.destination_network)
+    const input_tx_explorer = swap?.source_network?.transaction_explorer_template
+    const output_tx_explorer = swap.destination_network?.transaction_explorer_template
 
-    const input_tx_explorer = source_network?.transaction_explorer_template
-    const output_tx_explorer = destination_network?.transaction_explorer_template
-
-    const isStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet
-        || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet
-        || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
-        || swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
-
-    const destinationNetworkCurrency = GetNetworkCurrency(destination_layer, swap?.destination_network_asset)
+    const destinationNetworkCurrency = GetNetworkCurrency(swap.destination_layer, swap?.destination_network_asset.asset)
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id]
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
-    const nativeCurrency = destination_layer?.isExchange === false && settings?.currencies?.find(c => c.asset === destination_layer?.native_currency)
+    const nativeCurrency = swap?.destination_layer?.isExchange === false && settings?.currencies?.find(c => c.asset === swap?.destination_network?.native_currency)
     const truncatedRefuelAmount = truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision)
 
     const progressStatuses = getProgressStatuses(swap, swapStatus)
@@ -64,7 +55,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
                     <span>Up to 2 hours (delayed)</span>
                     :
-                    <AverageCompletionTime time={destination_network?.average_completion_time} />
+                    <AverageCompletionTime time={swap?.destination_network?.average_completion_time} />
             }
         </div>
     </div>
@@ -279,7 +270,7 @@ type StatusStep = {
 }
 
 
-const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string } } => {
+const getProgressStatuses = (swap: MappedSwapItem, swapStatus: SwapStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string } } => {
     let generalTitle = "Transfer in progress";
     let subtitle: string;
 

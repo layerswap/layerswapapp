@@ -29,7 +29,7 @@ type Props = {
 
 const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
     const { swap } = useSwapDataState()
-    const { layers, currencies, discovery } = useSettingsState()
+    const { currencies, discovery } = useSettingsState()
 
     let alreadyFamiliar = useCoinbaseStore((state) => state.alreadyFamiliar);
     let toggleAlreadyFamiliar = useCoinbaseStore((state) => state.toggleAlreadyFamiliar);
@@ -42,9 +42,9 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const carouselRef = useRef<CarouselRef | null>(null)
     const query = useQueryState()
     const exchange_internal_name = swap?.source_exchange
-    const asset_name = swap?.source_network_asset
+    const asset_name = swap?.source_network_asset?.asset
 
-    const exchange = layers.find(e => e.isExchange && e.internal_name?.toLowerCase() === exchange_internal_name?.toLowerCase()) as Layer & { isExchange: true }
+    const exchange = swap?.source_layer
     const currency = currencies?.find(c => asset_name?.toLocaleUpperCase() === c.asset?.toLocaleUpperCase())
 
     const oauthProviders = discovery?.o_auth_providers

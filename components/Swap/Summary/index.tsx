@@ -6,25 +6,20 @@ import Summary from "./Summary"
 import { ApiResponse } from "../../../Models/ApiResponse"
 import LayerSwapApiClient, { DepositType, Fee, TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
 import { useAccount } from "wagmi"
-import { truncateDecimals } from "../../utils/RoundDecimals"
 import { CanDoSweeplessTransfer } from "../../../lib/fees"
 
 const SwapSummary: FC = () => {
-    const { isConnected, address } = useAccount()
-    const { layers, currencies, networks } = useSettingsState()
+    const { address } = useAccount()
+    const { currencies, networks } = useSettingsState()
     const { swap, withdrawType, selectedAssetNetwork } = useSwapDataState()
     const {
-        source_network: source_network_internal_name,
-        source_exchange: source_exchange_internal_name,
-        destination_exchange: destination_exchange_internal_name,
-        destination_network: destination_network_internal_name,
         source_network_asset,
         destination_network_asset,
-        destination_address
+        destination_address,
+        source_layer,
+        destination_layer
     } = swap
-    const source_layer = layers?.find(n => n.internal_name === (source_exchange_internal_name ?? source_network_internal_name))
-    const destination_layer = layers?.find(l => l.internal_name === (destination_exchange_internal_name ?? destination_network_internal_name))
-    const asset = source_layer?.assets?.find(currency => currency?.asset === destination_network_asset)
+    const asset = source_network_asset
     const currency = currencies?.find(c => c.asset === asset?.asset)
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)

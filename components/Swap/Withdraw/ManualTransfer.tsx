@@ -71,22 +71,18 @@ const ManualTransfer: FC = () => {
 
 const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> = ({ address: existingDepositAddress, shouldGenerateAddress }) => {
 
-    const { layers, resolveImgSrc } = useSettingsState()
+    const { resolveImgSrc } = useSettingsState()
     const { swap, selectedAssetNetwork } = useSwapDataState()
     const { setSelectedAssetNetwork } = useSwapDataUpdate()
     const {
-        source_network: source_network_internal_name,
-        source_exchange: source_exchange_internal_name,
-        destination_network: destination_network_internal_name,
+        source_network,
+        source_exchange,
+        destination_network,
         destination_network_asset,
         source_network_asset
     } = swap
 
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name)
-
-    const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
-
-    const asset = source_network?.assets?.find(currency => currency?.asset === destination_network_asset)
+    const asset = destination_network_asset
 
     const layerswapApiClient = new LayerSwapApiClient()
     const generateDepositParams = shouldGenerateAddress ? [selectedAssetNetwork?.network_internal_name ?? null] : null
@@ -97,7 +93,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
 
     const feeParams = {
         source: selectedAssetNetwork?.network?.internal_name,
-        destination: destination_network_internal_name,
+        destination: destination_network?.internal_name,
         source_asset: source_network_asset,
         destination_asset: destination_network_asset,
         refuel: swap?.has_refuel
@@ -141,7 +137,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
             </div>
         </div>
         {
-            (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
+            (source_network?.internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network?.internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
             <BackgroundField header={'Send type'} withoutBorder>
                 <div className='flex items-center space-x-2'>
                     <ArrowLeftRight className='h-4 w-4' />
@@ -162,7 +158,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                         <div className='bg-gray-500 w-56 h-5 animate-pulse rounded-md' />
                 }
                 {
-                    (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
+                    (source_network?.internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network?.internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
                     <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-secondary-100 rounded border-dashed'>
                         <p>
                             You might get a warning that this is not an activated address. You can ignore it.
@@ -172,7 +168,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
             </div>
         </BackgroundField>
         {
-            (source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli || source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet) &&
+            (source_network?.internal_name === KnownInternalNames.Networks.LoopringGoerli || source_network?.internal_name === KnownInternalNames.Networks.LoopringMainnet) &&
             <div className='flex space-x-4'>
                 <BackgroundField header={'Address Type'} withoutBorder>
                     <p>
@@ -209,15 +205,14 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
 }
 
 const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = ({ onChange }) => {
-    const { layers, resolveImgSrc } = useSettingsState()
+    const { resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
     const {
-        source_exchange: source_exchange_internal_name,
+        source_layer,
         destination_network,
         source_network_asset } = swap
-    const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
-    const exchangeAssets = source_exchange.assets.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network.status !== "inactive")
+    const exchangeAssets = source_layer.assets.filter(a => a.asset === source_network_asset.asset && a.network_internal_name !== destination_network.internal_name && a.network.status !== "inactive")
     const defaultSourceNetwork = exchangeAssets.find(sn => sn.is_default) || exchangeAssets?.[0]
 
     const handleChangeSelectedNetwork = useCallback((n: string) => {

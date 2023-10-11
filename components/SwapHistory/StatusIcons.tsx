@@ -1,7 +1,7 @@
 import { SwapStatus } from "../../Models/SwapStatus"
 import { PublishedSwapTransactions, SwapItem, TransactionType } from "../../lib/layerSwapApiClient"
 
-export default function StatusIcon({  swap }: { swap: SwapItem }) {
+export default function StatusIcon({ swap }: { swap: SwapItem }) {
   const status = swap.status;
   switch (status) {
     case SwapStatus.Failed:

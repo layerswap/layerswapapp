@@ -42,12 +42,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const { swap } = useSwapDataState()
     const { setSwapPublishedTx } = useSwapDataUpdate()
-    const { networks } = useSettingsState()
-
-    const { source_network: source_network_internal_name } = swap
-    const source_network = networks.find(n => n.internal_name === source_network_internal_name)
-    const sourceCurrency = source_network.currencies.find(c => c.asset?.toLowerCase() === swap.source_network_asset?.toLowerCase())
-
+    const { source_network, source_network_asset: sourceCurrency } = swap
     const sourceChainId = source_network?.chain_id
 
     const handleConnect = useCallback(async () => {
@@ -132,7 +127,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                         <WarningMessage messageType='warning'>
                             <span className='flex'>
                                 {
-                                    source_network_internal_name === KnownInternalNames.Networks.StarkNetMainnet
+                                    source_network.internal_name === KnownInternalNames.Networks.StarkNetMainnet
                                         ? <span>Please switch to Starknet Mainnet with your wallet and click Connect again</span>
                                         : <span>Please switch to Starknet Goerli with your wallet and click Connect again</span>
                                 }

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryState } from "../../../context/query";
 import { useSettingsState } from "../../../context/settings";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
+import { useSwapDataUpdate } from "../../../context/swap";
 import React from "react";
 import ConnectNetwork from "../../ConnectNetwork";
 import toast from "react-hot-toast";
@@ -31,7 +31,6 @@ export default function Form () {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
-    const { swap } = useSwapDataState()
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const { updateAuthData, setUserType } = useAuthDataUpdate()

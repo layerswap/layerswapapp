@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { SwapItem, TransactionStatus, TransactionType } from '../lib/layerSwapApiClient';
+import { MappedSwapItem, SwapItem, TransactionStatus, TransactionType } from '../lib/layerSwapApiClient';
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapData, SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
@@ -13,7 +13,7 @@ import { FC } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange, cancelled, expired } from './Data/swaps'
 import { Settings } from './Data/settings';
-import { NetworkType } from '../Models/CryptoNetwork';
+import { CryptoNetwork, NetworkCurrency, NetworkType } from '../Models/CryptoNetwork';
 import { AuthDataUpdateContext, AuthStateContext, UserType } from '../context/authContext';
 import { IntercomProvider } from 'react-use-intercom';
 import ColorSchema from '../components/ColorSchema';
@@ -21,6 +21,7 @@ import { THEME_COLORS } from '../Models/Theme';
 import Layout from '../components/layout';
 import RainbowKitComponent from '../components/RainbowKit';
 import SwapDetails from '../components/Swap';
+import { Exchange } from '../Models/Exchange';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 let settings = new LayerSwapAppSettings(Settings)
@@ -79,14 +80,14 @@ const connectors = connectorsForWallets([
     },
 ]);
 window.plausible = () => { }
-const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, theme?: "default" | "light" }> = ({ settings, swap, failedSwap, failedSwapOutOfRange, theme }) => {
+const Comp: FC<{ settings: any, swap: SwapItem, theme?: "default" | "light" }> = ({ settings, swap, theme }) => {
     const wagmiConfig = createConfig({
         autoConnect: true,
         connectors,
         publicClient,
     })
     const appSettings = new LayerSwapAppSettings(settings?.data)
-    const swapContextInitialValues: SwapData = { codeRequested: false, swap, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
+    const swapContextInitialValues: SwapData = { codeRequested: false, swap: swap as unknown as MappedSwapItem, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
     if (!appSettings) {
         return <div>Loading...</div>
     }

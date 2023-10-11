@@ -3,7 +3,6 @@ import { useSwapDataState } from '../../../context/swap';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
 import { SwapStatus } from '../../../Models/SwapStatus';
-import { SwapItem } from '../../../lib/layerSwapApiClient';
 import { TrackEvent } from '../../../pages/_document';
 import QuestionIcon from '../../icons/Question';
 import Link from 'next/link';
@@ -36,11 +35,11 @@ const Failed: FC = () => {
                 <div className='mt-4 text-xs md:text-sm text-primary-text'>
                     {
                         swap?.status == SwapStatus.Cancelled &&
-                        <Canceled onGetHelp={startIntercom} swap={swap} />
+                        <Canceled onGetHelp={startIntercom} />
                     }
                     {
                         swap?.status == SwapStatus.Expired &&
-                        <Expired onGetHelp={startIntercom} swap={swap} />
+                        <Expired onGetHelp={startIntercom} />
                     }
                     {
                         swap?.status == SwapStatus.UserTransferDelayed &&
@@ -53,7 +52,6 @@ const Failed: FC = () => {
     )
 }
 type Props = {
-    swap: SwapItem
     onGetHelp: () => void
 }
 

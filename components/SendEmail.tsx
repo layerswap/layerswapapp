@@ -1,10 +1,9 @@
 import { Disclosure } from '@headlessui/react';
 import { ChevronDown, User } from 'lucide-react';
 import { Field, Form, Formik, FormikErrors } from 'formik';
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
-import LayerswapApiClient, { SwapItem, SwapType } from '../lib/layerSwapApiClient';
-import { useAuthDataUpdate, useAuthState, UserType } from '../context/authContext';
+import { useAuthDataUpdate, useAuthState } from '../context/authContext';
 import { useTimerState } from '../context/timerContext';
 import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';

@@ -21,10 +21,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const { imxAccount } = useWalletState()
     const { swap } = useSwapDataState()
     const { setSwapPublishedTx } = useSwapDataUpdate()
-    const { networks } = useSettingsState()
-
-    const { source_network: source_network_internal_name } = swap
-    const source_network = networks.find(n => n.internal_name === source_network_internal_name)
+    const { source_network } = swap
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
@@ -44,7 +41,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
         setLoading(true)
         try {
             const imtblClient = new ImtblClient(source_network?.internal_name)
-            const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
+            const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.asset.toLocaleUpperCase())
             const res = await imtblClient.Transfer(swap, source_currency, depositAddress)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)

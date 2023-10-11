@@ -8,6 +8,10 @@ import { NextRouter } from "next/router";
 import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
+import { BaseL2Asset, ExchangeL2Asset, Layer } from "../Models/Layer";
+import { CryptoNetwork, NetworkCurrency } from "../Models/CryptoNetwork";
+import { Exchange } from "../Models/Exchange";
+import { Currency } from "../Models/Currency";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
@@ -129,7 +133,7 @@ export type CreateSwapParams = {
     refuel?: boolean,
 }
 
-export type SwapItem = {
+export type SwapItem<N = string, E = string, A = string> = {
     id: string,
     created_date: string,
     fee: number,
@@ -141,12 +145,12 @@ export type SwapItem = {
     app_name?: string,
     refuel_price?: number,
     refuel_transaction_id?: string,
-    source_network_asset: string,
-    source_network: string,
-    source_exchange: string,
-    destination_network_asset: string,
-    destination_network: string,
-    destination_exchange: string,
+    source_network_asset: A,
+    source_network: N,
+    source_exchange: E,
+    destination_network_asset: A,
+    destination_network: N,
+    destination_exchange: E,
     transactions: Transaction[]
     has_refuel?: boolean,
     exchange_account_connected: boolean;
@@ -155,6 +159,11 @@ export type SwapItem = {
     has_pending_deposit: boolean;
     sequence_number: number;
     fail_reason: string;
+}
+
+export interface MappedSwapItem extends SwapItem<CryptoNetwork, Exchange, NetworkCurrency> {
+    source_layer?: Layer;
+    destination_layer?: Layer
 }
 
 export type AddressBookItem = {

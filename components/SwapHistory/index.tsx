@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers, TransactionType } from "../../lib/layerSwapApiClient"
 import SpinIcon from "../icons/spinIcon"
-import { ArrowRight, ChevronRight, ExternalLink, Eye, RefreshCcw, Scroll, X } from 'lucide-react';
+import { ArrowRight, ChevronRight, Eye, RefreshCcw, Scroll, X } from 'lucide-react';
 import SwapDetails from "./SwapDetailsComponent"
 import { useSettingsState } from "../../context/settings"
 import Image from 'next/image'
