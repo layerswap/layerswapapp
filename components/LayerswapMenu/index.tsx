@@ -25,7 +25,6 @@ import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import Menu from "./Menu";
 import SubmitButton from "../buttons/submitButton";
 
-
 export default function LayerswapMenu() {
     const { email, userType, userId } = useAuthState()
     const { setUserType } = useAuthDataUpdate()
@@ -121,15 +120,15 @@ export default function LayerswapMenu() {
                     <Modal show={openTopModal} setShow={setOpenTopModal} header={<h2 className="font-normal leading-none tracking-tight">Menu</h2>}>
                         <div className="text-sm font-medium focus:outline-none h-full">
                             <Menu>
+
                                 <div className="flex">
                                     {isConnected ? (
                                         <MenuRainbowKitConnectWallet />
                                     ) : (
-                                        <SubmitButton text_align="left" className="space-x-3" onClick={openConnectModal} icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />} type="button" isDisabled={false} isSubmitting={false}>
+                                        <SubmitButton text_align="left" className="space-x-3 bg-primary/20 border-none !text-primary" onClick={openConnectModal} icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />} type="button" isDisabled={false} isSubmitting={false}>
                                             Connect a wallet
                                         </SubmitButton>
                                     )}
-
                                 </div>
 
                                 <Menu.Group>
