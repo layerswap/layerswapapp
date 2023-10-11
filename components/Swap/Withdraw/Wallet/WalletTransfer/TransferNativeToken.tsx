@@ -93,7 +93,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
             setApplyingTransaction(false)
         },
         onError: async (err) => {
-            setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, "", err.message);
+            setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, transaction?.data?.hash, err.message);
         }
     })
 

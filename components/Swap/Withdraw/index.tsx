@@ -217,6 +217,7 @@ const WalletTransferContent: FC = () => {
                 setImxAccount(null)
             }
             else if (sourceIsZkSync) {
+                await wagmiDisconnect()
                 setZkSyncAccount(null)
             }
         }

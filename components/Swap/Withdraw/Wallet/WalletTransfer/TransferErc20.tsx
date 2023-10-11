@@ -14,7 +14,6 @@ import TransactionMessage from "./transactionMessage";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import { ButtonWrapper } from "./buttons";
 import { useSwapTransactionStore } from "../../../../store/zustandStore";
-import toast from "react-hot-toast";
 
 type TransferERC20ButtonProps = BaseTransferButtonProps & {
     tokenContractAddress: `0x${string}`,
@@ -107,8 +106,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             setApplyingTransaction(false)
         },
         onError: async (err) => {
-            console.log(err.message, "err222")
-            setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, "", err.message);
+            setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, contractWrite?.data?.hash, err.message);
         }
     })
 
