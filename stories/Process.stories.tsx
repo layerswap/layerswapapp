@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { MappedSwapItem, SwapItem, TransactionStatus, TransactionType } from '../lib/layerSwapApiClient';
+import { SwapItem, TransactionStatus, TransactionType } from '../lib/layerSwapApiClient';
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapData, SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
@@ -13,7 +13,7 @@ import { FC } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange, cancelled, expired } from './Data/swaps'
 import { Settings } from './Data/settings';
-import { CryptoNetwork, NetworkCurrency, NetworkType } from '../Models/CryptoNetwork';
+import { NetworkType } from '../Models/CryptoNetwork';
 import { AuthDataUpdateContext, AuthStateContext, UserType } from '../context/authContext';
 import { IntercomProvider } from 'react-use-intercom';
 import ColorSchema from '../components/ColorSchema';
@@ -21,7 +21,6 @@ import { THEME_COLORS } from '../Models/Theme';
 import Layout from '../components/layout';
 import RainbowKitComponent from '../components/RainbowKit';
 import SwapDetails from '../components/Swap';
-import { Exchange } from '../Models/Exchange';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 let settings = new LayerSwapAppSettings(Settings)
@@ -87,10 +86,35 @@ const Comp: FC<{ settings: any, swap: SwapItem, theme?: "default" | "light" }> =
         publicClient,
     })
     const appSettings = new LayerSwapAppSettings(settings?.data)
-    const swapContextInitialValues: SwapData = { codeRequested: false, swap: swap as unknown as MappedSwapItem, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
     if (!appSettings) {
         return <div>Loading...</div>
     }
+
+    const { networks, exchanges, layers } = appSettings
+
+    const source_network = networks.find(n => n.internal_name?.toLowerCase() === swap?.source_network?.toLowerCase())
+    const source_exchange = exchanges.find(n => n?.internal_name?.toLowerCase() === swap?.source_exchange?.toLowerCase())
+    const source_network_asset = source_exchange ? source_exchange?.currencies?.find(a => swap?.source_network_asset === a?.asset) : source_network?.currencies?.find(a => swap?.source_network_asset === a?.asset)
+    const destination_exchange = exchanges.find(n => n?.internal_name?.toLowerCase() === swap?.source_exchange?.toLowerCase())
+    const destination_network = networks.find(n => n.internal_name?.toLowerCase() === swap?.destination_network?.toLowerCase())
+    const destination_network_asset = destination_exchange ? destination_exchange?.currencies?.find(a => swap?.destination_network_asset === a?.asset) : destination_network?.currencies?.find(a => swap?.destination_network_asset === a?.asset)
+
+    const source_layer = layers.find(n => n?.internal_name?.toLowerCase() === swap?.source_exchange?.toLowerCase()) ?? layers.find(n => n.internal_name?.toLowerCase() === swap?.source_network?.toLowerCase())
+    const destination_layer = layers.find(n => n?.internal_name?.toLowerCase() === swap?.destination_exchange?.toLowerCase()) ?? layers.find(n => n.internal_name?.toLowerCase() === swap?.destination_network?.toLowerCase())
+
+    const swapItem = {
+        ...swap,
+        source_network: source_network,
+        source_exchange: source_exchange,
+        source_network_asset: source_network_asset,
+        destination_network: destination_network,
+        destination_exchange: destination_exchange,
+        destination_network_asset: destination_network_asset,
+        source_layer: source_layer,
+        destination_layer: destination_layer
+    }
+
+    const swapContextInitialValues: SwapData = { codeRequested: false, swap: swapItem, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
     const themeData = theme ? THEME_COLORS[theme] : THEME_COLORS["default"];
     return <WagmiConfig config={wagmiConfig}>
         <IntercomProvider appId='123'>
