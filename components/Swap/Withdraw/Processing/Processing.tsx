@@ -1,13 +1,11 @@
 import { ExternalLink } from 'lucide-react';
 import { FC } from 'react'
-import KnownInternalNames from '../../../../lib/knownIds';
 import Widget from '../../../Wizard/Widget';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
-import { GetNetworkCurrency } from '../../../../helpers/settingsHelper';
 import AverageCompletionTime from '../../../Common/AverageCompletionTime';
-import { MappedSwapItem, SwapItem, Transaction, TransactionStatus, TransactionType } from '../../../../lib/layerSwapApiClient';
+import { MappedSwapItem, Transaction, TransactionStatus, TransactionType } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
@@ -22,12 +20,9 @@ type Props = {
 
 const Processing: FC<Props> = ({ settings, swap }) => {
 
-    const swapStatus = swap.status;
-
-    const input_tx_explorer = swap?.source_network?.transaction_explorer_template
-    const output_tx_explorer = swap.destination_network?.transaction_explorer_template
-
-    const destinationNetworkCurrency = GetNetworkCurrency(swap.destination_layer, swap?.destination_network_asset?.asset)
+    const { destination_network_asset, status: swapStatus, source_network, destination_network } = swap
+    const input_tx_explorer = source_network?.transaction_explorer_template
+    const output_tx_explorer = destination_network?.transaction_explorer_template
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id]
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
@@ -52,7 +47,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         <span>Estimated arrival:</span>
         <div className='text-primary-text'>
             {
-                destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
+                destination_network_asset?.status == 'insufficient_liquidity' ?
                     <span>Up to 2 hours (delayed)</span>
                     :
                     <AverageCompletionTime time={swap?.destination_network?.average_completion_time} />
@@ -115,11 +110,11 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         },
         "output_transfer": {
             upcoming: {
-                name: `Sending ${destinationNetworkCurrency?.name} to your address`,
+                name: `Sending ${destination_network_asset?.name} to your address`,
                 description: null
             },
             current: {
-                name: `Sending ${destinationNetworkCurrency?.name} to your address`,
+                name: `Sending ${destination_network_asset?.name} to your address`,
                 description: null
             },
             complete: {
@@ -278,8 +273,7 @@ const getProgressStatuses = (swap: MappedSwapItem, swapStatus: SwapStatus): { st
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
     let inputIsCompleted = (swapInputTransaction as Transaction)?.status == TransactionStatus.Completed && (swapInputTransaction as Transaction).confirmations >= (swapInputTransaction as Transaction).max_confirmations;
-    if (!inputIsCompleted)
-    {
+    if (!inputIsCompleted) {
         // Magic case, shows estimated time
         subtitle = null
     }

@@ -19,8 +19,7 @@ const SwapSummary: FC = () => {
         source_layer,
         destination_layer
     } = swap
-    const asset = source_network_asset
-    const currency = currencies?.find(c => c.asset === asset?.asset)
+    const currency = currencies?.find(c => c.asset === source_network_asset?.asset)
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)

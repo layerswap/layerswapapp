@@ -72,7 +72,7 @@ const IsAvailableForLayer = (asset: string, source: Layer, destination: Layer) =
         || source_internal_name === destination_internal_name)
         return false
 
-    const sourceASsetIsAvailable = sourceDefaultAsset
+    const sourceAssetIsAvailable = sourceDefaultAsset
         .network
         .currencies
         .some(c => c?.asset === asset
@@ -86,7 +86,7 @@ const IsAvailableForLayer = (asset: string, source: Layer, destination: Layer) =
             && c.status !== 'inactive'
             && c.is_withdrawal_enabled)
 
-    return sourceASsetIsAvailable && destinationAssetIsAvailable
+    return sourceAssetIsAvailable && destinationAssetIsAvailable
 }
 
 export function FilterDestinationLayers(layers: Layer[], source?: Layer, lockedCurrency?: Currency): Layer[] {
