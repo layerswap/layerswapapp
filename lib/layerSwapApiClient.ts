@@ -272,7 +272,8 @@ export type Campaigns = {
     end_date: string,
     min_payout_amount: number,
     total_budget: number,
-    distributed_amount: number
+    distributed_amount: number,
+    status: string
 }
 
 export type Reward = {
