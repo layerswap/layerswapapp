@@ -4,20 +4,18 @@ import AppSettings from "./AppSettings";
 import { InitializeInstance } from "./axiosInterceptor"
 import { v4 as uuidv4 } from 'uuid';
 import axios, { AxiosInstance, Method } from "axios";
-import { NextRouter } from "next/router";
 import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
-import { BaseL2Asset, ExchangeL2Asset, Layer } from "../Models/Layer";
+import { Layer } from "../Models/Layer";
 import { CryptoNetwork, NetworkCurrency } from "../Models/CryptoNetwork";
 import { Exchange } from "../Models/Exchange";
-import { Currency } from "../Models/Currency";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
 
     _authInterceptor: AxiosInstance;
-    constructor(private readonly _router?: NextRouter, private readonly _redirect?: string) {
+    constructor() {
         this._authInterceptor = InitializeInstance(LayerSwapAuthApiClient.identityBaseEndpoint);
     }
 
@@ -106,12 +104,6 @@ export enum DepositAddressSource {
     Managed = 1
 }
 
-type NetworkAccountParams = {
-    address: string,
-    network: string,
-    signature: string
-}
-
 export type NetworkAccount = {
     id: string,
     address: string,
@@ -133,7 +125,27 @@ export type CreateSwapParams = {
     refuel?: boolean,
 }
 
-export type SwapItem<N = string, E = string, A = string> = {
+export interface SwapItem extends SharedSwapItemProps {
+    source_network_asset: string,
+    source_network: string,
+    source_exchange: string,
+    destination_network_asset: string,
+    destination_network: string,
+    destination_exchange: string,
+}
+
+export interface MappedSwapItem extends SharedSwapItemProps {
+    source_layer?: Layer,
+    destination_layer?: Layer,
+    source_network_asset: NetworkCurrency,
+    source_network: CryptoNetwork,
+    source_exchange: Exchange,
+    destination_network_asset: NetworkCurrency,
+    destination_network: CryptoNetwork,
+    destination_exchange: Exchange,
+}
+
+type SharedSwapItemProps = {
     id: string,
     created_date: string,
     fee: number,
@@ -145,12 +157,6 @@ export type SwapItem<N = string, E = string, A = string> = {
     app_name?: string,
     refuel_price?: number,
     refuel_transaction_id?: string,
-    source_network_asset: A,
-    source_network: N,
-    source_exchange: E,
-    destination_network_asset: A,
-    destination_network: N,
-    destination_exchange: E,
     transactions: Transaction[]
     has_refuel?: boolean,
     exchange_account_connected: boolean;
@@ -159,11 +165,6 @@ export type SwapItem<N = string, E = string, A = string> = {
     has_pending_deposit: boolean;
     sequence_number: number;
     fail_reason: string;
-}
-
-export interface MappedSwapItem extends SwapItem<CryptoNetwork, Exchange, NetworkCurrency> {
-    source_layer?: Layer;
-    destination_layer?: Layer
 }
 
 export type AddressBookItem = {
