@@ -7,6 +7,7 @@ import { Balance, Gas, getErc20Balances, getNativeBalance, resolveERC20Balances,
 import { createPublicClient, http } from 'viem';
 import resolveChain from '../lib/resolveChain';
 import { NetworkType } from '../Models/CryptoNetwork';
+import * as zksync from 'zksync';
 
 export const WalletStateContext = React.createContext<WalletState>(null);
 const WalletStateUpdateContext = React.createContext<WalletStateUpdate>(null);
@@ -18,7 +19,8 @@ export type WalletState = {
     balances: Balance[],
     gases: { [network: string]: Gas[] },
     isBalanceLoading: boolean,
-    isGasLoading: boolean
+    isGasLoading: boolean,
+    syncWallet: zksync.Wallet | null;
 }
 
 type WalletStateUpdate = {
@@ -27,6 +29,7 @@ type WalletStateUpdate = {
     setZkSyncAccount: (account: string) => void;
     getBalance: (from: Layer) => Promise<void>,
     getGas: (from: Layer, currency: Currency, userDestinationAddress: string) => Promise<void>,
+    setSyncWallet: (wallet: zksync.Wallet | null) => void;
 }
 
 type Props = {
@@ -34,6 +37,7 @@ type Props = {
 }
 
 export const WalletDataProvider: FC<Props> = ({ children }) => {
+    const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>(null);
     const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject>()
     const [imxAccount, setImxAccount] = useState<string>()
     const [zkSyncAccount, setZkSyncAccount] = useState<string>()
@@ -123,7 +127,8 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
             balances,
             gases,
             isBalanceLoading,
-            isGasLoading
+            isGasLoading,
+            syncWallet,
         }}>
             <WalletStateUpdateContext.Provider value={{
                 setStarknetAccount,
@@ -131,6 +136,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
                 setZkSyncAccount,
                 getBalance,
                 getGas,
+                setSyncWallet
             }}>
                 {children}
             </WalletStateUpdateContext.Provider>

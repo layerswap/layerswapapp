@@ -1,8 +1,8 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
-import { FC, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
-import { useWalletUpdate } from '../../../../context/wallet';
+import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 import * as zksync from 'zksync';
 import { utils } from 'ethers';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
@@ -23,13 +23,13 @@ type Props = {
 const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
-    const { setZkSyncAccount } = useWalletUpdate();
+    const { setZkSyncAccount, setSyncWallet } = useWalletUpdate();
+    const { syncWallet } = useWalletState();
     const { setSwapTransaction } = useSwapTransactionStore();
     const { swap } = useSwapDataState();
-    const [syncWallet, setSyncWallet] = useState<zksync.Wallet>(null);
     const signer = useEthersSigner();
     const { chain } = useNetwork();
-    
+
     const { networks } = useSettingsState();
     const { source_network: source_network_internal_name } = swap;
     const source_network = networks.find(n => n.internal_name === source_network_internal_name);
@@ -37,12 +37,18 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const defaultProvider = swap?.source_network?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "georli";
     const ethereum = networks.find(n => n.internal_name === KnownInternalNames.Networks.EthereumMainnet);
 
+    useEffect(() => {
+        if (signer?._address !== syncWallet?.cachedAddress) {
+            setSyncWallet(null)
+        }
+    }, [signer?._address]);
+
     const handleConnect = async () => {
         setLoading(true)
         try {
             const syncProvider = await zksync.getDefaultProvider(defaultProvider as Network);
             const wallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
-            wallet.getAccountState()
+            wallet.getAccountState();
             setSyncWallet(wallet);
             setZkSyncAccount(wallet.cachedAddress);
         }
@@ -85,7 +91,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         return (
             <ChangeNetworkButton
                 chainId={Number(ethereum.chain_id)}
-                network={source_network.display_name}
+                network={ethereum.display_name}
             />
         )
     }
