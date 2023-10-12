@@ -4,7 +4,6 @@ import SubmitButton from '../../../buttons/submitButton';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import { connect, disconnect } from "get-starknet"
 import { Contract, number, uint256 } from 'starknet';

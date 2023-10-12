@@ -51,7 +51,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                 return
             setLoading(true)
             try {
-                const layerswapApiClient = new LayerSwapApiClient(router)
+                const layerswapApiClient = new LayerSwapApiClient()
                 const swapResponse = await layerswapApiClient.GetSwapDetailsAsync(id)
                 setSwap(swapResponse.data)
             }
