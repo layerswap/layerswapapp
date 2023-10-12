@@ -132,11 +132,8 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                     <Widget.Content center={true}>
                                         <User className='w-16 h-16 text-primary self-center mt-auto' />
                                         <div>
-                                            <p className='mb-3 mt-2 pt-2 text-2xl font-bold text-primary-text leading-6 text-center font-roboto'>
+                                            <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-primary-text leading-6 text-center font-roboto'>
                                                 What&apos;s your email?
-                                            </p>
-                                            <p className='text-center text-base mb-6 px-2 text-secondary-text'>
-                                                By signing in to Layerswap you get:
                                             </p>
                                         </div>
                                         <div className="relative rounded-md shadow-sm">
@@ -154,7 +151,10 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                 )}
                                             </Field>
                                         </div>
-                                        <div className='p-3 text-primary-text mt-3'>
+                                        <div className='px-3 text-primary-text mt-6'>
+                                            <p className='text-left text-base mb-3 text-primary-text font-semibold'>
+                                                What will you get by signing in to Layerswap?
+                                            </p>
                                             <ul className='space-y-3'>
                                                 <li className='flex gap-3'>
                                                     <div>
@@ -163,7 +163,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                     <div>
                                                         <p className='font-semibold'>History</p>
                                                         <p className='text-secondary-text text-sm'>
-                                                            Acess your entire transaction history
+                                                            Access your entire transaction history
                                                         </p>
                                                     </div>
                                                 </li>
@@ -172,9 +172,9 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                         <Mail className='h-5 w-5 mt-0.5 text-primary' />
                                                     </div>
                                                     <div>
-                                                        <p className='font-semibold'>Email notifications</p>
+                                                        <p className='font-semibold'>Email updates</p>
                                                         <p className='text-secondary-text text-sm'>
-                                                            Get email notifications upon transaction completion
+                                                            Get a notification upon transfer completion
                                                         </p>
                                                     </div>
                                                 </li>
@@ -183,9 +183,9 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                         <Album className='h-5 w-5 mt-0.5 text-primary' />
                                                     </div>
                                                     <div>
-                                                        <p className='font-semibold'>Same deposit addresses</p>
+                                                        <p className='font-semibold'>Dedicated deposit address</p>
                                                         <p className='text-secondary-text text-sm'>
-                                                            Get deposit addresses that stay the same across transactions and can be whitelisted in exchanges
+                                                            Get deposit addresses that stay the same and can be whitelisted in CEXes
                                                         </p>
                                                     </div>
                                                 </li>
