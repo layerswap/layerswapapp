@@ -43,7 +43,6 @@ function RewardComponent() {
         router.back()
     }, [router])
 
-
     return (
         <>
             <div className='bg-secondary-900 pb-6 sm:mb-10 sm:shadow-card rounded-lg text-primary-text overflow-hidden relative min-h-[400px]'>
@@ -134,13 +133,12 @@ const Rewards: FC<RewardsProps> = ({ campaign }) => {
         Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600) - (difference_in_days * 24)))
         : null
 
-    const campaignIsEnded = Math.round(((campaignEndDate.getTime() - now.getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
+    const campaignIsEnded = (campaignEndDate.getTime() - now.getTime()) < 0 || campaign.status !== 'active'
 
     const DistributedAmount = ((campaign.distributed_amount / campaign.total_budget) * 100)
     const usdc_price = settings?.currencies?.find(c => c.asset === campaign.asset)?.usd_price
     const total_amount = rewards?.user_reward.total_amount
     const total_in_usd = (total_amount && usdc_price) ? (usdc_price * total_amount).toFixed(2) : null
-
 
     return <div className="space-y-5">
         <div className="space-y-4">

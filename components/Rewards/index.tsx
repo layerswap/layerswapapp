@@ -1,6 +1,6 @@
 import { Gift } from "lucide-react";
 import { useRouter } from "next/router";
-import { useCallback } from "react";
+import { FC, useCallback } from "react";
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient, { Campaign } from "../../lib/layerSwapApiClient";
 import HeaderWithMenu from "../HeaderWithMenu";
@@ -9,6 +9,7 @@ import useSWR from 'swr'
 import { useSettingsState } from "../../context/settings";
 import Image from "next/image";
 import LinkWrapper from "../LinkWraapper";
+import { Layer } from "../../Models/Layer";
 
 const Rewards = () => {
 
@@ -19,8 +20,8 @@ const Rewards = () => {
     const campaigns = campaignsData?.data
     const now = new Date()
 
-    const activeCampaigns = campaigns?.filter(c => Math.round(((new Date(c?.end_date).getTime() - now.getTime()) / (1000 * 3600 * 24))) < 0 ? false : true) || []
-    const inactiveCampaigns = campaigns?.filter(c => Math.round(((new Date(c?.end_date).getTime() - now.getTime()) / (1000 * 3600 * 24))) < 0 ? true : false) || []
+    const activeCampaigns = campaigns?.filter(c => IsCampaignActive) || []
+    const inactiveCampaigns = campaigns?.filter(c => !IsCampaignActive) || []
     const handleGoBack = useCallback(() => {
         router.back()
     }, [router])
@@ -33,32 +34,16 @@ const Rewards = () => {
                     <div className="space-y-2">
                         <p className="font-bold text-left leading-5">Campaigns</p>
                         <div className="bg-secondary-700 border border-secondary-700 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg">
-                            <div className="p-3">
+                            <div className="p-3 space-y-4">
                                 {
                                     activeCampaigns.length > 0 ?
-                                        activeCampaigns.map(c => {
-                                            const campaignLayer = layers.find(l => l.internal_name === c.network)
-                                            const campaignDaysLeft = ((new Date(c.end_date).getTime() - new Date().getTime()) / 86400000).toFixed()
-                                            return (
-                                                <LinkWrapper href={`/campaigns/${c.name}`} className="flex justify-between items-center" key={c.name}>
-                                                    <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
-                                                        <span className="h-5 w-5 relative">
-                                                            {campaignLayer && <Image
-                                                                src={resolveImgSrc(campaignLayer)}
-                                                                alt="Project Logo"
-                                                                height="40"
-                                                                width="40"
-                                                                loading="eager"
-                                                                className="rounded-md object-contain" />}
-                                                        </span>
-                                                        <span className="font-semibold text-base text-left flex items-center">{c?.display_name} </span>
-                                                    </span>
-                                                    <span className="text-primary-text-muted text-right text-sm">
-                                                        {campaignDaysLeft} days left
-                                                    </span>
-                                                </LinkWrapper>
-                                            )
-                                        })
+                                        activeCampaigns.map(c =>
+                                            <CampaignItem
+                                                campaign={c}
+                                                layers={layers}
+                                                resolveImgSrc={resolveImgSrc}
+                                                key={c.id}
+                                            />)
                                         :
                                         <div className="flex flex-col items-center justify-center space-y-2">
                                             <Gift className="h-10 w-10 text-primary" />
@@ -73,7 +58,7 @@ const Rewards = () => {
                         <div className="space-y-2">
                             <p className="font-bold text-left leading-5">Old campaigns</p>
                             <div className="bg-secondary-700 border border-secondary-700 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg">
-                                <div className="p-3 flex flex-col space-y-2">
+                                <div className="p-3 dpsv flex flex-col space-y-4">
                                     {inactiveCampaigns.map(c => {
                                         const campaignLayer = layers.find(l => l.internal_name === c.network)
                                         return (
@@ -106,6 +91,44 @@ const Rewards = () => {
             <div id="widget_root" />
         </div >
     )
+}
+type CampaignProps = {
+    campaign: Campaign,
+    layers: Layer[],
+    resolveImgSrc: (item: Layer) => string
+}
+const CampaignItem: FC<CampaignProps> = ({ campaign, layers, resolveImgSrc }) => {
+
+    const campaignLayer = layers.find(l => l.internal_name === campaign.network)
+    const campaignDaysLeft = ((new Date(campaign.end_date).getTime() - new Date().getTime()) / 86400000).toFixed()
+    const campaignIsActive = IsCampaignActive(campaign)
+
+    return <LinkWrapper href={`/campaigns/${campaign.name}`}
+        className="flex justify-between items-center">
+        <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
+            <span className="h-5 w-5 relative">
+                {campaignLayer && <Image
+                    src={resolveImgSrc(campaignLayer)}
+                    alt="Project Logo"
+                    height="40"
+                    width="40"
+                    loading="eager"
+                    className="rounded-md object-contain" />}
+            </span>
+            <span className="font-semibold text-base text-left flex items-center">{campaign?.display_name} </span>
+        </span>
+        {
+            campaignIsActive &&
+            <span className="text-primary-text-muted text-right text-sm">
+                {campaignDaysLeft} days left
+            </span>
+        }
+    </LinkWrapper>
+}
+
+function IsCampaignActive(campaign: Campaign) {
+    const now = new Date()
+    return campaign.status == 'active' && (new Date(campaign?.end_date).getTime() - now.getTime()) > 0
 }
 
 export default Rewards
