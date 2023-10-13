@@ -16,6 +16,7 @@ import { Widget } from "../../Widget/Index";
 import Leaderboard from "./LeaderBoard"
 import { CryptoNetwork } from "../../../Models/CryptoNetwork";
 import Rewards from "./Rewards";
+import SpinIcon from "../../icons/spinIcon"
 
 function CampaignDetails() {
 
@@ -109,6 +110,9 @@ const BriefInformation: FC<BriefInformationProps> = ({ campaign, network }) =>
 
 const Loading = () => <Widget className="min-h-[500px]">
     <Widget.Content>
+        <div className="absolute top-[calc(50%-5px)] left-[calc(50%-5px)]">
+            <SpinIcon className="animate-spin h-5 w-5" />
+        </div>
     </Widget.Content>
 </Widget>
 
