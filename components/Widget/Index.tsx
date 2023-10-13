@@ -24,9 +24,6 @@ const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[]
    return <>
       <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
          <div className="relative">
-            <div className="overflow-hidden h-1 flex rounded-t-lg bg-secondary-500">
-               <div className="shadow-none flex flex-col whitespace-nowrap justify-center bg-primary"></div>
-            </div>
             {
                process.env.NEXT_PUBLIC_API_VERSION === 'sandbox' && <div>
                   <div className="h-0.5 bg-[#D95E1B]" />
