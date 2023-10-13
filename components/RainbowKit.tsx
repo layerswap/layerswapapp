@@ -19,7 +19,7 @@ type Props = {
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
 
-    const settingsChains = settings.networks.sort((a, b) => Number(a.chain_id) - Number(b.chain_id)).filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0)).map(n => {
+    const settingsChains = settings.networks?.filter(n => n.status !== 'inactive').sort((a, b) => Number(a.chain_id) - Number(b.chain_id)).filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0)).map(n => {
         return resolveChain(n)
     })
 
@@ -27,6 +27,8 @@ function RainbowKitComponent({ children }: Props) {
         settingsChains,
         [publicProvider()]
     );
+
+    const filteredChains = chains?.slice(0, 10)
 
     const projectId = WALLETCONNECT_PROJECT_ID;
     const connectors = connectorsForWallets([
@@ -79,7 +81,7 @@ function RainbowKitComponent({ children }: Props) {
 
     return (
         <WagmiConfig config={wagmiConfig}>
-            <RainbowKitProvider modalSize="compact" chains={chains} theme={theme}
+            <RainbowKitProvider modalSize="compact" chains={filteredChains} theme={theme}
                 appInfo={{
                     appName: 'Layerswap',
                     learnMoreUrl: 'https://docs.layerswap.io/',
