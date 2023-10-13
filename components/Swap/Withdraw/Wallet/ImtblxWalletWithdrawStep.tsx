@@ -17,7 +17,7 @@ type Props = {
 const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { setImxAccount } = useWalletUpdate()
+    const { connectImx } = useWalletUpdate()
     const { imxAccount } = useWalletState()
     const { swap } = useSwapDataState()
     const { setSwapPublishedTx } = useSwapDataUpdate()
@@ -28,15 +28,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
-        try {
-          
-                const imtblClient = new ImtblClient(source_network?.internal_name)
-                const res = await imtblClient.ConnectWallet();
-                setImxAccount(res.address);
-        }
-        catch (e) {
-            toast(e.message)
-        }
+        connectImx(source_network)
         setLoading(false)
     }, [source_network])
 

@@ -15,11 +15,9 @@ import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
 import RainbowKit from "../Swap/Withdraw/Wallet/RainbowKit";
 import { useAccount } from "wagmi";
-import { disconnect as wagmiDisconnect } from '@wagmi/core'
 import shortenAddress from "../utils/ShortenAddress";
 import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
-import { connect, disconnect as starknetDisconnect } from "get-starknet";
 import WalletIcon from "../icons/WalletIcon";
 import { useWalletState, useWalletUpdate } from "../../context/wallet";
 import { NetworkType } from "../../Models/CryptoNetwork";
@@ -64,7 +62,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
         || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
     const { starknetAccount } = useWalletState()
-    const { setStarknetAccount } = useWalletUpdate()
+    const { connectStarknet, disconnectWallet } = useWalletUpdate()
 
     const settings = useSettingsState()
 
@@ -104,20 +102,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
         setDepositeAddressIsfromAccount(false)
         setFieldValue("destination_address", '')
         try {
-            if (autofilledWalletNetworkType === NetworkType.Starknet) {
-                starknetDisconnect({ clearLastWallet: true })
-                setStarknetAccount(null)
-                setWrongNetwork(false)
-            }
-            else if (autofilledWalletNetworkType === NetworkType.EVM) {
-                wagmiDisconnect()
-            }
+            await disconnectWallet(undefined, values.from)
         }
         catch (e) {
             toast(e.message)
         }
         setInputValue("")
-    }, [setDepositeAddressIsfromAccount, setFieldValue, autofilledWalletNetworkType, setStarknetAccount])
+    }, [setDepositeAddressIsfromAccount, setFieldValue, autofilledWalletNetworkType, disconnectWallet])
 
     const handleSelectAddress = useCallback((value: string) => {
         setAddressConfirmed(true)
@@ -161,20 +152,19 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const destinationChainId = destinationAsset?.network?.chain_id
 
     const handleConnectStarknet = useCallback(async () => {
-        const res = await connect()
-        if (res?.account?.chainId != destinationChainId) {
+        await connectStarknet()
+
+        if (starknetAccount?.account?.chainId != destinationChainId) {
             setWrongNetwork(true)
-            starknetDisconnect({ clearLastWallet: true })
-            setStarknetAccount(null)
+            await disconnectWallet(undefined, values.from)
             setAutofilledWalletNetworkType(null)
             return
         }
         setWrongNetwork(false)
-        setInputValue(res?.account?.address)
+        setInputValue(starknetAccount?.account?.address)
         setAddressConfirmed(true)
-        setFieldValue("destination_address", res?.account?.address)
+        setFieldValue("destination_address", starknetAccount?.account?.address)
         setAutofilledWalletNetworkType(NetworkType.Starknet)
-        setStarknetAccount(res)
     }, [destinationChainId])
 
     return (<>

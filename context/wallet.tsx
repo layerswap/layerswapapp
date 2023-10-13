@@ -1,12 +1,19 @@
-import React, { FC, useState } from 'react'
-import { StarknetWindowObject } from 'get-starknet';
+import React, { FC, useCallback, useState } from 'react'
+import { StarknetWindowObject, connect, disconnect } from 'get-starknet';
 import { useAccount } from 'wagmi';
 import { Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
 import { Balance, Gas, getErc20Balances, getNativeBalance, resolveERC20Balances, resolveGas, resolveNativeBalance } from '../helpers/balanceHelper';
 import { createPublicClient, http } from 'viem';
 import resolveChain from '../lib/resolveChain';
-import { NetworkType } from '../Models/CryptoNetwork';
+import { CryptoNetwork, NetworkType } from '../Models/CryptoNetwork';
+import ImtblClient from '../lib/imtbl';
+import LayerSwapApiClient, { SwapItem } from '../lib/layerSwapApiClient';
+import { GetDefaultNetwork } from '../helpers/settingsHelper';
+import KnownInternalNames from '../lib/knownIds';
+import toast from 'react-hot-toast';
+import { disconnect as wagmiDisconnect } from '@wagmi/core'
+import { useSwapDataUpdate } from './swap';
 
 export const WalletStateContext = React.createContext<WalletState>(null);
 const WalletStateUpdateContext = React.createContext<WalletStateUpdate>(null);
@@ -21,8 +28,9 @@ export type WalletState = {
 }
 
 type WalletStateUpdate = {
-    setStarknetAccount: (account: StarknetWindowObject) => void,
-    setImxAccount: (account: string) => void;
+    connectImx: (source_network: CryptoNetwork) => Promise<void>
+    connectStarknet: () => Promise<void>
+    disconnectWallet: (swap: SwapItem, source_network: Layer) => Promise<void>
     getBalance: (from: Layer) => Promise<void>,
     getGas: (from: Layer, currency: Currency, userDestinationAddress: string) => Promise<void>,
 }
@@ -39,8 +47,10 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
     const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
     const [isGasLoading, setIsGasLoading] = useState<boolean>(false)
     const { address } = useAccount()
+    const { mutateSwap } = useSwapDataUpdate()
     const balances = allBalances[address]
     const gases = allGases
+
     async function getBalance(from: Layer) {
         const isBalanceOutDated = new Date().getTime() - (new Date(allBalances[address]?.find(b => b?.network === from?.internal_name)?.request_time).getTime() || 0) > 10000
         if (from && isBalanceOutDated && address && from?.isExchange === false && from?.type === NetworkType.EVM) {
@@ -112,6 +122,71 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         }
     }
 
+    async function connectStarknet() {
+        try {
+            const res = await connect()
+            setStarknetAccount(res)
+        }
+        catch (e) {
+            throw new Error(e)
+        }
+    }
+
+    async function disconnectStarknet() {
+        try {
+            disconnect({ clearLastWallet: true })
+            setStarknetAccount(null)
+        }
+        catch (e) {
+            throw new Error(e)
+        }
+    }
+
+    async function connectImx(source_network: CryptoNetwork) {
+        try {
+
+            const imtblClient = new ImtblClient(source_network?.internal_name)
+            const res = await imtblClient.ConnectWallet();
+            setImxAccount(res.address);
+        }
+        catch (e) {
+            throw new Error(e)
+        }
+    }
+
+    function disconnectImx() {
+        setImxAccount(null)
+    }
+
+    const handleDisconnectCoinbase = useCallback(async (swap: SwapItem) => {
+        const apiClient = new LayerSwapApiClient()
+        await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
+        await mutateSwap()
+    }, [])
+
+    const disconnectWallet = async (swap: SwapItem, source_network: Layer) => {
+        const sourceNetworkType = GetDefaultNetwork(source_network, swap.source_network_asset)?.type
+        const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
+            || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+        try {
+            if (swap.source_exchange) {
+                await handleDisconnectCoinbase(swap)
+            }
+            else if (sourceNetworkType === NetworkType.EVM) {
+                await wagmiDisconnect()
+            }
+            else if (sourceNetworkType === NetworkType.Starknet) {
+                await disconnectStarknet()
+            }
+            else if (sourceIsImmutableX) {
+                disconnectImx()
+            }
+        }
+        catch {
+            toast.error("Couldn't disconnect the account")
+        }
+    }
+
     return (
         <WalletStateContext.Provider value={{
             starknetAccount,
@@ -122,8 +197,9 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
             isGasLoading
         }}>
             <WalletStateUpdateContext.Provider value={{
-                setStarknetAccount,
-                setImxAccount,
+                connectImx,
+                connectStarknet,
+                disconnectWallet,
                 getBalance,
                 getGas,
             }}>

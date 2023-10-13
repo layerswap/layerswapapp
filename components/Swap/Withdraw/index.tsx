@@ -12,18 +12,15 @@ import SwapSummary from '../Summary';
 import Coinbase from './Coinbase';
 import { useQueryState } from '../../../context/query';
 import External from './External';
-import LayerSwapApiClient, { WithdrawType } from '../../../lib/layerSwapApiClient';
+import { WithdrawType } from '../../../lib/layerSwapApiClient';
 import WalletIcon from '../../icons/WalletIcon';
 import { useAccount } from 'wagmi';
 import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
 import { useAccountModal } from '@rainbow-me/rainbowkit';
-import { disconnect as wagmiDisconnect } from '@wagmi/core'
 import { useWalletState, useWalletUpdate } from '../../../context/wallet';
 import { GetDefaultNetwork } from '../../../helpers/settingsHelper';
-import { disconnect as starknetDisconnect } from "get-starknet";
 import Image from 'next/image';
 import { ResolveWalletIcon } from '../../HeaderWithMenu/ConnectedWallets';
-import toast from 'react-hot-toast';
 import SpinIcon from '../../icons/spinIcon';
 import { NetworkType } from '../../../Models/CryptoNetwork';
 
@@ -173,7 +170,7 @@ const WalletTransferContent: FC = () => {
     const { address, connector } = useAccount();
     const { openAccountModal } = useAccountModal();
     const { starknetAccount, imxAccount } = useWalletState()
-    const { setStarknetAccount, setImxAccount } = useWalletUpdate()
+    const { disconnectWallet } = useWalletUpdate()
 
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
@@ -192,35 +189,10 @@ const WalletTransferContent: FC = () => {
 
     const sourceNetworkType = GetDefaultNetwork(source_network, source_network_asset)?.type
 
-    const handleDisconnectCoinbase = useCallback(async () => {
-        const apiClient = new LayerSwapApiClient()
-        await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
-        await mutateSwap()
-    }, [])
-
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         setIsloading(true);
-        try {
-            if (swap.source_exchange) {
-                await handleDisconnectCoinbase()
-            }
-            else if (sourceNetworkType === NetworkType.EVM) {
-                await wagmiDisconnect()
-            }
-            else if (sourceNetworkType === NetworkType.Starknet) {
-                await starknetDisconnect({ clearLastWallet: true })
-                setStarknetAccount(null)
-            }
-            else if (sourceIsImmutableX) {
-                setImxAccount(null)
-            }
-        }
-        catch {
-            toast.error("Couldn't disconnect the account")
-        }
-        finally {
-            setIsloading(false);
-        }
+        await disconnectWallet(swap, source_network)
+        setIsloading(false);
         e?.stopPropagation();
     }, [sourceNetworkType, swap.source_exchange])
 

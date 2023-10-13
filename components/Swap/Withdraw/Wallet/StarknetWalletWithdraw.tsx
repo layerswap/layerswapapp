@@ -6,7 +6,6 @@ import toast from 'react-hot-toast';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
-import { connect, disconnect } from "get-starknet"
 import { Contract, number, uint256 } from 'starknet';
 import Erc20Abi from "../../../../lib/abis/ERC20.json"
 import WatchDogAbi from "../../../../lib/abis/LSWATCHDOG.json"
@@ -34,7 +33,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { setStarknetAccount } = useWalletUpdate()
+    const { connectStarknet, disconnectWallet } = useWalletUpdate()
     const { starknetAccount } = useWalletState()
     const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
 
@@ -42,10 +41,11 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const { swap } = useSwapDataState()
     const { setSwapPublishedTx } = useSwapDataUpdate()
-    const { networks } = useSettingsState()
+    const { networks, layers } = useSettingsState()
 
     const { source_network: source_network_internal_name } = swap
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
+    const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
     const sourceCurrency = source_network.currencies.find(c => c.asset?.toLowerCase() === swap.source_network_asset?.toLowerCase())
 
     const sourceChainId = source_network?.chain_id
@@ -53,15 +53,14 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
-            const res = await connect()
-            const connectedChainId = res?.account?.chainId
+            await connectStarknet()
+            const connectedChainId = starknetAccount?.account?.chainId
             if (connectedChainId && connectedChainId !== sourceChainId) {
                 setIsWrongNetwork(true)
-                disconnect()
+                await disconnectWallet(swap, source_layer)
             }
             else {
                 setIsWrongNetwork(false)
-                setStarknetAccount(res)
             }
         }
         catch (e) {
