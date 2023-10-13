@@ -17,18 +17,19 @@ type Props = {
 const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { connectImx } = useWalletUpdate()
+    const { connectWallet } = useWalletUpdate()
     const { imxAccount } = useWalletState()
     const { swap } = useSwapDataState()
     const { setSwapPublishedTx } = useSwapDataUpdate()
-    const { networks } = useSettingsState()
+    const { networks, layers } = useSettingsState()
 
     const { source_network: source_network_internal_name } = swap
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
+    const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
-        connectImx(source_network)
+        connectWallet(source_layer)
         setLoading(false)
     }, [source_network])
 

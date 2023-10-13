@@ -51,7 +51,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const valid_addresses = address_book?.filter(a => (destination?.isExchange ? a.exchanges?.some(e => destination?.internal_name === e) : a.networks?.some(n => destination?.internal_name === n)) && isValidAddress(a.address, destination))
 
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
-    const { depositeAddressIsfromAccount } = useSwapDataState()
     const placeholder = "Enter your address here"
     const [inputValue, setInputValue] = useState(values?.destination_address || "")
     const [validInputAddress, setValidInputAddress] = useState<string>()
@@ -62,7 +61,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
         || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
     const { starknetAccount } = useWalletState()
-    const { connectStarknet, disconnectWallet } = useWalletUpdate()
+    const { connectWallet, disconnectWallet } = useWalletUpdate()
 
     const settings = useSettingsState()
 
@@ -102,7 +101,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
         setDepositeAddressIsfromAccount(false)
         setFieldValue("destination_address", '')
         try {
-            await disconnectWallet(undefined, values.from)
+            await disconnectWallet(undefined, values.to)
         }
         catch (e) {
             toast(e.message)
@@ -152,11 +151,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const destinationChainId = destinationAsset?.network?.chain_id
 
     const handleConnectStarknet = useCallback(async () => {
-        await connectStarknet()
-
+        await connectWallet(values.to)
+        
         if (starknetAccount?.account?.chainId != destinationChainId) {
             setWrongNetwork(true)
-            await disconnectWallet(undefined, values.from)
+            await disconnectWallet(undefined, values.to)
             setAutofilledWalletNetworkType(null)
             return
         }

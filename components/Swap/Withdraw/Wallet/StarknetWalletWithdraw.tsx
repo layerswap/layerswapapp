@@ -33,7 +33,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { connectStarknet, disconnectWallet } = useWalletUpdate()
+    const { connectWallet, disconnectWallet } = useWalletUpdate()
     const { starknetAccount } = useWalletState()
     const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
 
@@ -53,7 +53,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
-            await connectStarknet()
+            await connectWallet(source_layer)
             const connectedChainId = starknetAccount?.account?.chainId
             if (connectedChainId && connectedChainId !== sourceChainId) {
                 setIsWrongNetwork(true)
@@ -70,6 +70,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     }, [sourceChainId])
 
     const handleTransfer = useCallback(async () => {
+        debugger
         setLoading(true)
         try {
             if (!starknetAccount) {

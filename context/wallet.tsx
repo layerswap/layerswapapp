@@ -6,14 +6,14 @@ import { Currency } from '../Models/Currency';
 import { Balance, Gas, getErc20Balances, getNativeBalance, resolveERC20Balances, resolveGas, resolveNativeBalance } from '../helpers/balanceHelper';
 import { createPublicClient, http } from 'viem';
 import resolveChain from '../lib/resolveChain';
-import { CryptoNetwork, NetworkType } from '../Models/CryptoNetwork';
+import { NetworkType } from '../Models/CryptoNetwork';
 import ImtblClient from '../lib/imtbl';
 import LayerSwapApiClient, { SwapItem } from '../lib/layerSwapApiClient';
-import { GetDefaultNetwork } from '../helpers/settingsHelper';
 import KnownInternalNames from '../lib/knownIds';
 import toast from 'react-hot-toast';
 import { disconnect as wagmiDisconnect } from '@wagmi/core'
 import { useSwapDataUpdate } from './swap';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 
 export const WalletStateContext = React.createContext<WalletState>(null);
 const WalletStateUpdateContext = React.createContext<WalletStateUpdate>(null);
@@ -28,9 +28,8 @@ export type WalletState = {
 }
 
 type WalletStateUpdate = {
-    connectImx: (source_network: CryptoNetwork) => Promise<void>
-    connectStarknet: () => Promise<void>
-    disconnectWallet: (swap: SwapItem, source_network: Layer) => Promise<void>
+    connectWallet: (network: Layer) => Promise<void>
+    disconnectWallet: (swap: SwapItem, network: Layer) => Promise<void>
     getBalance: (from: Layer) => Promise<void>,
     getGas: (from: Layer, currency: Currency, userDestinationAddress: string) => Promise<void>,
 }
@@ -48,6 +47,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
     const [isGasLoading, setIsGasLoading] = useState<boolean>(false)
     const { address } = useAccount()
     const { mutateSwap } = useSwapDataUpdate()
+    const { openConnectModal } = useConnectModal()
     const balances = allBalances[address]
     const gases = allGases
 
@@ -126,31 +126,30 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         try {
             const res = await connect()
             setStarknetAccount(res)
+            return res
         }
         catch (e) {
             throw new Error(e)
         }
     }
-
     async function disconnectStarknet() {
         try {
             disconnect({ clearLastWallet: true })
             setStarknetAccount(null)
         }
         catch (e) {
-            throw new Error(e)
+            console.log(e)
         }
     }
 
-    async function connectImx(source_network: CryptoNetwork) {
+    async function connectImx(network_internal_name: string) {
         try {
-
-            const imtblClient = new ImtblClient(source_network?.internal_name)
+            const imtblClient = new ImtblClient(network_internal_name)
             const res = await imtblClient.ConnectWallet();
             setImxAccount(res.address);
         }
         catch (e) {
-            throw new Error(e)
+            console.log(e)
         }
     }
 
@@ -164,21 +163,41 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         await mutateSwap()
     }, [])
 
-    const disconnectWallet = async (swap: SwapItem, source_network: Layer) => {
-        const sourceNetworkType = GetDefaultNetwork(source_network, swap.source_network_asset)?.type
-        const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-            || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+    const connectWallet = async (network: Layer) => {
+        const networkType = network?.type
+        const isNetworkImmutableX = network?.internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
+            || network?.internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
         try {
-            if (swap.source_exchange) {
+            if (networkType === NetworkType.Starknet) {
+                await connectStarknet()
+            }
+            else if (isNetworkImmutableX) {
+                await connectImx(network.internal_name)
+            }
+            else if (networkType === NetworkType.EVM) {
+                openConnectModal()
+            }
+        }
+        catch {
+            toast.error("Couldn't connect the account")
+        }
+    }
+
+    const disconnectWallet = async (swap: SwapItem, network: Layer) => {
+        const networkType = network?.type
+        const isNetworkImmutableX = network?.internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
+            || network?.internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+        try {
+            if (swap?.source_exchange) {
                 await handleDisconnectCoinbase(swap)
             }
-            else if (sourceNetworkType === NetworkType.EVM) {
+            else if (networkType === NetworkType.EVM) {
                 await wagmiDisconnect()
             }
-            else if (sourceNetworkType === NetworkType.Starknet) {
+            else if (networkType === NetworkType.Starknet) {
                 await disconnectStarknet()
             }
-            else if (sourceIsImmutableX) {
+            else if (isNetworkImmutableX) {
                 disconnectImx()
             }
         }
@@ -197,8 +216,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
             isGasLoading
         }}>
             <WalletStateUpdateContext.Provider value={{
-                connectImx,
-                connectStarknet,
+                connectWallet,
                 disconnectWallet,
                 getBalance,
                 getGas,
