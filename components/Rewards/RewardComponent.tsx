@@ -166,7 +166,7 @@ const Rewards: FC<RewardsProps> = ({ campaign }) => {
                 </span>
             </p>
             <div className="bg-secondary-700 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
-                {!campaignIsEnded && <BackgroundField header={<span className="flex justify-between"><span className="flex items-center"><span>Pending Earnings&nbsp;</span><ClickTooltip text={`${campaign.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
+                {!campaignIsEnded && <BackgroundField header={<span className="flex justify-between"><span className="flex items-center"><span>Pending Earnings&nbsp;</span><ClickTooltip text={`${campaign?.asset} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
                     <div className="flex justify-between w-full text-2xl">
                         <div className="flex items-center space-x-1">
                             <div className="h-5 w-5 relative">
@@ -179,7 +179,7 @@ const Rewards: FC<RewardsProps> = ({ campaign }) => {
                                     className="rounded-full object-contain" />
                             </div>
                             <p>
-                                {rewards?.user_reward.total_pending_amount} <span className="text-base sm:text-2xl">{campaign.asset}</span>
+                                {rewards?.user_reward.total_pending_amount} <span className="text-base sm:text-2xl">{campaign?.asset}</span>
                             </p>
                         </div>
                         <div className="flex items-center space-x-1">
@@ -190,7 +190,7 @@ const Rewards: FC<RewardsProps> = ({ campaign }) => {
                         </div>
                     </div>
                 </BackgroundField>}
-                <BackgroundField header={<span className="flex justify-between"><span className="flex items-center"><span>Total Earnings&nbsp;</span><ClickTooltip text={`${campaign.asset} tokens that you’ve earned so far (including Pending Earnings).`} /></span><span>Current Value</span></span>} withoutBorder>
+                <BackgroundField header={<span className="flex justify-between"><span className="flex items-center"><span>Total Earnings&nbsp;</span><ClickTooltip text={`${campaign?.asset} tokens that you’ve earned so far (including Pending Earnings).`} /></span><span>Current Value</span></span>} withoutBorder>
                     <div className="flex justify-between w-full text-slate-300 text-2xl">
                         <div className="flex items-center space-x-1">
                             <div className="h-5 w-5 relative">
@@ -203,7 +203,7 @@ const Rewards: FC<RewardsProps> = ({ campaign }) => {
                                     className="rounded-full object-contain" />
                             </div>
                             <p>
-                                {rewards?.user_reward.total_amount} <span className="text-base sm:text-2xl">{campaign.asset}</span>
+                                {rewards?.user_reward.total_amount} <span className="text-base sm:text-2xl">{campaign?.asset}</span>
                             </p>
                         </div>
                         <p>
@@ -213,22 +213,22 @@ const Rewards: FC<RewardsProps> = ({ campaign }) => {
                 </BackgroundField>
             </div>
         </div>
-        {!campaignIsEnded && <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
+        <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
             <BackgroundField header={
                 <>
-                    <p className="flex items-center"><span>{campaign.asset} pool</span>
-                        <ClickTooltip text={`The amount of ${campaign.asset} to be distributed during this round of the campaign.`} />
+                    <p className="flex items-center"><span>{campaign?.asset} pool</span>
+                        <ClickTooltip text={`The amount of ${campaign?.asset} to be distributed during this round of the campaign.`} />
                     </p>
                 </>
             } withoutBorder>
                 <div className="flex flex-col w-full gap-2">
                     <Progress value={DistributedAmount === Infinity ? 0 : DistributedAmount} />
                     <div className="flex justify-between w-full font-semibold text-sm ">
-                        <div className="text-primary"><span className="text-primary-text">{campaign.distributed_amount.toFixed(0)}</span> <span>/</span> {totalBudget} {campaign.asset}</div>
+                        <div className="text-primary"><span className="text-primary-text">{campaign?.distributed_amount.toFixed(0)}</span> <span>/</span> {totalBudget} {campaign?.asset}</div>
                     </div>
                 </div>
             </BackgroundField>
-        </div>}
+        </div>
         {
             payouts.length > 0 &&
             <div className="space-y-1">
