@@ -102,7 +102,7 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
                                 <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
                                     <AuthDataUpdateContext.Provider value={{}}>
                                         <SwapDataUpdateContext.Provider value={{ setInterval: () => { } }}>
-                                            <WalletStateContext.Provider value={{ balances: null, zkSyncAccount: null, gases: null, imxAccount: null, isBalanceLoading: null, isGasLoading: null, starknetAccount: null, syncWallet: null }}>
+                                            <WalletStateContext.Provider value={{ balances: null, gases: null, imxAccount: null, isBalanceLoading: null, isGasLoading: null, starknetAccount: null, syncWallet: null }}>
                                                 <WalletMessage status="pending"
                                                     header='Preparing the transaction'
                                                     details='Will be ready to sign in a couple of seconds' />

@@ -16,7 +16,7 @@ import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw"
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
-    const { starknetAccount, imxAccount, zkSyncAccount } = useWalletState();
+    const { starknetAccount, imxAccount, syncWallet } = useWalletState();
     const { address } = useAccount()
     const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_network_asset } = swap
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
@@ -26,7 +26,7 @@ const WalletTransfer: FC = () => {
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsZkSync = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
-    let connectedWalletAddress = sourceIsImmutableX ? imxAccount : sourceIsStarknet ? starknetAccount?.account?.address : sourceIsZkSync ? zkSyncAccount : address;
+    let connectedWalletAddress = sourceIsImmutableX ? imxAccount : sourceIsStarknet ? starknetAccount?.account?.address : sourceIsZkSync ? syncWallet?.cachedAddress : address;
     const canDoSweeplessTransfer = CanDoSweeplessTransfer(source_network, connectedWalletAddress, destination_address)
     const layerswapApiClient = new LayerSwapApiClient()
     const shouldGetGeneratedAddress = !canDoSweeplessTransfer

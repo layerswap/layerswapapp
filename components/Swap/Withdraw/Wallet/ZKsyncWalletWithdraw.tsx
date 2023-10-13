@@ -23,7 +23,7 @@ type Props = {
 const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
-    const { setZkSyncAccount, setSyncWallet } = useWalletUpdate();
+    const { setSyncWallet } = useWalletUpdate();
     const { syncWallet } = useWalletState();
     const { setSwapTransaction } = useSwapTransactionStore();
     const { swap } = useSwapDataState();
@@ -50,7 +50,6 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             const wallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
             wallet.getAccountState();
             setSyncWallet(wallet);
-            setZkSyncAccount(wallet.cachedAddress);
         }
         catch (e) {
             toast(e.message)

@@ -173,8 +173,8 @@ const Withdraw: FC = () => {
 const WalletTransferContent: FC = () => {
     const { address, connector } = useAccount();
     const { openAccountModal } = useAccountModal();
-    const { starknetAccount, imxAccount, zkSyncAccount, syncWallet } = useWalletState()
-    const { setStarknetAccount, setImxAccount, setZkSyncAccount, setSyncWallet } = useWalletUpdate()
+    const { starknetAccount, imxAccount, syncWallet } = useWalletState()
+    const { setStarknetAccount, setImxAccount, setSyncWallet } = useWalletUpdate()
 
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
@@ -219,7 +219,6 @@ const WalletTransferContent: FC = () => {
             else if (sourceIsZkSync) {
                 await wagmiDisconnect()
                 setSyncWallet(null)
-                setZkSyncAccount(null)
             }
         }
         catch {
@@ -245,7 +244,7 @@ const WalletTransferContent: FC = () => {
         accountAddress = imxAccount;
     }
     else if (sourceIsZkSync) {
-        accountAddress = zkSyncAccount;
+        accountAddress = syncWallet?.cachedAddress;
     }
 
     const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap.source_exchange
