@@ -152,8 +152,8 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                             </Field>
                                         </div>
                                         <div className='px-3 text-primary-text mt-6'>
-                                            <p className='text-left text-base mb-3 text-primary-text font-semibold'>
-                                                What will you get by signing in to Layerswap?
+                                            <p className='text-left text-sm mb-3 text-secondary-text font-semibold'>
+                                                By signing in you get
                                             </p>
                                             <ul className='space-y-3'>
                                                 <li className='flex gap-3'>
