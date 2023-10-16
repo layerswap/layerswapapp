@@ -13,7 +13,7 @@ import WalletIcon from "../../icons/WalletIcon";
 import Link from "next/link";
 import LinkWrapper from "../../LinkWraapper";
 import { Widget } from "../../Widget/Index";
-import Leaderboard from "./LeaderBoard"
+import Leaderboard from "./Leaderboard"
 import { CryptoNetwork } from "../../../Models/CryptoNetwork";
 import Rewards from "./Rewards";
 import SpinIcon from "../../icons/spinIcon"

@@ -45,7 +45,7 @@ type ResolveGasArguments = {
     from: Layer & { isExchange: false },
     currency: Currency,
     destination: `0x${string}`
-    nativeToken: NetworkAsset | null | undefined,
+    nativeToken: NetworkAsset,
     isSweeplessTx: boolean
 }
 
@@ -205,7 +205,7 @@ export const resolveNativeBalance = async (
     const nativeBalance: Balance = {
         network: from.internal_name,
         token: native_currency.asset,
-        amount: formatAmount(nativeTokenRes?.value, native_currency?.decimals),
+        amount: formatAmount(nativeTokenRes?.value, native_currency.decimals),
         request_time: new Date().toJSON(),
         decimals: native_currency.decimals,
         isNativeCurrency: true,
@@ -291,13 +291,17 @@ const GetOpL1Fee = async ({ publicClient, chainId, destination, contract_address
 
 export const resolveGas = async (options: ResolveGasArguments) => {
     const feeData = await resolveFeeData(options.publicClient)
+
     const estimatedGasLimit = options.contract_address ?
         await estimateERC20GasLimit(options)
         : await estimateNativeGasLimit(options)
 
-    let totalGas = feeData?.maxFeePerGas
-        ? (feeData?.maxFeePerGas * estimatedGasLimit)
-        : ((feeData?.gasPrice || BigInt(1)) * estimatedGasLimit)
+    const multiplier = feeData.maxFeePerGas || feeData.gasPrice
+
+    if (!multiplier)
+        return undefined
+
+    let totalGas = multiplier * estimatedGasLimit
 
     const gasCalculationType = NetworkSettings.KnownSettings[options.from.internal_name].GasCalculationType
 
@@ -318,8 +322,8 @@ export const resolveGas = async (options: ResolveGasArguments) => {
     }
 }
 
-export const formatAmount = (unformattedAmount: bigint | unknown, decimals: number | null | undefined) => {
-    return (Number(BigInt(unformattedAmount?.toString() || 0)) / Math.pow(10, decimals || 1))
+export const formatAmount = (unformattedAmount: bigint | unknown, decimals: number) => {
+    return (Number(BigInt(unformattedAmount?.toString() || 0)) / Math.pow(10, decimals))
 }
 
 // Data is just "0x" for a non-contract (native token) transaction

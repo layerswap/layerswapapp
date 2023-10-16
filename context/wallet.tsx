@@ -84,33 +84,37 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
     }
 
     async function getGas(from: Layer & { isExchange: false }, currency: Currency, userDestinationAddress: string) {
-        if (!from || !address) {
+        if (!from || !address || from?.isExchange) {
             return
         }
+        const chainId = Number(from?.chain_id)
+        const nativeToken = from?.assets
+            .find(a =>
+                a.asset ===
+                (from as { native_currency: string }).native_currency)
+        const network = from.assets?.[0].network
+
+        if (!nativeToken || !chainId || !network)
+            return
 
         const contract_address = from?.assets?.find(a => a?.asset === currency?.asset)?.contract_address as `0x${string}`
-        const chainId = from?.isExchange === false && Number(from?.chain_id)
         const destination_address = from?.assets?.find(c => c.asset.toLowerCase() === currency?.asset?.toLowerCase())?.network?.managed_accounts?.[0]?.address as `0x${string}`
-        const nativeToken = from.isExchange === false ?
-            from?.assets
-                .find(a =>
-                    a.asset ===
-                    (from as { native_currency: string }).native_currency)
-            : null
+
 
         const gas = allGases[from.internal_name]?.find(g => g?.token === currency?.asset)
         const isGasOutDated = !gas || new Date().getTime() - (new Date(gas.request_time).getTime() || 0) > 10000
 
-        if (chainId && isGasOutDated && currency && destination_address && from?.isExchange === false && from?.type === NetworkType.EVM) {
+        if (chainId && isGasOutDated && currency && destination_address && from?.type === NetworkType.EVM) {
             setIsGasLoading(true)
             try {
-                const network = from.assets?.[0].network
-                const publicClient = network ? createPublicClient({
+
+
+                const publicClient = createPublicClient({
                     chain: resolveChain(network),
                     transport: http(),
-                }) : null;
+                })
 
-                const gas = publicClient ? (await resolveGas({
+                const gas = await resolveGas({
                     publicClient,
                     chainId,
                     contract_address,
@@ -120,7 +124,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
                     destination: destination_address,
                     isSweeplessTx: address !== userDestinationAddress,
                     nativeToken: nativeToken
-                })) : null
+                })
 
                 if (gas) {
                     const filteredGases = allGases[from.internal_name]?.some(b => b?.token === currency?.asset) ? allGases[from.internal_name].filter(g => g.token !== currency.asset) : allGases[from.internal_name] || []

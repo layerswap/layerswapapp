@@ -12,11 +12,8 @@ import { MenuProvider } from "../context/menu";
 import ErrorFallback from "./ErrorFallback";
 import { SendErrorMessage } from "../lib/telegram";
 import dynamic from 'next/dynamic'
-import LayerSwapLogo from "./icons/layerSwapLogo";
-import CardContainer from "./cardContainer";
 import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
-import RainbowKit from "./RainbowKit";
 
 type Props = {
   children: JSX.Element | JSX.Element[];

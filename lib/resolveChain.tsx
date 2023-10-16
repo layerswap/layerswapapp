@@ -1,22 +1,28 @@
 import { Chain, parseGwei } from "viem";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
 import NetworkSettings from "./NetworkSettings";
+import { SendErrorMessage } from "./telegram";
 
-export default function resolveChain(network: CryptoNetwork): Chain {
+export default function resolveChain(network: CryptoNetwork): Chain | undefined {
 
     const nativeCurrency = network.currencies.find(c => c.asset === network.native_currency);
     const blockExplorersBaseURL = new URL(network.transaction_explorer_template).origin;
     const metadata = network.metadata
     const { ensRegistry, ensUniversalResolver, multicall3 } = metadata || {}
 
+    if (!nativeCurrency) {
+        SendErrorMessage("UI Settings error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: could not find native currance for ${network.internal_name} %0A`)
+        return
+    }
+
     const res: Chain = {
         id: Number(network.chain_id),
         name: network.display_name,
         network: network.internal_name,
         nativeCurrency: {
-            name: nativeCurrency?.name || "",
-            symbol: nativeCurrency?.asset || "",
-            decimals: nativeCurrency?.decimals || 0
+            name: nativeCurrency.name,
+            symbol: nativeCurrency.asset,
+            decimals: nativeCurrency.decimals
         },
         rpcUrls: {
             default: {
