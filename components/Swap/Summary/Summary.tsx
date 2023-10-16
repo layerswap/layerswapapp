@@ -125,7 +125,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                             </div>
                             :
                             <div className="flex flex-col justify-end">
-                                <div className="h-[18px] my-[5px] w-20 animate-pulse rounded bg-gray-500" />
+                                <div className="h-[10px] my-[5px] w-20 animate-pulse rounded bg-gray-500" />
                                 <div className="h-[10px] my-[5px] w-10 animate-pulse rounded bg-gray-500 ml-auto" />
                             </div>
                     }
