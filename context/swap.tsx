@@ -23,7 +23,7 @@ export const SwapDataStateContext = createContext<SwapData>({
 export const SwapDataUpdateContext = createContext<UpdateInterface | null>(null);
 
 export type UpdateInterface = {
-    createSwap: (values: SwapFormValues, query: QueryParams, partner: Partner | null | undefined) => Promise<string | undefined>,
+    createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<string | undefined>,
     setCodeRequested: (codeSubmitted: boolean) => void;
     cancelSwap: (swapId: string) => Promise<void>;
     setAddressConfirmed: (value: boolean) => void;

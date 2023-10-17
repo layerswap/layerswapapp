@@ -2,7 +2,7 @@ import React, { Context, useCallback, useEffect, useState } from 'react'
 import { parseJwt } from '../lib/jwtParser';
 import TokenService from '../lib/TokenService';
 
-export const AuthStateContext = React.createContext<AuthState>({ authData: undefined, email: undefined, codeRequested: undefined, guestAuthData: undefined, tempEmail: undefined, userId: undefined, userLockedOut: false, userType: undefined });
+export const AuthStateContext = React.createContext<AuthState | null>({ authData: undefined, email: undefined, codeRequested: undefined, guestAuthData: undefined, tempEmail: undefined, userId: undefined, userLockedOut: false, userType: undefined });
 export const AuthDataUpdateContext = React.createContext<UpdateInterface | null>(null);
 
 type AuthState = {
@@ -93,7 +93,7 @@ export function AuthProvider({ children }) {
 }
 
 export function useAuthState() {
-    const data = React.useContext<AuthState>(AuthStateContext);
+    const data = React.useContext<AuthState>(AuthStateContext as Context<AuthState>);
 
     if (data === undefined) {
         throw new Error('useAuthState must be used within a AuthStateProvider');

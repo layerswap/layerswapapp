@@ -143,10 +143,10 @@ export type SwapItem = {
     refuel_transaction_id?: string,
     source_network_asset: string,
     source_network: string,
-    source_exchange: string | null | undefined,
+    source_exchange?: string,
     destination_network_asset: string,
     destination_network: string,
-    destination_exchange: string | null | undefined,
+    destination_exchange?: string,
     transactions: Transaction[]
     has_refuel?: boolean,
     exchange_account_connected: boolean;

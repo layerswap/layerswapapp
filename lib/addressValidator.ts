@@ -4,7 +4,7 @@ import { validateAndParseAddress } from "./starkNetAddressValidator";
 import { PublicKey } from '@solana/web3.js'
 import { Layer } from "../Models/Layer";
 
-export function isValidAddress(address: string | null | undefined, network?: Layer | null): boolean {
+export function isValidAddress(address?: string, network?: Layer | null): boolean {
     if (!address) {
         return false
     }

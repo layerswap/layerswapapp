@@ -78,7 +78,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
             status: c.status,
             is_default: true,
             network_internal_name: network?.internal_name,
-            network: { ...network, currencies: [c] },
+            network: { ...network },
             contract_address: c.contract_address,
             decimals: c.decimals
         }))

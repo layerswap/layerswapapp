@@ -48,15 +48,6 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const progressStatuses = getProgressStatuses(swap, swapStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
-    type ProgressStates = {
-        [key in Progress]?: {
-            [key in ProgressStatus]?: {
-                name: string | undefined | null;
-                description: string | JSX.Element | undefined | null;
-            }
-        }
-    }
-
     const outputPendingDetails = <div className='flex items-center space-x-1'>
         <span>Estimated arrival:</span>
         <div className='text-primary-text'>

@@ -32,10 +32,10 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     ref?: any;
     close: () => void,
     isPartnerWallet: boolean,
-    partnerImage: string | null | undefined,
-    partner: Partner | null | undefined,
+    partnerImage?: string,
+    partner?: Partner,
     canFocus?: boolean,
-    address_book: AddressBookItem[] | null | undefined
+    address_book?: AddressBookItem[]
 }
 
 const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address

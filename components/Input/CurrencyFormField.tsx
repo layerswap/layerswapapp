@@ -24,7 +24,7 @@ const CurrencyFormField: FC = () => {
     const name = "currency"
     const query = useQueryState()
     const { balances } = useWalletState()
-    const lockedCurrency = query?.lockAsset ? currencies?.find(c => c?.asset?.toUpperCase() === (query?.asset as string)?.toUpperCase()) : null
+    const lockedCurrency = query?.lockAsset ? currencies?.find(c => c?.asset?.toUpperCase() === (query?.asset as string)?.toUpperCase()) : undefined
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : FilterCurrencies(currencies, from, to)
     const currencyMenuItems = from ? GenerateCurrencyMenuItems(
@@ -57,7 +57,7 @@ const CurrencyFormField: FC = () => {
     return <PopoverSelectWrapper values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />;
 };
 
-export function GenerateCurrencyMenuItems(currencies: Currency[], source: Layer, resolveImgSrc: (item: Layer | Currency) => string, lockedCurrency?: Currency | null | undefined, balances?: Balance[]): SelectMenuItem<Currency>[] {
+export function GenerateCurrencyMenuItems(currencies: Currency[], source: Layer, resolveImgSrc: (item: Layer | Currency) => string, lockedCurrency?: Currency, balances?: Balance[]): SelectMenuItem<Currency>[] {
 
     let currencyIsAvailable = () => {
         if (lockedCurrency) {

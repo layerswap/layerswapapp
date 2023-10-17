@@ -8,7 +8,7 @@ import { createPublicClient, http } from 'viem';
 import resolveChain from '../lib/resolveChain';
 import { NetworkType } from '../Models/CryptoNetwork';
 
-export const WalletStateContext = createContext<WalletState>({
+export const WalletStateContext = createContext<WalletState | null>({
     balances: [],
     gases: {},
     imxAccount: null,
@@ -55,8 +55,12 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         const source_network = source_assets?.[0].network
         if (source_network && isBalanceOutDated && address && from?.isExchange === false && from?.type === NetworkType.EVM) {
             setIsBalanceLoading(true)
+            const chain = resolveChain(source_network)
+            if (!chain) {
+                return
+            }
             const publicClient = createPublicClient({
-                chain: resolveChain(source_network),
+                chain,
                 transport: http()
             })
             const erc20BalancesContractRes = await getErc20Balances({
@@ -158,7 +162,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
 }
 
 export function useWalletState<T>() {
-    const data = useContext<WalletState>(WalletStateContext);
+    const data = useContext<WalletState>(WalletStateContext as Context<WalletState>);
     if (data === undefined) {
         throw new Error('useWalletStateContext must be used within a WalletStateContext');
     }

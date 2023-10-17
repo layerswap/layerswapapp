@@ -29,10 +29,10 @@ export type Gas = {
     token: string,
     gas: number,
     gasDetails?: {
-        gasLimit?: number | null | undefined,
-        maxFeePerGas?: number | null | undefined,
-        gasPrice?: number | null | undefined,
-        maxPriorityFeePerGas?: number | null | undefined
+        gasLimit?: number,
+        maxFeePerGas?: number,
+        gasPrice?: number,
+        maxPriorityFeePerGas?: number
     },
     request_time: string
 }
@@ -314,9 +314,9 @@ export const resolveGas = async (options: ResolveGasArguments) => {
         token: options.currency?.asset,
         gasDetails: {
             gasLimit: Number(estimatedGasLimit),
-            maxFeePerGas: feeData?.maxFeePerGas ? Number(formatGwei(feeData?.maxFeePerGas)) : null,
-            gasPrice: feeData?.gasPrice ? Number(formatGwei(feeData?.gasPrice)) : null,
-            maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas ? Number(formatGwei(feeData?.maxPriorityFeePerGas)) : null,
+            maxFeePerGas: feeData?.maxFeePerGas ? Number(formatGwei(feeData?.maxFeePerGas)) : undefined,
+            gasPrice: feeData?.gasPrice ? Number(formatGwei(feeData?.gasPrice)) : undefined,
+            maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas ? Number(formatGwei(feeData?.maxPriorityFeePerGas)) : undefined,
         },
         request_time: new Date().toJSON()
     }

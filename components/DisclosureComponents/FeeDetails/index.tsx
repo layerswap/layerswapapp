@@ -9,7 +9,7 @@ import Campaign from './Campaign';
 
 export default function FeeDetails({ values }: { values: SwapFormValues }) {
     const { networks, currencies } = useSettingsState()
-    const { currency, from, to } = values || {}
+    const { currency, from, to, refuel } = values || {}
 
     let fee = CalculateFee(values, networks);
     let receive_amount = CalculateReceiveAmount(values, networks, currencies);
@@ -23,7 +23,10 @@ export default function FeeDetails({ values }: { values: SwapFormValues }) {
                             <ReceiveAmounts
                                 currencies={currencies}
                                 currency={currency}
-                                receive_amount={receive_amount} />
+                                to={to}
+                                receive_amount={receive_amount}
+                                refuel={!!refuel}
+                            />
                         </AccordionTrigger>
                         <AccordionContent className="text-sm text-secondary-text font-normal">
                             <DetailedEstimates

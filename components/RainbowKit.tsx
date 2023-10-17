@@ -30,9 +30,7 @@ function RainbowKitComponent({ children }: Props) {
         .sort((a, b) => Number(a.chain_id) - Number(b.chain_id))
         .filter(net => net.type === NetworkType.EVM
             && net.nodes?.some(n => n.url?.length > 0))
-        .map(n => {
-            return resolveChain(n)
-        }).filter(isChain) || []
+        .map(resolveChain).filter(isChain) || []
 
     const { chains, publicClient } = configureChains(
         settingsChains,

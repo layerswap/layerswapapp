@@ -3,7 +3,7 @@ const feedbackChat_id = "-1001625192521";
 const errorToken = '5438366819:AAHhbISk7q_Wx2CpKUVBCAfIsidhp_bmGKM'
 const errorChat_id = '-1001844311453'
 
-export const SendFeedbackMessage = async (title: string | null | undefined, text: string) => {
+export const SendFeedbackMessage = async (title: string, text: string) => {
     return await (await fetch(`https://api.telegram.org/bot${feedbackToken}/sendMessage?chat_id=${feedbackChat_id}&text=${title} %0A ${text}`)).json()
 }
 
