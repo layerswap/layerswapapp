@@ -49,7 +49,8 @@ export default class LayerSwapApiClient {
     }
 
     async GetSwapDetailsAsync(id: string): Promise<ApiResponse<SwapItem>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem>>("GET", `/swaps/${id}`);
+        const version = process.env.NEXT_PUBLIC_API_VERSION
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem>>("GET", `/swaps/${id}?version=${version}`);
     }
 
     async GetDepositAddress(network: string, source: DepositAddressSource): Promise<ApiResponse<DepositAddress>> {
