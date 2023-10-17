@@ -25,8 +25,9 @@ export default class LayerSwapApiClient {
     }
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<CreateSwapData>> {
+        const version = process.env.NEXT_PUBLIC_API_VERSION
         const correlationId = uuidv4()
-        return await this.AuthenticatedRequest<ApiResponse<CreateSwapData>>("POST", `/swaps`, params, { 'X-LS-CORRELATION-ID': correlationId });
+        return await this.AuthenticatedRequest<ApiResponse<CreateSwapData>>("POST", `/swaps?version=${version}`, params, { 'X-LS-CORRELATION-ID': correlationId });
     }
 
     async GetSwapsAsync(page: number, status?: SwapStatusInNumbers): Promise<ApiResponse<SwapItem[]>> {
