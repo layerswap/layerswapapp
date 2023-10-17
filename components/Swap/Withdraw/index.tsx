@@ -23,6 +23,7 @@ import Image from 'next/image';
 import { ResolveWalletIcon } from '../../HeaderWithMenu/ConnectedWallets';
 import SpinIcon from '../../icons/spinIcon';
 import { NetworkType } from '../../../Models/CryptoNetwork';
+import useWallet from '../../../hooks/useWallet';
 
 const Withdraw: FC = () => {
 
@@ -169,12 +170,10 @@ const Withdraw: FC = () => {
 const WalletTransferContent: FC = () => {
     const { address, connector } = useAccount();
     const { openAccountModal } = useAccountModal();
-    const { starknetAccount, imxAccount } = useWalletState()
-    const { disconnectWallet } = useWalletUpdate()
+    const { wallet, disconnectWallet } = useWallet()
 
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
-    const { mutateSwap } = useSwapDataUpdate()
     const [isLoading, setIsloading] = useState(false);
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
@@ -204,10 +203,10 @@ const WalletTransferContent: FC = () => {
         accountAddress = address;
     }
     else if (sourceNetworkType === NetworkType.Starknet) {
-        accountAddress = starknetAccount?.account?.address;
+        accountAddress = wallet?.address;
     }
     else if (sourceIsImmutableX) {
-        accountAddress = imxAccount;
+        accountAddress = wallet?.address;
     }
 
     const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap.source_exchange
@@ -236,7 +235,7 @@ const WalletTransferContent: FC = () => {
                     !swap.source_exchange
                     && sourceNetworkType === NetworkType.Starknet
                     && <Image
-                        src={starknetAccount?.icon}
+                        src={wallet?.icon}
                         alt={accountAddress}
                         width={25}
                         height={25} />

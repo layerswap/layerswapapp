@@ -8,7 +8,7 @@ import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClie
 import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
-import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
+import useWallet from '../../../../hooks/useWallet';
 
 type Props = {
     depositAddress: string
@@ -17,8 +17,7 @@ type Props = {
 const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { connectWallet } = useWalletUpdate()
-    const { imxAccount } = useWalletState()
+    const { connectWallet, wallet: imxAccount } = useWallet()
     const { swap } = useSwapDataState()
     const { setSwapPublishedTx } = useSwapDataUpdate()
     const { networks, layers } = useSettingsState()
@@ -29,7 +28,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
-        connectWallet(source_layer)
+        connectWallet(source_layer as any)
         setLoading(false)
     }, [source_network])
 

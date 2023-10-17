@@ -4,7 +4,7 @@ import { AddressBookItem } from "../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
-import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
+import { useSwapDataUpdate } from "../../context/swap";
 import { getStarknet } from "get-starknet-core"
 import { Info } from "lucide-react";
 import KnownInternalNames from "../../lib/knownIds";
@@ -19,8 +19,8 @@ import shortenAddress from "../utils/ShortenAddress";
 import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import WalletIcon from "../icons/WalletIcon";
-import { useWalletState, useWalletUpdate } from "../../context/wallet";
 import { NetworkType } from "../../Models/CryptoNetwork";
+import useWallet from "../../hooks/useWallet";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -60,9 +60,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const destinationIsStarknet = destination?.internal_name === KnownInternalNames.Networks.StarkNetGoerli
         || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
-    const { starknetAccount } = useWalletState()
-    const { connectWallet, disconnectWallet } = useWalletUpdate()
-
+    const { connectWallet, disconnectWallet, wallet } = useWallet()
     const settings = useSettingsState()
 
     const { isConnected: isRainbowKitConnected, address: walletAddress } = useAccount({
@@ -151,19 +149,24 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const destinationChainId = destinationAsset?.network?.chain_id
 
     const handleConnectStarknet = useCallback(async () => {
-        await connectWallet(values.to)
-        
-        if (starknetAccount?.account?.chainId != destinationChainId) {
-            setWrongNetwork(true)
-            await disconnectWallet(undefined, values.to)
-            setAutofilledWalletNetworkType(null)
-            return
+        const destination = values.to;
+
+        if (destination.isExchange === false && destination.type === NetworkType.Starknet) {
+            const res = await connectWallet(destination as any)
+
+            if (res.account.chainId != destinationChainId) {
+                setWrongNetwork(true)
+                await disconnectWallet(undefined, values.to)
+                setAutofilledWalletNetworkType(null)
+                return
+            }
+            setWrongNetwork(false)
+            setInputValue(res?.account?.address)
+            setAddressConfirmed(true)
+            setFieldValue("destination_address", res?.account?.address)
+            setAutofilledWalletNetworkType(destination.type)
         }
-        setWrongNetwork(false)
-        setInputValue(starknetAccount?.account?.address)
-        setAddressConfirmed(true)
-        setFieldValue("destination_address", starknetAccount?.account?.address)
-        setAutofilledWalletNetworkType(NetworkType.Starknet)
+
     }, [destinationChainId])
 
     return (<>
@@ -189,7 +192,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     placeholder={placeholder}
                                     autoCorrect="off"
                                     type={"text"}
-                                    disabled={disabled || !!((isRainbowKitConnected || starknetAccount?.isConnected) && values.destination_address) || !!(starknetAccount?.isConnected && values.destination_address)}
+                                    disabled={disabled || !!((isRainbowKitConnected || wallet?.isConnected) && values.destination_address) || !!(wallet?.isConnected && values.destination_address)}
                                     name={name}
                                     id={name}
                                     ref={inputReference}
@@ -234,8 +237,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-300 bg-secondary-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-500 transition duration-200 px-2 py-2 hover:border-secondary-500 hover:shadow-xl`}>
                             <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
                                 {
-                                    destinationIsStarknet && starknetAccount?.isConnected ?
-                                        <Image src={starknetAccount?.icon} alt={starknetAccount?.account?.address} width={25} height={25} />
+                                    destinationIsStarknet && wallet?.isConnected ?
+                                        <Image src={wallet?.icon} alt={wallet?.address} width={25} height={25} />
                                         :
                                         <AddressIcon address={validInputAddress} size={25} />
                                 }

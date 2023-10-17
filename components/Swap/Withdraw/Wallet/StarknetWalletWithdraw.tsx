@@ -11,8 +11,8 @@ import Erc20Abi from "../../../../lib/abis/ERC20.json"
 import WatchDogAbi from "../../../../lib/abis/LSWATCHDOG.json"
 import { useAuthState } from '../../../../context/authContext';
 import KnownInternalNames from '../../../../lib/knownIds';
-import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 import { parseUnits } from 'viem'
+import useWallet from '../../../../hooks/useWallet';
 
 type Props = {
     depositAddress: string;
@@ -33,8 +33,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { connectWallet, disconnectWallet } = useWalletUpdate()
-    const { starknetAccount } = useWalletState()
+    const { connectWallet, disconnectWallet, wallet } = useWallet()
     const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
 
     const { userId } = useAuthState()
@@ -53,8 +52,8 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
-            await connectWallet(source_layer)
-            const connectedChainId = starknetAccount?.account?.chainId
+            await connectWallet(source_layer as any)
+            const connectedChainId = wallet?.metadata?.starknetAccount?.chainId
             if (connectedChainId && connectedChainId !== sourceChainId) {
                 setIsWrongNetwork(true)
                 await disconnectWallet(swap, source_layer)
@@ -70,23 +69,22 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     }, [sourceChainId])
 
     const handleTransfer = useCallback(async () => {
-        debugger
         setLoading(true)
         try {
-            if (!starknetAccount) {
+            if (!wallet) {
                 throw Error("starknet wallet not connected")
             }
 
             const erc20Contract = new Contract(
                 Erc20Abi,
                 sourceCurrency.contract_address,
-                starknetAccount.account,
+                wallet.metadata?.starknetAccount,
             )
 
             const watchDogContract = new Contract(
                 WatchDogAbi,
                 process.env.NEXT_PUBLIC_WATCHDOG_CONTRACT,
-                starknetAccount.account,
+                wallet.metadata?.starknetAccount,
             )
 
             const call = erc20Contract.populate(
@@ -102,7 +100,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             );
 
             try {
-                const { transaction_hash: transferTxHash } = await starknetAccount.account.execute([call, watch]);
+                const { transaction_hash: transferTxHash } = await wallet.metadata?.starknetAccount.execute([call, watch]);
                 if (transferTxHash) {
                     setSwapPublishedTx(swap.id, PublishedSwapTransactionStatus.Completed, transferTxHash);
                     setTransferDone(true)
@@ -120,7 +118,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [starknetAccount, swap, source_network, depositAddress, userId, sourceCurrency])
+    }, [wallet, swap, source_network, depositAddress, userId, sourceCurrency])
 
     return (
         <>
@@ -140,7 +138,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                         </WarningMessage>
                     }
                     {
-                        !starknetAccount &&
+                        !wallet &&
                         <div className="flex flex-row
                          text-primary-text text-base space-x-2">
                             <SubmitButton
@@ -158,7 +156,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                         </div>
                     }
                     {
-                        starknetAccount
+                        wallet
                         && depositAddress
                         && !isWrongNetwork
                         && <div className="flex flex-row
