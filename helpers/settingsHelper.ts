@@ -30,7 +30,7 @@ export function GetDefaultNetwork(layer: Layer, asset: string): CryptoNetwork {
         ?.network
 }
 
-export function GetDefaultAsset(layer: Layer & { isExchange: false }, asset: string): ExchangeL2Asset
+export function GetDefaultAsset(layer: Layer & { isExchange: true }, asset: string): ExchangeL2Asset
 export function GetDefaultAsset(layer: Layer & { isExchange: false }, asset: string): BaseL2Asset
 export function GetDefaultAsset(layer: Layer, asset: string): BaseL2Asset
 export function GetDefaultAsset(layer: Layer, asset: string) {
