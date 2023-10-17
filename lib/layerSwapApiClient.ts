@@ -73,7 +73,8 @@ export default class LayerSwapApiClient {
     }
 
     async GetFee(params: GetFeeParams): Promise<ApiResponse<any>> {
-        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", '/swaps/quote', params);
+        const version = process.env.NEXT_PUBLIC_API_VERSION
+        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/swaps/quote?version=${version}`, params);
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
