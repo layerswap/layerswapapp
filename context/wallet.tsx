@@ -8,7 +8,7 @@ import { createPublicClient, http } from 'viem';
 import resolveChain from '../lib/resolveChain';
 import { NetworkType } from '../Models/CryptoNetwork';
 
-export const WalletStateContext = createContext<WalletState | null>({
+export const WalletStateContext = createContext<WalletState>({
     balances: [],
     gases: {},
     imxAccount: null,

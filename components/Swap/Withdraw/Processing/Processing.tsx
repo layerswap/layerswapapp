@@ -14,6 +14,7 @@ import { SwapStatus } from '../../../../Models/SwapStatus';
 import { SwapFailReasons } from '../../../../Models/RangeError';
 import { Gauge } from '../../../gauge';
 import Failed from '../Failed';
+import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
 
 type Props = {
     settings: LayerSwapAppSettings;
@@ -48,6 +49,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const progressStatuses = getProgressStatuses(swap, swapStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
+
     const outputPendingDetails = <div className='flex items-center space-x-1'>
         <span>Estimated arrival:</span>
         <div className='text-primary-text'>
@@ -60,7 +62,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         </div>
     </div>
 
-    const progressStates = {
+    const progressStates: ProgressStates = {
         "input_transfer": {
             upcoming: {
                 name: 'Waiting for your transfer',
@@ -184,26 +186,26 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     const allSteps: StatusStep[] = [
         {
-            name: progressStates.input_transfer[stepStatuses.input_transfer].name || "",
+            name: progressStates.input_transfer?.[stepStatuses?.input_transfer]?.name,
             status: stepStatuses.input_transfer,
-            description: progressStates.input_transfer[stepStatuses?.input_transfer]?.description,
+            description: progressStates?.input_transfer?.[stepStatuses?.input_transfer]?.description,
             index: 1
         },
         {
-            name: progressStates.output_transfer[stepStatuses?.output_transfer].name,
+            name: progressStates.output_transfer?.[stepStatuses?.output_transfer]?.name,
             status: stepStatuses.output_transfer,
-            description: progressStates.output_transfer[stepStatuses?.output_transfer]?.description,
+            description: progressStates?.output_transfer?.[stepStatuses?.output_transfer]?.description,
             index: 2
         },
         {
-            name: progressStates.refuel[stepStatuses?.refuel].name,
+            name: progressStates.refuel?.[stepStatuses?.refuel]?.name,
             status: stepStatuses.refuel,
-            description: progressStates.refuel[stepStatuses?.refuel]?.description,
+            description: progressStates.refuel?.[stepStatuses?.refuel]?.description,
             index: 3
         }
     ]
 
-    let currentSteps = allSteps.filter((s) => s.status);
+    let currentSteps = allSteps.filter((s) => s.status && s.status != ProgressStatus.Removed);
     let stepsProgressPercentage = currentSteps.filter(x => x.status == ProgressStatus.Complete).length / currentSteps.length * 100;
 
     if (!swap) return <></>
@@ -242,35 +244,15 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                                 ([SwapStatus.Expired, SwapStatus.Cancelled, SwapStatus.UserTransferDelayed].includes(swap?.status)) &&
                                 <Failed />
                             }
-
                         </div>
                     </div>
-
                 </div>
             </div>
         </Widget.Content>
     )
 }
 
-enum Progress {
-    InputTransfer = 'input_transfer',
-    Refuel = 'refuel',
-    OutputTransfer = 'output_transfer'
-}
-enum ProgressStatus {
-    Upcoming = 'upcoming',
-    Current = 'current',
-    Complete = 'complete',
-    Failed = 'failed',
-    Delayed = 'delayed',
-    Removed = 'removed',
-}
-type StatusStep = {
-    name: string;
-    status: ProgressStatus;
-    description: string | JSX.Element;
-    index?: number;
-}
+
 
 
 const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
