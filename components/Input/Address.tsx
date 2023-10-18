@@ -21,6 +21,7 @@ import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import WalletIcon from "../icons/WalletIcon";
 import { NetworkType } from "../../Models/CryptoNetwork";
 import useWallet from "../../hooks/useWallet";
+import { Layer } from "../../Models/Layer";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -53,14 +54,15 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const placeholder = "Enter your address here"
     const [inputValue, setInputValue] = useState(values?.destination_address || "")
-    const [validInputAddress, setValidInputAddress] = useState<string>()
+    const [validInputAddress, setValidInputAddress] = useState<string>("")
     const [autofilledWalletNetworkType, setAutofilledWalletNetworkType] = useState<NetworkType>()
     const [canAutofillStarknet, setCanAutofillStarknet] = useState(true)
     const starknet = getStarknet()
     const destinationIsStarknet = destination?.internal_name === KnownInternalNames.Networks.StarkNetGoerli
         || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
-    const { connectWallet, disconnectWallet, wallet } = useWallet()
+    const { connectWallet, disconnectWallet, wallets } = useWallet()
+    const wallet = wallets?.[values.to.internal_name]
     const settings = useSettingsState()
 
     const { isConnected: isRainbowKitConnected, address: walletAddress } = useAccount({
@@ -99,7 +101,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
         setDepositeAddressIsfromAccount(false)
         setFieldValue("destination_address", '')
         try {
-            await disconnectWallet(undefined, values.to)
+            await disconnectWallet(values.to)
         }
         catch (e) {
             toast(e.message)
@@ -150,13 +152,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
 
     const handleConnectStarknet = useCallback(async () => {
         const destination = values.to;
+        if (destination.isExchange === false) {
+            const res = await connectWallet(destination as Layer & { type: NetworkType.Starknet })
 
-        if (destination.isExchange === false && destination.type === NetworkType.Starknet) {
-            const res = await connectWallet(destination as any)
-
-            if (res.account.chainId != destinationChainId) {
+            if (res && res.account.chainId != destinationChainId) {
                 setWrongNetwork(true)
-                await disconnectWallet(undefined, values.to)
+                await disconnectWallet(values.to)
                 setAutofilledWalletNetworkType(null)
                 return
             }

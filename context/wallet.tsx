@@ -7,17 +7,17 @@ import { createPublicClient, http } from 'viem';
 import resolveChain from '../lib/resolveChain';
 import { NetworkType } from '../Models/CryptoNetwork';
 
-export const WalletStateContext = React.createContext<WalletState>(null);
-const WalletStateUpdateContext = React.createContext<WalletStateUpdate>(null);
+export const BalancesStateContext = React.createContext<BalancesState>(null);
+const BalancesStateUpdateContext = React.createContext<BalancesStateUpdate>(null);
 
-export type WalletState = {
+export type BalancesState = {
     balances: Balance[],
     gases: { [network: string]: Gas[] },
     isBalanceLoading: boolean,
     isGasLoading: boolean
 }
 
-type WalletStateUpdate = {
+type BalancesStateUpdate = {
     getBalance: (from: Layer) => Promise<void>,
     getGas: (from: Layer, currency: Currency, userDestinationAddress: string) => Promise<void>,
 }
@@ -26,7 +26,7 @@ type Props = {
     children?: JSX.Element | JSX.Element[];
 }
 
-export const WalletDataProvider: FC<Props> = ({ children }) => {
+export const BalancesDataProvider: FC<Props> = ({ children }) => {
     const [allBalances, setAllBalances] = useState<{ [address: string]: Balance[] }>({})
     const [allGases, setAllGases] = useState<{ [network: string]: Gas[] }>({})
     const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
@@ -107,24 +107,24 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
     }
 
     return (
-        <WalletStateContext.Provider value={{
+        <BalancesStateContext.Provider value={{
             balances,
             gases,
             isBalanceLoading,
             isGasLoading
         }}>
-            <WalletStateUpdateContext.Provider value={{
+            <BalancesStateUpdateContext.Provider value={{
                 getBalance,
                 getGas,
             }}>
                 {children}
-            </WalletStateUpdateContext.Provider>
-        </WalletStateContext.Provider >
+            </BalancesStateUpdateContext.Provider>
+        </BalancesStateContext.Provider >
     );
 }
 
-export function useWalletState<T>() {
-    const data = React.useContext<WalletState>(WalletStateContext);
+export function useBalancesState<T>() {
+    const data = React.useContext<BalancesState>(BalancesStateContext);
     if (data === undefined) {
         throw new Error('useWalletStateContext must be used within a WalletStateContext');
     }
@@ -132,8 +132,8 @@ export function useWalletState<T>() {
     return data;
 }
 
-export function useWalletUpdate<T>() {
-    const updateFns = React.useContext<WalletStateUpdate>(WalletStateUpdateContext);
+export function useBalancesUpdate<T>() {
+    const updateFns = React.useContext<BalancesStateUpdate>(BalancesStateUpdateContext);
 
     if (updateFns === undefined) {
         throw new Error('useWalletStateUpdateContext must be used within a WalletStateUpdateContext');

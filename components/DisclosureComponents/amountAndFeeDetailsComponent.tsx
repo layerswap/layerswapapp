@@ -11,7 +11,7 @@ import { ApiResponse } from '../../Models/ApiResponse';
 import LayerSwapApiClient, { Campaigns } from '../../lib/layerSwapApiClient';
 import useSWR from 'swr'
 import AverageCompletionTime from '../Common/AverageCompletionTime';
-import { useWalletState } from '../../context/wallet';
+import { useBalancesState } from '../../context/wallet';
 import { NetworkType } from '../../Models/CryptoNetwork';
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
@@ -43,7 +43,7 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const currencyName = currency?.asset || " "
 
     const destinationNetwork = GetDefaultNetwork(to, currency?.asset)
-    const { gases, isGasLoading } = useWalletState()
+    const { gases, isGasLoading } = useBalancesState()
     const networkGas = gases?.[values.from?.internal_name]?.find(g => g.token === values.currency?.asset)?.gas
 
     return (

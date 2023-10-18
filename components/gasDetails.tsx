@@ -1,11 +1,11 @@
 import { useEffect } from "react"
 import { Currency } from "../Models/Currency"
 import { Layer } from "../Models/Layer"
-import { useWalletState, useWalletUpdate } from "../context/wallet"
+import { useBalancesState, useBalancesUpdate } from "../context/wallet"
 
 const GasDetails = ({ network, currency }: { network: Layer, currency: Currency }) => {
 
-    const { gases } = useWalletState()
+    const { gases } = useBalancesState()
     const networkGas = gases?.[network?.internal_name]?.find(g => g.token === currency?.asset)
 
     if (!networkGas?.gasDetails) return

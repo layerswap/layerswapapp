@@ -34,7 +34,7 @@ type SwapInfoProps = {
 const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name }) => {
     const { resolveImgSrc, currencies, networks } = useSettingsState()
     const { address: evmAddress } = useAccount();
-    const { wallet } = useWallet()
+    const { wallets } = useWallet()
     const {
         hideFrom,
         hideTo,
@@ -49,6 +49,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
 
     const source = hideFrom ? partner : from
     const destination = hideTo ? partner : to
+    const wallet = wallets[from.internal_name]
 
     const sourceDisplayName = source?.display_name
     const destinationDisplayName = destination?.display_name

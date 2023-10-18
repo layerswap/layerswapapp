@@ -13,6 +13,8 @@ import { useAuthState } from '../../../../context/authContext';
 import KnownInternalNames from '../../../../lib/knownIds';
 import { parseUnits } from 'viem'
 import useWallet from '../../../../hooks/useWallet';
+import { NetworkType } from '../../../../Models/CryptoNetwork';
+import { Layer } from '../../../../Models/Layer';
 
 type Props = {
     depositAddress: string;
@@ -33,7 +35,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { connectWallet, disconnectWallet, wallet } = useWallet()
+    const { connectWallet, disconnectWallet, wallets } = useWallet()
     const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
 
     const { userId } = useAuthState()
@@ -48,15 +50,15 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const sourceCurrency = source_network.currencies.find(c => c.asset?.toLowerCase() === swap.source_network_asset?.toLowerCase())
 
     const sourceChainId = source_network?.chain_id
-
+    const wallet = wallets[source_layer.internal_name]
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
-            await connectWallet(source_layer as any)
-            const connectedChainId = wallet?.metadata?.starknetAccount?.chainId
+            const wallet = await connectWallet(source_layer as Layer & { type: NetworkType.Starknet })
+            const connectedChainId = wallet?.account?.chainId
             if (connectedChainId && connectedChainId !== sourceChainId) {
                 setIsWrongNetwork(true)
-                await disconnectWallet(swap, source_layer)
+                await disconnectWallet(source_layer, swap)
             }
             else {
                 setIsWrongNetwork(false)

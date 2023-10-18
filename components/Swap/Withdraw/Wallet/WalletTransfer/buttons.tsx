@@ -7,13 +7,21 @@ import WalletIcon from "../../../../icons/WalletIcon";
 import WalletMessage from "./message";
 import { ActionData } from "./sharedTypes";
 import SubmitButton from "../../../../buttons/submitButton";
+import useWallet from "../../../../../hooks/useWallet";
+import { useSwapDataState } from "../../../../../context/swap";
+import { useSettingsState } from "../../../../../context/settings";
+import { Layer } from "../../../../../Models/Layer";
+import { NetworkType } from "../../../../../Models/CryptoNetwork";
 
 export const ConnectWalletButton: FC = () => {
-    const { openConnectModal } = useConnectModal();
+    const { swap } = useSwapDataState()
+    const { layers } = useSettingsState()
+    const { connectWallet } = useWallet()
+    const source_layer = layers.find(l => l.internal_name === swap?.source_network)
 
     const clickHandler = useCallback(() => {
-        return openConnectModal()
-    }, [openConnectModal])
+        return connectWallet(source_layer as Layer & { isExchange: false, type: NetworkType.EVM })
+    }, [connectWallet])
 
     return <ButtonWrapper
         clcikHandler={clickHandler}

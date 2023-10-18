@@ -29,7 +29,7 @@ import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetw
 import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
-import { useWalletState, useWalletUpdate } from "../../../context/wallet";
+import { useBalancesState, useBalancesUpdate } from "../../../context/wallet";
 import { useAccount } from "wagmi";
 import GasDetails from "../../gasDetails";
 import { truncateDecimals } from "../../utils/RoundDecimals";
@@ -53,8 +53,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     const source = values.from
     const asset = values.currency?.asset
     const { authData } = useAuthState()
-    const { getBalance, getGas } = useWalletUpdate()
-    const { balances, gases } = useWalletState()
+    const { getBalance, getGas } = useBalancesUpdate()
+    const { balances, gases } = useBalancesState()
     const { address } = useAccount()
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null

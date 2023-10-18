@@ -15,9 +15,10 @@ import useWallet from "../../../../hooks/useWallet"
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
-    const { wallet } = useWallet();
+    const { wallets } = useWallet();
     const { address } = useAccount()
     const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_network_asset } = swap
+    const wallet = wallets[swap.source_network]
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const destination = layers.find(n => n.internal_name === destination_network)
     const sourceAsset = source_network.assets.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())

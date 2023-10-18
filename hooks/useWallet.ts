@@ -11,21 +11,26 @@ import { useSwapDataUpdate } from "../context/swap"
 import { disconnect as wagmiDisconnect } from '@wagmi/core'
 import { useWalletStore } from "../stores/walletStore"
 import { LinkResults } from "@imtbl/imx-sdk"
+import { useSettingsState } from "../context/settings"
+import { useAccount, useNetwork } from "wagmi"
 
 export default function useWallet() {
     const { openConnectModal } = useConnectModal()
     const { mutateSwap } = useSwapDataUpdate()
+    const { layers } = useSettingsState()
+    const { chain } = useNetwork()
 
-    const wallet = useWalletStore((state) => state.connectedWallet)
+    const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
 
-    async function connectStarknet() {
+    async function connectStarknet(network: Layer) {
         try {
             const res = await starknetConnect()
             addWallet({
                 address: res.account.address,
                 chainId: res.chainId,
+                network: network,
                 isConnected: res.isConnected,
                 icon: res.icon,
                 connector: res.name,
@@ -40,16 +45,19 @@ export default function useWallet() {
         }
     }
 
-    async function connectImx(network_internal_name: string, chain_id?: string | number): Promise<LinkResults.Setup> {
+    async function connectImx(network: Layer): Promise<LinkResults.Setup> {
+        if (network.isExchange === true) return
         try {
-            const imtblClient = new ImtblClient(network_internal_name)
+            const imtblClient = new ImtblClient(network.internal_name)
             const res = await imtblClient.ConnectWallet();
             addWallet({
                 address: res.address,
-                chainId: chain_id,
+                chainId: network.chain_id,
+                network: layers.find(l => l.internal_name === KnownInternalNames.Networks.ImmutableXMainnet),
                 isConnected: true,
                 connector: res.providerPreference
             });
+
             return res
         }
         catch (e) {
@@ -62,14 +70,13 @@ export default function useWallet() {
     async function handleConnect(layer: Layer & { isExchange: false, type: NetworkType.EVM }): Promise<void>
     async function handleConnect(layer: Layer & { isExchange: false, type: NetworkType }): Promise<void>
     async function handleConnect(layer: Layer & { isExchange: false, type: NetworkType }) {
-
         try {
             if (layer.isExchange == false && layer.type === NetworkType.Starknet) {
-                const res = await connectStarknet() 
+                const res = await connectStarknet(layer)
                 return res
             }
             else if (layer.isExchange == false && layer.type === NetworkType.StarkEx) {
-                const res = await connectImx(layer.internal_name, layer.chain_id)
+                const res = await connectImx(layer)
                 return res
             }
             else if (layer.type === NetworkType.EVM) {
@@ -87,36 +94,35 @@ export default function useWallet() {
         await mutateSwap()
     }, [])
 
-    async function disconnectStarknet() {
+    async function disconnectStarknet(network: Layer) {
         try {
             starknetDisconnect({ clearLastWallet: true })
-            removeWallet()
+            removeWallet(network)
         }
         catch (e) {
             console.log(e)
         }
     }
 
-    function disconnectImx() {
-        removeWallet()
+    function disconnectImx(network: Layer) {
+        removeWallet(network)
     }
 
-    const handleDisconnect = async (swap: SwapItem, network: Layer) => {
+    const handleDisconnect = async (network: Layer, swap?: SwapItem) => {
         const networkType = network?.type
-        const isNetworkImmutableX = network?.internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-            || network?.internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
         try {
             if (swap?.source_exchange) {
                 await handleDisconnectCoinbase(swap)
             }
             else if (networkType === NetworkType.EVM) {
                 await wagmiDisconnect()
+                removeWallet(network)
             }
             else if (networkType === NetworkType.Starknet) {
-                await disconnectStarknet()
+                await disconnectStarknet(network)
             }
-            else if (isNetworkImmutableX) {
-                disconnectImx()
+            else if (networkType === NetworkType.StarkEx) {
+                disconnectImx(network)
             }
         }
         catch {
@@ -124,9 +130,24 @@ export default function useWallet() {
         }
     }
 
+    const account = useAccount({
+        onConnect({ address, connector }) {
+            addWallet({
+                address: address,
+                connector: connector.id,
+                isConnected: account.isConnected,
+                chainId: chain.id,
+                network: layers.find(l => l.isExchange === false && Number(l.chain_id) === chain.id && l.type === NetworkType.EVM)
+            })
+        },
+        onDisconnect() {
+            handleDisconnect(layers.find(l => l.isExchange === false && Number(l.chain_id) === chain?.id && l.type === NetworkType.EVM))
+        }
+    })
+
     return {
-        wallet: wallet,
+        wallets: wallets,
         connectWallet: handleConnect,
-        disconnectWallet: handleDisconnect
+        disconnectWallet: handleDisconnect,
     }
 }

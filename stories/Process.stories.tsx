@@ -7,7 +7,7 @@ import { WagmiConfig, configureChains, createConfig } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
-import { WalletStateContext } from '../context/wallet';
+import { BalancesStateContext } from '../context/wallet';
 import { QueryStateContext } from '../context/query';
 import { FC } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
@@ -101,9 +101,9 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
                                 <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
                                     <AuthDataUpdateContext.Provider value={{}}>
                                         <SwapDataUpdateContext.Provider value={{ setInterval: () => { } }}>
-                                            <WalletStateContext.Provider value={{ balances: null, gases: null, isBalanceLoading: null, isGasLoading: null }}>
+                                            <BalancesStateContext.Provider value={{ balances: null, gases: null, isBalanceLoading: null, isGasLoading: null }}>
                                                 <SwapDetails />
-                                            </WalletStateContext.Provider>
+                                            </BalancesStateContext.Provider>
                                         </SwapDataUpdateContext.Provider>
                                     </AuthDataUpdateContext.Provider>
                                 </AuthStateContext.Provider>

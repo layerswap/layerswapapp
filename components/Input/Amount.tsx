@@ -7,7 +7,7 @@ import CurrencyFormField from "./CurrencyFormField";
 import NumericInput from "./NumericInput";
 import SecondaryButton from "../buttons/secondaryButton";
 import { useQueryState } from "../../context/query";
-import { useWalletState, useWalletUpdate } from "../../context/wallet";
+import { useBalancesState, useBalancesUpdate } from "../../context/wallet";
 import { truncateDecimals } from "../utils/RoundDecimals";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
@@ -17,9 +17,9 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const query = useQueryState();
     const { currency, from, to, amount, destination_address } = values
 
-    const { balances, isBalanceLoading, gases, isGasLoading } = useWalletState()
+    const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const gasAmount = gases[from?.internal_name]?.find(g => g?.token === currency?.asset)?.gas || 0
-    const { getBalance, getGas } = useWalletUpdate()
+    const { getBalance, getGas } = useBalancesUpdate()
     const name = "amount"
     const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
     const walletBalanceAmount = truncateDecimals(walletBalance?.amount, currency?.precision)

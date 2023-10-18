@@ -10,7 +10,7 @@ import CurrencySettings from "../../lib/CurrencySettings";
 import { SortingByOrder } from "../../lib/sorting";
 import { Layer } from "../../Models/Layer";
 import { useQueryState } from "../../context/query";
-import { useWalletState } from "../../context/wallet";
+import { useBalancesState } from "../../context/wallet";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { Balance } from "../../helpers/balanceHelper";
 
@@ -23,7 +23,7 @@ const CurrencyFormField: FC = () => {
     const { resolveImgSrc, currencies } = useSettingsState();
     const name = "currency"
     const query = useQueryState()
-    const { balances } = useWalletState()
+    const { balances } = useBalancesState()
     const lockedCurrency = query?.lockAsset ? currencies?.find(c => c?.asset?.toUpperCase() === query?.asset?.toUpperCase()) : null
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : FilterCurrencies(currencies, from, to)

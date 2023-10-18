@@ -17,7 +17,7 @@ import WalletIcon from '../../icons/WalletIcon';
 import { useAccount } from 'wagmi';
 import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
 import { useAccountModal } from '@rainbow-me/rainbowkit';
-import { useWalletState, useWalletUpdate } from '../../../context/wallet';
+import { useBalancesState, useBalancesUpdate } from '../../../context/wallet';
 import { GetDefaultNetwork } from '../../../helpers/settingsHelper';
 import Image from 'next/image';
 import { ResolveWalletIcon } from '../../HeaderWithMenu/ConnectedWallets';
@@ -170,7 +170,7 @@ const Withdraw: FC = () => {
 const WalletTransferContent: FC = () => {
     const { address, connector } = useAccount();
     const { openAccountModal } = useAccountModal();
-    const { wallet, disconnectWallet } = useWallet()
+    const { wallets, disconnectWallet } = useWallet()
 
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
@@ -187,10 +187,11 @@ const WalletTransferContent: FC = () => {
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
     const sourceNetworkType = GetDefaultNetwork(source_network, source_network_asset)?.type
+    const wallet = wallets[source_network_internal_name]
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         setIsloading(true);
-        await disconnectWallet(swap, source_network)
+        await disconnectWallet(source_network, swap)
         setIsloading(false);
         e?.stopPropagation();
     }, [sourceNetworkType, swap.source_exchange])
