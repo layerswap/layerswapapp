@@ -2,10 +2,8 @@ import { Chain as rainbowChain } from "@rainbow-me/rainbowkit";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
 import NetworkSettings from "./NetworkSettings";
 import { parseGwei, Chain } from "viem";
-import { useSettingsState } from "../context/settings";
 
 export default function resolveChain(network: CryptoNetwork): Chain {
-    const { resolveImgSrc } = useSettingsState()
     const nativeCurrency = network.currencies.find(c => c.asset === network.native_currency);
     const blockExplorersBaseURL = new URL(network.transaction_explorer_template).origin;
 
@@ -13,7 +11,7 @@ export default function resolveChain(network: CryptoNetwork): Chain {
         id: Number(network.chain_id),
         name: network.display_name,
         network: network.internal_name,
-        iconUrl: resolveImgSrc(network),
+        iconUrl: network.img_url,
         nativeCurrency: { name: nativeCurrency?.name, symbol: nativeCurrency?.asset, decimals: nativeCurrency?.decimals },
         rpcUrls: {
             default: {

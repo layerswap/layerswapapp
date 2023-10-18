@@ -9,6 +9,7 @@ export class Exchange {
     status: LayerStatus;
     type: "cex" | "fiat";
     is_featured: boolean;
+    img_url?: string
 }
 
 export class ExchangeCurrency {

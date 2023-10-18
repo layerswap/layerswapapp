@@ -20,7 +20,7 @@ type Props = {
 
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
-
+    console.log(settings)
     const settingsChains = settings.networks?.filter(n => n.status !== 'inactive').sort((a, b) => Number(a.chain_id) - Number(b.chain_id)).filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0)).map(n => {
         return resolveChain(n)
     })

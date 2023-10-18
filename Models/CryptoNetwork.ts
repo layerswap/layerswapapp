@@ -28,6 +28,7 @@ export class CryptoNetwork {
     nodes: NetworkNode[];
     managed_accounts: ManagedAccount[];
     metadata: Metadata;
+    img_url?: string
 }
 
 export class NetworkCurrency {
