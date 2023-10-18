@@ -7,7 +7,7 @@ import {
 } from '@rainbow-me/rainbowkit';
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 import { publicProvider } from 'wagmi/providers/public';
-import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitgetWallet, argentWallet, okxWallet, oneKeyWallet } from '@rainbow-me/rainbowkit/wallets';
+import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitgetWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 import { useSettingsState } from "../context/settings";
 import { WagmiConfig, configureChains, createConfig } from "wagmi";
 import { NetworkType } from "../Models/CryptoNetwork";
@@ -44,9 +44,7 @@ function RainbowKitComponent({ children }: Props) {
                 coinbaseWallet({ chains, appName: 'Layerswap' }),
                 argentWallet({ projectId, chains }),
                 bitgetWallet({ projectId, chains }),
-                rainbowWallet({ projectId, chains }),
-                oneKeyWallet({ chains }),
-                okxWallet({ projectId, chains })
+                rainbowWallet({ projectId, chains })
             ],
         },
     ]);
