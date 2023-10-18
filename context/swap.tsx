@@ -17,7 +17,7 @@ export const SwapDataUpdateContext = React.createContext<UpdateInterface | null>
 
 export type UpdateInterface = {
     createSwap?: (values: SwapFormValues, query: QueryParams, partner: Partner) => Promise<string>,
-    setCodeRequested?: (codeSubmitted: boolean)=> void;
+    setCodeRequested?: (codeSubmitted: boolean) => void;
     cancelSwap?: (swapId: string) => Promise<void>;
     setAddressConfirmed?: (value: boolean) => void;
     setInterval?: (value: number) => void,
@@ -53,7 +53,8 @@ export function SwapDataProvider({ children }) {
     const { layers } = useSettingsState()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const swap_details_endpoint = `/swaps/${swapId}`
+    const apiVersion = LayerSwapApiClient.apiVersion
+    const swap_details_endpoint = `/swaps/${swapId}?version=${apiVersion}`
     const [interval, setInterval] = useState(0)
     const { data: swapResponse, mutate, error } = useSWR<ApiResponse<SwapItem>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 

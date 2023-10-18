@@ -269,6 +269,8 @@ export default class NetworkSettings {
             BaseFeeMultiplier: 1.7,
             DefaultPriorityFee: 1
         };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ScrollMainnet] = {
+        };
 
         NetworkSettings.ImmutableXSettings = {
             [KnownInternalNames.Networks.ImmutableXMainnet]: {
