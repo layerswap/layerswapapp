@@ -11,6 +11,7 @@ import LayerSwapAuthApiClient from "./userAuthApiClient";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
+    static apiVersion: string = AppSettings.ApiVersion;
 
     _authInterceptor: AxiosInstance;
     constructor(private readonly _router?: NextRouter, private readonly _redirect?: string) {
@@ -20,24 +21,20 @@ export default class LayerSwapApiClient {
     fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
 
     async GetSettingsAsync(): Promise<ApiResponse<LayerSwapSettings>> {
-        const version = process.env.NEXT_PUBLIC_API_VERSION
-        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${version}`).then(res => res.data);
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
     }
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<CreateSwapData>> {
-        const version = process.env.NEXT_PUBLIC_API_VERSION
         const correlationId = uuidv4()
-        return await this.AuthenticatedRequest<ApiResponse<CreateSwapData>>("POST", `/swaps?version=${version}`, params, { 'X-LS-CORRELATION-ID': correlationId });
+        return await this.AuthenticatedRequest<ApiResponse<CreateSwapData>>("POST", `/swaps?version=${LayerSwapApiClient.apiVersion}`, params, { 'X-LS-CORRELATION-ID': correlationId });
     }
 
     async GetSwapsAsync(page: number, status?: SwapStatusInNumbers): Promise<ApiResponse<SwapItem[]>> {
-        const version = process.env.NEXT_PUBLIC_API_VERSION
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}${status ? `&status=${status}` : ''}&version=${version}`);
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}${status ? `&status=${status}` : ''}&version=${LayerSwapApiClient.apiVersion}`);
     }
 
     async GetPendingSwapsAsync(): Promise<ApiResponse<SwapItem[]>> {
-        const version = process.env.NEXT_PUBLIC_API_VERSION
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?status=0&version=${version}`);
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?status=0&version=${LayerSwapApiClient.apiVersion}`);
     }
 
     async CancelSwapAsync(swapid: string): Promise<ApiResponse<void>> {
@@ -49,8 +46,7 @@ export default class LayerSwapApiClient {
     }
 
     async GetSwapDetailsAsync(id: string): Promise<ApiResponse<SwapItem>> {
-        const version = process.env.NEXT_PUBLIC_API_VERSION
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem>>("GET", `/swaps/${id}?version=${version}`);
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem>>("GET", `/swaps/${id}?version=${LayerSwapApiClient.apiVersion}`);
     }
 
     async GetDepositAddress(network: string, source: DepositAddressSource): Promise<ApiResponse<DepositAddress>> {
@@ -74,8 +70,7 @@ export default class LayerSwapApiClient {
     }
 
     async GetFee(params: GetFeeParams): Promise<ApiResponse<any>> {
-        const version = process.env.NEXT_PUBLIC_API_VERSION
-        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/swaps/quote?version=${version}`, params);
+        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/swaps/quote?version=${LayerSwapApiClient.apiVersion}`, params);
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
