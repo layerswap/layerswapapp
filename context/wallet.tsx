@@ -53,7 +53,11 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
         const source_assets = from.assets
         const source_network = source_assets?.[0].network
-        if (source_network && isBalanceOutDated && address && from?.isExchange === false && from?.type === NetworkType.EVM) {
+        if (source_network
+            && isBalanceOutDated
+            && address
+            && from?.isExchange === false
+            && from?.type === NetworkType.EVM) {
             setIsBalanceLoading(true)
             const chain = resolveChain(source_network)
             if (!chain) {
@@ -108,10 +112,12 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
         const gas = allGases[from.internal_name]?.find(g => g?.token === currency?.asset)
         const isGasOutDated = !gas || new Date().getTime() - (new Date(gas.request_time).getTime() || 0) > 10000
 
-        if (chainId && isGasOutDated && currency && destination_address && from?.type === NetworkType.EVM) {
+        if (chainId
+            && isGasOutDated
+            && currency
+            && destination_address && from?.type === NetworkType.EVM) {
             setIsGasLoading(true)
             try {
-
 
                 const publicClient = createPublicClient({
                     chain: resolveChain(network),

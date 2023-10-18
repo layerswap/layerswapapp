@@ -266,7 +266,7 @@ export const Settings: LayerSwapSettings = {
             "average_completion_time": "00:01:52.0070860",
             "chain_id": "0x534e5f474f45524c49",
             "status": "active",
-            "type": NetworkType.EVM,
+            "type": NetworkType.Starknet,
             "refuel_amount_in_usd": 0.5,
             "native_currency": null,
             "transaction_explorer_template": "https://goerli.voyager.online/tx/{0}",
