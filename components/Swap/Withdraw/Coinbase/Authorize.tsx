@@ -78,7 +78,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
         const apiClient = new LayerSwapApiClient()
         if (swap)
             await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
-    }, [])
+    }, [swap])
 
     useEffect(() => {
         if (authorizedAmount) {
