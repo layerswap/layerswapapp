@@ -9,7 +9,7 @@ export default function resolveChain(network: CryptoNetwork): Chain | undefined 
     const blockExplorersBaseURL = new URL(network.transaction_explorer_template).origin;
     const metadata = network.metadata
     const { ensRegistry, ensUniversalResolver, multicall3 } = metadata || {}
-
+    
     if (!nativeCurrency) {
         SendErrorMessage("UI Settings error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: could not find native currency for ${network.internal_name} %0A`)
         return

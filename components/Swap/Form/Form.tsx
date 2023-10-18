@@ -37,10 +37,9 @@ import FeeDetails from "../../DisclosureComponents/FeeDetails";
 type Props = {
     isPartnerWallet: boolean,
     partner?: Partner,
-    loading: boolean
 }
 
-const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
+const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
     const {
         values,
@@ -191,7 +190,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
     )
     const gasToReserveFormatted = mightBeAutOfGas ? truncateDecimals(networkGas?.gas, values?.currency?.precision) : 0
     return <>
-        <Form className={`h-full ${(loading || isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
+        <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
             <Widget className="sm:min-h-[504px]">
                 <Widget.Content>
                     <div className='flex-col relative flex justify-between w-full space-y-4 mb-3.5 leading-4'>
@@ -297,8 +296,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                     <SwapButton
                         className="plausible-event-name=Swap+initiated"
                         type='submit'
-                        isDisabled={!isValid || loading}
-                        isSubmitting={isSubmitting || loading}>
+                        isDisabled={!isValid}
+                        isSubmitting={isSubmitting}>
                         {ActionText(errors, actionDisplayName as string)}
                     </SwapButton>
                 </Widget.Footer>

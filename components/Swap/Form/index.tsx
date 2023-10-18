@@ -18,7 +18,6 @@ import { Partner } from "../../../Models/Partner";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
 import { ApiError, KnownErrorCode } from "../../../Models/ApiError";
 import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
-import Withdraw from "../Withdraw";
 import { useQueryState } from "../../../context/query";
 import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
@@ -31,11 +30,8 @@ type NetworkToConnect = {
 export default function Form() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
-    const [showSwapModal, setShowSwapModal] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
-    const { swap } = useSwapDataState()
     const router = useRouter();
-    const [loading, setLoading] = useState(true);
     const { updateAuthData, setUserType } = useAuthDataUpdate()
 
     const settings = useSettingsState();
@@ -51,11 +47,6 @@ export default function Form() {
         formikRef?.current?.resetForm({ values: initialValues })
         formikRef?.current?.validateForm(initialValues)
     }, [])
-
-    useEffect(() => {
-        setShowSwapModal(!!swap)
-        setLoading(false)
-    }, [swap])
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
@@ -112,9 +103,6 @@ export default function Form() {
         <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
             {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
         </Modal>
-        <Modal height="full" show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`}>
-            <Withdraw />
-        </Modal>
         <Formik
             innerRef={formikRef}
             initialValues={initialValues}
@@ -122,7 +110,7 @@ export default function Form() {
             validate={MainStepValidation({ settings, query })}
             onSubmit={handleSubmit}
         >
-            <SwapForm loading={loading} isPartnerWallet={!!isPartnerWallet} partner={partner} />
+            <SwapForm isPartnerWallet={!!isPartnerWallet} partner={partner} />
         </Formik>
     </>
 }

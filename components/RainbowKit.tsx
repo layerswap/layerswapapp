@@ -31,7 +31,7 @@ function RainbowKitComponent({ children }: Props) {
         .filter(net => net.type === NetworkType.EVM
             && net.nodes?.some(n => n.url?.length > 0))
         .map(resolveChain).filter(isChain) || []
-
+    debugger
     const { chains, publicClient } = configureChains(
         settingsChains,
         [publicProvider()]
