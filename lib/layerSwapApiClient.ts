@@ -25,8 +25,9 @@ export default class LayerSwapApiClient {
     }
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<CreateSwapData>> {
+        const version = process.env.NEXT_PUBLIC_API_VERSION
         const correlationId = uuidv4()
-        return await this.AuthenticatedRequest<ApiResponse<CreateSwapData>>("POST", `/swaps`, params, { 'X-LS-CORRELATION-ID': correlationId });
+        return await this.AuthenticatedRequest<ApiResponse<CreateSwapData>>("POST", `/swaps?version=${version}`, params, { 'X-LS-CORRELATION-ID': correlationId });
     }
 
     async GetSwapsAsync(page: number, status?: SwapStatusInNumbers): Promise<ApiResponse<SwapItem[]>> {
@@ -48,7 +49,8 @@ export default class LayerSwapApiClient {
     }
 
     async GetSwapDetailsAsync(id: string): Promise<ApiResponse<SwapItem>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem>>("GET", `/swaps/${id}`);
+        const version = process.env.NEXT_PUBLIC_API_VERSION
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem>>("GET", `/swaps/${id}?version=${version}`);
     }
 
     async GetDepositAddress(network: string, source: DepositAddressSource): Promise<ApiResponse<DepositAddress>> {
@@ -72,7 +74,8 @@ export default class LayerSwapApiClient {
     }
 
     async GetFee(params: GetFeeParams): Promise<ApiResponse<any>> {
-        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", '/swaps/quote', params);
+        const version = process.env.NEXT_PUBLIC_API_VERSION
+        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/swaps/quote?version=${version}`, params);
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
