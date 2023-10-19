@@ -114,7 +114,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
         setSelectedAssetNetwork(n)
     }, [])
 
-    return <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500'>
+    return <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500 text-primary-text'>
         <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
             {
                 source_exchange &&
@@ -155,7 +155,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
             <div>
                 {
                     depositAddress ?
-                        <p className='break-all text-primary-text'>
+                        <p className='break-all'>
                             {depositAddress}
                         </p>
                         :
@@ -163,7 +163,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                 }
                 {
                     (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
-                    <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-secondary-100 rounded border-dashed'>
+                    <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-secondary-100 rounded border-dashed text-secondary-text'>
                         <p>
                             You might get a warning that this is not an activated address. You can ignore it.
                         </p>

@@ -8,7 +8,7 @@ import { Partner } from "./Partner";
 export class LayerSwapAppSettings extends LayerSwapSettings {
     constructor(settings: LayerSwapSettings | any) {
         super();
-        Object.assign(this, settings)
+        Object.assign(this, LayerSwapAppSettings.ResolveSettings(settings))
 
         this.layers = LayerSwapAppSettings.ResolveLayers(this.exchanges, this.networks);
     }
@@ -35,6 +35,25 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
         }
 
         return basePath.href;
+    }
+
+    static ResolveSettings(settings: LayerSwapSettings) {
+        const basePath = new URL(settings.discovery.resource_storage_url);
+
+        settings.networks = settings.networks.map(n => ({
+            ...n,
+            img_url: `${basePath}layerswap/networks/${n?.internal_name?.toLowerCase()}.png`
+        }))
+        settings.exchanges = settings.exchanges.map(e => ({
+            ...e,
+            img_url: `${basePath}layerswap/networks/${e?.internal_name?.toLowerCase()}.png`
+        }))
+        settings.currencies = settings.currencies.map(c => ({
+            ...c,
+            img_url: `${basePath}layerswap/networks/${c?.asset?.toLowerCase()}.png`
+        }))
+
+        return settings
     }
 
     static ResolveLayers(exchanges: Exchange[], networks: CryptoNetwork[]): Layer[] {

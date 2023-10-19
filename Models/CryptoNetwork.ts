@@ -27,6 +27,7 @@ export class CryptoNetwork {
     nodes: NetworkNode[];
     managed_accounts: ManagedAccount[];
     metadata: Metadata | null | undefined;
+    img_url?: string
 }
 
 export class NetworkCurrency {
@@ -61,4 +62,5 @@ export class Metadata {
     ensUniversalResolver?: {
         address: `0x${string}`
     }
+    WatchdogContractAddress?: `0x${string}`
 }

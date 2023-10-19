@@ -1,7 +1,7 @@
 import { CryptoNetwork, NetworkCurrency } from "../Models/CryptoNetwork";
 import { Currency } from "../Models/Currency";
-import { Exchange, ExchangeCurrency } from "../Models/Exchange";
-import { Layer, BaseL2Asset, ExchangeAsset } from "../Models/Layer";
+import { Exchange } from "../Models/Exchange";
+import { Layer, BaseL2Asset } from "../Models/Layer";
 
 export function mapNetworkCurrencies(exchanges: Exchange[], networks: CryptoNetwork[]): Exchange[] {
     return exchanges.map(e => {
@@ -32,7 +32,7 @@ export function GetDefaultNetwork(layer: Layer | undefined | null, asset: string
 
 export function GetDefaultAsset(layer: Layer & { isExchange: true }, asset: string): ExchangeAsset
 export function GetDefaultAsset(layer: Layer & { isExchange: false }, asset: string): BaseL2Asset | undefined
-export function GetDefaultAsset(layer: Layer, asset: string): BaseL2Asset| undefined
+export function GetDefaultAsset(layer: Layer, asset: string): BaseL2Asset | undefined
 export function GetDefaultAsset(layer: Layer, asset: string) {
     return layer
         ?.assets
