@@ -1,5 +1,5 @@
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
-import { roundDecimals, truncateDecimals } from "../components/utils/RoundDecimals";
+import { roundDecimals } from "../components/utils/RoundDecimals";
 import upperCaseKeys from "../components/utils/upperCaseKeys";
 import { GetDefaultAsset, GetDefaultNetwork, GetNetworkCurrency } from "../helpers/settingsHelper";
 import { CryptoNetwork, NetworkType } from "../Models/CryptoNetwork";

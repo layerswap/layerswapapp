@@ -14,7 +14,7 @@ export default function GlobalTable(props, { settings }: InferGetServerSideProps
     const router = useRouter();
     let appSettings = new LayerSwapAppSettings(settings)
     LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
-  
+
 
     const handleGoBack = useCallback(() => {
         router.back()
@@ -92,10 +92,10 @@ export async function getServerSideProps(context) {
     const { data: settings } = await apiClient.GetSettingsAsync()
 
     const resource_storage_url = settings?.discovery.resource_storage_url
-    // if (resource_storage_url?.[resource_storage_url.length - 1] === "/")
-    //     settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
+    if (settings && resource_storage_url?.[resource_storage_url.length - 1] === "/")
+        settings.discovery.resource_storage_url = resource_storage_url.slice(0, -1)
 
-    // LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
+    LayerSwapAuthApiClient.identityBaseEndpoint = settings?.discovery?.identity_url || ""
 
     return {
         props: { settings }

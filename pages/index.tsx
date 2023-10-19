@@ -19,11 +19,8 @@ type IndexProps = {
 }
 
 export default function Home({ settings, inMaintanance, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  let appSettings = new LayerSwapAppSettings(settings)
-  LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
-
   return (<>
-    <Layout settings={appSettings}>
+    <Layout settings={settings}>
       <Swap />
     </Layout>
     <ColorSchema themeData={themeData} />
@@ -43,12 +40,14 @@ export async function getServerSideProps(context) {
     's-maxage=60, stale-while-revalidate'
   );
 
-  const themeData = await getThemeData(context.query.theme || context.query.addressSource)
+  result.themeData = await getThemeData(context.query.theme || context.query.addressSource)
 
   var apiClient = new LayerSwapApiClient();
   const { data: settings } = await apiClient.GetSettingsAsync()
   if (!settings)
-    return { themeData }
+    return {
+      props: result,
+    }
 
   settings.exchanges = mapNetworkCurrencies(settings.exchanges, settings.networks)
 

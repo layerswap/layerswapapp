@@ -18,5 +18,5 @@ export function useSettingsState() {
     throw new Error('useSettingsState must be used within a SettingsProvider');
   }
 
-  return data as LayerSwapAppSettings;
+  return data;
 }

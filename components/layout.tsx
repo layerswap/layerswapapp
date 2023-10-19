@@ -14,17 +14,23 @@ import { SendErrorMessage } from "../lib/telegram";
 import dynamic from 'next/dynamic'
 import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
+import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
   hideFooter?: boolean;
-  hideNavbar?: boolean;
   settings?: LayerSwapSettings;
 };
 
-export default function Layout({ hideNavbar, children, settings }: Props) {
+export default function Layout({ children, settings }: Props) {
   const router = useRouter();
-  let appSettings = new LayerSwapAppSettings(settings);
+  if (!settings)
+    return <ThemeWrapper>
+      <MaintananceContent />
+    </ThemeWrapper>
+
+  let appSettings = new LayerSwapAppSettings(settings)
+  LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
 
   const query: QueryParams = {
     ...router.query,
@@ -63,6 +69,7 @@ export default function Layout({ hideNavbar, children, settings }: Props) {
   const DynamicRainbowKit = dynamic(() => import("./RainbowKit"), {
     loading: () => <></>
   })
+
 
   return (<>
     <Head>
