@@ -29,7 +29,7 @@ import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetw
 import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
-import { useBalancesState, useBalancesUpdate } from "../../../context/wallet";
+import { useBalancesState, useBalancesUpdate } from "../../../context/balances";
 import { useAccount } from "wagmi";
 import GasDetails from "../../gasDetails";
 import { truncateDecimals } from "../../utils/RoundDecimals";

@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { Currency } from "../Models/Currency"
 import { Layer } from "../Models/Layer"
-import { useBalancesState, useBalancesUpdate } from "../context/wallet"
+import { useBalancesState } from "../context/balances"
 
 const GasDetails = ({ network, currency }: { network: Layer, currency: Currency }) => {
 

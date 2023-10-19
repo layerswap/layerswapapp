@@ -4,7 +4,7 @@ import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import SwapDetails from "./Swap";
 import { Widget } from "./Widget/Index";
 import NotFound from "./Swap/NotFound";
-import { BalancesDataProvider } from "../context/wallet";
+import { BalancesDataProvider } from "../context/balances";
 
 const SwapWithdrawal: FC = () => {
     const { swap, swapApiError } = useSwapDataState()

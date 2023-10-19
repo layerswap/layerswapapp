@@ -11,7 +11,7 @@ import { ApiResponse } from '../../Models/ApiResponse';
 import LayerSwapApiClient, { Campaigns } from '../../lib/layerSwapApiClient';
 import useSWR from 'swr'
 import AverageCompletionTime from '../Common/AverageCompletionTime';
-import { useBalancesState } from '../../context/wallet';
+import { useBalancesState } from '../../context/balances';
 import { NetworkType } from '../../Models/CryptoNetwork';
 
 export default function AmountAndFeeDetails({ values }: { values: SwapFormValues }) {
@@ -32,7 +32,6 @@ export default function AmountAndFeeDetails({ values }: { values: SwapFormValues
     const campaignAsset = currencies.find(c => c?.asset === campaign?.asset)
     const feeinUsd = fee * currency?.usd_price
     const reward = truncateDecimals(((feeinUsd * campaign?.percentage / 100) / campaignAsset?.usd_price), campaignAsset?.precision)
-    const isCampaignEnded = Math.round(((new Date(campaign?.end_date).getTime() - new Date().getTime()) / (1000 * 3600 * 24))) < 0 ? true : false
 
     const destination_native_currency = !to?.isExchange
         && GetDefaultNetwork(to, asset)?.native_currency

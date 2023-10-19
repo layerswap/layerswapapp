@@ -10,7 +10,7 @@ import CurrencySettings from "../../lib/CurrencySettings";
 import { SortingByOrder } from "../../lib/sorting";
 import { Layer } from "../../Models/Layer";
 import { useQueryState } from "../../context/query";
-import { useBalancesState } from "../../context/wallet";
+import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { Balance } from "../../helpers/balanceHelper";
 

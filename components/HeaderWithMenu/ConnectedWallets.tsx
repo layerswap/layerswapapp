@@ -10,15 +10,20 @@ import WalletIcon from "../icons/WalletIcon"
 import shortenAddress from "../utils/ShortenAddress"
 import BitKeep from "../icons/Wallets/BitKeep"
 import Argent from "../icons/Wallets/Argent"
-import { FC, useCallback } from "react"
+import useWallet from "../../hooks/useWallet"
+import { useSettingsState } from "../../context/settings"
+import { NetworkType } from "../../Models/CryptoNetwork"
+import { Layer } from "../../Models/Layer"
 
 
 export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { isButton?: boolean, isMobile?: boolean, isConnected?: boolean }) => {
 
     const { connector } = useAccount()
+    const { layers } = useSettingsState()
+    const { connectWallet } = useWallet()
 
     return <ConnectButton.Custom>
-        {({ openConnectModal, account, mounted, chain, openAccountModal, openChainModal }) => {
+        {({ account, mounted, chain, openAccountModal, openChainModal }) => {
             const connected = !!(mounted && account && chain)
             const handleClick = () => {
                 if (chain?.unsupported) {
@@ -26,7 +31,7 @@ export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { i
                 } else if (connected) {
                     return openAccountModal()
                 } else {
-                    openConnectModal()
+                    connectWallet(layers.find(l => l.isExchange === false && Number(l.chain_id) === 1 && l.type === NetworkType.EVM) as Layer & { type: NetworkType.EVM })
                 }
             }
 
@@ -53,9 +58,10 @@ export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { i
 
 export const MenuRainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { isButton?: boolean, isMobile?: boolean, isConnected?: boolean }) => {
     const { connector } = useAccount()
-    
+    const { layers } = useSettingsState()
+    const { connectWallet } = useWallet()
     return <ConnectButton.Custom>
-        {({ openConnectModal, account, mounted, chain, openAccountModal, openChainModal }) => {
+        {({ account, mounted, chain, openAccountModal, openChainModal }) => {
             const connected = !!(mounted && account && chain)
             const handleClick = () => {
                 if (chain?.unsupported) {
@@ -63,7 +69,7 @@ export const MenuRainbowKitConnectWallet = ({ isButton, isMobile, isConnected }:
                 } else if (connected) {
                     return openAccountModal()
                 } else {
-                    openConnectModal()
+                    connectWallet(layers.find(l => l.isExchange === false && Number(l.chain_id) === 1 && l.type === NetworkType.EVM) as Layer & { type: NetworkType.EVM })
                 }
             }
 
