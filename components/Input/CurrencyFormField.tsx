@@ -72,7 +72,7 @@ export function GenerateCurrencyMenuItems(currencies: Currency[], source: Layer,
         const sourceCurrency = GetNetworkCurrency(source, c.asset);
         const displayName = lockedCurrency?.asset ?? (source?.isExchange ? sourceCurrency?.asset : sourceCurrency?.name);
         const balance = balances?.find(b => b?.token === c?.asset && source.internal_name === b.network)
-        const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : null
+        const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
 
         const res: SelectMenuItem<Currency> = {
             baseObject: c,
