@@ -24,7 +24,7 @@ module.exports = {
           '50': 'rgb(var(--ls-colors-primary-50, 248, 200, 220), <alpha-value>)',
           '100': 'rgb(var(--ls-colors-primary-100, 246, 182, 209), <alpha-value>)',
           '200': 'rgb(var(--ls-colors-primary-200, 241, 146, 186), <alpha-value>)',
-          '300': 'rgb(var(--ls-colors-primary-300, 237, 110, 163, <alpha-value>)',
+          '300': 'rgb(var(--ls-colors-primary-300, 237, 110, 163), <alpha-value>)',
           '400': 'rgb(var(--ls-colors-primary-400, 232, 73, 140), <alpha-value>)',
           '500': 'rgb(var(--ls-colors-primary-500, 228, 37, 117), <alpha-value>)',
           '600': 'rgb(var(--ls-colors-primary-600, 166, 51, 94), <alpha-value>)',
