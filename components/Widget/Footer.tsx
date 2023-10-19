@@ -33,15 +33,15 @@ type FooterProps = {
 
 const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
     const [height, setHeight] = useState(0)
-    const ref = useRef(null)
-    
-    useEffect(()=>{
-        setHeight(ref?.current?.clientHeight)
-    },[])
+    const ref = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        setHeight(Number(ref?.current?.clientHeight))
+    }, [])
 
     const handleAnimationEnd = (variant) => {
         if (variant == "center") {
-            setHeight(ref?.current?.clientHeight)
+            setHeight(Number(ref?.current?.clientHeight))
         }
     }
     return (

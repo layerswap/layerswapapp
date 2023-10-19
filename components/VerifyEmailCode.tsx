@@ -28,7 +28,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
     const { start: startTimer, started } = useTimerState()
     const { tempEmail, userLockedOut, guestAuthData, userType } = useAuthState();
     const { updateAuthData, setUserLockedOut } = useAuthDataUpdate()
-    const [modalUrl, setModalUrl] = useState<string>(null);
+    const [modalUrl, setModalUrl] = useState<string | null>(null);
     const [showDocModal, setShowDocModal] = useState(false)
 
     const handleResendCode = useCallback(async () => {
@@ -63,7 +63,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
 
     return (<>
         <Modal height='full' show={showDocModal} setShow={setShowDocModal} >
-            <DocIframe onConfirm={() => close()} URl={modalUrl} />
+            {modalUrl ? <DocIframe onConfirm={() => close()} URl={modalUrl} /> : <></>}
         </Modal>
         <Formik
             initialValues={initialValues}
@@ -80,12 +80,16 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
             }}
             onSubmit={async (values: CodeFormValues) => {
                 try {
+                    if (!tempEmail) {
+                        //TODO show validation error
+                        return
+                    }
                     var apiAuthClient = new LayerSwapAuthApiClient();
                     var apiClient = new LayerSwapApiClient()
                     const res = await apiAuthClient.connectAsync(tempEmail, values.Code)
                     updateAuthData(res)
                     await onSuccessfullVerify(res);
-                    if (userType == UserType.GuestUser) await apiClient.SwapsMigration(guestAuthData.access_token)
+                    if (userType == UserType.GuestUser && guestAuthData?.access_token) await apiClient.SwapsMigration(guestAuthData?.access_token)
                 }
                 catch (error) {
                     const message = error.response.data.error_description
@@ -135,7 +139,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                         </div>
                                         <div className='col-start-4 col-span-2'>
                                             <TimerWithContext isStarted={started} seconds={timerCountdown} waitingComponent={() => (
-                                                <SubmitButton type="submit" isDisabled={!isValid || userLockedOut} isSubmitting={isSubmitting}>
+                                                <SubmitButton type="submit" isDisabled={(!isValid || !!userLockedOut)} isSubmitting={isSubmitting}>
                                                     {userLockedOut ? 'User is locked out' : 'Confirm'}
                                                 </SubmitButton>
                                             )}>
@@ -208,7 +212,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                         </span>
                                     </p>
                                     <TimerWithContext isStarted={started} seconds={timerCountdown} waitingComponent={() => (
-                                        <SubmitButton type="submit" isDisabled={!isValid || userLockedOut} isSubmitting={isSubmitting}>
+                                        <SubmitButton type="submit" isDisabled={(!isValid || !!userLockedOut)} isSubmitting={isSubmitting}>
                                             {userLockedOut ? 'User is locked out' : 'Confirm'}
                                         </SubmitButton>
                                     )}>

@@ -8,10 +8,9 @@ export const SendFeedbackMessage = async (title: string, text: string) => {
 }
 
 export const SendErrorMessage = async (title: string, text: string) => {
-    if (text.length > 2000)
-    {
+    if (text.length > 2000) {
         text = text.slice(0, 2000);
     }
-    
+
     return await (await fetch(`https://api.telegram.org/bot${errorToken}/sendMessage?chat_id=${errorChat_id}&text=${title} %0A ${text}`)).json()
 }

@@ -8,7 +8,7 @@ import PopoverSelect from './PopoverSelect'
 type PopoverSelectWrapper = {
     setValue: (value: ISelectMenuItem) => void;
     values: ISelectMenuItem[];
-    value: ISelectMenuItem;
+    value?: ISelectMenuItem;
     placeholder?: string;
     searchHint?: string;
     disabled?: boolean

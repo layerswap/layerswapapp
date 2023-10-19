@@ -10,7 +10,7 @@ import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
 
 export default class LayerSwapApiClient {
-    static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
+    static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
     static apiVersion: string = AppSettings.ApiVersion;
 
     _authInterceptor: AxiosInstance;
@@ -120,7 +120,7 @@ export type CreateSwapParams = {
     destination: string,
     source_asset: string,
     destination_asset: string
-    source_address: string,
+    source_address: string | undefined,
     destination_address: string,
     app_name?: string,
     reference_id?: string,
@@ -141,10 +141,10 @@ export type SwapItem = {
     refuel_transaction_id?: string,
     source_network_asset: string,
     source_network: string,
-    source_exchange: string,
+    source_exchange?: string,
     destination_network_asset: string,
     destination_network: string,
-    destination_exchange: string,
+    destination_exchange?: string,
     transactions: Transaction[]
     has_refuel?: boolean,
     exchange_account_connected: boolean;
@@ -259,7 +259,7 @@ export enum SwapStatusInNumbers {
     SwapsWithoutCancelledAndExpired = '0&status=1&status=2&status=4'
 }
 
-export type Campaigns = {
+export type Campaign = {
     id: number,
     name: string,
     display_name: string,
@@ -271,7 +271,7 @@ export type Campaigns = {
     min_payout_amount: number,
     total_budget: number,
     distributed_amount: number,
-    status: string
+    status: 'active' | 'inactive'
 }
 
 export type Reward = {

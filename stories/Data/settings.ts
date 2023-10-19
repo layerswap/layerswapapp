@@ -20,6 +20,7 @@ export const Settings: LayerSwapSettings = {
             status: "active",
             type: "cex",
             is_featured: false,
+            created_date: "2021-12-30T21:52:48.380446+00:00",
             currencies: [
                 {
                     asset: "ETH",
@@ -48,6 +49,7 @@ export const Settings: LayerSwapSettings = {
             "status": "active",
             "type": "cex",
             "is_featured": true,
+            "created_date": "2021-12-30T21:52:48.380446+00:00",
             "currencies": [
                 {
                     asset: "ETH",
@@ -112,6 +114,7 @@ export const Settings: LayerSwapSettings = {
             "status": "active",
             "type": "fiat",
             "is_featured": false,
+            "created_date": "2021-12-30T21:52:48.380446+00:00",
             "currencies": [
                 {
                     asset: "ETH",
@@ -147,12 +150,11 @@ export const Settings: LayerSwapSettings = {
             "type": NetworkType.EVM,
             "refuel_amount_in_usd": 0,
             "transaction_explorer_template": "https://testnet.brine.finance/history",
-            "fee_multiplier": 89,
             "currencies": [
                 {
                     "name": "USDC",
+                    "contract_address": "",
                     "asset": "USDC",
-                    "contract_address": null,
                     "decimals": 6,
                     "status": "active",
                     "is_deposit_enabled": false,
@@ -182,7 +184,6 @@ export const Settings: LayerSwapSettings = {
             "created_date": "2023-08-30T12:27:38.362738+00:00"
         },
         {
-            "fee_multiplier": 89,
             "display_name": "Ethereum Goerli",
             "internal_name": "ETHEREUM_GOERLI",
             "native_currency": "ETH",
@@ -227,7 +228,6 @@ export const Settings: LayerSwapSettings = {
                 {
                     "name": "ETH",
                     "asset": "ETH",
-                    "contract_address": null,
                     "decimals": 18,
                     "status": "active",
                     "is_deposit_enabled": true,
@@ -237,7 +237,8 @@ export const Settings: LayerSwapSettings = {
                     "deposit_fee": 0.000063,
                     "withdrawal_fee": 0.000063,
                     "source_base_fee": 0.000542,
-                    "destination_base_fee": 0.000542
+                    "destination_base_fee": 0.000542,
+                    "contract_address": null
                 }
             ],
             "metadata": {
@@ -259,16 +260,15 @@ export const Settings: LayerSwapSettings = {
             "created_date": "2021-12-30T21:52:48.380446+00:00"
         },
         {
-            "fee_multiplier": 89,
             "display_name": "StarkNet Goerli",
             "internal_name": "STARKNET_GOERLI",
-            "native_currency": null,
             "is_featured": false,
             "average_completion_time": "00:01:52.0070860",
             "chain_id": "0x534e5f474f45524c49",
             "status": "active",
-            "type": NetworkType.EVM,
+            "type": NetworkType.Starknet,
             "refuel_amount_in_usd": 0.5,
+            "native_currency": null,
             "transaction_explorer_template": "https://goerli.voyager.online/tx/{0}",
             "currencies": [
                 {
@@ -316,7 +316,6 @@ export const Settings: LayerSwapSettings = {
             "type": NetworkType.StarkEx,
             "refuel_amount_in_usd": 0.5,
             "transaction_explorer_template": "https://immutascan.io/tx/{0}",
-            "fee_multiplier": 89,
             "currencies": [
                 {
                     "name": "IMX",
@@ -336,7 +335,6 @@ export const Settings: LayerSwapSettings = {
                 {
                     "name": "ETH",
                     "asset": "ETH",
-                    "contract_address": null,
                     "decimals": 18,
                     "status": "active",
                     "is_deposit_enabled": true,
@@ -346,6 +344,7 @@ export const Settings: LayerSwapSettings = {
                     "deposit_fee": 0,
                     "withdrawal_fee": 0,
                     "source_base_fee": 0.000572,
+                    "contract_address": null,
                     "destination_base_fee": 0.0
                 },
                 {
@@ -383,50 +382,6 @@ export const Settings: LayerSwapSettings = {
             "created_date": "2022-10-25T11:58:18.781769+00:00"
         },
         {
-            "fee_multiplier": 89,
-            "display_name": "Loopring Goerli",
-            "internal_name": "LOOPRING_GOERLI",
-            "native_currency": null,
-            "is_featured": false,
-            "average_completion_time": "00:05:19.5912930",
-            "chain_id": null,
-            "status": "inactive",
-            "type": NetworkType.ZkSyncLite,
-            "refuel_amount_in_usd": 0.5,
-            "transaction_explorer_template": "https://explorer.loopring.io/tx/{0}-transfer",
-            "currencies": [
-                {
-                    "name": "ETH",
-                    "asset": "ETH",
-                    "contract_address": null,
-                    "decimals": null,
-                    "status": "inactive",
-                    "is_deposit_enabled": false,
-                    "is_withdrawal_enabled": false,
-                    "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 0.1,
-                    "deposit_fee": 0.000823,
-                    "withdrawal_fee": 0.000823,
-                    "source_base_fee": 0.000542,
-                    "destination_base_fee": 0.000542
-                }
-            ],
-            "metadata": {
-                "multicall3": {
-                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                    "blockCreated": 1746963
-                }
-            },
-            "managed_accounts": [
-
-            ],
-            "nodes": [
-
-            ],
-            "created_date": "2023-01-19T14:32:06.948431+00:00"
-        },
-        {
-            "fee_multiplier": 89,
             "display_name": "Arbitrum One Goerli",
             "internal_name": "ARBITRUM_GOERLI",
             "native_currency": "ETH",
@@ -456,7 +411,6 @@ export const Settings: LayerSwapSettings = {
                 {
                     "name": "ETH",
                     "asset": "ETH",
-                    "contract_address": null,
                     "decimals": 18,
                     "status": "active",
                     "is_deposit_enabled": true,
@@ -466,6 +420,7 @@ export const Settings: LayerSwapSettings = {
                     "deposit_fee": 0.000028,
                     "withdrawal_fee": 0.000028,
                     "source_base_fee": 0.000572,
+                    "contract_address": null,
                     "destination_base_fee": 0.0
                 }
             ],
@@ -488,442 +443,9 @@ export const Settings: LayerSwapSettings = {
             "created_date": "2023-01-19T14:33:07.520931+00:00"
         },
         {
-            "display_name": "dYdX Goerli",
-            "internal_name": "DYDX_GOERLI",
-            "native_currency": null,
-            "is_featured": false,
-            "average_completion_time": "00:18:17.1275430",
-            "chain_id": null,
-            "status": "inactive",
-            "type": NetworkType.EVM,
-            "refuel_amount_in_usd": 0.5,
-            "transaction_explorer_template": "https://trade.stage.dydx.exchange/portfolio/history/transfers",
-            "fee_multiplier": 89,
-            "currencies": [
-                {
-                    "name": "USDC",
-                    "asset": "USDC",
-                    "contract_address": null,
-                    "decimals": null,
-                    "status": "inactive",
-                    "is_deposit_enabled": false,
-                    "is_withdrawal_enabled": false,
-                    "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 100,
-                    "deposit_fee": 0,
-                    "withdrawal_fee": 0,
-                    "source_base_fee": 1,
-                    "destination_base_fee": 0.0
-                }
-            ],
-            "metadata": {
-                "multicall3": {
-                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                    "blockCreated": 1746963
-                }
-            },
-            "managed_accounts": [
-
-            ],
-            "nodes": [
-
-            ],
-            "created_date": "2023-01-19T14:35:22.159278+00:00"
-        },
-        {
-            "display_name": "Solana Testnet",
-            "internal_name": "SOLANA_TESTNET",
-            "native_currency": null,
-            "fee_multiplier": 89,
-            "is_featured": false,
-            "average_completion_time": "00:01:01.2422360",
-            "chain_id": null,
-            "status": "inactive",
-            "type": NetworkType.Solana,
-            "refuel_amount_in_usd": 0.5,
-            "transaction_explorer_template": "https://explorer.solana.com/tx/{0}?cluster=testnet",
-            "currencies": [
-                {
-                    "name": "WETH",
-                    "asset": "ETH",
-                    "contract_address": null,
-                    "decimals": null,
-                    "status": "inactive",
-                    "is_deposit_enabled": false,
-                    "is_withdrawal_enabled": true,
-                    "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 0.1,
-                    "deposit_fee": 0,
-                    "withdrawal_fee": 0,
-                    "source_base_fee": 0.000631,
-                    "destination_base_fee": 0.0
-                }
-            ],
-            "metadata": {
-                "multicall3": {
-                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                    "blockCreated": 1746963
-                }
-            },
-            "managed_accounts": [
-
-            ],
-            "nodes": [
-
-            ],
-            "created_date": "2023-01-25T13:04:08.834539+00:00"
-        },
-        {
-            "display_name": "Linea Goerli",
-            "internal_name": "LINEA_GOERLI",
-            "native_currency": "ETH",
-            "fee_multiplier": 89,
-            "is_featured": false,
-            "average_completion_time": "00:00:00",
-            "chain_id": null,
-            "status": "inactive",
-            "type": NetworkType.EVM,
-            "refuel_amount_in_usd": 0.5,
-            "transaction_explorer_template": "https://goerli.lineascan.build/tx/{0}",
-            "currencies": [
-                {
-                    "name": "ETH",
-                    "asset": "ETH",
-                    "contract_address": null,
-                    "decimals": null,
-                    "status": "inactive",
-                    "is_deposit_enabled": true,
-                    "is_withdrawal_enabled": true,
-                    "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 0.1,
-                    "deposit_fee": 0.00021,
-                    "withdrawal_fee": 0.00021,
-                    "source_base_fee": 0.000542,
-                    "destination_base_fee": 0.000542
-                }
-            ],
-            "metadata": {
-                "multicall3": {
-                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                    "blockCreated": 1746963
-                }
-            },
-            "managed_accounts": [
-
-            ],
-            "nodes": [
-
-            ],
-            "created_date": "2023-07-12T09:32:28.913322+00:00"
-        },
-        {
-            "display_name": "PGN Testnet",
-            "internal_name": "PGN_TESTNET",
-            "native_currency": "ETH",
-            "is_featured": false,
-            "average_completion_time": "00:00:00",
-            "chain_id": null,
-            "status": "inactive",
-            "type": NetworkType.EVM,
-            "refuel_amount_in_usd": 1.0,
-            "transaction_explorer_template": "https://explorer.sepolia.publicgoods.network/tx/{0}",
-            "fee_multiplier": 89,
-            "currencies": [
-                {
-                    "name": "ETH",
-                    "asset": "ETH",
-                    "contract_address": null,
-                    "decimals": null,
-                    "status": "inactive",
-                    "is_deposit_enabled": false,
-                    "is_withdrawal_enabled": true,
-                    "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 0.1,
-                    "deposit_fee": 0.000043,
-                    "withdrawal_fee": 0.000043,
-                    "source_base_fee": 0.000542,
-                    "destination_base_fee": 0.000542
-                }
-            ],
-            "metadata": {
-                "multicall3": {
-                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                    "blockCreated": 1746963
-                }
-            },
-            "managed_accounts": [
-
-            ],
-            "nodes": [
-
-            ],
-            "created_date": "2023-07-26T13:50:48.210734+00:00"
-        },
-        {
-            "display_name": "Base Goerli",
-            "internal_name": "BASE_GOERLI",
-            "native_currency": "ETH",
-            "fee_multiplier": 89,
-            "is_featured": false,
-            "average_completion_time": "00:00:00",
-            "chain_id": null,
-            "status": "inactive",
-            "type": NetworkType.EVM,
-            "refuel_amount_in_usd": 1.0,
-            "transaction_explorer_template": "https://goerli.basescan.org/tx/{0}",
-            "currencies": [
-                {
-                    "name": "ETH",
-                    "asset": "ETH",
-                    "contract_address": null,
-                    "decimals": null,
-                    "status": "inactive",
-                    "is_deposit_enabled": false,
-                    "is_withdrawal_enabled": true,
-                    "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 0.1,
-                    "deposit_fee": 0.000042,
-                    "withdrawal_fee": 0.000042,
-                    "source_base_fee": 0.000542,
-                    "destination_base_fee": 0.0
-                }
-            ],
-            "metadata": {
-                "multicall3": {
-                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                    "blockCreated": 1746963
-                }
-            },
-            "managed_accounts": [
-
-            ],
-            "nodes": [
-
-            ],
-            "created_date": "2023-07-31T14:25:28.664454+00:00"
-        },
-        {
-            "display_name": "EVMOS TESTNET",
-            "internal_name": "EVMOS_TESTNET",
-            "native_currency": "ETH",
-            "fee_multiplier": 89,
-            "is_featured": false,
-            "average_completion_time": "00:00:00",
-            "chain_id": null,
-            "status": "inactive",
-            "type": NetworkType.EVM,
-            "refuel_amount_in_usd": 1.0,
-            "transaction_explorer_template": "https://testnet.escan.live/tx/{0}",
-            "currencies": [
-                {
-                    "name": "ETH",
-                    "asset": "ETH",
-                    "contract_address": null,
-                    "decimals": null,
-                    "status": "inactive",
-                    "is_deposit_enabled": true,
-                    "is_withdrawal_enabled": true,
-                    "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 0.1,
-                    "deposit_fee": 0.000823,
-                    "withdrawal_fee": 0.000823,
-                    "source_base_fee": 0.000052,
-                    "destination_base_fee": 0.0
-                },
-                {
-                    "name": "USDC",
-                    "asset": "USDC",
-                    "contract_address": null,
-                    "decimals": null,
-                    "status": "inactive",
-                    "is_deposit_enabled": true,
-                    "is_withdrawal_enabled": true,
-                    "is_refuel_enabled": true,
-                    "max_withdrawal_amount": 50,
-                    "deposit_fee": 0,
-                    "withdrawal_fee": 0,
-                    "source_base_fee": 0.0,
-                    "destination_base_fee": 0.0
-                }
-            ],
-            "metadata": {
-                "multicall3": {
-                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                    "blockCreated": 1746963
-                }
-            },
-            "managed_accounts": [
-
-            ],
-            "nodes": [
-
-            ],
-            "created_date": "2023-08-04T16:04:15.775427+00:00"
-        },
-        {
-            "display_name": "Mantle Testnet",
-            "internal_name": "MANTLE_TESTNET",
-            "native_currency": "MNT",
-            "fee_multiplier": 89,
-            "is_featured": false,
-            "average_completion_time": "00:00:00",
-            "chain_id": null,
-            "status": "inactive",
-            "type": NetworkType.EVM,
-            "refuel_amount_in_usd": 1.0,
-            "transaction_explorer_template": "https://explorer.mantle.xyz/tx/{0}",
-            "currencies": [
-                {
-                    "name": "ETH",
-                    "asset": "ETH",
-                    "contract_address": null,
-                    "decimals": null,
-                    "status": "inactive",
-                    "is_deposit_enabled": false,
-                    "is_withdrawal_enabled": true,
-                    "is_refuel_enabled": true,
-                    "max_withdrawal_amount": 0.1,
-                    "deposit_fee": 0,
-                    "withdrawal_fee": 0,
-                    "source_base_fee": 0.0,
-                    "destination_base_fee": 0.0
-                },
-                {
-                    "name": "MNT",
-                    "asset": "MNT",
-                    "contract_address": null,
-                    "decimals": null,
-                    "status": "inactive",
-                    "is_deposit_enabled": false,
-                    "is_withdrawal_enabled": true,
-                    "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 100,
-                    "deposit_fee": 0,
-                    "withdrawal_fee": 0,
-                    "source_base_fee": 0.0,
-                    "destination_base_fee": 0.0
-                }
-            ],
-            "metadata": {
-                "multicall3": {
-                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                    "blockCreated": 1746963
-                }
-            },
-            "managed_accounts": [
-
-            ],
-            "nodes": [
-
-            ],
-            "created_date": "2023-08-07T11:39:04.290718+00:00"
-        },
-        {
-            "display_name": "Zora Goerli",
-            "internal_name": "ZORA_GOERLI",
-            "native_currency": "ETH",
-            "fee_multiplier": 89,
-            "is_featured": false,
-            "average_completion_time": "00:00:00",
-            "chain_id": null,
-            "status": "inactive",
-            "type": NetworkType.EVM,
-            "refuel_amount_in_usd": 1,
-            "transaction_explorer_template": "https://testnet.explorer.zora.energy/tx/{0}",
-            "currencies": [
-                {
-                    "name": "ETH",
-                    "asset": "ETH",
-                    "contract_address": null,
-                    "decimals": null,
-                    "status": "inactive",
-                    "is_deposit_enabled": false,
-                    "is_withdrawal_enabled": true,
-                    "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 0.1,
-                    "deposit_fee": 0,
-                    "withdrawal_fee": 0,
-                    "source_base_fee": 0.000542,
-                    "destination_base_fee": 0.000542
-                }
-            ],
-            "metadata": {
-                "multicall3": {
-                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                    "blockCreated": 1746963
-                }
-            },
-            "managed_accounts": [
-
-            ],
-            "nodes": [
-
-            ],
-            "created_date": "2023-08-16T09:24:06.687243+00:00"
-        },
-        {
-            "display_name": "opBNB Testnet",
-            "internal_name": "OPBNB_TESTNET",
-            "native_currency": "BNB",
-            "fee_multiplier": 89,
-            "is_featured": false,
-            "average_completion_time": "00:00:00",
-            "chain_id": null,
-            "status": "inactive",
-            "type": NetworkType.EVM,
-            "refuel_amount_in_usd": 1.0,
-            "transaction_explorer_template": "http://opbnbscan.com/tx/{0}",
-            "currencies": [
-                {
-                    "name": "BNB",
-                    "asset": "BNB",
-                    "contract_address": null,
-                    "decimals": null,
-                    "status": "inactive",
-                    "is_deposit_enabled": false,
-                    "is_withdrawal_enabled": true,
-                    "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 0.1,
-                    "deposit_fee": 0,
-                    "withdrawal_fee": 0,
-                    "source_base_fee": 0.0,
-                    "destination_base_fee": 0.0
-                },
-                {
-                    "name": "ETH",
-                    "asset": "ETH",
-                    "contract_address": null,
-                    "decimals": null,
-                    "status": "inactive",
-                    "is_deposit_enabled": false,
-                    "is_withdrawal_enabled": true,
-                    "is_refuel_enabled": true,
-                    "max_withdrawal_amount": 0.1,
-                    "deposit_fee": 0,
-                    "withdrawal_fee": 0,
-                    "source_base_fee": 0.0,
-                    "destination_base_fee": 0.0
-                }
-            ],
-            "metadata": {
-                "multicall3": {
-                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                    "blockCreated": 1746963
-                }
-            },
-            "managed_accounts": [
-
-            ],
-            "nodes": [
-
-            ],
-            "created_date": "2023-08-24T10:45:29.562956+00:00"
-        },
-        {
             "display_name": "Optimism Goerli",
             "internal_name": "OPTIMISM_GOERLI",
             "native_currency": "ETH",
-            "fee_multiplier": 89,
             "is_featured": false,
             "average_completion_time": "00:00:00",
             "chain_id": "420",
@@ -935,7 +457,6 @@ export const Settings: LayerSwapSettings = {
                 {
                     "name": "ETH",
                     "asset": "ETH",
-                    "contract_address": null,
                     "decimals": 18,
                     "status": "active",
                     "is_deposit_enabled": true,
@@ -945,6 +466,7 @@ export const Settings: LayerSwapSettings = {
                     "deposit_fee": 0,
                     "withdrawal_fee": 0,
                     "source_base_fee": 0.0,
+                    "contract_address": null,
                     "destination_base_fee": 0
                 },
                 {

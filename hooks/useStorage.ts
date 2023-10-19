@@ -5,22 +5,22 @@ type UseStorageReturnValue = {
   getItem: (key: string, type?: storageType) => string;
   setItem: (key: string, value: string, type?: storageType) => boolean;
   removeItem: (key: string, type?: storageType) => void;
-  storageAvailable: boolean;
+  storageAvailable: boolean | null;
 };
 
 const useStorage = (): UseStorageReturnValue => {
-  const getItem = (key: string, type?: storageType): string => {
+  const getItem = (key: string, type: storageType = "sessionStorage"): string => {
     return checkStorageIsAvailable(type) ? window[type][key] : '';
   };
 
-  const [storageAvailable, setStorageAvailable] = useState<boolean>();
+  const [storageAvailable, setStorageAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
     const storageSupported = checkStorageIsAvailable("localStorage")
     setStorageAvailable(storageSupported)
   }, []);
 
-  const setItem = (key: string, value: string, type?: storageType): boolean => {
+  const setItem = (key: string, value: string, type: storageType = "sessionStorage"): boolean => {
     if (checkStorageIsAvailable(type)) {
       window[type].setItem(key, value);
       return true;
@@ -29,7 +29,7 @@ const useStorage = (): UseStorageReturnValue => {
     return false;
   };
 
-  const removeItem = (key: string, type?: storageType): void => {
+  const removeItem = (key: string, type: storageType = "sessionStorage"): void => {
     checkStorageIsAvailable(type) && window[type].removeItem(key);
   };
 

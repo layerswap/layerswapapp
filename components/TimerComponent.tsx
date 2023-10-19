@@ -13,8 +13,8 @@ const TimerWithContext: FC<TimerProps> = (({ isStarted, waitingComponent, childr
     const { secondsRemaining, started } = useTimerState()
     const twoDigits = (num) => String(num).padStart(2, '0')
 
-    const secondsToDisplay = secondsRemaining % 60
-    const minutesRemaining = (secondsRemaining - secondsToDisplay) / 60
+    const secondsToDisplay = Number(secondsRemaining) % 60
+    const minutesRemaining = (Number(secondsRemaining) - secondsToDisplay) / 60
     const minutesToDisplay = minutesRemaining % 60
 
     return (

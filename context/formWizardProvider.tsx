@@ -1,9 +1,10 @@
-import React, { useCallback, useState } from 'react'
+import React, { Context, useCallback, useState } from 'react'
 import { KnownErrorCode } from '../Models/ApiError';
 import { Steps } from '../Models/Wizard';
+import { number } from 'starknet';
 
-const FormWizardStateContext = React.createContext(null);
-const FormWizardStateUpdateContext = React.createContext(null);
+const FormWizardStateContext = React.createContext<WizardProvider<any> | null>(null);
+const FormWizardStateUpdateContext = React.createContext<UpdateInterface<any> | null>(null);
 
 type Direction = "back" | "forward"
 
@@ -15,14 +16,14 @@ type StepError<T> = {
 export type WizardProvider<T> = {
     currentStepName: T,
     moving: Direction,
-    loading: boolean,
-    error: StepError<T>,
-    wrapperWidth: number,
-    wrapperHeight: string,
-    goBack: () => void,
-    positionPercent: number,
-    noToolBar: boolean,
-    hideMenu: boolean
+    loading?: boolean,
+    error?: StepError<T>,
+    wrapperWidth?: number,
+    wrapperHeight?: number,
+    goBack?: () => void,
+    positionPercent?: number,
+    noToolBar?: boolean,
+    hideMenu?: boolean
 }
 
 type UpdateInterface<T> = {
@@ -30,7 +31,7 @@ type UpdateInterface<T> = {
     setLoading: (value: boolean) => void,
     setError: (error: StepError<T>) => void,
     setWrapperWidth: (value: number) => void,
-    setWrapperHeight: (value: string) => void,
+    setWrapperHeight: (value: number) => void,
     setGoBack: (callback) => void,
     setPositionPercent: (positionPercent: number) => void,
 }
@@ -49,11 +50,12 @@ export const FormWizardProvider = <T extends Steps>(props: Props<T>) => {
     const [moving, setmoving] = useState<Direction>("forward")
     const [loading, setLoading] = useState(initialLoading)
     const [wrapperWidth, setWrapperWidth] = useState(1);
+
     const [wrapperHeight, setWrapperHeight] = useState(1);
     const [error, setError] = useState<StepError<T>>()
 
     const [goBack, setGoBack] = useState<{ callback: () => void }>();
-    const [positionPercent, setPositionPercent] = useState<() => void>();
+    const [positionPercent, setPositionPercent] = useState<number>();
 
     const handleSetCallback = useCallback((callback) => setGoBack({ callback }), [])
 
@@ -82,7 +84,7 @@ export function useFormWizardState<T>() {
 }
 
 export function useFormWizardaUpdate<T>() {
-    const updateFns = React.useContext<UpdateInterface<T>>(FormWizardStateUpdateContext);
+    const updateFns = React.useContext<UpdateInterface<T>>(FormWizardStateUpdateContext as Context<UpdateInterface<T>>);
 
     if (updateFns === undefined) {
         throw new Error('useSwapDataUpdate must be used within a SwapDataProvider');

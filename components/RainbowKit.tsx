@@ -3,15 +3,18 @@ import {
     darkTheme,
     connectorsForWallets,
     RainbowKitProvider,
+    DisclaimerComponent,
     AvatarComponent
 } from '@rainbow-me/rainbowkit';
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 import { publicProvider } from 'wagmi/providers/public';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitgetWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 import { useSettingsState } from "../context/settings";
-import { WagmiConfig, configureChains, createConfig } from "wagmi";
+import { Chain, WagmiConfig, configureChains, createConfig } from "wagmi";
 import { NetworkType } from "../Models/CryptoNetwork";
 import resolveChain from "../lib/resolveChain";
+import React from "react";
+import NoCookies from "./NoCookies";
 import AddressIcon from "./AddressIcon";
 
 type Props = {
@@ -20,9 +23,16 @@ type Props = {
 
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
-    const settingsChains = settings.networks?.filter(n => n.status !== 'inactive').sort((a, b) => Number(a.chain_id) - Number(b.chain_id)).filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0)).map(n => {
-        return resolveChain(n)
-    })
+
+    if (!navigator?.cookieEnabled) {
+        return <NoCookies />
+    }
+    const isChain = (c: Chain | undefined): c is Chain => c != undefined
+    const settingsChains = settings?.networks
+        .sort((a, b) => Number(a.chain_id) - Number(b.chain_id))
+        .filter(net => net.type === NetworkType.EVM
+            && net.nodes?.some(n => n.url?.length > 0))
+        .map(resolveChain).filter(isChain) || []
 
     const { chains, publicClient } = configureChains(
         settingsChains,
@@ -72,7 +82,7 @@ function RainbowKitComponent({ children }: Props) {
         publicClient,
     })
 
-    const disclaimer = ({ Text }) => (
+    const disclaimer: DisclaimerComponent = ({ Text }) => (
         <Text>
             Thanks for choosing Layerswap!
         </Text>

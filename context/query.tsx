@@ -1,22 +1,9 @@
-import React, { FC, useEffect } from 'react'
-import { usePersistedState } from '../hooks/usePersistedState';
+import React, { Context, FC } from 'react'
 import { QueryParams } from '../Models/QueryParams';
 
-const STORAGE_KEY = "settings_query_params"
-
-export const QueryStateContext = React.createContext<QueryParams>(null);
+export const QueryStateContext = React.createContext<QueryParams | null>(null);
 
 const QueryProvider: FC<{ query: QueryParams, children?: React.ReactNode }> = ({ query, children }) => {
-
-  const [data, setData] = usePersistedState<QueryParams>(mapLegacyQueryParams(query), STORAGE_KEY, 'sessionStorage');
-
-  useEffect(() => {
-    const emptyParams = new QueryParams()
-    if (query && Object.keys(emptyParams).some(key => query[key] !== undefined)) {
-      setData(mapLegacyQueryParams(query));
-    }
-  }, [query])
-
   return (
     <QueryStateContext.Provider value={mapLegacyQueryParams(query)}>
       {children}
@@ -35,7 +22,7 @@ function mapLegacyQueryParams(params: QueryParams) {
 }
 
 export function useQueryState() {
-  const data = React.useContext(QueryStateContext);
+  const data = React.useContext<QueryParams>(QueryStateContext as Context<QueryParams>);
 
   if (data === undefined) {
     throw new Error('useQueryState must be used within a QueryStateProvider');

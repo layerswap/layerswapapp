@@ -1,7 +1,7 @@
-import { CryptoNetwork } from "./CryptoNetwork";
+import { CryptoNetwork, NetworkCurrency } from "./CryptoNetwork";
 import { Currency } from "./Currency";
 import { Exchange, ExchangeCurrency } from "./Exchange";
-import { BaseL2Asset, ExchangeL2Asset, Layer } from "./Layer";
+import { BaseL2Asset, ExchangeAsset, Layer, NetworkAsset } from "./Layer";
 import { LayerSwapSettings } from "./LayerSwapSettings";
 import { Partner } from "./Partner";
 
@@ -13,7 +13,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
         this.layers = LayerSwapAppSettings.ResolveLayers(this.exchanges, this.networks);
     }
 
-    layers?: Layer[]
+    layers: Layer[]
 
     resolveImgSrc = (item: Layer | Currency | Pick<Layer, 'internal_name'> | { asset: string } | Partner) => {
 
@@ -74,11 +74,11 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
 
     static ResolveExchangeL2Assets(
         currencies: ExchangeCurrency[],
-        networks: CryptoNetwork[]): ExchangeL2Asset[] {
+        networks: CryptoNetwork[]): ExchangeAsset[] {
         return currencies.map(exchangecurrency => {
-            const network = networks.find(n => n.internal_name === exchangecurrency.network)
-            const networkCurrencies = network?.currencies.find(nc => nc.asset === exchangecurrency.asset)
-            return {
+            const network = networks.find(n => n.internal_name === exchangecurrency.network) as CryptoNetwork
+            const networkCurrencies = network?.currencies.find(nc => nc.asset === exchangecurrency.asset) as NetworkCurrency
+            const res: ExchangeAsset = {
                 asset: exchangecurrency.asset,
                 status: exchangecurrency.status,
                 is_default: exchangecurrency.is_default,
@@ -87,16 +87,17 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
                 min_deposit_amount: exchangecurrency.min_deposit_amount,
                 withdrawal_fee: exchangecurrency.withdrawal_fee,
             }
+            return res
         })
     }
 
-    static ResolveNetworkL2Assets(network: CryptoNetwork): BaseL2Asset[] {
+    static ResolveNetworkL2Assets(network: CryptoNetwork): NetworkAsset[] {
         return network?.currencies.map(c => ({
             asset: c.asset,
             status: c.status,
             is_default: true,
             network_internal_name: network?.internal_name,
-            network: { ...network, currencies: [c] },
+            network: { ...network },
             contract_address: c.contract_address,
             decimals: c.decimals
         }))

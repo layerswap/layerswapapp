@@ -9,6 +9,7 @@
     "start": "next start",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
+    "analyze": "cross-env ANALYZE=true next build",
     "lint": "next lint"
   },
   "dependencies": {
@@ -68,6 +69,7 @@
     "node": "18.x"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^13.5.4",
     "@storybook/addon-essentials": "^7.4.5",
     "@storybook/addon-interactions": "^7.4.5",
     "@storybook/addon-links": "^7.4.5",
@@ -84,6 +86,7 @@
     "@web3-react/types": "^6.0.7",
     "autoprefixer": "^10.4.5",
     "chromatic": "^6.24.1",
+    "cross-env": "^7.0.3",
     "eslint": "8.49.0",
     "eslint-config-next": "13.4.19",
     "eslint-plugin-no-conditional-literals-in-jsx": "file:eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx",

@@ -20,7 +20,7 @@ const ManualTransfer: FC = () => {
     const [messageClicked, setMessageClicked] = useState(false)
 
     const {
-        source_network: source_network_internal_name } = swap
+        source_network: source_network_internal_name } = swap || {}
 
     const layerswapApiClient = new LayerSwapApiClient()
     const {
@@ -80,7 +80,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
         destination_network: destination_network_internal_name,
         destination_network_asset,
         source_network_asset
-    } = swap
+    } = swap || {}
 
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
 
@@ -107,7 +107,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
     const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
 
 
-    const requested_amount = manualTransferFee?.min_amount > swap?.requested_amount ? manualTransferFee?.min_amount : swap?.requested_amount
+    const requested_amount = Number(manualTransferFee?.min_amount) > Number(swap?.requested_amount) ? manualTransferFee?.min_amount : swap?.requested_amount
     const depositAddress = existingDepositAddress || generatedDeposit?.data?.address
 
     const handleChangeSelectedNetwork = useCallback((n: BaseL2Asset) => {
@@ -214,15 +214,16 @@ const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = 
     const {
         source_exchange: source_exchange_internal_name,
         destination_network,
-        source_network_asset } = swap
+        source_network_asset } = swap || {}
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
-    const exchangeAssets = source_exchange.assets.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network.status !== "inactive")
-    const defaultSourceNetwork = exchangeAssets.find(sn => sn.is_default) || exchangeAssets?.[0]
+    const exchangeAssets = source_exchange?.assets?.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network?.status !== "inactive")
+    const defaultSourceNetwork = exchangeAssets?.find(sn => sn.is_default) || exchangeAssets?.[0]
 
     const handleChangeSelectedNetwork = useCallback((n: string) => {
-        const network = exchangeAssets.find(network => network?.network_internal_name === n)
-        onChange(network)
+        const network = exchangeAssets?.find(network => network?.network_internal_name === n)
+        if (network)
+            onChange(network)
     }, [exchangeAssets])
 
     return <div className='flex items-center gap-1 text-sm my-2'>
@@ -240,12 +241,12 @@ const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = 
                 <SelectContent>
                     <SelectGroup>
                         <SelectLabel>Networks</SelectLabel>
-                        {exchangeAssets.map(sn => (
+                        {exchangeAssets?.map(sn => (
                             <SelectItem key={sn.network_internal_name} value={sn.network_internal_name}>
                                 <div className="flex items-center">
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         {
-                                            sn &&
+                                            sn.network &&
                                             <Image
                                                 src={resolveImgSrc(sn.network)}
                                                 alt="From Logo"

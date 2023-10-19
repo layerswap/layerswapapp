@@ -1,7 +1,7 @@
 import { CryptoNetwork, NetworkCurrency } from "../Models/CryptoNetwork";
 import { Currency } from "../Models/Currency";
 import { Exchange } from "../Models/Exchange";
-import { Layer, BaseL2Asset, ExchangeL2Asset } from "../Models/Layer";
+import { Layer, BaseL2Asset, ExchangeAsset } from "../Models/Layer";
 
 export function mapNetworkCurrencies(exchanges: Exchange[], networks: CryptoNetwork[]): Exchange[] {
     return exchanges.map(e => {
@@ -14,7 +14,7 @@ export function mapNetworkCurrencies(exchanges: Exchange[], networks: CryptoNetw
     })
 }
 
-export function GetNetworkCurrency(layer: Layer, asset: string): NetworkCurrency {
+export function GetNetworkCurrency(layer: Layer, asset: string): NetworkCurrency | undefined {
     return layer
         ?.assets
         ?.find(a => a.asset === asset && a.is_default)
@@ -23,30 +23,30 @@ export function GetNetworkCurrency(layer: Layer, asset: string): NetworkCurrency
         ?.find(c => c.asset === asset)
 }
 
-export function GetDefaultNetwork(layer: Layer, asset: string): CryptoNetwork {
+export function GetDefaultNetwork(layer: Layer | undefined | null, asset: string | undefined | null): CryptoNetwork | undefined {
     return layer
         ?.assets
         ?.find(a => a.is_default && a.asset === asset)
         ?.network
 }
 
-export function GetDefaultAsset(layer: Layer & { isExchange: true }, asset: string): ExchangeL2Asset
-export function GetDefaultAsset(layer: Layer & { isExchange: false }, asset: string): BaseL2Asset
-export function GetDefaultAsset(layer: Layer, asset: string): BaseL2Asset
+export function GetDefaultAsset(layer: Layer & { isExchange: true }, asset: string): ExchangeAsset | undefined
+export function GetDefaultAsset(layer: Layer & { isExchange: false }, asset: string): BaseL2Asset | undefined
+export function GetDefaultAsset(layer: Layer, asset: string): BaseL2Asset | undefined
 export function GetDefaultAsset(layer: Layer, asset: string) {
     return layer
         ?.assets
         ?.find(a => a.is_default && a.asset === asset)
 }
 
-export function FilterSourceLayers(layers: Layer[], destination?: Layer, lockedCurrency?: Currency): Layer[] {
+export function FilterSourceLayers(layers: Layer[], destination?: Layer | null, lockedCurrency?: Currency | null): Layer[] {
     const IsAvailableForSomeLayer = (asset: string, source: Layer) =>
         layers.some(l => IsAvailableForLayer(asset, source, l))
 
     const filteredLayers = layers.filter(l => {
         const isAvailable = l.status != 'inactive' && destination?.internal_name !== l.internal_name
 
-        const layerHasAvailableL2 = l.assets.some(l2Asset =>
+        const layerHasAvailableL2 = l.assets?.some(l2Asset =>
             l2Asset.is_default
             && (!lockedCurrency || l2Asset?.asset === lockedCurrency?.asset)
             && (destination
@@ -73,15 +73,15 @@ const IsAvailableForLayer = (asset: string, source: Layer, destination: Layer) =
         return false
 
     const sourceASsetIsAvailable = sourceDefaultAsset
-        .network
-        .currencies
+        ?.network
+        ?.currencies
         .some(c => c?.asset === asset
             && (c.status !== 'inactive')
             && c.is_deposit_enabled)
 
     const destinationAssetIsAvailable = destinationDefaultAsset
-        .network
-        .currencies
+        ?.network
+        ?.currencies
         .some(c => c?.asset === asset
             && c.status !== 'inactive'
             && c.is_withdrawal_enabled)
@@ -89,7 +89,7 @@ const IsAvailableForLayer = (asset: string, source: Layer, destination: Layer) =
     return sourceASsetIsAvailable && destinationAssetIsAvailable
 }
 
-export function FilterDestinationLayers(layers: Layer[], source?: Layer, lockedCurrency?: Currency): Layer[] {
+export function FilterDestinationLayers(layers: Layer[], source?: Layer | null, lockedCurrency?: Currency | null): Layer[] {
 
     const IsAvailableForSomeLayer = (asset: string, destination: Layer) =>
         layers.some(l => IsAvailableForLayer(asset, l, destination))
@@ -99,7 +99,7 @@ export function FilterDestinationLayers(layers: Layer[], source?: Layer, lockedC
             && !(l.isExchange === true && l.type === 'fiat')
             && source?.internal_name !== l.internal_name;
 
-        const layerHasAvailableL2 = l.assets.some(l2Asset =>
+        const layerHasAvailableL2 = l.assets?.some(l2Asset =>
             l2Asset.is_default
             && (!lockedCurrency || l2Asset?.asset === lockedCurrency?.asset)
             && (source ? IsAvailableForLayer(l2Asset.asset, source, l)
@@ -111,7 +111,10 @@ export function FilterDestinationLayers(layers: Layer[], source?: Layer, lockedC
     return filteredLayers;
 }
 
-export function FilterCurrencies(currencies: Currency[], source?: Layer, destination?: Layer): Currency[] {
+export function FilterCurrencies(currencies: Currency[], source: Layer | undefined | null, destination: Layer | undefined | null): Currency[] {
+    if (!source || !destination) {
+        return []
+    }
     const filteredCurrencies = currencies.filter(c => {
         return IsAvailableForLayer(c.asset, source, destination)
     })

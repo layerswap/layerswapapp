@@ -2,7 +2,7 @@ import HeaderWithMenu from "../HeaderWithMenu"
 import { useRouter } from "next/router"
 import { default as Content } from './Content';
 import { default as Footer } from './Footer';
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 
@@ -10,21 +10,21 @@ const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[]
    const router = useRouter()
    const wrapper = useRef(null);
 
-   const goBack = window?.['navigation']?.['canGoBack'] ?
-      () => router.back()
-      : () => router.push({
-         pathname: "/",
-         query: resolvePersistantQueryParams(router.query)
-      })
+   const goBack = useCallback(() => {
+      window?.['navigation']?.['canGoBack'] ?
+         router.back()
+         : router.push({
+            pathname: "/",
+            query: resolvePersistantQueryParams(router.query)
+         })
+   }, [])
+
 
    const handleBack = router.pathname === "/" ? null : goBack
 
    return <>
       <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
          <div className="relative">
-            <div className="overflow-hidden h-1 flex rounded-t-lg bg-secondary-500">
-               <div className="shadow-none flex flex-col whitespace-nowrap justify-center bg-primary"></div>
-            </div>
             {
                LayerSwapApiClient.apiVersion === 'sandbox' && <div>
                   <div className="h-0.5 bg-[#D95E1B]" />
