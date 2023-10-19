@@ -272,7 +272,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet, loading }) => {
                         {
                             walletBalance?.isNativeCurrency && Number(values.amount) + networkGas?.gas > walletBalance.amount && walletBalance.amount > minAllowedAmount &&
                             <WarningMessage messageType="warning" className="mt-4">
-                                <div className="font-normal text-white">
+                                <div className="font-normal text-primary-text">
                                     <div>
                                         You might not be able to complete the transaction.
                                     </div>

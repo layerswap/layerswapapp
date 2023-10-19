@@ -1,6 +1,5 @@
-import { Check, X, XCircle } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { classNames } from "../utils/classNames";
-import SpinIcon from "../icons/spinIcon";
 import { Gauge } from "../gauge";
 
 function renderStepIcon(step) {

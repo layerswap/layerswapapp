@@ -2,15 +2,17 @@ import "@rainbow-me/rainbowkit/styles.css";
 import {
     darkTheme,
     connectorsForWallets,
-    RainbowKitProvider
+    RainbowKitProvider,
+    AvatarComponent
 } from '@rainbow-me/rainbowkit';
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 import { publicProvider } from 'wagmi/providers/public';
-import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
+import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitgetWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 import { useSettingsState } from "../context/settings";
 import { WagmiConfig, configureChains, createConfig } from "wagmi";
 import { NetworkType } from "../Models/CryptoNetwork";
 import resolveChain from "../lib/resolveChain";
+import AddressIcon from "./AddressIcon";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -18,8 +20,7 @@ type Props = {
 
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
-
-    const settingsChains = settings.networks.sort((a, b) => Number(a.chain_id) - Number(b.chain_id)).filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0)).map(n => {
+    const settingsChains = settings.networks?.filter(n => n.status !== 'inactive').sort((a, b) => Number(a.chain_id) - Number(b.chain_id)).filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0)).map(n => {
         return resolveChain(n)
     })
 
@@ -42,8 +43,8 @@ function RainbowKitComponent({ children }: Props) {
             wallets: [
                 coinbaseWallet({ chains, appName: 'Layerswap' }),
                 argentWallet({ projectId, chains }),
-                bitKeepWallet({ projectId, chains }),
-                rainbowWallet({ projectId, chains }),
+                bitgetWallet({ projectId, chains }),
+                rainbowWallet({ projectId, chains })
             ],
         },
     ]);
@@ -77,9 +78,13 @@ function RainbowKitComponent({ children }: Props) {
         </Text>
     );
 
+    const CustomAvatar: AvatarComponent = ({ address, size }) => {
+        return <AddressIcon address={address} size={size} />
+    };
+
     return (
         <WagmiConfig config={wagmiConfig}>
-            <RainbowKitProvider modalSize="compact" chains={chains} theme={theme}
+            <RainbowKitProvider avatar={CustomAvatar} modalSize="compact" chains={chains} theme={theme}
                 appInfo={{
                     appName: 'Layerswap',
                     learnMoreUrl: 'https://docs.layerswap.io/',

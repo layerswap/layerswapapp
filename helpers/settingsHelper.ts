@@ -1,6 +1,6 @@
 import { CryptoNetwork, NetworkCurrency } from "../Models/CryptoNetwork";
 import { Currency } from "../Models/Currency";
-import { Exchange, ExchangeCurrency } from "../Models/Exchange";
+import { Exchange } from "../Models/Exchange";
 import { Layer, BaseL2Asset, ExchangeL2Asset } from "../Models/Layer";
 
 export function mapNetworkCurrencies(exchanges: Exchange[], networks: CryptoNetwork[]): Exchange[] {

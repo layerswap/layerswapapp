@@ -85,7 +85,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
             const watchDogContract = new Contract(
                 WatchDogAbi,
-                process.env.NEXT_PUBLIC_WATCHDOG_CONTRACT,
+                source_network.metadata.WatchdogContractAddress,
                 starknetAccount.account,
             )
 
