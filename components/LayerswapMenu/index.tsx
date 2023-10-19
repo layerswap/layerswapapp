@@ -35,9 +35,7 @@ export default function LayerswapMenu() {
     const [openTopModal, setOpenTopModal] = useState(false);
     const { openConnectModal } = useConnectModal();
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
-    const UserEmail = ({ email }: { email: string }) => {
-        return shortenEmail(email, 22)
-    }
+
 
     useEffect(() => {
         setEmbedded(inIframe())
@@ -99,7 +97,6 @@ export default function LayerswapMenu() {
         ]
     }
 
-
     const handleCloseFeedback = () => {
         setOpenFeedbackModal(false)
     }
@@ -132,25 +129,30 @@ export default function LayerswapMenu() {
                                 </div>
 
                                 <Menu.Group>
-                                    {
-                                        router.pathname != '/' &&
-                                        <Menu.Item pathname='/' icon={<Home className="h-5 w-5" />} >
-                                            Home
-                                        </Menu.Item>
-                                    }
-                                    {
-                                        router.pathname != '/transactions' &&
-                                        <Menu.Item pathname='/transactions' icon={<ScrollText className="h-5 w-5" />} >
-                                            Transfers
-                                        </Menu.Item>
-                                    }
-                                    {!embedded && router.pathname != '/campaigns' &&
-                                        <Menu.Item pathname='/campaigns' icon={<Gift className="h-5 w-5" />} >
-                                            Campaigns
-                                        </Menu.Item>
-                                    }
+                                    <>
+                                        {
+                                            router.pathname != '/' &&
+                                            <Menu.Item pathname='/' icon={<Home className="h-5 w-5" />} >
+                                                Home
+                                            </Menu.Item>
+                                        }
+                                    </>
+                                    <>
+                                        {
+                                            router.pathname != '/transactions' &&
+                                            <Menu.Item pathname='/transactions' icon={<ScrollText className="h-5 w-5" />} >
+                                                Transfers
+                                            </Menu.Item>
+                                        }
+                                    </>
+                                    <>
+                                        {!embedded && router.pathname != '/campaigns' &&
+                                            <Menu.Item pathname='/campaigns' icon={<Gift className="h-5 w-5" />} >
+                                                Campaigns
+                                            </Menu.Item>
+                                        }
+                                    </>
                                 </Menu.Group>
-
                                 <Menu.Group>
                                     <Menu.Item onClick={() => {
                                         boot();
@@ -220,7 +222,7 @@ export default function LayerswapMenu() {
                                                         >
                                                             <div className="font-normal flex gap-2 items-center">
                                                                 <UserCircle2 className="h-5 w-5" />
-                                                                <p><UserEmail email={email} /></p>
+                                                                <p>{email && <UserEmail email={email} />}</p>
                                                             </div>
                                                             <button className="text-primary hover:text-primary-600" onClick={handleLogout}>
                                                                 Sign out
@@ -235,14 +237,15 @@ export default function LayerswapMenu() {
                                         </Menu.Group>
                                     </Menu.Footer>
                                 }
-
                             </Menu>
                         </div>
-
                     </Modal>
-
                 </>
             }
         </span >
     </>
+}
+
+const UserEmail = ({ email }: { email: string }) => {
+    return shortenEmail(email, 22)
 }

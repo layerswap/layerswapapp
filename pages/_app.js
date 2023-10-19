@@ -10,22 +10,6 @@ import useStorage from "../hooks/useStorage";
 
 function App({ Component, pageProps }) {
   const router = useRouter()
-
-  const { storageAvailable } = useStorage();
-
-  if (!storageAvailable) {
-    return (
-      <SWRConfig
-        value={{
-          revalidateOnFocus: false,
-        }}
-      >
-        <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2000}>
-          <Component key={router.asPath} {...pageProps} />
-        </IntercomProvider>
-      </SWRConfig>)
-  }
-
   return (
     <SWRConfig
       value={{

@@ -10,7 +10,7 @@ const Component: FC = () => {
 
     return (
         <>
-            <Processing settings={settings} swap={swap} />
+            {swap && <Processing settings={settings} swap={swap} />}
         </>
 
     )

@@ -8,15 +8,15 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
     const { destAddress, amount, asset, from, to, lockAsset } = queryParams
     const { currencies, layers } = settings || {}
 
-    const lockedCurrency = lockAsset ? currencies?.find(c => c?.asset?.toUpperCase() === asset?.toUpperCase()) : null
+    const lockedCurrency = lockAsset ? currencies?.find(c => c?.asset?.toUpperCase() === asset?.toUpperCase()) : undefined
     const sourceLayer = layers.find(l => l.internal_name.toUpperCase() === from?.toUpperCase())
     const destinationLayer = layers.find(l => l.internal_name.toUpperCase() === to?.toUpperCase())
 
     const sourceItems = FilterSourceLayers(layers, destinationLayer, lockedCurrency)
     const destinationItems = FilterDestinationLayers(layers, sourceLayer, lockedCurrency)
 
-    const initialSource = sourceLayer ? sourceItems.find(i => i == sourceLayer) : null
-    const initialDestination = destinationLayer ? destinationItems.find(i => i === destinationLayer) : null
+    const initialSource = sourceLayer ? sourceItems.find(i => i == sourceLayer) : undefined
+    const initialDestination = destinationLayer ? destinationItems.find(i => i === destinationLayer) : undefined
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : FilterCurrencies(currencies, sourceLayer, destinationLayer);
 
@@ -39,4 +39,3 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
 
     return result
 }
-

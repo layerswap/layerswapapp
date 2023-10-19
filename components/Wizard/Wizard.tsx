@@ -9,7 +9,7 @@ type Props = {
 
 const Wizard: FC<Props> = ({ children }) => {
 
-   const wrapper = useRef(null);
+   const wrapper = useRef<HTMLDivElement>(null);
 
    const { setWrapperWidth } = useFormWizardaUpdate()
    const { wrapperWidth, positionPercent, moving, goBack, noToolBar, hideMenu } = useFormWizardState()

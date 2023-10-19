@@ -3,12 +3,11 @@ import { SwapItem, TransactionStatus, TransactionType } from '../lib/layerSwapAp
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapData, SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
-import { WagmiConfig, configureChains, createConfig } from 'wagmi';
+import { Chain, WagmiConfig, configureChains, createConfig } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 import { WalletStateContext } from '../context/wallet';
-import { QueryStateContext } from '../context/query';
 import { FC } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange, cancelled, expired } from './Data/swaps'
@@ -21,37 +20,19 @@ import { THEME_COLORS } from '../Models/Theme';
 import Layout from '../components/layout';
 import RainbowKitComponent from '../components/RainbowKit';
 import SwapDetails from '../components/Swap';
+import resolveChain from '../lib/resolveChain';
+import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
+import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
+import WalletStateMock from './Mocks/context/WalletState';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 let settings = new LayerSwapAppSettings(Settings)
 
-const settingsChains = settings.networks.filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0)).map(n => {
-    const nativeCurrency = n.currencies.find(c => c.asset === n.native_currency);
-    const blockExplorersBaseURL = new URL(n.transaction_explorer_template).origin;
-    return {
-        id: Number(n.chain_id),
-        name: n.display_name,
-        network: n.internal_name,
-        nativeCurrency: { name: nativeCurrency?.name, symbol: nativeCurrency?.asset, decimals: nativeCurrency?.decimals },
-        rpcUrls: {
-            default: {
-                http: n.nodes.map(n => n?.url),
-            },
-            public: {
-                http: n.nodes.map(n => n?.url),
-            },
-        },
-        blockExplorers: {
-            default: {
-                name: 'name',
-                url: blockExplorersBaseURL,
-            },
-        },
-        contracts: {
-            multicall3: n?.metadata?.multicall3
-        },
-    }
-})
+const isChain = (c: Chain | undefined): c is Chain => c != undefined
+const settingsChains = settings
+    .networks
+    .filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0))
+    .map(resolveChain).filter(isChain)
 
 const { chains, publicClient } = configureChains(
     settingsChains,
@@ -96,19 +77,17 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
             <SettingsStateContext.Provider value={appSettings}>
                 <Layout settings={appSettings}>
                     <RainbowKitComponent>
-                        <QueryStateContext.Provider value={{}}>
-                            <SwapDataStateContext.Provider value={swapContextInitialValues}>
-                                <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
-                                    <AuthDataUpdateContext.Provider value={{}}>
-                                        <SwapDataUpdateContext.Provider value={{ setInterval: () => { } }}>
-                                            <WalletStateContext.Provider value={{ balances: null, gases: null, imxAccount: null, isBalanceLoading: null, isGasLoading: null, starknetAccount: null }}>
-                                                <SwapDetails />
-                                            </WalletStateContext.Provider>
-                                        </SwapDataUpdateContext.Provider>
-                                    </AuthDataUpdateContext.Provider>
-                                </AuthStateContext.Provider>
-                            </SwapDataStateContext.Provider >
-                        </QueryStateContext.Provider>
+                        <SwapDataStateContext.Provider value={swapContextInitialValues}>
+                            <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
+                                <AuthDataUpdateContext.Provider value={AuthMockFunctions}>
+                                    <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
+                                        <WalletStateContext.Provider value={WalletStateMock}>
+                                            <SwapDetails />
+                                        </WalletStateContext.Provider>
+                                    </SwapDataUpdateContext.Provider>
+                                </AuthDataUpdateContext.Provider>
+                            </AuthStateContext.Provider>
+                        </SwapDataStateContext.Provider >
                     </RainbowKitComponent>
                     <ColorSchema themeData={themeData} />
                 </Layout>

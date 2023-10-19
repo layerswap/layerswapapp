@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 
 export function useComplexInterval(callback: () => Promise<boolean>, dependencies: any[] = [], delay: number = 50000) {
-    const timeoutIdRef = useRef(null)
+    const timeoutIdRef = useRef<any>(null)
 
     useEffect(() => {
         //for race conditions
@@ -28,7 +28,7 @@ export function useComplexInterval(callback: () => Promise<boolean>, dependencie
 }
 
 export function useInterval(callback, delay) {
-    const savedCallback = useRef(undefined)
+    const savedCallback = useRef<any>(undefined)
 
     useEffect(() => {
         savedCallback.current = callback
@@ -36,7 +36,7 @@ export function useInterval(callback, delay) {
 
     useEffect(() => {
         function tick() {
-            savedCallback.current()
+            typeof savedCallback.current === "function" && savedCallback.current()
         }
         if (delay !== null) {
             let id = setInterval(tick, delay)
@@ -48,7 +48,7 @@ export function useInterval(callback, delay) {
 
 
 export function useDelayedInterval(callback: () => Promise<boolean>, dependencies: any[] = [], delay: number = 50000) {
-    const timeoutIdRef = useRef(null)
+    const timeoutIdRef = useRef<any>(null)
     const [started, setStarted] = useState(false)
     const handleStart = () => {
         setStarted(true)
