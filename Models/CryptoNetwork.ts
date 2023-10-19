@@ -62,4 +62,5 @@ export class Metadata {
     ensUniversalResolver?: {
         address: `0x${string}`
     }
+    WatchdogContractAddress?: `0x${string}`
 }
