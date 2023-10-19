@@ -163,7 +163,7 @@ const Withdraw: FC = () => {
                 </div>
             </Widget.Content>
             {
-                activeTab.footer &&
+                activeTab?.footer &&
                 <Widget.Footer>
                     {activeTab?.footer}
                 </Widget.Footer>

@@ -84,7 +84,9 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             if(!sourceCurrency.contract_address){
                 throw Error("starknet contract_address is not defined")
             }
-            
+            if(!source_network?.metadata?.WatchdogContractAddress){
+                throw Error("WatchdogContractAddress is not defined on network metadata")
+            }
             const erc20Contract = new Contract(
                 Erc20Abi,
                 sourceCurrency.contract_address,

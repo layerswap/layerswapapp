@@ -158,8 +158,9 @@ export function CalculateMinAllowedAmount(values: SwapFormValues, allNetworks: C
     }
     if (destinationLayer?.isExchange) {
         const destinationNetworkCurrency = GetDefaultAsset(destinationLayer, asset)
-        if (destinationNetworkCurrency?.min_deposit_amount > 0)
-            minAmount += destinationNetworkCurrency?.min_deposit_amount
+        const minDepositAmount = Number(destinationNetworkCurrency?.min_deposit_amount) || 0
+        if (minDepositAmount > 0)
+            minAmount += minDepositAmount
     }
     const destinationNetworkCurrency = GetNetworkCurrency(destinationLayer, asset)
     const sourceNetworkCurrency = GetNetworkCurrency(sourceLayer, asset)
