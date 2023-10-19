@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect } from "react"
 import Head from "next/head"
 import { useRouter } from "next/router";
 import ThemeWrapper from "./themeWrapper";
@@ -24,6 +24,21 @@ type Props = {
 
 export default function Layout({ children, settings }: Props) {
   const router = useRouter();
+
+  useEffect(() => {
+    function prepareUrl(params) {
+      const url = new URL(location.href)
+      const queryParams = new URLSearchParams(location.search)
+      let customUrl = url.protocol + "//" + url.hostname + url.pathname.replace(/\/$/, '')
+      for (const paramName of params) {
+        const paramValue = queryParams.get(paramName)
+        if (paramValue) customUrl = customUrl + '/' + paramValue
+      }
+      return customUrl
+    }
+    plausible('pageview', { u: prepareUrl(['destNetwork', 'sourceExchangeName', 'addressSource', 'asset', 'amount']) })
+  }, [])
+
   if (!settings)
     return <ThemeWrapper>
       <MaintananceContent />
@@ -70,7 +85,6 @@ export default function Layout({ children, settings }: Props) {
     loading: () => <></>
   })
 
-
   return (<>
     <Head>
       <title>Layerswap</title>
@@ -96,7 +110,6 @@ export default function Layout({ children, settings }: Props) {
       <meta name="twitter:title" content="Layerswap" />
       <meta name="twitter:description" content="Move crypto across exchanges, blockchains, and wallets." />
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
-
     </Head>
     <QueryProvider query={query}>
       <SettingsProvider data={appSettings}>
