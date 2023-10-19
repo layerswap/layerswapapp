@@ -1,7 +1,7 @@
 import { CryptoNetwork, NetworkCurrency } from "./CryptoNetwork";
 import { Currency } from "./Currency";
 import { Exchange, ExchangeCurrency } from "./Exchange";
-import { BaseL2Asset, ExchangeAsset, Layer } from "./Layer";
+import { BaseL2Asset, ExchangeAsset, Layer, NetworkAsset } from "./Layer";
 import { LayerSwapSettings } from "./LayerSwapSettings";
 import { Partner } from "./Partner";
 
@@ -72,7 +72,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
         })
     }
 
-    static ResolveNetworkL2Assets(network: CryptoNetwork): (BaseL2Asset & { decimals: number })[] {
+    static ResolveNetworkL2Assets(network: CryptoNetwork): NetworkAsset[] {
         return network?.currencies.map(c => ({
             asset: c.asset,
             status: c.status,
