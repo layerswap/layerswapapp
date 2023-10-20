@@ -63,7 +63,7 @@ const SwapSummary: FC = () => {
     }
     const min_amount = withdrawType === WithdrawType.Wallet ? walletTransferFee?.min_amount : manualTransferFee?.min_amount
     const requested_amount = (swapInputTransaction?.amount ??
-        Number(min_amount) > Number(swap.requested_amount) ? min_amount : swap.requested_amount) || undefined
+        (Number(min_amount) > Number(swap.requested_amount) ? min_amount : swap.requested_amount)) || undefined
 
     const destinationNetworkNativeAsset = currencies?.find(c => c.asset == networks.find(n => n.internal_name === destination_layer?.internal_name)?.native_currency);
     const destinationNetwork = GetDefaultNetwork(destination_layer, currency?.asset)
