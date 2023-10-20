@@ -6,7 +6,7 @@ import { SettingsStateContext } from '../context/settings';
 import { Chain, WagmiConfig, configureChains, createConfig } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
-import { walletConnectWallet, rainbowWallet, metaMaskWallet, bitKeepWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
+import { walletConnectWallet, rainbowWallet, metaMaskWallet, bitgetWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 import { WalletStateContext } from '../context/wallet';
 import { FC } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
@@ -54,7 +54,7 @@ const connectors = connectorsForWallets([
         groupName: 'Wallets',
         wallets: [
             argentWallet({ projectId, chains }),
-            bitKeepWallet({ projectId, chains }),
+            bitgetWallet({ projectId, chains }),
             rainbowWallet({ projectId, chains }),
         ],
     },
@@ -66,7 +66,7 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
         connectors,
         publicClient,
     })
-    const appSettings = new LayerSwapAppSettings(settings?.data)
+    const appSettings = new LayerSwapAppSettings(Settings)
     const swapContextInitialValues: SwapData = { codeRequested: false, swap, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
     if (!appSettings) {
         return <div>Loading...</div>
