@@ -9,6 +9,7 @@
     "start": "next start",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
+    "analyze": "cross-env ANALYZE=true next build",
     "lint": "next lint"
   },
   "dependencies": {
@@ -24,7 +25,8 @@
     "@radix-ui/react-popover": "^1.0.3",
     "@radix-ui/react-progress": "^1.0.2",
     "@radix-ui/react-select": "^1.2.1",
-    "@rainbow-me/rainbowkit": "^1.0.4",
+    "@radix-ui/react-slot": "^1.0.2",
+    "@rainbow-me/rainbowkit": "^1.1.2",
     "@solana/web3.js": "^1.73.0",
     "@stripe/crypto": "^0.0.4",
     "@stripe/stripe-js": "^1.53.0",
@@ -69,6 +71,7 @@
     "node": "18.x"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^13.5.4",
     "@storybook/addon-essentials": "^7.4.5",
     "@storybook/addon-interactions": "^7.4.5",
     "@storybook/addon-links": "^7.4.5",
@@ -85,6 +88,7 @@
     "@web3-react/types": "^6.0.7",
     "autoprefixer": "^10.4.5",
     "chromatic": "^6.24.1",
+    "cross-env": "^7.0.3",
     "eslint": "8.49.0",
     "eslint-config-next": "13.4.19",
     "eslint-plugin-no-conditional-literals-in-jsx": "file:eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx",

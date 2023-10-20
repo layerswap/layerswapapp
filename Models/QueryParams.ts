@@ -18,11 +18,11 @@ export class PersistantQueryParams {
     signature?: string = "";
     timestamp?: string = "";
     apiKey?: string = "";
-    balances?: string = null;
+    balances?: string = "";
     account?: string = "";
     actionButtonText?: string = "";
     theme?: string = "";
-
+    
     // Obsolate
     sourceExchangeName?: string = "";
     destNetwork?: string = "";

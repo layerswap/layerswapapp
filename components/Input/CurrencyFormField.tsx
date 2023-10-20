@@ -1,4 +1,4 @@
-import { Field, useFormikContext } from "formik";
+import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -9,10 +9,10 @@ import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import CurrencySettings from "../../lib/CurrencySettings";
 import { SortingByOrder } from "../../lib/sorting";
 import { Layer } from "../../Models/Layer";
-import { useQueryState } from "../../context/query";
 import { useWalletState } from "../../context/wallet";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { Balance } from "../../helpers/balanceHelper";
+import { useQueryState } from "../../context/query";
 
 const CurrencyFormField: FC = () => {
     const {
@@ -24,23 +24,22 @@ const CurrencyFormField: FC = () => {
     const name = "currency"
     const query = useQueryState()
     const { balances } = useWalletState()
-    const lockedCurrency = query?.lockAsset ? currencies?.find(c => c?.asset?.toUpperCase() === query?.asset?.toUpperCase()) : null
+    const lockedCurrency = query?.lockAsset ? currencies?.find(c => c?.asset?.toUpperCase() === (query?.asset as string)?.toUpperCase()) : undefined
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : FilterCurrencies(currencies, from, to)
-    const currencyMenuItems = GenerateCurrencyMenuItems(
+    const currencyMenuItems = from ? GenerateCurrencyMenuItems(
         filteredCurrencies,
         from,
         resolveImgSrc,
         lockedCurrency,
         balances
-    )
+    ) : []
 
     useEffect(() => {
-
         const currencyIsAvailable = currency && currencyMenuItems.some(c => c?.baseObject.asset === currency?.asset)
         if (currencyIsAvailable) return
 
-        const default_currency = currencyMenuItems.find(c => c.baseObject?.asset?.toUpperCase() === query?.asset?.toUpperCase()) || currencyMenuItems?.[0]
+        const default_currency = currencyMenuItems.find(c => c.baseObject?.asset?.toUpperCase() === (query?.asset as string)?.toUpperCase()) || currencyMenuItems?.[0]
 
         if (default_currency) {
             setFieldValue(name, default_currency.baseObject)
@@ -72,18 +71,19 @@ export function GenerateCurrencyMenuItems(currencies: Currency[], source: Layer,
     return currencies.map(c => {
         const sourceCurrency = GetNetworkCurrency(source, c.asset);
         const displayName = lockedCurrency?.asset ?? (source?.isExchange ? sourceCurrency?.asset : sourceCurrency?.name);
-        const balance = Number(truncateDecimals(balances?.find(b => b?.token === c?.asset && source.internal_name === b.network)?.amount, c.precision))
-        return {
+        const balance = balances?.find(b => b?.token === c?.asset && source.internal_name === b.network)
+        const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
+
+        const res: SelectMenuItem<Currency> = {
             baseObject: c,
             id: c.asset,
-            //TODO implement getter
-            name: displayName,
+            name: displayName || "-",
             order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
             imgSrc: resolveImgSrc && resolveImgSrc(c),
             isAvailable: currencyIsAvailable(),
-            isDefault: false,
-            details: (balance || balance === 0) ? balance?.toString() : undefined
+            details: `${formatted_balance_amount}`
         };
+        return res
     }).sort(SortingByOrder);
 }
 

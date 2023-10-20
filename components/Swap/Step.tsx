@@ -1,31 +1,31 @@
-import { Check, X, XCircle } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { classNames } from "../utils/classNames";
-import SpinIcon from "../icons/spinIcon";
 import { Gauge } from "../gauge";
+import { ProgressStatus, StatusStep } from "./Withdraw/Processing/types";
 
-function renderStepIcon(step) {
+function renderStepIcon(step: StatusStep) {
     switch (step.status) {
-        case "complete":
+        case ProgressStatus.Complete:
             return (
                 <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
                     <Check className="h-5 w-5 text-primary" aria-hidden="true" />
                 </span>
             );
 
-        case "current":
+        case ProgressStatus.Current:
             return (
                 <span className="animate-spin">
                     <Gauge value={40} size="verySmall" />
                 </span>
             );
 
-        case "failed":
+        case ProgressStatus.Failed:
             return (
                 <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
                     <X className="h-5 w-5 text-primary" aria-hidden="true" />
                 </span>
             );
-        case "delayed":
+        case ProgressStatus.Delayed:
             return (
                 <span className="animate-spin opacity-50">
                     <Gauge value={40} size="verySmall" />
@@ -39,7 +39,7 @@ function renderStepIcon(step) {
     }
 }
 
-function Step({ step, isLastStep }) {
+function Step({ step, isLastStep }: { step: StatusStep, isLastStep: boolean }) {
     return (
         <li className={classNames(isLastStep ? '' : 'pb-10', 'relative')} key={step?.name}>
             <div className="flex items-center justify-between w-full">

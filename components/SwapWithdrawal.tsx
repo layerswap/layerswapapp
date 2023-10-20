@@ -1,5 +1,4 @@
 import { FC, useEffect } from "react";
-import { useQueryState } from "../context/query";
 import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import SwapDetails from "./Swap";
 import { Widget } from "./Widget/Index";
@@ -9,7 +8,6 @@ import { WalletDataProvider } from "../context/wallet";
 const SwapWithdrawal: FC = () => {
     const { swap, swapApiError } = useSwapDataState()
     const { mutateSwap } = useSwapDataUpdate()
-    const query = useQueryState()
 
     useEffect(() => {
         mutateSwap()
@@ -24,11 +22,10 @@ const SwapWithdrawal: FC = () => {
             </div>
         </Widget>
 
-    const key = Object.keys(query).join("")
 
     return (
         <WalletDataProvider>
-            <SwapDetails key={key} />
+            <SwapDetails />
         </WalletDataProvider>
     )
 };

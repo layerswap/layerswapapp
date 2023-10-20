@@ -275,7 +275,7 @@ body {
 }
 body::-webkit-scrollbar {
   --tw-bg-opacity: 1;
-  background-color: rgb(18 29 51 / var(--tw-bg-opacity));
+  background-color: rgb(var(--ls-colors-secondary-700));
 }
 
 body::-webkit-scrollbar {
@@ -287,7 +287,7 @@ body::-webkit-scrollbar {
 }
 
 body::-webkit-scrollbar-thumb {
-  background-color: rgb(100 116 139 / 0.5) !important;
+  background-color: rgb(var(--ls-colors-secondary-text), 0.4) !important;
 }
 
 body::-webkit-scrollbar-thumb {

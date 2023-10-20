@@ -1,3 +1,4 @@
+"use client"
 import { FC, useEffect } from 'react'
 import { Widget } from '../Widget/Index';
 import { useSwapDataState, useSwapDataUpdate } from '../../context/swap';
@@ -13,15 +14,18 @@ import { useSettingsState } from '../../context/settings';
 const SwapDetails: FC = () => {
     const { swap } = useSwapDataState()
     const settings = useSettingsState()
-    const swapStatus = swap.status;
+    const swapStatus = swap?.status;
     const { setInterval } = useSwapDataUpdate()
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id]
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions") || "{}")?.[swap?.id || '']
     useEffect(() => {
-        setInterval(ResolvePollingInterval(swapStatus))
+        if (swapStatus)
+            setInterval(ResolvePollingInterval(swapStatus))
         return () => setInterval(0)
     }, [swapStatus])
 
+    const sourceNetwork = settings.layers.find(l => l.internal_name === swap?.source_network)
 
+    const currency = settings.currencies.find(c => c.asset === swap?.source_network_asset)
     return (
         <>
             <Widget>
@@ -32,8 +36,10 @@ const SwapDetails: FC = () => {
             </Widget>
 
             {
-                process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true' &&
-                <GasDetails network={settings.layers.find(l => l.internal_name === swap.source_network)} currency={settings.currencies.find(c => c.asset === swap.source_network_asset)} />
+                process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
+                && sourceNetwork
+                && currency &&
+                <GasDetails network={sourceNetwork} currency={currency} />
             }
         </>
     )

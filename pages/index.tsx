@@ -3,7 +3,6 @@ import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import { LayerSwapSettings } from '../Models/LayerSwapSettings'
-import MaintananceContent from '../components/maintanance/maintanance'
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { validateSignature } from '../helpers/validateSignature'
 import { mapNetworkCurrencies } from '../helpers/settingsHelper'
@@ -18,21 +17,11 @@ type IndexProps = {
   inMaintanance: boolean,
   validSignatureisPresent?: boolean,
 }
-const toRGB = (value) => parseColor(value).color.join(" ");
 
 export default function Home({ settings, inMaintanance, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
-  let appSettings = new LayerSwapAppSettings(settings)
-
   return (<>
-    <Layout settings={appSettings}>
-      {
-        inMaintanance
-          ?
-          <MaintananceContent />
-          :
-          <Swap />
-      }
+    <Layout settings={settings}>
+      <Swap />
     </Layout>
     <ColorSchema themeData={themeData} />
   </>)
@@ -50,23 +39,16 @@ export async function getServerSideProps(context) {
     'Cache-Control',
     's-maxage=60, stale-while-revalidate'
   );
-  try {
-    const theme_name = context.query.theme || context.query.addressSource
-    // const internalApiClient = new InternalApiClient()
-    // const themeData = await internalApiClient.GetThemeData(theme_name);
-    // result.themeData = themeData as ThemeData;
-    const themeDat = THEME_COLORS[theme_name];
-    if (themeDat)
-      result.themeData = themeDat
-  }
-  catch (e) {
-    console.log(e)
-  }
+
+  result.themeData = await getThemeData(context.query.theme || context.query.addressSource)
 
   var apiClient = new LayerSwapApiClient();
   const { data: settings } = await apiClient.GetSettingsAsync()
-  settings.networks = settings.networks //.filter(n => n.status !== "inactive");
-  // settings.exchanges = mapNetworkCurrencies(settings.exchanges.filter(e => e.status === 'active'), settings.networks)
+  if (!settings)
+    return {
+      props: result,
+    }
+
   settings.exchanges = mapNetworkCurrencies(settings.exchanges, settings.networks)
 
   result.settings = settings;
@@ -78,3 +60,15 @@ export async function getServerSideProps(context) {
     props: result,
   }
 }
+
+const getThemeData = async (theme_name: string) => {
+  try {
+    // const internalApiClient = new InternalApiClient()
+    // const themeData = await internalApiClient.GetThemeData(theme_name);
+    // result.themeData = themeData as ThemeData;
+    return THEME_COLORS[theme_name] || null;
+  }
+  catch (e) {
+    console.log(e)
+  }
+} 

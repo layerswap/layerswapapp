@@ -46,12 +46,15 @@ export default class ImtblClient {
                 return res;
             }
             else {
+                if(!currency.contract_address){
+                    throw Error("immutable contract_address is not defined")
+                }
                 const res = await this.link.transfer([
                     {
                         type: ERC20TokenType.ERC20,
                         amount: swap.requested_amount.toString(),
                         toAddress: deposit_address,
-                        tokenAddress: currency.contract_address?.toLowerCase(),
+                        tokenAddress: currency.contract_address.toLowerCase(),
                         symbol: swap.source_network_asset
                     }
                 ])

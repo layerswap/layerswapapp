@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { Context, useCallback, createContext, useContext, useState } from 'react'
 import { useInterval } from '../hooks/useInterval';
 
-const TimerStateContext = React.createContext<DataContextType>(null);
+const TimerStateContext = createContext<DataContextType | null>(null);
 
 
 type DataContextType = {
     started: boolean;
-    secondsRemaining: number;
+    secondsRemaining: number | undefined;
     start: (seconds: number) => void,
 }
 
@@ -21,14 +21,14 @@ export function TimerProvider({ children }) {
     }, [])
 
     const callback = useCallback(() => {
-        if (secondsRemaining > 0) {
+        if (Number(secondsRemaining) > 0) {
             if (secondsRemaining == 1) {
                 setStarted(false)
             }
-            setSecondsRemaining(secondsRemaining - 1)
+            setSecondsRemaining(Number(secondsRemaining) - 1)
 
         }
-    },[secondsRemaining])
+    }, [secondsRemaining])
 
     useInterval(
         callback,
@@ -43,7 +43,7 @@ export function TimerProvider({ children }) {
 }
 
 export function useTimerState() {
-    const data = React.useContext(TimerStateContext);
+    const data = useContext<DataContextType>(TimerStateContext as Context<DataContextType>);
 
     if (data === undefined) {
         throw new Error('useTimerState must be used within a MenuStateProvider');

@@ -7,7 +7,7 @@ import { ArrowLeft } from 'lucide-react'
 import ChatIcon from "../icons/ChatIcon"
 import { RainbowKitConnectWallet } from "./ConnectedWallets"
 
-function HeaderWithMenu({ goBack }: { goBack: () => void }) {
+function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null }) {
    const { email, userId } = useAuthState()
    const { boot, show, update } = useIntercom()
    const updateWithProps = () => update({ email: email, userId: userId })

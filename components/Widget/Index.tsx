@@ -2,30 +2,31 @@ import HeaderWithMenu from "../HeaderWithMenu"
 import { useRouter } from "next/router"
 import { default as Content } from './Content';
 import { default as Footer } from './Footer';
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
+import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 
 const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[], className?: string }) => {
    const router = useRouter()
    const wrapper = useRef(null);
 
-   const goBack = window?.['navigation']?.['canGoBack'] ?
-      () => router.back()
-      : () => router.push({
-         pathname: "/",
-         query: resolvePersistantQueryParams(router.query)
-      })
+   const goBack = useCallback(() => {
+      window?.['navigation']?.['canGoBack'] ?
+         router.back()
+         : router.push({
+            pathname: "/",
+            query: resolvePersistantQueryParams(router.query)
+         })
+   }, [])
+
 
    const handleBack = router.pathname === "/" ? null : goBack
 
    return <>
       <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
          <div className="relative">
-            <div className="overflow-hidden h-1 flex rounded-t-lg bg-secondary-500">
-               <div className="shadow-none flex flex-col whitespace-nowrap justify-center bg-primary"></div>
-            </div>
             {
-               process.env.NEXT_PUBLIC_API_VERSION === 'sandbox' && <div>
+               LayerSwapApiClient.apiVersion === 'sandbox' && <div>
                   <div className="h-0.5 bg-[#D95E1B]" />
                   <div className="absolute top-0.5 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75">
                      TESTNET

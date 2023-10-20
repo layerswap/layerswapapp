@@ -1,13 +1,18 @@
 import { FC } from "react";
 
 type AverageCompletionTimeProps = {
-    time: string
+    time: string | undefined
 }
 
 const AverageCompletionTime: FC<AverageCompletionTimeProps> = ({ time }) => {
+    
+    if (!time) {
+        return <span>~1-2 minutes</span>
+    }
+
     const parts = time?.split(":");
     const averageTimeInMinutes = parts && parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10) + parseInt(parts[2]) / 60
-    
+
     const hours = Math.floor(averageTimeInMinutes / 60);
     const minutes = averageTimeInMinutes % 60;
 

@@ -4,7 +4,10 @@ import { validateAndParseAddress } from "./starkNetAddressValidator";
 import { PublicKey } from '@solana/web3.js'
 import { Layer } from "../Models/Layer";
 
-export function isValidAddress(address: string, network: Layer): boolean {
+export function isValidAddress(address?: string, network?: Layer | null): boolean {
+    if (!address) {
+        return false
+    }
     if (network?.internal_name === KnownInternalNames.Networks.RoninMainnet) {
         if (address.startsWith("ronin:")) {
             return isValidEtherAddress(address.replace("ronin:", "0x"));
