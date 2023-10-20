@@ -3,7 +3,7 @@ import { BaseError, InsufficientFundsError, EstimateGasExecutionError, UserRejec
 
 type ResolvedError = "insufficient_funds" | "transaction_rejected"
 
-const resolveError = (error: BaseError): ResolvedError => {
+const resolveError = (error: BaseError): ResolvedError | undefined => {
 
     const isInsufficientFundsError = typeof error?.walk === "function" && error?.walk((e: BaseError) => (e instanceof InsufficientFundsError)
         || (e instanceof EstimateGasExecutionError) || e?.['data']?.args?.some((a: string) => a?.includes("amount exceeds")))

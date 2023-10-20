@@ -31,10 +31,10 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     ref?: any;
     close: () => void,
     isPartnerWallet: boolean,
-    partnerImage: string,
-    partner: Partner,
+    partnerImage?: string,
+    partner?: Partner,
     canFocus?: boolean,
-    address_book: AddressBookItem[]
+    address_book?: AddressBookItem[]
 }
 
 const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
@@ -45,24 +45,24 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     } = useFormikContext<SwapFormValues>();
 
     const [wrongNetwork, setWrongNetwork] = useState(false)
-    const inputReference = useRef(null);
+    const inputReference = useRef<HTMLInputElement>(null);
     const destination = values.to
     const asset = values.currency?.asset
     const destinationNetwork = GetDefaultNetwork(destination, asset)
-    const valid_addresses = address_book?.filter(a => (destination?.isExchange ? a.exchanges?.some(e => destination?.internal_name === e) : a.networks?.some(n => destination?.internal_name === n)) && isValidAddress(a.address, destination))
+    const valid_addresses = address_book?.filter(a => (destination?.isExchange ? a.exchanges?.some(e => destination?.internal_name === e) : a.networks?.some(n => destination?.internal_name === n)) && isValidAddress(a.address, destination)) || []
 
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const placeholder = "Enter your address here"
-    const [inputValue, setInputValue] = useState(values?.destination_address || "")
-    const [validInputAddress, setValidInputAddress] = useState<string>("")
-    const [autofilledWalletNetworkType, setAutofilledWalletNetworkType] = useState<NetworkType>()
+    const [inputValue, setInputValue] = useState<string | undefined>(values?.destination_address || "")
+    const [validInputAddress, setValidInputAddress] = useState<string | undefined>('')
+    const [autofilledWalletNetworkType, setAutofilledWalletNetworkType] = useState<NetworkType | null>()
     const [canAutofillStarknet, setCanAutofillStarknet] = useState(true)
     const starknet = getStarknet()
     const destinationIsStarknet = destination?.internal_name === KnownInternalNames.Networks.StarkNetGoerli
         || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
     const { connectWallet, disconnectWallet, wallets } = useWallet()
-    const wallet = wallets?.[values.to.internal_name]
+    const wallet = wallets?.[values?.to?.internal_name || '']
     const settings = useSettingsState()
 
     const { isConnected: isRainbowKitConnected, address: walletAddress } = useAccount({
@@ -89,15 +89,16 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
 
     useEffect(() => {
         if (canFocus) {
-            inputReference.current.focus()
+            inputReference?.current?.focus()
         }
     }, [canFocus])
 
     useEffect(() => {
-        setInputValue(values.destination_address)
+        values.destination_address && setInputValue(values.destination_address)
     }, [values.destination_address])
 
     const handleRemoveDepositeAddress = useCallback(async () => {
+        if (!values.to) return
         setDepositeAddressIsfromAccount(false)
         setFieldValue("destination_address", '')
         try {
@@ -152,12 +153,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
 
     const handleConnectStarknet = useCallback(async () => {
         const destination = values.to;
-        if (destination.isExchange === false) {
+        if (destination?.isExchange === false && destination) {
             const res = await connectWallet(destination as Layer & { type: NetworkType.Starknet })
 
-            if (res && res.account.chainId != destinationChainId) {
+            if (res && res?.account?.chainId != destinationChainId) {
                 setWrongNetwork(true)
-                await disconnectWallet(values.to)
+                await disconnectWallet(destination)
                 setAutofilledWalletNetworkType(null)
                 return
             }
@@ -238,8 +239,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-300 bg-secondary-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-500 transition duration-200 px-2 py-2 hover:border-secondary-500 hover:shadow-xl`}>
                             <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
                                 {
-                                    destinationIsStarknet && wallet?.isConnected ?
-                                        <Image src={wallet?.icon} alt={wallet?.address} width={25} height={25} />
+                                    destinationIsStarknet && wallet && wallet?.isConnected ?
+                                        <Image src={wallet?.icon || ''} alt={wallet?.address} width={25} height={25} />
                                         :
                                         <AddressIcon address={validInputAddress} size={25} />
                                 }
@@ -271,8 +272,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         </div>
                     }
                     {
-                        !disabled && !inputValue && !destination?.isExchange
-                        && ([NetworkType.EVM, NetworkType.StarkEx, NetworkType.ZkSyncLite].includes(destinationNetwork?.type))
+                        !disabled
+                        && !inputValue
+                        && !destination?.isExchange
+                        && destinationNetwork
+                        && ([NetworkType.EVM, NetworkType.StarkEx, NetworkType.ZkSyncLite].includes(destinationNetwork.type))
                         &&
                         <RainbowKit>
                             <div className={`min-h-12 text-left space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
@@ -291,7 +295,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         </RainbowKit>
                     }
                     {
-                        destination?.isExchange && !inputAddressIsValid &&
+                        destination?.isExchange
+                        && !inputAddressIsValid
+                        && values.currency
+                        && destinationNetwork
+                        &&
                         <div className='text-left p-4 bg-secondary-800 text-primary-text rounded-lg border border-secondary-500'>
                             <div className="flex items-center">
                                 <Info className='h-5 w-5 text-primary-600 mr-3' />

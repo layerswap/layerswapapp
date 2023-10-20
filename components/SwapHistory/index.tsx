@@ -43,7 +43,7 @@ function TransactionsHistory() {
     (async () => {
       const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
       const { data } = await layerswapApiClient.GetSwapsAsync(1, SwapStatusInNumbers.Cancelled)
-      if (data?.length > 0) setShowToggleButton(true)
+      if (Number(data?.length) > 0) setShowToggleButton(true)
     })()
   }, [])
 
@@ -63,7 +63,7 @@ function TransactionsHistory() {
 
         setSwaps(data)
         setPage(1)
-        if (data?.length < PAGE_SIZE)
+        if (Number(data?.length) < PAGE_SIZE)
           setIsLastPage(true)
 
         setLoading(false)
@@ -79,7 +79,7 @@ function TransactionsHistory() {
 
         setSwaps(data)
         setPage(1)
-        if (data?.length < PAGE_SIZE)
+        if (Number(data?.length) < PAGE_SIZE)
           setIsLastPage(true)
         setLoading(false)
       }
@@ -101,7 +101,7 @@ function TransactionsHistory() {
 
       setSwaps(old => [...(old ? old : []), ...(data ? data : [])])
       setPage(nextPage)
-      if (data.length < PAGE_SIZE)
+      if (Number(data?.length) < PAGE_SIZE)
         setIsLastPage(true)
 
       setLoading(false)
@@ -115,7 +115,7 @@ function TransactionsHistory() {
 
       setSwaps(old => [...(old ? old : []), ...(data ? data : [])])
       setPage(nextPage)
-      if (data.length < PAGE_SIZE)
+      if (Number(data?.length) < PAGE_SIZE)
         setIsLastPage(true)
 
       setLoading(false)
@@ -139,7 +139,7 @@ function TransactionsHistory() {
           <SwapHistoryComponentSceleton />
           : <>
             {
-              swaps?.length > 0 ?
+              Number(swaps?.length) > 0 ?
                 <div className="w-full flex flex-col justify-between h-full px-6 space-y-5 text-secondary-text">
                   <div className="mt-4">
                     {showToggleButton && <div className="flex justify-end mb-2">
@@ -187,7 +187,7 @@ function TransactionsHistory() {
                             const source_currency = currencies?.find(c => c.asset === source_network_asset)
                             const destination_exchange = destination_exchange_internal_name && exchanges.find(e => e.internal_name === destination_exchange_internal_name)
                             const destination = destination_exchange_internal_name ? destination_exchange : networks.find(n => n.internal_name === destination_network_internal_name)
-
+                            const output_transaction = swap.transactions.find(t => t.type === TransactionType.Output)
                             return <tr onClick={() => handleopenSwapDetails(swap)} key={swap.id}>
 
                               <td
@@ -198,7 +198,7 @@ function TransactionsHistory() {
                               >
                                 <div className="text-primary-text flex items-center">
                                   <div className="flex-shrink-0 h-5 w-5 relative">
-                                    {
+                                    {source &&
                                       <Image
                                         src={resolveImgSrc(source)}
                                         alt="From Logo"
@@ -210,7 +210,7 @@ function TransactionsHistory() {
                                   </div>
                                   <ArrowRight className="h-4 w-4 mx-2" />
                                   <div className="flex-shrink-0 h-5 w-5 relative block">
-                                    {
+                                    {destination &&
                                       <Image
                                         src={resolveImgSrc(destination)}
                                         alt="To Logo"
@@ -243,7 +243,7 @@ function TransactionsHistory() {
                                     {
                                       swap?.status == 'completed' ?
                                         <span className="ml-1 md:ml-0">
-                                          {truncateDecimals(swap.transactions.find(t => t.type === TransactionType.Output)?.amount, source_currency?.precision)}
+                                          {output_transaction ? truncateDecimals(output_transaction?.amount, source_currency?.precision) : '-'}
                                         </span>
                                         :
                                         <span>
@@ -283,8 +283,11 @@ function TransactionsHistory() {
                   </div>
                   <Modal height="fit" show={openSwapDetailsModal} setShow={setOpenSwapDetailsModal} header="Swap details">
                     <div className="mt-2">
-                      <SwapDetails id={selectedSwap?.id} />
                       {
+                        selectedSwap && <SwapDetails id={selectedSwap?.id} />
+                      }
+                      {
+                        selectedSwap &&
                         <div className="text-primary-text text-sm mt-6 space-y-3">
                           <div className="flex flex-row text-primary-text text-base space-x-2">
                             <SubmitButton

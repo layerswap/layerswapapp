@@ -40,10 +40,10 @@ const getAccessToken = async (): Promise<AuthConnectResponse> => {
     const params = new URLSearchParams();
     params.append('client_id', 'layerswap_bridge_internal');
     params.append('grant_type', 'client_credentials');
-    params.append('client_secret', process.env.INTERNAL_API_SECRET);
+    params.append('client_secret', process.env.INTERNAL_API_SECRET || "");
     var apiClient = new LayerSwapApiClient();
-    const { data: { discovery: { identity_url } } } = await apiClient.GetSettingsAsync()
-
+    const settings = await apiClient.GetSettingsAsync()
+    const identity_url = settings?.data?.discovery?.identity_url
     const auth = axios.post<AuthConnectResponse>(`${identity_url}/connect/token`, params, { headers: { 'content-type': 'application/x-www-form-urlencoded' } })
 
     return (await auth).data;

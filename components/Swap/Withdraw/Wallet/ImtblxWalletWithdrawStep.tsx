@@ -1,7 +1,6 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
-import ImtblClient from '../../../../lib/imtbl';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
@@ -11,6 +10,7 @@ import GuideLink from '../../../guideLink';
 import useWallet from '../../../../hooks/useWallet';
 import { NetworkType } from '../../../../Models/CryptoNetwork';
 import { Layer } from '../../../../Models/Layer';
+import { NetworkCurrency } from '../../../../Models/CryptoNetwork';
 
 type Props = {
     depositAddress: string
@@ -24,22 +24,27 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const { setSwapPublishedTx } = useSwapDataUpdate()
     const { networks, layers } = useSettingsState()
 
-    const { source_network: source_network_internal_name } = swap
+    const { source_network: source_network_internal_name } = swap || {}
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
     const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
-    const imxAccount = wallets[source_layer.internal_name]
+    const imxAccount = wallets[source_layer?.internal_name || '']
 
     const handleConnect = useCallback(async () => {
+        if (!source_network)
+            return
         setLoading(true)
         await connectWallet(source_layer as Layer & { type: NetworkType.StarkEx })
         setLoading(false)
     }, [source_network])
 
     const handleTransfer = useCallback(async () => {
+        if (!source_network || !swap)
+            return
         setLoading(true)
         try {
+            const ImtblClient = (await import('../../../../lib/imtbl')).default;
             const imtblClient = new ImtblClient(source_network?.internal_name)
-            const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
+            const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase()) as NetworkCurrency
             const res = await imtblClient.Transfer(swap, source_currency, depositAddress)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
@@ -77,7 +82,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                     }
                     {
                         imxAccount &&
-                        <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>
                     }

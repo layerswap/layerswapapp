@@ -31,8 +31,8 @@ const SwapDetails: FC<Props> = ({ id }) => {
     } = swap || {}
 
     const source = source_exchange_internal_name ? exchanges.find(e => e.internal_name === source_exchange_internal_name) : networks.find(e => e.internal_name === source_network_internal_name)
-    const destination_exchange = destination_exchange_internal_name && exchanges.find(e => e.internal_name === destination_exchange_internal_name)
-    const exchange_currency = destination_exchange_internal_name && destination_exchange.currencies?.find(c => swap?.source_network_asset?.toUpperCase() === c?.asset?.toUpperCase() && c?.is_default)
+    const destination_exchange = destination_exchange_internal_name ? exchanges.find(e => e.internal_name === destination_exchange_internal_name) : null
+    const exchange_currency = destination_exchange_internal_name ? destination_exchange?.currencies?.find(c => swap?.source_network_asset?.toUpperCase() === c?.asset?.toUpperCase() && c?.is_default) : null
 
     const destination_network = destination_network_internal_name ? networks.find(n => n.internal_name === destination_network_internal_name) : networks?.find(e => e?.internal_name?.toUpperCase() === exchange_currency?.network?.toUpperCase())
 
@@ -76,9 +76,11 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className="text-left">Id </span>
                             <span className="text-primary-text">
                                 <div className='inline-flex items-center'>
-                                    <CopyButton toCopy={swap?.id} iconClassName="text-gray-500">
-                                        {shortenAddress(swap?.id)}
-                                    </CopyButton>
+                                    {
+                                        swap && <CopyButton toCopy={swap?.id} iconClassName="text-gray-500">
+                                            {shortenAddress(swap?.id)}
+                                        </CopyButton>
+                                    }
                                 </div>
                             </span>
                         </div>
@@ -92,7 +94,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Date </span>
-                            <span className='text-primary-text font-normal'>{(new Date(swap?.created_date)).toLocaleString()}</span>
+                            {swap && <span className='text-primary-text font-normal'>{(new Date(swap.created_date)).toLocaleString()}</span>}
                         </div>
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
@@ -142,9 +144,9 @@ const SwapDetails: FC<Props> = ({ id }) => {
                             <span className="text-left">Address </span>
                             <span className="text-primary-text">
                                 <div className='inline-flex items-center'>
-                                    <CopyButton toCopy={swap?.destination_address} iconClassName="text-gray-500">
+                                    {swap && <CopyButton toCopy={swap.destination_address} iconClassName="text-gray-500">
                                         {swap?.destination_address.slice(0, 8) + "..." + swap?.destination_address.slice(swap?.destination_address.length - 5, swap?.destination_address.length)}
-                                    </CopyButton>
+                                    </CopyButton>}
                                 </div>
                             </span>
                         </div>

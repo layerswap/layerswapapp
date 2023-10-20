@@ -12,8 +12,9 @@ import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { getServerSideProps } from '../helpers/getSettings'
 
 export default function Transactions({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
   let appSettings = new LayerSwapAppSettings(settings)
+  LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
+
 
   return (
     <>

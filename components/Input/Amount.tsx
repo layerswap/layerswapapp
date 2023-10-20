@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useRef } from "react";
+import { forwardRef, useCallback, useRef } from "react";
 import { useSettingsState } from "../../context/settings";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -9,38 +9,40 @@ import SecondaryButton from "../buttons/secondaryButton";
 import { useQueryState } from "../../context/query";
 import { useBalancesState, useBalancesUpdate } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
+import useWallet from "../../hooks/useWallet";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
     const { networks, currencies } = useSettingsState()
-    const query = useQueryState();
+    const query = useQueryState()
+    const { wallets } = useWallet()
     const { currency, from, to, amount, destination_address } = values
-
+    const wallet = wallets[from?.internal_name || '']
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
-    const gasAmount = gases[from?.internal_name]?.find(g => g?.token === currency?.asset)?.gas || 0
+    const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === currency?.asset)?.gas || 0
     const { getBalance, getGas } = useBalancesUpdate()
     const name = "amount"
     const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
-    const walletBalanceAmount = truncateDecimals(walletBalance?.amount, currency?.precision)
+    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, currency?.precision)
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
-    const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances, walletBalance?.amount, gasAmount, minAllowedAmount)
+    const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances as string, walletBalance?.amount, gasAmount, minAllowedAmount)
     const maxAllowedDisplayAmont = truncateDecimals(maxAllowedAmount, currency?.precision)
 
     const placeholder = (currency && from && to && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAllowedDisplayAmont}` : '0.01234'
-    const step = 1 / Math.pow(10, currency?.precision)
+    const step = 1 / Math.pow(10, currency?.precision || 1)
     const amountRef = useRef(ref)
 
     const handleSetMinAmount = () => {
         setFieldValue(name, minAllowedAmount)
     }
 
-    const handleSetMaxAmount = () => {
-        setFieldValue(name, maxAllowedAmount)
-        getBalance(from)
-        getGas(from, currency, destination_address)
-    }
+    const handleSetMaxAmount = useCallback(() => {
+        setFieldValue(name, maxAllowedAmount);
+        wallet.address && from && getBalance(from);
+        wallet.address && from && currency && getGas(from, currency, destination_address || wallet.address);
+    }, [wallet.address, from, currency, destination_address])
 
     return (<>
         <NumericInput
@@ -61,7 +63,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
             className="rounded-r-none text-primary-text"
         >
             {
-                from && to && currency && < div className="text-xs flex items-center space-x-1 md:space-x-2 ml-2 md:ml-5">
+                from && to && currency ? <div className="text-xs flex items-center space-x-1 md:space-x-2 ml-2 md:ml-5">
                     <SecondaryButton onClick={handleSetMinAmount} size="xs">
                         MIN
                     </SecondaryButton>
@@ -69,6 +71,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                         MAX
                     </SecondaryButton>
                 </div>
+                    : <></>
             }
             <CurrencyFormField />
         </NumericInput>
@@ -79,7 +82,7 @@ type AmountLabelProps = {
     minAllowedAmount: number;
     maxAllowedAmount: number;
     isBalanceLoading: boolean;
-    walletBalance: number
+    walletBalance?: number
 }
 const AmountLabel = ({
     detailsAvailable,
@@ -99,8 +102,15 @@ const AmountLabel = ({
             }
         </div>
         {
-            !isNaN(walletBalance) &&
-            <div className="border-primary-text text-xs text-primary-text flex items-center space-x-1"><span>Balance:</span> {isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{walletBalance}</span>}</div>
+            walletBalance != undefined && !isNaN(walletBalance) &&
+            <div
+                className="border-primary-text text-xs text-primary-text flex items-center space-x-1">
+                <span>Balance:</span>
+                {isBalanceLoading ?
+                    <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" />
+                    :
+                    <span>{walletBalance}</span>}
+            </div>
         }
     </div>
 }

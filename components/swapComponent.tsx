@@ -1,5 +1,4 @@
-import React from 'react';
-import { FC } from 'react'
+import { FC } from 'react';
 import { SwapDataProvider } from '../context/swap';
 import { MenuProvider } from '../context/menu';
 import { TimerProvider } from '../context/timerContext';

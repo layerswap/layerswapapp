@@ -24,7 +24,7 @@ const TransferElements: FC = () => {
     const { networks } = useSettingsState()
     const {
         destination_network: destination_network_internal_name,
-    } = swap
+    } = swap || {}
     const { start: startTimer } = useTimerState()
 
     const [showCoinbaseConnectModal, setShowCoinbaseConnectModal] = useState(false)
@@ -35,6 +35,8 @@ const TransferElements: FC = () => {
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
 
     const handleTransfer = useCallback(async () => {
+        if (!swap || !swap.source_exchange)
+            return
         setLoading(true)
         if (codeRequested)
             setOpenCoinbase2FA(true)
@@ -106,7 +108,7 @@ const TransferElements: FC = () => {
                 <div className='space-y-4'>
                     <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
                         {
-                            swap.exchange_account_connected ?
+                            swap?.exchange_account_connected ?
                                 <SubmitButton
                                     isDisabled={loading}
                                     isSubmitting={loading}

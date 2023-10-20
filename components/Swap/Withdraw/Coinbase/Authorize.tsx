@@ -1,6 +1,5 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
-import { useQueryState } from '../../../../context/query';
 import { useSettingsState } from '../../../../context/settings';
 import { useSwapDataState } from '../../../../context/swap';
 import { useInterval } from '../../../../hooks/useInterval';
@@ -19,6 +18,7 @@ import { ArrowLeft } from 'lucide-react';
 import IconButton from '../../../buttons/iconButton';
 import { motion } from 'framer-motion';
 import { useCoinbaseStore } from './CoinbaseStore';
+import { useRouter } from 'next/router';
 
 type Props = {
     onAuthorized: () => void,
@@ -30,17 +30,16 @@ type Props = {
 const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
     const { swap } = useSwapDataState()
     const { layers, currencies, discovery } = useSettingsState()
-
+    const router = useRouter()
     let alreadyFamiliar = useCoinbaseStore((state) => state.alreadyFamiliar);
     let toggleAlreadyFamiliar = useCoinbaseStore((state) => state.toggleAlreadyFamiliar);
     const [carouselFinished, setCarouselFinished] = useState(alreadyFamiliar)
 
-    const [authWindow, setAuthWindow] = useState<Window>()
+    const [authWindow, setAuthWindow] = useState<Window | null>()
     const [authorizedAmount, setAuthorizedAmount] = useState<number>()
     const [firstScreen, setFirstScreen] = useState<boolean>(true)
 
     const carouselRef = useRef<CarouselRef | null>(null)
-    const query = useQueryState()
     const exchange_internal_name = swap?.source_exchange
     const asset_name = swap?.source_network_asset
 
@@ -51,10 +50,11 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const coinbaseOauthProvider = oauthProviders?.find(p => p.provider === KnownInternalNames.Exchanges.Coinbase)
     const { oauth_authorize_url } = coinbaseOauthProvider || {}
 
-    const minimalAuthorizeAmount = CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount))
+    const minimalAuthorizeAmount = currency?.usd_price ?
+        CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount)) : null
 
     const checkShouldStartPolling = useCallback(() => {
-        let authWindowHref = ""
+        let authWindowHref: string | undefined = ""
         try {
             authWindowHref = authWindow?.location?.href
         }
@@ -76,12 +76,13 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     const handleDisconnectCoinbase = useCallback(async () => {
         const apiClient = new LayerSwapApiClient()
-        await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
-    }, [])
+        if (swap)
+            await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
+    }, [swap])
 
     useEffect(() => {
         if (authorizedAmount) {
-            if (Number(authorizedAmount) < minimalAuthorizeAmount) {
+            if (Number(authorizedAmount) < Number(minimalAuthorizeAmount)) {
                 toast.dismiss();
                 toast.error("You have not authorized enough to be able to complete the transfer. Please authorize again.");
                 handleDisconnectCoinbase();
@@ -94,20 +95,26 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
 
     const handleConnect = useCallback(() => {
         try {
+            if (!swap)
+                return
             if (!carouselFinished && !alreadyFamiliar) {
                 carouselRef?.current?.next()
                 return;
             }
             const access_token = TokenService.getAuthData()?.access_token
+            if (!access_token) {
+                //TODO handle not authenticated
+                return
+            }
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ SwapId: swap?.id, UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
-            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, query: query, swapId: swap.id })
+            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, query: router.query, swapId: swap.id })
             setAuthWindow(authWindow)
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [carouselFinished, alreadyFamiliar, swap?.id, oauth_authorize_url, query])
+    }, [carouselFinished, alreadyFamiliar, swap?.id, oauth_authorize_url, router.query])
 
     const handlePrev = useCallback(() => {
         carouselRef?.current?.prev()
@@ -133,10 +140,11 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
         <Widget>
             <Widget.Content>
                 {
-                    !hideHeader &&
-                    <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-primary-text font-semibold'>
-                        Please connect your {exchange_name} account
-                    </h3>
+                    !hideHeader ?
+                        <h3 className='md:mb-4 pt-2 text-lg sm:text-xl text-left font-roboto text-primary-text font-semibold'>
+                            Please connect your {exchange_name} account
+                        </h3>
+                        : <></>
                 }
                 {
                     <div className="w-full flex flex-col self-center h-[100%]">
@@ -154,7 +162,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                                 <FourthScreen minimalAuthorizeAmount={minimalAuthorizeAmount} />
                             </CarouselItem>
                             <CarouselItem width={100}>
-                                <LastScreen number={!alreadyFamiliar} minimalAuthorizeAmount={minimalAuthorizeAmount} />
+                                <LastScreen number={!alreadyFamiliar} minimalAuthorizeAmount={Number(minimalAuthorizeAmount)} />
                             </CarouselItem>
                         </Carousel>}
                     </div>

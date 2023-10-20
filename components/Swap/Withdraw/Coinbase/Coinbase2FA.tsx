@@ -38,6 +38,8 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
     const formikRef = useRef<FormikProps<CodeFormValues>>(null);
 
     const handleSubmit = useCallback(async (values: CodeFormValues) => {
+        if (!swap|| !swap.source_exchange)
+            return
         setLoading(true)
         try {
             const layerswapApiClient = new LayerSwapApiClient()
@@ -65,9 +67,11 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
     }, [swap])
 
     const handleResendTwoFACode = useCallback(async () => {
+        if (!swap || !swap.source_exchange)
+            return
         setLoading(true)
         try {
-            formikRef.current.setFieldValue("Code", "");
+            formikRef.current?.setFieldValue("Code", "");
             const layerswapApiClient = new LayerSwapApiClient()
             await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange)
         } catch (error) {

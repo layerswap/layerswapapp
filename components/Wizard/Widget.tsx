@@ -19,10 +19,10 @@ const Content = ({ children, center }: ContetProps) => {
                 </div>
             </div>
         </div>
-        : <div className='space-y-4 py-3 h-full'>{children}</div>
+        : <div className='space-y-4 pt-3 h-full'>{children}</div>
 }
 export let variants = {
-    enter: ({ direction, width }) => {
+    enter: () => {
         return ({
             opacity: 0,
             y: '100%',
@@ -34,7 +34,7 @@ export let variants = {
             y: 0,
         })
     },
-    exit: ({ direction, width }) => {
+    exit: () => {
         return ({
             y: '100%',
             zIndex: 0,
@@ -49,15 +49,15 @@ type FooterProps = {
 }
 const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
     const [height, setHeight] = useState(0)
-    const ref = useRef(null)
-    
-    useEffect(()=>{
-        setHeight(ref?.current?.clientHeight)
-    },[])
+    const ref = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        setHeight(Number(ref?.current?.clientHeight))
+    }, [])
 
     const handleAnimationEnd = (variant) => {
         if (variant == "center") {
-            setHeight(ref?.current?.clientHeight)
+            setHeight(Number(ref?.current?.clientHeight))
         }
     }
     return (

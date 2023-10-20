@@ -9,8 +9,9 @@ import { getServerSideProps } from '../helpers/getSettings';
 
 export default function Salon({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const router = useRouter();
-    LayerSwapAuthApiClient.identityBaseEndpoint = settings.discovery.identity_url
     let appSettings = new LayerSwapAppSettings(settings)
+    LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
+
 
     useEffect(() => {
         const temp_data = getTempData()
@@ -32,7 +33,7 @@ export default function Salon({ settings }: InferGetServerSidePropsType<typeof g
     }, [router])
 
     return (
-        <Layout hideFooter={true} hideNavbar={true} settings={appSettings}>
+        <Layout hideFooter={true} settings={appSettings}>
             <div className="h-full min-h-screen flex flex-col justify-center text-secondary-text text-md font-lighter leading-6">
                 <div className='flex place-content-center mb-4'>
                     <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 116 116" fill="none">

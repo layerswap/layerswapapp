@@ -10,7 +10,8 @@ import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
 
 export default class LayerSwapApiClient {
-    static apiBaseEndpoint: string = AppSettings.LayerswapApiUri;
+    static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
+    static apiVersion: string = AppSettings.ApiVersion;
 
     _authInterceptor: AxiosInstance;
     constructor(private readonly _router?: NextRouter, private readonly _redirect?: string) {
@@ -20,23 +21,20 @@ export default class LayerSwapApiClient {
     fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
 
     async GetSettingsAsync(): Promise<ApiResponse<LayerSwapSettings>> {
-        const version = process.env.NEXT_PUBLIC_API_VERSION
-        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${version}`).then(res => res.data);
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
     }
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<CreateSwapData>> {
         const correlationId = uuidv4()
-        return await this.AuthenticatedRequest<ApiResponse<CreateSwapData>>("POST", `/swaps`, params, { 'X-LS-CORRELATION-ID': correlationId });
+        return await this.AuthenticatedRequest<ApiResponse<CreateSwapData>>("POST", `/swaps?version=${LayerSwapApiClient.apiVersion}`, params, { 'X-LS-CORRELATION-ID': correlationId });
     }
 
     async GetSwapsAsync(page: number, status?: SwapStatusInNumbers): Promise<ApiResponse<SwapItem[]>> {
-        const version = process.env.NEXT_PUBLIC_API_VERSION
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}${status ? `&status=${status}` : ''}&version=${version}`);
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}${status ? `&status=${status}` : ''}&version=${LayerSwapApiClient.apiVersion}`);
     }
 
     async GetPendingSwapsAsync(): Promise<ApiResponse<SwapItem[]>> {
-        const version = process.env.NEXT_PUBLIC_API_VERSION
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?status=0&version=${version}`);
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?status=0&version=${LayerSwapApiClient.apiVersion}`);
     }
 
     async CancelSwapAsync(swapid: string): Promise<ApiResponse<void>> {
@@ -48,7 +46,7 @@ export default class LayerSwapApiClient {
     }
 
     async GetSwapDetailsAsync(id: string): Promise<ApiResponse<SwapItem>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem>>("GET", `/swaps/${id}`);
+        return await this.AuthenticatedRequest<ApiResponse<SwapItem>>("GET", `/swaps/${id}?version=${LayerSwapApiClient.apiVersion}`);
     }
 
     async GetDepositAddress(network: string, source: DepositAddressSource): Promise<ApiResponse<DepositAddress>> {
@@ -72,7 +70,7 @@ export default class LayerSwapApiClient {
     }
 
     async GetFee(params: GetFeeParams): Promise<ApiResponse<any>> {
-        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", '/swaps/quote', params);
+        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/swaps/quote?version=${LayerSwapApiClient.apiVersion}`, params);
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
@@ -122,7 +120,7 @@ export type CreateSwapParams = {
     destination: string,
     source_asset: string,
     destination_asset: string
-    source_address: string,
+    source_address: string | undefined,
     destination_address: string,
     app_name?: string,
     reference_id?: string,
@@ -143,10 +141,10 @@ export type SwapItem = {
     refuel_transaction_id?: string,
     source_network_asset: string,
     source_network: string,
-    source_exchange: string,
+    source_exchange?: string,
     destination_network_asset: string,
     destination_network: string,
-    destination_exchange: string,
+    destination_exchange?: string,
     transactions: Transaction[]
     has_refuel?: boolean,
     exchange_account_connected: boolean;
@@ -261,7 +259,7 @@ export enum SwapStatusInNumbers {
     SwapsWithoutCancelledAndExpired = '0&status=1&status=2&status=4'
 }
 
-export type Campaigns = {
+export type Campaign = {
     id: number,
     name: string,
     display_name: string,
@@ -273,7 +271,7 @@ export type Campaigns = {
     min_payout_amount: number,
     total_budget: number,
     distributed_amount: number,
-    status: string
+    status: 'active' | 'inactive'
 }
 
 export type Reward = {

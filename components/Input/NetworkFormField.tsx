@@ -1,6 +1,5 @@
 import { useFormikContext } from "formik";
 import { forwardRef, useCallback } from "react";
-import { useQueryState } from "../../context/query";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
@@ -13,6 +12,8 @@ import { SortingByOrder } from "../../lib/sorting"
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
+import { useRouter } from "next/router";
+import { useQueryState } from "../../context/query";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -22,10 +23,10 @@ type Props = {
 const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10 };
 const getGroupName = (layer: Layer) => {
 
-    if (layer?.is_featured) {
+    if (layer.is_featured) {
         return "Popular";
     }
-    else if (new Date(layer?.created_date).getTime() >= (new Date().getTime() - 2629800000)) {
+    else if (new Date(layer.created_date).getTime() >= (new Date().getTime() - 2629800000)) {
         return "New";
     }
     else if (!layer.isExchange) {
@@ -47,6 +48,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
+    const router = useRouter()
     const name = direction
     const { from, to } = values
     const { lockFrom, lockTo, asset, lockAsset } = useQueryState()
@@ -56,7 +58,9 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     let searchHint = "";
     let filteredLayers: Layer[];
     let menuItems: SelectMenuItem<Layer>[];
-    const lockedCurrency = lockAsset ? currencies?.find(c => c?.asset?.toUpperCase() === asset?.toUpperCase()) : null
+    const lockedCurrency = lockAsset ?
+        currencies?.find(c => c?.asset?.toUpperCase() === (asset as string)?.toUpperCase())
+        : null
 
     let valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
 
@@ -64,13 +68,13 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         placeholder = "Source";
         searchHint = "Swap from";
         filteredLayers = FilterSourceLayers(layers, to, lockedCurrency);
-        menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, from && lockFrom);
+        menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, !!(from && lockFrom));
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
         filteredLayers = FilterDestinationLayers(layers, from, lockedCurrency);
-        menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, to && lockTo);
+        menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, !!(to && lockTo));
     }
     valueGrouper = groupByType
 
@@ -132,15 +136,19 @@ function GenerateMenuItems(layers: Layer[], resolveImgSrc: (item: Layer | Curren
 
     return layers.map(l => {
         let orderProp: keyof NetworkSettings | keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
-        return {
+        const order = (l.isExchange ?
+            ExchangeSettings.KnownSettings[l.internal_name]?.[orderProp]
+            : NetworkSettings.KnownSettings[l.internal_name]?.[orderProp])
+        const res: SelectMenuItem<Layer> = {
             baseObject: l,
             id: l.internal_name,
             name: l.display_name,
-            order: l.isExchange ? ExchangeSettings.KnownSettings[l.internal_name]?.[orderProp] : NetworkSettings.KnownSettings[l.internal_name]?.[orderProp],
+            order: order || 100,
             imgSrc: resolveImgSrc && resolveImgSrc(l),
             isAvailable: layerIsAvailable(l),
             group: getGroupName(l)
         }
+        return res;
     }).sort(SortingByOrder);
 }
 

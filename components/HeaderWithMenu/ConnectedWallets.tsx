@@ -56,10 +56,11 @@ export const RainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { i
     </ConnectButton.Custom >
 }
 
-export const MenuRainbowKitConnectWallet = ({ isButton, isMobile, isConnected }: { isButton?: boolean, isMobile?: boolean, isConnected?: boolean }) => {
+export const MenuRainbowKitConnectWallet = () => {
     const { connector } = useAccount()
     const { layers } = useSettingsState()
     const { connectWallet } = useWallet()
+    
     return <ConnectButton.Custom>
         {({ account, mounted, chain, openAccountModal, openChainModal }) => {
             const connected = !!(mounted && account && chain)
@@ -73,21 +74,21 @@ export const MenuRainbowKitConnectWallet = ({ isButton, isMobile, isConnected }:
                 }
             }
 
-            return <button onClick={handleClick} type="button" className={`${!isMobile ? "h-24 w-24" : "h-20 w-14"} mx-2 w-4/12 flex flex-col items-center justify-center border-2 border-secondary-500 menu-link rounded-md outline-none bg-secondary-700 text-secondary-text hover:text-primary-text`}>
+            return <button onClick={handleClick} type="button" className={`w-full relative items-center gap-2 flex rounded-md outline-none bg-secondary-700 hover:bg-secondary-600 text-primary-text p-4 `}>
                 {connected ?
-                    <div className="mx-0.5">
-                        <div className="flex-col items-center">
+                    <>
+                        <div className="flex gap-4 items-center">
                             <div className="inline-flex items-center relative">
-                                <AddressIcon address={account.address} size={25} />
+                                <AddressIcon address={account.address} size={20} />
                                 {
                                     connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-primary-text">
-                                        <ResolveWalletIcon connector={connector?.name} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
+                                        <ResolveWalletIcon connector={connector?.name} className="w-4 h-4 border-2 border-secondary-600 rounded-full bg-primary-text" />
                                     </span>
                                 }
                             </div>
                             <p>{shortenAddress(account.address)}</p>
                         </div>
-                    </div>
+                    </>
                     : <WalletIcon className="h-6 w-6 mx-0.5" strokeWidth="2" />
                 }
             </button>
