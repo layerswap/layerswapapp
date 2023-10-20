@@ -29,10 +29,9 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
-          
-                const imtblClient = new ImtblClient(source_network?.internal_name)
-                const res = await imtblClient.ConnectWallet();
-                setImxAccount(res.address);
+            const imtblClient = new ImtblClient(source_network?.internal_name)
+            const res = await imtblClient.ConnectWallet();
+            setImxAccount(res.address);
         }
         catch (e) {
             toast(e.message)
