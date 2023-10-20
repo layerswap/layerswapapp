@@ -27,17 +27,19 @@ export default function useWallet() {
     async function connectStarknet(network: Layer) {
         try {
             const res = await starknetConnect()
-            addWallet({
-                address: res.account.address,
-                chainId: res.chainId,
-                network: network,
-                isConnected: res.isConnected,
-                icon: res.icon,
-                connector: res.name,
-                metadata: {
-                    starknetAccount: res.account
-                }
-            })
+            if (res && res.account && res.chainId) {
+                addWallet({
+                    address: res.account.address,
+                    chainId: res.chainId,
+                    network: network,
+                    isConnected: res.isConnected,
+                    icon: res.icon,
+                    connector: res.name,
+                    metadata: {
+                        starknetAccount: res.account
+                    }
+                })
+            }
             return res
         }
         catch (e) {
@@ -45,19 +47,20 @@ export default function useWallet() {
         }
     }
 
-    async function connectImx(network: Layer): Promise<LinkResults.Setup> {
+    async function connectImx(network: Layer): Promise<LinkResults.Setup | undefined> {
         if (network.isExchange === true) return
         try {
             const imtblClient = new ImtblClient(network.internal_name)
             const res = await imtblClient.ConnectWallet();
-            addWallet({
-                address: res.address,
-                chainId: network.chain_id,
-                network: layers.find(l => l.internal_name === KnownInternalNames.Networks.ImmutableXMainnet),
-                isConnected: true,
-                connector: res.providerPreference
-            });
-
+            if (network) {
+                addWallet({
+                    address: res.address,
+                    chainId: Number(network.chain_id),
+                    network: network,
+                    isConnected: true,
+                    connector: res.providerPreference
+                });
+            }
             return res
         }
         catch (e) {
@@ -80,7 +83,7 @@ export default function useWallet() {
                 return res
             }
             else if (layer.type === NetworkType.EVM) {
-                return openConnectModal()
+                return openConnectModal && openConnectModal()
             }
         }
         catch {
@@ -132,16 +135,18 @@ export default function useWallet() {
 
     const account = useAccount({
         onConnect({ address, connector }) {
-            addWallet({
-                address: address,
-                connector: connector.id,
-                isConnected: account.isConnected,
-                chainId: chain.id,
-                network: layers.find(l => l.isExchange === false && Number(l.chain_id) === chain.id && l.type === NetworkType.EVM)
-            })
+            if (address && connector && chain) {
+                addWallet({
+                    address: address,
+                    connector: connector.id,
+                    isConnected: account.isConnected,
+                    chainId: chain.id,
+                    network: layers.find(l => l.isExchange === false && Number(l.chain_id) === chain.id && l.type === NetworkType.EVM) as Layer
+                })
+            }
         },
         onDisconnect() {
-            handleDisconnect(layers.find(l => l.isExchange === false && Number(l.chain_id) === chain?.id && l.type === NetworkType.EVM))
+            handleDisconnect(layers.find(l => l.isExchange === false && Number(l.chain_id) === chain?.id && l.type === NetworkType.EVM) as Layer)
         }
     })
 

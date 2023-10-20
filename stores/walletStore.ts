@@ -10,7 +10,7 @@ interface WalletState {
 }
 
 type Wallet = {
-    address: string;
+    address: string | `0x${string}`;
     chainId: number | string
     isConnected: boolean;
     network: Layer,
@@ -22,7 +22,7 @@ type Wallet = {
 }
 
 export const useWalletStore = create<WalletState>()(persist((set) => ({
-    connectedWallets: null,
+    connectedWallets: {},
     connectWallet: (wallet) => set((state) => ({
         connectedWallets: {
             ...state.connectedWallets,
@@ -30,7 +30,7 @@ export const useWalletStore = create<WalletState>()(persist((set) => ({
         }
     })),
     disconnectWallet: (network) => set((state) => {
-        delete state.connectedWallets[network.internal_name]
+        delete state?.connectedWallets?.[network.internal_name]
         return {
             connectedWallets: {
                 ...state.connectedWallets
