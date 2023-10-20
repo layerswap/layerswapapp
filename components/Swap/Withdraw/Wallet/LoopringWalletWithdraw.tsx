@@ -32,7 +32,6 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const { setLprAccount } = useWalletUpdate();
 
     const web3 = useWeb3Signer();
-    const data = useEthersSigner();
     const { source_network: source_network_internal_name } = swap;
     const source_network = networks.find(n => n.internal_name === source_network_internal_name);
     const token = networks.find(n => swap.source_network == n.internal_name).currencies.find(c => c.asset == swap.source_network_asset);
@@ -77,9 +76,6 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
             debugger
             const exchangeApi: lp.ExchangeAPI = new lp.ExchangeAPI({ chainId: 1 });
             const { exchangeInfo } = await exchangeApi.getExchangeInfo();
-
-            const unspecifiedData: any = data
-            const web3 = new Web3(unspecifiedData?.provider?.provider)
 
             const { accInfo } = await LoopringAPI.exchangeAPI.getAccount({
                 owner: fromAddress,
