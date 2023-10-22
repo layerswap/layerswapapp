@@ -8,6 +8,10 @@ import { PublishedSwapTransactions } from "../../../../../lib/layerSwapApiClient
 import TransferNativeTokenButton from "./TransferNativeToken";
 import { ChangeNetworkButton, ConnectWalletButton } from "./buttons";
 import TransferErc20Button from "./TransferErc20";
+import KnownInternalNames from "../../../../../lib/knownIds";
+import { useSwapDataState } from "../../../../../context/swap";
+import { useSettingsState } from "../../../../../context/settings";
+import isArgentWallet from "../../../../../lib/isArgentWallet";
 
 type Props = {
     sequenceNumber: number,
@@ -33,12 +37,15 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     swapId,
     asset
 }) => {
-    const { isConnected } = useAccount();
+    const { isConnected, address } = useAccount();
     const networkChange = useSwitchNetwork({
         chainId: chainId,
     });
+    const { swap } = useSwapDataState()
+    const { networks } = useSettingsState()
 
     const { chain: activeChain } = useNetwork();
+    const [isArgentGenerated, setIsArgentGenerated] = useState<boolean>(false)
 
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
 
@@ -60,8 +67,20 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
         }
     }, [swapId])
 
+    useEffect(() => {
+        const source_network = networks?.find(n => n.internal_name === swap?.source_network)
+
+        if (swap?.source_network === KnownInternalNames.Networks.EthereumMainnet) {
+            (async () => {
+                if (source_network) {
+                    setIsArgentGenerated(await isArgentWallet(address as string, source_network))
+                }
+            })()
+        }
+    }, [swap?.source_network])
+
     const hexed_sequence_number = sequenceNumber?.toString(16)
-    const sequence_number_even = hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number
+    const sequence_number_even = !isArgentGenerated ? (hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number) : ''
 
     if (!isConnected) {
         return <ConnectWalletButton />
