@@ -72,7 +72,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     useEffect(() => {
         const source_network = networks?.find(n => n.internal_name === swap?.source_network)
 
-        if (source_network?.internal_name === KnownInternalNames.Networks.EthereumMainnet && address) {
+        if (source_network?.internal_name === KnownInternalNames.Networks.EthereumMainnet && address && userDestinationAddress! == address) {
             (async () => {
                 setIsArgent(await isArgentWallet(address, source_network))
             })()
