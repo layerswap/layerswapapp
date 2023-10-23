@@ -80,7 +80,8 @@ const UexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
     return <WalletMessage
         status="error"
         header='Unexpected error'
-        details={message} />
+        details={message}
+        bigDetails={true} />
 }
 
 export default TransactionMessage
