@@ -4,7 +4,7 @@ import {
     useSwitchNetwork,
     useNetwork,
 } from "wagmi";
-import { PublishedSwapTransactions } from "../../../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { DepositAddress, PublishedSwapTransactions } from "../../../../../lib/layerSwapApiClient";
 import TransferNativeTokenButton from "./TransferNativeToken";
 import { ChangeNetworkButton, ConnectWalletButton } from "./buttons";
 import TransferErc20Button from "./TransferErc20";
@@ -12,6 +12,8 @@ import KnownInternalNames from "../../../../../lib/knownIds";
 import { useSwapDataState } from "../../../../../context/swap";
 import { useSettingsState } from "../../../../../context/settings";
 import isArgentWallet from "../../../../../lib/isArgentWallet";
+import useSWR from "swr";
+import { ApiResponse } from "../../../../../Models/ApiResponse";
 
 type Props = {
     sequenceNumber: number,
@@ -45,7 +47,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     const { networks } = useSettingsState()
 
     const { chain: activeChain } = useNetwork();
-    const [isArgentGenerated, setIsArgentGenerated] = useState<boolean>(false)
+    const [isArgent, setIsArgent] = useState<boolean>(false)
 
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
 
@@ -70,17 +72,25 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     useEffect(() => {
         const source_network = networks?.find(n => n.internal_name === swap?.source_network)
 
-        if (swap?.source_network === KnownInternalNames.Networks.EthereumMainnet) {
+        if (source_network?.internal_name === KnownInternalNames.Networks.EthereumMainnet && address) {
             (async () => {
-                if (source_network) {
-                    setIsArgentGenerated(await isArgentWallet(address as string, source_network))
-                }
+                setIsArgent(await isArgentWallet(address, source_network))
             })()
         }
-    }, [swap?.source_network])
+        else {
+            setIsArgent(false)
+        }
+    }, [swap?.source_network, address])
+
+    const generateDepositParams = isArgent ? [swap?.source_network] : null
+
+    const layerswapApiClient = new LayerSwapApiClient()
+    const {
+        data: generatedDeposit
+    } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
 
     const hexed_sequence_number = sequenceNumber?.toString(16)
-    const sequence_number_even = !isArgentGenerated ? (hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number) : ''
+    const sequence_number_even = !isArgent ? (hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number) : ''
 
     if (!isConnected) {
         return <ConnectWalletButton />
@@ -96,7 +106,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
             swapId={swapId}
             sequenceNumber={sequence_number_even}
             amount={amount}
-            depositAddress={depositAddress}
+            depositAddress={(generatedDeposit?.data?.address as `0x${string}`) || depositAddress}
             userDestinationAddress={userDestinationAddress}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
             tokenContractAddress={tokenContractAddress}
@@ -108,7 +118,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
             swapId={swapId}
             sequenceNumber={sequence_number_even}
             amount={amount}
-            depositAddress={depositAddress}
+            depositAddress={(generatedDeposit?.data?.address as `0x${string}`) || depositAddress}
             userDestinationAddress={userDestinationAddress}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
             chainId={chainId}
