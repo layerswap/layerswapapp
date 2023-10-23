@@ -3,12 +3,13 @@ import FailIcon from "../../../../icons/FailIcon";
 import Modal from "../../../../modal/modal";
 import { ChevronUp } from "lucide-react";
 
-type WalletMessageProps = {
+export type WalletMessageProps = {
     header: string;
-    details?: string;
-    status: 'pending' | 'error'
+    details: string;
+    status: 'pending' | 'error';
+    showInModal?: boolean;
 }
-const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
+const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, showInModal }) => {
     const [showErrorModal, setShowErrorModal] = useState(false);
 
     return <div className="flex text-center mb-2 space-x-2">
@@ -24,7 +25,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
                     </>
             }
         </div>
-        {header == "Unexpected error" ?
+        {showInModal ?
             <div className="text-left space-y-1 w-full max-w-2xl">
                 <button onClick={() => setShowErrorModal(true)} className="flex justify-between w-full">
                     <p className="text-md font-semibold self-center text-white">
@@ -34,7 +35,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
                 </button>
                 <Modal height="fit" show={showErrorModal} setShow={setShowErrorModal}>
                     <div className="text-left space-y-1">
-                        <p className="text-md font-semibold self-center text-white">
+                        <p className="text-md font-semibold self-center text-primary">
                             {header}
                         </p>
                         <p className="text-sm text-primary-text break-all whitespace-pre-wrap">
@@ -45,7 +46,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
             </div>
             :
             <div className="text-left space-y-1">
-                <p className="text-md font-semibold self-center text-white">
+                <p className="text-md font-semibold self-center text-primary">
                     {header}
                 </p>
                 <p className="text-sm text-primary-text break-all">
