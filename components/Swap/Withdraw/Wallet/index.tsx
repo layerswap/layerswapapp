@@ -43,7 +43,7 @@ const WalletTransfer: FC = () => {
             break;
         }
         case KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase():
-            sourceNetworkType = WalletTypes.ZzkSync
+            sourceNetworkType = WalletTypes.ZkSync
             connectedWalletAddress = syncWallet?.cachedAddress;
             break;
         case KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase():
@@ -116,7 +116,7 @@ const WalletTransfer: FC = () => {
 
 enum WalletTypes {
     ImmutableX,
-    ZzkSync,
+    ZkSync,
     Starknet,
     Evm
 }

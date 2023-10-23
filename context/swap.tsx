@@ -139,7 +139,7 @@ export function SwapDataProvider({ children }) {
         setDepositeAddressIsfromAccount,
         setWalletAddress,
         setWithdrawType,
-        setSelectedAssetNetwork
+        setSelectedAssetNetwork,
     };
     return (
         <SwapDataStateContext.Provider value={{
