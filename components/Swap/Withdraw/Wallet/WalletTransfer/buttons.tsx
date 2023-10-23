@@ -1,4 +1,3 @@
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { FC, ReactNode, useCallback } from "react";
 import {
     useSwitchNetwork,

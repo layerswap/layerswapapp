@@ -3,7 +3,6 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
 import TokenService from "../../lib/TokenService";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
@@ -24,6 +23,11 @@ import { shortenEmail } from '../utils/ShortenAddress';
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import Menu from "./Menu";
 import SubmitButton from "../buttons/submitButton";
+import useWallet from "../../hooks/useWallet";
+import { NetworkType } from "../../Models/CryptoNetwork";
+import { Layer } from "../../Models/Layer";
+import { useSettingsState } from "../../context/settings";
+import ConnectButton from "../buttons/connectButton";
 
 export default function LayerswapMenu() {
     const { email, userType, userId } = useAuthState()
@@ -33,9 +37,9 @@ export default function LayerswapMenu() {
     const { boot, show, update } = useIntercom()
     const [embedded, setEmbedded] = useState<boolean>()
     const [openTopModal, setOpenTopModal] = useState(false);
-    const { openConnectModal } = useConnectModal();
+    const { connectWallet } = useWallet();
+    const { layers } = useSettingsState()
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
-
 
     useEffect(() => {
         setEmbedded(inIframe())
@@ -122,9 +126,11 @@ export default function LayerswapMenu() {
                                     {isConnected ? (
                                         <MenuRainbowKitConnectWallet />
                                     ) : (
-                                        <SubmitButton text_align="center" className="bg-primary/20 border-none !text-primary !px-4" onClick={openConnectModal} icon={<WalletIcon className="h-5 w-5" strokeWidth={2} />} type="button" isDisabled={false} isSubmitting={false}>
-                                            Connect a wallet
-                                        </SubmitButton>
+                                        <ConnectButton>
+                                            <SubmitButton text_align="center" className="bg-primary/20 border-none !text-primary !px-4" type="button" isDisabled={false} isSubmitting={false}>
+                                                Connect a wallet
+                                            </SubmitButton>
+                                        </ConnectButton>
                                     )}
                                 </div>
 

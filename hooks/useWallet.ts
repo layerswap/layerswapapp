@@ -1,7 +1,6 @@
 import toast from "react-hot-toast"
 import { NetworkType } from "../Models/CryptoNetwork"
 import { Layer } from "../Models/Layer"
-import KnownInternalNames from "../lib/knownIds"
 import LayerSwapApiClient, { SwapItem } from "../lib/layerSwapApiClient"
 import { useCallback } from "react"
 import { StarknetWindowObject, connect as starknetConnect, disconnect as starknetDisconnect } from "get-starknet"
