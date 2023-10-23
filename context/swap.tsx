@@ -32,7 +32,6 @@ export type UpdateInterface = {
     setWalletAddress: (value: string) => void,
     setDepositeAddressIsfromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
-    setSwapPublishedTx: (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => void;
     setSelectedAssetNetwork: (assetNetwork: ExchangeAsset | BaseL2Asset) => void
 }
 

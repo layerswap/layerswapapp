@@ -1,5 +1,5 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
-import { FC, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
@@ -31,11 +31,11 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const { chain } = useNetwork();
 
     const { networks } = useSettingsState();
-    const { source_network: source_network_internal_name } = swap;
+    const { source_network: source_network_internal_name } = swap || {};
     const source_network = networks.find(n => n.internal_name === source_network_internal_name);
-    const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase());
-    const defaultProvider = swap?.source_network?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "georli";
-    const ethereum = networks.find(n => n.internal_name === KnownInternalNames.Networks.EthereumMainnet);
+    const source_currency = source_network?.currencies?.find(c => c.asset.toLocaleUpperCase() === swap?.source_network_asset.toLocaleUpperCase());
+    const defaultProvider = swap?.source_network?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "goerli";
+    const l1Network = networks.find(n => n.internal_name === source_network?.metadata?.L1Network);
 
     useEffect(() => {
         if (signer?._address !== syncWallet?.cachedAddress) {
@@ -43,10 +43,12 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         }
     }, [signer?._address]);
 
-    const handleConnect = async () => {
+    const handleConnect = useCallback(async () => {
+        if (!signer)
+            return
         setLoading(true)
         try {
-            const syncProvider = await zksync.getDefaultProvider(defaultProvider as Network);
+            const syncProvider = await zksync.getDefaultProvider(defaultProvider);
             const wallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
             wallet.getAccountState();
             setSyncWallet(wallet);
@@ -55,42 +57,51 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             toast(e.message)
         }
         setLoading(false)
-    }
+    }, [signer, defaultProvider])
 
-    const handleTransfer = async () => {
+    const handleTransfer = useCallback(async () => {
+
+        if (!swap)
+            return
+
         setLoading(true)
         try {
-            const tf = await syncWallet.syncTransfer({
+            const tf = await syncWallet?.syncTransfer({
                 to: depositAddress,
                 token: swap?.source_network_asset,
                 amount: zksync.closestPackableTransactionAmount(utils.parseUnits(amount.toString(), source_currency?.decimals)),
                 validUntil: zksync.utils.MAX_TIMESTAMP - swap?.sequence_number,
             });
 
-            const res = await tf.awaitReceipt();
+            const res = await tf?.awaitReceipt();
+            const txHash = tf?.txHash?.replace('sync-tx:', '')
+
+            //TODO handle no transaction hash case
             if (res?.success) {
-                setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Completed, tf?.txHash?.replace('sync-tx:', ''));
+                txHash && setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Completed, txHash);
                 setTransferDone(true)
             } else {
-                setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, tf?.txHash?.replace('sync-tx:', ''), res?.failReason);
+                txHash && setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, txHash, res?.failReason);
             }
         }
         catch (e) {
             if (e?.message)
                 toast(e.message)
         }
-        setLoading(false)
-    }
+        finally {
+            setLoading(false)
+        }
+    }, [syncWallet, swap])
 
     if (!signer) {
         return <ConnectWalletButton />
     }
-
-    if (chain?.id !== Number(ethereum.chain_id)) {
+    //TODO handle no l1Network
+    if (l1Network && chain?.id !== Number(l1Network.chain_id)) {
         return (
             <ChangeNetworkButton
-                chainId={Number(ethereum.chain_id)}
-                network={ethereum.display_name}
+                chainId={Number(l1Network?.chain_id)}
+                network={l1Network?.display_name}
             />
         )
     }
@@ -107,7 +118,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     }
                     {
                         syncWallet &&
-                        <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>
                     }

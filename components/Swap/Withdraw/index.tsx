@@ -247,7 +247,7 @@ const WalletTransferContent: FC = () => {
         accountAddress = imxAccount || "";
     }
     else if (sourceIsZkSync) {
-        accountAddress = syncWallet?.cachedAddress;
+        accountAddress = syncWallet?.cachedAddress || "";
     }
 
     const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap?.source_exchange

@@ -106,7 +106,8 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             setApplyingTransaction(false)
         },
         onError: async (err) => {
-            setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, contractWrite?.data?.hash, err.message);
+            if (contractWrite?.data?.hash)
+                setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, contractWrite.data.hash, err.message);
         }
     })
 

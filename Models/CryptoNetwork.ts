@@ -52,7 +52,7 @@ export class ManagedAccount {
     address: string;
 }
 export class Metadata {
-    multicall3: {
+    multicall3?: {
         address: `0x${string}`
         blockCreated: number
     }
@@ -63,4 +63,5 @@ export class Metadata {
         address: `0x${string}`
     }
     WatchdogContractAddress?: `0x${string}`
+    L1Network?: string
 }
