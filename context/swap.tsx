@@ -58,6 +58,15 @@ export function SwapDataProvider({ children }) {
     const { address } = useAccount()
     const { layers } = useSettingsState()
 
+    // export function CanDoSweeplessTransfer(sourceLayer: Layer, sourceAddress?: string | null, destinationAddress?: string | null, isArgent?: boolean): boolean {
+    //     if (sourceLayer?.isExchange == false
+    //         && (([NetworkType.EVM, NetworkType.Starknet].includes(sourceLayer.type) && !isArgent) || sourceAddress?.toLowerCase() === destinationAddress?.toLowerCase())
+    //     ) {
+    //         return true;
+    //     }
+    
+    //     return false;
+    // }
 
     const layerswapApiClient = new LayerSwapApiClient()
     const apiVersion = LayerSwapApiClient.apiVersion

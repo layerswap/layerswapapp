@@ -18,6 +18,7 @@ import MessageComponent from "../../../../MessageComponent";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import TransactionMessage from "./transactionMessage";
 import { ButtonWrapper } from "./buttons";
+import useWalletTransferOptions from "../../../../../hooks/useWalletTransferOptions";
 
 type TransferNativeTokenButtonProps = BaseTransferButtonProps & {
     chainId: number,
@@ -38,13 +39,15 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     const [openChangeAmount, setOpenChangeAmount] = useState(false)
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
     const { address } = useAccount();
+    const { canDoSweepless, ready } = useWalletTransferOptions()
 
     const sendTransactionPrepare = usePrepareSendTransaction({
+        enabled: !!depositAddress && ready,
         to: depositAddress,
         value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,
     })
-    const encodedData: `0x${string}` = address !== userDestinationAddress ? `0x${sequenceNumber}` : "0x"
+    const encodedData: `0x${string}` = (canDoSweepless && address !== userDestinationAddress) ? `0x${sequenceNumber}` : "0x"
 
     const tx = {
         to: depositAddress,

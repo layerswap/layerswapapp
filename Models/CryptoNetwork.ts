@@ -49,7 +49,7 @@ export class NetworkNode {
     url: string;
 }
 export class ManagedAccount {
-    address: string;
+    address: `0x${string}`;
 }
 export class Metadata {
     multicall3: {

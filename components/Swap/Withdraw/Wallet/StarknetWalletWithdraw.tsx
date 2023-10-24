@@ -16,8 +16,8 @@ import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 import { parseUnits } from 'viem'
 
 type Props = {
-    depositAddress: string;
-    amount: number
+    depositAddress?: string;
+    amount?: number
 }
 
 function getUint256CalldataFromBN(bn: number.BigNumberish) {
@@ -86,6 +86,9 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             }
             if(!source_network?.metadata?.WatchdogContractAddress){
                 throw Error("WatchdogContractAddress is not defined on network metadata")
+            }
+            if(!amount){
+                throw Error("amount is not defined for starknet transfer")
             }
             const erc20Contract = new Contract(
                 Erc20Abi,

@@ -92,7 +92,7 @@ export default class LayerSwapApiClient {
 
 export type DepositAddress = {
     type: string
-    address: string;
+    address: `0x${string}`;
 }
 
 export enum DepositAddressSource {
@@ -132,7 +132,7 @@ export type SwapItem = {
     created_date: string,
     fee: number,
     status: SwapStatus,
-    destination_address: string,
+    destination_address: `0x${string}`,
     requested_amount: number,
     message?: string,
     reference_id?: string,

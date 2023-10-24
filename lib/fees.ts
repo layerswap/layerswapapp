@@ -58,9 +58,9 @@ function ResolveRefuelNetwork(args: CaluclateRefuelArgs): CryptoNetwork | undefi
     }
 }
 
-export function CanDoSweeplessTransfer(sourceLayer: Layer, sourceAddress?: string | null, destinationAddress?: string | null): boolean {
+export function CanDoSweeplessTransfer(sourceLayer: Layer, sourceAddress?: string | null, destinationAddress?: string | null, isArgent?: boolean): boolean {
     if (sourceLayer?.isExchange == false
-        && ([NetworkType.EVM, NetworkType.Starknet].includes(sourceLayer.type) || sourceAddress?.toLowerCase() === destinationAddress?.toLowerCase())
+        && (([NetworkType.EVM, NetworkType.Starknet].includes(sourceLayer.type) && !isArgent) || sourceAddress?.toLowerCase() === destinationAddress?.toLowerCase())
     ) {
         return true;
     }
