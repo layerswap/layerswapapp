@@ -6,12 +6,12 @@ import { useSettingsState } from "../../context/settings";
 import KnownInternalNames from "../../lib/knownIds";
 import { Layer } from "../../Models/Layer";
 
-const ConnectButton = ({ children, className }: { children: ReactNode, className?: string }) => {
-    const { connectWallet } = useWallet()
+const ConnectButton = ({ children, className, onClose }: { children: ReactNode, className?: string, onClose?: () => void }) => {
+    const { connectWallet, wallets } = useWallet()
     const { layers } = useSettingsState()
     const [open, setOpen] = useState<boolean>()
 
-    const connectors = [
+    const knownConnectors = [
         {
             name: 'EVM',
             type: NetworkType.EVM,
@@ -23,16 +23,17 @@ const ConnectButton = ({ children, className }: { children: ReactNode, className
             network: layers.find(l => l.internal_name === KnownInternalNames.Networks.StarkNetMainnet || l.internal_name === KnownInternalNames.Networks.StarkNetGoerli)
         }
     ]
+    const filteredConnectors = knownConnectors.filter(c => c.network && !wallets.map(w => w.network.type).includes(c.network.type))
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger className={className}>
+            <PopoverTrigger disabled={filteredConnectors.length == 0} className={`${className} disabled:opacity-50 disabled:cursor-not-allowed `}>
                 {children}
             </PopoverTrigger>
-            <PopoverContent className='flex items-center justify-around gap-2'>
+            <PopoverContent className='flex items-center justify-around gap-2 w-fit'>
                 {
-                    connectors.map((connector, index) => (
-                        <button type="button" key={index} className="w-full h-full hover:bg-secondary-600 rounded py-2" onClick={() => { connectWallet(connector.network as Layer & { type: typeof connector.type }), setOpen(false) }}>
+                    filteredConnectors.map((connector, index) => (
+                        <button type="button" key={index} className="w-full h-full hover:bg-secondary-600 rounded py-2 px-3" onClick={() => { connectWallet(connector.network as Layer & { type: typeof connector.type }); setOpen(false); onClose && onClose() }}>
                             {connector.name}
                         </button>
                     ))

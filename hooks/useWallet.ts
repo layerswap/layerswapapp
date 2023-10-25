@@ -2,14 +2,13 @@ import toast from "react-hot-toast"
 import { NetworkType } from "../Models/CryptoNetwork"
 import { Layer } from "../Models/Layer"
 import LayerSwapApiClient, { SwapItem } from "../lib/layerSwapApiClient"
-import { useCallback, useEffect } from "react"
+import { useCallback } from "react"
 import { StarknetWindowObject, connect as starknetConnect, disconnect as starknetDisconnect } from "get-starknet"
-import starknet from 'get-starknet-core'
 import ImtblClient from "../lib/imtbl"
 import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { useSwapDataUpdate } from "../context/swap"
 import { disconnect as wagmiDisconnect } from '@wagmi/core'
-import { useWalletStore } from "../stores/walletStore"
+import { Wallet, useWalletStore } from "../stores/walletStore"
 import { LinkResults } from "@imtbl/imx-sdk"
 import { useSettingsState } from "../context/settings"
 import { useAccount, useNetwork } from "wagmi"
@@ -25,34 +24,13 @@ export default function useWallet() {
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
 
-    // useEffect(() => {
-    //     (async () => {
-    //         const res = await starknet.getLastConnectedWallet()
-    //         if (res && res.account && res.chainId) {
-    //             addWallet({
-    //                 address: res.account.address,
-    //                 chainId: res.chainId,
-    //                 network: layers.find(l => l.internal_name === KnownInternalNames.Networks.StarkNetMainnet) as Layer,
-    //                 isConnected: res.isConnected,
-    //                 icon: res.icon,
-    //                 connector: res.name,
-    //                 metadata: {
-    //                     starknetAccount: res.account
-    //                 }
-    //             })
-    //         }
-    //     })()
-    // }, [])
-
     async function connectStarknet(network: Layer) {
         try {
             const res = await starknetConnect()
-            if (res && res.account && res.chainId) {
+            if (res && res.account) {
                 addWallet({
                     address: res.account.address,
-                    chainId: res.chainId,
                     network: network,
-                    isConnected: res.isConnected,
                     icon: res.icon,
                     connector: res.name,
                     metadata: {
@@ -75,9 +53,7 @@ export default function useWallet() {
             if (network) {
                 addWallet({
                     address: res.address,
-                    chainId: Number(network.chain_id),
                     network: network,
-                    isConnected: true,
                     connector: res.providerPreference
                 });
             }
@@ -139,7 +115,6 @@ export default function useWallet() {
             }
             else if (networkType === NetworkType.EVM) {
                 await wagmiDisconnect()
-                removeWallet(network)
             }
             else if (networkType === NetworkType.Starknet) {
                 await disconnectStarknet(network)
@@ -154,24 +129,29 @@ export default function useWallet() {
     }
 
     const account = useAccount({
-        onConnect({ address, connector }) {
-            if (address && connector && chain) {
-                addWallet({
-                    address: address,
-                    connector: connector.id,
-                    isConnected: account.isConnected,
-                    chainId: chain.id,
-                    network: layers.find(l => l.isExchange === false && Number(l.chain_id) === chain.id && l.type === NetworkType.EVM) as Layer
-                })
-            }
-        },
         onDisconnect() {
             handleDisconnect(layers.find(l => l.isExchange === false && l.internal_name === KnownInternalNames.Networks.EthereumMainnet) as Layer)
         }
     })
 
+    const getConnectedWallets = () => {
+        let connectedWallets: Wallet[] = []
+
+        if (account && account.address && account.connector && chain) {
+            connectedWallets = [...connectedWallets, {
+                address: account.address,
+                connector: account.connector?.id,
+                network: layers.find(l => l.isExchange === false && Number(l.chain_id) === chain.id && l.type === NetworkType.EVM) as Layer
+            }]
+        }
+
+        return connectedWallets.concat(wallets)
+    }
+
+    const connectedWallets = getConnectedWallets()
+
     return {
-        wallets: wallets,
+        wallets: connectedWallets,
         connectWallet: handleConnect,
         disconnectWallet: handleDisconnect,
     }

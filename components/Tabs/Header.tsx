@@ -11,6 +11,7 @@ type HeaderProps = {
 
 const Header: FC<HeaderProps> = ({ tab, onCLick, activeTabId }) => {
     return <button
+        type="button"
         key={tab.id}
         onClick={() => onCLick(tab.id)}
         className={`${activeTabId === tab.id ? "text-secondary-text" : "text-secondary-text/50 hover:text-secondary-text"

@@ -194,7 +194,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     placeholder={placeholder}
                                     autoCorrect="off"
                                     type={"text"}
-                                    disabled={disabled || !!((isRainbowKitConnected || wallet?.isConnected) && values.destination_address) || !!(wallet?.isConnected && values.destination_address)}
+                                    disabled={disabled || !!((isRainbowKitConnected || wallet) && values.destination_address) || !!(wallet && values.destination_address)}
                                     name={name}
                                     id={name}
                                     ref={inputReference}
@@ -239,7 +239,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-300 bg-secondary-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-500 transition duration-200 px-2 py-2 hover:border-secondary-500 hover:shadow-xl`}>
                             <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
                                 {
-                                    destinationIsStarknet && wallet && wallet?.isConnected ?
+                                    destinationIsStarknet && wallet ?
                                         <Image src={wallet?.icon || ''} alt={wallet?.address} width={25} height={25} />
                                         :
                                         <AddressIcon address={validInputAddress} size={25} />

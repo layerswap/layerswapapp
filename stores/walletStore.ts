@@ -1,6 +1,7 @@
 import { AccountInterface } from 'starknet';
 import { create } from 'zustand'
 import { Layer } from '../Models/Layer';
+import { persist } from 'zustand/middleware';
 
 interface WalletState {
     connectedWallets: Wallet[];
@@ -8,10 +9,8 @@ interface WalletState {
     disconnectWallet: (network: Layer) => void;
 }
 
-type Wallet = {
+export type Wallet = {
     address: string | `0x${string}`;
-    chainId: number | string
-    isConnected: boolean;
     network: Layer,
     icon?: string;
     connector?: string;
@@ -20,7 +19,7 @@ type Wallet = {
     }
 }
 
-export const useWalletStore = create<WalletState>()((set) => ({
+export const useWalletStore = create<WalletState>()(persist((set) => ({
     connectedWallets: [],
     connectWallet: (wallet) => set((state) => ({
         connectedWallets: [
@@ -31,4 +30,8 @@ export const useWalletStore = create<WalletState>()((set) => ({
     disconnectWallet: (network) => set((state) => ({
         connectedWallets: state.connectedWallets.filter(w => w.network.internal_name !== network.internal_name)
     }))
-}))
+}),
+    {
+        name: 'connected-wallets'
+    }
+))

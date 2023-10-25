@@ -210,7 +210,7 @@ export default function LayerswapMenu() {
                                                                 <UserCircle2 className="h-5 w-5" />
                                                                 <p>{email && <UserEmail email={email} />}</p>
                                                             </div>
-                                                            <button className="text-primary hover:text-primary-600" onClick={handleLogout}>
+                                                            <button type="button" className="text-primary hover:text-primary-600" onClick={handleLogout}>
                                                                 Sign out
                                                             </button>
                                                         </div>
