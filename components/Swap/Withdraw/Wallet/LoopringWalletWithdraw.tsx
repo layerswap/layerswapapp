@@ -8,12 +8,11 @@ import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 import { useAccount } from 'wagmi';
 import { LoopringAPI } from '../../../../lib/loopring/LoopringAPI';
 import { ConnectorNames } from '@loopring-web/loopring-sdk';
-import { connectProvides } from '@loopring-web/web3-provider'
+import {connectProvides} from '@loopring-web/web3-provider';
 import { ConnectWalletButton } from './WalletTransfer/buttons';
 import * as lp from "@loopring-web/loopring-sdk";
 import { signatureKeyPairMock } from '../../../../lib/loopring/helpers';
-import { useEthersSigner, useWeb3Signer } from '../../../../lib/toViem/toWeb3';
-import Web3 from 'web3';
+import { useWeb3Signer } from '../../../../lib/toViem/toWeb3';
 import { parseUnits } from 'viem';
 
 type Props = {
