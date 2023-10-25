@@ -9,8 +9,6 @@ import resolveChain from '../lib/resolveChain';
 import { NetworkType } from '../Models/CryptoNetwork';
 import { useSettingsState } from './settings';
 import { useSwapDataState } from './swap';
-import KnownInternalNames from '../lib/knownIds';
-import isArgentWallet from '../lib/isArgentWallet';
 
 export const WalletStateContext = createContext<WalletState>({
     balances: [],
@@ -29,7 +27,7 @@ export type WalletState = {
     gases: { [network: string]: Gas[] },
     isBalanceLoading: boolean,
     isGasLoading: boolean,
-    isArgent?: { ready: boolean, value?: boolean }
+    isContractWallet?: { ready: boolean, value?: boolean }
 }
 
 type WalletStateUpdate = {
@@ -57,7 +55,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
     const { swap } = useSwapDataState()
     const { networks } = useSettingsState()
 
-    const [isArgent, setIsArgent] = useState<{ ready: boolean, value?: boolean }>({ ready: false })
+    const [isContractWallet, setIsContractWallet] = useState<{ ready: boolean, value?: boolean }>({ ready: false })
 
     useEffect(() => {
         (async () => {
@@ -66,18 +64,35 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
             }
             try {
                 const source_network = networks?.find(n => n.internal_name === swap?.source_network)
-                if (source_network?.internal_name === KnownInternalNames.Networks.EthereumMainnet
-                    && evmAddress
+                if (!source_network)
+                    return
+
+                if (evmAddress
                     && swap.destination_address! == evmAddress) {
-                    setIsArgent({ ready: true, value: await isArgentWallet(evmAddress, source_network) })
+                    const chain = resolveChain(source_network)
+                    if (!chain) {
+                        return
+                    }
+                    const publicClient = createPublicClient({
+                        chain,
+                        transport: http()
+                    })
+
+                    const bytecode = await publicClient.getBytecode({
+                        address: evmAddress
+                    });
+
+                    const isContractWallet = !!bytecode
+
+                    setIsContractWallet({ ready: true, value: isContractWallet })
                 }
                 else {
-                    setIsArgent({ ready: true, value: false })
+                    setIsContractWallet({ ready: true, value: false })
                 }
             }
             catch (e) {
                 //TODO handle error
-                setIsArgent({ ready: true })
+                setIsContractWallet({ ready: true })
             }
         })()
     }, [swap?.source_network, swap?.destination_address, evmAddress])
@@ -190,7 +205,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
             gases,
             isBalanceLoading,
             isGasLoading,
-            isArgent
+            isContractWallet
         }}>
             <WalletStateUpdateContext.Provider value={{
                 setStarknetAccount,

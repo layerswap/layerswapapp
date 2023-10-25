@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react"
 import { useSettingsState } from "../context/settings"
 import { useSwapDataState } from "../context/swap"
 import KnownInternalNames from "../lib/knownIds"
-import isArgentWallet from "../lib/isArgentWallet"
 import { useWalletState } from "../context/wallet"
 import { useAccount } from "wagmi"
 import { Layer } from "../Models/Layer"
@@ -11,7 +9,7 @@ import { NetworkType } from "../Models/CryptoNetwork"
 export default function useWalletTransferOptions() {
 
     const { swap } = useSwapDataState()
-    const { starknetAccount, imxAccount, isArgent } = useWalletState();
+    const { starknetAccount, imxAccount, isContractWallet } = useWalletState();
     const { address: evmAddress } = useAccount()
 
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
@@ -23,9 +21,9 @@ export default function useWalletTransferOptions() {
     const source_layer = layers.find(n => n.internal_name === swap?.source_network) as (Layer & { isExchange: false })
 
     const canDoSweepless = source_layer?.isExchange == false
-        && ([NetworkType.EVM, NetworkType.Starknet].includes(source_layer.type) && !isArgent?.value)
+        && ([NetworkType.EVM, NetworkType.Starknet].includes(source_layer.type) && !isContractWallet?.value)
         || connectedWalletAddress?.toLowerCase() === swap?.destination_address.toLowerCase()
 
 
-    return { canDoSweepless, ready: isArgent?.ready }
+    return { canDoSweepless, ready: isContractWallet?.ready }
 }
