@@ -62,7 +62,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
         || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
     const { connectWallet, disconnectWallet, wallets } = useWallet()
-    const wallet = wallets?.[values?.to?.internal_name || '']
+    const wallet = wallets?.find(w => w.network.internal_name === values?.to?.internal_name)
     const settings = useSettingsState()
 
     const { isConnected: isRainbowKitConnected, address: walletAddress } = useAccount({

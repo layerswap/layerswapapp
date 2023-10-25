@@ -1,10 +1,9 @@
 import { AccountInterface } from 'starknet';
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import { Layer } from '../Models/Layer';
 
 interface WalletState {
-    connectedWallets: { [network: string]: Wallet }
+    connectedWallets: Wallet[];
     connectWallet: (wallet: Wallet) => void;
     disconnectWallet: (network: Layer) => void;
 }
@@ -21,24 +20,15 @@ type Wallet = {
     }
 }
 
-export const useWalletStore = create<WalletState>()(persist((set) => ({
-    connectedWallets: {},
+export const useWalletStore = create<WalletState>()((set) => ({
+    connectedWallets: [],
     connectWallet: (wallet) => set((state) => ({
-        connectedWallets: {
-            ...state.connectedWallets,
-            [wallet.network.internal_name]: wallet
-        }
+        connectedWallets: [
+            ...state.connectedWallets.filter(w => w.network.internal_name !== wallet.network.internal_name),
+            wallet
+        ]
     })),
-    disconnectWallet: (network) => set((state) => {
-        delete state?.connectedWallets?.[network.internal_name]
-        return {
-            connectedWallets: {
-                ...state.connectedWallets
-            }
-        }
-    })
-}),
-    {
-        name: 'connected-wallets',
-    }
-))
+    disconnectWallet: (network) => set((state) => ({
+        connectedWallets: state.connectedWallets.filter(w => w.network.internal_name !== network.internal_name)
+    }))
+}))

@@ -27,7 +27,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const { source_network: source_network_internal_name } = swap || {}
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
     const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
-    const imxAccount = wallets[source_layer?.internal_name || '']
+    const imxAccount = wallets?.find(w => w.network.internal_name === source_layer?.internal_name)
 
     const handleConnect = useCallback(async () => {
         if (!source_network)

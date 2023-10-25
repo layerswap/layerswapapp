@@ -6,7 +6,7 @@ import { useSettingsState } from "../../context/settings";
 import KnownInternalNames from "../../lib/knownIds";
 import { Layer } from "../../Models/Layer";
 
-const ConnectButton = ({ children }: { children: ReactNode }) => {
+const ConnectButton = ({ children, className }: { children: ReactNode, className?: string }) => {
     const { connectWallet } = useWallet()
     const { layers } = useSettingsState()
     const [open, setOpen] = useState<boolean>()
@@ -26,13 +26,13 @@ const ConnectButton = ({ children }: { children: ReactNode }) => {
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger className="w-full h-full">
+            <PopoverTrigger className={className}>
                 {children}
             </PopoverTrigger>
-            <PopoverContent className='text-sm'>
+            <PopoverContent className='flex items-center justify-around gap-2'>
                 {
                     connectors.map((connector, index) => (
-                        <button type="button" tabIndex={index} onClick={() => { connectWallet(connector.network as Layer & { type: typeof connector.type }), setOpen(false) }}>
+                        <button type="button" key={index} className="w-full h-full hover:bg-secondary-600 rounded py-2" onClick={() => { connectWallet(connector.network as Layer & { type: typeof connector.type }), setOpen(false) }}>
                             {connector.name}
                         </button>
                     ))

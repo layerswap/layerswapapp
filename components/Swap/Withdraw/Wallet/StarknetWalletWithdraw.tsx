@@ -50,7 +50,8 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const sourceCurrency = source_network?.currencies.find(c => c.asset?.toLowerCase() === swap?.source_network_asset?.toLowerCase())
 
     const sourceChainId = source_network?.chain_id
-    const wallet = wallets[source_layer?.internal_name || '']
+    const wallet = wallets?.find(w => w.network.internal_name === source_layer?.internal_name)
+
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {

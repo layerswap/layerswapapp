@@ -50,7 +50,8 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
 
     const source = hideFrom ? partner : from
     const destination = hideTo ? partner : to
-    const wallet = wallets[from.internal_name]
+    const wallet = wallets?.find(w => w.network.internal_name === from?.internal_name)
+
 
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
     const receiveAmountInUsd = (currency?.usd_price * receiveAmount).toFixed(2)

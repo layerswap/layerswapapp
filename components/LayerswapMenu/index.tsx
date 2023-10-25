@@ -6,7 +6,6 @@ import TokenService from "../../lib/TokenService";
 import { useAccount } from "wagmi";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
-import WalletIcon from "../icons/WalletIcon";
 import inIframe from "../utils/inIframe";
 import Modal from "../../components/modal/modal";
 import DiscordLogo from "./../icons/DiscordLogo";
@@ -14,7 +13,7 @@ import GitHubLogo from "./../icons/GitHubLogo";
 import SubstackLogo from "./../icons/SubstackLogo";
 import TwitterLogo from "./../icons/TwitterLogo";
 import Link from "next/link";
-import { MenuRainbowKitConnectWallet } from "../HeaderWithMenu/ConnectedWallets";
+import { WalletsMenu } from "../HeaderWithMenu/ConnectedWallets";
 import Popover from "../modal/popover";
 import SendFeedback from "../sendFeedback";
 import IconButton from "../buttons/iconButton";
@@ -22,23 +21,14 @@ import YoutubeLogo from "../icons/YoutubeLogo";
 import { shortenEmail } from '../utils/ShortenAddress';
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import Menu from "./Menu";
-import SubmitButton from "../buttons/submitButton";
-import useWallet from "../../hooks/useWallet";
-import { NetworkType } from "../../Models/CryptoNetwork";
-import { Layer } from "../../Models/Layer";
-import { useSettingsState } from "../../context/settings";
-import ConnectButton from "../buttons/connectButton";
 
 export default function LayerswapMenu() {
     const { email, userType, userId } = useAuthState()
     const { setUserType } = useAuthDataUpdate()
     const router = useRouter();
-    const { isConnected } = useAccount();
     const { boot, show, update } = useIntercom()
     const [embedded, setEmbedded] = useState<boolean>()
     const [openTopModal, setOpenTopModal] = useState(false);
-    const { connectWallet } = useWallet();
-    const { layers } = useSettingsState()
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
 
     useEffect(() => {
@@ -122,17 +112,7 @@ export default function LayerswapMenu() {
                         <div className="text-sm font-medium focus:outline-none h-full">
                             <Menu>
 
-                                <div className="flex">
-                                    {isConnected ? (
-                                        <MenuRainbowKitConnectWallet />
-                                    ) : (
-                                        <ConnectButton>
-                                            <SubmitButton text_align="center" className="bg-primary/20 border-none !text-primary !px-4" type="button" isDisabled={false} isSubmitting={false}>
-                                                Connect a wallet
-                                            </SubmitButton>
-                                        </ConnectButton>
-                                    )}
-                                </div>
+                                <WalletsMenu />
 
                                 <Menu.Group>
                                     <>

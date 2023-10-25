@@ -2,8 +2,9 @@ import toast from "react-hot-toast"
 import { NetworkType } from "../Models/CryptoNetwork"
 import { Layer } from "../Models/Layer"
 import LayerSwapApiClient, { SwapItem } from "../lib/layerSwapApiClient"
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import { StarknetWindowObject, connect as starknetConnect, disconnect as starknetDisconnect } from "get-starknet"
+import starknet from 'get-starknet-core'
 import ImtblClient from "../lib/imtbl"
 import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { useSwapDataUpdate } from "../context/swap"
@@ -12,6 +13,7 @@ import { useWalletStore } from "../stores/walletStore"
 import { LinkResults } from "@imtbl/imx-sdk"
 import { useSettingsState } from "../context/settings"
 import { useAccount, useNetwork } from "wagmi"
+import KnownInternalNames from "../lib/knownIds"
 
 export default function useWallet() {
     const { openConnectModal } = useConnectModal()
@@ -22,6 +24,25 @@ export default function useWallet() {
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
+
+    // useEffect(() => {
+    //     (async () => {
+    //         const res = await starknet.getLastConnectedWallet()
+    //         if (res && res.account && res.chainId) {
+    //             addWallet({
+    //                 address: res.account.address,
+    //                 chainId: res.chainId,
+    //                 network: layers.find(l => l.internal_name === KnownInternalNames.Networks.StarkNetMainnet) as Layer,
+    //                 isConnected: res.isConnected,
+    //                 icon: res.icon,
+    //                 connector: res.name,
+    //                 metadata: {
+    //                     starknetAccount: res.account
+    //                 }
+    //             })
+    //         }
+    //     })()
+    // }, [])
 
     async function connectStarknet(network: Layer) {
         try {
@@ -145,7 +166,7 @@ export default function useWallet() {
             }
         },
         onDisconnect() {
-            handleDisconnect(layers.find(l => l.isExchange === false && Number(l.chain_id) === chain?.id && l.type === NetworkType.EVM) as Layer)
+            handleDisconnect(layers.find(l => l.isExchange === false && l.internal_name === KnownInternalNames.Networks.EthereumMainnet) as Layer)
         }
     })
 

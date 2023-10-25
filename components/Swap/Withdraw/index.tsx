@@ -189,7 +189,8 @@ const WalletTransferContent: FC = () => {
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
     const sourceNetworkType = GetDefaultNetwork(source_network, source_network_asset)?.type
-    const wallet = wallets[source_network_internal_name || '']
+    const wallet = wallets?.find(w => w.network.internal_name === source_network_internal_name)
+
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!source_network) return
@@ -199,7 +200,7 @@ const WalletTransferContent: FC = () => {
         e?.stopPropagation();
     }, [sourceNetworkType, swap?.source_exchange])
 
-    let accountAddress = ""
+    let accountAddress: string | undefined = ""
     if (swap?.source_exchange) {
         accountAddress = swap.exchange_account_name || ""
     }
@@ -238,6 +239,7 @@ const WalletTransferContent: FC = () => {
                 {
                     !swap?.source_exchange
                     && sourceNetworkType === NetworkType.Starknet
+                    && wallet
                     && wallet.icon
                     && <Image
                         src={wallet?.icon}
