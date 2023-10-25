@@ -8,12 +8,13 @@ import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 import { useAccount } from 'wagmi';
 import { LoopringAPI } from '../../../../lib/loopring/LoopringAPI';
 import { ConnectorNames } from '@loopring-web/loopring-sdk';
-import {connectProvides} from '@loopring-web/web3-provider';
+import { connectProvides } from '@loopring-web/web3-provider';
 import { ConnectWalletButton } from './WalletTransfer/buttons';
 import * as lp from "@loopring-web/loopring-sdk";
 import { signatureKeyPairMock } from '../../../../lib/loopring/helpers';
 import { useWeb3Signer } from '../../../../lib/toViem/toWeb3';
 import { parseUnits } from 'viem';
+import WalletMessage from './WalletTransfer/message';
 
 type Props = {
     depositAddress: string,
@@ -23,6 +24,7 @@ type Props = {
 const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
+    //const [inactive, setInactive] = useState(false);
     const { lprAccount } = useWalletState();
     const { swap } = useSwapDataState();
     const { networks } = useSettingsState();
@@ -42,10 +44,16 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
+            debugger
             const account = await LoopringAPI.exchangeAPI.getAccount({
                 owner: fromAddress,
             })
-            
+
+            // if ((account as any).code == 101002) {
+            //     setInactive(true);
+            //     return
+            // }
+
             const response = await LoopringAPI.userAPI.unLockAccount(
                 {
                     keyPair: {
@@ -55,7 +63,6 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                         walletType: ConnectorNames.MetaMask,
                         chainId: 1,
                         accountId: Number(account.accInfo.accountId),
-                        isMobile: false,
                     },
                     request: {
                         accountId: account.accInfo.accountId,
@@ -69,7 +76,9 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         catch (e) {
             toast(e.message)
         }
-        setLoading(false)
+        finally {
+            setLoading(false)
+        }
     }, [source_network, fromAddress, web3])
 
     const handleTransfer = useCallback(async () => {
@@ -142,7 +151,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [swap, source_network])
+    }, [swap, source_network, web3, depositAddress])
 
     if (!isConnected) {
         return <ConnectWalletButton />
@@ -152,10 +161,17 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         <>
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
                 <div className='space-y-4'>
+                    {/* {
+                        inactive &&
+                        <WalletMessage
+                            status="error"
+                            header='Activate your Loopring account'
+                            details={`Make a deposit to your address for activating Loopring account`} />
+                    } */}
                     {
                         !lprAccount &&
                         <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Connect
+                            Unlock
                         </SubmitButton>
                     }
                     {
