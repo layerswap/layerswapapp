@@ -32,13 +32,12 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     sequenceNumber,
     swapId,
 }) => {
-    const { isConnected, address } = useAccount();
+    const { isConnected } = useAccount();
     const networkChange = useSwitchNetwork({
         chainId: chainId,
     });
 
     const { chain: activeChain } = useNetwork();
-    const [isArgent, setIsArgent] = useState<boolean>(false)
 
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
 
@@ -61,7 +60,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     }, [swapId])
 
     const hexed_sequence_number = sequenceNumber?.toString(16)
-    const sequence_number_even = !isArgent ? (hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number) : ''
+    const sequence_number_even = (hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number)
 
     if (!isConnected) {
         return <ConnectWalletButton />
