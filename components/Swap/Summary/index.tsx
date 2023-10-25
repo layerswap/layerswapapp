@@ -5,8 +5,6 @@ import { useSwapDataState } from "../../../context/swap"
 import Summary from "./Summary"
 import { ApiResponse } from "../../../Models/ApiResponse"
 import LayerSwapApiClient, { DepositType, Fee, TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
-import { useAccount } from "wagmi"
-import { CanDoSweeplessTransfer } from "../../../lib/fees"
 import { GetDefaultNetwork } from "../../../helpers/settingsHelper"
 import useWalletTransferOptions from "../../../hooks/useWalletTransferOptions"
 
