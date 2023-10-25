@@ -7,14 +7,14 @@ import { useSettingsState } from '../../../../context/settings';
 import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 import { useAccount } from 'wagmi';
 import { LoopringAPI } from '../../../../lib/loopring/LoopringAPI';
-import { connectProvides, } from "@loopring-web/web3-provider";
 import { ConnectorNames } from '@loopring-web/loopring-sdk';
-import Web3 from 'web3'
+import { connectProvides } from '@loopring-web/web3-provider'
 import { ConnectWalletButton } from './WalletTransfer/buttons';
 import * as lp from "@loopring-web/loopring-sdk";
 import { signatureKeyPairMock } from '../../../../lib/loopring/helpers';
-import { useEthersProvider, useEthersSigner } from '../../../../lib/toViem/ethers';
-import { useWeb3Signer } from '../../../../lib/toViem/toWeb3'
+import { useEthersSigner, useWeb3Signer } from '../../../../lib/toViem/toWeb3';
+import Web3 from 'web3';
+import { parseUnits } from 'viem';
 
 type Props = {
     depositAddress: string,
@@ -36,18 +36,22 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const source_network = networks.find(n => n.internal_name === source_network_internal_name);
     const token = networks.find(n => swap.source_network == n.internal_name).currencies.find(c => c.asset == swap.source_network_asset);
 
+    const { layers } = useSettingsState();
+    const sourceNnetwork = layers.find(n => n.internal_name === source_network_internal_name);
+    const decimals = sourceNnetwork.assets.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase()).decimals;
+
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
             const account = await LoopringAPI.exchangeAPI.getAccount({
                 owner: fromAddress,
             })
-
+            
             const response = await LoopringAPI.userAPI.unLockAccount(
                 {
                     keyPair: {
-                        web3: web3,
-                        address: account.accInfo.owner,
+                        web3,
+                        address: account?.accInfo?.owner,
                         keySeed: account.accInfo.keySeed,
                         walletType: ConnectorNames.MetaMask,
                         chainId: 1,
@@ -60,20 +64,18 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 },
                 account.accInfo.publicKey
             );
-
+            setLprAccount(account?.accInfo?.owner)
             const res = await connectProvides.MetaMask({ chainId: 1 })
-            setLprAccount(account.accInfo.owner)
         }
         catch (e) {
             toast(e.message)
         }
         setLoading(false)
-    }, [source_network])
+    }, [source_network, fromAddress, web3])
 
     const handleTransfer = useCallback(async () => {
         setLoading(true)
         try {
-            debugger
             const exchangeApi: lp.ExchangeAPI = new lp.ExchangeAPI({ chainId: 1 });
             const { exchangeInfo } = await exchangeApi.getExchangeInfo();
 
@@ -115,12 +117,12 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                     exchange: exchangeInfo.exchangeAddress,
                     payerAddr: accInfo.owner,
                     payerId: accInfo.accountId,
-                    payeeAddr: swap.destination_address,
+                    payeeAddr: depositAddress,
                     payeeId: 0,
                     storageId: storageId.offchainId,
                     token: {
                         tokenId: token.contract_address,
-                        volume: swap.requested_amount.toString(),
+                        volume: parseUnits(swap.requested_amount.toString(), decimals).toString(),
                     },
                     maxFee: {
                         tokenId: token.contract_address,
@@ -128,19 +130,20 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                     },
                     validUntil: Math.round(Date.now() / 1000) + 30 * 86400,
                 },
-                web3,
+                web3: connectProvides.usedWeb3 as any,
                 chainId: 1,
                 walletType: ConnectorNames.MetaMask,
-                apiKey: apiKey,
+                apiKey,
                 eddsaKey: eddsaKey.sk
             });
+            setTransferDone(true);
         }
         catch (e) {
             if (e?.message)
                 toast(e.message)
         }
         setLoading(false)
-    }, [lprAccount, swap, source_network])
+    }, [swap, source_network])
 
     if (!isConnected) {
         return <ConnectWalletButton />

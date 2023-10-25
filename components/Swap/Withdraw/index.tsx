@@ -245,7 +245,7 @@ const WalletTransferContent: FC = () => {
         accountAddress = imxAccount;
     }
     else if (sourceIsLpr) {
-        accountAddress = address;
+        accountAddress = lprAccount;
     }
 
     const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap.source_exchange
