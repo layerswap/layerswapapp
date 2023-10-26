@@ -5,15 +5,15 @@ import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import { useSettingsState } from '../../../../context/settings';
 import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
-import { useAccount } from 'wagmi';
+import { useAccount, useSendTransaction } from 'wagmi';
 import { LoopringAPI } from '../../../../lib/loopring/LoopringAPI';
-import { ConnectorNames } from '@loopring-web/loopring-sdk';
+import { ConnectorNames, personalSign } from '@loopring-web/loopring-sdk';
 import { connectProvides } from '@loopring-web/web3-provider';
 import { ConnectWalletButton } from './WalletTransfer/buttons';
 import * as lp from "@loopring-web/loopring-sdk";
 import { signatureKeyPairMock } from '../../../../lib/loopring/helpers';
 import { useWeb3Signer } from '../../../../lib/toViem/toWeb3';
-import { parseUnits } from 'viem';
+import { parseEther, parseUnits, toHex } from 'viem';
 import WalletMessage from './WalletTransfer/message';
 
 type Props = {
@@ -24,14 +24,14 @@ type Props = {
 const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
-    //const [inactive, setInactive] = useState(false);
+    const [inactive, setInactive] = useState(false);
     const { lprAccount } = useWalletState();
     const { swap } = useSwapDataState();
     const { networks } = useSettingsState();
     const { isConnected, address: fromAddress } = useAccount();
 
     const { setLprAccount } = useWalletUpdate();
-
+    
     const web3 = useWeb3Signer();
     const { source_network: source_network_internal_name } = swap;
     const source_network = networks.find(n => n.internal_name === source_network_internal_name);
@@ -49,10 +49,10 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 owner: fromAddress,
             })
 
-            // if ((account as any).code == 101002) {
-            //     setInactive(true);
-            //     return
-            // }
+            if ((account as any).code == 101002) {
+                setInactive(true);
+                return
+            }
 
             const response = await LoopringAPI.userAPI.unLockAccount(
                 {
@@ -60,7 +60,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                         web3,
                         address: account?.accInfo?.owner,
                         keySeed: account.accInfo.keySeed,
-                        walletType: ConnectorNames.MetaMask,
+                        walletType: ConnectorNames.Coinbase,
                         chainId: 1,
                         accountId: Number(account.accInfo.accountId),
                     },
@@ -71,10 +71,12 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 account.accInfo.publicKey
             );
             setLprAccount(account?.accInfo?.owner)
-            const res = await connectProvides.MetaMask({ chainId: 1 })
+            const res = await connectProvides.Coinbase({ chainId: 1 })
         }
         catch (e) {
+            debugger
             toast(e.message)
+            console.log("error accured ***")
         }
         finally {
             setLoading(false)
@@ -161,13 +163,13 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         <>
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
                 <div className='space-y-4'>
-                    {/* {
+                    {
                         inactive &&
                         <WalletMessage
                             status="error"
                             header='Activate your Loopring account'
                             details={`Make a deposit to your address for activating Loopring account`} />
-                    } */}
+                    }
                     {
                         !lprAccount &&
                         <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
