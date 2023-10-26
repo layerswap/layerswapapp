@@ -5,16 +5,17 @@ import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import { useSettingsState } from '../../../../context/settings';
 import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
-import { useAccount, useSendTransaction } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { LoopringAPI } from '../../../../lib/loopring/LoopringAPI';
-import { ConnectorNames, personalSign } from '@loopring-web/loopring-sdk';
+import { ConnectorNames } from '@loopring-web/loopring-sdk';
 import { connectProvides } from '@loopring-web/web3-provider';
 import { ConnectWalletButton } from './WalletTransfer/buttons';
 import * as lp from "@loopring-web/loopring-sdk";
 import { signatureKeyPairMock } from '../../../../lib/loopring/helpers';
 import { useWeb3Signer } from '../../../../lib/toViem/toWeb3';
-import { parseEther, parseUnits, toHex } from 'viem';
+import { parseUnits } from 'viem';
 import WalletMessage from './WalletTransfer/message';
+import { useEthersSigner } from '../../../../lib/toViem/ethers';
 
 type Props = {
     depositAddress: string,
@@ -31,7 +32,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const { isConnected, address: fromAddress } = useAccount();
 
     const { setLprAccount } = useWalletUpdate();
-    
+
     const web3 = useWeb3Signer();
     const { source_network: source_network_internal_name } = swap;
     const source_network = networks.find(n => n.internal_name === source_network_internal_name);
@@ -58,7 +59,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 {
                     keyPair: {
                         web3,
-                        address: account?.accInfo?.owner,
+                        address: account.accInfo.owner,
                         keySeed: account.accInfo.keySeed,
                         walletType: ConnectorNames.Coinbase,
                         chainId: 1,
@@ -70,13 +71,11 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 },
                 account.accInfo.publicKey
             );
-            setLprAccount(account?.accInfo?.owner)
+            setLprAccount(account.accInfo.owner)
             const res = await connectProvides.Coinbase({ chainId: 1 })
         }
         catch (e) {
-            debugger
             toast(e.message)
-            console.log("error accured ***")
         }
         finally {
             setLoading(false)
