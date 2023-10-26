@@ -48,7 +48,7 @@ const GLobalFooter = () => {
     }
 
     return (
-        <footer className="hidden md:flex fixed bottom-0 py-4 justify-between items-center w-full px-6 lg:px-8 mt-auto">
+        <footer className="z-0 hidden md:flex fixed bottom-0 py-4 justify-between items-center w-full px-6 lg:px-8 mt-auto">
             <div className="">
                 <p className="text-center text-xs text-primary-text-muted leading-6">
                     &copy; {new Date().getFullYear()} Bransfer, Inc. All rights reserved.
