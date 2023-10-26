@@ -1,5 +1,6 @@
 import { FC, ReactNode, useCallback } from "react";
 import {
+    useNetwork,
     useSwitchNetwork,
 } from "wagmi";
 import WalletIcon from "../../../../icons/WalletIcon";

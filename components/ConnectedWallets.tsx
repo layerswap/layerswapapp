@@ -1,19 +1,19 @@
-import CoinbaseIcon from "../icons/Wallets/Coinbase"
-import MetaMaskIcon from "../icons/Wallets/MetaMask"
-import RainbowIcon from "../icons/Wallets/Rainbow"
-import WalletConnectIcon from "../icons/Wallets/WalletConnect"
-import WalletIcon from "../icons/WalletIcon"
-import shortenAddress from "../utils/ShortenAddress"
-import BitKeep from "../icons/Wallets/BitKeep"
-import Argent from "../icons/Wallets/Argent"
-import useWallet from "../../hooks/useWallet"
-import ConnectButton from "../buttons/connectButton"
-import SubmitButton from "../buttons/submitButton"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../shadcn/dialog"
+import CoinbaseIcon from "./icons/Wallets/Coinbase"
+import MetaMaskIcon from "./icons/Wallets/MetaMask"
+import RainbowIcon from "./icons/Wallets/Rainbow"
+import WalletConnectIcon from "./icons/Wallets/WalletConnect"
+import WalletIcon from "./icons/WalletIcon"
+import shortenAddress from "./utils/ShortenAddress"
+import BitKeep from "./icons/Wallets/BitKeep"
+import Argent from "./icons/Wallets/Argent"
+import useWallet from "../hooks/useWallet"
+import ConnectButton from "./buttons/connectButton"
+import SubmitButton from "./buttons/submitButton"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./shadcn/dialog"
 import { useState } from "react"
 import { Plus } from "lucide-react"
-import Braavos from "../icons/Wallets/Braavos"
-import AddressIcon from "../AddressIcon"
+import Braavos from "./icons/Wallets/Braavos"
+import AddressIcon from "./AddressIcon"
 
 export const WalletsHeader = () => {
     const { wallets } = useWallet()
@@ -30,7 +30,7 @@ export const WalletsHeader = () => {
                                 <AddressIcon address={lastConnectedWallet.address} size={24} />
                                 {
                                     lastConnectedWallet.connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-secondary-text">
-                                        <ResolveWalletIcon connector={lastConnectedWallet.connector?.toLowerCase()} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
+                                        <ResolveWalletIcon connector={lastConnectedWallet.connector} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
                                     </span>
                                 }
                             </div>
@@ -66,7 +66,7 @@ export const WalletsMenu = () => {
                                     <AddressIcon address={wallets[0].address} size={20} />
                                     {
                                         wallets[0].connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-primary-text">
-                                            <ResolveWalletIcon connector={wallets[0].connector.toLowerCase()} className="w-4 h-4 border-2 border-secondary-600 rounded-full bg-primary-text" />
+                                            <ResolveWalletIcon connector={wallets[0].connector} className="w-4 h-4 border-2 border-secondary-600 rounded-full bg-primary-text" />
                                         </span>
                                     }
                                 </div>
@@ -80,7 +80,7 @@ export const WalletsMenu = () => {
                                 <div className="inline-flex place-items-end absolute left-2.5">
                                     {
                                         wallets.map((wallet, index) => (
-                                            wallet.connector && <ResolveWalletIcon key={index} connector={wallet.connector.toLowerCase()} className="w-6 h-6 p-0.5 rounded-full bg-secondary-800 border border-secondary-400" />
+                                            wallet.connector && <ResolveWalletIcon key={index} connector={wallet.connector} className="w-6 h-6 p-0.5 rounded-full bg-secondary-800 border border-secondary-400" />
                                         ))
                                     }
                                 </div>
@@ -118,7 +118,7 @@ const ConnectedWalletsDialog = ({ openDialog, setOpenDialog }: { openDialog: boo
                                     {
                                         wallet.connector &&
                                         <div className="inline-flex items-center relative">
-                                            <ResolveWalletIcon connector={wallet.connector.toLowerCase()} className="w-8 h-8 p-0.5 rounded-full bg-secondary-800 border border-secondary-400" />
+                                            <ResolveWalletIcon connector={wallet.connector} className="w-8 h-8 p-0.5 rounded-full bg-secondary-800 border border-secondary-400" />
                                         </div>
                                     }
                                     <p>{shortenAddress(wallet.address)}</p>
@@ -146,7 +146,7 @@ const ConnectedWalletsDialog = ({ openDialog, setOpenDialog }: { openDialog: boo
 }
 
 export const ResolveWalletIcon = ({ connector, className }: { connector: string, className: string }) => {
-    switch (connector) {
+    switch (connector.toLowerCase()) {
         case KnownKonnectors.MetaMask:
             return <MetaMaskIcon className={className} />
         case KnownKonnectors.Coinbase:

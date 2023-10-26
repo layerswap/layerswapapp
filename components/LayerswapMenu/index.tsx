@@ -13,7 +13,7 @@ import GitHubLogo from "./../icons/GitHubLogo";
 import SubstackLogo from "./../icons/SubstackLogo";
 import TwitterLogo from "./../icons/TwitterLogo";
 import Link from "next/link";
-import { WalletsMenu } from "../HeaderWithMenu/ConnectedWallets";
+import { WalletsMenu } from "../ConnectedWallets";
 import Popover from "../modal/popover";
 import SendFeedback from "../sendFeedback";
 import IconButton from "../buttons/iconButton";

@@ -3,7 +3,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import useWallet from "../../hooks/useWallet";
 import { NetworkType } from "../../Models/CryptoNetwork";
 import { useSettingsState } from "../../context/settings";
-import KnownInternalNames from "../../lib/knownIds";
 import { Layer } from "../../Models/Layer";
 
 const ConnectButton = ({ children, className, onClose }: { children: ReactNode, className?: string, onClose?: () => void }) => {
@@ -15,15 +14,15 @@ const ConnectButton = ({ children, className, onClose }: { children: ReactNode, 
         {
             name: 'EVM',
             type: NetworkType.EVM,
-            network: layers.find(l => l.internal_name === KnownInternalNames.Networks.EthereumMainnet)
+            network: layers.find(l => l.type === NetworkType.EVM)
         },
         {
             name: 'Starknet',
             type: NetworkType.Starknet,
-            network: layers.find(l => l.internal_name === KnownInternalNames.Networks.StarkNetMainnet || l.internal_name === KnownInternalNames.Networks.StarkNetGoerli)
+            network: layers.find(l => l.type === NetworkType.Starknet)
         }
     ]
-    const filteredConnectors = knownConnectors.filter(c => c.network && !wallets.map(w => w.network.type).includes(c.network.type))
+    const filteredConnectors = knownConnectors.filter(c => c.network && !wallets.map(w => w?.network?.type).includes(c.network.type))
 
     return (
         <Popover open={open} onOpenChange={setOpen}>

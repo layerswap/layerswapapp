@@ -62,7 +62,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
         || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
     const { connectWallet, disconnectWallet, wallets } = useWallet()
-    const wallet = wallets?.find(w => w.network.internal_name === values?.to?.internal_name)
+    const wallet = wallets?.find(w => w?.network?.internal_name === values?.to?.internal_name)
     const settings = useSettingsState()
 
     const { isConnected: isRainbowKitConnected, address: walletAddress } = useAccount({
@@ -103,6 +103,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
         setFieldValue("destination_address", '')
         try {
             await disconnectWallet(values.to)
+            setWrongNetwork(false)
         }
         catch (e) {
             toast(e.message)
@@ -154,22 +155,26 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const handleConnectStarknet = useCallback(async () => {
         const destination = values.to;
         if (destination?.isExchange === false && destination) {
-            const res = await connectWallet(destination as Layer & { type: NetworkType.Starknet })
+            if (wallet) {
+                setInputValue(wallet.address)
+                setFieldValue("destination_address", wallet?.address)
+            } else {
+                const res = await connectWallet(destination as Layer & { type: NetworkType.Starknet })
 
-            if (res && res?.account?.chainId != destinationChainId) {
-                setWrongNetwork(true)
-                await disconnectWallet(destination)
-                setAutofilledWalletNetworkType(null)
-                return
+                if (res && res?.account?.chainId != destinationChainId) {
+                    setWrongNetwork(true)
+                    await disconnectWallet(destination)
+                    setAutofilledWalletNetworkType(null)
+                    return
+                }
+                setInputValue(res?.account?.address)
+                setFieldValue("destination_address", res?.account?.address)
             }
-            setWrongNetwork(false)
-            setInputValue(res?.account?.address)
             setAddressConfirmed(true)
-            setFieldValue("destination_address", res?.account?.address)
             setAutofilledWalletNetworkType(destination.type)
+            setWrongNetwork(false)
         }
-
-    }, [destinationChainId])
+    }, [destinationChainId, wallet])
 
     return (<>
         <div className='w-full flex flex-col justify-between h-full text-primary-text'>

@@ -15,7 +15,6 @@ import { GetDefaultNetwork } from "../../../helpers/settingsHelper";
 import KnownInternalNames from "../../../lib/knownIds";
 import { NetworkType } from "../../../Models/CryptoNetwork";
 import useWallet from "../../../hooks/useWallet";
-import { useRouter } from "next/router";
 import { useQueryState } from "../../../context/query";
 
 type SwapInfoProps = {
@@ -50,7 +49,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
 
     const source = hideFrom ? partner : from
     const destination = hideTo ? partner : to
-    const wallet = wallets?.find(w => w.network.internal_name === from?.internal_name)
+    const wallet = wallets?.find(w => w?.network?.internal_name === from?.internal_name)
 
 
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)

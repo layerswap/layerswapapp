@@ -18,7 +18,7 @@ import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
 import { useAccountModal } from '@rainbow-me/rainbowkit';
 import { GetDefaultNetwork } from '../../../helpers/settingsHelper';
 import Image from 'next/image';
-import { ResolveWalletIcon } from '../../HeaderWithMenu/ConnectedWallets';
+import { ResolveWalletIcon } from '../../ConnectedWallets';
 import SpinIcon from '../../icons/spinIcon';
 import { NetworkType } from '../../../Models/CryptoNetwork';
 import useWallet from '../../../hooks/useWallet';
@@ -189,7 +189,7 @@ const WalletTransferContent: FC = () => {
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
     const sourceNetworkType = GetDefaultNetwork(source_network, source_network_asset)?.type
-    const wallet = wallets?.find(w => w.network.internal_name === source_network_internal_name)
+    const wallet = wallets?.find(w => w?.network?.internal_name === source_network_internal_name)
 
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {

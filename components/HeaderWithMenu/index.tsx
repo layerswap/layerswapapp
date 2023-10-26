@@ -5,7 +5,7 @@ import LayerswapMenu from "../LayerswapMenu"
 import GoHomeButton from "../utils/GoHome"
 import { ArrowLeft } from 'lucide-react'
 import ChatIcon from "../icons/ChatIcon"
-import { WalletsHeader } from "./ConnectedWallets"
+import { WalletsHeader } from "../ConnectedWallets"
 
 function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null }) {
    const { email, userId } = useAuthState()
