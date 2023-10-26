@@ -50,7 +50,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         chainId: chainId,
     })
     const encodedData: `0x${string}` = (canDoSweepless && address !== userDestinationAddress) ? `0x${sequenceNumber}` : "0x"
-
+    
     const tx = {
         to: depositAddress,
         value: amount ? parseEther(amount?.toString()) : undefined,
@@ -69,7 +69,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
 
     useEffect(() => {
         (async () => {
-            if (address) {
+            if (address && depositAddress) {
                 const gasEstimate = await publicClient.estimateGas({
                     account: address,
                     to: depositAddress,
