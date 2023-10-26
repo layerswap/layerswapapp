@@ -9,14 +9,16 @@ import { TransactionType } from '../../lib/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
 import GasDetails from '../gasDetails';
 import { useSettingsState } from '../../context/settings';
-
+import { useSwapTransactionStore } from '../store/zustandStore';
 
 const SwapDetails: FC = () => {
     const { swap } = useSwapDataState()
     const settings = useSettingsState()
     const swapStatus = swap?.status;
     const { setInterval } = useSwapDataUpdate()
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions") || "{}")?.[swap?.id || '']
+    const transactions = useSwapTransactionStore()
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : transactions.swapTransactions?.[swap?.id || '']
+
     useEffect(() => {
         if (swapStatus)
             setInterval(ResolvePollingInterval(swapStatus))

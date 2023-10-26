@@ -11,8 +11,6 @@ import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClie
 import { useSwapDataState } from '../../../../context/swap';
 import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
-import { Network } from 'zksync/build/types';
-import KnownInternalNames from '../../../../lib/knownIds';
 import { useNetwork } from 'wagmi';
 
 type Props = {
@@ -96,7 +94,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     if (!signer) {
         return <ConnectWalletButton />
     }
-    //TODO handle no l1Network
+    
     if (l1Network && chain?.id !== Number(l1Network.chain_id)) {
         return (
             <ChangeNetworkButton
@@ -113,7 +111,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     {
                         !syncWallet &&
                         <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Unlock zkSync account
+                            Authorize to Send on zkSync
                         </SubmitButton>
                     }
                     {

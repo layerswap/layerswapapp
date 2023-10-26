@@ -15,6 +15,7 @@ import { SwapFailReasons } from '../../../../Models/RangeError';
 import { Gauge } from '../../../gauge';
 import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
+import { useSwapTransactionStore } from '../../../store/zustandStore';
 
 type Props = {
     settings: LayerSwapAppSettings;
@@ -24,7 +25,8 @@ type Props = {
 const Processing: FC<Props> = ({ settings, swap }) => {
 
     const swapStatus = swap.status;
-
+    const transactions = useSwapTransactionStore()
+    
     const source_network = settings.networks?.find(e => e.internal_name === swap.source_network)
     const destination_network = settings.networks?.find(e => e.internal_name === swap.destination_network)
     const destination_layer = settings.layers?.find(e => e.internal_name === swap.destination_network)
@@ -39,7 +41,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     const destinationNetworkCurrency = destination_layer ? GetNetworkCurrency(destination_layer, swap?.destination_network_asset) : null
 
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions") || "{}")?.[swap?.id]
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : transactions.swapTransactions?.[swap?.id] as any;
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
