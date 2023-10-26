@@ -83,8 +83,6 @@ const SwapSummary: FC = () => {
         ?? (Number(requested_amount) - fee - Number(refuelAmountInSelectedCurrency)))
         : undefined
 
-    debugger
-
     return <Summary
         currency={currency}
         source={source_layer}

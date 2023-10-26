@@ -42,12 +42,15 @@ type Props = {
 }
 
 export const WalletDataProvider: FC<Props> = ({ children }) => {
+
     const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject | null>()
     const [imxAccount, setImxAccount] = useState<string | null>()
     const [allBalances, setAllBalances] = useState<{ [address: string]: Balance[] }>({})
     const [allGases, setAllGases] = useState<{ [network: string]: Gas[] }>({})
     const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
     const [isGasLoading, setIsGasLoading] = useState<boolean>(false)
+    const [cachedAddress, setCachedAddress] = useState<string | undefined>()
+
     const { address: evmAddress } = useAccount()
     const balances = allBalances[evmAddress || '']
     const gases = allGases
@@ -94,6 +97,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
                 //TODO handle error
                 setIsContractWallet({ ready: true })
             }
+            setCachedAddress(evmAddress)
         })()
     }, [swap?.source_network, swap?.destination_address, evmAddress])
 
@@ -205,7 +209,10 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
             gases,
             isBalanceLoading,
             isGasLoading,
-            isContractWallet
+            isContractWallet: {
+                ready: cachedAddress === evmAddress && isContractWallet.ready,
+                value: isContractWallet.value
+            }
         }}>
             <WalletStateUpdateContext.Provider value={{
                 setStarknetAccount,
