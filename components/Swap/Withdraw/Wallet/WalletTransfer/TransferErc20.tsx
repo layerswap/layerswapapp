@@ -15,6 +15,7 @@ import TransactionMessage from "./transactionMessage";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import { ButtonWrapper } from "./buttons";
 import useWalletTransferOptions from "../../../../../hooks/useWalletTransferOptions";
+import { SendTransactionData } from "../../../../../lib/telegram";
 
 type TransferERC20ButtonProps = BaseTransferButtonProps & {
     tokenContractAddress: `0x${string}`,
@@ -29,6 +30,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     swapId,
     sequenceNumber,
     userDestinationAddress,
+    isContractWallet
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { setSwapPublishedTx } = useSwapDataUpdate()
@@ -87,13 +89,15 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         try {
             if (contractWrite?.data?.hash) {
                 setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Pending, contractWrite?.data?.hash);
+                if (isContractWallet)
+                    SendTransactionData(swapId, contractWrite?.data?.hash)
             }
         }
         catch (e) {
             //TODO log to logger
             console.error(e.message)
         }
-    }, [contractWrite?.data?.hash, swapId])
+    }, [contractWrite?.data?.hash, swapId, isContractWallet])
 
     const clickHandler = useCallback(() => {
         setButtonClicked(true)

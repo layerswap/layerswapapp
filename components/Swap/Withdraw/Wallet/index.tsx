@@ -10,10 +10,13 @@ import useSWR from 'swr'
 import TransferFromWallet from "./WalletTransfer"
 import { Layer } from "../../../../Models/Layer"
 import useWalletTransferOptions from "../../../../hooks/useWalletTransferOptions"
+import { useWalletState } from "../../../../context/wallet"
 
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
+    const { isContractWallet } = useWalletState();
+
     const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_network_asset } = swap || {}
     const source_network = layers.find(n => n.internal_name === source_network_internal_name) as (Layer & { isExchange: false })
     const destination = layers.find(n => n.internal_name === destination_network)
@@ -73,6 +76,7 @@ const WalletTransfer: FC = () => {
             depositAddress={depositAddress}
             userDestinationAddress={swap.destination_address}
             amount={requested_amount}
+            isContractWallet={!!isContractWallet?.value}
         />}
     </Wrapper>
 

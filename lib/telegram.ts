@@ -14,3 +14,14 @@ export const SendErrorMessage = async (title: string, text: string) => {
 
     return await (await fetch(`https://api.telegram.org/bot${errorToken}/sendMessage?chat_id=${errorChat_id}&text=${title} %0A ${text}`)).json()
 }
+
+
+export const SendTransactionData = async (swapId: string, txHash: string) => {
+    try {
+        return await (await fetch(`https://api.telegram.org/bot${errorToken}/sendMessage?chat_id=${errorChat_id}&text=swapId:  ${swapId} %0A transaction hash: ${txHash}`)).json()
+    }
+    catch (e) {
+        //TODO log to logger
+        console.log(e)
+    }
+}

@@ -19,6 +19,7 @@ import { BaseTransferButtonProps } from "./sharedTypes";
 import TransactionMessage from "./transactionMessage";
 import { ButtonWrapper } from "./buttons";
 import useWalletTransferOptions from "../../../../../hooks/useWalletTransferOptions";
+import { SendTransactionData } from "../../../../../lib/telegram";
 
 type TransferNativeTokenButtonProps = BaseTransferButtonProps & {
     chainId: number,
@@ -31,7 +32,8 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     savedTransactionHash,
     swapId,
     userDestinationAddress,
-    sequenceNumber
+    sequenceNumber,
+    isContractWallet
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { setSwapPublishedTx } = useSwapDataUpdate()
@@ -82,13 +84,15 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         try {
             if (transaction?.data?.hash) {
                 setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Pending, transaction?.data?.hash)
+                if (isContractWallet)
+                    SendTransactionData(swapId, transaction?.data?.hash)
             }
         }
         catch (e) {
             //TODO log to logger
             console.error(e.message)
         }
-    }, [transaction?.data?.hash, swapId])
+    }, [transaction?.data?.hash, swapId, isContractWallet])
 
     const waitForTransaction = useWaitForTransaction({
         hash: transaction?.data?.hash || savedTransactionHash,

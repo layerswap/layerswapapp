@@ -20,6 +20,7 @@ type Props = {
     tokenDecimals: number,
     networkDisplayName: string,
     swapId: string;
+    isContractWallet: boolean
 }
 
 const TransferFromWallet: FC<Props> = ({ networkDisplayName,
@@ -31,6 +32,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     tokenDecimals,
     sequenceNumber,
     swapId,
+    isContractWallet
 }) => {
     const { isConnected } = useAccount();
     const networkChange = useSwitchNetwork({
@@ -81,6 +83,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
             savedTransactionHash={savedTransactionHash as `0x${string}`}
             tokenContractAddress={tokenContractAddress}
             tokenDecimals={tokenDecimals}
+            isContractWallet={isContractWallet}
         />
     }
     else {
@@ -92,6 +95,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
             userDestinationAddress={userDestinationAddress}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
             chainId={chainId}
+            isContractWallet={isContractWallet}
         />
     }
 }

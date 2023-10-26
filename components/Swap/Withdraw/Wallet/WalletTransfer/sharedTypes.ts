@@ -11,4 +11,5 @@ export type BaseTransferButtonProps = {
     userDestinationAddress: `0x${string}`,
     amount: number,
     savedTransactionHash: `0x${string}`,
+    isContractWallet: boolean,
 }
