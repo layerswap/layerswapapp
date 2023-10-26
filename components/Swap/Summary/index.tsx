@@ -62,7 +62,7 @@ const SwapSummary: FC = () => {
         }
     }
 
-    const min_amount = withdrawType === WithdrawType.Wallet ? walletTransferFee?.min_amount : manualTransferFee?.min_amount
+    const min_amount = (withdrawType === WithdrawType.Wallet && canDoSweepless) ? walletTransferFee?.min_amount : manualTransferFee?.min_amount
     const requested_amount = (swapInputTransaction?.amount ??
         (Number(min_amount) > Number(swap.requested_amount) ? min_amount : swap.requested_amount)) || undefined
 
@@ -82,6 +82,9 @@ const SwapSummary: FC = () => {
     const receive_amount = fee != undefined ? (swapOutputTransaction?.amount
         ?? (Number(requested_amount) - fee - Number(refuelAmountInSelectedCurrency)))
         : undefined
+
+    debugger
+
     return <Summary
         currency={currency}
         source={source_layer}
