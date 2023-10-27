@@ -124,7 +124,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                     exchange: exchangeInfo.exchangeAddress,
                     payerAddr: accInfo.owner,
                     payerId: accInfo.accountId,
-                    payeeAddr: depositAddress,
+                    payeeAddr: swap.destination_address,
                     payeeId: 0,
                     storageId: storageId.offchainId,
                     token: {
