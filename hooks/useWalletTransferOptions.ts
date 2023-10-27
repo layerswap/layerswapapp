@@ -9,7 +9,7 @@ import { NetworkType } from "../Models/CryptoNetwork"
 export default function useWalletTransferOptions() {
 
     const { swap } = useSwapDataState()
-    const { starknetAccount, imxAccount, isContractWallet } = useWalletState();
+    const { starknetAccount, imxAccount, isContractWallet: isEVMContractWallet } = useWalletState();
     const { address: evmAddress } = useAccount()
 
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
@@ -21,9 +21,9 @@ export default function useWalletTransferOptions() {
     const source_layer = layers.find(n => n.internal_name === swap?.source_network) as (Layer & { isExchange: false })
 
     const canDoSweepless = source_layer?.isExchange == false
-        && ([NetworkType.EVM, NetworkType.Starknet].includes(source_layer.type) && !isContractWallet?.value)
+        && ((source_layer.type == NetworkType.EVM && !isEVMContractWallet?.value) || source_layer.type == NetworkType.Starknet)
         || connectedWalletAddress?.toLowerCase() === swap?.destination_address.toLowerCase()
 
 
-    return { canDoSweepless, ready: isContractWallet?.ready }
+    return { canDoSweepless, ready: isEVMContractWallet?.ready }
 }

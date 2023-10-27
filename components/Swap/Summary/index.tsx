@@ -47,22 +47,25 @@ const SwapSummary: FC = () => {
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
     let fee: number | undefined
+    let min_amount: number | undefined
 
     const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Wallet)
     const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
 
-    if (swap?.fee && swapOutputTransaction) {
-        fee = swap?.fee
-    }
-    else if (ready) {
+    if (ready) {
         if (withdrawType === WithdrawType.Wallet && canDoSweepless) {
             fee = walletTransferFee?.fee_amount;
+            min_amount = walletTransferFee?.min_amount;
         } else {
             fee = manualTransferFee?.fee_amount;
+            min_amount = manualTransferFee?.min_amount;
         }
     }
 
-    const min_amount = (withdrawType === WithdrawType.Wallet && canDoSweepless) ? walletTransferFee?.min_amount : manualTransferFee?.min_amount
+    if (swap?.fee && swapOutputTransaction) {
+        fee = swap?.fee
+    }
+
     const requested_amount = (swapInputTransaction?.amount ??
         (Number(min_amount) > Number(swap.requested_amount) ? min_amount : swap.requested_amount)) || undefined
 

@@ -71,7 +71,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
                     return
 
                 if (evmAddress
-                    && swap.destination_address !== evmAddress) {
+                    && source_network.type == NetworkType.EVM) {
                     const chain = resolveChain(source_network)
                     if (!chain) {
                         return
