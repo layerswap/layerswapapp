@@ -20,6 +20,11 @@ const ConnectButton = ({ children, className, onClose }: { children: ReactNode, 
             name: 'Starknet',
             type: NetworkType.Starknet,
             network: layers.find(l => l.type === NetworkType.Starknet)
+        },
+        {
+            name: 'TON',
+            type: NetworkType.TON,
+            network: layers.find(l => l.type === NetworkType.TON)
         }
     ]
     const filteredConnectors = knownConnectors.filter(c => c.network && !wallets.map(w => w?.network?.type).includes(c.network.type))

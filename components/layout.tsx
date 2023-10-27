@@ -15,6 +15,7 @@ import dynamic from 'next/dynamic'
 import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
 import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
+import { TonConnectUIProvider } from '@tonconnect/ui-react';
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -117,11 +118,13 @@ export default function Layout({ children, settings }: Props) {
           <AuthProvider>
             <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
               <ThemeWrapper>
-                <DynamicRainbowKit>
-                  {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                    <MaintananceContent />
-                    : children}
-                </DynamicRainbowKit>
+                <TonConnectUIProvider manifestUrl={`https://layerswap.io/${basePath}/tonconnect-manifest.json`}>
+                  <DynamicRainbowKit>
+                    {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                      <MaintananceContent />
+                      : children}
+                  </DynamicRainbowKit>
+                </TonConnectUIProvider>
               </ThemeWrapper>
             </ErrorBoundary>
           </AuthProvider>

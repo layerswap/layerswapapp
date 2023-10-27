@@ -10,12 +10,14 @@ import { LinkResults } from "@imtbl/imx-sdk"
 import useStarknet from "../lib/wallets/starknet"
 import useImmutableX from "../lib/wallets/immutableX"
 import useEVM from "../lib/wallets/evm"
+import useTON from "../lib/wallets/ton"
 
 export default function useWallet() {
     const { mutateSwap } = useSwapDataUpdate()
     const { connectStarknet, disconnectStarknet, getStarknetWallet } = useStarknet()
     const { connectImx, disconnectImx, getImxWallet } = useImmutableX()
     const { connectEVM, disconnectEVM, getEVMWallet } = useEVM()
+    const { connectTON, disconnectTON, getTONWallet } = useTON()
 
     async function handleConnect(layer: Layer & { isExchange: false, type: NetworkType.Starknet }): Promise<StarknetWindowObject>
     async function handleConnect(layer: Layer & { isExchange: false, type: NetworkType.StarkEx }): Promise<LinkResults.Setup>
@@ -33,6 +35,9 @@ export default function useWallet() {
             }
             else if (layer.type === NetworkType.EVM) {
                 return connectEVM()
+            }
+            else if (layer.type === NetworkType.TON) {
+                return connectTON()
             }
         }
         catch {
@@ -55,6 +60,9 @@ export default function useWallet() {
             else if (networkType === NetworkType.EVM) {
                 await disconnectEVM()
             }
+            else if (networkType === NetworkType.TON) {
+                await disconnectTON()
+            }
             else if (networkType === NetworkType.Starknet) {
                 await disconnectStarknet(network)
             }
@@ -73,8 +81,12 @@ export default function useWallet() {
         const imx = getImxWallet()
         const starknet = getStarknetWallet()
         const evm = getEVMWallet()
+        const ton = getTONWallet()
         connectedWallets = evm && [...connectedWallets,
             evm
+        ] || [...connectedWallets]
+        connectedWallets = ton && [...connectedWallets,
+            ton
         ] || [...connectedWallets]
         connectedWallets = starknet && [...connectedWallets,
             starknet
