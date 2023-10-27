@@ -27,7 +27,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
 
          <div className="col-start-5 justify-self-end self-center flex items-center gap-4">
             <RainbowKitConnectWallet />
-            <IconButton className="relative hidden md:inline" onClick={() => {
+            <IconButton className="relative hidden min-[400px]:inline" onClick={() => {
                boot();
                show();
                updateWithProps()

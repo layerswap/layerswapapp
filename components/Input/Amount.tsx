@@ -42,7 +42,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         setFieldValue(name, maxAllowedAmount);
         address && from && getBalance(from);
         address && from && currency && getGas(from, currency, destination_address || address);
-    }, [address, from, currency, destination_address])
+    }, [address, from, currency, destination_address, maxAllowedAmount])
 
     return (<>
         <NumericInput

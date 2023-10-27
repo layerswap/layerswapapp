@@ -82,11 +82,10 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
         source_network_asset
     } = swap || {}
 
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name)
-
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
-    const asset = source_network?.assets?.find(currency => currency?.asset === destination_network_asset)
+    const asset = selectedAssetNetwork?.network?.currencies.find(c => c.asset == destination_network_asset)
+
 
     const layerswapApiClient = new LayerSwapApiClient()
     const generateDepositParams = shouldGenerateAddress ? [selectedAssetNetwork?.network_internal_name ?? null] : null
@@ -105,7 +104,6 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
 
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
     const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
-
 
     const requested_amount = Number(manualTransferFee?.min_amount) > Number(swap?.requested_amount) ? manualTransferFee?.min_amount : swap?.requested_amount
     const depositAddress = existingDepositAddress || generatedDeposit?.data?.address
@@ -201,7 +199,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                             />
                         }
                     </div>
-                    <div className="mx-1 block">{asset?.asset}</div>
+                    <div className="mx-1 block">{asset?.name}</div>
                 </div>
             </BackgroundField>
         </div>
