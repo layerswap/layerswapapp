@@ -80,7 +80,7 @@ const Withdraw: FC = () => {
             content: <FiatTransfer />
         }]
     }
-    else if (sourceIsStarknet || sourceIsImmutableX || sourceIsZkSync) {
+    else if (sourceIsStarknet || sourceIsImmutableX) {
         tabs = [
             {
                 id: WithdrawType.Wallet,

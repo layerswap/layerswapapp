@@ -35,7 +35,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, showIn
                 </button>
                 <Modal height="fit" show={showErrorModal} setShow={setShowErrorModal}>
                     <div className="text-left space-y-1">
-                        <p className="text-md font-semibold self-center text-primary">
+                        <p className="text-md font-semibold self-center text-white">
                             {header}
                         </p>
                         <p className="text-sm text-primary-text break-all whitespace-pre-wrap">
@@ -46,7 +46,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, showIn
             </div>
             :
             <div className="text-left space-y-1">
-                <p className="text-md font-semibold self-center text-primary">
+                <p className="text-md font-semibold self-center text-white">
                     {header}
                 </p>
                 <p className="text-sm text-primary-text break-all">
