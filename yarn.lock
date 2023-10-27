@@ -2106,7 +2106,7 @@
     web-encoding "^1.1.5"
     web3 "1.8.0"
 
-"@loopring-web/web3-provider@^1.4.13":
+"@loopring-web/web3-provider@1.4.13":
   version "1.4.13"
   resolved "https://registry.yarnpkg.com/@loopring-web/web3-provider/-/web3-provider-1.4.13.tgz#79776be5a3de5a5edcd77f7bce9f2b8cdf7d4e1a"
   integrity sha512-TckzlNm75ExmL6uYlGeUxWidSKRnIQ0SI05evQEleIqOErbaQS7MyAKWTouW5imCHhO5yWOgSBTANYS621DUrw==
