@@ -48,7 +48,7 @@ const Withdraw: FC = () => {
 
     const source_layer = layers.find(n => n.internal_name === swap?.source_network)
     const sourceNetworkType = GetDefaultNetwork(source_layer, swap?.source_network_asset)?.type
-    const manualIsAvailable = !(sourceIsStarknet || sourceIsImmutableX || sourceIsLoopring || isFiat)
+    const manualIsAvailable = !(sourceIsStarknet || sourceIsImmutableX || isFiat)
     const walletIsAvailable = !isFiat
         && !swap?.source_exchange
         && (sourceNetworkType === NetworkType.EVM
@@ -78,7 +78,7 @@ const Withdraw: FC = () => {
             content: <FiatTransfer />
         }]
     }
-    else if (sourceIsStarknet || sourceIsImmutableX || sourceIsLoopring) {
+    else if (sourceIsStarknet || sourceIsImmutableX) {
         tabs = [
             {
                 id: WithdrawType.Wallet,

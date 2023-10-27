@@ -15,7 +15,6 @@ import { signatureKeyPairMock } from '../../../../lib/loopring/helpers';
 import { useWeb3Signer } from '../../../../lib/toViem/toWeb3';
 import { parseUnits } from 'viem';
 import WalletMessage from './WalletTransfer/message';
-import { useEthersSigner } from '../../../../lib/toViem/ethers';
 
 type Props = {
     depositAddress: string,
@@ -45,7 +44,6 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
-            debugger
             const account = await LoopringAPI.exchangeAPI.getAccount({
                 owner: fromAddress,
             })
@@ -61,7 +59,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                         web3,
                         address: account.accInfo.owner,
                         keySeed: account.accInfo.keySeed,
-                        walletType: ConnectorNames.Coinbase,
+                        walletType: ConnectorNames.MetaMask,
                         chainId: 1,
                         accountId: Number(account.accInfo.accountId),
                     },
@@ -72,7 +70,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 account.accInfo.publicKey
             );
             setLprAccount(account.accInfo.owner)
-            const res = await connectProvides.Coinbase({ chainId: 1 })
+            const res = await connectProvides.MetaMask({ chainId: 1 })
         }
         catch (e) {
             toast(e.message)
