@@ -16,6 +16,7 @@ import KnownInternalNames from "../../../lib/knownIds";
 import { NetworkType } from "../../../Models/CryptoNetwork";
 import useWallet from "../../../hooks/useWallet";
 import { useQueryState } from "../../../context/query";
+import { useSwapDataState } from "../../../context/swap";
 
 type SwapInfoProps = {
     currency: Currency,
@@ -35,6 +36,8 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     const { resolveImgSrc, currencies, networks } = useSettingsState()
     const { address: evmAddress } = useAccount();
     const { wallets } = useWallet()
+    const { selectedAssetNetwork } = useSwapDataState()
+
     const {
         hideFrom,
         hideTo,
@@ -90,7 +93,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
-    const sourceCurrencyName = networks?.find(n => n.internal_name === from?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset)?.name || currency?.asset
+    const sourceCurrencyName = selectedAssetNetwork?.network?.currencies.find(c => c.asset === currency.asset)?.name || currency?.asset
     const destCurrencyName = networks?.find(n => n.internal_name === to?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset)?.name || currency?.asset
 
     return (
