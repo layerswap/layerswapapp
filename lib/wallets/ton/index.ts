@@ -1,7 +1,8 @@
 import { Layer } from "../../../Models/Layer"
 import { NetworkType } from "../../../Models/CryptoNetwork"
 import { useSettingsState } from "../../../context/settings"
-import { useTonConnectUI, useTonWallet, } from "@tonconnect/ui-react"
+import { useTonConnectUI, useTonWallet } from "@tonconnect/ui-react"
+import { Address } from "@ton/core";
 
 
 export default function useTON() {
@@ -12,7 +13,7 @@ export default function useTON() {
     const getWallet = () => {
         if (wallet && wallet.account.address && wallet.provider) {
             return {
-                address: wallet.account.address,
+                address: Address.parse(wallet.account.address).toString(),
                 connector: 'TON',
                 network: layers.find(l => l.type === NetworkType.TON) as Layer
             }

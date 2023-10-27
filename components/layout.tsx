@@ -118,7 +118,7 @@ export default function Layout({ children, settings }: Props) {
           <AuthProvider>
             <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
               <ThemeWrapper>
-                <TonConnectUIProvider manifestUrl={`https://layerswap.io/${basePath}/tonconnect-manifest.json`}>
+                <TonConnectUIProvider manifestUrl={`${process.env.NEXT_PUBLIC_VERCEL_URL}/tonconnect-manifest.json`}>
                   <DynamicRainbowKit>
                     {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
                       <MaintananceContent />

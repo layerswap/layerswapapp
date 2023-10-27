@@ -14,6 +14,7 @@ import { useState } from "react"
 import { Plus } from "lucide-react"
 import Braavos from "./icons/Wallets/Braavos"
 import AddressIcon from "./AddressIcon"
+import TON from "./icons/Wallets/TON"
 
 export const WalletsHeader = () => {
     const { wallets } = useWallet()
@@ -163,6 +164,8 @@ export const ResolveWalletIcon = ({ connector, className }: { connector: string,
             return <Argent className={className} />
         case KnownKonnectors.Braavos:
             return <Braavos className={className} />
+        case KnownKonnectors.TON:
+            return <TON className={className} />
         default:
             return <></>
     }
@@ -176,5 +179,6 @@ const KnownKonnectors = {
     BitKeep: 'bitkeep',
     Argent: 'argent',
     ArgentX: 'argent x',
-    Braavos: 'braavos'
+    Braavos: 'braavos',
+    TON: 'ton'
 }
