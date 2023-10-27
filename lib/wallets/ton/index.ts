@@ -13,7 +13,7 @@ export default function useTON() {
     const getWallet = () => {
         if (wallet && wallet.account.address && wallet.provider) {
             return {
-                address: Address.parse(wallet.account.address).toString(),
+                address: Address.parse(wallet.account.address).toString({ bounceable: false }),
                 connector: 'TON',
                 network: layers.find(l => l.type === NetworkType.TON) as Layer
             }
