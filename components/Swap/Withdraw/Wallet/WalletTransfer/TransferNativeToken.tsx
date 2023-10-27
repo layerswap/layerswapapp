@@ -44,7 +44,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,
     })
-    const encodedData : `0x${string}` = address !== userDestinationAddress ? `0x${sequenceNumber}` : "0x"
+    const encodedData: `0x${string}` = address !== userDestinationAddress ? `0x${sequenceNumber}` : "0x"
 
     const tx = {
         to: depositAddress,
@@ -84,6 +84,8 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
             console.error(e.message)
         }
     }, [transaction?.data?.hash, swapId])
+    
+    console.log("transaction?.data?.hash", transaction?.data?.hash)
 
     const waitForTransaction = useWaitForTransaction({
         hash: transaction?.data?.hash || savedTransactionHash,

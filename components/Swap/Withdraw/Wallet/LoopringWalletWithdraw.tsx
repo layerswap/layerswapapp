@@ -1,7 +1,7 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
-import { useSwapDataState } from '../../../../context/swap';
+import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import { useSettingsState } from '../../../../context/settings';
 import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
@@ -15,6 +15,7 @@ import { signatureKeyPairMock } from '../../../../lib/loopring/helpers';
 import { useWeb3Signer } from '../../../../lib/toViem/toWeb3';
 import { parseUnits } from 'viem';
 import WalletMessage from './WalletTransfer/message';
+import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 
 type Props = {
     depositAddress: string,
@@ -28,6 +29,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const { lprAccount } = useWalletState();
     const { swap } = useSwapDataState();
     const { networks } = useSettingsState();
+    const { setSwapPublishedTx } = useSwapDataUpdate();
     const { isConnected, address: fromAddress } = useAccount();
 
     const { setLprAccount } = useWalletUpdate();
@@ -85,7 +87,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         try {
             const exchangeApi: lp.ExchangeAPI = new lp.ExchangeAPI({ chainId: 1 });
             const { exchangeInfo } = await exchangeApi.getExchangeInfo();
-
+            debugger
             const { accInfo } = await LoopringAPI.exchangeAPI.getAccount({
                 owner: fromAddress,
             });
@@ -98,7 +100,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 return { errorMsg: "AccountInfo Does not contain keyseed. Might need to Reset Loopring L2 Keypair", result: null };
             }
 
-            const eddsaKey = await signatureKeyPairMock(accInfo, web3, fromAddress);
+            const eddsaKey = await signatureKeyPairMock(accInfo, connectProvides.usedWeb3 as any, fromAddress);
             const { apiKey } = await LoopringAPI.userAPI.getUserApiKey(
                 {
                     accountId: accInfo.accountId,
@@ -124,7 +126,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                     exchange: exchangeInfo.exchangeAddress,
                     payerAddr: accInfo.owner,
                     payerId: accInfo.accountId,
-                    payeeAddr: swap.destination_address,
+                    payeeAddr: depositAddress,
                     payeeId: 0,
                     storageId: storageId.offchainId,
                     token: {
@@ -136,6 +138,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                         volume: fee.fees[token.asset].fee ?? "9400000000000000000",
                     },
                     validUntil: Math.round(Date.now() / 1000) + 30 * 86400,
+                    memo: swap.sequence_number.toString(),
                 },
                 web3: connectProvides.usedWeb3 as any,
                 chainId: 1,
@@ -143,7 +146,12 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 apiKey,
                 eddsaKey: eddsaKey.sk
             });
-            setTransferDone(true);
+
+            const txHash = (transferResult as any)?.hash
+            if (txHash) {
+                setSwapPublishedTx(swap.id, PublishedSwapTransactionStatus.Pending, txHash);
+                setTransferDone(true)
+            }
         }
         catch (e) {
             if (e?.message)
