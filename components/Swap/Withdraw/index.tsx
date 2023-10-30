@@ -234,7 +234,7 @@ const WalletTransferContent: FC = () => {
             <span className='mb-1 ml-1 text-sm'>{swap?.source_exchange ? "Connected account" : "Connected wallet"}</span>
         }
 
-        <div onClick={handleOpenAccount} className={`${canOpenAccount ? 'cursor-pointer' : 'cursor-auto'} text-left min-h-12  space-x-2 border border-secondary-700 ea7df14a1597407f9f755f05e25bab42:bg-secondary-800/50 bg-secondary-700/70 shadow-xl flex text-sm rounded-md items-center w-full pl-4 pr-2 py-1.5`}>
+        <div onClick={handleOpenAccount} className={`${canOpenAccount ? 'cursor-pointer' : 'cursor-auto'} text-left min-h-12  space-x-2 border border-secondary-600 bg-secondary-700/70 flex text-sm rounded-md items-center w-full pl-4 pr-2 py-1.5`}>
             <div className='flex text-secondary-text bg-secondary-400 flex-row items-left rounded-md p-1'>
                 {
                     !swap?.source_exchange
