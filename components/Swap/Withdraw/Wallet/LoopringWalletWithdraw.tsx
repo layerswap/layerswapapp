@@ -18,7 +18,7 @@ import WalletMessage from './WalletTransfer/message';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 
 type Props = {
-    depositAddress: string,
+    depositAddress?: string,
     amount?: number
 }
 
@@ -127,7 +127,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                     exchange: exchangeInfo.exchangeAddress,
                     payerAddr: accInfo.owner,
                     payerId: accInfo.accountId,
-                    payeeAddr: depositAddress,
+                    payeeAddr: depositAddress as `0x${string}`,
                     payeeId: 0,
                     storageId: storageId.offchainId,
                     token: {
