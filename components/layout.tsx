@@ -94,7 +94,7 @@ export default function Layout({ children, settings }: Props) {
       <link rel="icon" type="image/png" sizes="16x16" href={`${basePath}/favicon/favicon-16x16.png`} />
       <link rel="manifest" href={`${basePath}/favicon/site.webmanifest`} />
       <meta name="msapplication-TileColor" content="#ffffff" />
-      <meta name="theme-color" content="rgb(var(--ls-colors-primary-950))" />
+      <meta name="theme-color" content="#ffffff" />
       <meta name="description" content="Move crypto across exchanges, blockchains, and wallets." />
 
       {/* Facebook Meta Tags */}
