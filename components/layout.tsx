@@ -15,7 +15,7 @@ import dynamic from 'next/dynamic'
 import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
 import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
-import { TonConnectUIProvider } from '@tonconnect/ui-react';
+import { THEME, TonConnectUIProvider } from '@tonconnect/ui-react';
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -112,13 +112,18 @@ export default function Layout({ children, settings }: Props) {
       <meta name="twitter:description" content="Move crypto across exchanges, blockchains, and wallets." />
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
     </Head>
+
     <QueryProvider query={query}>
       <SettingsProvider data={appSettings}>
         <MenuProvider>
           <AuthProvider>
             <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
               <ThemeWrapper>
-                <TonConnectUIProvider manifestUrl={`https://${process.env.NEXT_PUBLIC_VERCEL_URL}${basePath ? `/${basePath}` : ''}/tonconnect-manifest.json`}>
+                <TonConnectUIProvider uiPreferences={
+                  {
+                    theme: THEME.LIGHT
+                  }
+                } manifestUrl={`https://${process.env.NEXT_PUBLIC_VERCEL_URL}${basePath ? `/${basePath}` : ''}/tonconnect-manifest.json`}>
                   <DynamicRainbowKit>
                     {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
                       <MaintananceContent />
