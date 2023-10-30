@@ -1,5 +1,5 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import toast from 'react-hot-toast';
@@ -16,6 +16,7 @@ import { useWeb3Signer } from '../../../../lib/toViem/toWeb3';
 import { parseUnits } from 'viem';
 import WalletMessage from './WalletTransfer/message';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { disconnect as wagmiDisconnect } from '@wagmi/core'
 
 type Props = {
     depositAddress?: string,
@@ -39,6 +40,17 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const source_network = networks.find(n => n.internal_name === source_network_internal_name);
     const token = networks?.find(n => swap?.source_network == n?.internal_name)?.currencies.find(c => c.asset == swap?.source_network_asset);
     const decimals = source_network?.currencies.find(c => c.asset === source_network.native_currency)?.decimals;
+
+    useEffect(() => {
+        const disconnect = async () => {
+            if (!isConnected) {
+                await wagmiDisconnect();
+                setLprAccount(null);
+            }
+        };
+
+        disconnect();
+    }, [isConnected]);
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
@@ -84,7 +96,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         try {
             const exchangeApi: lp.ExchangeAPI = new lp.ExchangeAPI({ chainId: 1 });
             const { exchangeInfo } = await exchangeApi.getExchangeInfo();
-            
+
             const { accInfo } = await LoopringAPI.exchangeAPI.getAccount({
                 owner: fromAddress as `0x${string}`,
             });
