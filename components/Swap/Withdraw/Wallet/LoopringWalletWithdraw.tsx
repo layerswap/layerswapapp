@@ -84,7 +84,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         try {
             const exchangeApi: lp.ExchangeAPI = new lp.ExchangeAPI({ chainId: 1 });
             const { exchangeInfo } = await exchangeApi.getExchangeInfo();
-            debugger
+            
             const { accInfo } = await LoopringAPI.exchangeAPI.getAccount({
                 owner: fromAddress as `0x${string}`,
             });
