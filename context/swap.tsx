@@ -107,7 +107,7 @@ export function SwapDataProvider({ children }) {
             destination_asset: currency.asset,
             source_address: address || starknetAddress,
             destination_address: values.destination_address,
-            app_name: partner ? query?.addressSource : undefined,
+            app_name: partner ? query?.appName : (apiVersion === 'sandbox' ? 'LayerswapSandbox' : 'Layerswap' ),
             reference_id: query.externalId,
         }
 

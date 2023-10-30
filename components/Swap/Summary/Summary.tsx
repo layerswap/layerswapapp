@@ -15,19 +15,19 @@ import { GetDefaultNetwork } from "../../../helpers/settingsHelper";
 import { useWalletState } from "../../../context/wallet";
 import KnownInternalNames from "../../../lib/knownIds";
 import { NetworkType } from "../../../Models/CryptoNetwork";
-import { useRouter } from "next/router";
 import { useQueryState } from "../../../context/query";
+import { useSwapDataState } from "../../../context/swap";
 
 type SwapInfoProps = {
     currency: Currency,
     source: Layer,
     destination: Layer;
     requestedAmount: number;
-    receiveAmount: number;
+    receiveAmount?: number;
     destinationAddress: string;
     hasRefuel?: boolean;
     refuelAmount?: number;
-    fee: number,
+    fee?: number,
     exchange_account_connected: boolean;
     exchange_account_name?: string;
 }
@@ -35,24 +35,25 @@ type SwapInfoProps = {
 const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name }) => {
     const { resolveImgSrc, currencies, networks } = useSettingsState()
     const { address: evmAddress } = useAccount();
+    const { selectedAssetNetwork } = useSwapDataState()
     const { starknetAccount, imxAccount } = useWalletState()
     const {
         hideFrom,
         hideTo,
         account,
-        addressSource,
+        appName,
         hideAddress
     } = useQueryState()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(addressSource && `/apps?name=${addressSource}`, layerswapApiClient.fetcher)
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = partnerData?.data
 
     const source = hideFrom ? partner : from
     const destination = hideTo ? partner : to
 
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
-    const receiveAmountInUsd = (currency?.usd_price * receiveAmount).toFixed(2)
+    const receiveAmountInUsd = receiveAmount ? (currency?.usd_price * receiveAmount).toFixed(2) : undefined
     const nativeCurrency = refuelAmount && to?.isExchange === false ?
         currencies.find(c => c.asset === to?.native_currency) : null
 
@@ -92,7 +93,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
-    const sourceCurrencyName = networks?.find(n => n.internal_name === from?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset)?.name || currency?.asset
+    const sourceCurrencyName = selectedAssetNetwork?.network?.currencies.find(c => c.asset === currency.asset)?.name || currency?.asset
     const destCurrencyName = networks?.find(n => n.internal_name === to?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset)?.name || currency?.asset
 
     return (
@@ -123,7 +124,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                         </div>
                     </div>
                     {
-                        fee >= 0 ?
+                        fee != undefined && receiveAmount != undefined && fee >= 0 ?
                             <div className="flex flex-col justify-end">
                                 <p className="text-primary-text text-sm">{truncateDecimals(receiveAmount, currency.precision)} {destCurrencyName}</p>
                                 <p className="text-secondary-text text-sm flex justify-end">${receiveAmountInUsd}</p>

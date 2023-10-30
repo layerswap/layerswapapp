@@ -40,7 +40,8 @@ export class NetworkCurrency {
     max_withdrawal_amount: number;
     deposit_fee: number;
     withdrawal_fee: number;
-    contract_address: string | null | undefined;
+    //TODO may be plain string
+    contract_address: `0x${string}` | null | undefined;
     decimals: number;
     source_base_fee: number;
     destination_base_fee: number;
@@ -49,7 +50,7 @@ export class NetworkNode {
     url: string;
 }
 export class ManagedAccount {
-    address: string;
+    address: `0x${string}`;
 }
 export class Metadata {
     multicall3?: {

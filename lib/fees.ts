@@ -58,16 +58,6 @@ function ResolveRefuelNetwork(args: CaluclateRefuelArgs): CryptoNetwork | undefi
     }
 }
 
-export function CanDoSweeplessTransfer(sourceLayer: Layer, sourceAddress?: string | null, destinationAddress?: string | null): boolean {
-    if (sourceLayer?.isExchange == false
-        && ([NetworkType.EVM, NetworkType.Starknet].includes(sourceLayer.type) || sourceAddress?.toLowerCase() === destinationAddress?.toLowerCase())
-    ) {
-        return true;
-    }
-
-    return false;
-}
-
 export function CalculateFee(values: SwapFormValues, allNetworks: CryptoNetwork[]): number {
     const { currency, from, to } = values || {}
 
@@ -84,9 +74,14 @@ export function CalculateFee(values: SwapFormValues, allNetworks: CryptoNetwork[
     let baseFee = (sourceNetworkCurrency?.source_base_fee + destinationNetworkCurrency?.destination_base_fee)
     let withdrawalFee = destinationNetworkCurrency.withdrawal_fee
     let depoistFee = sourceNetworkCurrency.deposit_fee;
-    if (CanDoSweeplessTransfer(sourceLayer))
-        depoistFee = 0
 
+    if (
+        sourceLayer?.isExchange == false
+        && [NetworkType.EVM, NetworkType.Starknet]
+            .includes(sourceLayer.type)
+    ) {
+        depoistFee = 0
+    }
 
     return (withdrawalFee + depoistFee + baseFee);
 }

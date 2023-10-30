@@ -7,7 +7,6 @@ export class PersistantQueryParams {
     lockTo?: boolean = false;
     lockAsset?: boolean = false;
     destAddress?: string = "";
-    addressSource?: string = "";
     hideRefuel?: boolean = false;
     hideAddress?: boolean = false;
     hideFrom?: boolean = false;
@@ -22,15 +21,18 @@ export class PersistantQueryParams {
     account?: string = "";
     actionButtonText?: string = "";
     theme?: string = "";
-    
+    appName?: string = "";
+
     // Obsolate
     sourceExchangeName?: string = "";
     destNetwork?: string = "";
     lockNetwork?: boolean = false;
     lockExchange?: boolean = false;
+    addressSource?: string = "";
+
 }
 
 
-export class QueryParams extends  PersistantQueryParams {
+export class QueryParams extends PersistantQueryParams {
     coinbase_redirect?: string = "";
 }

@@ -39,8 +39,8 @@ export default function Form() {
     const { createSwap } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?name=${query?.addressSource}`, layerswapApiClient.fetcher)
-    const partner = query?.addressSource && partnerData?.data?.name?.toLowerCase() === (query?.addressSource as string)?.toLowerCase() ? partnerData?.data : undefined
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.appName && `/apps?name=${query?.appName}`, layerswapApiClient.fetcher)
+    const partner = query?.appName && partnerData?.data?.name?.toLowerCase() === (query?.appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
     useEffect(() => {
         const initialValues = generateSwapInitialValues(settings, query)

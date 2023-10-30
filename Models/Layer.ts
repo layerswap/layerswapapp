@@ -39,7 +39,7 @@ export type ExchangeAsset = {
 } & BaseL2Asset
 
 export type NetworkAsset = {
-    contract_address?: string | null | undefined
+    contract_address?: `0x${string}` | null | undefined
     decimals: number
 } & BaseL2Asset
 

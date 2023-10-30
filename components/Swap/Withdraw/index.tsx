@@ -34,7 +34,7 @@ const Withdraw: FC = () => {
     const { setWithdrawType } = useSwapDataUpdate()
     const { layers } = useSettingsState()
     const router = useRouter()
-    const { addressSource, signature } = useQueryState()
+    const { appName, signature } = useQueryState()
     const source_internal_name = swap?.source_exchange ?? swap?.source_network
     const source = layers.find(n => n.internal_name === source_internal_name)
 
@@ -57,8 +57,8 @@ const Withdraw: FC = () => {
             || sourceNetworkType === NetworkType.Starknet
             || sourceIsImmutableX || sourceIsZkSync)
 
-    const isImtblMarketplace = (signature && addressSource === "imxMarketplace" && sourceIsImmutableX)
-    const sourceIsSynquote = addressSource === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
+    const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
+    const sourceIsSynquote = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
 
     let tabs: Tab[] = []
     // TODO refactor

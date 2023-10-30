@@ -18,6 +18,8 @@ import { BaseTransferButtonProps } from "./sharedTypes";
 import TransactionMessage from "./transactionMessage";
 import { ButtonWrapper } from "./buttons";
 import { useSwapTransactionStore } from "../../../../store/zustandStore";
+import useWalletTransferOptions from "../../../../../hooks/useWalletTransferOptions";
+import { SendTransactionData } from "../../../../../lib/telegram";
 
 type TransferNativeTokenButtonProps = BaseTransferButtonProps & {
     chainId: number,
@@ -30,7 +32,8 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     savedTransactionHash,
     swapId,
     userDestinationAddress,
-    sequenceNumber
+    sequenceNumber,
+    isContractWallet
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const [buttonClicked, setButtonClicked] = useState(false)
@@ -38,14 +41,16 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
     const { address } = useAccount();
     const { setSwapTransaction } = useSwapTransactionStore();
+    const { canDoSweepless, ready } = useWalletTransferOptions()
 
     const sendTransactionPrepare = usePrepareSendTransaction({
+        enabled: !!depositAddress && ready,
         to: depositAddress,
         value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,
     })
-    const encodedData: `0x${string}` = address !== userDestinationAddress ? `0x${sequenceNumber}` : "0x"
-
+    const encodedData: `0x${string}` = (canDoSweepless && address !== userDestinationAddress) ? `0x${sequenceNumber}` : "0x"
+    
     const tx = {
         to: depositAddress,
         value: amount ? parseEther(amount?.toString()) : undefined,
@@ -64,7 +69,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
 
     useEffect(() => {
         (async () => {
-            if (address) {
+            if (address && depositAddress) {
                 const gasEstimate = await publicClient.estimateGas({
                     account: address,
                     to: depositAddress,
@@ -79,13 +84,15 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         try {
             if (transaction?.data?.hash) {
                 setSwapTransaction(swapId, PublishedSwapTransactionStatus.Pending, transaction?.data?.hash)
+                if (isContractWallet)
+                    SendTransactionData(swapId, transaction?.data?.hash)
             }
         }
         catch (e) {
             //TODO log to logger
             console.error(e.message)
         }
-    }, [transaction?.data?.hash, swapId])
+    }, [transaction?.data?.hash, swapId, isContractWallet])
 
     const waitForTransaction = useWaitForTransaction({
         hash: transaction?.data?.hash || savedTransactionHash,
