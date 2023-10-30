@@ -41,12 +41,12 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
         hideFrom,
         hideTo,
         account,
-        addressSource,
+        appName,
         hideAddress
     } = useQueryState()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(addressSource && `/apps?name=${addressSource}`, layerswapApiClient.fetcher)
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = partnerData?.data
 
     const source = hideFrom ? partner : from
