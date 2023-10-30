@@ -208,7 +208,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     "ton": {
         placeholderText: '134, 134, 134',
         actionButtonText: '255, 255, 255',
-        logo: '51, 144, 236',
+        logo: '15, 15, 15',
         primary: {
             DEFAULT: '51, 144, 236',
             '50': '248, 200, 220',
