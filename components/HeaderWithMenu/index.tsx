@@ -21,7 +21,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
             }>
             </IconButton>
          }
-         <div className='justify-self-center self-center col-start-2 col-span-3 mx-auto overflow-hidden imxMarketplace:hidden md:hidden'>
+         <div className='justify-self-center self-center col-start-2 col-span-3 mx-auto overflow-hidden hidden'>
             <GoHomeButton />
          </div>
 
