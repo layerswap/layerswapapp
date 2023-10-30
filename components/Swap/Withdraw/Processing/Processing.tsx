@@ -14,6 +14,7 @@ import { SwapStatus } from '../../../../Models/SwapStatus';
 import { SwapFailReasons } from '../../../../Models/RangeError';
 import { Gauge } from '../../../gauge';
 import Failed from '../Failed';
+import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
 
 type Props = {
     settings: LayerSwapAppSettings;
@@ -36,26 +37,18 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
         || swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
 
-    const destinationNetworkCurrency = GetNetworkCurrency(destination_layer, swap?.destination_network_asset)
+    const destinationNetworkCurrency = destination_layer ? GetNetworkCurrency(destination_layer, swap?.destination_network_asset) : null
 
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id]
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions") || "{}")?.[swap?.id]
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
-    const nativeCurrency = destination_layer?.isExchange === false && settings?.currencies?.find(c => c.asset === destination_layer?.native_currency)
-    const truncatedRefuelAmount = truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision)
+    const nativeCurrency = destination_layer?.isExchange === false ? settings?.currencies?.find(c => c.asset === destination_layer?.native_currency) : null
+    const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
 
     const progressStatuses = getProgressStatuses(swap, swapStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
-    type ProgressStates = {
-        [key in Progress]?: {
-            [key in ProgressStatus]?: {
-                name: string;
-                description: string | JSX.Element;
-            }
-        }
-    }
 
     const outputPendingDetails = <div className='flex items-center space-x-1'>
         <span>Estimated arrival:</span>
@@ -96,7 +89,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 description: <div className='flex items-center space-x-1'>
                     <span>Transaction: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
-                        <a target={"_blank"} href={input_tx_explorer.replace("{0}", swapInputTransaction?.transaction_id)}>{shortenAddress(swapInputTransaction?.transaction_id)}</a>
+                        <a target={"_blank"} href={input_tx_explorer?.replace("{0}", swapInputTransaction?.transaction_id)}>{shortenAddress(swapInputTransaction?.transaction_id)}</a>
                         <ExternalLink className='h-4' />
                     </div>
                 </div>
@@ -137,7 +130,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                     <div className='flex items-center space-x-1'>
                         <span>Transaction: </span>
                         <div className='underline hover:no-underline flex items-center space-x-1'>
-                            <a target={"_blank"} href={output_tx_explorer.replace("{0}", swapOutputTransaction.transaction_id)}>{shortenAddress(swapOutputTransaction.transaction_id)}</a>
+                            <a target={"_blank"} href={output_tx_explorer?.replace("{0}", swapOutputTransaction.transaction_id)}>{shortenAddress(swapOutputTransaction.transaction_id)}</a>
                             <ExternalLink className='h-4' />
                         </div>
                     </div>
@@ -177,8 +170,10 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 description: <div className='flex items-center space-x-1'>
                     <span>Transaction: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
-                        <a target={"_blank"} href={swapRefuelTransaction?.explorer_url}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
-                        <ExternalLink className='h-4' />
+                        {swapRefuelTransaction && <>
+                            <a target={"_blank"} href={swapRefuelTransaction?.explorer_url}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
+                            <ExternalLink className='h-4' />
+                        </>}
                     </div>
                 </div>
             },
@@ -191,26 +186,26 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     const allSteps: StatusStep[] = [
         {
-            name: progressStates["input_transfer"][stepStatuses?.input_transfer]?.name,
-            status: stepStatuses?.input_transfer,
-            description: progressStates["input_transfer"][stepStatuses?.input_transfer]?.description,
+            name: progressStates.input_transfer?.[stepStatuses?.input_transfer]?.name,
+            status: stepStatuses.input_transfer,
+            description: progressStates?.input_transfer?.[stepStatuses?.input_transfer]?.description,
             index: 1
         },
         {
-            name: progressStates["output_transfer"][stepStatuses?.output_transfer]?.name,
-            status: stepStatuses?.output_transfer,
-            description: progressStates["output_transfer"][stepStatuses?.output_transfer]?.description,
+            name: progressStates.output_transfer?.[stepStatuses?.output_transfer]?.name,
+            status: stepStatuses.output_transfer,
+            description: progressStates?.output_transfer?.[stepStatuses?.output_transfer]?.description,
             index: 2
         },
         {
-            name: progressStates["refuel"][stepStatuses?.refuel]?.name,
-            status: stepStatuses?.refuel,
-            description: progressStates["refuel"][stepStatuses?.refuel]?.description,
+            name: progressStates.refuel?.[stepStatuses?.refuel]?.name,
+            status: stepStatuses.refuel,
+            description: progressStates.refuel?.[stepStatuses?.refuel]?.description,
             index: 3
         }
     ]
 
-    let currentSteps = allSteps.filter((s) => s.status);
+    let currentSteps = allSteps.filter((s) => s.status && s.status != ProgressStatus.Removed);
     let stepsProgressPercentage = currentSteps.filter(x => x.status == ProgressStatus.Complete).length / currentSteps.length * 100;
 
     if (!swap) return <></>
@@ -249,46 +244,26 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                                 ([SwapStatus.Expired, SwapStatus.Cancelled, SwapStatus.UserTransferDelayed].includes(swap?.status)) &&
                                 <Failed />
                             }
-
                         </div>
                     </div>
-
                 </div>
             </div>
         </Widget.Content>
     )
 }
 
-enum Progress {
-    InputTransfer = 'input_transfer',
-    Refuel = 'refuel',
-    OutputTransfer = 'output_transfer'
-}
-enum ProgressStatus {
-    Upcoming = 'upcoming',
-    Current = 'current',
-    Complete = 'complete',
-    Failed = 'failed',
-    Delayed = 'delayed'
-}
-type StatusStep = {
-    name: string;
-    status: ProgressStatus;
-    description: string | JSX.Element;
-    index?: number;
-}
 
 
-const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string } } => {
+
+const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
     let generalTitle = "Transfer in progress";
-    let subtitle: string;
+    let subtitle: string | null = "";
 
-    const swapInputTransaction: Transaction | string = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions"))?.[swap?.id];
+    const swapInputTransaction: Transaction | string = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions") || "{}")?.[swap?.id];
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
     let inputIsCompleted = (swapInputTransaction as Transaction)?.status == TransactionStatus.Completed && (swapInputTransaction as Transaction).confirmations >= (swapInputTransaction as Transaction).max_confirmations;
-    if (!inputIsCompleted)
-    {
+    if (!inputIsCompleted) {
         // Magic case, shows estimated time
         subtitle = null
     }
@@ -303,19 +278,19 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStat
         (swap.has_refuel && !swapRefuelTransaction) ? ProgressStatus.Upcoming
             : swapRefuelTransaction?.status == TransactionStatus.Pending ? ProgressStatus.Current
                 : swapRefuelTransaction?.status == TransactionStatus.Initiated || swapRefuelTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete
-                    : null;
+                    : ProgressStatus.Removed;
 
     if (swapStatus === SwapStatus.Failed) {
         output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed;
-        refuel_transfer = refuel_transfer !== ProgressStatus.Complete && null;
+        refuel_transfer = refuel_transfer !== ProgressStatus.Complete ? ProgressStatus.Removed : refuel_transfer;
         generalTitle = swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? "Transfer on hold" : "Transfer failed";
         subtitle = "View instructions below"
     }
 
     if (swapStatus === SwapStatus.UserTransferDelayed) {
-        input_transfer = null;
-        output_transfer = null;
-        refuel_transfer = null;
+        input_transfer = ProgressStatus.Removed;
+        output_transfer = ProgressStatus.Removed;
+        refuel_transfer = ProgressStatus.Removed;
         generalTitle = "Transfer delayed"
         subtitle = "View instructions below"
     }

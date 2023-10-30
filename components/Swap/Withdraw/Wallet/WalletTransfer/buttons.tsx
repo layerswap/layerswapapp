@@ -12,7 +12,7 @@ export const ConnectWalletButton: FC = () => {
     const { openConnectModal } = useConnectModal();
 
     const clickHandler = useCallback(() => {
-        return openConnectModal()
+        return openConnectModal && openConnectModal()
     }, [openConnectModal])
 
     return <ButtonWrapper
@@ -47,7 +47,7 @@ export const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ 
     });
 
     const clickHandler = useCallback(() => {
-        return networkChange?.switchNetwork()
+        return networkChange?.switchNetwork && networkChange?.switchNetwork()
     }, [networkChange])
 
     return <>
@@ -88,7 +88,7 @@ export const ButtonWrapper: FC<ButtonWrapperProps> = ({
         <div className="flex flex-row text-primary-text text-base space-x-2">
             <SubmitButton icon={icon}
                 text_align='center'
-                isDisabled={disabled}
+                isDisabled={!!disabled}
                 isSubmitting={false}
                 onClick={clcikHandler}
                 buttonStyle='filled'

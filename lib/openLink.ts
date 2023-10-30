@@ -9,7 +9,7 @@ export const TEMP_DATA_ITEM_NAME = "link_temp_data"
 
 export const getTempData = (): LinkTempData => JSON.parse(sessionStorage.getItem(TEMP_DATA_ITEM_NAME) || "null")
 const setTempData = (data: LinkTempData) => sessionStorage.setItem(TEMP_DATA_ITEM_NAME, JSON.stringify(data))
-export const clearTempData = () => sessionStorage.setItem(TEMP_DATA_ITEM_NAME, null)
+export const clearTempData = () => sessionStorage.removeItem(TEMP_DATA_ITEM_NAME)
 
 type OpenLinkArgs = {
   addressSource?: string;

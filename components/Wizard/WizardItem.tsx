@@ -19,7 +19,7 @@ const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent, f
     useEffect(() => {
         if (currentStepName === StepName) {
             setGoBack(GoBack)
-            setPositionPercent(PositionPercent)
+            PositionPercent && setPositionPercent(PositionPercent)
         }
     }, [currentStepName, GoBack, PositionPercent, StepName, setGoBack, setPositionPercent])
 
@@ -36,7 +36,7 @@ const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent, f
             }}
             custom={{ direction: moving === "back" ? -1 : 1, width: wrapperWidth }}>
             <div style={styleConfigs} className="pb-6">
-                {wrapperWidth > 1 && children}
+                {Number(wrapperWidth) > 1 && children}
             </div>
         </motion.div>
         : null

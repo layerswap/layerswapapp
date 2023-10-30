@@ -10,7 +10,6 @@ import { Tab, TabHeader } from '../../Tabs/Index';
 import Widget from '../../Wizard/Widget';
 import SwapSummary from '../Summary';
 import Coinbase from './Coinbase';
-import { useQueryState } from '../../../context/query';
 import External from './External';
 import LayerSwapApiClient, { WithdrawType } from '../../../lib/layerSwapApiClient';
 import WalletIcon from '../../icons/WalletIcon';
@@ -26,14 +25,17 @@ import { ResolveWalletIcon } from '../../HeaderWithMenu/ConnectedWallets';
 import toast from 'react-hot-toast';
 import SpinIcon from '../../icons/spinIcon';
 import { NetworkType } from '../../../Models/CryptoNetwork';
+import { useRouter } from 'next/router';
+import { useQueryState } from '../../../context/query';
 
 const Withdraw: FC = () => {
 
     const { swap } = useSwapDataState()
     const { setWithdrawType } = useSwapDataUpdate()
     const { layers } = useSettingsState()
+    const router = useRouter()
     const { addressSource, signature } = useQueryState()
-    const source_internal_name = swap?.source_exchange ?? swap.source_network
+    const source_internal_name = swap?.source_exchange ?? swap?.source_network
     const source = layers.find(n => n.internal_name === source_internal_name)
 
     let isFiat = source?.isExchange && source?.type === "fiat"
@@ -122,7 +124,7 @@ const Withdraw: FC = () => {
     const showTabsHeader = tabs?.filter(t => t.enabled)?.length > 1
 
     useEffect(() => {
-        setWithdrawType(activeTab.id)
+        activeTab && setWithdrawType(activeTab.id)
     }, [activeTab])
 
     return (
@@ -143,7 +145,7 @@ const Withdraw: FC = () => {
                                 <>
                                     <div className="mb-4 ml-1 text-base">Choose how you&apos;d like to complete the swap</div>
                                     <div className="flex space-x-3 w-full">
-                                        {tabs.filter(t => t.enabled).map((tab) => (
+                                        {activeTabId && tabs.filter(t => t.enabled).map((tab) => (
                                             <TabHeader
                                                 activeTabId={activeTabId}
                                                 onCLick={setActiveTabId}
@@ -161,11 +163,12 @@ const Withdraw: FC = () => {
                     </div>
                 </div>
             </Widget.Content>
-            <Widget.Footer>
-                {
-                    activeTab?.footer
-                }
-            </Widget.Footer>
+            {
+                activeTab?.footer &&
+                <Widget.Footer>
+                    {activeTab?.footer}
+                </Widget.Footer>
+            }
         </>
     )
 }
@@ -188,7 +191,7 @@ const WalletTransferContent: FC = () => {
     const {
         source_network: source_network_internal_name,
         source_exchange: source_exchange_internal_name,
-        source_network_asset } = swap
+        source_network_asset } = swap || {}
 
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
@@ -197,14 +200,14 @@ const WalletTransferContent: FC = () => {
 
     const handleDisconnectCoinbase = useCallback(async () => {
         const apiClient = new LayerSwapApiClient()
-        await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
+        swap && await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
         await mutateSwap()
     }, [])
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         setIsloading(true);
         try {
-            if (swap.source_exchange) {
+            if (swap?.source_exchange) {
                 await handleDisconnectCoinbase()
             }
             else if (sourceNetworkType === NetworkType.EVM) {
@@ -229,33 +232,33 @@ const WalletTransferContent: FC = () => {
             setIsloading(false);
         }
         e?.stopPropagation();
-    }, [sourceNetworkType, swap.source_exchange])
+    }, [sourceNetworkType, swap?.source_exchange])
 
     let accountAddress = ""
-    if (swap.source_exchange) {
-        accountAddress = swap.exchange_account_name
+    if (swap?.source_exchange) {
+        accountAddress = swap.exchange_account_name || ""
     }
     else if (sourceNetworkType === NetworkType.EVM) {
-        accountAddress = address;
+        accountAddress = address || "";
     }
     else if (sourceNetworkType === NetworkType.Starknet) {
-        accountAddress = starknetAccount?.account?.address;
+        accountAddress = starknetAccount?.account?.address || "";
     }
     else if (sourceIsImmutableX) {
-        accountAddress = imxAccount;
+        accountAddress = imxAccount || "";
     }
     else if (sourceIsLpr) {
         accountAddress = lprAccount;
     }
 
-    const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap.source_exchange
+    const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap?.source_exchange
 
     const handleOpenAccount = useCallback(() => {
-        if (canOpenAccount)
+        if (canOpenAccount && openAccountModal)
             openAccountModal()
     }, [canOpenAccount, openAccountModal])
 
-    if (!accountAddress || (swap.source_exchange && !swap.exchange_account_connected)) {
+    if (!accountAddress || (swap?.source_exchange && !swap.exchange_account_connected)) {
         return <>
             <div className='flex justify-center'>
                 <WalletIcon className='w-12 text-secondary-800/70' />
@@ -265,23 +268,25 @@ const WalletTransferContent: FC = () => {
 
     return <div className="grid content-end">
         {
-            <span className='mb-1 ml-1 text-sm'>{swap.source_exchange ? "Connected account" : "Connected wallet"}</span>
+            <span className='mb-1 ml-1 text-sm'>{swap?.source_exchange ? "Connected account" : "Connected wallet"}</span>
         }
 
         <div onClick={handleOpenAccount} className={`${canOpenAccount ? 'cursor-pointer' : 'cursor-auto'} text-left min-h-12  space-x-2 border border-secondary-700 ea7df14a1597407f9f755f05e25bab42:bg-secondary-800/50 bg-secondary-700/70 shadow-xl flex text-sm rounded-md items-center w-full pl-4 pr-2 py-1.5`}>
             <div className='flex text-secondary-text bg-secondary-400 flex-row items-left rounded-md p-1'>
                 {
-                    !swap.source_exchange
+                    !swap?.source_exchange
                     && sourceNetworkType === NetworkType.Starknet
-                    && <Image
+                    && starknetAccount?.icon &&
+                    <Image
                         src={starknetAccount?.icon}
                         alt={accountAddress}
                         width={25}
                         height={25} />
                 }
                 {
-                    !swap.source_exchange
+                    !swap?.source_exchange
                     && sourceIsImmutableX
+                    && source_network
                     && <Image
                         src={resolveImgSrc(source_network)}
                         alt={accountAddress}
@@ -289,15 +294,16 @@ const WalletTransferContent: FC = () => {
                         height={25} />
                 }
                 {
-                    !swap.source_exchange
+                    !swap?.source_exchange
                     && sourceNetworkType === NetworkType.EVM
+                    && connector?.name
                     && <ResolveWalletIcon
                         connector={connector?.name}
                         className="w-6 h-6 rounded-full"
                     />
                 }
                 {
-                    swap.source_exchange
+                    source_exchange
                     && <Image
                         className="w-6 h-6 rounded-full p-0"
                         src={resolveImgSrc(source_exchange)}
@@ -308,10 +314,10 @@ const WalletTransferContent: FC = () => {
             </div>
             <div className="flex flex-col grow">
                 <div className="block text-md font-medium text-primary-text">
-                    {!swap.source_exchange && <span>
+                    {!swap?.source_exchange && <span>
                         {shortenAddress(accountAddress)}
                     </span>}
-                    {swap.source_exchange && <span>
+                    {swap?.source_exchange && <span>
                         {shortenEmail(swap?.exchange_account_name)}
                     </span>}
                 </div>

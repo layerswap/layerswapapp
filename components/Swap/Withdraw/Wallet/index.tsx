@@ -7,30 +7,31 @@ import LayerSwapApiClient, { DepositAddress, DepositType, Fee } from "../../../.
 import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep"
 import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw"
 import useSWR from 'swr'
-import { useAccount } from "wagmi"
 import TransferFromWallet from "./WalletTransfer"
-import { CanDoSweeplessTransfer } from "../../../../lib/fees"
+import { Layer } from "../../../../Models/Layer"
+import useWalletTransferOptions from "../../../../hooks/useWalletTransferOptions"
 import { useWalletState } from "../../../../context/wallet"
 import LoopringWalletWithdraw from "./LoopringWalletWithdraw"
 
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
-    const { starknetAccount, imxAccount, lprAccount } = useWalletState();
-    const { address } = useAccount()
-    const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_network_asset } = swap
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name)
+    const { isContractWallet } = useWalletState();
+
+    const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_network_asset } = swap || {}
+    const source_network = layers.find(n => n.internal_name === source_network_internal_name) as (Layer & { isExchange: false })
     const destination = layers.find(n => n.internal_name === destination_network)
-    const sourceAsset = source_network.assets.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase())
+    const sourceAsset = source_network?.assets?.find(c => c.asset.toLowerCase() === swap?.source_network_asset.toLowerCase())
 
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
     const sourceIsLoopring = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.LoopringMainnet?.toUpperCase()
-    let connectedWalletAddress = sourceIsImmutableX ? imxAccount : sourceIsStarknet ? starknetAccount?.account?.address : sourceIsLoopring ? lprAccount : address;
-    const canDoSweeplessTransfer = CanDoSweeplessTransfer(source_network, connectedWalletAddress, destination_address)
-    const layerswapApiClient = new LayerSwapApiClient()
-    const shouldGetGeneratedAddress = !canDoSweeplessTransfer
+
+    const { canDoSweepless, ready } = useWalletTransferOptions()
+    const shouldGetGeneratedAddress = ready && !canDoSweepless
     const generateDepositParams = shouldGetGeneratedAddress ? [source_network_internal_name] : null
+
+    const layerswapApiClient = new LayerSwapApiClient()
     const {
         data: generatedDeposit
     } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
@@ -38,9 +39,11 @@ const WalletTransfer: FC = () => {
     const managedDepositAddress = sourceAsset?.network?.managed_accounts?.[0]?.address;
     const generatedDepositAddress = generatedDeposit?.data?.address
 
-    const depositAddress = canDoSweeplessTransfer ? managedDepositAddress : generatedDepositAddress
+    const depositAddress = ready ?
+        (canDoSweepless ? managedDepositAddress : generatedDepositAddress)
+        : undefined
 
-    const sourceChainId = source_network.isExchange === false && Number(source_network.chain_id)
+    const sourceChainId = (source_network && source_network.isExchange === false) ? Number(source_network?.chain_id) : null
     const feeParams = {
         source: source_network_internal_name,
         destination: destination?.internal_name,
@@ -50,8 +53,11 @@ const WalletTransfer: FC = () => {
     }
 
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
-    const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Wallet)
-    const requested_amount = walletTransferFee?.min_amount > swap?.requested_amount ? walletTransferFee?.min_amount : swap?.requested_amount
+    const walletTransferFee = ready ?
+        feeData?.data?.find(f => f?.deposit_type === (canDoSweepless ? DepositType.Wallet : DepositType.Manual))
+        : undefined
+
+    const requested_amount = Number(walletTransferFee?.min_amount) > Number(swap?.requested_amount) ? walletTransferFee?.min_amount : swap?.requested_amount
 
     if (sourceIsImmutableX)
         return <Wrapper>
@@ -66,18 +72,18 @@ const WalletTransfer: FC = () => {
             <LoopringWalletWithdraw amount={requested_amount} depositAddress={depositAddress} />
         </Wrapper>
     return <Wrapper>
-        <TransferFromWallet
-            sequenceNumber={swap.sequence_number}
+        {swap && source_network && sourceAsset && requested_amount && sourceChainId && <TransferFromWallet
+            sequenceNumber={swap?.sequence_number}
             swapId={swap.id}
             networkDisplayName={source_network?.display_name}
             tokenDecimals={sourceAsset?.decimals}
-            tokenContractAddress={sourceAsset?.contract_address as `0x${string}`}
-            chainId={sourceChainId as number}
-            depositAddress={depositAddress as `0x${string}`}
-            userDestinationAddress={swap.destination_address as `0x${string}`}
+            tokenContractAddress={sourceAsset.contract_address}
+            chainId={sourceChainId}
+            depositAddress={depositAddress}
+            userDestinationAddress={swap.destination_address}
             amount={requested_amount}
-            asset={sourceAsset?.asset}
-        />
+            isContractWallet={!!isContractWallet?.value}
+        />}
     </Wrapper>
 
 }

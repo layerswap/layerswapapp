@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import { Currency } from "../Models/Currency"
 import { Layer } from "../Models/Layer"
 import { useWalletState, useWalletUpdate } from "../context/wallet"

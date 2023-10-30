@@ -14,6 +14,8 @@ import { encodeFunctionData, http, parseUnits, createWalletClient, publicActions
 import TransactionMessage from "./transactionMessage";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import { ButtonWrapper } from "./buttons";
+import useWalletTransferOptions from "../../../../../hooks/useWalletTransferOptions";
+import { SendTransactionData } from "../../../../../lib/telegram";
 
 type TransferERC20ButtonProps = BaseTransferButtonProps & {
     tokenContractAddress: `0x${string}`,
@@ -28,20 +30,22 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     swapId,
     sequenceNumber,
     userDestinationAddress,
+    isContractWallet
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { setSwapPublishedTx } = useSwapDataUpdate()
     const { address } = useAccount();
     const [buttonClicked, setButtonClicked] = useState(false)
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
+    const { canDoSweepless, ready } = useWalletTransferOptions()
 
     const contractWritePrepare = usePrepareContractWrite({
-        enabled: !!depositAddress,
+        enabled: !!depositAddress && ready,
         address: tokenContractAddress,
         abi: erc20ABI,
         functionName: 'transfer',
         gas: estimatedGas,
-        args: [depositAddress, parseUnits(amount.toString(), tokenDecimals)],
+        args: depositAddress ? [depositAddress, parseUnits(amount.toString(), tokenDecimals)] : undefined,
     });
 
     let encodedData = depositAddress && contractWritePrepare?.config?.request
@@ -49,8 +53,8 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             ...contractWritePrepare?.config?.request,
         });
 
-    if (encodedData && address !== userDestinationAddress) {
-        encodedData = encodedData ? `${encodedData}${sequenceNumber}` as `0x${string}` : null;
+    if (encodedData && canDoSweepless && address !== userDestinationAddress) {
+        encodedData = encodedData ? `${encodedData}${sequenceNumber}` as `0x${string}` : encodedData;
     }
 
     const tx = {
@@ -69,7 +73,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
 
     useEffect(() => {
         (async () => {
-            if (encodedData) {
+            if (encodedData && address) {
                 const estimate = await publicClient.estimateGas({
                     data: encodedData,
                     to: tokenContractAddress,
@@ -85,13 +89,15 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         try {
             if (contractWrite?.data?.hash) {
                 setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Pending, contractWrite?.data?.hash);
+                if (isContractWallet)
+                    SendTransactionData(swapId, contractWrite?.data?.hash)
             }
         }
         catch (e) {
             //TODO log to logger
             console.error(e.message)
         }
-    }, [contractWrite?.data?.hash, swapId])
+    }, [contractWrite?.data?.hash, swapId, isContractWallet])
 
     const clickHandler = useCallback(() => {
         setButtonClicked(true)

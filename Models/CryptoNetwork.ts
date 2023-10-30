@@ -13,9 +13,8 @@ export enum NetworkType {
 export class CryptoNetwork {
     display_name: string;
     internal_name: string;
-    native_currency: string;
+    native_currency: string | null | undefined;
     average_completion_time: string;
-    fee_multiplier: number;
     transaction_explorer_template: string;
     account_explorer_template?: string;
     status: LayerStatus;
@@ -27,7 +26,8 @@ export class CryptoNetwork {
     is_featured: boolean;
     nodes: NetworkNode[];
     managed_accounts: ManagedAccount[];
-    metadata: Metadata;
+    metadata: Metadata | null | undefined;
+    img_url?: string
 }
 
 export class NetworkCurrency {
@@ -40,7 +40,8 @@ export class NetworkCurrency {
     max_withdrawal_amount: number;
     deposit_fee: number;
     withdrawal_fee: number;
-    contract_address: string;
+    //TODO may be plain string
+    contract_address: `0x${string}` | null | undefined;
     decimals: number;
     source_base_fee: number;
     destination_base_fee: number;
@@ -49,7 +50,7 @@ export class NetworkNode {
     url: string;
 }
 export class ManagedAccount {
-    address: string;
+    address: `0x${string}`;
 }
 export class Metadata {
     multicall3: {
@@ -62,4 +63,5 @@ export class Metadata {
     ensUniversalResolver?: {
         address: `0x${string}`
     }
+    WatchdogContractAddress?: `0x${string}`
 }

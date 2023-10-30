@@ -19,15 +19,15 @@ export interface LeafletProps {
     position: LeafletPosition;
 }
 
-export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, description, position}, topmostRef) {
-    const mobileModalRef = useRef(null);
+export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, description, position }, topmostRef) {
+    const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 33 };
 
     async function handleDragEnd(_, info) {
         const offset = info.offset.y;
         const velocity = info.velocity.y;
-        const height = mobileModalRef.current.getBoundingClientRect().height;
+        const height = mobileModalRef.current?.getBoundingClientRect().height || 0;
         if (offset > height / 2 || velocity > 800) {
             await controls.start({ y: "100%", transition: transitionProps, });
             setShow(false);
@@ -74,7 +74,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
                 <div className={`py-3 flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
-                    <div className='px-4 flex justify-between items-center'>
+                    <div className='px-6 flex justify-between items-center'>
                         <div className="text-lg text-primary-text font-semibold">
                             <div>{title}</div>
                         </div>
@@ -83,7 +83,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                         }>
                         </IconButton>
                     </div>
-                    <div className={`max-h-full overflow-y-auto styled-scroll px-4 h-full`}>
+                    <div className={`max-h-full overflow-y-auto styled-scroll px-6 h-full`}>
                         {children}
                     </div>
                 </div>

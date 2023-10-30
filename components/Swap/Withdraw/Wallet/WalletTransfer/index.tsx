@@ -9,17 +9,18 @@ import TransferNativeTokenButton from "./TransferNativeToken";
 import { ChangeNetworkButton, ConnectWalletButton } from "./buttons";
 import TransferErc20Button from "./TransferErc20";
 
+
 type Props = {
     sequenceNumber: number,
     chainId: number,
-    depositAddress: `0x${string}`,
-    tokenContractAddress: `0x${string}`,
+    depositAddress?: `0x${string}`,
+    tokenContractAddress?: `0x${string}` | null,
     userDestinationAddress: `0x${string}`,
     amount: number,
     tokenDecimals: number,
     networkDisplayName: string,
     swapId: string;
-    asset: string;
+    isContractWallet: boolean
 }
 
 const TransferFromWallet: FC<Props> = ({ networkDisplayName,
@@ -31,7 +32,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     tokenDecimals,
     sequenceNumber,
     swapId,
-    asset
+    isContractWallet
 }) => {
     const { isConnected } = useAccount();
     const networkChange = useSwitchNetwork({
@@ -61,7 +62,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     }, [swapId])
 
     const hexed_sequence_number = sequenceNumber?.toString(16)
-    const sequence_number_even = hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number
+    const sequence_number_even = (hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number)
 
     if (!isConnected) {
         return <ConnectWalletButton />
@@ -82,6 +83,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
             savedTransactionHash={savedTransactionHash as `0x${string}`}
             tokenContractAddress={tokenContractAddress}
             tokenDecimals={tokenDecimals}
+            isContractWallet={isContractWallet}
         />
     }
     else {
@@ -93,6 +95,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
             userDestinationAddress={userDestinationAddress}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
             chainId={chainId}
+            isContractWallet={isContractWallet}
         />
     }
 }

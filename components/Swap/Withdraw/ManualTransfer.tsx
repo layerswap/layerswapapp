@@ -20,7 +20,7 @@ const ManualTransfer: FC = () => {
     const [messageClicked, setMessageClicked] = useState(false)
 
     const {
-        source_network: source_network_internal_name } = swap
+        source_network: source_network_internal_name } = swap || {}
 
     const layerswapApiClient = new LayerSwapApiClient()
     const {
@@ -80,13 +80,12 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
         destination_network: destination_network_internal_name,
         destination_network_asset,
         source_network_asset
-    } = swap
-
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name)
+    } = swap || {}
 
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
-    const asset = source_network?.assets?.find(currency => currency?.asset === destination_network_asset)
+    const asset = selectedAssetNetwork?.network?.currencies.find(c => c.asset == destination_network_asset)
+
 
     const layerswapApiClient = new LayerSwapApiClient()
     const generateDepositParams = shouldGenerateAddress ? [selectedAssetNetwork?.network_internal_name ?? null] : null
@@ -106,15 +105,14 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
     const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
 
-
-    const requested_amount = manualTransferFee?.min_amount > swap?.requested_amount ? manualTransferFee?.min_amount : swap?.requested_amount
+    const requested_amount = Number(manualTransferFee?.min_amount) > Number(swap?.requested_amount) ? manualTransferFee?.min_amount : swap?.requested_amount
     const depositAddress = existingDepositAddress || generatedDeposit?.data?.address
 
     const handleChangeSelectedNetwork = useCallback((n: BaseL2Asset) => {
         setSelectedAssetNetwork(n)
     }, [])
 
-    return <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500'>
+    return <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500 text-primary-text'>
         <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
             {
                 source_exchange &&
@@ -155,7 +153,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
             <div>
                 {
                     depositAddress ?
-                        <p className='break-all text-primary-text'>
+                        <p className='break-all'>
                             {depositAddress}
                         </p>
                         :
@@ -163,7 +161,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                 }
                 {
                     (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
-                    <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-secondary-100 rounded border-dashed'>
+                    <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-secondary-100 rounded border-dashed text-secondary-text'>
                         <p>
                             You might get a warning that this is not an activated address. You can ignore it.
                         </p>
@@ -201,7 +199,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                             />
                         }
                     </div>
-                    <div className="mx-1 block">{asset?.asset}</div>
+                    <div className="mx-1 block">{asset?.name}</div>
                 </div>
             </BackgroundField>
         </div>
@@ -214,15 +212,16 @@ const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = 
     const {
         source_exchange: source_exchange_internal_name,
         destination_network,
-        source_network_asset } = swap
+        source_network_asset } = swap || {}
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
-    const exchangeAssets = source_exchange.assets.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network.status !== "inactive")
-    const defaultSourceNetwork = exchangeAssets.find(sn => sn.is_default) || exchangeAssets?.[0]
+    const exchangeAssets = source_exchange?.assets?.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network?.status !== "inactive")
+    const defaultSourceNetwork = exchangeAssets?.find(sn => sn.is_default) || exchangeAssets?.[0]
 
     const handleChangeSelectedNetwork = useCallback((n: string) => {
-        const network = exchangeAssets.find(network => network?.network_internal_name === n)
-        onChange(network)
+        const network = exchangeAssets?.find(network => network?.network_internal_name === n)
+        if (network)
+            onChange(network)
     }, [exchangeAssets])
 
     return <div className='flex items-center gap-1 text-sm my-2'>
@@ -240,12 +239,12 @@ const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = 
                 <SelectContent>
                     <SelectGroup>
                         <SelectLabel>Networks</SelectLabel>
-                        {exchangeAssets.map(sn => (
+                        {exchangeAssets?.map(sn => (
                             <SelectItem key={sn.network_internal_name} value={sn.network_internal_name}>
                                 <div className="flex items-center">
                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                         {
-                                            sn &&
+                                            sn.network &&
                                             <Image
                                                 src={resolveImgSrc(sn.network)}
                                                 alt="From Logo"

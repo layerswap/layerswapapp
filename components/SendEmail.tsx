@@ -1,5 +1,5 @@
 import { Disclosure } from '@headlessui/react';
-import { ChevronDown, User } from 'lucide-react';
+import { Album, ChevronDown, Mail, ScrollText, User } from 'lucide-react';
 import { Field, Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
@@ -135,9 +135,6 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                             <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-primary-text leading-6 text-center font-roboto'>
                                                 What&apos;s your email?
                                             </p>
-                                            <p className='text-center text-base mb-6 px-2 text-secondary-text'>
-                                                With your email, your exchange credentials will stay linked to your account and you can access your entire transfer history.
-                                            </p>
                                         </div>
                                         <div className="relative rounded-md shadow-sm">
                                             <Field name="email">
@@ -153,6 +150,46 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                     />
                                                 )}
                                             </Field>
+                                        </div>
+                                        <div className='px-3 text-primary-text mt-6'>
+                                            <p className='text-left text-sm mb-3 text-secondary-text font-semibold'>
+                                                By signing in you get
+                                            </p>
+                                            <ul className='space-y-3'>
+                                                <li className='flex gap-3'>
+                                                    <div>
+                                                        <ScrollText className='h-5 w-5 mt-0.5 text-primary' />
+                                                    </div>
+                                                    <div>
+                                                        <p className='font-semibold'>History</p>
+                                                        <p className='text-secondary-text text-sm'>
+                                                            Access your entire transaction history
+                                                        </p>
+                                                    </div>
+                                                </li>
+                                                <li className='flex gap-3'>
+                                                    <div>
+                                                        <Mail className='h-5 w-5 mt-0.5 text-primary' />
+                                                    </div>
+                                                    <div>
+                                                        <p className='font-semibold'>Email updates</p>
+                                                        <p className='text-secondary-text text-sm'>
+                                                            Get a notification upon transfer completion
+                                                        </p>
+                                                    </div>
+                                                </li>
+                                                <li className='flex gap-3'>
+                                                    <div>
+                                                        <Album className='h-5 w-5 mt-0.5 text-primary' />
+                                                    </div>
+                                                    <div>
+                                                        <p className='font-semibold'>Dedicated deposit address</p>
+                                                        <p className='text-secondary-text text-sm'>
+                                                            Get deposit addresses that stay the same and can be whitelisted in CEXes
+                                                        </p>
+                                                    </div>
+                                                </li>
+                                            </ul>
                                         </div>
                                     </Widget.Content>
                                     <Widget.Footer>

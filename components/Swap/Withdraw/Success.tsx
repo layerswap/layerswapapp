@@ -7,15 +7,17 @@ import MessageComponent from '../../MessageComponent';
 import Widget from '../../Wizard/Widget';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import GoHomeButton from '../../utils/GoHome';
-import { useQueryState } from '../../../context/query';
 import { TransactionType } from '../../../lib/layerSwapApiClient';
 import AppSettings from '../../../lib/AppSettings';
+import { useRouter } from 'next/router';
+import { useQueryState } from '../../../context/query';
 
 const Success: FC = () => {
     const { networks } = useSettingsState()
     const { swap } = useSwapDataState()
+    const router = useRouter()
     const { externalId } = useQueryState()
-    const { destination_network: destination_network_internal_name } = swap
+    const { destination_network: destination_network_internal_name } = swap || {}
     const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
     const transaction_explorer_template = destination_network?.transaction_explorer_template
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)

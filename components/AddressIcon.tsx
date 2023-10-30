@@ -6,7 +6,7 @@ type Props = {
     size: number;
 }
 const AddressIcon: FC<Props> = ({ address, size }) => {
-    const ref = useRef(null)
+    const ref = useRef<HTMLDivElement>(null)
     useEffect(() => {
         if (address && ref.current) {
             ref.current.innerHTML = "";
