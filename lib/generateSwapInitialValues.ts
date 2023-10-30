@@ -5,6 +5,7 @@ import { FilterCurrencies, FilterDestinationLayers, FilterSourceLayers } from ".
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
+    console.log("generating form initial values")
     const { destAddress, amount, asset, from, to, lockAsset } = queryParams
     const { currencies, layers } = settings || {}
 

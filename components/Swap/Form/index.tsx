@@ -1,5 +1,5 @@
 import { Formik, FormikProps } from "formik";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "../../../context/settings";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
@@ -21,6 +21,7 @@ import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 import { useQueryState } from "../../../context/query";
 import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
+import Withdraw from "../Withdraw";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -30,6 +31,7 @@ type NetworkToConnect = {
 export default function Form() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
+    const [showSwapModal, setShowSwapModal] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
@@ -41,6 +43,11 @@ export default function Form() {
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?name=${query?.addressSource}`, layerswapApiClient.fetcher)
     const partner = query?.addressSource && partnerData?.data?.name?.toLowerCase() === (query?.addressSource as string)?.toLowerCase() ? partnerData?.data : undefined
+    const { swap } = useSwapDataState()
+
+    useEffect(() => {
+        setShowSwapModal(!!swap)
+    }, [swap])
 
     useEffect(() => {
         const initialValues = generateSwapInitialValues(settings, query)
@@ -50,25 +57,17 @@ export default function Form() {
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
-            const accessToken = TokenService.getAuthData()?.access_token
-            if (!accessToken) {
-                try {
-                    var apiClient = new LayerSwapAuthApiClient();
-                    const res = await apiClient.guestConnectAsync()
-                    updateAuthData(res)
-                    setUserType(UserType.GuestUser)
-                }
-                catch (error) {
-                    toast.error(error.response?.data?.error || error.message)
-                    return;
-                }
-            }
-
-            const swapId = await createSwap(values, query, partner);
-            await router.push({
-                pathname: `/swap/${swapId}`,
-                query: resolvePersistantQueryParams(router.query)
-            })
+            const swapId = 'c2d6c4de-5eb2-4edc-b69f-cfa05c094730'//await createSwap(values, query, partner);
+            await router.push(
+                {
+                    pathname: `/`,
+                    query: { ...resolvePersistantQueryParams(router.query), swapId: swapId }
+                },
+                {
+                    pathname: `/swap/${swapId}`,
+                    query: resolvePersistantQueryParams(router.query)
+                },
+                { shallow: true })
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error
@@ -97,12 +96,16 @@ export default function Form() {
 
     const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
-    const initialValues: SwapFormValues = generateSwapInitialValues(settings, query)
-
+    const initialValues: SwapFormValues = useMemo(() => generateSwapInitialValues(settings, query), [])
+    console.log("main form rerender")
     return <>
         <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
             {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
         </Modal>
+        <Modal height="fit" show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`}>
+            <Withdraw />
+        </Modal>
+        <button type="button" onClick={handleSubmit}>asdasd</button>
         <Formik
             innerRef={formikRef}
             initialValues={initialValues}
