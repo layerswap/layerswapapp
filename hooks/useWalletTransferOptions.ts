@@ -9,12 +9,14 @@ import { NetworkType } from "../Models/CryptoNetwork"
 export default function useWalletTransferOptions() {
 
     const { swap } = useSwapDataState()
-    const { starknetAccount, imxAccount, isContractWallet: isEVMContractWallet } = useWalletState();
+    const { starknetAccount, imxAccount, lprAccount, isContractWallet: isEVMContractWallet } = useWalletState();
     const { address: evmAddress } = useAccount()
 
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
-    let connectedWalletAddress = sourceIsImmutableX ? imxAccount : sourceIsStarknet ? starknetAccount?.account?.address : evmAddress;
+    const sourceIsLoopring = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.LoopringMainnet?.toUpperCase()
+
+    let connectedWalletAddress = sourceIsImmutableX ? imxAccount : sourceIsStarknet ? starknetAccount?.account?.address : sourceIsLoopring ? lprAccount : evmAddress;
 
     const { layers } = useSettingsState()
 

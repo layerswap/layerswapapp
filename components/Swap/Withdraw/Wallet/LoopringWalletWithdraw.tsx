@@ -19,7 +19,7 @@ import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClie
 
 type Props = {
     depositAddress: string,
-    amount: number
+    amount?: number
 }
 
 const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
@@ -35,19 +35,16 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const { setLprAccount } = useWalletUpdate();
 
     const web3 = useWeb3Signer();
-    const { source_network: source_network_internal_name } = swap;
+    const { source_network: source_network_internal_name } = swap || {}
     const source_network = networks.find(n => n.internal_name === source_network_internal_name);
-    const token = networks.find(n => swap.source_network == n.internal_name).currencies.find(c => c.asset == swap.source_network_asset);
-
-    const { layers } = useSettingsState();
-    const sourceNnetwork = layers.find(n => n.internal_name === source_network_internal_name);
-    const decimals = sourceNnetwork.assets.find(c => c.asset.toLowerCase() === swap.source_network_asset.toLowerCase()).decimals;
+    const token = networks?.find(n => swap?.source_network == n?.internal_name)?.currencies.find(c => c.asset == swap?.source_network_asset);
+    const decimals = source_network?.currencies.find(c => c.asset === source_network.native_currency)?.decimals;
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
             const account = await LoopringAPI.exchangeAPI.getAccount({
-                owner: fromAddress,
+                owner: fromAddress as `0x${string}`,
             })
 
             if ((account as any).code == 101002) {
@@ -89,8 +86,12 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
             const { exchangeInfo } = await exchangeApi.getExchangeInfo();
             debugger
             const { accInfo } = await LoopringAPI.exchangeAPI.getAccount({
-                owner: fromAddress,
+                owner: fromAddress as `0x${string}`,
             });
+
+            if (!swap) {
+                return
+            }
 
             if (!accInfo) {
                 return { errorMsg: "AccountInfo Does not exists", result: null };
@@ -100,7 +101,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 return { errorMsg: "AccountInfo Does not contain keyseed. Might need to Reset Loopring L2 Keypair", result: null };
             }
 
-            const eddsaKey = await signatureKeyPairMock(accInfo, connectProvides.usedWeb3 as any, fromAddress);
+            const eddsaKey = await signatureKeyPairMock(accInfo, connectProvides.usedWeb3 as any, fromAddress as `0x${string}`);
             const { apiKey } = await LoopringAPI.userAPI.getUserApiKey(
                 {
                     accountId: accInfo.accountId,
@@ -111,7 +112,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
             const storageId = await LoopringAPI.userAPI.getNextStorageId(
                 {
                     accountId: accInfo.accountId,
-                    sellTokenId: Number(token.contract_address),
+                    sellTokenId: Number(token?.contract_address),
                 },
                 apiKey
             );
@@ -130,15 +131,15 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                     payeeId: 0,
                     storageId: storageId.offchainId,
                     token: {
-                        tokenId: token.contract_address,
-                        volume: parseUnits(swap.requested_amount.toString(), decimals).toString(),
+                        tokenId: Number(token?.contract_address),
+                        volume: parseUnits(swap.requested_amount.toString(), Number(decimals)).toString(),
                     },
                     maxFee: {
-                        tokenId: token.contract_address,
-                        volume: fee.fees[token.asset].fee ?? "9400000000000000000",
+                        tokenId: Number(token?.contract_address),
+                        volume: fee.fees[String(token?.asset)].fee ?? "9400000000000000000",
                     },
                     validUntil: Math.round(Date.now() / 1000) + 30 * 86400,
-                    memo: swap.sequence_number.toString(),
+                    memo: swap?.sequence_number.toString(),
                 },
                 web3: connectProvides.usedWeb3 as any,
                 chainId: 1,
@@ -183,7 +184,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                     }
                     {
                         lprAccount &&
-                        <SubmitButton isDisabled={loading || transferDone} isSubmitting={loading || transferDone} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>
                     }

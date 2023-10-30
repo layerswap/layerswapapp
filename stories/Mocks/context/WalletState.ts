@@ -4,7 +4,8 @@ const WalletStateMock = {
     imxAccount: null,
     isBalanceLoading: false,
     isGasLoading: false,
-    starknetAccount: null
+    starknetAccount: null,
+    lprAccount: null
 }
 
 export default WalletStateMock
