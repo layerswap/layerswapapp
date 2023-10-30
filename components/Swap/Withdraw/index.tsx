@@ -25,7 +25,6 @@ import { ResolveWalletIcon } from '../../HeaderWithMenu/ConnectedWallets';
 import toast from 'react-hot-toast';
 import SpinIcon from '../../icons/spinIcon';
 import { NetworkType } from '../../../Models/CryptoNetwork';
-import { useRouter } from 'next/router';
 import { useQueryState } from '../../../context/query';
 
 const Withdraw: FC = () => {
@@ -33,7 +32,6 @@ const Withdraw: FC = () => {
     const { swap } = useSwapDataState()
     const { setWithdrawType } = useSwapDataUpdate()
     const { layers } = useSettingsState()
-    const router = useRouter()
     const { addressSource, signature } = useQueryState()
     const source_internal_name = swap?.source_exchange ?? swap?.source_network
     const source = layers.find(n => n.internal_name === source_internal_name)
@@ -248,7 +246,7 @@ const WalletTransferContent: FC = () => {
         accountAddress = imxAccount || "";
     }
     else if (sourceIsLpr) {
-        accountAddress = lprAccount;
+        accountAddress = lprAccount || "";
     }
 
     const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap?.source_exchange
