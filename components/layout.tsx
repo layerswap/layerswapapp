@@ -15,14 +15,17 @@ import dynamic from 'next/dynamic'
 import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
 import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
+import { THEME, TonConnectUIProvider } from '@tonconnect/ui-react';
+import { THEME_COLORS, ThemeData } from "../Models/Theme";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
   hideFooter?: boolean;
   settings?: LayerSwapSettings;
+  themeData?: ThemeData
 };
 
-export default function Layout({ children, settings }: Props) {
+export default function Layout({ children, settings, themeData }: Props) {
   const router = useRouter();
 
   useEffect(() => {
@@ -79,6 +82,8 @@ export default function Layout({ children, settings }: Props) {
     }
   }
 
+  themeData = themeData || THEME_COLORS.default
+  
   const basePath = router?.basePath ?? ""
 
   const DynamicRainbowKit = dynamic(() => import("./RainbowKit"), {
@@ -93,7 +98,7 @@ export default function Layout({ children, settings }: Props) {
       <link rel="icon" type="image/png" sizes="16x16" href={`${basePath}/favicon/favicon-16x16.png`} />
       <link rel="manifest" href={`${basePath}/favicon/site.webmanifest`} />
       <meta name="msapplication-TileColor" content="#ffffff" />
-      <meta name="theme-color" content="#111827" />
+      <meta name="theme-color" content={`rgb(${themeData.secondary?.[900]})`} />
       <meta name="description" content="Move crypto across exchanges, blockchains, and wallets." />
 
       {/* Facebook Meta Tags */}
@@ -111,17 +116,63 @@ export default function Layout({ children, settings }: Props) {
       <meta name="twitter:description" content="Move crypto across exchanges, blockchains, and wallets." />
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
     </Head>
+    {themeData &&
+      <style global jsx>{`
+          :root {
+          --ls-colors-backdrop:${themeData.backdrop};
+          --ls-colors-logo: ${themeData.logo};
+          --ls-colors-primary: ${themeData.primary?.DEFAULT};
+          --ls-colors-primary-50: ${themeData.primary?.[50]};
+          --ls-colors-primary-100: ${themeData.primary?.[100]};
+          --ls-colors-primary-200: ${themeData.primary?.[200]};
+          --ls-colors-primary-300: ${themeData.primary?.[300]};
+          --ls-colors-primary-400: ${themeData.primary?.[400]};
+          --ls-colors-primary-500: ${themeData.primary?.[500]};
+          --ls-colors-primary-600: ${themeData.primary?.[600]};
+          --ls-colors-primary-700: ${themeData.primary?.[700]};
+          --ls-colors-primary-800: ${themeData.primary?.[800]};
+          --ls-colors-primary-900: ${themeData.primary?.[900]};
+
+          --ls-colors-actionButtonText: ${themeData.actionButtonText};
+          --ls-colors-text-placeholder: ${themeData.placeholderText};
+          --ls-colors-primary-text: ${themeData.primary?.text};
+          --ls-colors-primary-text-muted: ${themeData.primary?.textMuted};
+          --ls-colors-primary-logoColor: ${themeData.logo};
+
+          --ls-colors-secondary: ${themeData.secondary?.DEFAULT};
+          --ls-colors-secondary-50: ${themeData.secondary?.[50]};
+          --ls-colors-secondary-100: ${themeData.secondary?.[100]};
+          --ls-colors-secondary-200: ${themeData.secondary?.[200]};
+          --ls-colors-secondary-300: ${themeData.secondary?.[300]};
+          --ls-colors-secondary-400: ${themeData.secondary?.[400]};
+          --ls-colors-secondary-500: ${themeData.secondary?.[500]};
+          --ls-colors-secondary-600: ${themeData.secondary?.[600]};
+          --ls-colors-secondary-700: ${themeData.secondary?.[700]};
+          --ls-colors-secondary-800: ${themeData.secondary?.[800]};
+          --ls-colors-secondary-900: ${themeData.secondary?.[900]};
+          --ls-colors-secondary-950: ${themeData.secondary?.[950]};
+          --ls-colors-secondary-text: ${themeData.secondary?.text};
+          }
+        `}
+      </style>
+    }
     <QueryProvider query={query}>
       <SettingsProvider data={appSettings}>
         <MenuProvider>
           <AuthProvider>
             <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
               <ThemeWrapper>
-                <DynamicRainbowKit>
-                  {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                    <MaintananceContent />
-                    : children}
-                </DynamicRainbowKit>
+                <TonConnectUIProvider uiPreferences={
+                  {
+                    theme: THEME.LIGHT
+                  }
+                } manifestUrl={`https://${process.env.NEXT_PUBLIC_VERCEL_URL}${basePath ? `/${basePath}` : ''}/tonconnect-manifest.json`}>
+                  <DynamicRainbowKit>
+                    {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                      <MaintananceContent />
+                      : children}
+                  </DynamicRainbowKit>
+                </TonConnectUIProvider>
               </ThemeWrapper>
             </ErrorBoundary>
           </AuthProvider>

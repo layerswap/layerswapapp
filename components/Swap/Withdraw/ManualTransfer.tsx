@@ -40,11 +40,9 @@ const ManualTransfer: FC = () => {
     const handleCloseNote = useCallback(async () => {
         setMessageClicked(true)
     }, [])
-
+    
     if (isLoading) {
-        return <div className='flex justify-center'>
-            <AlignLeft className='w-36 h-36 text-[#141c31]' />
-        </div>
+        return <Sceleton />
     }
 
     return (
@@ -264,6 +262,32 @@ const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = 
         }
     </div>
 }
+
+
+const Sceleton = () => {
+    return <div className="animate-pulse rounded-lg p-4 flex items-center text-center bg-secondary-700 border border-secondary-500">
+        <div className="flex-1 space-y-6 py-1 p-8 pt-14 items-center">
+            <div className="h-2 bg-secondary-text rounded self-center w-16 m-auto"></div>
+            <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-4">
+                    <div className="h-2 bg-secondary-text rounded col-span-2"></div>
+                    <div className="h-2 bg-secondary-text rounded col-span-1"></div>
+                </div>
+                <div className="h-2 bg-secondary-text rounded"></div>
+
+            </div>
+            <div className="h-2 bg-secondary-text rounded"></div>
+            <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-4">
+                    <div className="h-2 bg-secondary-text rounded col-span-2"></div>
+                    <div className="h-2 bg-secondary-text rounded col-span-1"></div>
+                </div>
+                <div className="h-2 bg-secondary-text rounded"></div>
+            </div>
+        </div>
+    </div>
+}
+
 
 
 export default ManualTransfer

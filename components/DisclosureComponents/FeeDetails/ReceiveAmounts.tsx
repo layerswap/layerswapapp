@@ -25,12 +25,12 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency,
                 {
                     parsedReceiveAmount > 0 ?
                         <div className="font-semibold md:font-bold text-right leading-4">
-                            <p>
-                                <>{parsedReceiveAmount}</>
+                            <div className="space-x-1">
+                                <span>{parsedReceiveAmount}</span>
                                 <span>
                                     {destinationNetworkCurrency?.name}
                                 </span>
-                            </p>
+                            </div>
                             {refuel && <Refuel
                                 currencies={currencies}
                                 currency={currency}
@@ -64,7 +64,7 @@ export const Refuel: FC<RefuelProps> = ({ to, currency, currencies, refuel }) =>
 
     return <>
         {
-            truncated_refuel > 0 ? <p className='text-[12px] text-slate-300'>
+            truncated_refuel > 0 ? <p className='text-[12px] text-secondary-text/50'>
                 <>+</> <span>{truncated_refuel} {destination_native_asset}</span>
             </p>
                 : null

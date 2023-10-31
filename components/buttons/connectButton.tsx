@@ -6,6 +6,7 @@ import { useSettingsState } from "../../context/settings";
 import { Layer } from "../../Models/Layer";
 import RainbowIcon from "../icons/Wallets/Rainbow";
 import Starknet from "../icons/Wallets/Starknet";
+import TON from "../icons/Wallets/TON";
 
 const ConnectButton = ({ children, className, onClose }: { children: ReactNode, className?: string, onClose?: () => void }) => {
     const { connectWallet, wallets } = useWallet()
@@ -24,6 +25,12 @@ const ConnectButton = ({ children, className, onClose }: { children: ReactNode, 
             id: 'starknet',
             type: NetworkType.Starknet,
             network: layers.find(l => l.type === NetworkType.Starknet)
+        },
+        {
+            name: 'TON',
+            id: 'ton',
+            type: NetworkType.TON,
+            network: layers.find(l => l.type === NetworkType.TON)
         }
     ]
     const filteredConnectors = knownConnectors.filter(c => c.network && !wallets.map(w => w?.network?.type).includes(c.network.type))
@@ -62,6 +69,8 @@ const ResolveConnectorIcon = ({ connector, className }: { connector: string, cla
             return <RainbowIcon className={className} />
         case KnownConnectors.Starknet:
             return <Starknet className={className} />
+        case KnownConnectors.TON:
+            return <TON className={className} />
         default:
             return <></>
     }
@@ -70,4 +79,5 @@ const ResolveConnectorIcon = ({ connector, className }: { connector: string, cla
 const KnownConnectors = {
     Starknet: 'starknet',
     Rainbow: 'rainbow',
+    TON: 'ton'
 }

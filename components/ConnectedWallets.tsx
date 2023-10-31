@@ -14,6 +14,7 @@ import { useState } from "react"
 import { Plus } from "lucide-react"
 import Braavos from "./icons/Wallets/Braavos"
 import AddressIcon from "./AddressIcon"
+import TON from "./icons/Wallets/TON"
 
 export const WalletsHeader = () => {
     const { wallets } = useWallet()
@@ -29,7 +30,7 @@ export const WalletsHeader = () => {
                             <div className="inline-flex items-center relative">
                                 <AddressIcon address={lastConnectedWallet.address} size={24} />
                                 {
-                                    lastConnectedWallet.connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-secondary-text">
+                                    lastConnectedWallet.connector && <span className="absolute -bottom-1 -right-2 ml-1 text-[10px] leading-4 font-semibold text-secondary-text">
                                         <ResolveWalletIcon connector={lastConnectedWallet.connector} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
                                     </span>
                                 }
@@ -58,14 +59,14 @@ export const WalletsMenu = () => {
     if (wallets.length > 0) {
         return (
             <>
-                <button onClick={() => setOpenDialog(true)} type="button" className="py-3 px-4 bg-secondary-700 flex items-center w-full rounded-md shadowed-button space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative font-semibold shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200 ease-in-out">
+                <button onClick={() => setOpenDialog(true)} type="button" className="py-3 px-4 bg-secondary-700 flex items-center w-full rounded-md space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative font-semibold transform border border-secondary-500 hover:bg-secondary-600 transition duration-200 ease-in-out">
                     {
                         wallets.length === 1 ?
                             <div className="flex gap-4 items-start">
                                 <div className="inline-flex items-center relative">
                                     <AddressIcon address={wallets[0].address} size={20} />
                                     {
-                                        wallets[0].connector && <span className="absolute -bottom-1 -right-2 ml-1 shadow-sm text-[10px] leading-4 font-semibold text-primary-text">
+                                        wallets[0].connector && <span className="absolute -bottom-1 -right-2 ml-1 text-[10px] leading-4 font-semibold text-primary-text">
                                             <ResolveWalletIcon connector={wallets[0].connector} className="w-4 h-4 border-2 border-secondary-600 rounded-full bg-primary-text" />
                                         </span>
                                     }
@@ -163,6 +164,8 @@ export const ResolveWalletIcon = ({ connector, className }: { connector: string,
             return <Argent className={className} />
         case KnownKonnectors.Braavos:
             return <Braavos className={className} />
+        case KnownKonnectors.TON:
+            return <TON className={className} />
         default:
             return <></>
     }
@@ -176,5 +179,6 @@ const KnownKonnectors = {
     BitKeep: 'bitkeep',
     Argent: 'argent',
     ArgentX: 'argent x',
-    Braavos: 'braavos'
+    Braavos: 'braavos',
+    TON: 'ton'
 }
