@@ -170,7 +170,7 @@ const Withdraw: FC = () => {
 }
 
 const WalletTransferContent: FC = () => {
-    const { address, connector } = useAccount();
+    const { connector } = useAccount();
     const { openAccountModal } = useAccountModal();
     const { wallets, disconnectWallet } = useWallet()
 
@@ -204,14 +204,8 @@ const WalletTransferContent: FC = () => {
     if (swap?.source_exchange) {
         accountAddress = swap.exchange_account_name || ""
     }
-    else if (sourceNetworkType === NetworkType.EVM) {
-        accountAddress = address || "";
-    }
-    else if (sourceNetworkType === NetworkType.Starknet) {
-        accountAddress = wallet?.address;
-    }
-    else if (sourceIsImmutableX) {
-        accountAddress = wallet?.address;
+    else if (wallet) {
+        accountAddress = wallet.address || "";
     }
 
     const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap?.source_exchange
@@ -260,9 +254,9 @@ const WalletTransferContent: FC = () => {
                 {
                     !swap?.source_exchange
                     && sourceNetworkType === NetworkType.EVM
-                    && connector?.name
+                    && wallet?.connector
                     && <ResolveWalletIcon
-                        connector={connector?.name}
+                        connector={wallet?.connector}
                         className="w-6 h-6 rounded-full"
                     />
                 }
