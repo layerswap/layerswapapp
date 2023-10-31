@@ -13,7 +13,7 @@ import { Layer } from '../../../../Models/Layer';
 import { NetworkCurrency } from '../../../../Models/CryptoNetwork';
 
 type Props = {
-    depositAddress: string
+    depositAddress?: string
 }
 
 const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
@@ -38,7 +38,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     }, [source_network])
 
     const handleTransfer = useCallback(async () => {
-        if (!source_network || !swap)
+        if (!source_network || !swap || !depositAddress)
             return
         setLoading(true)
         try {
@@ -62,7 +62,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [imxAccount, swap, source_network])
+    }, [imxAccount, swap, source_network, depositAddress])
 
     return (
         <>
@@ -81,8 +81,8 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                         </SubmitButton>
                     }
                     {
-                        imxAccount &&
-                        <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        imxAccount &&  
+                        <SubmitButton isDisabled={!!(loading || transferDone) || !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>
                     }

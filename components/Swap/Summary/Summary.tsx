@@ -23,11 +23,11 @@ type SwapInfoProps = {
     source: Layer,
     destination: Layer;
     requestedAmount: number;
-    receiveAmount: number;
+    receiveAmount?: number;
     destinationAddress: string;
     hasRefuel?: boolean;
     refuelAmount?: number;
-    fee: number,
+    fee?: number,
     exchange_account_connected: boolean;
     exchange_account_name?: string;
 }
@@ -41,12 +41,12 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
         hideFrom,
         hideTo,
         account,
-        addressSource,
+        appName,
         hideAddress
     } = useQueryState()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(addressSource && `/apps?name=${addressSource}`, layerswapApiClient.fetcher)
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = partnerData?.data
 
     const source = hideFrom ? partner : from
@@ -54,7 +54,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     const wallet = wallets?.find(w => w?.network?.internal_name === from?.internal_name)
 
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
-    const receiveAmountInUsd = (currency?.usd_price * receiveAmount).toFixed(2)
+    const receiveAmountInUsd = receiveAmount ? (currency?.usd_price * receiveAmount).toFixed(2) : undefined
     const nativeCurrency = refuelAmount && to?.isExchange === false ?
         currencies.find(c => c.asset === to?.native_currency) : null
 
@@ -111,7 +111,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                         </div>
                     </div>
                     {
-                        fee >= 0 ?
+                        fee != undefined && receiveAmount != undefined && fee >= 0 ?
                             <div className="flex flex-col justify-end">
                                 <p className="text-primary-text text-sm">{truncateDecimals(receiveAmount, currency.precision)} {destCurrencyName}</p>
                                 <p className="text-secondary-text text-sm flex justify-end">${receiveAmountInUsd}</p>

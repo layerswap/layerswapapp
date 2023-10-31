@@ -2,6 +2,7 @@ import { CryptoNetwork, NetworkCurrency } from "../Models/CryptoNetwork";
 import { Currency } from "../Models/Currency";
 import { Exchange } from "../Models/Exchange";
 import { Layer, BaseL2Asset, ExchangeAsset } from "../Models/Layer";
+import { THEME_COLORS } from "../Models/Theme";
 
 export function mapNetworkCurrencies(exchanges: Exchange[], networks: CryptoNetwork[]): Exchange[] {
     return exchanges.map(e => {
@@ -119,4 +120,20 @@ export function FilterCurrencies(currencies: Currency[], source: Layer | undefin
         return IsAvailableForLayer(c.asset, source, destination)
     })
     return filteredCurrencies;
+}
+
+export const getThemeData = async (query: any) => {
+    try {
+        if (!query)
+            return null
+        const theme_name = query.theme || query.appName || query.addressSource
+        // const internalApiClient = new InternalApiClient()
+        // const themeData = await internalApiClient.GetThemeData(theme_name);
+        // result.themeData = themeData as ThemeData;
+        return THEME_COLORS[theme_name] || null;
+    }
+    catch (e) {
+        console.log(e)
+        return null
+    }
 }
