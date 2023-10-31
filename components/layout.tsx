@@ -22,7 +22,7 @@ type Props = {
   children: JSX.Element | JSX.Element[];
   hideFooter?: boolean;
   settings?: LayerSwapSettings;
-  themeData?: ThemeData
+  themeData?: ThemeData | null
 };
 
 export default function Layout({ children, settings, themeData }: Props) {

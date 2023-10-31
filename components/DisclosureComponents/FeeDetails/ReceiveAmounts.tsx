@@ -31,7 +31,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency,
                                 <span>
                                     {destinationNetworkCurrency?.name}
                                 </span>
-                            </div>
+                            </p>
                             {refuel && <Refuel
                                 currencies={currencies}
                                 currency={currency}
