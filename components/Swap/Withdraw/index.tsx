@@ -257,7 +257,7 @@ const WalletTransferContent: FC = () => {
             openAccountModal()
     }, [canOpenAccount, openAccountModal])
 
-    if (!accountAddress || (swap?.source_exchange && !swap.exchange_account_connected) || !syncWallet?.cachedAddress) {
+    if (!accountAddress || (swap?.source_exchange && !swap.exchange_account_connected)) {
         return <>
             <div className='flex justify-center'>
                 <WalletIcon className='w-12 text-secondary-800/70' />

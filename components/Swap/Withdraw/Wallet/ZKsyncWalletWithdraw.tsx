@@ -12,6 +12,7 @@ import { useSwapDataState } from '../../../../context/swap';
 import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
 import { useNetwork } from 'wagmi';
+import { Transaction } from 'zksync';
 
 type Props = {
     depositAddress: string,
@@ -21,6 +22,7 @@ type Props = {
 const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
+    const [publishedTransaction, setPublishedTransaction] = useState<Transaction | null>(null);
     const { setSyncWallet } = useWalletUpdate();
     const { syncWallet } = useWalletState();
     const { setSwapTransaction } = useSwapTransactionStore();
@@ -36,6 +38,22 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const l1Network = networks.find(n => n.internal_name === source_network?.metadata?.L1Network);
 
     useEffect(() => {
+        const handleTransaction = async () => {
+            const res = await publishedTransaction?.awaitReceipt();
+            const txHash = publishedTransaction?.txHash?.replace('sync-tx:', '')
+            if (swap) {
+                if (res?.success) {
+                    txHash && setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Completed, txHash, res?.failReason);
+                    setTransferDone(true)
+                } else {
+                    txHash && setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, txHash, res?.failReason);
+                }
+            }
+        };
+        handleTransaction();
+    }, [publishedTransaction]);
+
+    useEffect(() => {
         if (signer?._address !== syncWallet?.cachedAddress) {
             setSyncWallet(null)
         }
@@ -48,7 +66,6 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         try {
             const syncProvider = await zksync.getDefaultProvider(defaultProvider);
             const wallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
-            wallet.getAccountState();
             setSyncWallet(wallet);
         }
         catch (e) {
@@ -70,17 +87,11 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 amount: zksync.closestPackableTransactionAmount(utils.parseUnits(amount.toString(), source_currency?.decimals)),
                 validUntil: zksync.utils.MAX_TIMESTAMP - swap?.sequence_number,
             });
-
-            const res = await tf?.awaitReceipt();
+            setPublishedTransaction(tf || null);
             const txHash = tf?.txHash?.replace('sync-tx:', '')
 
-            //TODO handle no transaction hash case
-            if (res?.success) {
-                txHash && setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Completed, txHash);
-                setTransferDone(true)
-            } else {
-                txHash && setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, txHash, res?.failReason);
-            }
+            if (txHash)
+                setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Pending, txHash);
         }
         catch (e) {
             if (e?.message)
@@ -94,7 +105,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     if (!signer) {
         return <ConnectWalletButton />
     }
-    
+
     if (l1Network && chain?.id !== Number(l1Network.chain_id)) {
         return (
             <ChangeNetworkButton
