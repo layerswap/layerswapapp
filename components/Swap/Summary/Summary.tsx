@@ -34,7 +34,6 @@ type SwapInfoProps = {
 
 const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name }) => {
     const { resolveImgSrc, currencies, networks } = useSettingsState()
-    const { address: evmAddress } = useAccount();
     const { wallets } = useWallet()
     const { selectedAssetNetwork } = useSwapDataState()
 
@@ -54,7 +53,6 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     const destination = hideTo ? partner : to
     const wallet = wallets?.find(w => w?.network?.internal_name === from?.internal_name)
 
-
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
     const receiveAmountInUsd = (currency?.usd_price * receiveAmount).toFixed(2)
     const nativeCurrency = refuelAmount && to?.isExchange === false ?
@@ -64,26 +62,15 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
         truncateDecimals(refuelAmount, nativeCurrency?.precision) : null
     const refuelAmountInUsd = ((nativeCurrency?.usd_price || 1) * (truncatedRefuelAmount || 0)).toFixed(2)
 
-    const sourceNetworkType = GetDefaultNetwork(from, currency?.asset)?.type
-    const sourceIsImmutableX = from?.internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-        || from?.internal_name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-
     let sourceAccountAddress = ""
     if (hideFrom && account) {
         sourceAccountAddress = shortenAddress(account as string);
     }
-    else if (sourceNetworkType === NetworkType.EVM && evmAddress && !from?.isExchange) {
-        sourceAccountAddress = shortenAddress(evmAddress);
-    }
-    else if (sourceNetworkType === NetworkType.Starknet && wallet && !from?.isExchange) {
-        sourceAccountAddress = wallet?.address ?
-            shortenAddress(wallet?.address) : "";
+    else if (wallet && !from?.isExchange) {
+        sourceAccountAddress = shortenAddress(wallet.address);
     }
     else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
         sourceAccountAddress = shortenEmail(exchange_account_name, 10);
-    }
-    else if (sourceIsImmutableX && wallet) {
-        sourceAccountAddress = shortenAddress(wallet?.address);
     }
     else if (from?.isExchange) {
         sourceAccountAddress = "Exchange"

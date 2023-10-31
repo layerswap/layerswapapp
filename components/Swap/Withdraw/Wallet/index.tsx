@@ -7,7 +7,6 @@ import LayerSwapApiClient, { DepositAddress, DepositType, Fee } from "../../../.
 import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep"
 import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw"
 import useSWR from 'swr'
-import { useAccount } from "wagmi"
 import TransferFromWallet from "./WalletTransfer"
 import { CanDoSweeplessTransfer } from "../../../../lib/fees"
 import useWallet from "../../../../hooks/useWallet"
@@ -17,7 +16,6 @@ const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
     const { wallets } = useWallet();
-    const { address } = useAccount()
     const wallet = wallets?.find(w => w?.network?.internal_name === swap?.source_network)
 
     const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_network_asset } = swap || {}
@@ -27,8 +25,7 @@ const WalletTransfer: FC = () => {
 
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
-    let connectedWalletAddress = sourceIsImmutableX ? wallet?.address : sourceIsStarknet ? wallet?.address : address;
-    const canDoSweeplessTransfer = source_network && CanDoSweeplessTransfer(source_network, connectedWalletAddress, destination_address)
+    const canDoSweeplessTransfer = source_network && CanDoSweeplessTransfer(source_network, wallet?.address, destination_address)
     
     const layerswapApiClient = new LayerSwapApiClient()
     const shouldGetGeneratedAddress = !canDoSweeplessTransfer
