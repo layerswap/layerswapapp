@@ -44,7 +44,7 @@ const ConnectButton = ({ children, className, onClose }: { children: ReactNode, 
                         <button type="button" key={index} className="w-full h-full hover:bg-secondary-600 rounded py-2 px-3" onClick={() => { connectWallet(connector.network as Layer & { type: typeof connector.type }); setOpen(false); onClose && onClose() }}>
                             <div className="flex space-x-2 items-center">
                                 {
-                                    connector &&
+                                    connector.id &&
                                     <div className="inline-flex items-center relative">
                                         <ResolveConnectorIcon connector={connector.id} className="w-8 h-8 p-0.5 rounded-full bg-secondary-800 border border-secondary-400" />
                                     </div>

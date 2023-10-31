@@ -6,10 +6,8 @@ import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { useEffect, useState } from 'react'
 import inIframe from '../components/utils/inIframe'
 import { SwapDataProvider } from '../context/swap'
-import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
 import { InferGetServerSidePropsType } from 'next'
-import ColorSchema from '../components/ColorSchema'
 import { getServerSideProps } from '../helpers/getSettings'
 
 export default function AuthPage({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
@@ -22,14 +20,13 @@ export default function AuthPage({ settings, themeData }: InferGetServerSideProp
   }, [])
 
   return (<>
-    <Layout settings={appSettings}>
+    <Layout settings={appSettings} themeData={themeData} >
       <SwapDataProvider>
         <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
           <AuthWizard />
         </FormWizardProvider >
       </SwapDataProvider>
     </Layout>
-    <ColorSchema themeData={themeData} />
   </>
   )
 }

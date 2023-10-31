@@ -15,7 +15,6 @@ import { Settings } from './Data/settings';
 import { NetworkType } from '../Models/CryptoNetwork';
 import { AuthDataUpdateContext, AuthStateContext, UserType } from '../context/authContext';
 import { IntercomProvider } from 'react-use-intercom';
-import ColorSchema from '../components/ColorSchema';
 import { THEME_COLORS } from '../Models/Theme';
 import Layout from '../components/layout';
 import RainbowKitComponent from '../components/RainbowKit';
@@ -75,7 +74,7 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
     return <WagmiConfig config={wagmiConfig}>
         <IntercomProvider appId='123'>
             <SettingsStateContext.Provider value={appSettings}>
-                <Layout settings={appSettings}>
+                <Layout settings={appSettings} themeData={themeData}>
                     <RainbowKitComponent>
                         <SwapDataStateContext.Provider value={swapContextInitialValues}>
                             <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
@@ -89,7 +88,6 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
                             </AuthStateContext.Provider>
                         </SwapDataStateContext.Provider >
                     </RainbowKitComponent>
-                    <ColorSchema themeData={themeData} />
                 </Layout>
             </SettingsStateContext.Provider>
         </IntercomProvider>
