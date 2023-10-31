@@ -6,6 +6,7 @@ import { useSettingsState } from "../../context/settings";
 import { Layer } from "../../Models/Layer";
 import RainbowIcon from "../icons/Wallets/Rainbow";
 import Starknet from "../icons/Wallets/Starknet";
+import TON from "../icons/Wallets/TON";
 
 const ConnectButton = ({ children, className, onClose }: { children: ReactNode, className?: string, onClose?: () => void }) => {
     const { connectWallet, wallets } = useWallet()
@@ -27,6 +28,7 @@ const ConnectButton = ({ children, className, onClose }: { children: ReactNode, 
         },
         {
             name: 'TON',
+            id: 'ton',
             type: NetworkType.TON,
             network: layers.find(l => l.type === NetworkType.TON)
         }
@@ -44,7 +46,7 @@ const ConnectButton = ({ children, className, onClose }: { children: ReactNode, 
                         <button type="button" key={index} className="w-full h-full hover:bg-secondary-600 rounded py-2 px-3" onClick={() => { connectWallet(connector.network as Layer & { type: typeof connector.type }); setOpen(false); onClose && onClose() }}>
                             <div className="flex space-x-2 items-center">
                                 {
-                                    connector.id &&
+                                    connector &&
                                     <div className="inline-flex items-center relative">
                                         <ResolveConnectorIcon connector={connector.id} className="w-8 h-8 p-0.5 rounded-full bg-secondary-800 border border-secondary-400" />
                                     </div>
@@ -67,6 +69,8 @@ const ResolveConnectorIcon = ({ connector, className }: { connector: string, cla
             return <RainbowIcon className={className} />
         case KnownConnectors.Starknet:
             return <Starknet className={className} />
+        case KnownConnectors.TON:
+            return <TON className={className} />
         default:
             return <></>
     }
@@ -75,4 +79,5 @@ const ResolveConnectorIcon = ({ connector, className }: { connector: string, cla
 const KnownConnectors = {
     Starknet: 'starknet',
     Rainbow: 'rainbow',
+    TON: 'ton'
 }
