@@ -33,7 +33,8 @@ export type UpdateInterface = {
     setDepositeAddressIsfromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
     setSwapPublishedTx: (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => void;
-    setSelectedAssetNetwork: (assetNetwork: ExchangeAsset | BaseL2Asset) => void
+    setSelectedAssetNetwork: (assetNetwork: ExchangeAsset | BaseL2Asset) => void,
+    setSwapId: (value: string) => void
 }
 
 export type SwapData = {
@@ -54,7 +55,7 @@ export function SwapDataProvider({ children }) {
     const [walletAddress, setWalletAddress] = useState<string>()
     const [depositeAddressIsfromAccount, setDepositeAddressIsfromAccount] = useState<boolean>()
     const router = useRouter();
-    const swapId = router.query.swapId?.toString()
+    const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
     const { address } = useAccount()
     const { layers } = useSettingsState()
 
@@ -138,7 +139,6 @@ export function SwapDataProvider({ children }) {
         setSwapTransaction(txForSwap)
     }, [swapResponse])
 
-
     const updateFns: UpdateInterface = {
         createSwap: createSwap,
         setCodeRequested: setCodeRequested,
@@ -150,7 +150,8 @@ export function SwapDataProvider({ children }) {
         setWalletAddress,
         setWithdrawType,
         setSwapPublishedTx,
-        setSelectedAssetNetwork
+        setSelectedAssetNetwork,
+        setSwapId
     };
     return (
         <SwapDataStateContext.Provider value={{

@@ -33,20 +33,21 @@ import GasDetails from "../../gasDetails";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { useQueryState } from "../../../context/query";
 import FeeDetails from "../../DisclosureComponents/FeeDetails";
+import { swapIsModified } from ".";
 
 type Props = {
-    isPartnerWallet: boolean,
+    isPartnerWallet?: boolean,
     partner?: Partner,
 }
 
 const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
-
     const {
         values,
         setValues,
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
-
+    const { swap } = useSwapDataState()
+    const swapNotModified = swap && !swapIsModified(swap, values)
     const { to: destination } = values
     const settings = useSettingsState();
     const source = values.from
@@ -221,7 +222,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                 </label>
                                 <AddressButton
                                     disabled={!values.to || !values.from}
-                                    isPartnerWallet={isPartnerWallet}
+                                    isPartnerWallet={!!isPartnerWallet}
                                     openAddressModal={() => setShowAddressModal(true)}
                                     partnerImage={partnerImage}
                                     values={values} />
@@ -236,7 +237,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                         disabled={lockAddress || (!values.to || !values.from)}
                                         name={"destination_address"}
                                         partnerImage={partnerImage}
-                                        isPartnerWallet={isPartnerWallet}
+                                        isPartnerWallet={!!isPartnerWallet}
                                         partner={partner}
                                         address_book={address_book?.data}
                                     />
@@ -298,7 +299,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                         type='submit'
                         isDisabled={!isValid}
                         isSubmitting={isSubmitting}>
-                        {ActionText(errors, actionDisplayName as string)}
+                        {swapNotModified ? "Complete the swap" : ActionText(errors, actionDisplayName as string)}
                     </SwapButton>
                 </Widget.Footer>
             </Widget>

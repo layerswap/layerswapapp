@@ -3,9 +3,9 @@ import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./addressValidator";
 import { FilterCurrencies, FilterDestinationLayers, FilterSourceLayers } from "../helpers/settingsHelper";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
+import { SwapItem } from "./layerSwapApiClient";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
-    console.log("generating form initial values")
     const { destAddress, amount, asset, from, to, lockAsset } = queryParams
     const { currencies, layers } = settings || {}
 
@@ -36,6 +36,42 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         amount: initialAmount,
         currency: initialCurrency,
         destination_address: (!destinationLayer?.isExchange && initialAddress) ? initialAddress : '',
+    }
+
+    return result
+}
+
+
+export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: LayerSwapAppSettings): SwapFormValues {
+    const {
+        destination_address,
+        requested_amount,
+        source_network_asset,
+        source_network,
+        destination_network,
+        source_exchange,
+        destination_exchange
+    } = swap
+
+    const { currencies, layers } = settings || {}
+
+    const from = source_exchange ?
+        layers.find(l => l.internal_name === source_exchange)
+        : layers.find(l => l.internal_name === source_network)
+
+    const to = source_exchange ?
+        layers.find(l => l.internal_name === destination_exchange)
+        : layers.find(l => l.internal_name === destination_network)
+
+    const currency = currencies.find(c => c.asset === source_network_asset)
+
+
+    const result: SwapFormValues = {
+        from,
+        to,
+        amount: requested_amount?.toString(),
+        currency,
+        destination_address
     }
 
     return result

@@ -12,6 +12,7 @@ const MockFunctions: UpdateInterface = {
     setSwapPublishedTx: () => { throw new Error("Not implemented") },
     setSelectedAssetNetwork: () => { throw new Error("Not implemented") },
     setInterval: () => { console.log("set interval called") },
+    setSwapId: () => { throw new Error("Not implemented") },
 }
 
 

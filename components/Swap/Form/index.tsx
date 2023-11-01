@@ -7,8 +7,8 @@ import React from "react";
 import ConnectNetwork from "../../ConnectNetwork";
 import toast from "react-hot-toast";
 import MainStepValidation from "../../../lib/mainStepValidator";
-import { generateSwapInitialValues } from "../../../lib/generateSwapInitialValues";
-import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
+import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "../../../lib/generateSwapInitialValues";
+import LayerSwapApiClient, { SwapItem } from "../../../lib/layerSwapApiClient";
 import Modal from "../../modal/modal";
 import SwapForm from "./Form";
 import { useRouter } from "next/router";
@@ -22,6 +22,8 @@ import { useQueryState } from "../../../context/query";
 import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import Withdraw from "../Withdraw";
+import { SwapStatus } from "../../../Models/SwapStatus";
+import SwapDetails from "..";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -38,36 +40,39 @@ export default function Form() {
 
     const settings = useSettingsState();
     const query = useQueryState()
-    const { createSwap } = useSwapDataUpdate()
+    const { createSwap, setSwapId } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.addressSource && `/apps?name=${query?.addressSource}`, layerswapApiClient.fetcher)
     const partner = query?.addressSource && partnerData?.data?.name?.toLowerCase() === (query?.addressSource as string)?.toLowerCase() ? partnerData?.data : undefined
+
     const { swap } = useSwapDataState()
 
     useEffect(() => {
-        setShowSwapModal(!!swap)
+        if (swap) {
+            const initialValues = generateSwapInitialValuesFromSwap(swap, settings)
+            formikRef?.current?.resetForm({ values: initialValues })
+            formikRef?.current?.validateForm(initialValues)
+        }
     }, [swap])
-
-    useEffect(() => {
-        const initialValues = generateSwapInitialValues(settings, query)
-        formikRef?.current?.resetForm({ values: initialValues })
-        formikRef?.current?.validateForm(initialValues)
-    }, [])
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
-            const swapId = 'c2d6c4de-5eb2-4edc-b69f-cfa05c094730'//await createSwap(values, query, partner);
-            await router.push(
-                {
-                    pathname: `/`,
-                    query: { ...resolvePersistantQueryParams(router.query), swapId: swapId }
-                },
-                {
-                    pathname: `/swap/${swapId}`,
-                    query: resolvePersistantQueryParams(router.query)
-                },
-                { shallow: true })
+            if (!swap || swapIsModified(swap, values)) {
+                const swapId = await createSwap(values, query, partner);
+                if (swapId) {
+                    setSwapId(swapId)
+                    var swapURL = window.location.protocol + "//"
+                        + window.location.host + `/swap/${swapId}`;
+                    const params = resolvePersistantQueryParams(router.query)
+                    if (params) {
+                        const search = new URLSearchParams(params as any);
+                        swapURL += `?${search}`
+                    }
+                    window.history.pushState({ path: swapURL }, '', swapURL);
+                }
+            }
+            setShowSwapModal(true)
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error
@@ -88,7 +93,7 @@ export default function Form() {
                 toast.error(error.message)
             }
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType])
+    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap])
 
     const destAddress: string = query?.destAddress as string;
 
@@ -96,16 +101,16 @@ export default function Form() {
 
     const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
-    const initialValues: SwapFormValues = useMemo(() => generateSwapInitialValues(settings, query), [])
-    console.log("main form rerender")
+    const initialValues: SwapFormValues = swap ? generateSwapInitialValuesFromSwap(swap, settings)
+        : generateSwapInitialValues(settings, query)
+
     return <>
         <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
             {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
         </Modal>
-        <Modal height="fit" show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`}>
-            <Withdraw />
+        <Modal height="90%" show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`}>
+            <SwapDetails type="contained" />
         </Modal>
-        <button type="button" onClick={handleSubmit}>asdasd</button>
         <Formik
             innerRef={formikRef}
             initialValues={initialValues}
@@ -118,3 +123,11 @@ export default function Form() {
     </>
 }
 
+
+export const swapIsModified = (swap: SwapItem, formValues: SwapFormValues) => {
+    return !([swap.source_exchange, swap.source_network].includes(formValues.from?.internal_name)
+        && [swap.destination_exchange, swap.destination_network].includes(formValues.to?.internal_name)
+        && swap.source_network_asset === formValues.currency?.asset
+        && swap.requested_amount === Number(formValues.amount)
+        && swap.destination_address === formValues.destination_address)
+}
