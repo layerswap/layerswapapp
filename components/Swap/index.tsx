@@ -17,7 +17,10 @@ const SwapDetails: FC = () => {
     const swapStatus = swap?.status;
     const { setInterval } = useSwapDataUpdate()
     const transactions = useSwapTransactionStore()
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : transactions.swapTransactions?.[swap?.id || '']
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
+        ? swap?.transactions?.find(t => t.type === TransactionType.Input)
+        : transactions.swapTransactions?.[swap?.id || ''] && transactions.swapTransactions?.[swap?.id || '']?.status !== 1
+            ? transactions.swapTransactions?.[swap?.id || ''] : {} as any
 
     useEffect(() => {
         if (swapStatus)
@@ -32,7 +35,7 @@ const SwapDetails: FC = () => {
         <>
             <Widget>
                 {
-                    (swapStatus === SwapStatus.UserTransferPending && !swapInputTransaction) ?
+                    ((swapStatus === SwapStatus.UserTransferPending && !swapInputTransaction) || transactions.swapTransactions?.[swap?.id || '']?.status == 1) ?
                         <Withdraw /> : <Processing />
                 }
             </Widget>

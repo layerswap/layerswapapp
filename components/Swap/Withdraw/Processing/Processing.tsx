@@ -26,7 +26,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     const swapStatus = swap.status;
     const transactions = useSwapTransactionStore()
-    
+
     const source_network = settings.networks?.find(e => e.internal_name === swap.source_network)
     const destination_network = settings.networks?.find(e => e.internal_name === swap.destination_network)
     const destination_layer = settings.layers?.find(e => e.internal_name === swap.destination_network)
@@ -34,21 +34,19 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
 
-    const isStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet
-        || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet
-        || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
-        || swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
-
     const destinationNetworkCurrency = destination_layer ? GetNetworkCurrency(destination_layer, swap?.destination_network_asset) : null
 
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : transactions.swapTransactions?.[swap?.id] as any;
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
+        ? swap?.transactions?.find(t => t.type === TransactionType.Input)
+        : transactions.swapTransactions?.[swap?.id] && transactions.swapTransactions?.[swap?.id]?.status !== 1
+            ? transactions.swapTransactions?.[swap?.id] : {} as any
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
     const nativeCurrency = destination_layer?.isExchange === false ? settings?.currencies?.find(c => c.asset === destination_layer?.native_currency) : null
     const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
 
-    const progressStatuses = getProgressStatuses(swap, swapStatus)
+    const progressStatuses = getProgressStatuses(swap, swapStatus, transactions)
     const stepStatuses = progressStatuses.stepStatuses;
 
 
@@ -75,12 +73,12 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 description: <div>
                     <span>
                         <span>Waiting for confirmations</span>
-                        {swapInputTransaction && swapInputTransaction.confirmations && (
+                        {swapInputTransaction && swapInputTransaction?.confirmations && (
                             <span className="text-primary-text ml-1">
-                                <span>{swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations
-                                    ? swapInputTransaction.max_confirmations
-                                    : swapInputTransaction.confirmations}</span>
-                                <span>/</span>{swapInputTransaction.max_confirmations}
+                                <span>{swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations
+                                    ? swapInputTransaction?.max_confirmations
+                                    : swapInputTransaction?.confirmations}</span>
+                                <span>/</span>{swapInputTransaction?.max_confirmations}
                             </span>
                         )}
                     </span>
@@ -257,11 +255,14 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
 
 
-const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
+const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus, transactions): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
     let generalTitle = "Transfer in progress";
     let subtitle: string | null = "";
 
-    const swapInputTransaction: Transaction | string = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions") || "{}")?.[swap?.id];
+    const swapInputTransaction: Transaction | string = swap?.transactions?.find(t => t.type === TransactionType.Input)
+        ? swap?.transactions?.find(t => t.type === TransactionType.Input)
+        : transactions.swapTransactions?.[swap?.id] && transactions.swapTransactions?.[swap?.id]?.status !== 1
+            ? transactions.swapTransactions?.[swap?.id] : {} as any
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
     let inputIsCompleted = (swapInputTransaction as Transaction)?.status == TransactionStatus.Completed && (swapInputTransaction as Transaction).confirmations >= (swapInputTransaction as Transaction).max_confirmations;

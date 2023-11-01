@@ -12,7 +12,7 @@ import { useSwapDataState } from '../../../../context/swap';
 import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
 import { useNetwork } from 'wagmi';
-import { Transaction } from 'zksync';
+import { TransactionReceipt } from 'zksync/build/types';
 
 type Props = {
     depositAddress: string,
@@ -22,7 +22,6 @@ type Props = {
 const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
-    const [publishedTransaction, setPublishedTransaction] = useState<Transaction | null>(null);
     const { setSyncWallet } = useWalletUpdate();
     const { syncWallet } = useWalletState();
     const { setSwapTransaction } = useSwapTransactionStore();
@@ -38,26 +37,24 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const l1Network = networks.find(n => n.internal_name === source_network?.metadata?.L1Network);
 
     useEffect(() => {
-        const handleTransaction = async () => {
-            const res = await publishedTransaction?.awaitReceipt();
-            const txHash = publishedTransaction?.txHash?.replace('sync-tx:', '')
-            if (swap) {
-                if (res?.success) {
-                    txHash && setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Completed, txHash, res?.failReason);
-                    setTransferDone(true)
-                } else {
-                    txHash && setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, txHash, res?.failReason);
-                }
-            }
-        };
-        handleTransaction();
-    }, [publishedTransaction]);
-
-    useEffect(() => {
         if (signer?._address !== syncWallet?.cachedAddress) {
             setSyncWallet(null)
         }
     }, [signer?._address]);
+
+    const handleTransaction = async (publishedTransaction: TransactionReceipt, txHash: string) => {
+        if (swap) {
+            if (!publishedTransaction?.failReason) {
+                txHash && setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Completed, txHash, publishedTransaction?.failReason);
+                setTransferDone(true)
+            } else {
+                txHash && setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, txHash, publishedTransaction?.failReason);
+                toast(String(publishedTransaction.failReason))
+                setLoading(false)
+                return
+            }
+        }
+    };
 
     const handleConnect = useCallback(async () => {
         if (!signer)
@@ -76,9 +73,8 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const handleTransfer = useCallback(async () => {
 
-        if (!swap)
-            return
-
+        if (!swap) return
+        
         setLoading(true)
         try {
             const tf = await syncWallet?.syncTransfer({
@@ -87,18 +83,24 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 amount: zksync.closestPackableTransactionAmount(utils.parseUnits(amount.toString(), source_currency?.decimals)),
                 validUntil: zksync.utils.MAX_TIMESTAMP - swap?.sequence_number,
             });
-            setPublishedTransaction(tf || null);
+
             const txHash = tf?.txHash?.replace('sync-tx:', '')
 
-            if (txHash)
-                setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Pending, txHash);
+            if (txHash) {
+                const syncProvider = await zksync.getDefaultProvider(defaultProvider);
+                const txReceipt = await syncProvider.getTxReceipt(String(tf?.txHash));
+                if (!txReceipt.executed)
+                    setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Pending, txHash);
+                else
+                    handleTransaction(txReceipt, String(tf?.txHash))
+            }
         }
         catch (e) {
-            if (e?.message)
+            if (e?.message) {
                 toast(e.message)
-        }
-        finally {
-            setLoading(false)
+                setLoading(false)
+                return
+            }
         }
     }, [syncWallet, swap])
 
