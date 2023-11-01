@@ -33,7 +33,7 @@ import GasDetails from "../../gasDetails";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { useQueryState } from "../../../context/query";
 import FeeDetails from "../../DisclosureComponents/FeeDetails";
-import { swapIsModified } from ".";
+import { shoudlCreateNewSwap } from ".";
 
 type Props = {
     isPartnerWallet?: boolean,
@@ -47,7 +47,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
     const { swap } = useSwapDataState()
-    const swapNotModified = swap && !swapIsModified(swap, values)
     const { to: destination } = values
     const settings = useSettingsState();
     const source = values.from
@@ -299,7 +298,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                         type='submit'
                         isDisabled={!isValid}
                         isSubmitting={isSubmitting}>
-                        {swapNotModified ? "Complete the swap" : ActionText(errors, actionDisplayName as string)}
+                        {ActionText(errors, actionDisplayName as string)}
                     </SwapButton>
                 </Widget.Footer>
             </Widget>
