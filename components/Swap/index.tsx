@@ -20,7 +20,7 @@ const SwapDetails: FC = () => {
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
         ? swap?.transactions?.find(t => t.type === TransactionType.Input)
         : transactions.swapTransactions?.[swap?.id || ''] && transactions.swapTransactions?.[swap?.id || '']?.status !== 1
-            ? transactions.swapTransactions?.[swap?.id || ''] : {} as any
+            ? transactions.swapTransactions?.[swap?.id || ''] : null
 
     useEffect(() => {
         if (swapStatus)
