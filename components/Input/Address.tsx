@@ -5,7 +5,6 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 import { toast } from "react-hot-toast";
 import { useSwapDataUpdate } from "../../context/swap";
-import { getStarknet } from "get-starknet-core"
 import { Info } from "lucide-react";
 import KnownInternalNames from "../../lib/knownIds";
 import { useSettingsState } from "../../context/settings";
@@ -13,7 +12,6 @@ import { isValidAddress } from "../../lib/addressValidator";
 import { RadioGroup } from "@headlessui/react";
 import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
-import RainbowKit from "../Swap/Withdraw/Wallet/RainbowKit";
 import { useAccount } from "wagmi";
 import shortenAddress from "../utils/ShortenAddress";
 import AddressIcon from "../AddressIcon";
@@ -56,16 +54,14 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const [inputValue, setInputValue] = useState<string | undefined>(values?.destination_address || "")
     const [validInputAddress, setValidInputAddress] = useState<string | undefined>('')
     const [autofilledWalletNetworkType, setAutofilledWalletNetworkType] = useState<NetworkType | null>(null)
-    const [canAutofillStarknet, setCanAutofillStarknet] = useState(true)
-    const starknet = getStarknet()
     const destinationIsStarknet = destination?.internal_name === KnownInternalNames.Networks.StarkNetGoerli
         || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
     const { connectWallet, disconnectWallet, wallets } = useWallet()
-    const wallet = wallets?.find(w => w?.network?.internal_name === values?.to?.internal_name)
+    const wallet = wallets?.find(w => w?.network.type === values?.to?.type)
     const settings = useSettingsState()
 
-    const { isConnected: isRainbowKitConnected, address: walletAddress } = useAccount({
+    const { isConnected: isRainbowKitConnected } = useAccount({
         onDisconnect() {
             setInputValue("")
             setAddressConfirmed(false)
@@ -74,15 +70,18 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     });
 
     useEffect(() => {
-        if (isRainbowKitConnected && destinationNetwork?.type) {
-            setAutofilledWalletNetworkType(NetworkType.EVM)
-        }
-    }, [isRainbowKitConnected, destinationNetwork?.type])
-
-    useEffect(() => {
-        if (!destination?.isExchange && isValidAddress(wallet?.address, destination) && !values?.destination_address) {
+        if (destination && !destination?.isExchange && isValidAddress(wallet?.address, destination) && !values?.destination_address) {
+            if (wallet && wallet.network.type === NetworkType.Starknet && (wallet.chainId != destinationChainId) && destination) {
+                (async () => {
+                    setWrongNetwork(true)
+                    await disconnectWallet(destination)
+                    setAutofilledWalletNetworkType(null)
+                })()
+                return
+            }
             setInputValue(wallet?.address)
             setAddressConfirmed(true)
+            setAutofilledWalletNetworkType(destination?.type)
             setFieldValue("destination_address", wallet?.address)
         }
     }, [wallet?.address, destination?.isExchange, destination, values?.destination_address])
@@ -134,15 +133,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
         }
     }, [inputValue, inputAddressIsValid])
 
-    useEffect(() => {
-        if (destinationIsStarknet) {
-            (async () => {
-                const availableNetworks = await starknet.getAvailableWallets()
-                if (!(availableNetworks.length > 0)) setCanAutofillStarknet(false)
-            })()
-        }
-    }, [destinationIsStarknet])
-
     const handleSetNewAddress = useCallback(() => {
         setAddressConfirmed(true)
         setFieldValue("destination_address", validInputAddress)
@@ -151,30 +141,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
 
     const destinationAsset = destination?.assets?.find(a => a.asset === asset)
     const destinationChainId = destinationAsset?.network?.chain_id
-
-    const handleConnectStarknet = useCallback(async () => {
-        const destination = values.to;
-        if (destination?.isExchange === false && destination) {
-            if (wallet) {
-                setInputValue(wallet.address)
-                setFieldValue("destination_address", wallet?.address)
-            } else {
-                const res = await connectWallet(destination as Layer & { type: NetworkType.Starknet })
-
-                if (res && res?.account?.chainId != destinationChainId) {
-                    setWrongNetwork(true)
-                    await disconnectWallet(destination)
-                    setAutofilledWalletNetworkType(null)
-                    return
-                }
-                setInputValue(res?.account?.address)
-                setFieldValue("destination_address", res?.account?.address)
-            }
-            setAddressConfirmed(true)
-            setAutofilledWalletNetworkType(destination.type)
-            setWrongNetwork(false)
-        }
-    }, [destinationChainId, wallet])
 
     return (<>
         <div className='w-full flex flex-col justify-between h-full text-primary-text'>
@@ -261,59 +227,24 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         </div>
                     }
                     {
-                        !disabled && !inputValue && destinationIsStarknet && canAutofillStarknet &&
-                        <div onClick={handleConnectStarknet} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
-                            <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
-                                <WalletIcon className="w-6 h-6 text-primary-text" />
-                            </div>
-                            <div className="flex flex-col">
-                                <div className="block text-sm font-medium">
-                                    Autofill from wallet
-                                </div>
-                                <div className="text-gray-500">
-                                    Connect your wallet to fetch the address
-                                </div>
-                            </div>
-                        </div>
-                    }
-                    {
-                        !disabled && !inputValue && destination?.type === 6 &&
-                        <div onClick={() => connectWallet(destination as Layer & { type: NetworkType.TON })} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
-                            <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
-                                <WalletIcon className="w-6 h-6 text-primary-text" />
-                            </div>
-                            <div className="flex flex-col">
-                                <div className="block text-sm font-medium">
-                                    Autofill from wallet
-                                </div>
-                                <div className="text-gray-500">
-                                    Connect your wallet to fetch the address
-                                </div>
-                            </div>
-                        </div>
-                    }
-                    {
                         !disabled
                         && !inputValue
                         && !destination?.isExchange
                         && destinationNetwork
-                        && ([NetworkType.EVM, NetworkType.StarkEx, NetworkType.ZkSyncLite].includes(destinationNetwork.type))
-                        &&
-                        <RainbowKit>
-                            <div className={`min-h-12 text-left space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
-                                <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
-                                    <WalletIcon className="w-6 h-6 text-primary-text" />
+                        && ([NetworkType.EVM, NetworkType.StarkEx, NetworkType.ZkSyncLite, NetworkType.TON, NetworkType.Starknet].includes(destinationNetwork.type)) &&
+                        <div onClick={() => { connectWallet(destination as Layer & { type: typeof destinationNetwork.type }) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
+                            <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
+                                <WalletIcon className="w-6 h-6 text-primary-text" />
+                            </div>
+                            <div className="flex flex-col">
+                                <div className="block text-sm font-medium">
+                                    Autofill from wallet
                                 </div>
-                                <div className="flex flex-col">
-                                    <div className="block text-sm font-medium">
-                                        Autofill from wallet
-                                    </div>
-                                    <div className="text-gray-500">
-                                        Connect your wallet to fetch the address
-                                    </div>
+                                <div className="text-gray-500">
+                                    Connect your wallet to fetch the address
                                 </div>
                             </div>
-                        </RainbowKit>
+                        </div>
                     }
                     {
                         destination?.isExchange

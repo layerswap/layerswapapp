@@ -1,12 +1,12 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
-import { Contract, number, uint256 } from 'starknet';
+import { Contract, BigNumberish, cairo } from 'starknet';
 import Erc20Abi from "../../../../lib/abis/ERC20.json"
 import WatchDogAbi from "../../../../lib/abis/LSWATCHDOG.json"
 import { useAuthState } from '../../../../context/authContext';
@@ -21,8 +21,8 @@ type Props = {
     amount?: number
 }
 
-function getUint256CalldataFromBN(bn: number.BigNumberish) {
-    return { type: "struct" as const, ...uint256.bnToUint256(bn) }
+function getUint256CalldataFromBN(bn: BigNumberish) {
+    return { ...cairo.uint256(bn) }
 }
 export function parseInputAmountToUint256(
     input: string,
@@ -37,7 +37,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [transferDone, setTransferDone] = useState<boolean>()
     const { connectWallet, disconnectWallet, wallets } = useWallet()
     const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
-
+    const wallet = wallets.find(wallet => wallet?.network?.type === NetworkType.Starknet)
     const { userId } = useAuthState()
 
     const { swap } = useSwapDataState()
@@ -50,18 +50,17 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const sourceCurrency = source_network?.currencies.find(c => c.asset?.toLowerCase() === swap?.source_network_asset?.toLowerCase())
 
     const sourceChainId = source_network?.chain_id
-    const wallet = wallets?.find(w => w.network.internal_name === source_layer?.internal_name)
 
-    const handleConnect = useCallback(async () => {
+    const handleConnect = async () => {
         setLoading(true)
         try {
-            const wallet = await connectWallet(source_layer as Layer & { type: NetworkType.Starknet })
-            const connectedChainId = wallet?.account?.chainId
+            await connectWallet(source_layer as Layer & { type: NetworkType.Starknet })
+            const connectedChainId = wallet?.chainId
             if (source_layer && connectedChainId && connectedChainId !== sourceChainId) {
                 setIsWrongNetwork(true)
-                await disconnectWallet(source_layer, swap)
+                await disconnectWallet(source_layer)
             }
-            else {
+            else if (source_layer && connectedChainId && connectedChainId === sourceChainId) {
                 setIsWrongNetwork(false)
             }
         }
@@ -69,11 +68,21 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             toast(e.message)
         }
         setLoading(false)
-    }, [sourceChainId])
+    }
+
+    useEffect(() => {
+        const connectedChainId = wallet?.chainId
+        if (source_layer && connectedChainId && connectedChainId !== sourceChainId) {
+            (async () => {
+                setIsWrongNetwork(true)
+                await disconnectWallet(source_layer)
+            })()
+        } else if (source_layer && connectedChainId && connectedChainId === sourceChainId) {
+            setIsWrongNetwork(false)
+        }
+    }, [wallet])
 
     const handleTransfer = useCallback(async () => {
-        if (!process.env.NEXT_PUBLIC_WATCHDOG_CONTRACT)
-            throw new Error("Watchdog contract not configured")
         if (!swap || !sourceCurrency) {
             return
         }
@@ -88,26 +97,30 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             if (!source_network?.metadata?.WatchdogContractAddress) {
                 throw Error("WatchdogContractAddress is not defined on network metadata")
             }
-            if(!amount){
+            if (!amount) {
                 throw Error("amount is not defined for starknet transfer")
+            }
+            if (!depositAddress) {
+                throw Error("depositAddress is not defined for starknet transfer")
             }
             const erc20Contract = new Contract(
                 Erc20Abi,
                 sourceCurrency.contract_address,
-                wallet.metadata?.starknetAccount,
+                wallet.metadata?.starknetAccount?.account,
             )
 
             const watchDogContract = new Contract(
                 WatchDogAbi,
                 source_network.metadata.WatchdogContractAddress,
-                wallet.metadata?.starknetAccount
+                wallet.metadata?.starknetAccount?.account
             )
 
             const call = erc20Contract.populate(
                 "transfer",
-                [depositAddress,
-                    parseInputAmountToUint256(amount.toString(), sourceCurrency?.decimals)]
-                ,
+                [
+                    depositAddress,
+                    parseInputAmountToUint256(amount.toString(), sourceCurrency?.decimals)
+                ]
             );
 
             const watch = watchDogContract.populate(
@@ -116,7 +129,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             );
 
             try {
-                const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.execute([call, watch]) || {});
+                const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.account?.execute([call, watch]) || {});
                 if (transferTxHash) {
                     setSwapPublishedTx(swap.id, PublishedSwapTransactionStatus.Completed, transferTxHash);
                     setTransferDone(true)

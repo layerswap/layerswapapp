@@ -1,10 +1,12 @@
 import { LinkResults } from "@imtbl/imx-sdk"
-import { Layer } from "../../../Models/Layer"
-import { useWalletStore } from "../../../stores/walletStore"
-import ImtblClient from "../../imtbl"
-import KnownInternalNames from "../../knownIds"
+import { Layer } from "../../../../Models/Layer"
+import { useWalletStore } from "../../../../stores/walletStore"
+import ImtblClient from "../../../imtbl"
+import KnownInternalNames from "../../../knownIds"
 
 export default function useImmutableX() {
+    const SupportedNetworks = [KnownInternalNames.Networks.ImmutableXMainnet, KnownInternalNames.Networks.ImmutableXGoerli]
+
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
@@ -37,8 +39,9 @@ export default function useImmutableX() {
     }
 
     return {
-        getImxWallet: getWallet,
-        connectImx: connectWallet,
-        disconnectImx: disconnectWallet
+        getWallet,
+        connectWallet,
+        disconnectWallet,
+        SupportedNetworks
     }
 }

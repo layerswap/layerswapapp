@@ -2,25 +2,22 @@ import toast from "react-hot-toast"
 import { NetworkType } from "../Models/CryptoNetwork"
 import { Layer } from "../Models/Layer"
 import LayerSwapApiClient, { SwapItem } from "../lib/layerSwapApiClient"
-import { StarknetWindowObject } from "get-starknet"
 import { useSwapDataUpdate } from "../context/swap"
 import { Wallet } from "../stores/walletStore"
-import { LinkResults } from "@imtbl/imx-sdk"
-import useStarknet from "../lib/wallets/starknet" 
-import useImmutableX from "../lib/wallets/immutableX"
-import useEVM from "../lib/wallets/evm"
-import useTON from "../lib/wallets/ton"
+import useStarknet from "../lib/WalletConnect/wallets/starknet/useStarknet"
+import useImmutableX from "../lib/WalletConnect/wallets/immutableX/useIMX"
+import useEVM from "../lib/WalletConnect/wallets/evm/useEVM"
+import useTON from "../lib/WalletConnect/wallets/ton/useTON"
 
 export default function useWallet() {
     const { mutateSwap } = useSwapDataUpdate()
-    const { connectStarknet, disconnectStarknet, getStarknetWallet } = useStarknet()
-    const { connectImx, disconnectImx, getImxWallet } = useImmutableX()
-    const { connectEVM, disconnectEVM, getEVMWallet } = useEVM()
-    const { connectTON, disconnectTON, getTONWallet } = useTON()
+    const { connectWallet: connectStarknet, disconnectWallet: disconnectStarknet, getWallet: getStarknetWallet } = useStarknet()
+    const { connectWallet: connectImx, disconnectWallet: disconnectImx, getWallet: getImxWallet } = useImmutableX()
+    const { connectWallet: connectEVM, disconnectWallet: disconnectEVM, getWallet: getEVMWallet } = useEVM()
+    const { connectWallet: connectTON, disconnectWallet: disconnectTON, getWallet: getTONWallet } = useTON()
 
-    async function handleConnect(layer: Layer & { isExchange: false, type: NetworkType.Starknet }): Promise<StarknetWindowObject>
-    async function handleConnect(layer: Layer & { isExchange: false, type: NetworkType.StarkEx }): Promise<LinkResults.Setup>
-    async function handleConnect(layer: Layer & { isExchange: false, type: NetworkType }): Promise<void>
+    // const { connectWallet, disconnectWallet, getWallet } = useWalletProvider(network)
+
     async function handleConnect(layer: Layer & { isExchange: false, type: NetworkType }) {
         try {
             if (layer.type === NetworkType.Starknet) {

@@ -1,13 +1,16 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit"
-import { Layer } from "../../../Models/Layer"
+import { Layer } from "../../../../Models/Layer"
 import { disconnect } from '@wagmi/core'
 import { useAccount } from "wagmi"
-import { NetworkType } from "../../../Models/CryptoNetwork"
-import { useSettingsState } from "../../../context/settings"
+import { NetworkType } from "../../../../Models/CryptoNetwork"
+import { useSettingsState } from "../../../../context/settings"
+import { WalletProvider } from "../.."
 
 
-export default function useEVM() {
+export default function useEVM(): WalletProvider {
     const { layers } = useSettingsState()
+    const SupportedNetworks = layers.filter(layer => layer.type === NetworkType.EVM).map(l => l.internal_name)
+    
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
 
@@ -35,8 +38,9 @@ export default function useEVM() {
     }
 
     return {
-        getEVMWallet: getWallet,
-        connectEVM: connectWallet,
-        disconnectEVM: disconnectWallet
+        getWallet,
+        connectWallet,
+        disconnectWallet,
+        SupportedNetworks
     }
 }
