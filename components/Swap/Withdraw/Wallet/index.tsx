@@ -8,7 +8,6 @@ import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep"
 import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw"
 import useSWR from 'swr'
 import TransferFromWallet from "./WalletTransfer"
-import useWallet from "../../../../hooks/useWallet"
 import { Layer } from "../../../../Models/Layer"
 import useWalletTransferOptions from "../../../../hooks/useWalletTransferOptions"
 import { useBalancesState } from "../../../../context/balances"
@@ -16,8 +15,6 @@ import { useBalancesState } from "../../../../context/balances"
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
-    const { wallets } = useWallet();
-    const wallet = wallets?.find(w => w?.network?.internal_name === swap?.source_network)
     const { isContractWallet } = useBalancesState();
 
     const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_network_asset } = swap || {}

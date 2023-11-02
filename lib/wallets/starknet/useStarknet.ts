@@ -1,9 +1,10 @@
-import { Layer } from "../../../../Models/Layer"
-import { useWalletStore } from "../../../../stores/walletStore"
-import KnownInternalNames from "../../../knownIds"
+import { Layer } from "../../../Models/Layer"
+import { WalletProvider } from "../../../hooks/useWallet";
+import { useWalletStore } from "../../../stores/walletStore"
+import KnownInternalNames from "../../knownIds"
 import { constants } from "starknet";
 
-export default function useStarknet() {
+export default function useStarknet(): WalletProvider {
     const SupportedNetworks = [KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetGoerli]
     const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
     const wallets = useWalletStore((state) => state.connectedWallets)
@@ -30,7 +31,6 @@ export default function useStarknet() {
                     }
                 })
             }
-            return res
         }
         catch (e) {
             throw new Error(e)

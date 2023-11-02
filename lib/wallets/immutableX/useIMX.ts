@@ -1,10 +1,11 @@
 import { LinkResults } from "@imtbl/imx-sdk"
-import { Layer } from "../../../../Models/Layer"
-import { useWalletStore } from "../../../../stores/walletStore"
-import ImtblClient from "../../../imtbl"
-import KnownInternalNames from "../../../knownIds"
+import { Layer } from "../../../Models/Layer"
+import { useWalletStore } from "../../../stores/walletStore"
+import ImtblClient from "../../imtbl"
+import KnownInternalNames from "../../knownIds"
+import { WalletProvider } from "../../../hooks/useWallet"
 
-export default function useImmutableX() {
+export default function useImmutableX(): WalletProvider {
     const SupportedNetworks = [KnownInternalNames.Networks.ImmutableXMainnet, KnownInternalNames.Networks.ImmutableXGoerli]
 
     const wallets = useWalletStore((state) => state.connectedWallets)
@@ -15,7 +16,7 @@ export default function useImmutableX() {
         return wallets.find(wallet => wallet.network.internal_name === KnownInternalNames.Networks.ImmutableXMainnet || wallet.network.internal_name === KnownInternalNames.Networks.ImmutableXGoerli)
     }
 
-    const connectWallet = async (network: Layer): Promise<LinkResults.Setup | undefined> => {
+    const connectWallet = async (network: Layer) => {
         if (network.isExchange === true) return
         try {
             const imtblClient = new ImtblClient(network.internal_name)
@@ -27,15 +28,14 @@ export default function useImmutableX() {
                     connector: res.providerPreference
                 });
             }
-            return res
         }
         catch (e) {
             console.log(e)
         }
     }
 
-    const disconnectWallet = (network: Layer) => {
-        removeWallet(network)
+    const disconnectWallet = async (network: Layer) => {
+        return removeWallet(network)
     }
 
     return {

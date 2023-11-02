@@ -4,61 +4,48 @@ import { Layer } from "../Models/Layer"
 import LayerSwapApiClient, { SwapItem } from "../lib/layerSwapApiClient"
 import { useSwapDataUpdate } from "../context/swap"
 import { Wallet } from "../stores/walletStore"
-import useStarknet from "../lib/WalletConnect/wallets/starknet/useStarknet"
-import useImmutableX from "../lib/WalletConnect/wallets/immutableX/useIMX"
-import useEVM from "../lib/WalletConnect/wallets/evm/useEVM"
-import useTON from "../lib/WalletConnect/wallets/ton/useTON"
+import useStarknet from "../lib/wallets/starknet/useStarknet"
+import useImmutableX from "../lib/wallets/immutableX/useIMX"
+import useEVM from "../lib/wallets/evm/useEVM"
+import useTON from "../lib/wallets/ton/useTON"
+
+export type WalletProvider = {
+    connectWallet: (layer: Layer) => Promise<void> | undefined | void,
+    disconnectWallet: (layer: Layer) => Promise<void> | undefined,
+    getWallet: () => Wallet | undefined,
+    SupportedNetworks: string[]
+}
 
 export default function useWallet() {
     const { mutateSwap } = useSwapDataUpdate()
-    const { connectWallet: connectStarknet, disconnectWallet: disconnectStarknet, getWallet: getStarknetWallet } = useStarknet()
-    const { connectWallet: connectImx, disconnectWallet: disconnectImx, getWallet: getImxWallet } = useImmutableX()
-    const { connectWallet: connectEVM, disconnectWallet: disconnectEVM, getWallet: getEVMWallet } = useEVM()
-    const { connectWallet: connectTON, disconnectWallet: disconnectTON, getWallet: getTONWallet } = useTON()
 
-    // const { connectWallet, disconnectWallet, getWallet } = useWalletProvider(network)
+    const WalletProviders: WalletProvider[] = [
+        useTON(),
+        useEVM(),
+        useStarknet(),
+        useImmutableX()
+    ]
 
     async function handleConnect(layer: Layer & { isExchange: false, type: NetworkType }) {
+        const provider = WalletProviders.find(provider => provider.SupportedNetworks.includes(layer.internal_name))
         try {
-            if (layer.type === NetworkType.Starknet) {
-                const res = await connectStarknet(layer)
-                return res
-            }
-            else if (layer.type === NetworkType.StarkEx) {
-                const res = await connectImx(layer)
-                return res
-            }
-            else if (layer.type === NetworkType.EVM) {
-                return connectEVM()
-            }
-            else if (layer.type === NetworkType.TON) {
-                return connectTON()
-            }
+            await provider?.connectWallet(layer)
         }
         catch {
             toast.error("Couldn't connect the account")
         }
     }
 
-    const handleDisconnect = async (network: Layer, swap?: SwapItem) => {
-        const networkType = network?.type
+    const handleDisconnect = async (layer: Layer, swap?: SwapItem) => {
+        const provider = WalletProviders.find(provider => provider.SupportedNetworks.includes(layer.internal_name))
         try {
             if (swap?.source_exchange) {
                 const apiClient = new LayerSwapApiClient()
                 await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
                 await mutateSwap()
             }
-            else if (networkType === NetworkType.EVM) {
-                await disconnectEVM()
-            }
-            else if (networkType === NetworkType.TON) {
-                await disconnectTON()
-            }
-            else if (networkType === NetworkType.Starknet) {
-                await disconnectStarknet(network)
-            }
-            else if (networkType === NetworkType.StarkEx) {
-                disconnectImx(network)
+            else {
+                await provider?.disconnectWallet(layer)
             }
         }
         catch {
@@ -69,30 +56,16 @@ export default function useWallet() {
     const getConnectedWallets = () => {
         let connectedWallets: Wallet[] = []
 
-        const imx = getImxWallet()
-        const starknet = getStarknetWallet()
-        const evm = getEVMWallet()
-        const ton = getTONWallet()
-        connectedWallets = evm && [...connectedWallets,
-            evm
-        ] || [...connectedWallets]
-        connectedWallets = ton && [...connectedWallets,
-            ton
-        ] || [...connectedWallets]
-        connectedWallets = starknet && [...connectedWallets,
-            starknet
-        ] || [...connectedWallets]
-        connectedWallets = imx && [...connectedWallets,
-            imx
-        ] || [...connectedWallets]
+        WalletProviders.forEach(wallet => {
+            const w = wallet.getWallet()
+            connectedWallets = w && [...connectedWallets, w] || [...connectedWallets]
+        })
 
         return connectedWallets
     }
 
-    const connectedWallets = getConnectedWallets()
-
     return {
-        wallets: connectedWallets,
+        wallets: getConnectedWallets(),
         connectWallet: handleConnect,
         disconnectWallet: handleDisconnect,
     }

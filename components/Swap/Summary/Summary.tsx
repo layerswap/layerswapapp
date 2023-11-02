@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { Fuel } from "lucide-react";
-import { useAccount } from "wagmi";
 import { FC } from "react";
 import { Currency } from "../../../Models/Currency";
 import { Layer } from "../../../Models/Layer";
@@ -11,9 +10,7 @@ import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import useSWR from 'swr'
-import { GetDefaultNetwork } from "../../../helpers/settingsHelper";
 import KnownInternalNames from "../../../lib/knownIds";
-import { NetworkType } from "../../../Models/CryptoNetwork";
 import useWallet from "../../../hooks/useWallet";
 import { useQueryState } from "../../../context/query";
 import { useSwapDataState } from "../../../context/swap";
@@ -51,7 +48,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
 
     const source = hideFrom ? partner : from
     const destination = hideTo ? partner : to
-    const wallet = wallets?.find(w => w?.network?.internal_name === from?.internal_name)
+    const wallet = wallets?.find(w => w?.network.type === from?.type)
 
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
     const receiveAmountInUsd = receiveAmount ? (currency?.usd_price * receiveAmount).toFixed(2) : undefined
