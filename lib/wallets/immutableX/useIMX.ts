@@ -12,7 +12,7 @@ export default function useImmutableX(): WalletProvider {
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
 
     const getWallet = () => {
-        return wallets.find(wallet => wallet.network.internal_name === KnownInternalNames.Networks.ImmutableXMainnet || wallet.network.internal_name === KnownInternalNames.Networks.ImmutableXGoerli)
+        return wallets.find(wallet => SupportedNetworks.includes(wallet.network.internal_name))
     }
 
     const connectWallet = async (network: Layer) => {
