@@ -24,7 +24,7 @@ const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[]
 
    return <>
       <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
-         <div className="relative">
+         <div className="relative z-20">
             {
                LayerSwapApiClient.apiVersion === 'sandbox' && <div>
                   <div className="h-0.5 bg-[#D95E1B]" />
