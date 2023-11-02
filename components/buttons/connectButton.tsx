@@ -79,5 +79,5 @@ const ResolveConnectorIcon = ({ connector, className }: { connector: string, cla
 const KnownConnectors = {
     Starknet: 'starknet',
     Rainbow: 'rainbow',
-    TON: 'ton'
+    TON: 'ton',
 }

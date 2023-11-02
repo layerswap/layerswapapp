@@ -15,7 +15,6 @@ import dynamic from 'next/dynamic'
 import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
 import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
-import { THEME, TonConnectUIProvider } from '@tonconnect/ui-react';
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
 
 type Props = {
@@ -94,10 +93,14 @@ export default function Layout({ children, settings, themeData }: Props) {
   }
 
   themeData = themeData || THEME_COLORS.default
-  
+
   const basePath = router?.basePath ?? ""
 
   const DynamicRainbowKit = dynamic(() => import("./RainbowKit"), {
+    loading: () => <></>
+  })
+
+  const DynamicTonConnect = dynamic(() => import("./TonConnectProvider"), {
     loading: () => <></>
   })
 
@@ -173,17 +176,13 @@ export default function Layout({ children, settings, themeData }: Props) {
           <AuthProvider>
             <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
               <ThemeWrapper>
-                <TonConnectUIProvider uiPreferences={
-                  {
-                    theme: THEME.LIGHT
-                  }
-                } manifestUrl={`https://${process.env.NEXT_PUBLIC_VERCEL_URL}${basePath ? `/${basePath}` : ''}/tonconnect-manifest.json`}>
+                <DynamicTonConnect basePath={basePath}>
                   <DynamicRainbowKit>
                     {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
                       <MaintananceContent />
                       : children}
                   </DynamicRainbowKit>
-                </TonConnectUIProvider>
+                </DynamicTonConnect>
               </ThemeWrapper>
             </ErrorBoundary>
           </AuthProvider>

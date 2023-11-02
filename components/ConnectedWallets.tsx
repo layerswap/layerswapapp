@@ -162,6 +162,8 @@ export const ResolveWalletIcon = ({ connector, className }: { connector: string,
             return <Argent className={className} />
         case KnownKonnectors.ArgentX:
             return <Argent className={className} />
+        case KnownKonnectors.ArgentMobile:
+            return <Argent className={className} />
         case KnownKonnectors.Braavos:
             return <Braavos className={className} />
         case KnownKonnectors.TON:
@@ -179,6 +181,7 @@ const KnownKonnectors = {
     BitKeep: 'bitkeep',
     Argent: 'argent',
     ArgentX: 'argent x',
+    ArgentMobile: 'argent mobile',
     Braavos: 'braavos',
     TON: 'ton'
 }

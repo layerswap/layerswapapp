@@ -7,7 +7,7 @@ export enum NetworkType {
     Cosmos = "cosmos",
     StarkEx = "stark_ex",
     ZkSyncLite = "zksynclite",
-    TON = 6
+    TON = 'ton'
 }
 
 
