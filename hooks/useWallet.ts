@@ -11,7 +11,7 @@ import useTON from "../lib/wallets/ton/useTON"
 
 export type WalletProvider = {
     connectWallet: (layer: Layer) => Promise<void> | undefined | void,
-    disconnectWallet: (layer: Layer) => Promise<void> | undefined,
+    disconnectWallet: (layer: Layer) => Promise<void> | undefined | void,
     getWallet: () => Wallet | undefined,
     SupportedNetworks: string[]
 }

@@ -1,4 +1,3 @@
-import { LinkResults } from "@imtbl/imx-sdk"
 import { Layer } from "../../../Models/Layer"
 import { useWalletStore } from "../../../stores/walletStore"
 import ImtblClient from "../../imtbl"
@@ -34,7 +33,7 @@ export default function useImmutableX(): WalletProvider {
         }
     }
 
-    const disconnectWallet = async (network: Layer) => {
+    const disconnectWallet = (network: Layer) => {
         return removeWallet(network)
     }
 
