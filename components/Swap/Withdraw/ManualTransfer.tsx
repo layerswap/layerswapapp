@@ -12,6 +12,7 @@ import SubmitButton from "../../buttons/submitButton";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../../shadcn/select";
 import { BaseL2Asset } from "../../../Models/Layer";
 import shortenAddress from "../../utils/ShortenAddress";
+import { isValidAddress } from "../../../lib/addressValidator";
 
 const ManualTransfer: FC = () => {
     const { swap } = useSwapDataState()
@@ -129,7 +130,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                     }
                     {
                         (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
-                        <div className='flex text-xs items-center py-1 mt-1 border-2 border-secondary-100 rounded border-dashed text-secondary-text'>
+                        <div className='flex text-xs items-center py-1 mt-1 border-2 border-secondary-300 rounded border-dashed text-secondary-text'>
                             <p>
                                 This address might not be activated. You can ignore it.
                             </p>
@@ -165,7 +166,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                     {requested_amount}
                 </p>
             </BackgroundField>
-            <BackgroundField header={'Asset'} withoutBorder Explorable={asset?.contract_address != null} toExplore={asset?.contract_address != null ? selectedAssetNetwork?.network?.account_explorer_template?.replace("{0}", asset?.contract_address) : undefined}>
+            <BackgroundField header={'Asset'} withoutBorder Explorable={asset?.contract_address != null && isValidAddress(asset?.contract_address, selectedAssetNetwork?.network)} toExplore={asset?.contract_address != null ? selectedAssetNetwork?.network?.account_explorer_template?.replace("{0}", asset?.contract_address) : undefined}>
                 <div className="flex items-center gap-2">
                     <div className="flex-shrink-0 h-7 w-7 relative">
                         {
@@ -183,7 +184,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                         <span className="font-semibold leading-4">
                             {asset?.name}
                         </span>
-                        {asset?.contract_address &&
+                        {asset?.contract_address && isValidAddress(asset.contract_address, selectedAssetNetwork?.network) &&
                             <span className="text-xs text-secondary-text flex items-center leading-3">
                                 {shortenAddress(asset?.contract_address)}
                             </span>
