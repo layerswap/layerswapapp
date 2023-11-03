@@ -39,8 +39,7 @@ const SwapDetails: FC = () => {
             <Widget>
                 {
                     ((swapStatus === SwapStatus.UserTransferPending
-                        && !(swapInputTransaction || storedWalletTransaction)) ||
-                        storedWalletTransaction?.status == PublishedSwapTransactionStatus.Error) ?
+                        && !(swapInputTransaction || (storedWalletTransaction && storedWalletTransaction.status !== PublishedSwapTransactionStatus.Error)))) ?
                         <Withdraw /> : <Processing />
                 }
             </Widget>

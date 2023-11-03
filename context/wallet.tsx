@@ -20,7 +20,7 @@ export const WalletStateContext = createContext<WalletState | null>({
     starknetAccount: null,
     syncWallet: null
 });
-const WalletStateUpdateContext = createContext<WalletStateUpdate | null>(null);
+export const WalletStateUpdateContext = createContext<WalletStateUpdate | null>(null);
 
 export type WalletState = {
     starknetAccount: StarknetWindowObject | undefined | null,
@@ -33,7 +33,7 @@ export type WalletState = {
     isContractWallet?: { ready: boolean, value?: boolean }
 }
 
-type WalletStateUpdate = {
+export type WalletStateUpdate = {
     setStarknetAccount: (account: StarknetWindowObject | null) => void,
     setImxAccount: (account: string | null) => void;
     getBalance: (from: Layer) => Promise<void>,
