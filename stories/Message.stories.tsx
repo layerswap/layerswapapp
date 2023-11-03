@@ -3,16 +3,25 @@ import ColorSchema from '../components/ColorSchema';
 import { THEME_COLORS } from '../Models/Theme';
 import WalletMessage, { WalletMessageProps } from '../components/Swap/Withdraw/Wallet/WalletTransfer/message';
 import { FC } from 'react';
+import { Widget } from '../components/Widget/Index';
 
 window.plausible = () => { }
-const Comp: FC<{ theme?: "default" | "light", header: string, status: 'pending' | 'error', details: string }> = ({ theme, status, details, header }) => {
+const Comp: FC<{ theme?: "default" | "light", header: string, status: 'pending' | 'error', details: string, showInModal?: boolean }> = ({ theme, status, details, header, showInModal }) => {
     const themeData = theme ? THEME_COLORS[theme] : THEME_COLORS["default"];
-    return <>
-        <WalletMessage status={status}
-            header={header}
-            details={details} />
+    return <Widget hideMenu={true} >
+        <Widget.Content>
+            <div style={{ width: '350px' }} className='h-[500px]'>
+            </div>
+        </Widget.Content>
+        <Widget.Footer>
+            <WalletMessage status={status}
+                header={header}
+                details={details}
+                showInModal={!!showInModal}
+            />
+        </Widget.Footer>
         <ColorSchema themeData={themeData} />
-    </>
+    </Widget>
 }
 
 const meta = {
@@ -51,7 +60,8 @@ export const ConfirmTransactionMessage: Story = {
     args: {
         header: 'Confirm in wallet',
         status: 'pending',
-        details: 'Please confirm the transaction in your wallet'
+        details: 'Please confirm the transaction in your wallet',
+        showInModal: true
     } as WalletMessageProps
 };
 export const TransactionInProgressMessage: Story = {
