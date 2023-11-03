@@ -15,6 +15,7 @@ import { SwapFailReasons } from '../../../../Models/RangeError';
 import { Gauge } from '../../../gauge';
 import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
+import { useSwapTransactionStore } from '../../../store/zustandStore';
 
 type Props = {
     settings: LayerSwapAppSettings;
@@ -24,6 +25,7 @@ type Props = {
 const Processing: FC<Props> = ({ settings, swap }) => {
 
     const swapStatus = swap.status;
+    const storedWalletTransactions = useSwapTransactionStore()
 
     const source_network = settings.networks?.find(e => e.internal_name === swap.source_network)
     const destination_network = settings.networks?.find(e => e.internal_name === swap.destination_network)
@@ -32,14 +34,14 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
 
-    const isStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet
-        || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet
-        || swap?.destination_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
-        || swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetGoerli
-
     const destinationNetworkCurrency = destination_layer ? GetNetworkCurrency(destination_layer, swap?.destination_network_asset) : null
 
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions") || "{}")?.[swap?.id]
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
+    const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id]
+
+    const transactionHash = swapInputTransaction?.transaction_id || storedWalletTransaction?.hash
+
+
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
@@ -48,7 +50,6 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     const progressStatuses = getProgressStatuses(swap, swapStatus)
     const stepStatuses = progressStatuses.stepStatuses;
-
 
     const outputPendingDetails = <div className='flex items-center space-x-1'>
         <span>Estimated arrival:</span>
@@ -73,12 +74,12 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 description: <div>
                     <span>
                         <span>Waiting for confirmations</span>
-                        {swapInputTransaction && swapInputTransaction.confirmations && (
+                        {swapInputTransaction && swapInputTransaction?.confirmations && (
                             <span className="text-primary-text ml-1">
-                                <span>{swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations
-                                    ? swapInputTransaction.max_confirmations
-                                    : swapInputTransaction.confirmations}</span>
-                                <span>/</span>{swapInputTransaction.max_confirmations}
+                                <span>{swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations
+                                    ? swapInputTransaction?.max_confirmations
+                                    : swapInputTransaction?.confirmations}</span>
+                                <span>/</span>{swapInputTransaction?.max_confirmations}
                             </span>
                         )}
                     </span>
@@ -89,7 +90,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 description: <div className='flex items-center space-x-1'>
                     <span>Transaction: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
-                        <a target={"_blank"} href={input_tx_explorer?.replace("{0}", swapInputTransaction?.transaction_id)}>{shortenAddress(swapInputTransaction?.transaction_id)}</a>
+                        <a target={"_blank"} href={input_tx_explorer?.replace("{0}", transactionHash)}>{shortenAddress(transactionHash)}</a>
                         <ExternalLink className='h-4' />
                     </div>
                 </div>
@@ -258,11 +259,12 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
     let generalTitle = "Transfer in progress";
     let subtitle: string | null = "";
+    //TODO might need to check stored wallet transaction statuses
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
 
-    const swapInputTransaction: Transaction | string = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions") || "{}")?.[swap?.id];
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
-    let inputIsCompleted = (swapInputTransaction as Transaction)?.status == TransactionStatus.Completed && (swapInputTransaction as Transaction).confirmations >= (swapInputTransaction as Transaction).max_confirmations;
+    let inputIsCompleted = swapInputTransaction?.status == TransactionStatus.Completed && swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations;
     if (!inputIsCompleted) {
         // Magic case, shows estimated time
         subtitle = null

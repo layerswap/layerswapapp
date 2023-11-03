@@ -37,7 +37,18 @@ export default function Layout({ children, settings }: Props) {
       }
       return customUrl
     }
-    plausible('pageview', { u: prepareUrl(['destNetwork', 'sourceExchangeName', 'addressSource', 'asset', 'amount']) })
+    plausible('pageview', {
+      u: prepareUrl([
+        'destNetwork', //opsolate
+        'sourceExchangeName', //opsolate
+        'addressSource', //opsolate
+        'from',
+        'to',
+        'appName',
+        'asset',
+        'amount'
+      ])
+    })
   }, [])
 
   if (!settings)

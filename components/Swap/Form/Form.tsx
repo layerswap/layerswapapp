@@ -69,7 +69,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const lockAddress =
         (values.destination_address && values.to)
         && isValidAddress(values.destination_address, values.to)
-        && (((query.lockAddress || query.hideAddress) && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
+        && (((query.lockAddress || query.hideAddress) && (query.appName !== "imxMarketplace" || settings.validSignatureisPresent)));
 
     const actionDisplayName = query?.actionButtonText || "Swap now"
 

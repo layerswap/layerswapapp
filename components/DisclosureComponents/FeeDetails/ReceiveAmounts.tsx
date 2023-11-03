@@ -27,6 +27,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency,
                         <div className="font-semibold md:font-bold text-right leading-4">
                             <p>
                                 <>{parsedReceiveAmount}</>
+                                &nbsp;
                                 <span>
                                     {destinationNetworkCurrency?.name}
                                 </span>

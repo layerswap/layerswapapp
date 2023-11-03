@@ -1,17 +1,18 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
-import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
+import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
 import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
+import { useSwapTransactionStore } from '../../../store/zustandStore';
 import { NetworkCurrency } from '../../../../Models/CryptoNetwork';
 
 type Props = {
-    depositAddress: string
+    depositAddress?: string
 }
 
 const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
@@ -20,8 +21,8 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const { setImxAccount } = useWalletUpdate()
     const { imxAccount } = useWalletState()
     const { swap } = useSwapDataState()
-    const { setSwapPublishedTx } = useSwapDataUpdate()
     const { networks } = useSettingsState()
+    const { setSwapTransaction } = useSwapTransactionStore();
 
     const { source_network: source_network_internal_name } = swap || {}
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
@@ -43,7 +44,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     }, [source_network])
 
     const handleTransfer = useCallback(async () => {
-        if (!source_network || !swap)
+        if (!source_network || !swap || !depositAddress)
             return
         setLoading(true)
         try {
@@ -58,7 +59,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                 toast(transactionRes.message)
             }
             else if (transactionRes.status == "success") {
-                setSwapPublishedTx(swap.id, PublishedSwapTransactionStatus.Completed, transactionRes.txId.toString());
+                setSwapTransaction(swap.id, PublishedSwapTransactionStatus.Completed, transactionRes.txId.toString());
                 setTransferDone(true)
             }
         }
@@ -67,7 +68,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [imxAccount, swap, source_network])
+    }, [imxAccount, swap, source_network, depositAddress])
 
     return (
         <>
@@ -86,8 +87,8 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                         </SubmitButton>
                     }
                     {
-                        imxAccount &&
-                        <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        imxAccount &&  
+                        <SubmitButton isDisabled={!!(loading || transferDone) || !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>
                     }

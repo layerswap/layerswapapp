@@ -6,7 +6,13 @@ import { useCallback, useRef } from "react";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 
-const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[], className?: string }) => {
+type Props = {
+   children: JSX.Element | JSX.Element[];
+   className?: string;
+   hideMenu?: boolean;
+}
+
+const Widget = ({ children, className, hideMenu }: Props) => {
    const router = useRouter()
    const wrapper = useRef(null);
 
@@ -34,7 +40,7 @@ const Widget = ({ children, className }: { children: JSX.Element | JSX.Element[]
                </div>
             }
          </div>
-         <HeaderWithMenu goBack={handleBack} />
+         {!hideMenu && <HeaderWithMenu goBack={handleBack} />}
          <div className='text-center text-xl text-secondary-100'>
          </div>
          <div className="relative px-6">

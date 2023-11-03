@@ -7,7 +7,7 @@ import { Chain, WagmiConfig, configureChains, createConfig } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, bitgetWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
-import { WalletStateContext } from '../context/wallet';
+import { WalletStateContext, WalletStateUpdateContext } from '../context/wallet';
 import { FC } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange, cancelled, expired } from './Data/swaps'
@@ -23,6 +23,8 @@ import SwapDetails from '../components/Swap';
 import resolveChain from '../lib/resolveChain';
 import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
+import WalletMockFunctions from './Mocks/context/WalletMockFunctions';
+
 import WalletStateMock from './Mocks/context/WalletState';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
@@ -82,7 +84,9 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
                                 <AuthDataUpdateContext.Provider value={AuthMockFunctions}>
                                     <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
                                         <WalletStateContext.Provider value={WalletStateMock}>
-                                            <SwapDetails type='contained' />
+                                            <WalletStateUpdateContext.Provider value={WalletMockFunctions}>
+                                                <SwapDetails type='contained' />
+                                            </WalletStateUpdateContext.Provider>
                                         </WalletStateContext.Provider>
                                     </SwapDataUpdateContext.Provider>
                                 </AuthDataUpdateContext.Provider>

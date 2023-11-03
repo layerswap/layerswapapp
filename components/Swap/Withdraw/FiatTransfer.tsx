@@ -2,6 +2,7 @@ import { Context, FC, createContext, useContext, useEffect, useRef, useState } f
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import { StripeOnramp, loadStripeOnramp } from "@stripe/crypto";
 import { PublishedSwapTransactionStatus } from "../../../lib/layerSwapApiClient";
+import { useSwapTransactionStore } from "../../store/zustandStore";
 
 type ContextState = {
     onramp: StripeOnramp | null
@@ -59,12 +60,12 @@ type OnrampElementProps = {
 // React element to render Onramp UI
 export const OnrampElement: FC<OnrampElementProps> = ({
     clientSecret,
-    swapId
+    swapId,
 }) => {
     const stripeOnramp = useStripeOnramp();
     const onrampElementRef = useRef<HTMLDivElement>(null);
-    const { setSwapPublishedTx } = useSwapDataUpdate()
     const [loading, setLoading] = useState(false)
+    const { setSwapTransaction } = useSwapTransactionStore();
 
     useEffect(() => {
         const containerRef = onrampElementRef.current;
@@ -90,7 +91,7 @@ export const OnrampElement: FC<OnrampElementProps> = ({
                         // TODO handle
                         return
                     }
-                    await setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, e.payload.session.id);
+                    await setSwapTransaction(swapId, PublishedSwapTransactionStatus.Completed, e.payload.session.id);
                 }
 
                 session.addEventListener("onramp_session_updated", eventListener)

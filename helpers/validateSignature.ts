@@ -7,7 +7,7 @@ export function validateSignature(queryParams: QueryParams): boolean {
     if (!queryParams.timestamp || !queryParams.signature || Number(queryParams.timestamp) < new Date().getTime() - PERIOD_IN_MILISECONDS)
         return false
 
-    const secret = JSON.parse(process.env.PARTNER_SECRETS || "{}")?.[queryParams.addressSource || '']?.[queryParams.apiKey || ""]
+    const secret = JSON.parse(process.env.PARTNER_SECRETS || "{}")?.[queryParams.appName || '']?.[queryParams.apiKey || ""]
     if (!secret)
         return false;
     const paraps: QueryParams = { ...queryParams }

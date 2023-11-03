@@ -1,7 +1,7 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
-import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
+import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
@@ -14,19 +14,18 @@ import { useAuthState } from '../../../../context/authContext';
 import KnownInternalNames from '../../../../lib/knownIds';
 import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 import { parseUnits } from 'viem'
+import { useSwapTransactionStore } from '../../../store/zustandStore';
 
 type Props = {
-    depositAddress: string;
-    amount: number
+    depositAddress?: string;
+    amount?: number
 }
 
 function getUint256CalldataFromBN(bn: number.BigNumberish) {
     return { type: "struct" as const, ...uint256.bnToUint256(bn) }
 }
-export function parseInputAmountToUint256(
-    input: string,
-    decimals: number = 18,
-) {
+
+export function parseInputAmountToUint256(input: string,decimals: number = 18) {
     return getUint256CalldataFromBN(parseUnits(input, decimals).toString())
 }
 
@@ -37,17 +36,15 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const { setStarknetAccount } = useWalletUpdate()
     const { starknetAccount } = useWalletState()
     const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
-
     const { userId } = useAuthState()
 
     const { swap } = useSwapDataState()
-    const { setSwapPublishedTx } = useSwapDataUpdate()
     const { networks } = useSettingsState()
 
+    const { setSwapTransaction } = useSwapTransactionStore();
     const { source_network: source_network_internal_name } = swap || {}
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
     const sourceCurrency = source_network?.currencies.find(c => c.asset?.toLowerCase() === swap?.source_network_asset?.toLowerCase())
-
     const sourceChainId = source_network?.chain_id
 
     const handleConnect = useCallback(async () => {
@@ -87,6 +84,9 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             if(!source_network?.metadata?.WatchdogContractAddress){
                 throw Error("WatchdogContractAddress is not defined on network metadata")
             }
+            if(!amount){
+                throw Error("amount is not defined for starknet transfer")
+            }
             const erc20Contract = new Contract(
                 Erc20Abi,
                 sourceCurrency.contract_address,
@@ -115,7 +115,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
                 const { transaction_hash: transferTxHash } = (await starknetAccount.account?.execute([call, watch]) || {});
                 if (transferTxHash) {
-                    setSwapPublishedTx(swap.id, PublishedSwapTransactionStatus.Completed, transferTxHash);
+                    setSwapTransaction(swap.id, PublishedSwapTransactionStatus.Completed, transferTxHash);
                     setTransferDone(true)
                 }
                 else {
