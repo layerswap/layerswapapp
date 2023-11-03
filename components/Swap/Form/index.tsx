@@ -122,7 +122,7 @@ export default function Form() {
         : generateSwapInitialValues(settings, query)
 
     return <>
-        <div className="drop-shadow-xl rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
+        <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence exitBeforeEnter>
                 {swap && !showSwapModal &&
                     <PendingSwap onClick={() => setShowSwapModal(true)} />
@@ -209,7 +209,7 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
     >
         <motion.div
             onClick={onClick}
-            initial="rest" whileHover="rest" animate="rest"
+            initial="rest" whileHover="hover" animate="rest"
             className="relative bg-secondary-600 rounded-r-lg">
             {/* <motion.div
                 variants={slashMotion}
