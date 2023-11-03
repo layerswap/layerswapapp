@@ -5,7 +5,7 @@ import { useSwapDataState, useSwapDataUpdate } from '../../context/swap';
 import { ResolvePollingInterval } from '../utils/SwapStatus';
 import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
-import { TransactionType } from '../../lib/layerSwapApiClient';
+import { PublishedSwapTransactionStatus, TransactionType } from '../../lib/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
 import GasDetails from '../gasDetails';
 import { useSettingsState } from '../../context/settings';
@@ -16,11 +16,14 @@ const SwapDetails: FC = () => {
     const settings = useSettingsState()
     const swapStatus = swap?.status;
     const { setInterval } = useSwapDataUpdate()
-    const transactions = useSwapTransactionStore()
+    const storedWalletTransactions = useSwapTransactionStore()
+
+
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
-        ? swap?.transactions?.find(t => t.type === TransactionType.Input)
-        : transactions.swapTransactions?.[swap?.id || ''] && transactions.swapTransactions?.[swap?.id || '']?.status !== 1
-            ? transactions.swapTransactions?.[swap?.id || ''] : null
+    const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id || '']
+
+
+
 
     useEffect(() => {
         if (swapStatus)
@@ -35,7 +38,9 @@ const SwapDetails: FC = () => {
         <>
             <Widget>
                 {
-                    ((swapStatus === SwapStatus.UserTransferPending && !swapInputTransaction) || transactions.swapTransactions?.[swap?.id || '']?.status == 1) ?
+                    ((swapStatus === SwapStatus.UserTransferPending
+                        && !(swapInputTransaction || storedWalletTransaction)) ||
+                        storedWalletTransaction?.status == PublishedSwapTransactionStatus.Error) ?
                         <Withdraw /> : <Processing />
                 }
             </Widget>
