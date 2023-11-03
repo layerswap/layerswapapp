@@ -120,7 +120,7 @@ export default function Form() {
         : generateSwapInitialValues(settings, query)
 
     return <>
-        <div className="drop-shadow-xl cursor-pointer rounded-r-lg absolute z-10 mt-3 border-l-0">
+        <div className="drop-shadow-xl rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence exitBeforeEnter>
                 {swap && !showSwapModal &&
                     <PendingSwap onClick={() => setShowSwapModal(true)} />
@@ -207,8 +207,8 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
     >
         <motion.div
             onClick={onClick}
-            initial="rest" whileHover="hover" animate="rest"
-            className="relative bg-secondary-600">
+            initial="rest" whileHover="rest" animate="rest"
+            className="relative bg-secondary-600 rounded-r-lg">
             {/* <motion.div
                 variants={slashMotion}
                 className="absolute left-0 flex opacity-0 bg-secondary-600"
@@ -219,7 +219,7 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
             </motion.div> */}
             <motion.div
                 variants={textMotion}
-                className="flex items-center bg-secondary-600">
+                className="flex items-center bg-secondary-600 rounded-r-lg">
                 <div className="text-primary-text flex px-4 p-2 items-center space-x-2">
                     <span className="flex items-center">
                         {swap && <StatusIcon swap={swap} short={true} />}
@@ -246,6 +246,9 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                                 className="rounded-md object-contain"
                             />
                         }
+                    </div>
+                    <div className="flex-shrink-0 relative hidden md:block">
+                       {requested_amount} {source_network_asset}
                     </div>
                 </div>
             </motion.div>
