@@ -100,7 +100,8 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             }
         }
         setLoading(false)
-    }, [syncWallet, swap])
+        
+    }, [syncWallet, swap, depositAddress, source_currency, amount])
 
     if (!signer) {
         return <ConnectWalletButton />
