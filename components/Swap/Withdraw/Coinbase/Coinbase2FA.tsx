@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { useSwapDataState } from '../../../../context/swap';
 import { useTimerState } from '../../../../context/timerContext';
 import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
-import { ApiError, KnownErrorCode } from '../../../../Models/ApiError';
+import { ApiError, LSAPIKnownErrorCode } from '../../../../Models/ApiError';
 import SubmitButton from '../../../buttons/submitButton';
 import SpinIcon from '../../../icons/spinIcon';
 import NumericInput from '../../../Input/NumericInput';
@@ -53,10 +53,10 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
                 toast.error(error.message)
                 return
             }
-            else if (data.code === KnownErrorCode.INSUFFICIENT_FUNDS) {
+            else if (data.code === LSAPIKnownErrorCode.INSUFFICIENT_FUNDS) {
                 setShowInsufficientFundsModal(true)
             }
-            else if (data.code === KnownErrorCode.FUNDS_ON_HOLD) {
+            else if (data.code === LSAPIKnownErrorCode.FUNDS_ON_HOLD) {
                 setShowFundsOnHoldModal(true)
             }
             else {
@@ -81,7 +81,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
                 toast.error(error.message)
                 return
             }
-            if (data.code === KnownErrorCode.COINBASE_INVALID_2FA) {
+            if (data.code === LSAPIKnownErrorCode.COINBASE_INVALID_2FA) {
                 startTimer(TIMER_SECONDS)
                 return
             }
