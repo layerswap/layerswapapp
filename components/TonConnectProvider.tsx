@@ -1,46 +1,60 @@
 import { THEME, TonConnectUIProvider } from "@tonconnect/ui-react"
+import { ThemeData } from "../Models/Theme";
 
-const TonConnectProvider = ({ children, basePath }: { children: JSX.Element | JSX.Element[], basePath: string }) => {
+const TonConnectProvider = ({ children, basePath, themeData }: { children: JSX.Element | JSX.Element[], basePath: string, themeData: ThemeData }) => {
+
+    const rgbToHex = (rgb: string) => {
+        const rgbArray = rgb.match(/\d+/g)
+        function componentToHex(c: number) {
+            var hex = c?.toString(16);
+            return hex.length == 1 ? "0" + hex : hex;
+        }
+
+        if (!rgbArray) return
+
+        return "#" + componentToHex(Number(rgbArray[0])) + componentToHex(Number(rgbArray[1])) + componentToHex(Number(rgbArray[2]));
+    }
 
     return (
-        <TonConnectUIProvider uiPreferences={
-            {
-                theme: THEME.DARK,
-                borderRadius: 's',
-                // colorsSet: {
-                //     [THEME.DARK]: {
-                //         constant: {
-                //             black: '#000000',
-                //             white: '#f1f1f1f1',
-                //         },
-                //         connectButton: {
-                //             background:'rgb(var(--ls-colors-primary-500))',
-                //             foreground: 'rgb(var(--ls-colors-secondary-800))',
-                //         },
-                //         accent: 'rgb(var(--ls-colors-primary-500))',
-                //         telegramButton: 'rgb(var(--ls-colors-primary-500))',
-                //         icon: {
-                //             primary: 'rgb(var(--ls-colors-primary-500))',
-                //             secondary:'rgb(var(--ls-colors-secondary-text))',
-                //             tertiary: 'rgb(var(--ls-colors-secondary-200))',
-                //             success: Color$1,
-                //             error: Color$1,
-                //         },
-                //         background: {
-                //             primary: 'rgb(var(--ls-colors-secondary-900))',
-                //             secondary: 'rgb(var(--ls-colors-secondary-800))',
-                //             segment: 'rgb(var(--ls-colors-secondary-200))',
-                //             tint: 'rgb(var(--ls-colors-secondary-700))',
-                //             qr: 'rgb(var(--ls-colors-primary-text))',
-                //         },
-                //         text: {
-                //             primary: 'rgb(var(--ls-colors-primary-text))',
-                //             secondary: 'rgb(var(--ls-colors-secondary-text))',
-                //         }
-                //     }
-                // }
+        <TonConnectUIProvider
+            uiPreferences={
+                {
+                    theme: THEME.DARK,
+                    borderRadius: 's',
+                    colorsSet: {
+                        [THEME.DARK]: {
+                            constant: {
+                                black: '#000000',
+                                white: '#f1f1f1f1',
+                            },
+                            connectButton: {
+                                background: rgbToHex(themeData.primary?.[500]),
+                                foreground: rgbToHex(themeData?.secondary?.[800] || ''),
+                            },
+                            accent: rgbToHex(themeData.primary?.[500]),
+                            telegramButton: rgbToHex(themeData.primary?.[500]),
+                            icon: {
+                                primary: rgbToHex(themeData.primary?.[500]),
+                                secondary: rgbToHex(themeData?.secondary?.text || ''),
+                                tertiary: rgbToHex(themeData.secondary?.[400] || ''),
+                                success: rgbToHex(themeData.primary?.[500]),
+                            },
+                            background: {
+                                primary: rgbToHex(themeData.secondary?.[900] || ''),
+                                secondary: rgbToHex(themeData.secondary?.[800] || ''),
+                                segment: rgbToHex(themeData.secondary?.[200] || ''),
+                                tint: rgbToHex(themeData.secondary?.[700] || ''),
+                                qr: '#f1f1f1f1',
+                            },
+                            text: {
+                                primary: rgbToHex(themeData.primary.text),
+                                secondary: rgbToHex(themeData?.secondary?.text || ''),
+                            }
+                        }
+                    }
+                }
             }
-        } manifestUrl={`https://${process.env.NEXT_PUBLIC_VERCEL_URL}${basePath ? `/${basePath}` : ''}/tonconnect-manifest.json`}>
+            manifestUrl={`https://${process.env.NEXT_PUBLIC_VERCEL_URL}${basePath ? `/${basePath}` : ''}/tonconnect-manifest.json`}>
             {children}
         </TonConnectUIProvider>
     )

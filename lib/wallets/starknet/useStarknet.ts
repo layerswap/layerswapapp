@@ -3,6 +3,7 @@ import { WalletProvider } from "../../../hooks/useWallet";
 import { useWalletStore } from "../../../stores/walletStore"
 import KnownInternalNames from "../../knownIds"
 import { constants } from "starknet";
+import {connect, disconnect} from 'starknetkit'
 
 export default function useStarknet(): WalletProvider {
     const SupportedNetworks = [KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetGoerli]
@@ -16,10 +17,18 @@ export default function useStarknet(): WalletProvider {
     }
 
     const connectWallet = async (network: Layer) => {
-        const connect = (await import('starknetkit')).connect;
         try {
-            const res = await connect({ argentMobileOptions: { dappName: 'Layerswap', projectId: WALLETCONNECT_PROJECT_ID, url: 'https://www.layerswap.io/app', description: 'Move crypto across exchanges, blockchains, and wallets.', chainId: constants.NetworkName.SN_MAIN } })
-            if (res && res.account) {
+            const res = await connect({
+                argentMobileOptions: {
+                    dappName: 'Layerswap',
+                    projectId: WALLETCONNECT_PROJECT_ID,
+                    url: 'https://www.layerswap.io/app',
+                    description: 'Move crypto across exchanges, blockchains, and wallets.',
+                    chainId: constants.NetworkName.SN_MAIN
+                },
+                dappName: 'Layerswap',
+            })
+            if (res && res.account && res.isConnected) {
                 addWallet({
                     address: res.account.address,
                     network: network,
@@ -38,7 +47,6 @@ export default function useStarknet(): WalletProvider {
     }
 
     const disconnectWallet = async (network: Layer) => {
-        const disconnect = (await import('starknetkit')).disconnect;
         try {
             disconnect({ clearLastWallet: true })
             removeWallet(network)

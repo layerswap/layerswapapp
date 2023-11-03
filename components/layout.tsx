@@ -176,7 +176,7 @@ export default function Layout({ children, settings, themeData }: Props) {
           <AuthProvider>
             <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
               <ThemeWrapper>
-                <DynamicTonConnect basePath={basePath}>
+                <DynamicTonConnect basePath={basePath} themeData={themeData}>
                   <DynamicRainbowKit>
                     {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
                       <MaintananceContent />
