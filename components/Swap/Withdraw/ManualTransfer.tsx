@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { BaseL2Asset } from "../../../Models/Layer";
 import shortenAddress from "../../utils/ShortenAddress";
 import { isValidAddress } from "../../../lib/addressValidator";
+import { Player } from '@lottiefiles/react-lottie-player';
 
 const ManualTransfer: FC = () => {
     const { swap } = useSwapDataState()
@@ -47,23 +48,35 @@ const ManualTransfer: FC = () => {
     }
 
     return (
-        !(messageClicked) ?
-            <div className="rounded-lg p-4 flex flex-col items-center text-center bg-secondary-700 border border-secondary-500 gap-5">
-                <Megaphone className="h-10 w-10 text-secondary-text" />
-                <div className="max-w-xs">
-                    <h3 className="text-lg text-primary-text">
-                        About manual transfers
-                    </h3>
-                    <p className="text-sm">
-                        Transfer assets to Layerswap’s deposit address to complete the swap.
-                    </p>
+        <div className='rounded-md bg-secondary-700 border border-secondary-500 w-full h-full items-center relative'>
+            <div className={!messageClicked ? "absolute w-full h-full flex flex-col items-center px-4 pb-4 text-center" : "hidden"}>
+                <div className="flex flex-col items-center justify-center h-full pb-2">
+                    <div className=" w-full flex items-center">
+                        <Player
+                            autoplay
+                            loop
+                            src="/manualTransfer.json"
+                            style={{ height: '15%', width: '15%' }}
+                        >
+                        </Player>
+                    </div>
+                    <div className="max-w-xs">
+                        <p className="text-base text-primary-text">
+                            About manual transfers
+                        </p>
+                        <p className="text-xs text-secondary-text">
+                            Transfer assets to Layerswap’s deposit address to complete the swap.
+                        </p>
+                    </div>
                 </div>
-                <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleCloseNote}>
-                    Got it
+                <SubmitButton isDisabled={false} isSubmitting={false} size="small" onClick={handleCloseNote}>
+                    OK
                 </SubmitButton>
             </div>
-            :
-            <TransferInvoice address={generatedDepositAddress} shouldGenerateAddress={shouldGenerateAddress} />
+            <div className={messageClicked ? "flex" : "invisible"}>
+                <TransferInvoice address={generatedDepositAddress} shouldGenerateAddress={shouldGenerateAddress} />
+            </div>
+        </div>
     )
 
 }
@@ -110,14 +123,12 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
         setSelectedAssetNetwork(n)
     }, [])
 
-    return <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500 text-primary-text'>
+    return <div className='divide-y divide-secondary-500 text-primary-text h-full'>
         {source_exchange && <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
-
             <ExchangeNetworkPicker onChange={handleChangeSelectedNetwork} />
         </div>
         }
         <div className="flex divide-x divide-secondary-500">
-
             <BackgroundField Copiable={true} QRable={true} header={"Deposit address"} toCopy={depositAddress} withoutBorder>
                 <div>
                     {
