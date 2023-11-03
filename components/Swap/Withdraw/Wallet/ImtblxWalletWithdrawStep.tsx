@@ -1,7 +1,7 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
-import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
+import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
@@ -10,6 +10,7 @@ import GuideLink from '../../../guideLink';
 import useWallet from '../../../../hooks/useWallet';
 import { NetworkType } from '../../../../Models/CryptoNetwork';
 import { Layer } from '../../../../Models/Layer';
+import { useSwapTransactionStore } from '../../../store/zustandStore';
 import { NetworkCurrency } from '../../../../Models/CryptoNetwork';
 
 type Props = {
@@ -21,8 +22,8 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const [transferDone, setTransferDone] = useState<boolean>()
     const { connectWallet, wallets } = useWallet()
     const { swap } = useSwapDataState()
-    const { setSwapPublishedTx } = useSwapDataUpdate()
     const { networks, layers } = useSettingsState()
+    const { setSwapTransaction } = useSwapTransactionStore();
 
     const { source_network: source_network_internal_name } = swap || {}
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
@@ -53,7 +54,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                 toast(transactionRes.message)
             }
             else if (transactionRes.status == "success") {
-                setSwapPublishedTx(swap.id, PublishedSwapTransactionStatus.Completed, transactionRes.txId.toString());
+                setSwapTransaction(swap.id, PublishedSwapTransactionStatus.Completed, transactionRes.txId.toString());
                 setTransferDone(true)
             }
         }

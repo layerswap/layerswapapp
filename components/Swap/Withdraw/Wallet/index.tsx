@@ -8,10 +8,13 @@ import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep"
 import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw"
 import useSWR from 'swr'
 import TransferFromWallet from "./WalletTransfer"
+import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw"
 import { Layer } from "../../../../Models/Layer"
 import useWalletTransferOptions from "../../../../hooks/useWalletTransferOptions"
 import { useBalancesState } from "../../../../context/balances"
 
+
+//TODO have separate components for evm and none_evm as others are sweepless anyway
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
@@ -23,6 +26,7 @@ const WalletTransfer: FC = () => {
     const sourceAsset = source_network?.assets?.find(c => c.asset.toLowerCase() === swap?.source_network_asset.toLowerCase())
 
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+    const sourceIsZkSync = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
 
     const { canDoSweepless, ready } = useWalletTransferOptions()
@@ -65,20 +69,25 @@ const WalletTransfer: FC = () => {
         return <Wrapper>
             <StarknetWalletWithdrawStep amount={requested_amount} depositAddress={depositAddress} />
         </Wrapper>
-    return <Wrapper>
-        {swap && source_network && sourceAsset && requested_amount && sourceChainId && <TransferFromWallet
-            sequenceNumber={swap?.sequence_number}
-            swapId={swap.id}
-            networkDisplayName={source_network?.display_name}
-            tokenDecimals={sourceAsset?.decimals}
-            tokenContractAddress={sourceAsset.contract_address}
-            chainId={sourceChainId}
-            depositAddress={depositAddress}
-            userDestinationAddress={swap.destination_address}
-            amount={requested_amount}
-            isContractWallet={!!isContractWallet?.value}
-        />}
-    </Wrapper>
+    else if (sourceIsZkSync)
+        return <Wrapper>
+            {requested_amount && depositAddress && <ZkSyncWalletWithdrawStep depositAddress={depositAddress} amount={requested_amount} />}
+        </Wrapper>
+    else
+        return <Wrapper>
+            {swap && source_network && sourceAsset && requested_amount && sourceChainId && <TransferFromWallet
+                sequenceNumber={swap?.sequence_number}
+                swapId={swap.id}
+                networkDisplayName={source_network?.display_name}
+                tokenDecimals={sourceAsset?.decimals}
+                tokenContractAddress={sourceAsset.contract_address}
+                chainId={sourceChainId}
+                depositAddress={depositAddress}
+                userDestinationAddress={swap.destination_address}
+                amount={requested_amount}
+                isContractWallet={!!isContractWallet?.value}
+            />}
+        </Wrapper>
 
 }
 

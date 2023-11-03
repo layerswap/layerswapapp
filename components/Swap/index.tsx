@@ -5,18 +5,26 @@ import { useSwapDataState, useSwapDataUpdate } from '../../context/swap';
 import { ResolvePollingInterval } from '../utils/SwapStatus';
 import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
-import { TransactionType } from '../../lib/layerSwapApiClient';
+import { PublishedSwapTransactionStatus, TransactionType } from '../../lib/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
 import GasDetails from '../gasDetails';
 import { useSettingsState } from '../../context/settings';
-
+import { useSwapTransactionStore } from '../store/zustandStore';
 
 const SwapDetails: FC = () => {
     const { swap } = useSwapDataState()
     const settings = useSettingsState()
     const swapStatus = swap?.status;
     const { setInterval } = useSwapDataUpdate()
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions") || "{}")?.[swap?.id || '']
+    const storedWalletTransactions = useSwapTransactionStore()
+
+
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
+    const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id || '']
+
+
+
+
     useEffect(() => {
         if (swapStatus)
             setInterval(ResolvePollingInterval(swapStatus))
@@ -30,7 +38,8 @@ const SwapDetails: FC = () => {
         <>
             <Widget>
                 {
-                    (swapStatus === SwapStatus.UserTransferPending && !swapInputTransaction) ?
+                    ((swapStatus === SwapStatus.UserTransferPending
+                        && !(swapInputTransaction || (storedWalletTransaction && storedWalletTransaction.status !== PublishedSwapTransactionStatus.Error)))) ?
                         <Withdraw /> : <Processing />
                 }
             </Widget>

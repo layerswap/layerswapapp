@@ -1,5 +1,5 @@
 import React, { Context, useCallback, useState } from 'react'
-import { KnownErrorCode } from '../Models/ApiError';
+import { LSAPIKnownErrorCode } from '../Models/ApiError';
 import { Steps } from '../Models/Wizard';
 import { number } from 'starknet';
 
@@ -9,7 +9,7 @@ const FormWizardStateUpdateContext = React.createContext<UpdateInterface<any> | 
 type Direction = "back" | "forward"
 
 type StepError<T> = {
-    Code: KnownErrorCode,
+    Code: LSAPIKnownErrorCode,
     Step: T
 }
 

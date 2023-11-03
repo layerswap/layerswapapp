@@ -16,7 +16,7 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
 }) => {
     const prepareResolvedError = resolveError(prepare?.error as BaseError)
     const transactionResolvedError = resolveError(transaction?.error as BaseError)
-    const hasEror = prepare?.isError || transaction?.isError || wait?.isError
+    const hasError = prepare?.isError || transaction?.isError || wait?.isError
 
     if (wait?.isLoading || applyingTransaction) {
         return <TransactionInProgressMessage />
@@ -32,7 +32,7 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     }
     else if (transaction?.isError && transactionResolvedError) {
         return <TransactionRejectedMessage />
-    } else if (hasEror) {
+    } else if (hasError) {
         const unexpectedError = prepare?.error
             || transaction?.error?.['data']?.message || transaction?.error
             || wait?.error
@@ -80,7 +80,8 @@ const UexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
     return <WalletMessage
         status="error"
         header='Unexpected error'
-        details={message} />
+        details={message}
+        showInModal />
 }
 
 export default TransactionMessage

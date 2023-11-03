@@ -6,7 +6,7 @@ export enum NetworkType {
     Solana = "solana",
     Cosmos = "cosmos",
     StarkEx = "stark_ex",
-    ZkSyncLite = "zksynclite",
+    ZkSyncLite = "zk_sync_lite",
     TON = 'ton'
 }
 
@@ -54,7 +54,7 @@ export class ManagedAccount {
     address: `0x${string}`;
 }
 export class Metadata {
-    multicall3: {
+    multicall3?: {
         address: `0x${string}`
         blockCreated: number
     }
@@ -65,4 +65,5 @@ export class Metadata {
         address: `0x${string}`
     }
     WatchdogContractAddress?: `0x${string}`
+    L1Network?: string
 }

@@ -6,6 +6,7 @@ import { Balance, Gas, getErc20Balances, getNativeBalance, resolveERC20Balances,
 import { createPublicClient, http } from 'viem';
 import resolveChain from '../lib/resolveChain';
 import { NetworkType } from '../Models/CryptoNetwork';
+import * as zksync from 'zksync';
 import { useSettingsState } from './settings';
 import { useSwapDataState } from './swap';
 
@@ -17,12 +18,14 @@ export type BalancesState = {
     gases: { [network: string]: Gas[] },
     isBalanceLoading: boolean,
     isGasLoading: boolean,
+    syncWallet: zksync.Wallet | null;
     isContractWallet?: { ready: boolean, value?: boolean }
 }
 
 type BalancesStateUpdate = {
     getBalance: (from: Layer) => Promise<void>,
     getGas: (from: Layer, currency: Currency, userDestinationAddress: string) => Promise<void>,
+    setSyncWallet: (wallet: zksync.Wallet | null) => void;
 }
 
 type Props = {
@@ -35,6 +38,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
     const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
     const [isGasLoading, setIsGasLoading] = useState<boolean>(false)
     const [cachedAddress, setCachedAddress] = useState<string | undefined>()
+    const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>(null);
 
     const { address: evmAddress } = useAccount()
     const balances = allBalances[evmAddress || '']
@@ -192,6 +196,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
             gases,
             isBalanceLoading,
             isGasLoading,
+            syncWallet,
             isContractWallet: {
                 ready: cachedAddress === evmAddress && isContractWallet.ready,
                 value: isContractWallet.value
@@ -200,6 +205,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
             <BalancesStateUpdateContext.Provider value={{
                 getBalance,
                 getGas,
+                setSyncWallet
             }}>
                 {children}
             </BalancesStateUpdateContext.Provider>
