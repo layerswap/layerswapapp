@@ -9,7 +9,7 @@ import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 type Props = {
    children: JSX.Element | JSX.Element[];
    className?: string;
-   hideMenu: boolean;
+   hideMenu?: boolean;
 }
 
 const Widget = ({ children, className, hideMenu }: Props) => {
