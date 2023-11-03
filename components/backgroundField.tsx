@@ -35,20 +35,20 @@ const BackgroundField: FC<Props> = (({ Copiable, toCopy, header, children, QRabl
                 }
                 <div className="flex items-center justify-between w-full mt-1 space-x-2">
                     {children}
-                        <div className="space-x-2 flex self-start">
-                            {
-                                QRable && toCopy &&
-                                <QRCodeModal qrUrl={toCopy?.toLocaleString()} iconSize={isMobile ? 20 : 16} className=' text-secondary-text bg-secondary-text/10 p-1.5 hover:text-primary-text rounded' />
-                            }
-                            {
-                                Copiable && toCopy &&
-                                <CopyButton iconSize={isMobile ? 20 : 16} toCopy={toCopy} className=' text-secondary-text bg-secondary-text/10 p-1.5 hover:text-primary-text rounded' />
-                            }
-                            {
-                                Explorable && toExplore &&
-                                <ExploreButton href={toExplore} target="_blank" iconSize={isMobile ? 20 : 16} className=' text-secondary-text bg-secondary-text/10 p-1.5 hover:text-primary-text rounded' />
-                            }
-                        </div>
+                    <div className="space-x-2 flex self-start">
+                        {
+                            QRable && toCopy &&
+                            <QRCodeModal qrUrl={toCopy?.toLocaleString()} iconSize={isMobile ? 20 : 16} className=' text-secondary-text bg-secondary-text/10 p-1.5 hover:text-primary-text rounded' />
+                        }
+                        {
+                            Copiable && toCopy &&
+                            <CopyButton iconSize={isMobile ? 20 : 16} toCopy={toCopy} className=' text-secondary-text bg-secondary-text/10 p-1.5 hover:text-primary-text rounded' />
+                        }
+                        {
+                            Explorable && toExplore &&
+                            <ExploreButton href={toExplore} target="_blank" iconSize={isMobile ? 20 : 16} className=' text-secondary-text bg-secondary-text/10 p-1.5 hover:text-primary-text rounded' />
+                        }
+                    </div>
                 </div>
             </div>
         </div>

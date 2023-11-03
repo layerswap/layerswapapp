@@ -23,12 +23,8 @@ const SwapDetails: FC<Props> = ({ type }) => {
     const { setInterval } = useSwapDataUpdate()
     const storedWalletTransactions = useSwapTransactionStore()
 
-
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id || '']
-
-
-
 
     useEffect(() => {
         if (swapStatus)
@@ -37,18 +33,19 @@ const SwapDetails: FC<Props> = ({ type }) => {
     }, [swapStatus])
 
     const sourceNetwork = settings.layers.find(l => l.internal_name === swap?.source_network)
-
     const currency = settings.currencies.find(c => c.asset === swap?.source_network_asset)
 
     return (
         <>
-            <Widget>
-                {
-                    ((swapStatus === SwapStatus.UserTransferPending
-                        && !(swapInputTransaction || (storedWalletTransaction && storedWalletTransaction.status !== PublishedSwapTransactionStatus.Error)))) ?
-                        <Withdraw /> : <Processing />
-                }
-            </Widget>
+            <Container type={type}>
+                <WalletDataProvider>
+                    {
+                        ((swapStatus === SwapStatus.UserTransferPending
+                            && !(swapInputTransaction || (storedWalletTransaction && storedWalletTransaction.status !== PublishedSwapTransactionStatus.Error)))) ?
+                            <Withdraw /> : <Processing />
+                    }
+                </WalletDataProvider>
+            </Container>
             {
                 process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
                 && sourceNetwork

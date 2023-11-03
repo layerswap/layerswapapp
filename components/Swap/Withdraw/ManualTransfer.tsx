@@ -14,11 +14,12 @@ import { BaseL2Asset } from "../../../Models/Layer";
 import shortenAddress from "../../utils/ShortenAddress";
 import { isValidAddress } from "../../../lib/addressValidator";
 import { Player } from '@lottiefiles/react-lottie-player';
+import { useSwapDepositHintClicked } from "../../store/zustandStore";
 
 const ManualTransfer: FC = () => {
     const { swap } = useSwapDataState()
-    const [messageClicked, setMessageClicked] = useState(false)
-
+    const hintsStore = useSwapDepositHintClicked()
+    const hintClicked = hintsStore.swapTransactions[swap?.id || ""]
     const {
         source_network: source_network_internal_name } = swap || {}
 
@@ -35,31 +36,22 @@ const ManualTransfer: FC = () => {
     )
 
     let generatedDepositAddress = generatedDeposit?.data?.address
-    let shouldGenerateAddress = !generatedDepositAddress && messageClicked
+    let shouldGenerateAddress = !generatedDepositAddress && hintClicked
 
     const handleCloseNote = useCallback(async () => {
-        setMessageClicked(true)
-    }, [])
+        if (swap)
+            hintsStore.setSwapDepositHintClicked(swap?.id)
+    }, [swap, hintsStore])
 
     if (isLoading) {
         return <div className='flex justify-center'>
             <AlignLeft className='w-36 h-36 text-[#141c31]' />
         </div>
     }
-
     return (
         <div className='rounded-md bg-secondary-700 border border-secondary-500 w-full h-full items-center relative'>
-            <div className={!messageClicked ? "absolute w-full h-full flex flex-col items-center px-4 pb-4 text-center" : "hidden"}>
+            <div className={!hintClicked ? "absolute w-full h-full flex flex-col items-center px-4 pb-4 text-center" : "hidden"}>
                 <div className="flex flex-col items-center justify-center h-full pb-2">
-                    <div className=" w-full flex items-center">
-                        <Player
-                            autoplay
-                            loop
-                            src="/manualTransfer.json"
-                            style={{ height: '15%', width: '15%' }}
-                        >
-                        </Player>
-                    </div>
                     <div className="max-w-xs">
                         <p className="text-base text-primary-text">
                             About manual transfers
@@ -73,7 +65,7 @@ const ManualTransfer: FC = () => {
                     OK
                 </SubmitButton>
             </div>
-            <div className={messageClicked ? "flex" : "invisible"}>
+            <div className={hintClicked ? "flex" : "invisible"}>
                 <TransferInvoice address={generatedDepositAddress} shouldGenerateAddress={shouldGenerateAddress} />
             </div>
         </div>

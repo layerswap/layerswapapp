@@ -28,7 +28,7 @@ const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconSize, iconCla
             <Popover>
                 <PopoverTrigger>
                     <Tooltip>
-                        <TooltipTrigger>
+                        <TooltipTrigger asChild>
                             <div className={classNames(className)}>
                                 <div className="flex items-center gap-1 cursor-pointer">
                                     <QrCode className={iconClassName} width={iconSize ? iconSize : 16} height={iconSize ? iconSize : 16} />

@@ -33,8 +33,6 @@ import GasDetails from "../../gasDetails";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { useQueryState } from "../../../context/query";
 import FeeDetails from "../../DisclosureComponents/FeeDetails";
-import { shoudlCreateNewSwap } from ".";
-import StatusIcon from "../../SwapHistory/StatusIcons";
 
 type Props = {
     isPartnerWallet?: boolean,

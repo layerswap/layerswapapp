@@ -19,21 +19,22 @@ import { UserType, useAuthDataUpdate } from "../../../context/authContext";
 import { ApiError, LSAPIKnownErrorCode } from "../../../Models/ApiError";
 import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 import { useQueryState } from "../../../context/query";
-import { SwapStatus } from "../../../Models/SwapStatus";
-import SwapDetails from "..";
 import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import StatusIcon from "../../SwapHistory/StatusIcons";
 import Image from 'next/image';
 import { ArrowRight, X } from "lucide-react";
-import IconButton from "../../buttons/iconButton";
 import { AnimatePresence, motion } from "framer-motion";
 import useWindowDimensions from "../../../hooks/useWindowDimensions";
+import dynamic from "next/dynamic";
 
 type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
+const SwapDetails = dynamic(() => import(".."), {
+    loading: () => <></>
+})
 
 export default function Form() {
     const { isMobile } = useWindowDimensions()
@@ -167,18 +168,6 @@ const textMotion = {
     }
 };
 
-const slashMotion = {
-    rest: { opacity: 0, ease: "easeOut", duration: 0.2, type: "tween" },
-    hover: {
-        opacity: 1,
-        transition: {
-            duration: 0.4,
-            type: "tween",
-            ease: "easeIn"
-        }
-    }
-};
-
 const PendingSwap = ({ onClick }: { onClick: () => void }) => {
     const { swap } = useSwapDataState()
     const { source_exchange: source_exchange_internal_name,
@@ -196,10 +185,8 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
     const { exchanges, networks, currencies, resolveImgSrc } = settings
 
     const source = source_exchange_internal_name ? exchanges.find(e => e.internal_name === source_exchange_internal_name) : networks.find(e => e.internal_name === source_network_internal_name)
-    const source_currency = currencies?.find(c => c.asset === source_network_asset)
     const destination_exchange = destination_exchange_internal_name && exchanges.find(e => e.internal_name === destination_exchange_internal_name)
     const destination = destination_exchange_internal_name ? destination_exchange : networks.find(n => n.internal_name === destination_network_internal_name)
-    const output_transaction = swap.transactions.find(t => t.type === TransactionType.Output)
 
     return <motion.div
         initial={{ y: 10, opacity: 0 }}
@@ -211,14 +198,6 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
             onClick={onClick}
             initial="rest" whileHover="hover" animate="rest"
             className="relative bg-secondary-600 rounded-r-lg">
-            {/* <motion.div
-                variants={slashMotion}
-                className="absolute left-0 flex opacity-0 bg-secondary-600"
-            >
-                <div className="rounded-lg p-2">
-                    <X className="w-4 h-4" />
-                </div>
-            </motion.div> */}
             <motion.div
                 variants={textMotion}
                 className="flex items-center bg-secondary-600 rounded-r-lg">
@@ -250,24 +229,10 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                         }
                     </div>
                     <div className="flex-shrink-0 relative hidden md:block">
-                       {requested_amount} {source_network_asset}
+                        {requested_amount} {source_network_asset}
                     </div>
                 </div>
             </motion.div>
         </motion.div>
     </motion.div>
-}
-
-export const shoudlCreateNewSwap = (swap: SwapItem | undefined, formValues: SwapFormValues) => {
-
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions") || "{ }")?.[swap?.id || '']
-    console.log("swapInputTransaction", swapInputTransaction)
-    return !(swap &&
-        !(swap.status !== SwapStatus.UserTransferPending
-            || swapInputTransaction)
-        && [swap.source_exchange, swap.source_network].includes(formValues.from?.internal_name)
-        && [swap.destination_exchange, swap.destination_network].includes(formValues.to?.internal_name)
-        && swap.source_network_asset === formValues.currency?.asset
-        && swap.requested_amount === Number(formValues.amount)
-        && swap.destination_address === formValues.destination_address)
 }
