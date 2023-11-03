@@ -25,7 +25,7 @@ type Props = {
 const Processing: FC<Props> = ({ settings, swap }) => {
 
     const swapStatus = swap.status;
-    const transactions = useSwapTransactionStore()
+    const storedWalletTransactions = useSwapTransactionStore()
 
     const source_network = settings.networks?.find(e => e.internal_name === swap.source_network)
     const destination_network = settings.networks?.find(e => e.internal_name === swap.destination_network)
@@ -37,18 +37,19 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const destinationNetworkCurrency = destination_layer ? GetNetworkCurrency(destination_layer, swap?.destination_network_asset) : null
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
-        ? swap?.transactions?.find(t => t.type === TransactionType.Input)
-        : transactions.swapTransactions?.[swap?.id] && transactions.swapTransactions?.[swap?.id]?.status !== 1
-            ? transactions.swapTransactions?.[swap?.id] : {} as any
+    const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id]
+
+    const transactionHash = swapInputTransaction?.transaction_id || storedWalletTransaction?.hash
+
+
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
     const nativeCurrency = destination_layer?.isExchange === false ? settings?.currencies?.find(c => c.asset === destination_layer?.native_currency) : null
     const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
 
-    const progressStatuses = getProgressStatuses(swap, swapStatus, transactions)
+    const progressStatuses = getProgressStatuses(swap, swapStatus)
     const stepStatuses = progressStatuses.stepStatuses;
-
 
     const outputPendingDetails = <div className='flex items-center space-x-1'>
         <span>Estimated arrival:</span>
@@ -89,7 +90,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 description: <div className='flex items-center space-x-1'>
                     <span>Transaction: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
-                        <a target={"_blank"} href={input_tx_explorer?.replace("{0}", swapInputTransaction?.transaction_id)}>{shortenAddress(swapInputTransaction?.transaction_id)}</a>
+                        <a target={"_blank"} href={input_tx_explorer?.replace("{0}", transactionHash)}>{shortenAddress(transactionHash)}</a>
                         <ExternalLink className='h-4' />
                     </div>
                 </div>
@@ -255,17 +256,15 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
 
 
-const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus, transactions): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
+const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
     let generalTitle = "Transfer in progress";
     let subtitle: string | null = "";
+    //TODO might need to check stored wallet transaction statuses
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
 
-    const swapInputTransaction: Transaction | string = swap?.transactions?.find(t => t.type === TransactionType.Input)
-        ? swap?.transactions?.find(t => t.type === TransactionType.Input)
-        : transactions.swapTransactions?.[swap?.id] && transactions.swapTransactions?.[swap?.id]?.status !== 1
-            ? transactions.swapTransactions?.[swap?.id] : {} as any
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
-    let inputIsCompleted = (swapInputTransaction as Transaction)?.status == TransactionStatus.Completed && (swapInputTransaction as Transaction).confirmations >= (swapInputTransaction as Transaction).max_confirmations;
+    let inputIsCompleted = swapInputTransaction?.status == TransactionStatus.Completed && swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations;
     if (!inputIsCompleted) {
         // Magic case, shows estimated time
         subtitle = null
