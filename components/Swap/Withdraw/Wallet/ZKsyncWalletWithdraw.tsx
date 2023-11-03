@@ -42,17 +42,14 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         }
     }, [signer?._address]);
 
-    const handleTransaction = async (publishedTransaction: TransactionReceipt, txHash: string) => {
-        if (swap) {
-            if (!publishedTransaction?.failReason) {
-                txHash && setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Completed, txHash, publishedTransaction?.failReason);
-                setTransferDone(true)
-            } else {
-                txHash && setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, txHash, publishedTransaction?.failReason);
-                toast(String(publishedTransaction.failReason))
-                setLoading(false)
-                return
-            }
+    const handleTransaction = async (swapId: string, publishedTransaction: TransactionReceipt, txHash: string) => {
+        if (publishedTransaction?.failReason) {
+            txHash && setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, txHash, publishedTransaction?.failReason);
+            toast(String(publishedTransaction.failReason))
+        }
+        else {
+            txHash && setSwapTransaction(swapId, PublishedSwapTransactionStatus.Completed, txHash, publishedTransaction?.failReason);
+            setTransferDone(true)
         }
     };
 
@@ -74,7 +71,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const handleTransfer = useCallback(async () => {
 
         if (!swap) return
-        
+
         setLoading(true)
         try {
             const tf = await syncWallet?.syncTransfer({
@@ -89,19 +86,20 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             if (txHash) {
                 const syncProvider = await zksync.getDefaultProvider(defaultProvider);
                 const txReceipt = await syncProvider.getTxReceipt(String(tf?.txHash));
+                //TODO might be unnecessary why handleTransaction does not do this
                 if (!txReceipt.executed)
                     setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Pending, txHash);
                 else
-                    handleTransaction(txReceipt, String(tf?.txHash))
+                    handleTransaction(swap?.id, txReceipt, String(tf?.txHash))
             }
         }
         catch (e) {
             if (e?.message) {
                 toast(e.message)
-                setLoading(false)
                 return
             }
         }
+        setLoading(false)
     }, [syncWallet, swap])
 
     if (!signer) {
