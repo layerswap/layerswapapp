@@ -43,6 +43,7 @@ const Withdraw: FC = () => {
         || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+    const sourceIsZkSync = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
     const sourceIsArbitrumOne = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
     const sourceIsCoinbase = swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
@@ -54,7 +55,7 @@ const Withdraw: FC = () => {
         && !swap?.source_exchange
         && (sourceNetworkType === NetworkType.EVM
             || sourceNetworkType === NetworkType.Starknet
-            || sourceIsImmutableX)
+            || sourceIsImmutableX || sourceIsZkSync)
 
     const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
     const sourceIsSynquote = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
@@ -175,8 +176,8 @@ const Withdraw: FC = () => {
 const WalletTransferContent: FC = () => {
     const { address, connector } = useAccount();
     const { openAccountModal } = useAccountModal();
-    const { starknetAccount, imxAccount } = useWalletState()
-    const { setStarknetAccount, setImxAccount } = useWalletUpdate()
+    const { starknetAccount, imxAccount, syncWallet } = useWalletState()
+    const { setStarknetAccount, setImxAccount, setSyncWallet } = useWalletUpdate()
 
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
@@ -184,6 +185,7 @@ const WalletTransferContent: FC = () => {
     const [isLoading, setIsloading] = useState(false);
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+    const sourceIsZkSync = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
 
     const {
         source_network: source_network_internal_name,
@@ -217,6 +219,10 @@ const WalletTransferContent: FC = () => {
             else if (sourceIsImmutableX) {
                 setImxAccount(null)
             }
+            else if (sourceIsZkSync) {
+                await wagmiDisconnect()
+                setSyncWallet(null)
+            }
         }
         catch {
             toast.error("Couldn't disconnect the account")
@@ -239,6 +245,9 @@ const WalletTransferContent: FC = () => {
     }
     else if (sourceIsImmutableX) {
         accountAddress = imxAccount || "";
+    }
+    else if (sourceIsZkSync) {
+        accountAddress = syncWallet?.cachedAddress || "";
     }
 
     const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap?.source_exchange
@@ -276,6 +285,16 @@ const WalletTransferContent: FC = () => {
                 {
                     !swap?.source_exchange
                     && sourceIsImmutableX
+                    && source_network
+                    && <Image
+                        src={resolveImgSrc(source_network)}
+                        alt={accountAddress}
+                        width={25}
+                        height={25} />
+                }
+                {
+                    !swap?.source_exchange
+                    && sourceIsZkSync
                     && source_network
                     && <Image
                         src={resolveImgSrc(source_network)}

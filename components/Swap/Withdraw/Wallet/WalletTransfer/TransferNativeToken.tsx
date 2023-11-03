@@ -10,7 +10,6 @@ import {
 import { parseEther, createPublicClient, http } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
 import { PublishedSwapTransactionStatus } from "../../../../../lib/layerSwapApiClient";
-import { useSwapDataUpdate } from "../../../../../context/swap";
 import { toast } from "react-hot-toast";
 import WalletIcon from "../../../../icons/WalletIcon";
 import Modal from '../../../../modal/modal';
@@ -18,6 +17,7 @@ import MessageComponent from "../../../../MessageComponent";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import TransactionMessage from "./transactionMessage";
 import { ButtonWrapper } from "./buttons";
+import { useSwapTransactionStore } from "../../../../store/zustandStore";
 import useWalletTransferOptions from "../../../../../hooks/useWalletTransferOptions";
 import { SendTransactionData } from "../../../../../lib/telegram";
 
@@ -36,11 +36,11 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     isContractWallet
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
-    const { setSwapPublishedTx } = useSwapDataUpdate()
     const [buttonClicked, setButtonClicked] = useState(false)
     const [openChangeAmount, setOpenChangeAmount] = useState(false)
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
     const { address } = useAccount();
+    const { setSwapTransaction } = useSwapTransactionStore();
     const { canDoSweepless, ready } = useWalletTransferOptions()
 
     const sendTransactionPrepare = usePrepareSendTransaction({
@@ -83,7 +83,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     useEffect(() => {
         try {
             if (transaction?.data?.hash) {
-                setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Pending, transaction?.data?.hash)
+                setSwapTransaction(swapId, PublishedSwapTransactionStatus.Pending, transaction?.data?.hash)
                 if (isContractWallet)
                     SendTransactionData(swapId, transaction?.data?.hash)
             }
@@ -98,12 +98,12 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         hash: transaction?.data?.hash || savedTransactionHash,
         onSuccess: async (trxRcpt) => {
             setApplyingTransaction(true)
-            setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
+            setSwapTransaction(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
             setApplyingTransaction(false)
         },
         onError: async (err) => {
-            setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Error, "");
-            toast.error(err.message)
+            if (transaction?.data?.hash)
+                setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, transaction?.data?.hash, err.message);
         }
     })
 

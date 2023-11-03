@@ -82,6 +82,9 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     else if (sourceIsImmutableX && imxAccount) {
         sourceAccountAddress = shortenAddress(imxAccount);
     }
+    else if (sourceNetworkType && sourceNetworkType == NetworkType.ZkSyncLite) {
+        sourceAccountAddress = shortenAddress(evmAddress as string)
+    }
     else if (from?.isExchange) {
         sourceAccountAddress = "Exchange"
     }

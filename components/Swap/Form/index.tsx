@@ -16,7 +16,7 @@ import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
-import { ApiError, KnownErrorCode } from "../../../Models/ApiError";
+import { ApiError, LSAPIKnownErrorCode } from "../../../Models/ApiError";
 import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 import { useQueryState } from "../../../context/query";
 import TokenService from "../../../lib/TokenService";
@@ -72,13 +72,13 @@ export default function Form() {
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error
-            if (data?.code === KnownErrorCode.BLACKLISTED_ADDRESS) {
+            if (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS) {
                 toast.error("You can't transfer to that address. Please double check.")
             }
-            else if (data?.code === KnownErrorCode.INVALID_ADDRESS_ERROR) {
+            else if (data?.code === LSAPIKnownErrorCode.INVALID_ADDRESS_ERROR) {
                 toast.error(`Enter a valid ${values.to?.display_name} address`)
             }
-            else if (data?.code === KnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.to) {
+            else if (data?.code === LSAPIKnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.to) {
                 setNetworkToConnect({
                     DisplayName: values.to?.display_name,
                     AppURL: data.message
