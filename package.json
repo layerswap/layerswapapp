@@ -16,6 +16,7 @@
     "@eth-optimism/contracts-ts": "^0.15.0",
     "@headlessui/react": "^1.7.3",
     "@imtbl/imx-sdk": "2.1.1",
+    "@lottiefiles/react-lottie-player": "^3.5.3",
     "@markdoc/markdoc": "^0.1.3",
     "@markdoc/next.js": "^0.1.6",
     "@metamask/jazzicon": "^2.0.0",

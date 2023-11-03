@@ -111,7 +111,8 @@ const Withdraw: FC = () => {
                 label: "Manually",
                 enabled: manualIsAvailable,
                 icon: <AlignLeft />,
-                content: <ManualTransfer />,
+                footer: <ManualTransfer />,
+                content: <></>
             }
         ];
     }

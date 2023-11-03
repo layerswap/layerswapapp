@@ -28,6 +28,7 @@ import Image from 'next/image';
 import { ArrowRight, X } from "lucide-react";
 import IconButton from "../../buttons/iconButton";
 import { AnimatePresence, motion } from "framer-motion";
+import useWindowDimensions from "../../../hooks/useWindowDimensions";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -35,6 +36,7 @@ type NetworkToConnect = {
 }
 
 export default function Form() {
+    const { isMobile } = useWindowDimensions()
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [showSwapModal, setShowSwapModal] = useState(false);
@@ -130,7 +132,7 @@ export default function Form() {
         <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
             {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
         </Modal>
-        <Modal height="90%" show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`}>
+        <Modal height='90%' show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`}>
             <SwapDetails type="contained" />
         </Modal>
         <Formik
