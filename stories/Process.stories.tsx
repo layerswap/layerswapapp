@@ -6,7 +6,7 @@ import { SettingsStateContext } from '../context/settings';
 import { Chain, WagmiConfig, configureChains, createConfig } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
-import { BalancesStateContext } from '../context/balances';
+import { BalancesStateContext, BalancesStateUpdateContext } from '../context/balances';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, bitgetWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 import { FC } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
@@ -22,9 +22,9 @@ import SwapDetails from '../components/Swap';
 import resolveChain from '../lib/resolveChain';
 import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
-import WalletMockFunctions from './Mocks/context/WalletMockFunctions';
+import WalletMockFunctions from './Mocks/context/BalancesMockFunctions';
 
-import WalletStateMock from './Mocks/context/WalletState';
+import BalancesStateMock from './Mocks/context/BalancesState';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 let settings = new LayerSwapAppSettings(Settings)
@@ -82,8 +82,10 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
                             <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
                                 <AuthDataUpdateContext.Provider value={AuthMockFunctions}>
                                     <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
-                                        <BalancesStateContext.Provider value={WalletStateMock}>
-                                            <SwapDetails />
+                                        <BalancesStateContext.Provider value={BalancesStateMock}>
+                                            <BalancesStateUpdateContext.Provider value={WalletMockFunctions}>
+                                                <SwapDetails />
+                                            </BalancesStateUpdateContext.Provider>
                                         </BalancesStateContext.Provider>
                                     </SwapDataUpdateContext.Provider>
                                 </AuthDataUpdateContext.Provider>

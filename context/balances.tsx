@@ -11,7 +11,7 @@ import { useSettingsState } from './settings';
 import { useSwapDataState } from './swap';
 
 export const BalancesStateContext = React.createContext<BalancesState | null>(null);
-const BalancesStateUpdateContext = React.createContext<BalancesStateUpdate | null>(null);
+export const BalancesStateUpdateContext = React.createContext<BalancesStateUpdate | null>(null);
 
 export type BalancesState = {
     balances: Balance[],
@@ -22,7 +22,7 @@ export type BalancesState = {
     isContractWallet?: { ready: boolean, value?: boolean }
 }
 
-type BalancesStateUpdate = {
+export type BalancesStateUpdate = {
     getBalance: (from: Layer) => Promise<void>,
     getGas: (from: Layer, currency: Currency, userDestinationAddress: string) => Promise<void>,
     setSyncWallet: (wallet: zksync.Wallet | null) => void;

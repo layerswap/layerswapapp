@@ -13,7 +13,7 @@ import Coinbase from './Coinbase';
 import External from './External';
 import { WithdrawType } from '../../../lib/layerSwapApiClient';
 import WalletIcon from '../../icons/WalletIcon';
-import { useAccount } from 'wagmi';
+import { useAccount, useBalance } from 'wagmi';
 import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
 import { useAccountModal } from '@rainbow-me/rainbowkit';
 import { GetDefaultNetwork } from '../../../helpers/settingsHelper';
@@ -24,6 +24,7 @@ import { NetworkType } from '../../../Models/CryptoNetwork';
 import useWallet from '../../../hooks/useWallet';
 import { useRouter } from 'next/router';
 import { useQueryState } from '../../../context/query';
+import { useBalancesState } from '../../../context/balances';
 
 const Withdraw: FC = () => {
 
@@ -171,10 +172,9 @@ const Withdraw: FC = () => {
 }
 
 const WalletTransferContent: FC = () => {
-    const { connector } = useAccount();
     const { openAccountModal } = useAccountModal();
     const { wallets, disconnectWallet } = useWallet()
-
+    const { syncWallet } = useBalancesState()
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
     const [isLoading, setIsloading] = useState(false);

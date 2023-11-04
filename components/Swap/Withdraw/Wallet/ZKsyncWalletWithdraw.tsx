@@ -2,7 +2,6 @@ import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
-import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 import * as zksync from 'zksync';
 import { utils } from 'ethers';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
@@ -13,6 +12,7 @@ import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/butto
 import { useSettingsState } from '../../../../context/settings';
 import { useNetwork } from 'wagmi';
 import { TransactionReceipt } from 'zksync/build/types';
+import { useBalancesState, useBalancesUpdate } from '../../../../context/balances';
 
 type Props = {
     depositAddress: string,
@@ -22,8 +22,8 @@ type Props = {
 const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
-    const { setSyncWallet } = useWalletUpdate();
-    const { syncWallet } = useWalletState();
+    const { setSyncWallet } = useBalancesUpdate();
+    const { syncWallet } = useBalancesState();
     const { setSwapTransaction } = useSwapTransactionStore();
     const { swap } = useSwapDataState();
     const signer = useEthersSigner();
