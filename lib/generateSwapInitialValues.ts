@@ -59,12 +59,11 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
         layers.find(l => l.internal_name === source_exchange)
         : layers.find(l => l.internal_name === source_network)
 
-    const to = source_exchange ?
+    const to = destination_exchange ?
         layers.find(l => l.internal_name === destination_exchange)
         : layers.find(l => l.internal_name === destination_network)
 
     const currency = currencies.find(c => c.asset === source_network_asset)
-
 
     const result: SwapFormValues = {
         from,

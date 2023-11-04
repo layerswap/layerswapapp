@@ -27,17 +27,27 @@ import { ArrowRight, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import useWindowDimensions from "../../../hooks/useWindowDimensions";
 import dynamic from "next/dynamic";
+import { truncateDecimals } from "../../utils/RoundDecimals";
+import { ResolvePollingInterval } from "../../utils/SwapStatus";
+import { SwapStatus } from "../../../Models/SwapStatus";
 
 type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
 const SwapDetails = dynamic(() => import(".."), {
-    loading: () => <></>
+    loading: () => <div className="p-4 w-full">
+        <div className="animate-pulse flex space-x-4">
+            <div className="flex-1 space-y-6 py-1">
+                <div className="h-32 bg-secondary-700 rounded-lg"></div>
+                <div className="h-40 bg-secondary-700 rounded-lg"></div>
+                <div className="h-12 bg-secondary-700 rounded-lg"></div>
+            </div>
+        </div>
+    </div>
 })
 
 export default function Form() {
-    const { isMobile } = useWindowDimensions()
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [showSwapModal, setShowSwapModal] = useState(false);
@@ -86,7 +96,8 @@ export default function Form() {
                 const params = resolvePersistantQueryParams(router.query)
                 if (params) {
                     const search = new URLSearchParams(params as any);
-                    swapURL += `?${search}`
+                    if (search)
+                        swapURL += `?${search}`
                 }
                 window.history.pushState({ path: swapURL }, '', swapURL);
             }
@@ -125,7 +136,10 @@ export default function Form() {
     return <>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence exitBeforeEnter>
-                {swap && !showSwapModal &&
+                {
+                    swap &&
+                    !showSwapModal &&
+                    swap.status != SwapStatus.Completed &&
                     <PendingSwap onClick={() => setShowSwapModal(true)} />
                 }
             </AnimatePresence >
@@ -177,16 +191,18 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
         source_network_asset,
         requested_amount
     } = swap || {}
+
     const settings = useSettingsState()
 
     if (!swap)
         return <></>
 
     const { exchanges, networks, currencies, resolveImgSrc } = settings
-
     const source = source_exchange_internal_name ? exchanges.find(e => e.internal_name === source_exchange_internal_name) : networks.find(e => e.internal_name === source_network_internal_name)
     const destination_exchange = destination_exchange_internal_name && exchanges.find(e => e.internal_name === destination_exchange_internal_name)
     const destination = destination_exchange_internal_name ? destination_exchange : networks.find(n => n.internal_name === destination_network_internal_name)
+    const currency = currencies.find(c => c.asset === source_network_asset)
+    const truncated_amount = requested_amount ? truncateDecimals(requested_amount, currency?.precision) : ''
 
     return <motion.div
         initial={{ y: 10, opacity: 0 }}
@@ -229,7 +245,7 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                         }
                     </div>
                     <div className="flex-shrink-0 relative hidden md:block">
-                        {requested_amount} {source_network_asset}
+                        {truncated_amount} {source_network_asset}
                     </div>
                 </div>
             </motion.div>

@@ -10,6 +10,7 @@ import { Partner } from '../Models/Partner';
 import { ApiError } from '../Models/ApiError';
 import { useAccount } from 'wagmi';
 import { BaseL2Asset, ExchangeAsset } from '../Models/Layer';
+import { ResolvePollingInterval } from '../components/utils/SwapStatus';
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
@@ -73,6 +74,13 @@ export function SwapDataProvider({ children }) {
     const source_network = layers.find(n => n.internal_name?.toLowerCase() === swapResponse?.data?.source_network?.toLowerCase())
     const defaultSourceNetwork = (exchangeAssets?.find(sn => sn?.is_default) || exchangeAssets?.[0] || source_network?.assets?.[0])
     const [selectedAssetNetwork, setSelectedAssetNetwork] = useState<ExchangeAsset | BaseL2Asset | undefined>(defaultSourceNetwork)
+
+    const swapStatus = swapResponse?.data?.status;
+    useEffect(() => {
+        if (swapStatus)
+            setInterval(ResolvePollingInterval(swapStatus))
+        return () => setInterval(0)
+    }, [swapStatus])
 
     useEffect(() => {
         setSelectedAssetNetwork(defaultSourceNetwork)
