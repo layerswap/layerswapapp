@@ -50,7 +50,8 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
         source_network,
         destination_network,
         source_exchange,
-        destination_exchange
+        destination_exchange,
+        has_refuel
     } = swap
 
     const { currencies, layers } = settings || {}
@@ -70,7 +71,8 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
         to,
         amount: requested_amount?.toString(),
         currency,
-        destination_address
+        destination_address,
+        refuel: has_refuel
     }
 
     return result
