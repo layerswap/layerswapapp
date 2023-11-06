@@ -24,6 +24,5 @@ export default function useWalletTransferOptions() {
         && ((source_layer.type == NetworkType.EVM && !isEVMContractWallet?.value) || source_layer.type == NetworkType.Starknet)
         || connectedWalletAddress?.toLowerCase() === swap?.destination_address.toLowerCase()
 
-
     return { canDoSweepless, ready: isEVMContractWallet?.ready }
 }

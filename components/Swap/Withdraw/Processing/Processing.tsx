@@ -212,7 +212,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     if (!swap) return <></>
     return (
         <Widget.Content>
-            <div className={`w-full min-h-[422px] space-y-5 flex flex-col justify-between h-full text-primary-text`}>
+            <div className={`w-full min-h-[422px] space-y-5 flex flex-col justify-between text-primary-text`}>
                 <div className='space-y-5'>
                     <div className="w-full flex flex-col h-full space-y-5">
                         <div className="bg-secondary-700 font-normal px-3 py-4 rounded-lg flex flex-col border border-secondary-500 w-full relative z-10">

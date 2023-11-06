@@ -29,7 +29,6 @@ import { useRouter } from 'next/router';
 import { useQueryState } from '../../../context/query';
 
 const Withdraw: FC = () => {
-
     const { swap } = useSwapDataState()
     const { setWithdrawType } = useSwapDataUpdate()
     const { layers } = useSettingsState()
@@ -114,7 +113,8 @@ const Withdraw: FC = () => {
                 label: "Manually",
                 enabled: manualIsAvailable,
                 icon: <AlignLeft />,
-                content: <ManualTransfer />,
+                footer: <ManualTransfer />,
+                content: <></>
             }
         ];
     }
@@ -130,7 +130,7 @@ const Withdraw: FC = () => {
     return (
         <>
             <Widget.Content>
-                <div className="w-full flex flex-col justify-between h-full text-secondary-text">
+                <div className="w-full flex flex-col justify-between  text-secondary-text">
                     <div className='grid grid-cols-1 gap-4 '>
                         {
                             !isFiat &&

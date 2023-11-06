@@ -1,58 +1,54 @@
 import { FC, useState } from "react"
-import QRCode from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 import { classNames } from "./utils/classNames";
 import { QrCode } from "lucide-react";
-import SubmitButton from "./buttons/submitButton";
-import shortenAddress from "./utils/ShortenAddress";
-import CopyButton from "./buttons/copyButton";
-import colors from "tailwindcss/colors";
-import Modal from "./modal/modal";
+import { Popover, PopoverContent, PopoverTrigger } from "./shadcn/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./shadcn/tooltip";
+import { motion } from "framer-motion";
 
 type QRCodeModalProps = {
     qrUrl: string;
     className?: string
-    iconHeight?: number
-    iconWidth?: number
+    iconSize?: number
     iconClassName?: string
 }
 
-const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconHeight, iconWidth, iconClassName }) => {
-    const qrCode = (
-        <QRCode
-            className="p-4 bg-primary-text rounded-lg"
+const QRCodeModal: FC<QRCodeModalProps> = ({ qrUrl, className, iconSize, iconClassName }) => {
+    const qrCode =
+        <QRCodeSVG
+            className="rounded-lg"
             value={qrUrl}
-            size={250}
-            fgColor={'#000000'}
+            includeMargin={true}
+            size={160}
             level={"H"}
         />
-    );
-    const [isOpen, setIsOpen] = useState(false)
-
-    const handleOpenModal = () => setIsOpen(true)
-    const handleCloseModal = () => setIsOpen(false)
 
     return (
         <>
-            <div className={classNames(className)} onClick={handleOpenModal}>
-                <div className="flex items-center gap-1 cursor-pointer">
-                    <QrCode className={iconClassName} width={iconWidth ? iconWidth : 16} height={iconHeight ? iconHeight : 16} />
-                </div>
-            </div>
-            <Modal show={isOpen} setShow={setIsOpen}  >
-                <div className="flex flex-col justify-between items-center space-y-6 md:space-y-8 mt-6 md:mt-8">
-                    <div>
+            <Popover>
+                <PopoverTrigger>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className={classNames(className)}>
+                                <div className="flex items-center gap-1 cursor-pointer">
+                                    <QrCode className={iconClassName} width={iconSize ? iconSize : 16} height={iconSize ? iconSize : 16} />
+                                </div>
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Show QR code</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-4" side="left">
+                    <motion.div whileHover={{
+                        scale: 1.2,
+                        transition: { duration: 0.5 },
+                    }}>
                         {qrCode}
-                    </div>
-                    <div className="text-xl md:text-2xl text-secondary-text">
-                        <CopyButton toCopy={qrUrl} iconHeight={22} iconWidth={22}>
-                            <span>{shortenAddress(qrUrl)}</span>
-                        </CopyButton>
-                    </div>
-                    <SubmitButton onClick={handleCloseModal} isDisabled={false} isSubmitting={false}>
-                        Close
-                    </SubmitButton>
-                </div>
-            </Modal>
+                    </motion.div>
+                </PopoverContent>
+            </Popover>
         </>
     )
 }
