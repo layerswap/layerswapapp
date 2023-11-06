@@ -16,6 +16,7 @@ import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
 import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
+import { TooltipProvider } from "./shadcn/tooltip";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -174,17 +175,19 @@ export default function Layout({ children, settings, themeData }: Props) {
       <SettingsProvider data={appSettings}>
         <MenuProvider>
           <AuthProvider>
-            <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
-              <ThemeWrapper>
-                <DynamicTonConnect basePath={basePath} themeData={themeData}>
-                  <DynamicRainbowKit>
-                    {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                      <MaintananceContent />
-                      : children}
-                  </DynamicRainbowKit>
-                </DynamicTonConnect>
-              </ThemeWrapper>
-            </ErrorBoundary>
+            <TooltipProvider delayDuration={500}>
+              <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+                <ThemeWrapper>
+                  <DynamicTonConnect basePath={basePath} themeData={themeData}>
+                    <DynamicRainbowKit>
+                      {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                        <MaintananceContent />
+                        : children}
+                    </DynamicRainbowKit>
+                  </DynamicTonConnect>
+                </ThemeWrapper>
+              </ErrorBoundary>
+            </TooltipProvider>
           </AuthProvider>
         </MenuProvider>
       </SettingsProvider >

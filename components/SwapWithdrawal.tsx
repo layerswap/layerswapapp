@@ -25,7 +25,7 @@ const SwapWithdrawal: FC = () => {
 
     return (
         <BalancesDataProvider>
-            <SwapDetails />
+            <SwapDetails type="widget" />
         </BalancesDataProvider>
     )
 };

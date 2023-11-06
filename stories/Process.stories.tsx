@@ -84,7 +84,7 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
                                     <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
                                         <BalancesStateContext.Provider value={BalancesStateMock}>
                                             <BalancesStateUpdateContext.Provider value={WalletMockFunctions}>
-                                                <SwapDetails />
+                                                <SwapDetails type='widget' />
                                             </BalancesStateUpdateContext.Provider>
                                         </BalancesStateContext.Provider>
                                     </SwapDataUpdateContext.Provider>
