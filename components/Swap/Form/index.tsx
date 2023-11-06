@@ -25,11 +25,10 @@ import StatusIcon from "../../SwapHistory/StatusIcons";
 import Image from 'next/image';
 import { ArrowRight, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import useWindowDimensions from "../../../hooks/useWindowDimensions";
 import dynamic from "next/dynamic";
 import { truncateDecimals } from "../../utils/RoundDecimals";
-import { ResolvePollingInterval } from "../../utils/SwapStatus";
 import { SwapStatus } from "../../../Models/SwapStatus";
+import LinkWrapper from "../../LinkWraapper";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -64,6 +63,11 @@ export default function Form() {
     const partner = query?.appName && partnerData?.data?.name?.toLowerCase() === (query?.appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
     const { swap } = useSwapDataState()
+
+    useEffect(() => {
+        if (swap?.status === SwapStatus.Completed)
+            toast.success("The swap is completed")
+    }, [swap?.status])
 
     useEffect(() => {
         if (swap) {
@@ -151,7 +155,7 @@ export default function Form() {
                     swap.status != SwapStatus.Completed &&
                     <PendingSwap onClick={() => setShowSwapModal(true)} />
                 }
-            </AnimatePresence >
+            </AnimatePresence>
         </div>
         <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
             {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
