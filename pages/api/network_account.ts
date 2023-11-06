@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(500).json({ error: { message: "Not valid signature" } })
         return
     }
-    if (query.addressSource === "imxMarketplace") {
+    if (query.appName === "imxMarketplace") {
         try {
             const auth = await getAccessToken();
             const { sub } = parseJwt(user_token) || {}

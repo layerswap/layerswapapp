@@ -32,7 +32,6 @@ export type UpdateInterface = {
     setWalletAddress: (value: string) => void,
     setDepositeAddressIsfromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
-    setSwapPublishedTx: (swapId: string, status: PublishedSwapTransactionStatus, txHash: string) => void;
     setSelectedAssetNetwork: (assetNetwork: ExchangeAsset | BaseL2Asset) => void
 }
 
@@ -108,7 +107,7 @@ export function SwapDataProvider({ children }) {
             destination_asset: currency.asset,
             source_address: address || starknetAddress,
             destination_address: values.destination_address,
-            app_name: partner ? query?.addressSource : (apiVersion === 'sandbox' ? 'LayerswapSandbox' : 'Layerswap' ),
+            app_name: partner ? query?.appName : (apiVersion === 'sandbox' ? 'LayerswapSandbox' : 'Layerswap' ),
             reference_id: query.externalId,
         }
 
@@ -129,16 +128,6 @@ export function SwapDataProvider({ children }) {
         await layerswapApiClient.CancelSwapAsync(swapId)
     }, [router])
 
-    const setSwapPublishedTx = useCallback(async (Id: string, status: PublishedSwapTransactionStatus, txHash: string) => {
-        const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-        const txForSwap = data?.[Id] ?? { hash: txHash, status: PublishedSwapTransactionStatus.Pending };
-        txForSwap.status = status;
-        data[Id] = txForSwap;
-        localStorage.setItem('swapTransactions', JSON.stringify(data))
-        setSwapTransaction(txForSwap)
-    }, [swapResponse])
-
-
     const updateFns: UpdateInterface = {
         createSwap: createSwap,
         setCodeRequested: setCodeRequested,
@@ -149,8 +138,7 @@ export function SwapDataProvider({ children }) {
         setDepositeAddressIsfromAccount,
         setWalletAddress,
         setWithdrawType,
-        setSwapPublishedTx,
-        setSelectedAssetNetwork
+        setSelectedAssetNetwork,
     };
     return (
         <SwapDataStateContext.Provider value={{

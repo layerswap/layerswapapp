@@ -8,12 +8,12 @@ import {
     erc20ABI,
 } from "wagmi";
 import { PublishedSwapTransactionStatus } from "../../../../../lib/layerSwapApiClient";
-import { useSwapDataUpdate } from "../../../../../context/swap";
 import WalletIcon from "../../../../icons/WalletIcon";
 import { encodeFunctionData, http, parseUnits, createWalletClient, publicActions } from 'viem'
 import TransactionMessage from "./transactionMessage";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import { ButtonWrapper } from "./buttons";
+import { useSwapTransactionStore } from "../../../../store/zustandStore";
 import useWalletTransferOptions from "../../../../../hooks/useWalletTransferOptions";
 import { SendTransactionData } from "../../../../../lib/telegram";
 
@@ -33,10 +33,10 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     isContractWallet
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
-    const { setSwapPublishedTx } = useSwapDataUpdate()
     const { address } = useAccount();
     const [buttonClicked, setButtonClicked] = useState(false)
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
+    const { setSwapTransaction } = useSwapTransactionStore();
     const { canDoSweepless, ready } = useWalletTransferOptions()
 
     const contractWritePrepare = usePrepareContractWrite({
@@ -88,7 +88,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     useEffect(() => {
         try {
             if (contractWrite?.data?.hash) {
-                setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Pending, contractWrite?.data?.hash);
+                setSwapTransaction(swapId, PublishedSwapTransactionStatus.Pending, contractWrite?.data?.hash);
                 if (isContractWallet)
                     SendTransactionData(swapId, contractWrite?.data?.hash)
             }
@@ -108,8 +108,12 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         hash: contractWrite?.data?.hash || savedTransactionHash,
         onSuccess: async (trxRcpt) => {
             setApplyingTransaction(true)
-            setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
+            setSwapTransaction(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
             setApplyingTransaction(false)
+        },
+        onError: async (err) => {
+            if (contractWrite?.data?.hash)
+                setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, contractWrite.data.hash, err.message);
         }
     })
 

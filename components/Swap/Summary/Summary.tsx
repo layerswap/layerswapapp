@@ -41,12 +41,12 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
         hideFrom,
         hideTo,
         account,
-        addressSource,
+        appName,
         hideAddress
     } = useQueryState()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(addressSource && `/apps?name=${addressSource}`, layerswapApiClient.fetcher)
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = partnerData?.data
 
     const source = hideFrom ? partner : from
@@ -85,6 +85,9 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     }
     else if (sourceIsImmutableX && imxAccount) {
         sourceAccountAddress = shortenAddress(imxAccount);
+    }
+    else if (sourceNetworkType && sourceNetworkType == NetworkType.ZkSyncLite && evmAddress) {
+        sourceAccountAddress = shortenAddress(evmAddress as string)
     }
     else if (from?.isExchange) {
         sourceAccountAddress = "Exchange"

@@ -18,7 +18,7 @@ export interface LeafletProps {
     height?: LeafletHeight;
     position: LeafletPosition;
 }
-
+// TODO handle overflow when height is set to 'fit'
 export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, description, position }, topmostRef) {
     const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();

@@ -7,19 +7,21 @@ import { Balance, Gas, getErc20Balances, getNativeBalance, resolveERC20Balances,
 import { createPublicClient, http } from 'viem';
 import resolveChain from '../lib/resolveChain';
 import { NetworkType } from '../Models/CryptoNetwork';
+import * as zksync from 'zksync';
 import { useSettingsState } from './settings';
 import { useSwapDataState } from './swap';
 
-export const WalletStateContext = createContext<WalletState>({
+export const WalletStateContext = createContext<WalletState | null>({
     balances: [],
     gases: {},
     imxAccount: null,
     lprAccount: null,
     isBalanceLoading: false,
     isGasLoading: false,
-    starknetAccount: null
+    starknetAccount: null,
+    syncWallet: null
 });
-const WalletStateUpdateContext = createContext<WalletStateUpdate | null>(null);
+export const WalletStateUpdateContext = createContext<WalletStateUpdate | null>(null);
 
 export type WalletState = {
     starknetAccount: StarknetWindowObject | undefined | null,
@@ -29,15 +31,17 @@ export type WalletState = {
     gases: { [network: string]: Gas[] },
     isBalanceLoading: boolean,
     isGasLoading: boolean,
+    syncWallet: zksync.Wallet | null;
     isContractWallet?: { ready: boolean, value?: boolean }
 }
 
-type WalletStateUpdate = {
+export type WalletStateUpdate = {
     setStarknetAccount: (account: StarknetWindowObject | null) => void,
     setImxAccount: (account: string | null) => void;
     setLprAccount: (account: string | null) => void;
     getBalance: (from: Layer) => Promise<void>,
     getGas: (from: Layer, currency: Currency, userDestinationAddress: string) => Promise<void>,
+    setSyncWallet: (wallet: zksync.Wallet | null) => void;
 }
 
 type Props = {
@@ -45,7 +49,7 @@ type Props = {
 }
 
 export const WalletDataProvider: FC<Props> = ({ children }) => {
-
+    const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>(null);
     const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject | null>()
     const [imxAccount, setImxAccount] = useState<string | null>()
     const [lprAccount, setLprAccount] = useState<string | null>()
@@ -214,6 +218,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
             gases,
             isBalanceLoading,
             isGasLoading,
+            syncWallet,
             isContractWallet: {
                 ready: cachedAddress === evmAddress && isContractWallet.ready,
                 value: isContractWallet.value
@@ -225,6 +230,7 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
                 setLprAccount,
                 getBalance,
                 getGas,
+                setSyncWallet
             }}>
                 {children}
             </WalletStateUpdateContext.Provider>
