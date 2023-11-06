@@ -11,6 +11,7 @@ interface WalletState {
 
 export type Wallet = {
     address: string | `0x${string}`;
+    //TODO remove
     network: Layer,
     icon?: string;
     connector?: string;

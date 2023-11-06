@@ -19,6 +19,7 @@ export default function useEVM(): WalletProvider {
             return {
                 address: account.address,
                 connector: account.connector?.id,
+                //TODO remove
                 network: layers.find(l => l.type === NetworkType.EVM) as Layer
             }
         }

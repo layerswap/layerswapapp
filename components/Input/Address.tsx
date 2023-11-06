@@ -61,17 +61,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const wallet = wallets?.find(w => w?.network.type === values?.to?.type)
     const settings = useSettingsState()
 
-    const { isConnected: isRainbowKitConnected } = useAccount({
-        onDisconnect() {
-            setInputValue("")
-            setAddressConfirmed(false)
-            setFieldValue("destination_address", "")
-        }
-    });
-
     useEffect(() => {
         if (destination && !destination?.isExchange && isValidAddress(wallet?.address, destination) && !values?.destination_address) {
-            if (wallet && wallet.network.type === NetworkType.Starknet && (wallet.chainId != destinationChainId) && destination) {
+            //TODO move to wallet implementation
+            if (wallet
+                && wallet.network.type === NetworkType.Starknet
+                && (wallet.chainId != destinationChainId)
+                && destination) {
                 (async () => {
                     setWrongNetwork(true)
                     await disconnectWallet(destination)
@@ -100,13 +96,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
         if (!values.to) return
         setDepositeAddressIsfromAccount(false)
         setFieldValue("destination_address", '')
-        try {
-            await disconnectWallet(values.to)
-            setWrongNetwork(false)
-        }
-        catch (e) {
-            toast(e.message)
-        }
         setInputValue("")
     }, [setDepositeAddressIsfromAccount, setFieldValue, autofilledWalletNetworkType, disconnectWallet])
 
@@ -165,7 +154,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     placeholder={placeholder}
                                     autoCorrect="off"
                                     type={"text"}
-                                    disabled={disabled || !!((isRainbowKitConnected || wallet) && values.destination_address) || !!(wallet && values.destination_address)}
+                                    disabled={disabled || !!(wallet && values.destination_address) || !!(wallet && values.destination_address)}
                                     name={name}
                                     id={name}
                                     ref={inputReference}
@@ -211,7 +200,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                             <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
                                 {
                                     destinationIsStarknet && wallet ?
-                                        <Image src={wallet?.icon || ''} alt={wallet?.address} width={25} height={25} />
+                                        <Image src={wallet.icon || ''} alt={wallet?.address} width={25} height={25} />
                                         :
                                         <AddressIcon address={validInputAddress} size={25} />
                                 }

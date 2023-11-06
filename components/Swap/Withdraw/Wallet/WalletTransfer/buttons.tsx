@@ -20,7 +20,10 @@ export const ConnectWalletButton: FC = () => {
     const source_layer = layers.find(l => l.internal_name === swap?.source_network)
 
     const clickHandler = useCallback(() => {
-        return connectWallet(source_layer as Layer & { isExchange: false, type: NetworkType.EVM })
+        if (!source_layer) {
+            throw new Error("Source layer could not be found")
+        }
+        return connectWallet(source_layer)
     }, [connectWallet])
 
     return <ButtonWrapper

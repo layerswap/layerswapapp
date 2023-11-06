@@ -61,7 +61,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
 
     let sourceAccountAddress = ""
     if (hideFrom && account) {
-        sourceAccountAddress = shortenAddress(account as string);
+        sourceAccountAddress = shortenAddress(account);
     }
     else if (wallet && !from?.isExchange) {
         sourceAccountAddress = shortenAddress(wallet.address);

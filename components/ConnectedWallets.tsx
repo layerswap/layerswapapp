@@ -21,7 +21,7 @@ export const WalletsHeader = () => {
     const [openDialog, setOpenDialog] = useState<boolean>(false)
     const lastConnectedWallet = wallets.slice(-1)[0]
 
-    if (wallets.length > 0) {
+    if (lastConnectedWallet) {
         return (
             <>
                 <button type="button" onClick={() => setOpenDialog(true)} className="-mx-2 p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
@@ -145,7 +145,7 @@ const ConnectedWalletsDialog = ({ openDialog, setOpenDialog }: { openDialog: boo
         </Dialog>
     )
 }
-
+//TODO move to wallet store
 export const ResolveWalletIcon = ({ connector, className }: { connector: string, className: string }) => {
     switch (connector.toLowerCase()) {
         case KnownKonnectors.MetaMask:

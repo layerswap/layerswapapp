@@ -13,7 +13,6 @@ import Coinbase from './Coinbase';
 import External from './External';
 import { WithdrawType } from '../../../lib/layerSwapApiClient';
 import WalletIcon from '../../icons/WalletIcon';
-import { useAccount, useBalance } from 'wagmi';
 import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
 import { useAccountModal } from '@rainbow-me/rainbowkit';
 import { GetDefaultNetwork } from '../../../helpers/settingsHelper';
@@ -22,15 +21,12 @@ import { ResolveWalletIcon } from '../../ConnectedWallets';
 import SpinIcon from '../../icons/spinIcon';
 import { NetworkType } from '../../../Models/CryptoNetwork';
 import useWallet from '../../../hooks/useWallet';
-import { useRouter } from 'next/router';
 import { useQueryState } from '../../../context/query';
-import { useBalancesState } from '../../../context/balances';
 
 const Withdraw: FC = () => {
     const { swap } = useSwapDataState()
     const { setWithdrawType } = useSwapDataUpdate()
     const { layers } = useSettingsState()
-    const router = useRouter()
     const { appName, signature } = useQueryState()
     const source_internal_name = swap?.source_exchange ?? swap?.source_network
     const source = layers.find(n => n.internal_name === source_internal_name)
@@ -177,9 +173,6 @@ const WalletTransferContent: FC = () => {
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
     const [isLoading, setIsloading] = useState(false);
-    const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-        || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-    const sourceIsZkSync = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
 
     const {
         source_network: source_network_internal_name,
@@ -231,37 +224,6 @@ const WalletTransferContent: FC = () => {
 
         <div onClick={handleOpenAccount} className={`${canOpenAccount ? 'cursor-pointer' : 'cursor-auto'} text-left min-h-12  space-x-2 border border-secondary-600 bg-secondary-700/70 flex text-sm rounded-md items-center w-full pl-4 pr-2 py-1.5`}>
             <div className='flex text-secondary-text bg-secondary-400 flex-row items-left rounded-md p-1'>
-                {
-                    !swap?.source_exchange
-                    && sourceNetworkType === NetworkType.Starknet
-                    && wallet
-                    && wallet.icon
-                    && <Image
-                        src={wallet?.icon}
-                        alt={accountAddress}
-                        width={25}
-                        height={25} />
-                }
-                {
-                    !swap?.source_exchange
-                    && sourceIsImmutableX
-                    && source_network
-                    && <Image
-                        src={resolveImgSrc(source_network)}
-                        alt={accountAddress}
-                        width={25}
-                        height={25} />
-                }
-                {
-                    !swap?.source_exchange
-                    && sourceIsZkSync
-                    && source_network
-                    && <Image
-                        src={resolveImgSrc(source_network)}
-                        alt={accountAddress}
-                        width={25}
-                        height={25} />
-                }
                 {
                     !swap?.source_exchange
                     && sourceNetworkType === NetworkType.EVM

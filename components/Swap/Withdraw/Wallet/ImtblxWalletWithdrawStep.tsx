@@ -8,10 +8,7 @@ import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
 import useWallet from '../../../../hooks/useWallet';
-import { NetworkType } from '../../../../Models/CryptoNetwork';
-import { Layer } from '../../../../Models/Layer';
 import { useSwapTransactionStore } from '../../../store/zustandStore';
-import { NetworkCurrency } from '../../../../Models/CryptoNetwork';
 
 type Props = {
     depositAddress?: string
@@ -31,10 +28,10 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const imxAccount = wallets?.find(w => w.network.type === source_layer?.type)
 
     const handleConnect = useCallback(async () => {
-        if (!source_network)
+        if (!source_network || !source_layer)
             return
         setLoading(true)
-        await connectWallet(source_layer as Layer & { type: NetworkType.StarkEx })
+        await connectWallet(source_layer)
         setLoading(false)
     }, [source_network])
 
@@ -45,7 +42,10 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
         try {
             const ImtblClient = (await import('../../../../lib/imtbl')).default;
             const imtblClient = new ImtblClient(source_network?.internal_name)
-            const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase()) as NetworkCurrency
+            const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
+            if (!source_currency) {
+                throw new Error("No source currency could be found");
+            }
             const res = await imtblClient.Transfer(swap, source_currency, depositAddress)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
@@ -82,7 +82,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                         </SubmitButton>
                     }
                     {
-                        imxAccount &&  
+                        imxAccount &&
                         <SubmitButton isDisabled={!!(loading || transferDone) || !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>
