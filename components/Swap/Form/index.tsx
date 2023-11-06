@@ -99,7 +99,7 @@ export default function Form() {
                     if (search)
                         swapURL += `?${search}`
                 }
-                window.history.pushState({ path: swapURL }, '', swapURL);
+                window.history.replaceState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
                 setShowSwapModal(true)
             }
         }
