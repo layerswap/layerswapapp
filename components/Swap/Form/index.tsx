@@ -224,7 +224,7 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                             />
                         }
                     </div>
-                    <ChevronRight className="hidden md:block h-4 w-4 mx-1" />
+                    <ChevronRight className="block h-4 w-4 mx-1" />
                     <div className="flex-shrink-0 h-5 w-5 relative block">
                         {destination &&
                             <Image
