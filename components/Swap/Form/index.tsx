@@ -65,11 +65,6 @@ export default function Form() {
     const { swap } = useSwapDataState()
 
     useEffect(() => {
-        if (swap?.status === SwapStatus.Completed)
-            toast.success("The swap is completed")
-    }, [swap?.status])
-
-    useEffect(() => {
         if (swap) {
             const initialValues = generateSwapInitialValuesFromSwap(swap, settings)
             formikRef?.current?.resetForm({ values: initialValues })
@@ -152,7 +147,6 @@ export default function Form() {
                 {
                     swap &&
                     !showSwapModal &&
-                    swap.status != SwapStatus.Completed &&
                     <PendingSwap onClick={() => setShowSwapModal(true)} />
                 }
             </AnimatePresence>
