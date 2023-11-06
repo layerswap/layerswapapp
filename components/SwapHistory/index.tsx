@@ -35,9 +35,15 @@ function TransactionsHistory() {
 
   const PAGE_SIZE = 20
 
-  const handleGoBack = useCallback(() => {
-    router.back()
+  const goBack = useCallback(() => {
+    window?.['navigation']?.['canGoBack'] ?
+      router.back()
+      : router.push({
+        pathname: "/",
+        query: resolvePersistantQueryParams(router.query)
+      })
   }, [router])
+
 
   useEffect(() => {
     (async () => {
@@ -133,7 +139,7 @@ function TransactionsHistory() {
 
   return (
     <div className='bg-secondary-900 sm:shadow-card rounded-lg mb-6 w-full text-primary-text overflow-hidden relative min-h-[620px]'>
-      <HeaderWithMenu goBack={handleGoBack} />
+      <HeaderWithMenu goBack={goBack} />
       {
         page == 0 && loading ?
           <SwapHistoryComponentSceleton />
