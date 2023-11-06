@@ -17,6 +17,7 @@ import { parseUnits } from 'viem';
 import WalletMessage from './WalletTransfer/message';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { disconnect as wagmiDisconnect } from '@wagmi/core'
+import { useSwapTransactionStore } from '../../../store/zustandStore';
 
 type Props = {
     depositAddress?: string,
@@ -30,7 +31,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const { lprAccount } = useWalletState();
     const { swap } = useSwapDataState();
     const { networks } = useSettingsState();
-    const { setSwapPublishedTx } = useSwapDataUpdate();
+    const { setSwapTransaction } = useSwapTransactionStore();
     const { isConnected, address: fromAddress } = useAccount();
 
     const { setLprAccount } = useWalletUpdate();
@@ -162,7 +163,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
 
             const txHash = (transferResult as any)?.hash
             if (txHash) {
-                setSwapPublishedTx(swap.id, PublishedSwapTransactionStatus.Pending, txHash);
+                setSwapTransaction(swap.id, PublishedSwapTransactionStatus.Pending, txHash);
                 setTransferDone(true)
             }
         }

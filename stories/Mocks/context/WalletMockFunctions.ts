@@ -1,4 +1,4 @@
-import {  WalletStateUpdate } from "../../../context/wallet"
+import { WalletStateUpdate } from "../../../context/wallet"
 
 const MockFunctions: WalletStateUpdate = {
     getBalance: () => { throw new Error("Not implemented") },
@@ -6,6 +6,7 @@ const MockFunctions: WalletStateUpdate = {
     setImxAccount: () => { throw new Error("Not implemented") },
     setStarknetAccount: () => { throw new Error("Not implemented") },
     setSyncWallet: () => { throw new Error("Not implemented") },
+    setLprAccount: () => { throw new Error("Not implemented") }
 }
 
 export default MockFunctions
