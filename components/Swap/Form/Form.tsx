@@ -5,7 +5,7 @@ import SwapButton from "../../buttons/swapButton";
 import React from "react";
 import NetworkFormField from "../../Input/NetworkFormField";
 import AmountField from "../../Input/Amount";
-import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { AddressBookItem, TransactionType } from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
 import Modal from "../../modal/modal";
@@ -20,7 +20,7 @@ import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
 import ClickTooltip from "../../Tooltips/ClickTooltip";
 import ToggleButton from "../../buttons/toggleButton";
-import { ArrowUpDown, Fuel } from 'lucide-react'
+import { ArrowRight, ArrowUpDown, Fuel } from 'lucide-react'
 import { useAuthState } from "../../../context/authContext";
 import WarningMessage from "../../WarningMessage";
 import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetworkCurrency } from "../../../helpers/settingsHelper";
@@ -35,18 +35,16 @@ import { useQueryState } from "../../../context/query";
 import FeeDetails from "../../DisclosureComponents/FeeDetails";
 
 type Props = {
-    isPartnerWallet: boolean,
+    isPartnerWallet?: boolean,
     partner?: Partner,
 }
 
 const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
-
     const {
         values,
         setValues,
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
-
     const { to: destination } = values
     const settings = useSettingsState();
     const source = values.from
@@ -190,8 +188,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     )
     const gasToReserveFormatted = mightBeAutOfGas ? truncateDecimals(networkGas?.gas, values?.currency?.precision) : 0
     return <>
-        <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-            <Widget className="sm:min-h-[504px]">
+        <Widget className="sm:min-h-[504px]">
+            <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
+
                 <Widget.Content>
                     <div className='flex-col relative flex justify-between w-full space-y-4 mb-3.5 leading-4'>
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
@@ -221,7 +220,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                 </label>
                                 <AddressButton
                                     disabled={!values.to || !values.from}
-                                    isPartnerWallet={isPartnerWallet}
+                                    isPartnerWallet={!!isPartnerWallet}
                                     openAddressModal={() => setShowAddressModal(true)}
                                     partnerImage={partnerImage}
                                     values={values} />
@@ -236,7 +235,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                         disabled={lockAddress || (!values.to || !values.from)}
                                         name={"destination_address"}
                                         partnerImage={partnerImage}
-                                        isPartnerWallet={isPartnerWallet}
+                                        isPartnerWallet={!!isPartnerWallet}
                                         partner={partner}
                                         address_book={address_book?.data}
                                     />
@@ -301,9 +300,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                         {ActionText(errors, actionDisplayName as string)}
                     </SwapButton>
                 </Widget.Footer>
-            </Widget>
-        </Form >
-
+            </Form >
+        </Widget>
         {
             process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
             && values.from
@@ -357,6 +355,7 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWall
         </div>
     </button>
 }
+
 
 
 

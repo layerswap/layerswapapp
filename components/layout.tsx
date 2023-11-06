@@ -15,6 +15,7 @@ import dynamic from 'next/dynamic'
 import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
 import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
+import { TooltipProvider } from "./shadcn/tooltip";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -126,15 +127,17 @@ export default function Layout({ children, settings }: Props) {
       <SettingsProvider data={appSettings}>
         <MenuProvider>
           <AuthProvider>
-            <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
-              <ThemeWrapper>
-                <DynamicRainbowKit>
-                  {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                    <MaintananceContent />
-                    : children}
-                </DynamicRainbowKit>
-              </ThemeWrapper>
-            </ErrorBoundary>
+            <TooltipProvider delayDuration={500}>
+              <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+                <ThemeWrapper>
+                  <DynamicRainbowKit>
+                    {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                      <MaintananceContent />
+                      : children}
+                  </DynamicRainbowKit>
+                </ThemeWrapper>
+              </ErrorBoundary>
+            </TooltipProvider>
           </AuthProvider>
         </MenuProvider>
       </SettingsProvider >

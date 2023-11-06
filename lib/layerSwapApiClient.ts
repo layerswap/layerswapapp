@@ -152,7 +152,7 @@ export type SwapItem = {
     fiat_session_id?: string;
     has_pending_deposit: boolean;
     sequence_number: number;
-    fail_reason: string;
+    fail_reason?: string;
 }
 
 export type AddressBookItem = {
