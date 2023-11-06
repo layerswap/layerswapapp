@@ -90,25 +90,17 @@ export default function Form() {
             const swapId = await createSwap(values, query, partner);
 
             if (swapId) {
-                if (query.appName) {
-                    await router.push({
-                        pathname: `/swap/${swapId}`,
-                        query: resolvePersistantQueryParams(router.query)
-                    })
+                setSwapId(swapId)
+                var swapURL = window.location.protocol + "//"
+                    + window.location.host + `/swap/${swapId}`;
+                const params = resolvePersistantQueryParams(router.query)
+                if (params && Object.keys(params).length) {
+                    const search = new URLSearchParams(params as any);
+                    if (search)
+                        swapURL += `?${search}`
                 }
-                else {
-                    setSwapId(swapId)
-                    var swapURL = window.location.protocol + "//"
-                        + window.location.host + `/swap/${swapId}`;
-                    const params = resolvePersistantQueryParams(router.query)
-                    if (params) {
-                        const search = new URLSearchParams(params as any);
-                        if (search)
-                            swapURL += `?${search}`
-                    }
-                    window.history.pushState({ path: swapURL }, '', swapURL);
-                    setShowSwapModal(true)
-                }
+                window.history.pushState({ path: swapURL }, '', swapURL);
+                setShowSwapModal(true)
             }
         }
         catch (error) {
