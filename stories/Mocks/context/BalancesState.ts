@@ -5,7 +5,6 @@ const BalancesStateMock: BalancesState = {
     gases: {},
     isBalanceLoading: false,
     isGasLoading: false,
-    syncWallet: null
 }
 
 export default BalancesStateMock

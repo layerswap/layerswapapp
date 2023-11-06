@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { Layer } from '../Models/Layer';
 import { StarknetWindowObject } from 'get-starknet-core';
+import * as zksync from 'zksync';
 
 interface WalletState {
     connectedWallets: Wallet[];
@@ -14,7 +15,8 @@ export type Wallet = {
     icon?: string;
     connector?: string;
     metadata?: {
-        starknetAccount?: StarknetWindowObject
+        starknetAccount?: StarknetWindowObject,
+        zkSyncAccount?: zksync.Wallet
     }
     chainId?: string | number
 }

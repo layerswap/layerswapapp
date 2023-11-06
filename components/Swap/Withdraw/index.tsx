@@ -174,7 +174,6 @@ const Withdraw: FC = () => {
 const WalletTransferContent: FC = () => {
     const { openAccountModal } = useAccountModal();
     const { wallets, disconnectWallet } = useWallet()
-    const { syncWallet } = useBalancesState()
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
     const [isLoading, setIsloading] = useState(false);
@@ -208,9 +207,6 @@ const WalletTransferContent: FC = () => {
     }
     else if (wallet) {
         accountAddress = wallet.address || "";
-    }
-    else if (sourceIsZkSync) {
-        accountAddress = syncWallet?.cachedAddress || "";
     }
 
     const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap?.source_exchange

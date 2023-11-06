@@ -31,6 +31,12 @@ const ConnectButton = ({ children, className, onClose }: { children: ReactNode, 
             id: 'ton',
             type: NetworkType.TON,
             network: layers.find(l => l.type === NetworkType.TON)
+        },
+        {
+            name: 'zkSync Lite',
+            id: 'zksync',
+            type: NetworkType.ZkSyncLite,
+            network: layers.find(l => l.type === NetworkType.ZkSyncLite)
         }
     ]
     const filteredConnectors = knownConnectors.filter(c => c.network && !wallets.map(w => w?.network?.type).includes(c.network.type))

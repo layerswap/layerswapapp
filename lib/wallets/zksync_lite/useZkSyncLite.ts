@@ -2,12 +2,21 @@ import { Layer } from "../../../Models/Layer"
 import { WalletProvider } from "../../../hooks/useWallet";
 import { useWalletStore } from "../../../stores/walletStore"
 import KnownInternalNames from "../../knownIds"
-import { constants } from "starknet";
-import {connect, disconnect} from 'starknetkit'
+import { disconnect } from '@wagmi/core'
+import { useEthersSigner } from "../../ethersToViem/ethers";
+import * as zksync from 'zksync';
+import useEVM from "../evm/useEVM";
+import { useSettingsState } from "../../../context/settings";
+import { NetworkType } from "../../../Models/CryptoNetwork";
+
 
 export default function useZkSyncLite(): WalletProvider {
+
     const SupportedNetworks = [KnownInternalNames.Networks.ZksyncMainnet]
-    const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
+
+    const { connectWallet: connecEVMWallet } = useEVM()
+    const { layers } = useSettingsState()
+    const signer = useEthersSigner();
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
@@ -17,38 +26,35 @@ export default function useZkSyncLite(): WalletProvider {
     }
 
     const connectWallet = async (network: Layer) => {
+        const defaultProvider = network.internal_name?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "goerli";
+        const evm = layers.find(l => l.type === NetworkType.EVM)
+
+        if (!signer) evm && await connecEVMWallet(evm)
+
         try {
-            const res = await connect({
-                argentMobileOptions: {
-                    dappName: 'Layerswap',
-                    projectId: WALLETCONNECT_PROJECT_ID,
-                    url: 'https://www.layerswap.io/app',
-                    description: 'Move crypto across exchanges, blockchains, and wallets.',
-                    chainId: constants.NetworkName.SN_MAIN
-                },
-                dappName: 'Layerswap',
-            })
-            if (res && res.account && res.isConnected) {
+            if (signer) {
+                const syncProvider = await zksync.getDefaultProvider(defaultProvider);
+                const wallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
                 addWallet({
-                    address: res.account.address,
+                    address: wallet.address(),
                     network: network,
-                    chainId: res.provider.provider.chainId,
-                    icon: res.icon,
-                    connector: res.name,
+                    chainId: defaultProvider,
                     metadata: {
-                        starknetAccount: res
+                        zkSyncAccount: wallet
                     }
                 })
             }
         }
         catch (e) {
-            throw new Error(e)
+            throw new Error(e.message)
         }
+
     }
+
 
     const disconnectWallet = async (network: Layer) => {
         try {
-            disconnect({ clearLastWallet: true })
+            disconnect()
             removeWallet(network)
         }
         catch (e) {
