@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Fuel } from "lucide-react";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { Currency } from "../../../Models/Currency";
 import { Layer } from "../../../Models/Layer";
 import { useSettingsState } from "../../../context/settings";
@@ -31,7 +31,13 @@ type SwapInfoProps = {
 
 const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name }) => {
     const { resolveImgSrc, currencies, networks } = useSettingsState()
-    const { wallets } = useWallet()
+    const { getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return from && getProvider(from)
+    }, [from, getProvider])
+
+    const wallet = provider?.getConnectedWallet()
+
     const { selectedAssetNetwork } = useSwapDataState()
 
     const {
@@ -48,7 +54,6 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
 
     const source = hideFrom ? partner : from
     const destination = hideTo ? partner : to
-    const wallet = wallets?.find(w => w?.network.type === from?.type)
 
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
     const receiveAmountInUsd = receiveAmount ? (currency?.usd_price * receiveAmount).toFixed(2) : undefined

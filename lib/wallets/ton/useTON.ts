@@ -10,8 +10,7 @@ import { WalletProvider } from "../../../hooks/useWallet";
 
 export default function useTON(): WalletProvider {
     const SupportedNetworks = [KnownInternalNames.Networks.TONMainnet]
-
-    const { layers } = useSettingsState()
+    const name = 'ton'
     const wallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
 
@@ -19,8 +18,8 @@ export default function useTON(): WalletProvider {
         if (wallet && wallet.account.address && wallet.provider) {
             const w: Wallet = {
                 address: Address.parse(wallet.account.address).toString({ bounceable: false }),
-                connector: 'TON',
-                network: layers.find(l => l.type === NetworkType.TON) as Layer
+                connector: name,
+                providerName: name,
             }
             return w
         }
@@ -40,9 +39,10 @@ export default function useTON(): WalletProvider {
     }
 
     return {
-        getWallet,
+        getConnectedWallet: getWallet,
         connectWallet,
         disconnectWallet,
-        SupportedNetworks
+        SupportedNetworks,
+        name
     }
 }

@@ -12,7 +12,6 @@ import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/butto
 import { useSettingsState } from '../../../../context/settings';
 import { useNetwork } from 'wagmi';
 import { TransactionReceipt } from 'zksync/build/types';
-import useWallet from '../../../../hooks/useWallet';
 
 type Props = {
     depositAddress: string,
@@ -22,7 +21,8 @@ type Props = {
 const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
-    const { connectWallet, disconnectWallet, wallets } = useWallet()
+    const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>()
+
     const { setSwapTransaction } = useSwapTransactionStore();
     const { swap } = useSwapDataState();
     const signer = useEthersSigner();
@@ -31,15 +31,14 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const { networks, layers } = useSettingsState();
     const { source_network: source_network_internal_name } = swap || {};
     const source_network = networks.find(n => n.internal_name === source_network_internal_name);
-    const source_layer = layers.find(l => l.internal_name === source_network_internal_name);
+    const source_layer = layers.find(l => l.internal_name === source_network_internal_name)
     const source_currency = source_network?.currencies?.find(c => c.asset.toLocaleUpperCase() === swap?.source_network_asset.toLocaleUpperCase());
     const defaultProvider = swap?.source_network?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "goerli";
     const l1Network = networks.find(n => n.internal_name === source_network?.metadata?.L1Network);
-    const wallet = wallets.find(w => w.network.type === source_layer?.type)
 
     useEffect(() => {
-        if (wallet?.metadata?.zkSyncAccount?.cachedAddress && signer?._address !== wallet?.metadata?.zkSyncAccount?.cachedAddress && source_layer) {
-            disconnectWallet(source_layer)
+        if (signer?._address !== syncWallet?.cachedAddress && source_layer) {
+            setSyncWallet(null)
         }
     }, [signer?._address]);
 
@@ -55,10 +54,20 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     };
 
     const handleConnect = useCallback(async () => {
-        if (!signer || !source_layer) return
+        if (!signer)
+            return
         setLoading(true)
-        await connectWallet(source_layer)
-        setLoading(false)
+        try {
+            const syncProvider = await zksync.getDefaultProvider(defaultProvider);
+            const wallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
+            setSyncWallet(wallet)
+        }
+        catch (e) {
+            toast(e.message)
+        }
+        finally {
+            setLoading(false)
+        }
     }, [signer, defaultProvider])
 
     const handleTransfer = useCallback(async () => {
@@ -67,7 +76,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
         setLoading(true)
         try {
-            const tf = await wallet?.metadata?.zkSyncAccount?.syncTransfer({
+            const tf = await syncWallet?.syncTransfer({
                 to: depositAddress,
                 token: swap?.source_network_asset,
                 amount: zksync.closestPackableTransactionAmount(utils.parseUnits(amount.toString(), source_currency?.decimals)),
@@ -94,7 +103,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         }
         setLoading(false)
 
-    }, [wallet, swap, depositAddress, source_currency, amount])
+    }, [syncWallet, swap, depositAddress, source_currency, amount])
 
     if (!signer) {
         return <ConnectWalletButton />
@@ -114,13 +123,13 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
                 <div className='space-y-4'>
                     {
-                        !wallet &&
+                        !syncWallet &&
                         <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Authorize to Send on zkSync
                         </SubmitButton>
                     }
                     {
-                        wallet &&
+                        syncWallet &&
                         <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>

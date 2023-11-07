@@ -1,4 +1,3 @@
-import { Layer } from "../../../Models/Layer"
 import { useWalletStore } from "../../../stores/walletStore"
 import ImtblClient from "../../imtbl"
 import KnownInternalNames from "../../knownIds"
@@ -6,41 +5,41 @@ import { WalletProvider } from "../../../hooks/useWallet"
 
 export default function useImmutableX(): WalletProvider {
     const SupportedNetworks = [KnownInternalNames.Networks.ImmutableXMainnet, KnownInternalNames.Networks.ImmutableXGoerli]
-
+    const name = 'imx'
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
 
     const getWallet = () => {
-        return wallets.find(wallet => SupportedNetworks.includes(wallet.network.internal_name))
+        return wallets.find(wallet => wallet.connector === name)
     }
 
-    const connectWallet = async (network: Layer) => {
-        if (network.isExchange === true) return
+    const connectWallet = async (chain: string | number) => {
+        if (!chain) return
+        const networkName = chain === 1 ? KnownInternalNames.Networks.ImmutableXMainnet : KnownInternalNames.Networks.ImmutableXGoerli
         try {
-            const imtblClient = new ImtblClient(network.internal_name)
+            const imtblClient = new ImtblClient(networkName)
             const res = await imtblClient.ConnectWallet();
-            if (network) {
-                addWallet({
-                    address: res.address,
-                    network: network,
-                    connector: res.providerPreference
-                });
-            }
+            addWallet({
+                address: res.address,
+                connector: 'imx',
+                providerName: name
+            });
         }
         catch (e) {
             console.log(e)
         }
     }
 
-    const disconnectWallet = (network: Layer) => {
-        return removeWallet(network)
+    const disconnectWallet = () => {
+        return removeWallet(name)
     }
 
     return {
-        getWallet,
+        getConnectedWallet: getWallet,
         connectWallet,
         disconnectWallet,
-        SupportedNetworks
+        SupportedNetworks,
+        name
     }
 }

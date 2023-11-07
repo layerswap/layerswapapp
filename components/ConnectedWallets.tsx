@@ -15,28 +15,17 @@ import { Plus } from "lucide-react"
 import Braavos from "./icons/Wallets/Braavos"
 import AddressIcon from "./AddressIcon"
 import TON from "./icons/Wallets/TON"
+import { Wallet } from "../stores/walletStore"
 
 export const WalletsHeader = () => {
     const { wallets } = useWallet()
     const [openDialog, setOpenDialog] = useState<boolean>(false)
-    const lastConnectedWallet = wallets.slice(-1)[0]
 
-    if (lastConnectedWallet) {
+    if (wallets.length > 0) {
         return (
             <>
                 <button type="button" onClick={() => setOpenDialog(true)} className="-mx-2 p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
-                    <div className="mx-0.5">
-                        <div className="font-bold grow flex space-x-2">
-                            <div className="inline-flex items-center relative">
-                                <AddressIcon address={lastConnectedWallet.address} size={24} />
-                                {
-                                    lastConnectedWallet.connector && <span className="absolute -bottom-1 -right-2 ml-1 text-[10px] leading-4 font-semibold text-secondary-text">
-                                        <ResolveWalletIcon connector={lastConnectedWallet.connector} className="w-5 h-5 border-2 border-secondary-600 rounded-full bg-primary-text" />
-                                    </span>
-                                }
-                            </div>
-                        </div>
-                    </div>
+                    <WalletsIcons wallets={wallets} />
                 </button>
                 <ConnectedWalletsDialog openDialog={openDialog} setOpenDialog={setOpenDialog} />
             </>
@@ -49,6 +38,27 @@ export const WalletsHeader = () => {
                 <WalletIcon className="h-6 w-6 mx-0.5" strokeWidth="2" />
             </div>
         </ConnectButton>
+    )
+}
+
+const WalletsIcons = ({ wallets }: { wallets: Wallet[] }) => {
+    return (
+        <div className="-space-x-2 flex">
+            {
+                wallets[0]?.connector &&
+                <ResolveWalletIcon connector={wallets[0].connector} className="rounded-full border-2 border-secondary-600 bg-secondary-700 flex-shrink-0 h-6 w-6" />
+            }
+            {
+                wallets[1]?.connector &&
+                <ResolveWalletIcon connector={wallets[1].connector} className="rounded-full border-2 border-secondary-600 bg-secondary-700 flex-shrink-0 h-6 w-6" />
+            }
+            {
+                wallets.length > 2 &&
+                <div className="h-6 w-6 flex-shrink-0 rounded-full justify-center p-1 bg-secondary-600 text-primary-text overlfow-hidden text-xs">
+                    <span><span>+</span>{wallets.length - 2}</span>
+                </div>
+            }
+        </div>
     )
 }
 
@@ -78,12 +88,8 @@ export const WalletsMenu = () => {
                                 <div className="flex justify-center w-full">
                                     Connected wallets
                                 </div>
-                                <div className="inline-flex place-items-end absolute left-2.5">
-                                    {
-                                        wallets.map((wallet, index) => (
-                                            wallet.connector && <ResolveWalletIcon key={index} connector={wallet.connector} className="w-6 h-6 p-0.5 rounded-full bg-secondary-800 border border-secondary-400" />
-                                        ))
-                                    }
+                                <div className="place-items-end absolute left-2.5">
+                                    <WalletsIcons wallets={wallets} />
                                 </div>
                             </>
                     }
@@ -124,7 +130,7 @@ const ConnectedWalletsDialog = ({ openDialog, setOpenDialog }: { openDialog: boo
                                     }
                                     <p>{shortenAddress(wallet.address)}</p>
                                 </div>
-                                <button onClick={() => { disconnectWallet(wallet.network); wallets.length === 1 && setOpenDialog(false) }} className="p-1 hover:bg-secondary-700 text-xs text-secondary-text hover:opacity-75">
+                                <button onClick={() => { disconnectWallet(wallet.providerName); wallets.length === 1 && setOpenDialog(false) }} className="p-1 hover:bg-secondary-700 text-xs text-secondary-text hover:opacity-75">
                                     Disconnect
                                 </button>
                             </div>

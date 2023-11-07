@@ -2,44 +2,32 @@ import { ReactNode, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import useWallet from "../../hooks/useWallet";
 import { NetworkType } from "../../Models/CryptoNetwork";
-import { useSettingsState } from "../../context/settings";
-import { Layer } from "../../Models/Layer";
 import RainbowIcon from "../icons/Wallets/Rainbow";
 import Starknet from "../icons/Wallets/Starknet";
 import TON from "../icons/Wallets/TON";
 
 const ConnectButton = ({ children, className, onClose }: { children: ReactNode, className?: string, onClose?: () => void }) => {
     const { connectWallet, wallets } = useWallet()
-    const { layers } = useSettingsState()
     const [open, setOpen] = useState<boolean>()
 
     const knownConnectors = [
         {
             name: 'EVM',
-            id: 'rainbow',
+            id: 'evm',
             type: NetworkType.EVM,
-            network: layers.find(l => l.type === NetworkType.EVM)
         },
         {
             name: 'Starknet',
             id: 'starknet',
             type: NetworkType.Starknet,
-            network: layers.find(l => l.type === NetworkType.Starknet)
         },
         {
             name: 'TON',
             id: 'ton',
             type: NetworkType.TON,
-            network: layers.find(l => l.type === NetworkType.TON)
-        },
-        {
-            name: 'zkSync Lite',
-            id: 'zksync',
-            type: NetworkType.ZkSyncLite,
-            network: layers.find(l => l.type === NetworkType.ZkSyncLite)
         }
     ]
-    const filteredConnectors = knownConnectors.filter(c => c.network && !wallets.map(w => w?.network?.type).includes(c.network.type))
+    const filteredConnectors = knownConnectors.filter(c => !wallets.map(w => w?.providerName).includes(c.id))
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -49,7 +37,7 @@ const ConnectButton = ({ children, className, onClose }: { children: ReactNode, 
             <PopoverContent className='flex flex-col items-start gap-2 w-fit'>
                 {
                     filteredConnectors.map((connector, index) => (
-                        <button type="button" key={index} className="w-full h-full hover:bg-secondary-600 rounded py-2 px-3" onClick={() => { connectWallet(connector.network as Layer & { type: typeof connector.type }); setOpen(false); onClose && onClose() }}>
+                        <button type="button" key={index} className="w-full h-full hover:bg-secondary-600 rounded py-2 px-3" onClick={() => { connectWallet(connector.id); setOpen(false); onClose && onClose() }}>
                             <div className="flex space-x-2 items-center">
                                 {
                                     connector &&
@@ -71,7 +59,7 @@ export default ConnectButton
 
 const ResolveConnectorIcon = ({ connector, className }: { connector: string, className: string }) => {
     switch (connector.toLowerCase()) {
-        case KnownConnectors.Rainbow:
+        case KnownConnectors.EVM:
             return <RainbowIcon className={className} />
         case KnownConnectors.Starknet:
             return <Starknet className={className} />
@@ -84,6 +72,6 @@ const ResolveConnectorIcon = ({ connector, className }: { connector: string, cla
 
 const KnownConnectors = {
     Starknet: 'starknet',
-    Rainbow: 'rainbow',
+    EVM: 'evm',
     TON: 'ton',
 }

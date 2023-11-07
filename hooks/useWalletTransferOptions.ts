@@ -4,15 +4,20 @@ import { Layer } from "../Models/Layer"
 import { NetworkType } from "../Models/CryptoNetwork"
 import { useBalancesState } from "../context/balances"
 import useWallet from "./useWallet"
+import { useMemo } from "react"
 
 export default function useWalletTransferOptions() {
 
     const { swap } = useSwapDataState()
     const { isContractWallet: isEVMContractWallet } = useBalancesState();
-    const { wallets } = useWallet()
+    const { getProvider } = useWallet()
     const { layers } = useSettingsState()
     const source_layer = layers.find(n => n.internal_name === swap?.source_network) as (Layer & { isExchange: false })
-    const wallet = wallets.find(wallet => wallet?.network?.type === source_layer.type)
+    const provider = useMemo(() => {
+        return source_layer && getProvider(source_layer)
+    }, [source_layer, getProvider])
+
+    const wallet = provider?.getConnectedWallet()
 
     const canDoSweepless = source_layer?.isExchange == false
         && ((source_layer.type == NetworkType.EVM && !isEVMContractWallet?.value) || source_layer.type == NetworkType.Starknet)

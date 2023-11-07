@@ -1,5 +1,5 @@
 import { AlignLeft, X } from 'lucide-react';
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import WalletTransfer from './Wallet';
 import ManualTransfer from './ManualTransfer';
 import FiatTransfer from './FiatTransfer';
@@ -169,7 +169,7 @@ const Withdraw: FC = () => {
 
 const WalletTransferContent: FC = () => {
     const { openAccountModal } = useAccountModal();
-    const { wallets, disconnectWallet } = useWallet()
+    const { getProvider, disconnectWallet } = useWallet()
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
     const [isLoading, setIsloading] = useState(false);
@@ -181,15 +181,19 @@ const WalletTransferContent: FC = () => {
 
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
+    const source_layer = layers.find(n => n.internal_name === swap?.source_network)
 
     const sourceNetworkType = GetDefaultNetwork(source_network, source_network_asset)?.type
-    const wallet = wallets?.find(w => w?.network?.type === source_network?.type)
+    const provider = useMemo(() => {
+        return source_layer && getProvider(source_layer)
+    }, [source_layer, getProvider])
 
+    const wallet = provider?.getConnectedWallet()
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!source_network) return
+        if (!wallet) return
         setIsloading(true);
-        await disconnectWallet(source_network, swap)
+        await disconnectWallet(wallet.providerName, swap)
         setIsloading(false);
         e?.stopPropagation();
     }, [sourceNetworkType, swap?.source_exchange])
@@ -226,7 +230,6 @@ const WalletTransferContent: FC = () => {
             <div className='flex text-secondary-text bg-secondary-400 flex-row items-left rounded-md p-1'>
                 {
                     !swap?.source_exchange
-                    && sourceNetworkType === NetworkType.EVM
                     && wallet?.connector
                     && <ResolveWalletIcon
                         connector={wallet?.connector}

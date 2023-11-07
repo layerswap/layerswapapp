@@ -1,16 +1,16 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit"
-import { Layer } from "../../../Models/Layer"
 import { disconnect } from '@wagmi/core'
 import { useAccount } from "wagmi"
 import { NetworkType } from "../../../Models/CryptoNetwork"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
+import KnownInternalNames from "../../knownIds"
 
 
 export default function useEVM(): WalletProvider {
     const { layers } = useSettingsState()
-    const SupportedNetworks = layers.filter(layer => layer.type === NetworkType.EVM).map(l => l.internal_name)
-    
+    const SupportedNetworks = [...layers.filter(layer => layer.type === NetworkType.EVM).map(l => l.internal_name), KnownInternalNames.Networks.ZksyncMainnet]
+    const name = 'evm'
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
 
@@ -19,8 +19,7 @@ export default function useEVM(): WalletProvider {
             return {
                 address: account.address,
                 connector: account.connector?.id,
-                //TODO remove
-                network: layers.find(l => l.type === NetworkType.EVM) as Layer
+                providerName: name,
             }
         }
     }
@@ -39,9 +38,10 @@ export default function useEVM(): WalletProvider {
     }
 
     return {
-        getWallet,
+        getConnectedWallet: getWallet,
         connectWallet,
         disconnectWallet,
-        SupportedNetworks
+        SupportedNetworks,
+        name
     }
 }

@@ -1,6 +1,5 @@
-import { FC, ReactNode, useCallback } from "react";
+import { FC, ReactNode, useCallback, useMemo } from "react";
 import {
-    useNetwork,
     useSwitchNetwork,
 } from "wagmi";
 import WalletIcon from "../../../../icons/WalletIcon";
@@ -10,21 +9,22 @@ import SubmitButton from "../../../../buttons/submitButton";
 import useWallet from "../../../../../hooks/useWallet";
 import { useSwapDataState } from "../../../../../context/swap";
 import { useSettingsState } from "../../../../../context/settings";
-import { Layer } from "../../../../../Models/Layer";
-import { NetworkType } from "../../../../../Models/CryptoNetwork";
 
 export const ConnectWalletButton: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
-    const { connectWallet } = useWallet()
+    const { getProvider } = useWallet()
     const source_layer = layers.find(l => l.internal_name === swap?.source_network)
+    const provider = useMemo(() => {
+        return source_layer && getProvider(source_layer)
+    }, [source_layer, getProvider])
 
     const clickHandler = useCallback(() => {
-        if (!source_layer) {
-            throw new Error("Source layer could not be found")
+        if (!provider) {
+            throw new Error("provider could not be found")
         }
-        return connectWallet(source_layer)
-    }, [connectWallet])
+        return provider.connectWallet(provider?.name)
+    }, [provider])
 
     return <ButtonWrapper
         clcikHandler={clickHandler}

@@ -1,5 +1,5 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
@@ -26,7 +26,7 @@ function getUint256CalldataFromBN(bn: BigNumberish) {
     return { ...cairo.uint256(bn) }
 }
 
-export function parseInputAmountToUint256(input: string,decimals: number = 18) {
+export function parseInputAmountToUint256(input: string, decimals: number = 18) {
     return getUint256CalldataFromBN(parseUnits(input, decimals).toString())
 }
 
@@ -34,9 +34,9 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { connectWallet, disconnectWallet, wallets } = useWallet()
+    const { getProvider } = useWallet()
     const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
-    const wallet = wallets.find(wallet => wallet?.network?.type === NetworkType.Starknet)
+
     const { userId } = useAuthState()
 
     const { swap } = useSwapDataState()
@@ -49,14 +49,20 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const sourceCurrency = source_network?.currencies.find(c => c.asset?.toLowerCase() === swap?.source_network_asset?.toLowerCase())
     const sourceChainId = source_network?.chain_id
 
+    const provider = useMemo(() => {
+        return source_layer && getProvider(source_layer)
+    }, [source_layer, getProvider])
+    const wallet = provider?.getConnectedWallet()
+
     const handleConnect = async () => {
+        if (!provider) return
         setLoading(true)
         try {
-            await connectWallet(source_layer as Layer & { type: NetworkType.Starknet })
+            await provider.connectWallet()
             const connectedChainId = wallet?.chainId
             if (source_layer && connectedChainId && connectedChainId !== sourceChainId) {
                 setIsWrongNetwork(true)
-                await disconnectWallet(source_layer)
+                await provider.disconnectWallet()
             }
             else if (source_layer && connectedChainId && connectedChainId === sourceChainId) {
                 setIsWrongNetwork(false)
@@ -70,10 +76,10 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     useEffect(() => {
         const connectedChainId = wallet?.chainId
-        if (source_layer && connectedChainId && connectedChainId !== sourceChainId) {
+        if (source_layer && connectedChainId && connectedChainId !== sourceChainId && provider) {
             (async () => {
                 setIsWrongNetwork(true)
-                await disconnectWallet(source_layer)
+                await provider.disconnectWallet()
             })()
         } else if (source_layer && connectedChainId && connectedChainId === sourceChainId) {
             setIsWrongNetwork(false)

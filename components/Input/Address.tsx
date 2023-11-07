@@ -1,9 +1,8 @@
 import { useFormikContext } from "formik";
-import { ChangeEvent, FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AddressBookItem } from "../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
-import { toast } from "react-hot-toast";
 import { useSwapDataUpdate } from "../../context/swap";
 import { Info } from "lucide-react";
 import KnownInternalNames from "../../lib/knownIds";
@@ -12,14 +11,12 @@ import { isValidAddress } from "../../lib/addressValidator";
 import { RadioGroup } from "@headlessui/react";
 import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
-import { useAccount } from "wagmi";
 import shortenAddress from "../utils/ShortenAddress";
 import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import WalletIcon from "../icons/WalletIcon";
 import { NetworkType } from "../../Models/CryptoNetwork";
 import useWallet from "../../hooks/useWallet";
-import { Layer } from "../../Models/Layer";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -53,34 +50,35 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const placeholder = "Enter your address here"
     const [inputValue, setInputValue] = useState<string | undefined>(values?.destination_address || "")
     const [validInputAddress, setValidInputAddress] = useState<string | undefined>('')
-    const [autofilledWalletNetworkType, setAutofilledWalletNetworkType] = useState<NetworkType | null>(null)
     const destinationIsStarknet = destination?.internal_name === KnownInternalNames.Networks.StarkNetGoerli
         || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
-    const { connectWallet, disconnectWallet, wallets } = useWallet()
-    const wallet = wallets?.find(w => w?.network.type === values?.to?.type)
+    const { connectWallet, disconnectWallet, getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return values?.to && getProvider(values?.to)
+    }, [values?.to, getProvider])
+
+    const connectedWallet = provider?.getConnectedWallet()
     const settings = useSettingsState()
 
     useEffect(() => {
-        if (destination && !destination?.isExchange && isValidAddress(wallet?.address, destination) && !values?.destination_address) {
+        if (destination && !destination?.isExchange && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address) {
             //TODO move to wallet implementation
-            if (wallet
-                && wallet.network.type === NetworkType.Starknet
-                && (wallet.chainId != destinationChainId)
+            if (connectedWallet
+                && connectedWallet.providerName === 'starknet'
+                && (connectedWallet.chainId != destinationChainId)
                 && destination) {
                 (async () => {
                     setWrongNetwork(true)
-                    await disconnectWallet(destination)
-                    setAutofilledWalletNetworkType(null)
+                    await disconnectWallet(connectedWallet.providerName)
                 })()
                 return
             }
-            setInputValue(wallet?.address)
+            setInputValue(connectedWallet?.address)
             setAddressConfirmed(true)
-            setAutofilledWalletNetworkType(destination?.type)
-            setFieldValue("destination_address", wallet?.address)
+            setFieldValue("destination_address", connectedWallet?.address)
         }
-    }, [wallet?.address, destination?.isExchange, destination, values?.destination_address])
+    }, [connectedWallet?.address, destination?.isExchange, destination])
 
     useEffect(() => {
         if (canFocus) {
@@ -93,11 +91,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     }, [values.destination_address])
 
     const handleRemoveDepositeAddress = useCallback(async () => {
-        if (!values.to) return
         setDepositeAddressIsfromAccount(false)
         setFieldValue("destination_address", '')
         setInputValue("")
-    }, [setDepositeAddressIsfromAccount, setFieldValue, autofilledWalletNetworkType, disconnectWallet])
+    }, [setDepositeAddressIsfromAccount, setFieldValue, values.to])
 
     const handleSelectAddress = useCallback((value: string) => {
         setAddressConfirmed(true)
@@ -154,7 +151,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     placeholder={placeholder}
                                     autoCorrect="off"
                                     type={"text"}
-                                    disabled={disabled || !!(wallet && values.destination_address) || !!(wallet && values.destination_address)}
+                                    disabled={disabled || !!(connectedWallet && values.destination_address) || !!(connectedWallet && values.destination_address)}
                                     name={name}
                                     id={name}
                                     ref={inputReference}
@@ -199,8 +196,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         <div onClick={handleSetNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 border border-secondary-300 bg-secondary-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-500 transition duration-200 px-2 py-2 hover:border-secondary-500 hover:shadow-xl`}>
                             <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
                                 {
-                                    destinationIsStarknet && wallet ?
-                                        <Image src={wallet.icon || ''} alt={wallet?.address} width={25} height={25} />
+                                    destinationIsStarknet && connectedWallet ?
+                                        <Image src={connectedWallet.icon || ''} alt={connectedWallet?.address} width={25} height={25} />
                                         :
                                         <AddressIcon address={validInputAddress} size={25} />
                                 }
@@ -218,10 +215,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                     {
                         !disabled
                         && !inputValue
+                        && destination
                         && !destination?.isExchange
                         && destinationNetwork
-                        && ([NetworkType.EVM, NetworkType.StarkEx, NetworkType.ZkSyncLite, NetworkType.TON, NetworkType.Starknet].includes(destinationNetwork.type)) &&
-                        <div onClick={() => { connectWallet(destination as Layer & { type: typeof destinationNetwork.type }) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
+                        && provider 
+                        && !connectedWallet &&
+                        <div onClick={() => { connectWallet(provider.name) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
                             <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
                                 <WalletIcon className="w-6 h-6 text-primary-text" />
                             </div>

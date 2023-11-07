@@ -1,5 +1,5 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
@@ -17,7 +17,7 @@ type Props = {
 const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { connectWallet, wallets } = useWallet()
+    const { connectWallet } = useWallet()
     const { swap } = useSwapDataState()
     const { networks, layers } = useSettingsState()
     const { setSwapTransaction } = useSwapTransactionStore();
@@ -25,15 +25,19 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const { source_network: source_network_internal_name } = swap || {}
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
     const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
-    const imxAccount = wallets?.find(w => w.network.type === source_layer?.type)
+    const { getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return source_layer && getProvider(source_layer)
+    }, [source_layer, getProvider])
+
+    const imxAccount = provider?.getConnectedWallet()
 
     const handleConnect = useCallback(async () => {
-        if (!source_network || !source_layer)
-            return
+        if (!provider) return
         setLoading(true)
-        await connectWallet(source_layer)
+        await provider?.connectWallet()
         setLoading(false)
-    }, [source_network])
+    }, [provider])
 
     const handleTransfer = useCallback(async () => {
         if (!source_network || !swap || !depositAddress)

@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useRef } from "react";
+import { forwardRef, useCallback, useMemo, useRef } from "react";
 import { useSettingsState } from "../../context/settings";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -16,9 +16,14 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
     const { networks, currencies } = useSettingsState()
     const query = useQueryState()
-    const { wallets } = useWallet()
     const { currency, from, to, amount, destination_address } = values
-    const wallet = wallets?.find(w => w?.network.type === from?.type)
+    const { getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return from && getProvider(from)
+    }, [from, getProvider])
+
+    const wallet = provider?.getConnectedWallet()
+
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === currency?.asset)?.gas || 0
     const { getBalance, getGas } = useBalancesUpdate()

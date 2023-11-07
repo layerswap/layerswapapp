@@ -7,13 +7,13 @@ import useStarknet from "../lib/wallets/starknet/useStarknet"
 import useImmutableX from "../lib/wallets/immutableX/useIMX"
 import useEVM from "../lib/wallets/evm/useEVM"
 import useTON from "../lib/wallets/ton/useTON"
-import useZkSyncLite from "../lib/wallets/zksync_lite/useZkSyncLite"
 
 export type WalletProvider = {
-    connectWallet: (layer: Layer) => Promise<void> | undefined | void,
-    disconnectWallet: (layer: Layer) => Promise<void> | undefined | void,
-    getWallet: () => Wallet | undefined,
-    SupportedNetworks: string[]
+    connectWallet: (chain?: string | number | undefined) => Promise<void> | undefined | void,
+    disconnectWallet: () => Promise<void> | undefined | void,
+    getConnectedWallet: () => Wallet | undefined,
+    SupportedNetworks: string[],
+    name: string,
 }
 
 export default function useWallet() {
@@ -24,21 +24,20 @@ export default function useWallet() {
         useEVM(),
         useStarknet(),
         useImmutableX(),
-        useZkSyncLite()
     ]
 
-    async function handleConnect(layer: Layer) {
-        const provider = WalletProviders.find(provider => provider.SupportedNetworks.includes(layer.internal_name))
+    async function handleConnect(providerName: string, chain?: string | number) {
+        const provider = WalletProviders.find(provider => provider.name === providerName)
         try {
-            await provider?.connectWallet(layer)
+            await provider?.connectWallet(chain)
         }
         catch {
             toast.error("Couldn't connect the account")
         }
     }
 
-    const handleDisconnect = async (layer: Layer, swap?: SwapItem) => {
-        const provider = WalletProviders.find(provider => provider.SupportedNetworks.includes(layer.internal_name))
+    const handleDisconnect = async (providerName: string, swap?: SwapItem) => {
+        const provider = WalletProviders.find(provider => provider.name === providerName)
         try {
             if (swap?.source_exchange) {
                 const apiClient = new LayerSwapApiClient()
@@ -46,7 +45,7 @@ export default function useWallet() {
                 await mutateSwap()
             }
             else {
-                await provider?.disconnectWallet(layer)
+                await provider?.disconnectWallet()
             }
         }
         catch {
@@ -58,16 +57,22 @@ export default function useWallet() {
         let connectedWallets: Wallet[] = []
 
         WalletProviders.forEach(wallet => {
-            const w = wallet.getWallet()
+            const w = wallet.getConnectedWallet()
             connectedWallets = w && [...connectedWallets, w] || [...connectedWallets]
         })
 
         return connectedWallets
     }
 
+    const getProvider = (network: Layer) => {
+        const provider = WalletProviders.find(provider => provider.SupportedNetworks.includes(network.internal_name))
+        return provider
+    }
+
     return {
         wallets: getConnectedWallets(),
         connectWallet: handleConnect,
         disconnectWallet: handleDisconnect,
+        getProvider: getProvider
     }
 }
