@@ -101,8 +101,8 @@ const AmountLabel = ({
             <p>Amount</p>
             {
                 detailsAvailable &&
-                <div className="text-xs text-secondary-text flex items-center space-x-1">
-                    <span>(Min:&nbsp;</span>{minAllowedAmount}<span>&nbsp;- Max:&nbsp;</span>{isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{maxAllowedAmount}</span>}<span>)</span>
+                <div className="text-xs hidden md:flex text-secondary-text items-center">
+                    <span>(Min:&nbsp;</span>{minAllowedAmount}<span>&nbsp;-&nbsp;Max:&nbsp;</span>{isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{maxAllowedAmount}</span>}<span>)</span>
                 </div>
             }
         </div>
