@@ -57,9 +57,17 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         if (!signer)
             return
         setLoading(true)
+
         try {
             const syncProvider = await zksync.getDefaultProvider(defaultProvider);
             const wallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
+
+            const pubKeyHash = await wallet.getCurrentPubKeyHash()
+            if (!pubKeyHash || pubKeyHash == "sync:0000000000000000000000000000000000000000") {
+                toast("Account is locked")
+                setLoading(false)
+                return
+            }
             setSyncWallet(wallet);
         }
         catch (e) {
@@ -100,7 +108,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             }
         }
         setLoading(false)
-        
+
     }, [syncWallet, swap, depositAddress, source_currency, amount])
 
     if (!signer) {
