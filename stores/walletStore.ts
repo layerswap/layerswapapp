@@ -20,12 +20,14 @@ export type Wallet = {
 
 export const useWalletStore = create<WalletState>()((set) => ({
     connectedWallets: [],
-    connectWallet: (wallet) => set((state) => ({
-        connectedWallets: [
-            ...state.connectedWallets,
-            wallet
-        ]
-    })),
+    connectWallet: (wallet) => set((state) => {
+        return ({
+            connectedWallets: [
+                ...state.connectedWallets.filter(w => w.providerName !== wallet.providerName),
+                wallet
+            ]
+        })
+    }),
     disconnectWallet: (providerName) => set((state) => ({
         connectedWallets: state.connectedWallets.filter(w => w.providerName !== providerName)
     }))
