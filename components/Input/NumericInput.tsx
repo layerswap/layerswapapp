@@ -16,7 +16,7 @@ type Input = {
     step?: number;
     name: string;
     className?: string;
-    children?: JSX.Element | JSX.Element[];
+    children?: JSX.Element | JSX.Element[] | null;
     ref?: any;
     onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 }
@@ -27,13 +27,13 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const { handleChange } = useFormikContext<SwapFormValues>();
         const [field] = useField(name)
 
-        return <>
+        return <div>
             {label &&
                 <label htmlFor={name} className="block font-semibold text-secondary-text text-sm mb-1.5 w-full">
                     {label}
                 </label>
             }
-            <div className="flex rounded-lg shadow-sm bg-secondary-700 border-secondary-500 border ">
+            <div className="flex relative">
                 <input
                     {...field}
                     pattern={pattern ? pattern : "^[0-9]*[.,]?[0-9]*$"}
@@ -53,7 +53,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     id={name}
                     ref={ref}
                     className={classNames(
-                        'disabled:cursor-not-allowed h-12 leading-4 placeholder:text-primary-text-placeholder bg-secondary-700 focus:ring-primary focus:border-primary flex-grow block w-full min-w-0 rounded-lg font-semibold border-0',
+                        'disabled:cursor-not-allowed h-16 leading-4 shadow-sm border-secondary-500 placeholder:text-primary-text-placeholder bg-secondary-700 focus:ring-primary focus:border-primary flex-grow block w-full min-w-0 rounded-lg font-semibold border-0',
                         className
                     )}
                     onChange={onChange ? onChange : e => {
@@ -61,12 +61,12 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     }}
                 />
                 {children &&
-                    <span className="inline-flex items-center">
+                    <span className="inline-flex items-center absolute bottom-2 text-xs">
                         {children}
                     </span>
                 }
             </div>
-        </>;
+        </div>;
     });
 
 function limitDecimalPlaces(e, count) {

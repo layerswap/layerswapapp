@@ -14,6 +14,9 @@ import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import { useRouter } from "next/router";
 import { useQueryState } from "../../context/query";
+import CurrencyFormField from "./CurrencyFormField";
+import { useWalletState } from "../../context/wallet";
+import { truncateDecimals } from "../utils/RoundDecimals";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -50,7 +53,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     } = useFormikContext<SwapFormValues>();
     const router = useRouter()
     const name = direction
-    const { from, to } = values
+    const { from, to, currency } = values
     const { lockFrom, lockTo, asset, lockAsset } = useQueryState()
     const { resolveImgSrc, layers, currencies } = useSettingsState();
 
@@ -87,16 +90,27 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         <label htmlFor={name} className="block font-semibold text-secondary-text text-sm">
             {label}
         </label>
-        <div ref={ref} className={`mt-1.5 `}>
-            <CommandSelectWrapper
-                disabled={false}
-                valueGrouper={valueGrouper}
-                placeholder={placeholder}
-                setValue={handleSelect}
-                value={value}
-                values={menuItems}
-                searchHint={searchHint}
-            />
+        <div ref={ref} className={`mt-1.5 grid grid-flow-row-dense grid-cols-6 items-center pr-2`}>
+            <div className={`col-span-4`}>
+                <CommandSelectWrapper
+                    disabled={false}
+                    valueGrouper={valueGrouper}
+                    placeholder={placeholder}
+                    setValue={handleSelect}
+                    value={value}
+                    values={menuItems}
+                    searchHint={searchHint}
+                />
+            </div>
+            {direction == "from" && from && to ?
+                <div className="col-span-2 rounded-lg h-12 w-full py-2.5 ml-2 bg-secondary-600 border border-secondary-500">
+                    <div className="inline-flex items-start flex-col">
+                        <CurrencyFormField />
+                    </div>
+                </div>
+                :
+                <div className="col-span-2 rounded-lg h-12 w-full pl-3 pr-2 py-3.5 ml-2 bg-secondary-600 border border-secondary-500"></div>
+            }
         </div>
     </div>)
 });
