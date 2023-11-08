@@ -13,6 +13,7 @@ import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/butto
 import { useSettingsState } from '../../../../context/settings';
 import { useNetwork } from 'wagmi';
 import { TransactionReceipt } from 'zksync/build/types';
+import { Transaction } from 'zksync';
 
 type Props = {
     depositAddress: string,
@@ -22,6 +23,8 @@ type Props = {
 const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
+    const [syncTransfer, setSyncTransfer] = useState<Transaction>()
+    const [txHash, setTxHash] = useState('');
     const { setSyncWallet } = useWalletUpdate();
     const { syncWallet } = useWalletState();
     const { setSwapTransaction } = useSwapTransactionStore();
@@ -42,16 +45,26 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         }
     }, [signer?._address]);
 
-    const handleTransaction = async (swapId: string, publishedTransaction: TransactionReceipt, txHash: string) => {
-        if (publishedTransaction?.failReason) {
-            txHash && setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, txHash, publishedTransaction?.failReason);
-            toast(String(publishedTransaction.failReason))
-        }
-        else {
-            txHash && setSwapTransaction(swapId, PublishedSwapTransactionStatus.Completed, txHash, publishedTransaction?.failReason);
-            setTransferDone(true)
-        }
-    };
+    useEffect(() => {
+        const getTxReceipt = async () => {
+            const syncProvider = await zksync.getDefaultProvider(defaultProvider);
+            const txReceipt = await syncProvider.getTxReceipt(String(syncTransfer?.txHash));
+            // TODO: might be unnecessary why handleTransaction does not do this
+            if (swap?.id) {
+                if (txReceipt.executed && !txReceipt.success) {
+                    setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, txHash);
+                    toast(String(txReceipt.failReason))
+                } else if(txReceipt.executed && txReceipt.success) {
+                    setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Completed, txHash);
+                    setTransferDone(true);
+                } else {
+                    setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Pending, txHash);
+                }
+            }
+        };
+        if (txHash)
+            getTxReceipt();
+    }, [syncTransfer, swap, txHash]);
 
     const handleConnect = useCallback(async () => {
         if (!signer)
@@ -89,16 +102,9 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 validUntil: zksync.utils.MAX_TIMESTAMP - swap?.sequence_number,
             });
 
-            const txHash = tf?.txHash?.replace('sync-tx:', '')
-
-            if (txHash) {
-                const syncProvider = await zksync.getDefaultProvider(defaultProvider);
-                const txReceipt = await syncProvider.getTxReceipt(String(tf?.txHash));
-                //TODO might be unnecessary why handleTransaction does not do this
-                if (!txReceipt.executed)
-                    setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Pending, txHash);
-                else
-                    handleTransaction(swap?.id, txReceipt, String(tf?.txHash))
+            if (tf?.txHash) {
+                setTxHash(tf?.txHash?.replace('sync-tx:', ''))
+                setSyncTransfer(tf);
             }
         }
         catch (e) {
