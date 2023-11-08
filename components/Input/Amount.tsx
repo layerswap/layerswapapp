@@ -34,23 +34,24 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const step = 1 / Math.pow(10, currency?.precision || 1)
     const amountRef = useRef(ref)
 
-    const updateRequestedAmountInUsd = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        const parsedValue = parseFloat(e.target.value);
-        if (currency?.usd_price && !isNaN(parsedValue)) {
-            setRequestedAmountInUsd((currency?.usd_price * parsedValue).toFixed(2));
+    const updateRequestedAmountInUsd = useCallback((requestedAmount: number) => {
+        if (currency?.usd_price && !isNaN(requestedAmount)) {
+            setRequestedAmountInUsd((currency?.usd_price * requestedAmount).toFixed(2));
         } else {
             setRequestedAmountInUsd(undefined);
         }
     }, [requestedAmountInUsd, currency]);
 
     const handleSetMinAmount = () => {
-        setFieldValue(name, minAllowedAmount)
+        setFieldValue(name, minAllowedAmount);
+        updateRequestedAmountInUsd(minAllowedAmount);
     }
 
     const handleSetMaxAmount = useCallback(() => {
         setFieldValue(name, maxAllowedAmount);
         address && from && getBalance(from);
         address && from && currency && getGas(from, currency, destination_address || address);
+        updateRequestedAmountInUsd(maxAllowedAmount)
     }, [address, from, currency, destination_address, maxAllowedAmount])
 
     return (<>
@@ -73,7 +74,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     className="rounded-r-none text-primary-text w-full"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-                        updateRequestedAmountInUsd(e)
+                        updateRequestedAmountInUsd(parseFloat(e.target.value))
                     }}
                 >
                     {requestedAmountInUsd ? (
@@ -96,7 +97,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                         </div>
                         {
                             walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) &&
-                            <div className='text-right rounded-b-lg bg-secondary-700 py-2 px-2 pl-1.5 text-xs'>
+                            <div className='bg-secondary-700 py-2 px-2 pl-0 text-xs'>
                                 <span>Balance:&nbsp;</span>
                                 {isBalanceLoading ?
                                     <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" />
