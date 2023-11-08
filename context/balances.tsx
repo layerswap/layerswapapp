@@ -1,5 +1,4 @@
-import { Context, FC, useState, createContext, useContext, useEffect } from 'react'
-import { StarknetWindowObject } from 'get-starknet';
+import React, { FC, useEffect, useState } from 'react'
 import { useAccount } from 'wagmi';
 import { Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
@@ -7,48 +6,30 @@ import { Balance, Gas, getErc20Balances, getNativeBalance, resolveERC20Balances,
 import { createPublicClient, http } from 'viem';
 import resolveChain from '../lib/resolveChain';
 import { NetworkType } from '../Models/CryptoNetwork';
-import * as zksync from 'zksync';
 import { useSettingsState } from './settings';
 import { useSwapDataState } from './swap';
 
-export const WalletStateContext = createContext<WalletState | null>({
-    balances: [],
-    gases: {},
-    imxAccount: null,
-    isBalanceLoading: false,
-    isGasLoading: false,
-    starknetAccount: null,
-    syncWallet: null
-});
-export const WalletStateUpdateContext = createContext<WalletStateUpdate | null>(null);
+export const BalancesStateContext = React.createContext<BalancesState | null>(null);
+export const BalancesStateUpdateContext = React.createContext<BalancesStateUpdate | null>(null);
 
-export type WalletState = {
-    starknetAccount: StarknetWindowObject | undefined | null,
-    imxAccount: string | undefined | null,
+export type BalancesState = {
     balances: Balance[],
     gases: { [network: string]: Gas[] },
     isBalanceLoading: boolean,
     isGasLoading: boolean,
-    syncWallet: zksync.Wallet | null;
     isContractWallet?: { ready: boolean, value?: boolean }
 }
 
-export type WalletStateUpdate = {
-    setStarknetAccount: (account: StarknetWindowObject | null) => void,
-    setImxAccount: (account: string | null) => void;
+export type BalancesStateUpdate = {
     getBalance: (from: Layer) => Promise<void>,
     getGas: (from: Layer, currency: Currency, userDestinationAddress: string) => Promise<void>,
-    setSyncWallet: (wallet: zksync.Wallet | null) => void;
 }
 
 type Props = {
     children?: JSX.Element | JSX.Element[];
 }
 
-export const WalletDataProvider: FC<Props> = ({ children }) => {
-    const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>(null);
-    const [starknetAccount, setStarknetAccount] = useState<StarknetWindowObject | null>()
-    const [imxAccount, setImxAccount] = useState<string | null>()
+export const BalancesDataProvider: FC<Props> = ({ children }) => {
     const [allBalances, setAllBalances] = useState<{ [address: string]: Balance[] }>({})
     const [allGases, setAllGases] = useState<{ [network: string]: Gas[] }>({})
     const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
@@ -206,46 +187,39 @@ export const WalletDataProvider: FC<Props> = ({ children }) => {
     }
 
     return (
-        <WalletStateContext.Provider value={{
-            starknetAccount,
-            imxAccount,
+        <BalancesStateContext.Provider value={{
             balances,
             gases,
             isBalanceLoading,
             isGasLoading,
-            syncWallet,
             isContractWallet: {
                 ready: cachedAddress === evmAddress && isContractWallet.ready,
                 value: isContractWallet.value
             }
         }}>
-            <WalletStateUpdateContext.Provider value={{
-                setStarknetAccount,
-                setImxAccount,
+            <BalancesStateUpdateContext.Provider value={{
                 getBalance,
                 getGas,
-                setSyncWallet
             }}>
                 {children}
-            </WalletStateUpdateContext.Provider>
-        </WalletStateContext.Provider >
+            </BalancesStateUpdateContext.Provider>
+        </BalancesStateContext.Provider >
     );
 }
 
-export function useWalletState<T>() {
-    const data = useContext<WalletState>(WalletStateContext as Context<WalletState>);
-    if (data === undefined) {
-        throw new Error('useWalletStateContext must be used within a WalletStateContext');
+export function useBalancesState() {
+    const data = React.useContext<BalancesState | null>(BalancesStateContext);
+    if (!data) {
+        throw new Error('useBalancesState must be used within a BalancesStateContext');
     }
-
     return data;
 }
 
-export function useWalletUpdate<T>() {
-    const updateFns = useContext<WalletStateUpdate>(WalletStateUpdateContext as Context<WalletStateUpdate>);
+export function useBalancesUpdate() {
+    const updateFns = React.useContext<BalancesStateUpdate | null>(BalancesStateUpdateContext);
 
-    if (updateFns === undefined) {
-        throw new Error('useWalletStateUpdateContext must be used within a WalletStateUpdateContext');
+    if (!updateFns) {
+        throw new Error('useBalancesUpdate must be used within a BalancesStateUpdateContext');
     }
 
     return updateFns;

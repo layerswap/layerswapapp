@@ -3,11 +3,9 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
 import TokenService from "../../lib/TokenService";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
-import WalletIcon from "../icons/WalletIcon";
 import inIframe from "../utils/inIframe";
 import Modal from "../../components/modal/modal";
 import DiscordLogo from "./../icons/DiscordLogo";
@@ -15,7 +13,7 @@ import GitHubLogo from "./../icons/GitHubLogo";
 import SubstackLogo from "./../icons/SubstackLogo";
 import TwitterLogo from "./../icons/TwitterLogo";
 import Link from "next/link";
-import { MenuRainbowKitConnectWallet } from "../HeaderWithMenu/ConnectedWallets";
+import { WalletsMenu } from "../ConnectedWallets";
 import Popover from "../modal/popover";
 import SendFeedback from "../sendFeedback";
 import IconButton from "../buttons/iconButton";
@@ -23,19 +21,15 @@ import YoutubeLogo from "../icons/YoutubeLogo";
 import { shortenEmail } from '../utils/ShortenAddress';
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import Menu from "./Menu";
-import SubmitButton from "../buttons/submitButton";
 
 export default function LayerswapMenu() {
     const { email, userType, userId } = useAuthState()
     const { setUserType } = useAuthDataUpdate()
     const router = useRouter();
-    const { isConnected } = useAccount();
     const { boot, show, update } = useIntercom()
     const [embedded, setEmbedded] = useState<boolean>()
     const [openTopModal, setOpenTopModal] = useState(false);
-    const { openConnectModal } = useConnectModal();
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
-
 
     useEffect(() => {
         setEmbedded(inIframe())
@@ -118,15 +112,7 @@ export default function LayerswapMenu() {
                         <div className="text-sm font-medium focus:outline-none h-full">
                             <Menu>
 
-                                <div className="flex">
-                                    {isConnected ? (
-                                        <MenuRainbowKitConnectWallet />
-                                    ) : (
-                                        <SubmitButton text_align="center" className="bg-primary/20 border-none !text-primary !px-4" onClick={openConnectModal} icon={<WalletIcon className="h-5 w-5" strokeWidth={2} />} type="button" isDisabled={false} isSubmitting={false}>
-                                            Connect a wallet
-                                        </SubmitButton>
-                                    )}
-                                </div>
+                                <WalletsMenu />
 
                                 <Menu.Group>
                                     <>
@@ -224,7 +210,7 @@ export default function LayerswapMenu() {
                                                                 <UserCircle2 className="h-5 w-5" />
                                                                 <p>{email && <UserEmail email={email} />}</p>
                                                             </div>
-                                                            <button className="text-primary hover:text-primary-600" onClick={handleLogout}>
+                                                            <button type="button" className="text-primary hover:text-primary-600" onClick={handleLogout}>
                                                                 Sign out
                                                             </button>
                                                         </div>

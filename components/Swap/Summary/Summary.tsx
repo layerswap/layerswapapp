@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { Fuel } from "lucide-react";
-import { useAccount } from "wagmi";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { Currency } from "../../../Models/Currency";
 import { Layer } from "../../../Models/Layer";
 import { useSettingsState } from "../../../context/settings";
@@ -11,10 +10,8 @@ import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import useSWR from 'swr'
-import { GetDefaultNetwork } from "../../../helpers/settingsHelper";
-import { useWalletState } from "../../../context/wallet";
 import KnownInternalNames from "../../../lib/knownIds";
-import { NetworkType } from "../../../Models/CryptoNetwork";
+import useWallet from "../../../hooks/useWallet";
 import { useQueryState } from "../../../context/query";
 import { useSwapDataState } from "../../../context/swap";
 
@@ -34,9 +31,15 @@ type SwapInfoProps = {
 
 const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name }) => {
     const { resolveImgSrc, currencies, networks } = useSettingsState()
-    const { address: evmAddress } = useAccount();
+    const { getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return from && getProvider(from)
+    }, [from, getProvider])
+
+    const wallet = provider?.getConnectedWallet()
+
     const { selectedAssetNetwork } = useSwapDataState()
-    const { starknetAccount, imxAccount } = useWalletState()
+
     const {
         hideFrom,
         hideTo,
@@ -61,29 +64,15 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
         truncateDecimals(refuelAmount, nativeCurrency?.precision) : null
     const refuelAmountInUsd = ((nativeCurrency?.usd_price || 1) * (truncatedRefuelAmount || 0)).toFixed(2)
 
-    const sourceNetworkType = GetDefaultNetwork(from, currency?.asset)?.type
-    const sourceIsImmutableX = from?.internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-        || from?.internal_name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-
     let sourceAccountAddress = ""
     if (hideFrom && account) {
-        sourceAccountAddress = shortenAddress(account as string);
+        sourceAccountAddress = shortenAddress(account);
     }
-    else if (sourceNetworkType === NetworkType.EVM && evmAddress && !from?.isExchange) {
-        sourceAccountAddress = shortenAddress(evmAddress);
-    }
-    else if (sourceNetworkType === NetworkType.Starknet && starknetAccount && !from?.isExchange) {
-        sourceAccountAddress = starknetAccount?.account?.address ?
-            shortenAddress(starknetAccount?.account?.address) : "";
+    else if (wallet && !from?.isExchange) {
+        sourceAccountAddress = shortenAddress(wallet.address);
     }
     else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
         sourceAccountAddress = shortenEmail(exchange_account_name, 10);
-    }
-    else if (sourceIsImmutableX && imxAccount) {
-        sourceAccountAddress = shortenAddress(imxAccount);
-    }
-    else if (sourceNetworkType && sourceNetworkType == NetworkType.ZkSyncLite && evmAddress) {
-        sourceAccountAddress = shortenAddress(evmAddress as string)
     }
     else if (from?.isExchange) {
         sourceAccountAddress = "Exchange"

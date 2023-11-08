@@ -33,7 +33,7 @@ export default function ThemeWrapper({ children }: Props) {
                                     {icon}
                                     {message}
                                     {t.type !== 'loading' && (
-                                        <button onClick={() => toast.dismiss(t.id)}><X className="h-5" /></button>
+                                        <button type="button" onClick={() => toast.dismiss(t.id)}><X className="h-5" /></button>
                                     )}
                                 </>
                             )}

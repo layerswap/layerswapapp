@@ -1,16 +1,15 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useRef } from "react";
+import { forwardRef, useCallback, useMemo, useRef } from "react";
 import { useSettingsState } from "../../context/settings";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import CurrencyFormField from "./CurrencyFormField";
 import NumericInput from "./NumericInput";
 import SecondaryButton from "../buttons/secondaryButton";
-import { useWalletState, useWalletUpdate } from "../../context/wallet";
-import { truncateDecimals } from "../utils/RoundDecimals";
-import { useRouter } from "next/router";
-import { useAccount } from "wagmi";
 import { useQueryState } from "../../context/query";
+import { useBalancesState, useBalancesUpdate } from "../../context/balances";
+import { truncateDecimals } from "../utils/RoundDecimals";
+import useWallet from "../../hooks/useWallet";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
@@ -18,10 +17,16 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { networks, currencies } = useSettingsState()
     const query = useQueryState()
     const { currency, from, to, amount, destination_address } = values
-    const { address } = useAccount()
-    const { balances, isBalanceLoading, gases, isGasLoading } = useWalletState()
+    const { getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return from && getProvider(from)
+    }, [from, getProvider])
+
+    const wallet = provider?.getConnectedWallet()
+
+    const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === currency?.asset)?.gas || 0
-    const { getBalance, getGas } = useWalletUpdate()
+    const { getBalance, getGas } = useBalancesUpdate()
     const name = "amount"
     const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, currency?.precision)
@@ -40,9 +45,9 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const handleSetMaxAmount = useCallback(() => {
         setFieldValue(name, maxAllowedAmount);
-        address && from && getBalance(from);
-        address && from && currency && getGas(from, currency, destination_address || address);
-    }, [address, from, currency, destination_address, maxAllowedAmount])
+        wallet?.address && from && getBalance(from);
+        wallet?.address && from && currency && getGas(from, currency, destination_address || wallet?.address);
+    }, [wallet?.address, from, currency, destination_address, maxAllowedAmount])
 
     return (<>
         <NumericInput

@@ -8,17 +8,17 @@ import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep"
 import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw"
 import useSWR from 'swr'
 import TransferFromWallet from "./WalletTransfer"
-import { useWalletState } from "../../../../context/wallet"
 import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw"
 import { Layer } from "../../../../Models/Layer"
 import useWalletTransferOptions from "../../../../hooks/useWalletTransferOptions"
+import { useBalancesState } from "../../../../context/balances"
 
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
-    const { isContractWallet } = useWalletState();
+    const { isContractWallet } = useBalancesState();
 
     const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_network_asset } = swap || {}
     const source_network = layers.find(n => n.internal_name === source_network_internal_name) as (Layer & { isExchange: false })

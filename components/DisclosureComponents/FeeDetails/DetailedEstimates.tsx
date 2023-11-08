@@ -1,14 +1,13 @@
 import { FC } from "react";
 import { CryptoNetwork, NetworkType } from "../../../Models/CryptoNetwork";
 import { Currency } from "../../../Models/Currency";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { CalculateFee, GetExchangeFee } from "../../../lib/fees";
+import { GetExchangeFee } from "../../../lib/fees";
 import { Layer } from "../../../Models/Layer";
 import ClickTooltip from "../../Tooltips/ClickTooltip";
-import { useWalletState } from "../../../context/wallet";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { GetDefaultNetwork, GetNetworkCurrency } from "../../../helpers/settingsHelper";
 import AverageCompletionTime from "../../Common/AverageCompletionTime";
+import { useBalancesState } from "../../../context/balances";
 
 type EstimatesProps = {
     networks: CryptoNetwork[]
@@ -76,7 +75,7 @@ type NetworkGasProps = {
 }
 const NetworkGas: FC<NetworkGasProps> = ({ selected_currency, network, currencies }) => {
 
-    const { gases, isGasLoading } = useWalletState()
+    const { gases, isGasLoading } = useBalancesState()
     const networkGas = network.internal_name ?
         gases?.[network.internal_name]?.find(g => g.token === selected_currency.asset)?.gas : null
 
