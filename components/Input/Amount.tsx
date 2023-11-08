@@ -85,8 +85,8 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
             </div>
             <div className="inline-flex items-center">
                 {
-                    from && to && currency ? <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 pt-2">
-                        <div>
+                    from && to && currency ? <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 pt-2 px-2">
+                        <div className="flex">
                             <SecondaryButton onClick={handleSetMinAmount} size="xs">
                                 MIN
                             </SecondaryButton>
@@ -96,7 +96,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                         </div>
                         {
                             walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) &&
-                            <div className='text-right rounded-b-lg bg-secondary-700 py-2 px-3.5 text-xs'>
+                            <div className='text-right rounded-b-lg bg-secondary-700 py-2 px-2 pl-1.5 text-xs'>
                                 <span>Balance:&nbsp;</span>
                                 {isBalanceLoading ?
                                     <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" />

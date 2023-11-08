@@ -5,18 +5,17 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import { Layer } from "../../Models/Layer";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
-import { FilterDestinationLayers, FilterSourceLayers } from "../../helpers/settingsHelper";
+import { FilterDestinationLayers, FilterSourceLayers, GetNetworkCurrency } from "../../helpers/settingsHelper";
 import { Currency } from "../../Models/Currency";
 import ExchangeSettings from "../../lib/ExchangeSettings";
 import { SortingByOrder } from "../../lib/sorting"
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
-import { useRouter } from "next/router";
 import { useQueryState } from "../../context/query";
 import CurrencyFormField from "./CurrencyFormField";
-import { useWalletState } from "../../context/wallet";
-import { truncateDecimals } from "../utils/RoundDecimals";
+import { CalculateReceiveAmount } from "../../lib/fees";
+import Image from 'next/image'
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -51,11 +50,15 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
-    const router = useRouter()
     const name = direction
     const { from, to, currency } = values
     const { lockFrom, lockTo, asset, lockAsset } = useQueryState()
-    const { resolveImgSrc, layers, currencies } = useSettingsState();
+    const { resolveImgSrc, layers, currencies, networks } = useSettingsState();
+
+    let receive_amount = CalculateReceiveAmount(values, networks, currencies);
+    const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(currency?.precision) || "");
+    const destinationNetworkCurrency = (to && currency) ? GetNetworkCurrency(to, currency.asset) : null;
+    const destinationImg = destinationNetworkCurrency && resolveImgSrc(destinationNetworkCurrency);
 
     let placeholder = "";
     let searchHint = "";
@@ -102,15 +105,44 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     searchHint={searchHint}
                 />
             </div>
-            {direction == "from" && from && to ?
+            {direction == "from" && from && to &&
                 <div className="col-span-2 rounded-lg h-12 w-full py-2.5 ml-2 bg-secondary-600 border border-secondary-500">
                     <div className="inline-flex items-start flex-col">
                         <CurrencyFormField />
                     </div>
                 </div>
-                :
-                <div className="col-span-2 rounded-lg h-12 w-full pl-3 pr-2 py-3.5 ml-2 bg-secondary-600 border border-secondary-500"></div>
             }
+            {direction == "to" && from && to &&
+                <div className="col-span-2 rounded-lg h-12 w-full py-2.5 ml-2 bg-secondary-600 border border-secondary-500 flex justify-center items-center">
+                    <span className="text-sm md:text-base">
+                        {
+                            parsedReceiveAmount > 0 ?
+                                <div className="font-semibold md:font-bold text-right leading-4">
+                                    <p className="flex items-center">
+                                        {destinationImg && <div className="flex-shrink-0 h-6 w-6 relative">
+                                            <Image
+                                                src={destinationImg}
+                                                alt="Project Logo"
+                                                height="40"
+                                                width="40"
+                                                loading="eager"
+                                                priority
+                                                className="rounded-md object-contain"
+                                            />
+                                        </div>
+                                        }
+                                        <span className="ml-3">
+                                            {destinationNetworkCurrency?.name}
+                                        </span>
+                                    </p>
+                                </div>
+                                : '-'
+                        }
+                    </span>
+                </div>
+            }
+            {direction && (!from || !to) &&
+                <div className="col-span-2 rounded-lg h-12 w-full pl-3 pr-2 py-3.5 ml-2 bg-secondary-600 border border-secondary-500"></div>}
         </div>
     </div>)
 });
