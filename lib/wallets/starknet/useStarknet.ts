@@ -32,7 +32,7 @@ export default function useStarknet(): WalletProvider {
                 },
                 dappName: 'Layerswap',
             })
-            if (res && res.account ) {
+            if (res && res.account && res.isConnected) {
                 addWallet({
                     address: res.account.address,
                     chainId: res.provider.provider.chainId,
@@ -48,7 +48,7 @@ export default function useStarknet(): WalletProvider {
         catch (e) {
             throw new Error(e)
         }
-    },[addWallet])
+    }, [addWallet])
 
     const disconnectWallet = async () => {
         try {

@@ -11,7 +11,7 @@ export default function useImmutableX(): WalletProvider {
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
 
     const getWallet = () => {
-        return wallets.find(wallet => wallet.connector === name)
+        return wallets.find(wallet => wallet.providerName === name)
     }
 
     const connectWallet = async (chain: string | number) => {

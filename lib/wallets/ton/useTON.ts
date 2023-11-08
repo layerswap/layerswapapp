@@ -1,6 +1,3 @@
-import { Layer } from "../../../Models/Layer"
-import { NetworkType } from "../../../Models/CryptoNetwork"
-import { useSettingsState } from "../../../context/settings"
 import { useTonConnectUI, useTonWallet } from "@tonconnect/ui-react"
 import { Address } from "@ton/core";
 import KnownInternalNames from "../../knownIds";
