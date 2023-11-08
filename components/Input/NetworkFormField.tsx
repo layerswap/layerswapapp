@@ -122,7 +122,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                                         {destinationImg && <div className="flex-shrink-0 h-6 w-6 relative">
                                             <Image
                                                 src={destinationImg}
-                                                alt="Project Logo"
+                                                alt="Destination icon"
                                                 height="40"
                                                 width="40"
                                                 loading="eager"
