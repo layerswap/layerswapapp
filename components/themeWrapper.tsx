@@ -77,7 +77,6 @@ export default function ThemeWrapper({ children }: Props) {
                         </div>
                     </div>
                 </div>
-                <div id="offset-for-stickyness"></div>
                 <GlobalFooter />
             </div>
         </main>
