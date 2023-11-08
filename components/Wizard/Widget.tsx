@@ -48,24 +48,10 @@ type FooterProps = {
     sticky?: boolean
 }
 const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
-    const [height, setHeight] = useState(0)
-    const ref = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        setHeight(Number(ref?.current?.clientHeight))
-    }, [])
-
-    const handleAnimationEnd = (variant) => {
-        if (variant == "center") {
-            setHeight(Number(ref?.current?.clientHeight))
-        }
-    }
     return (
         sticky ?
             <>
                 <motion.div
-                    onAnimationComplete={handleAnimationEnd}
-                    ref={ref}
                     transition={{
                         duration: 0.15,
                     }}
@@ -78,14 +64,6 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         max-sm:z-30 max-sm:bg-secondary-900 max-sm:shadow-widget-footer max-sm:p-4 max-sm:px-6 max-sm:w-full ${hidden ? 'adnimation-slide-out' : ''}`}>
                     {children}
                 </motion.div>
-                <ReactPortal wrapperId='offset-for-stickyness'>
-                    <div style={{ height: `${height}px` }}
-                        className={`text-primary-text text-base mt-3        
-                             max-sm:inset-x-0
-                             max-sm:bottom-0 
-                             max-sm:p-4 max-sm:w-full invisible`}>
-                    </div>
-                </ReactPortal>
             </ >
             :
             <>
