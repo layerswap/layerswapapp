@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { StarknetWindowObject } from 'get-starknet-core';
+import { StarknetWindowObject } from 'starknetkit';
 
 interface WalletState {
     connectedWallets: Wallet[];
