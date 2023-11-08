@@ -12,7 +12,6 @@ import { useSwapDataState } from '../../../../context/swap';
 import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
 import { useNetwork } from 'wagmi';
-import { TransactionReceipt } from 'zksync/build/types';
 import { Transaction } from 'zksync';
 
 type Props = {
@@ -52,7 +51,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             // TODO: might be unnecessary why handleTransaction does not do this
             if (swap?.id) {
                 if (txReceipt.executed && !txReceipt.success) {
-                    setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, txHash);
+                    setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, txHash, txReceipt?.failReason);
                     toast(String(txReceipt.failReason))
                 } else if(txReceipt.executed && txReceipt.success) {
                     setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Completed, txHash);
