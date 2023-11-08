@@ -20,9 +20,9 @@ export const ConnectWalletButton: FC = () => {
     }, [source_layer, getProvider])
 
     const clickHandler = useCallback(() => {
-        if (!provider) {
-            throw new Error("provider could not be found")
-        }
+        if (!provider)
+            throw new Error(`No provider from ${source_layer?.internal_name}`)
+
         return provider.connectWallet(provider?.name)
     }, [provider])
 

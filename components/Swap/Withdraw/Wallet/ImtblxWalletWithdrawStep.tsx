@@ -33,11 +33,13 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const imxAccount = provider?.getConnectedWallet()
 
     const handleConnect = useCallback(async () => {
-        if (!provider) return
+        if (!provider)
+            throw new Error(`No provider from ${source_layer?.internal_name}`)
+
         setLoading(true)
         await provider?.connectWallet()
         setLoading(false)
-    }, [provider])
+    }, [provider, source_layer])
 
     const handleTransfer = useCallback(async () => {
         if (!source_network || !swap || !depositAddress)

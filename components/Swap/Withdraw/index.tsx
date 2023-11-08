@@ -198,7 +198,7 @@ const WalletTransferContent: FC = () => {
         if (source_exchange) await mutateSwap()
         setIsloading(false);
         e?.stopPropagation();
-    }, [sourceNetworkType, swap?.source_exchange])
+    }, [sourceNetworkType, swap?.source_exchange, disconnectWallet])
 
     let accountAddress: string | undefined = ""
     if (swap?.source_exchange) {

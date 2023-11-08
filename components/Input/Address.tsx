@@ -78,7 +78,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
             setAddressConfirmed(true)
             setFieldValue("destination_address", connectedWallet?.address)
         }
-    }, [connectedWallet?.address, destination?.isExchange, destination])
+    }, [connectedWallet?.address, destination?.isExchange, destination, disconnectWallet])
 
     useEffect(() => {
         if (canFocus) {
@@ -218,7 +218,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         && destination
                         && !destination?.isExchange
                         && destinationNetwork
-                        && provider 
+                        && provider
                         && !connectedWallet &&
                         <div onClick={() => { connectWallet(provider.name) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
                             <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>

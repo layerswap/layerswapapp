@@ -13,8 +13,6 @@ import { useAuthState } from '../../../../context/authContext';
 import KnownInternalNames from '../../../../lib/knownIds';
 import { parseUnits } from 'viem'
 import useWallet from '../../../../hooks/useWallet';
-import { NetworkType } from '../../../../Models/CryptoNetwork';
-import { Layer } from '../../../../Models/Layer';
 import { useSwapTransactionStore } from '../../../store/zustandStore';
 
 type Props = {
@@ -38,7 +36,6 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
 
     const { userId } = useAuthState()
-
     const { swap } = useSwapDataState()
     const { networks, layers } = useSettingsState()
 
@@ -52,27 +49,22 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const provider = useMemo(() => {
         return source_layer && getProvider(source_layer)
     }, [source_layer, getProvider])
+
     const wallet = provider?.getConnectedWallet()
 
-    const handleConnect = async () => {
-        if (!provider) return
+    const handleConnect = useCallback(async () => {
+        if (!provider)
+            throw new Error(`No provider from ${source_layer?.internal_name}`)
+
         setLoading(true)
         try {
             await provider.connectWallet()
-            const connectedChainId = wallet?.chainId
-            if (source_layer && connectedChainId && connectedChainId !== sourceChainId) {
-                setIsWrongNetwork(true)
-                await provider.disconnectWallet()
-            }
-            else if (source_layer && connectedChainId && connectedChainId === sourceChainId) {
-                setIsWrongNetwork(false)
-            }
         }
         catch (e) {
             toast(e.message)
         }
         setLoading(false)
-    }
+    }, [source_layer, provider])
 
     useEffect(() => {
         const connectedChainId = wallet?.chainId
@@ -84,7 +76,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         } else if (source_layer && connectedChainId && connectedChainId === sourceChainId) {
             setIsWrongNetwork(false)
         }
-    }, [wallet])
+    }, [wallet, source_layer, sourceChainId, provider])
 
     const handleTransfer = useCallback(async () => {
         if (!swap || !sourceCurrency) {
