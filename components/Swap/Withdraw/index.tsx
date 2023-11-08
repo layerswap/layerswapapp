@@ -173,6 +173,7 @@ const WalletTransferContent: FC = () => {
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
     const [isLoading, setIsloading] = useState(false);
+    const { mutateSwap } = useSwapDataUpdate()
 
     const {
         source_network: source_network_internal_name,
@@ -194,6 +195,7 @@ const WalletTransferContent: FC = () => {
         if (!wallet) return
         setIsloading(true);
         await disconnectWallet(wallet.providerName, swap)
+        if (source_exchange) await mutateSwap()
         setIsloading(false);
         e?.stopPropagation();
     }, [sourceNetworkType, swap?.source_exchange])

@@ -13,7 +13,6 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { BaseL2Asset } from "../../../Models/Layer";
 import shortenAddress from "../../utils/ShortenAddress";
 import { isValidAddress } from "../../../lib/addressValidator";
-import { Player } from '@lottiefiles/react-lottie-player';
 import { useSwapDepositHintClicked } from "../../store/zustandStore";
 
 const ManualTransfer: FC = () => {

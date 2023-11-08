@@ -3,10 +3,11 @@ import { Layer } from "../Models/Layer"
 import LayerSwapApiClient, { SwapItem } from "../lib/layerSwapApiClient"
 import { useSwapDataUpdate } from "../context/swap"
 import { Wallet } from "../stores/walletStore"
+import useTON from "../lib/wallets/ton/useTON"
+import useEVM from "../lib/wallets/evm/useEVM"
 import useStarknet from "../lib/wallets/starknet/useStarknet"
 import useImmutableX from "../lib/wallets/immutableX/useIMX"
-import useEVM from "../lib/wallets/evm/useEVM"
-import useTON from "../lib/wallets/ton/useTON"
+
 
 export type WalletProvider = {
     connectWallet: (chain?: string | number | undefined) => Promise<void> | undefined | void,
@@ -17,7 +18,6 @@ export type WalletProvider = {
 }
 
 export default function useWallet() {
-    const { mutateSwap } = useSwapDataUpdate()
 
     const WalletProviders: WalletProvider[] = [
         useTON(),
@@ -42,7 +42,6 @@ export default function useWallet() {
             if (swap?.source_exchange) {
                 const apiClient = new LayerSwapApiClient()
                 await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
-                await mutateSwap()
             }
             else {
                 await provider?.disconnectWallet()
