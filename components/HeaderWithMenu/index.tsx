@@ -1,11 +1,16 @@
 import { useIntercom } from "react-use-intercom"
 import { useAuthState } from "../../context/authContext"
 import IconButton from "../buttons/iconButton"
-import LayerswapMenu from "../LayerswapMenu"
 import GoHomeButton from "../utils/GoHome"
 import { ArrowLeft } from 'lucide-react'
 import ChatIcon from "../icons/ChatIcon"
 import { WalletsHeader } from "../ConnectedWallets"
+import dynamic from "next/dynamic"
+
+const LayerswapMenu = dynamic(() => import("../LayerswapMenu"), {
+   loading: () => <></>
+ })
+
 
 function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null }) {
    const { email, userId } = useAuthState()

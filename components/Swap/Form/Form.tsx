@@ -4,8 +4,7 @@ import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
 import React from "react";
 import NetworkFormField from "../../Input/NetworkFormField";
-import AmountField from "../../Input/Amount";
-import LayerSwapApiClient, { AddressBookItem, TransactionType } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
 import Modal from "../../modal/modal";
@@ -13,14 +12,13 @@ import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import { useSettingsState } from "../../../context/settings";
 import { isValidAddress } from "../../../lib/addressValidator";
 import { CalculateMinAllowedAmount } from "../../../lib/fees";
-import Address from "../../Input/Address";
 import shortenAddress from "../../utils/ShortenAddress";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
 import ClickTooltip from "../../Tooltips/ClickTooltip";
 import ToggleButton from "../../buttons/toggleButton";
-import { ArrowRight, ArrowUpDown, Fuel } from 'lucide-react'
+import { ArrowUpDown, Fuel } from 'lucide-react'
 import { useAuthState } from "../../../context/authContext";
 import WarningMessage from "../../WarningMessage";
 import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetworkCurrency } from "../../../helpers/settingsHelper";
@@ -33,12 +31,19 @@ import GasDetails from "../../gasDetails";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { useQueryState } from "../../../context/query";
 import FeeDetails from "../../DisclosureComponents/FeeDetails";
+import dynamic from "next/dynamic";
 
 type Props = {
     isPartnerWallet?: boolean,
     partner?: Partner,
 }
-
+const Address = dynamic(() => import("../../Input/Address"), {
+    loading: () => <></>
+})
+const AmountField = dynamic(() => import("../../Input/Amount"), {
+    loading: () => <></>
+})
+ 
 const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const {
         values,
@@ -190,7 +195,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     return <>
         <Widget className="sm:min-h-[504px]">
             <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-
                 <Widget.Content>
                     <div className='flex-col relative flex justify-between w-full space-y-4 mb-3.5 leading-4'>
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">

@@ -2,8 +2,6 @@ import { fromHex } from "viem";
 import { WalletProvider } from "../../../hooks/useWallet";
 import { useWalletStore } from "../../../stores/walletStore"
 import KnownInternalNames from "../../knownIds"
-import { constants } from "starknet";
-import { connect, disconnect } from 'starknetkit'
 import { useCallback } from "react";
 import { ResolveStarknetWalletIcon } from "./resoveStarknetIcon";
 
@@ -22,7 +20,9 @@ export default function useStarknet(): WalletProvider {
     }
 
     const connectWallet = useCallback(async (chain: string) => {
+        const constants = (await import('starknet')).constants
         const chainId = (chain && fromHex(chain as `0x${string}`, 'string')) ?? constants.NetworkName.SN_MAIN
+        const connect = (await import('starknetkit')).connect
         try {
             const res = await connect({
                 argentMobileOptions: {
@@ -30,7 +30,7 @@ export default function useStarknet(): WalletProvider {
                     projectId: WALLETCONNECT_PROJECT_ID,
                     url: 'https://www.layerswap.io/app',
                     description: 'Move crypto across exchanges, blockchains, and wallets.',
-                    chainId: chainId as constants.NetworkName
+                    chainId: chainId as any
                 },
                 dappName: 'Layerswap',
             })
@@ -53,6 +53,7 @@ export default function useStarknet(): WalletProvider {
     }, [addWallet])
 
     const disconnectWallet = async () => {
+        const disconnect = (await import('starknetkit')).disconnect
         try {
             disconnect({ clearLastWallet: true })
             removeWallet(name)
