@@ -77,7 +77,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
             setAddressConfirmed(true)
             setFieldValue("destination_address", connectedWallet?.address)
         }
-    }, [connectedWallet?.address, destination?.isExchange, destination, disconnectWallet])
+    }, [connectedWallet?.address, destination?.isExchange, destination])
 
     useEffect(() => {
         if (canFocus) {
