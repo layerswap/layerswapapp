@@ -77,7 +77,7 @@ export default function ThemeWrapper({ children }: Props) {
                         </div>
                     </div>
                 </div>
-                <div id="offset-for-stickyness" className="hidden md:block"></div>
+                <div id="offset-for-stickyness" className="block md:hidden"></div>
                 <GlobalFooter />
             </div>
         </main>
