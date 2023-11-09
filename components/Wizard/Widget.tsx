@@ -59,6 +59,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
         sticky ?
             <>
                 <motion.div
+                    ref={ref}
                     transition={{
                         duration: 0.15,
                     }}
