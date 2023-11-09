@@ -9,10 +9,11 @@ import useImmutableX from "../lib/wallets/immutableX/useIMX"
 
 
 export type WalletProvider = {
-    connectWallet: (chain?: string | number | undefined) => Promise<void> | undefined | void,
+    connectWallet: (chain?: string | number | undefined | null) => Promise<void> | undefined | void,
     disconnectWallet: () => Promise<void> | undefined | void,
     getConnectedWallet: () => Wallet | undefined,
-    SupportedNetworks: string[],
+    autofillSupportedNetworks?: string[],
+    withdrawalSupportedNetworks: string[],
     name: string,
 }
 
@@ -62,8 +63,13 @@ export default function useWallet() {
         return connectedWallets
     }
 
-    const getProvider = (network: Layer) => {
-        const provider = WalletProviders.find(provider => provider.SupportedNetworks.includes(network.internal_name))
+    const getWithdrawalProvider = (network: Layer) => {
+        const provider = WalletProviders.find(provider => provider.withdrawalSupportedNetworks.includes(network.internal_name))
+        return provider
+    }
+
+    const getAutofillProvider = (network: Layer) => {
+        const provider = WalletProviders.find(provider => provider?.autofillSupportedNetworks?.includes(network.internal_name))
         return provider
     }
 
@@ -71,6 +77,7 @@ export default function useWallet() {
         wallets: getConnectedWallets(),
         connectWallet: handleConnect,
         disconnectWallet: handleDisconnect,
-        getProvider: getProvider
+        getWithdrawalProvider,
+        getAutofillProvider
     }
 }

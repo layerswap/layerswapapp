@@ -168,7 +168,7 @@ const Withdraw: FC = () => {
 
 const WalletTransferContent: FC = () => {
     const { openAccountModal } = useAccountModal();
-    const { getProvider, disconnectWallet } = useWallet()
+    const { getWithdrawalProvider: getProvider, disconnectWallet } = useWallet()
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
     const [isLoading, setIsloading] = useState(false);

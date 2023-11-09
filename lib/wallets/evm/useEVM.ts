@@ -9,7 +9,8 @@ import { ResolveEVMWalletIcon } from "./resolveEVMIcon"
 
 export default function useEVM(): WalletProvider {
     const { layers } = useSettingsState()
-    const SupportedNetworks = [...layers.filter(layer => layer.type === NetworkType.EVM).map(l => l.internal_name), KnownInternalNames.Networks.ZksyncMainnet]
+    const withdrawalSupportedNetworks = [...layers.filter(layer => layer.type === NetworkType.EVM).map(l => l.internal_name), KnownInternalNames.Networks.ZksyncMainnet]
+    const autofillSupportedNetworks = [...withdrawalSupportedNetworks, KnownInternalNames.Networks.ImmutableXMainnet, KnownInternalNames.Networks.ImmutableXGoerli]
     const name = 'evm'
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
@@ -42,7 +43,8 @@ export default function useEVM(): WalletProvider {
         getConnectedWallet: getWallet,
         connectWallet,
         disconnectWallet,
-        SupportedNetworks,
+        autofillSupportedNetworks,
+        withdrawalSupportedNetworks,
         name
     }
 }
