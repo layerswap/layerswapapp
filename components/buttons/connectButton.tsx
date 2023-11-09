@@ -3,7 +3,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import useWallet from "../../hooks/useWallet";
 import { NetworkType } from "../../Models/CryptoNetwork";
 import RainbowIcon from "../icons/Wallets/Rainbow";
-import Starknet from "../icons/Wallets/Starknet";
 import TON from "../icons/Wallets/TON";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../shadcn/dialog";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
@@ -38,7 +37,6 @@ const ConnectButton = ({ children, className, onClose }: { children: ReactNode, 
         }
     ]
     const filteredConnectors = knownConnectors.filter(c => !wallets.map(w => w?.providerName).includes(c.id))
-
     return (
         isMobile ?
             <Dialog open={open} onOpenChange={setOpen}>

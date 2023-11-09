@@ -129,6 +129,8 @@ export default function Form() {
 
     const initialValues: SwapFormValues = swap ? generateSwapInitialValuesFromSwap(swap, settings)
         : generateSwapInitialValues(settings, query)
+    const initiallyValidation = MainStepValidation({ settings, query })(initialValues)
+    const initiallyInValid = Object.values(initiallyValidation)?.filter(v => v).length > 0
 
     return <>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
@@ -152,6 +154,7 @@ export default function Form() {
             validateOnMount={true}
             validate={MainStepValidation({ settings, query })}
             onSubmit={handleSubmit}
+            isInitialValid={!initiallyInValid}
         >
             <SwapForm isPartnerWallet={!!isPartnerWallet} partner={partner} />
         </Formik>
@@ -237,7 +240,7 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                         }
                     </div>
                 </div>
-                
+
             </motion.div>
         </motion.div>
     </motion.div>

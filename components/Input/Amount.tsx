@@ -17,12 +17,6 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { networks, currencies } = useSettingsState()
     const query = useQueryState()
     const { currency, from, to, amount, destination_address } = values
-    const { getWithdrawalProvider: getProvider } = useWallet()
-    const provider = useMemo(() => {
-        return from && getProvider(from)
-    }, [from, getProvider])
-
-    const wallet = provider?.getConnectedWallet()
 
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === currency?.asset)?.gas || 0
@@ -45,9 +39,9 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const handleSetMaxAmount = useCallback(() => {
         setFieldValue(name, maxAllowedAmount);
-        wallet?.address && from && getBalance(from);
-        wallet?.address && from && currency && getGas(from, currency, destination_address || wallet?.address);
-    }, [wallet?.address, from, currency, destination_address, maxAllowedAmount])
+        from && getBalance(from);
+        from && currency && getGas(from, currency, destination_address || "");
+    }, [from, currency, destination_address, maxAllowedAmount])
 
     return (<>
         <NumericInput
