@@ -2,7 +2,6 @@ import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
-import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 import * as zksync from 'zksync';
 import { utils } from 'ethers';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
@@ -22,22 +21,23 @@ type Props = {
 const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
-    const { setSyncWallet } = useWalletUpdate();
-    const { syncWallet } = useWalletState();
+    const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>()
+
     const { setSwapTransaction } = useSwapTransactionStore();
     const { swap } = useSwapDataState();
     const signer = useEthersSigner();
     const { chain } = useNetwork();
 
-    const { networks } = useSettingsState();
+    const { networks, layers } = useSettingsState();
     const { source_network: source_network_internal_name } = swap || {};
     const source_network = networks.find(n => n.internal_name === source_network_internal_name);
+    const source_layer = layers.find(l => l.internal_name === source_network_internal_name)
     const source_currency = source_network?.currencies?.find(c => c.asset.toLocaleUpperCase() === swap?.source_network_asset.toLocaleUpperCase());
     const defaultProvider = swap?.source_network?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "goerli";
     const l1Network = networks.find(n => n.internal_name === source_network?.metadata?.L1Network);
 
     useEffect(() => {
-        if (signer?._address !== syncWallet?.cachedAddress) {
+        if (signer?._address !== syncWallet?.cachedAddress && source_layer) {
             setSyncWallet(null)
         }
     }, [signer?._address]);
@@ -60,12 +60,14 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         try {
             const syncProvider = await zksync.getDefaultProvider(defaultProvider);
             const wallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
-            setSyncWallet(wallet);
+            setSyncWallet(wallet)
         }
         catch (e) {
             toast(e.message)
         }
-        setLoading(false)
+        finally {
+            setLoading(false)
+        }
     }, [signer, defaultProvider])
 
     const handleTransfer = useCallback(async () => {
@@ -100,7 +102,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             }
         }
         setLoading(false)
-        
+
     }, [syncWallet, swap, depositAddress, source_currency, amount])
 
     if (!signer) {

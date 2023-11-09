@@ -55,16 +55,10 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
         setHeight(Number(ref?.current?.clientHeight))
     }, [])
 
-    const handleAnimationEnd = (variant) => {
-        if (variant == "center") {
-            setHeight(Number(ref?.current?.clientHeight))
-        }
-    }
     return (
         sticky ?
             <>
                 <motion.div
-                    onAnimationComplete={handleAnimationEnd}
                     ref={ref}
                     transition={{
                         duration: 0.15,

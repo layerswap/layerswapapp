@@ -10,7 +10,6 @@ import {
 import { parseEther, createPublicClient, http } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
 import { PublishedSwapTransactionStatus } from "../../../../../lib/layerSwapApiClient";
-import { toast } from "react-hot-toast";
 import WalletIcon from "../../../../icons/WalletIcon";
 import Modal from '../../../../modal/modal';
 import MessageComponent from "../../../../MessageComponent";

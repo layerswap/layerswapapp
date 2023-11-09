@@ -1,5 +1,5 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
@@ -7,9 +7,8 @@ import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClie
 import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
-import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
+import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../store/zustandStore';
-import { NetworkCurrency } from '../../../../Models/CryptoNetwork';
 
 type Props = {
     depositAddress?: string
@@ -18,30 +17,30 @@ type Props = {
 const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { setImxAccount } = useWalletUpdate()
-    const { imxAccount } = useWalletState()
     const { swap } = useSwapDataState()
-    const { networks } = useSettingsState()
+    const { networks, layers } = useSettingsState()
     const { setSwapTransaction } = useSwapTransactionStore();
 
     const { source_network: source_network_internal_name } = swap || {}
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
+    const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
+    const { getWithdrawalProvider: getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return source_layer && getProvider(source_layer)
+    }, [source_layer, getProvider])
+
+    const imxAccount = provider?.getConnectedWallet()
 
     const handleConnect = useCallback(async () => {
-        if (!source_network)
-            return
+        if (!provider)
+            throw new Error(`No provider from ${source_layer?.internal_name}`)
+        if(source_layer?.isExchange === true )
+        throw new Error(`Source is exchange`)
+
         setLoading(true)
-        try {
-            const ImtblClient = (await import('../../../../lib/imtbl')).default;
-            const imtblClient = new ImtblClient(source_network?.internal_name)
-            const res = await imtblClient.ConnectWallet();
-            setImxAccount(res.address);
-        }
-        catch (e) {
-            toast(e.message)
-        }
+        await provider?.connectWallet(source_layer?.chain_id)
         setLoading(false)
-    }, [source_network])
+    }, [provider, source_layer])
 
     const handleTransfer = useCallback(async () => {
         if (!source_network || !swap || !depositAddress)
@@ -50,7 +49,10 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
         try {
             const ImtblClient = (await import('../../../../lib/imtbl')).default;
             const imtblClient = new ImtblClient(source_network?.internal_name)
-            const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase()) as NetworkCurrency
+            const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
+            if (!source_currency) {
+                throw new Error("No source currency could be found");
+            }
             const res = await imtblClient.Transfer(swap, source_currency, depositAddress)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
@@ -87,7 +89,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                         </SubmitButton>
                     }
                     {
-                        imxAccount &&  
+                        imxAccount &&
                         <SubmitButton isDisabled={!!(loading || transferDone) || !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>
