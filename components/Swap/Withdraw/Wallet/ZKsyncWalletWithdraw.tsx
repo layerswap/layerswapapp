@@ -53,6 +53,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 if (txReceipt.executed && !txReceipt.success) {
                     setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, txHash, txReceipt?.failReason);
                     toast(String(txReceipt.failReason))
+                    setLoading(false)
                 } else if(txReceipt.executed && txReceipt.success) {
                     setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Completed, txHash);
                     setTransferDone(true);
