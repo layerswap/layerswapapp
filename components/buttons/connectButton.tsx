@@ -5,10 +5,20 @@ import { NetworkType } from "../../Models/CryptoNetwork";
 import RainbowIcon from "../icons/Wallets/Rainbow";
 import Starknet from "../icons/Wallets/Starknet";
 import TON from "../icons/Wallets/TON";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../shadcn/dialog";
+import useWindowDimensions from "../../hooks/useWindowDimensions";
+import MetaMaskIcon from "../icons/Wallets/MetaMask";
+import WalletConnectIcon from "../icons/Wallets/WalletConnect";
+import Braavos from "../icons/Wallets/Braavos";
+import ArgentX from "../icons/Wallets/ArgentX";
+import Argent from "../icons/Wallets/Argent";
+import TonKeeper from "../icons/Wallets/TonKeeper";
+import OpenMask from "../icons/Wallets/OpenMask";
 
 const ConnectButton = ({ children, className, onClose }: { children: ReactNode, className?: string, onClose?: () => void }) => {
     const { connectWallet, wallets } = useWallet()
     const [open, setOpen] = useState<boolean>()
+    const { isMobile } = useWindowDimensions()
 
     const knownConnectors = [
         {
@@ -30,28 +40,57 @@ const ConnectButton = ({ children, className, onClose }: { children: ReactNode, 
     const filteredConnectors = knownConnectors.filter(c => !wallets.map(w => w?.providerName).includes(c.id))
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger disabled={filteredConnectors.length == 0} className={`${className} disabled:opacity-50 disabled:cursor-not-allowed `}>
-                {children}
-            </PopoverTrigger>
-            <PopoverContent className='flex flex-col items-start gap-2 w-fit'>
-                {
-                    filteredConnectors.map((connector, index) => (
-                        <button type="button" key={index} className="w-full h-full hover:bg-secondary-600 rounded py-2 px-3" onClick={() => { connectWallet(connector.id); setOpen(false); onClose && onClose() }}>
-                            <div className="flex space-x-2 items-center">
-                                {
-                                    connector &&
-                                    <div className="inline-flex items-center relative">
-                                        <ResolveConnectorIcon connector={connector.id} className="w-8 h-8 p-0.5 rounded-full bg-secondary-800 border border-secondary-400" />
+        isMobile ?
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger>
+                    {children}
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] text-primary-text">
+                    <DialogHeader>
+                        <DialogTitle className="text-center">Link a new wallet</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-2">
+                        {
+                            filteredConnectors.map((connector, index) => (
+                                <button type="button" key={index} className="w-full h-fit bg-secondary-700 border border-secondary-500 rounded py-2 px-3" onClick={() => { connectWallet(connector.id); setOpen(false); onClose && onClose() }}>
+                                    <div className="flex space-x-2 items-center">
+                                        {
+                                            connector &&
+                                            <div className="inline-flex items-center relative">
+                                                <ResolveConnectorIcon connector={connector.id} className="w-7 h-7 p-0.5 rounded-full bg-secondary-800 border border-secondary-400" />
+                                            </div>
+                                        }
+                                        <p>{connector.name}</p>
                                     </div>
-                                }
-                                <p>{connector.name}</p>
-                            </div>
-                        </button>
-                    ))
-                }
-            </PopoverContent>
-        </Popover>
+                                </button>
+                            ))
+                        }
+                    </div>
+                </DialogContent>
+            </Dialog>
+            :
+            <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger disabled={filteredConnectors.length == 0} className={`${className} disabled:opacity-50 disabled:cursor-not-allowed `}>
+                    {children}
+                </PopoverTrigger>
+                <PopoverContent className='flex flex-col items-start gap-2 w-fit'>
+                    {
+                        filteredConnectors.map((connector, index) => (
+                            <button type="button" key={index} className="w-full h-full hover:bg-secondary-600 rounded py-2 px-3" onClick={() => { connectWallet(connector.id); setOpen(false); onClose && onClose() }}>
+                                <div className="flex space-x-2 items-center">
+                                    {
+                                        connector &&
+                                        <div className="inline-flex items-center relative">
+                                            <ResolveConnectorIcon connector={connector.id} className="w-7 h-7 p-0.5 rounded-full bg-secondary-800 border border-secondary-400" />
+                                        </div>
+                                    }
+                                    <p>{connector.name}</p>
+                                </div>
+                            </button>
+                        ))
+                    }
+                </PopoverContent>
+            </Popover>
     )
 }
 
@@ -60,11 +99,29 @@ export default ConnectButton
 const ResolveConnectorIcon = ({ connector, className }: { connector: string, className: string }) => {
     switch (connector.toLowerCase()) {
         case KnownConnectors.EVM:
-            return <RainbowIcon className={className} />
+            return (
+                <div className="-space-x-2 flex">
+                    <RainbowIcon className={className} />
+                    <MetaMaskIcon className={className} />
+                    <WalletConnectIcon className={className} />
+                </div>
+            )
         case KnownConnectors.Starknet:
-            return <Starknet className={className} />
+            return (
+                <div className="-space-x-2 flex">
+                    <Braavos className={className} />
+                    <Argent className={className} />
+                    <ArgentX className={className} />
+                </div>
+            )
         case KnownConnectors.TON:
-            return <TON className={className} />
+            return (
+                <div className="-space-x-2 flex">
+                    <TonKeeper className={className} />
+                    <OpenMask className={className} />
+                    <TON className={className} />
+                </div>
+            )
         default:
             return <></>
     }

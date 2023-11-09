@@ -5,6 +5,9 @@ import KnownInternalNames from "../../knownIds"
 import { constants } from "starknet";
 import { connect, disconnect } from 'starknetkit'
 import { useCallback } from "react";
+import Braavos from "../../../components/icons/Wallets/Braavos";
+import Argent from "../../../components/icons/Wallets/Argent";
+import { ResolveStarknetWalletIcon } from "./resoveStarknetIcon";
 
 export default function useStarknet(): WalletProvider {
     const SupportedNetworks = [KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetGoerli]
@@ -36,7 +39,7 @@ export default function useStarknet(): WalletProvider {
                 addWallet({
                     address: res.account.address,
                     chainId: res.provider.provider.chainId,
-                    icon: res.icon,
+                    icon: ResolveStarknetWalletIcon({ connector: res.name }),
                     connector: res.name,
                     providerName: name,
                     metadata: {

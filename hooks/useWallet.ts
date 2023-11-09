@@ -1,7 +1,6 @@
 import toast from "react-hot-toast"
 import { Layer } from "../Models/Layer"
 import LayerSwapApiClient, { SwapItem } from "../lib/layerSwapApiClient"
-import { useSwapDataUpdate } from "../context/swap"
 import { Wallet } from "../stores/walletStore"
 import useTON from "../lib/wallets/ton/useTON"
 import useEVM from "../lib/wallets/evm/useEVM"

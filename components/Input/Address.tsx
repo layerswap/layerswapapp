@@ -15,7 +15,6 @@ import shortenAddress from "../utils/ShortenAddress";
 import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import WalletIcon from "../icons/WalletIcon";
-import { NetworkType } from "../../Models/CryptoNetwork";
 import useWallet from "../../hooks/useWallet";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
@@ -197,7 +196,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                             <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
                                 {
                                     destinationIsStarknet && connectedWallet ?
-                                        <Image src={connectedWallet.icon || ''} alt={connectedWallet?.address} width={25} height={25} />
+                                        <connectedWallet.icon className='rounded-md' alt={connectedWallet?.address} width={25} height={25} />
                                         :
                                         <AddressIcon address={validInputAddress} size={25} />
                                 }

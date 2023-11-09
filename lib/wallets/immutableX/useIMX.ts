@@ -2,6 +2,7 @@ import { useWalletStore } from "../../../stores/walletStore"
 import ImtblClient from "../../imtbl"
 import KnownInternalNames from "../../knownIds"
 import { WalletProvider } from "../../../hooks/useWallet"
+import WalletConnectIcon from "../../../components/icons/Wallets/WalletConnect"
 
 export default function useImmutableX(): WalletProvider {
     const SupportedNetworks = [KnownInternalNames.Networks.ImmutableXMainnet, KnownInternalNames.Networks.ImmutableXGoerli]
@@ -23,7 +24,8 @@ export default function useImmutableX(): WalletProvider {
             addWallet({
                 address: res.address,
                 connector: 'imx',
-                providerName: name
+                providerName: name,
+                icon: WalletConnectIcon
             });
         }
         catch (e) {

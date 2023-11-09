@@ -42,15 +42,18 @@ export const WalletsHeader = () => {
 }
 
 const WalletsIcons = ({ wallets }: { wallets: Wallet[] }) => {
+    const firstWallet = wallets[0]
+    const secondWallet =  wallets[1]
+
     return (
         <div className="-space-x-2 flex">
             {
-                wallets[0]?.connector &&
-                <ResolveWalletIcon connector={wallets[0].connector} className="rounded-full border-2 border-secondary-600 bg-secondary-700 flex-shrink-0 h-6 w-6" />
+                firstWallet?.connector &&
+                <firstWallet.icon className="rounded-full border-2 border-secondary-600 bg-secondary-700 flex-shrink-0 h-6 w-6" />
             }
             {
-                wallets[1]?.connector &&
-                <ResolveWalletIcon connector={wallets[1].connector} className="rounded-full border-2 border-secondary-600 bg-secondary-700 flex-shrink-0 h-6 w-6" />
+                secondWallet?.connector &&
+                <secondWallet.icon className="rounded-full border-2 border-secondary-600 bg-secondary-700 flex-shrink-0 h-6 w-6" />
             }
             {
                 wallets.length > 2 &&
@@ -65,7 +68,7 @@ const WalletsIcons = ({ wallets }: { wallets: Wallet[] }) => {
 export const WalletsMenu = () => {
     const [openDialog, setOpenDialog] = useState<boolean>(false)
     const { wallets } = useWallet()
-
+    const wallet = wallets[0]
     if (wallets.length > 0) {
         return (
             <>
@@ -74,14 +77,14 @@ export const WalletsMenu = () => {
                         wallets.length === 1 ?
                             <div className="flex gap-4 items-start">
                                 <div className="inline-flex items-center relative">
-                                    <AddressIcon address={wallets[0].address} size={20} />
+                                    <AddressIcon address={wallet.address} size={20} />
                                     {
-                                        wallets[0].connector && <span className="absolute -bottom-1 -right-2 ml-1 text-[10px] leading-4 font-semibold text-primary-text">
-                                            <ResolveWalletIcon connector={wallets[0].connector} className="w-4 h-4 border-2 border-secondary-600 rounded-full bg-primary-text" />
+                                        wallet.connector && <span className="absolute -bottom-1 -right-2 ml-1 text-[10px] leading-4 font-semibold text-primary-text">
+                                            <wallet.icon className="w-4 h-4 border-2 border-secondary-600 rounded-full bg-primary-text" />
                                         </span>
                                     }
                                 </div>
-                                <p>{shortenAddress(wallets[0].address)}</p>
+                                <p>{shortenAddress(wallet.address)}</p>
                             </div>
                             :
                             <>
@@ -125,7 +128,7 @@ const ConnectedWalletsDialog = ({ openDialog, setOpenDialog }: { openDialog: boo
                                     {
                                         wallet.connector &&
                                         <div className="inline-flex items-center relative">
-                                            <ResolveWalletIcon connector={wallet.connector} className="w-8 h-8 p-0.5 rounded-full bg-secondary-800 border border-secondary-400" />
+                                            <wallet.icon className="w-8 h-8 p-0.5 rounded-full bg-secondary-800 border border-secondary-400" />
                                         </div>
                                     }
                                     <p>{shortenAddress(wallet.address)}</p>
@@ -150,44 +153,4 @@ const ConnectedWalletsDialog = ({ openDialog, setOpenDialog }: { openDialog: boo
             </DialogContent>
         </Dialog>
     )
-}
-//TODO move to wallet store
-export const ResolveWalletIcon = ({ connector, className }: { connector: string, className: string }) => {
-    switch (connector.toLowerCase()) {
-        case KnownKonnectors.MetaMask:
-            return <MetaMaskIcon className={className} />
-        case KnownKonnectors.Coinbase:
-            return <CoinbaseIcon className={className} />
-        case KnownKonnectors.WalletConnect:
-            return <WalletConnectIcon className={className} />
-        case KnownKonnectors.Rainbow:
-            return <RainbowIcon className={className} />
-        case KnownKonnectors.BitKeep:
-            return <BitKeep className={className} />
-        case KnownKonnectors.Argent:
-            return <Argent className={className} />
-        case KnownKonnectors.ArgentX:
-            return <Argent className={className} />
-        case KnownKonnectors.ArgentMobile:
-            return <Argent className={className} />
-        case KnownKonnectors.Braavos:
-            return <Braavos className={className} />
-        case KnownKonnectors.TON:
-            return <TON className={className} />
-        default:
-            return <></>
-    }
-}
-
-const KnownKonnectors = {
-    MetaMask: 'metamask',
-    WalletConnect: 'walletconnect',
-    Coinbase: 'coinbase wallet',
-    Rainbow: 'rainbow',
-    BitKeep: 'bitkeep',
-    Argent: 'argent',
-    ArgentX: 'argent x',
-    ArgentMobile: 'argent mobile',
-    Braavos: 'braavos',
-    TON: 'ton'
 }
