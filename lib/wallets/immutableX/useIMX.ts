@@ -2,9 +2,10 @@ import { useWalletStore } from "../../../stores/walletStore"
 import ImtblClient from "../../imtbl"
 import KnownInternalNames from "../../knownIds"
 import { WalletProvider } from "../../../hooks/useWallet"
+import IMX from "../../../components/icons/Wallets/IMX"
 
 export default function useImmutableX(): WalletProvider {
-    const SupportedNetworks = [KnownInternalNames.Networks.ImmutableXMainnet, KnownInternalNames.Networks.ImmutableXGoerli]
+    const withdrawalSupportedNetworks = [KnownInternalNames.Networks.ImmutableXMainnet, KnownInternalNames.Networks.ImmutableXGoerli]
     const name = 'imx'
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
@@ -15,15 +16,16 @@ export default function useImmutableX(): WalletProvider {
     }
 
     const connectWallet = async (chain: string | number) => {
-        if (!chain) return
-        const networkName = chain === 1 ? KnownInternalNames.Networks.ImmutableXMainnet : KnownInternalNames.Networks.ImmutableXGoerli
+        if (!chain) throw new Error('No chain id for imx connect wallet')
+        const networkName = chain == 1 ? KnownInternalNames.Networks.ImmutableXMainnet : KnownInternalNames.Networks.ImmutableXGoerli
         try {
             const imtblClient = new ImtblClient(networkName)
             const res = await imtblClient.ConnectWallet();
             addWallet({
                 address: res.address,
                 connector: 'imx',
-                providerName: name
+                providerName: name,
+                icon: IMX
             });
         }
         catch (e) {
@@ -39,7 +41,7 @@ export default function useImmutableX(): WalletProvider {
         getConnectedWallet: getWallet,
         connectWallet,
         disconnectWallet,
-        SupportedNetworks,
+        withdrawalSupportedNetworks: withdrawalSupportedNetworks,
         name
     }
 }

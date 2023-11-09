@@ -17,7 +17,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { networks, currencies } = useSettingsState()
     const query = useQueryState()
     const { currency, from, to, amount, destination_address } = values
-    const { getProvider } = useWallet()
+    const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
         return from && getProvider(from)
     }, [from, getProvider])

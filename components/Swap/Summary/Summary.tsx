@@ -31,7 +31,7 @@ type SwapInfoProps = {
 
 const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name }) => {
     const { resolveImgSrc, currencies, networks } = useSettingsState()
-    const { getProvider } = useWallet()
+    const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
         return from && getProvider(from)
     }, [from, getProvider])

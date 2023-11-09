@@ -17,7 +17,6 @@ import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
 import { useAccountModal } from '@rainbow-me/rainbowkit';
 import { GetDefaultNetwork } from '../../../helpers/settingsHelper';
 import Image from 'next/image';
-import { ResolveWalletIcon } from '../../ConnectedWallets';
 import SpinIcon from '../../icons/spinIcon';
 import { NetworkType } from '../../../Models/CryptoNetwork';
 import useWallet from '../../../hooks/useWallet';
@@ -169,7 +168,7 @@ const Withdraw: FC = () => {
 
 const WalletTransferContent: FC = () => {
     const { openAccountModal } = useAccountModal();
-    const { getProvider, disconnectWallet } = useWallet()
+    const { getWithdrawalProvider: getProvider, disconnectWallet } = useWallet()
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
     const [isLoading, setIsloading] = useState(false);
@@ -233,8 +232,7 @@ const WalletTransferContent: FC = () => {
                 {
                     !swap?.source_exchange
                     && wallet?.connector
-                    && <ResolveWalletIcon
-                        connector={wallet?.connector}
+                    && <wallet.icon
                         className="w-6 h-6 rounded-full"
                     />
                 }

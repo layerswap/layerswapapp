@@ -5,11 +5,12 @@ import { NetworkType } from "../../../Models/CryptoNetwork"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
-
+import { ResolveEVMWalletIcon } from "./resolveEVMIcon"
 
 export default function useEVM(): WalletProvider {
     const { layers } = useSettingsState()
-    const SupportedNetworks = [...layers.filter(layer => layer.type === NetworkType.EVM).map(l => l.internal_name), KnownInternalNames.Networks.ZksyncMainnet]
+    const withdrawalSupportedNetworks = [...layers.filter(layer => layer.type === NetworkType.EVM).map(l => l.internal_name), KnownInternalNames.Networks.ZksyncMainnet]
+    const autofillSupportedNetworks = [...withdrawalSupportedNetworks, KnownInternalNames.Networks.ImmutableXMainnet, KnownInternalNames.Networks.ImmutableXGoerli]
     const name = 'evm'
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
@@ -20,6 +21,7 @@ export default function useEVM(): WalletProvider {
                 address: account.address,
                 connector: account.connector?.id,
                 providerName: name,
+                icon: ResolveEVMWalletIcon({ connector: account.connector?.id })
             }
         }
     }
@@ -41,7 +43,8 @@ export default function useEVM(): WalletProvider {
         getConnectedWallet: getWallet,
         connectWallet,
         disconnectWallet,
-        SupportedNetworks,
+        autofillSupportedNetworks,
+        withdrawalSupportedNetworks,
         name
     }
 }
