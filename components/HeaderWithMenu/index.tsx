@@ -4,13 +4,12 @@ import IconButton from "../buttons/iconButton"
 import GoHomeButton from "../utils/GoHome"
 import { ArrowLeft } from 'lucide-react'
 import ChatIcon from "../icons/ChatIcon"
-import { WalletsHeader } from "../ConnectedWallets"
 import dynamic from "next/dynamic"
+import LayerswapMenu from "../LayerswapMenu"
 
-const LayerswapMenu = dynamic(() => import("../LayerswapMenu"), {
+const WalletsHeader = dynamic(() => import("../ConnectedWallets").then((comp) => comp.WalletsHeader), {
    loading: () => <></>
- })
-
+})
 
 function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null }) {
    const { email, userId } = useAuthState()

@@ -18,6 +18,7 @@ import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
+import TonConnectProvider from "./TonConnectProvider";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -98,13 +99,24 @@ export default function Layout({ children, settings, themeData }: Props) {
 
   const basePath = router?.basePath ?? ""
 
-  const DynamicRainbowKit = dynamic(() => import("./RainbowKit"), {
-    loading: () => <></>
-  })
+  const DynamicRainbowKit = (dynamic(() => import("./RainbowKit"), {
+    loading: () => <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
+      <div className='text-center text-xl text-secondary-100'>
+      </div>
+      <div className="relative px-6">
+        <div className="flex items-start">
+          <div className={`flex flex-nowrap grow`}>
+            <div className="w-full pb-6 flex flex-col justify-between space-y-5 text-secondary-text h-full">
+              <div className="sm:min-h-[504px]"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="widget_root" />
+    </div>
+  }))
 
-  const DynamicTonConnect = dynamic(() => import("./TonConnectProvider"), {
-    loading: () => <></>
-  })
+
 
   return (<>
     <Head>
@@ -143,13 +155,13 @@ export default function Layout({ children, settings, themeData }: Props) {
             <TooltipProvider delayDuration={500}>
               <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
                 <ThemeWrapper>
-                  <DynamicTonConnect basePath={basePath} themeData={themeData}>
+                  <TonConnectProvider basePath={basePath} themeData={themeData}>
                     <DynamicRainbowKit>
                       {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
                         <MaintananceContent />
                         : children}
                     </DynamicRainbowKit>
-                  </DynamicTonConnect>
+                  </TonConnectProvider>
                 </ThemeWrapper>
               </ErrorBoundary>
             </TooltipProvider>
