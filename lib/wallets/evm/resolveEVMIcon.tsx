@@ -18,8 +18,6 @@ export const ResolveEVMWalletIcon = ({ connector }: { connector: string }) => {
     }
 }
 
-ResolveEVMWalletIcon.displayName = 'EVMIcon'
-
 const KnownKonnectors = {
     MetaMask: 'metamask',
     WalletConnect: 'walletconnect',

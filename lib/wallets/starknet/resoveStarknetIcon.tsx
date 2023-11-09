@@ -15,7 +15,6 @@ export const ResolveStarknetWalletIcon = ({ connector }: { connector: string }) 
     }
 }
 
-ResolveStarknetWalletIcon.displayName = 'StarknetIcon'
 
 const KnownKonnectors = {
     ArgentX: 'argent x',
