@@ -21,7 +21,7 @@ export default function useStarknet(): WalletProvider {
 
     const connectWallet = useCallback(async (chain: string) => {
         const constants = (await import('starknet')).constants
-        const chainId = (chain && fromHex(chain as `0x${string}`, 'string')) ?? constants.NetworkName.SN_MAIN
+        const chainId = (chain && fromHex(chain as `0x${string}`, 'string')) || constants.NetworkName.SN_MAIN
         const connect = (await import('starknetkit')).connect
         try {
             const res = await connect({
