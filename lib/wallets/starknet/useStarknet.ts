@@ -37,7 +37,7 @@ export default function useStarknet(): WalletProvider {
             if (res && res.account && res.isConnected) {
                 addWallet({
                     address: res.account.address,
-                    chainId: res.provider.provider.chainId,
+                    chainId: res.provider?.chainId || res.provider?.provider?.chainId,
                     icon: ResolveStarknetWalletIcon({ connector: res.name }),
                     connector: res.name,
                     providerName: name,
