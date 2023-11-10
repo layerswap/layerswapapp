@@ -71,7 +71,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     name={name}
                     ref={amountRef}
                     precision={currency?.precision}
-                    className="rounded-r-none text-primary-text w-full"
+                    className="rounded-r-none text-primary-text w-full !pb-6 text-lg"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value))
