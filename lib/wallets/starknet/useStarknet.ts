@@ -21,7 +21,7 @@ export default function useStarknet(): WalletProvider {
 
     const connectWallet = useCallback(async (chain: string) => {
         const constants = (await import('starknet')).constants
-        const chainId = (chain && fromHex(chain as `0x${string}`, 'string')) ?? constants.NetworkName.SN_MAIN
+        const chainId = (chain && fromHex(chain as `0x${string}`, 'string')) || constants.NetworkName.SN_MAIN
         const connect = (await import('starknetkit')).connect
         try {
             const res = await connect({
@@ -37,7 +37,7 @@ export default function useStarknet(): WalletProvider {
             if (res && res.account && res.isConnected) {
                 addWallet({
                     address: res.account.address,
-                    chainId: res.provider.provider.chainId,
+                    chainId: res.provider?.chainId || res.provider?.provider?.chainId,
                     icon: ResolveStarknetWalletIcon({ connector: res.name }),
                     connector: res.name,
                     providerName: name,

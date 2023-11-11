@@ -55,10 +55,12 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const handleConnect = useCallback(async () => {
         if (!provider)
             throw new Error(`No provider from ${source_layer?.internal_name}`)
+        if (source_layer?.isExchange === true)
+            throw new Error(`Source is exchange`)
 
         setLoading(true)
         try {
-            await provider.connectWallet()
+            await provider.connectWallet(source_layer?.chain_id)
         }
         catch (e) {
             toast(e.message)
