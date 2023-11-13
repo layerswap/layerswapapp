@@ -31,7 +31,7 @@ const SwapSummary: FC = () => {
     }
 
     const apiClient = new LayerSwapApiClient()
-    const { data: feeData } = useSWR<ApiResponse<Fee[]>>([params], selectedAssetNetwork ? ([params]) => apiClient.GetFee(params) : null, { dedupingInterval: 60000 })
+    const { data: feeData } = useSWR<ApiResponse<Fee[]>>([params], selectedAssetNetwork ? ([params]) => apiClient.GetFee(params) : null)
 
     const source_layer = layers.find(n => n.internal_name === (source_exchange_internal_name ?? source_network_internal_name))
     const asset = source_layer?.assets?.find(currency => currency?.asset === destination_network_asset)
@@ -85,6 +85,7 @@ const SwapSummary: FC = () => {
     const receive_amount = fee != undefined ? (swapOutputTransaction?.amount
         ?? (Number(requested_amount) - fee - Number(refuelAmountInSelectedCurrency)))
         : undefined
+    console.log("ready", ready)
 
     return <Summary
         currency={currency}

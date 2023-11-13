@@ -47,13 +47,13 @@ export type SwapData = {
     selectedAssetNetwork: ExchangeAsset | BaseL2Asset | undefined
 }
 
-export function SwapDataProvider({ children }) {
+export function SwapDataProvider({ id, children }: { id?: string, children: any }) {
     const [addressConfirmed, setAddressConfirmed] = useState<boolean>(false)
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [depositeAddressIsfromAccount, setDepositeAddressIsfromAccount] = useState<boolean>()
     const router = useRouter();
-    const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
+    const [swapId, setSwapId] = useState<string | undefined>(id || router.query.swapId?.toString())
     const { layers } = useSettingsState()
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -61,7 +61,6 @@ export function SwapDataProvider({ children }) {
     const swap_details_endpoint = `/swaps/${swapId}?version=${apiVersion}`
     const [interval, setInterval] = useState(0)
     const { data: swapResponse, mutate, error } = useSWR<ApiResponse<SwapItem>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
-
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const source_exchange = layers.find(n => n?.internal_name?.toLowerCase() === swapResponse?.data?.source_exchange?.toLowerCase())
 
@@ -72,9 +71,13 @@ export function SwapDataProvider({ children }) {
 
     const swapStatus = swapResponse?.data?.status;
     useEffect(() => {
+        console.log("ttr")
         if (swapStatus)
             setInterval(ResolvePollingInterval(swapStatus))
-        return () => setInterval(0)
+        return () => {
+            console.log("ex")
+            setInterval(0)
+        }
     }, [swapStatus])
 
     useEffect(() => {

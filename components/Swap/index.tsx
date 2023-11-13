@@ -15,6 +15,7 @@ import { useSwapTransactionStore } from '../store/zustandStore';
 
 const SwapDetails: FC<Props> = ({ type }) => {
     const { swap } = useSwapDataState()
+    console.log("Swap", swap)
     const settings = useSettingsState()
     const swapStatus = swap?.status;
     const storedWalletTransactions = useSwapTransactionStore()

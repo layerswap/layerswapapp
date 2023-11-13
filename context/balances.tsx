@@ -84,7 +84,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
             }
             setCachedAddress(evmAddress)
         })()
-    }, [swap?.source_network, swap?.destination_address, evmAddress])
+    }, [swap?.source_network, swap?.destination_address, evmAddress, swap?.id])
 
     async function getBalance(from: Layer) {
         const balance = allBalances[evmAddress || '']?.find(b => b?.network === from?.internal_name)
@@ -193,7 +193,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
             isBalanceLoading,
             isGasLoading,
             isContractWallet: {
-                ready: cachedAddress === evmAddress && isContractWallet.ready,
+                ready: true,
                 value: isContractWallet.value
             }
         }}>

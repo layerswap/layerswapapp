@@ -8,11 +8,11 @@ import ConnectNetwork from "../../ConnectNetwork";
 import toast from "react-hot-toast";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "../../../lib/generateSwapInitialValues";
-import LayerSwapApiClient, { SwapItem, TransactionType } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { SwapStatusInNumbers } from "../../../lib/layerSwapApiClient";
 import Modal from "../../modal/modal";
 import SwapForm from "./Form";
 import { useRouter } from "next/router";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
@@ -23,8 +23,8 @@ import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import StatusIcon from "../../SwapHistory/StatusIcons";
 import Image from 'next/image';
-import { ChevronRight, X } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 
 type NetworkToConnect = {
@@ -99,6 +99,7 @@ export default function Form() {
                 window.history.replaceState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
                 setShowSwapModal(true)
             }
+            mutate(`/swaps?status=${SwapStatusInNumbers.Pending}&version=${LayerSwapApiClient.apiVersion}`)
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error
@@ -133,7 +134,7 @@ export default function Form() {
     const initiallyInValid = Object.values(initiallyValidation)?.filter(v => v).length > 0
 
     return <>
-        <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
+        {/* <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence exitBeforeEnter>
                 {
                     swap &&
@@ -141,7 +142,7 @@ export default function Form() {
                     <PendingSwap onClick={() => setShowSwapModal(true)} />
                 }
             </AnimatePresence>
-        </div>
+        </div> */}
         <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
             {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
         </Modal>

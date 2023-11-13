@@ -106,7 +106,7 @@ export default function LayerswapMenu() {
                     <div className="relative top-">
 
                         <IconButton onClick={() => setOpenTopModal(true)} icon={
-                            <MenuIcon strokeWidth={3} />
+                            <MenuIcon strokeWidth="2" />
                         }>
                         </IconButton>
 
