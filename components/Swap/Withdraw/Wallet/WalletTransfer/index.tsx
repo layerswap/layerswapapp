@@ -51,7 +51,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     useEffect(() => {
         try {
             const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-            const hash = data?.[swapId]?.hash
+            const hash = data.state.swapTransactions?.[swapId]?.hash;
             if (hash)
                 setSavedTransactionHash(hash)
         }

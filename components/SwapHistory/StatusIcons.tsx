@@ -41,7 +41,7 @@ export default function StatusIcon({ swap, short }: { swap: SwapItem, short?: bo
         </>)
     case SwapStatus.UserTransferPending:
       const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-      const txForSwap = data?.[swap.id];
+      const txForSwap = data.state.swapTransactions?.[swap.id];
       if (txForSwap || swap.transactions.find(t => t.type === TransactionType.Input)) {
         return <>
           <div className="inline-flex items-center">

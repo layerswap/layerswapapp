@@ -34,7 +34,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
          {
             router.pathname == "/" &&
             <AnimatePresence exitBeforeEnter>
-               <PendingSwapsModal />
+               <PendingSwapsPopover />
             </AnimatePresence>
          }
 

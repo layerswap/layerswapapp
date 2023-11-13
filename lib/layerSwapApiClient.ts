@@ -215,7 +215,11 @@ export enum PublishedSwapTransactionStatus {
 }
 
 export type PublishedSwapTransactions = {
-    [key: string]: SwapTransaction
+    state: {
+        swapTransactions: {
+            [key: string]: SwapTransaction
+        }
+    }
 }
 
 
