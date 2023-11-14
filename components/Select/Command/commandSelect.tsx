@@ -30,7 +30,7 @@ export class SelectMenuItemGroup {
     items: ISelectMenuItem[];
 }
 
-export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper }: CommandSelectProps) {
+export default function CommandSelect({ values, setValue, show, setShow, searchHint, valueGrouper }: CommandSelectProps) {
     const { isDesktop } = useWindowDimensions();
 
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
@@ -38,7 +38,10 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
     return (
         <Modal height='full' show={show} setShow={setShow}>
             {show ?
-                <CommandWrapper>
+                <CommandWrapper filter={(item: string | undefined, search: string | undefined) => {
+                    if (!search || !item) return 1
+                    return item.toLowerCase().indexOf(search.toLowerCase()) !== -1 ? 1 : 0
+                }}>
                     {show ? <>
                         <CommandInput autoFocus={isDesktop} placeholder={searchHint} />
                         {
