@@ -7,7 +7,7 @@ import { useSettingsState } from "../../../context/settings"
 import { NetworkType } from "../../../Models/CryptoNetwork"
 import NetworkSettings, { GasCalculation } from "../../NetworkSettings"
 import { getErc20Balances, getNativeBalance, resolveERC20Balances, resolveNativeBalance } from "../evm/getBalance"
-import { resolveGas } from "../evm/getGas"
+import { resolveGas } from "./getGas"
 
 export default function useOptimismBalance(): BalanceProvider {
     const name = 'optimism'

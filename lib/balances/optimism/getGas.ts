@@ -2,6 +2,7 @@ import { erc20ABI } from 'wagmi';
 import { encodeFunctionData, PublicClient, formatGwei, serializeTransaction, TransactionSerializedEIP1559 } from 'viem'
 import { Layer, NetworkAsset } from '../../../Models/Layer';
 import { Currency } from '../../../Models/Currency';
+import { getL1Fee } from '../../optimism/estimateFees';
 import formatAmount from '../../formatAmount';
 
 type ResolveGasArguments = {
@@ -88,6 +89,50 @@ export const estimateERC20GasLimit = async ({ publicClient, contract_address, ac
     return estimatedERC20GasLimit
 }
 
+const GetOpL1Fee = async ({ publicClient, chainId, destination, contract_address, isSweeplessTx }: ResolveGasArguments): Promise<bigint> => {
+    const amount = BigInt(1000)
+    let serializedTransaction: TransactionSerializedEIP1559
+
+    if (contract_address) {
+        let encodedData = encodeFunctionData({
+            abi: erc20ABI,
+            functionName: "transfer",
+            args: [destination, amount]
+        })
+
+        if (encodedData && isSweeplessTx) {
+            encodedData = constructSweeplessTxData(encodedData)
+        }
+
+        serializedTransaction = serializeTransaction({
+            client: publicClient,
+            abi: erc20ABI,
+            functionName: "transfer",
+            chainId: chainId,
+            args: [destination, amount],
+            to: contract_address,
+            data: encodedData,
+            type: 'eip1559',
+        }) as TransactionSerializedEIP1559
+    }
+    else {
+        serializedTransaction = serializeTransaction({
+            client: publicClient,
+            chainId: chainId,
+            to: destination,
+            data: constructSweeplessTxData(),
+            type: 'eip1559',
+        }) as TransactionSerializedEIP1559
+    }
+
+    const fee = await getL1Fee({
+        data: serializedTransaction,
+        client: publicClient,
+    })
+
+    return fee;
+}
+
 export const resolveGas = async (options: ResolveGasArguments) => {
     const feeData = await resolveFeeData(options.publicClient)
 
@@ -100,7 +145,7 @@ export const resolveGas = async (options: ResolveGasArguments) => {
     if (!multiplier)
         return undefined
 
-    const totalGas = multiplier * estimatedGasLimit
+    let totalGas = (multiplier * estimatedGasLimit) + await GetOpL1Fee(options)
 
     const formattedGas = formatAmount(totalGas, options.nativeToken?.decimals)
     return {

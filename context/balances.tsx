@@ -7,7 +7,7 @@ import resolveChain from '../lib/resolveChain';
 import { NetworkType } from '../Models/CryptoNetwork';
 import { useSettingsState } from './settings';
 import { useSwapDataState } from './swap';
-import useBalance, { Balance, Gas } from '../hooks/useBalance';
+import useBalanceProvider, { Balance, Gas } from '../hooks/useBalance';
 
 export const BalancesStateContext = React.createContext<BalancesState | null>(null);
 export const BalancesStateUpdateContext = React.createContext<BalancesStateUpdate | null>(null);
@@ -35,7 +35,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
     const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
     const [isGasLoading, setIsGasLoading] = useState<boolean>(false)
     const [cachedAddress, setCachedAddress] = useState<string | undefined>()
-    const { getBalanceProvider } = useBalance()
+    const { getBalanceProvider } = useBalanceProvider()
 
     const { address: evmAddress } = useAccount()
     const balances = allBalances[evmAddress || '']

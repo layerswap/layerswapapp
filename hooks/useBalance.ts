@@ -31,7 +31,7 @@ export type Gas = {
     request_time: string
 }
 
-export default function useBalance() {
+export default function useBalanceProvider() {
 
     const BalanceProviders: BalanceProvider[] = [
         useEVMBalance(),

@@ -11,8 +11,8 @@ import { SortingByOrder } from "../../lib/sorting";
 import { Layer } from "../../Models/Layer";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
-import { Balance } from "../../helpers/balanceHelper";
 import { useQueryState } from "../../context/query";
+import { Balance } from "../../hooks/useBalance";
 
 const CurrencyFormField: FC = () => {
     const {
