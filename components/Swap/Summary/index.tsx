@@ -85,7 +85,6 @@ const SwapSummary: FC = () => {
     const receive_amount = fee != undefined ? (swapOutputTransaction?.amount
         ?? (Number(requested_amount) - fee - Number(refuelAmountInSelectedCurrency)))
         : undefined
-    console.log("ready", ready)
 
     return <Summary
         currency={currency}

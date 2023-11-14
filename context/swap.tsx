@@ -71,11 +71,9 @@ export function SwapDataProvider({ id, children }: { id?: string, children: any 
 
     const swapStatus = swapResponse?.data?.status;
     useEffect(() => {
-        console.log("ttr")
         if (swapStatus)
             setInterval(ResolvePollingInterval(swapStatus))
         return () => {
-            console.log("ex")
             setInterval(0)
         }
     }, [swapStatus])
