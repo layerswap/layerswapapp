@@ -1,5 +1,5 @@
 import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
 import React from "react";
@@ -33,6 +33,7 @@ import { useQueryState } from "../../../context/query";
 import FeeDetails from "../../DisclosureComponents/FeeDetails";
 import dynamic from "next/dynamic";
 import AmountField from "../../Input/Amount";
+import useWallet from "../../../hooks/useWallet";
 
 type Props = {
     isPartnerWallet?: boolean,
@@ -49,11 +50,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    useEffect(() => {
-        //prefetch address component
-        const Address = import("../../Input/Address")
-    }, [])
-
     const { to: destination } = values
     const settings = useSettingsState();
     const source = values.from
@@ -61,6 +57,14 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const { authData } = useAuthState()
     const { getBalance, getGas } = useBalancesUpdate()
     const { balances, gases } = useBalancesState()
+
+    const { getWithdrawalProvider: getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return values.from && getProvider(values.from)
+    }, [values.from, getProvider])
+
+    const wallet = provider?.getConnectedWallet()
+
     const { address } = useAccount()
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null
@@ -161,7 +165,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     }, [values.from, values.destination_address, address])
 
     const contract_address = values.from?.isExchange == false ? values.from.assets.find(a => a.asset === values?.currency?.asset)?.contract_address : null
-    const walletBalance = balances?.find(b => b?.network === values?.from?.internal_name && b?.token === values?.currency?.asset)
+    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === values?.from?.internal_name && b?.token === values?.currency?.asset)
     const networkGas = values.from?.internal_name ?
         gases?.[values.from?.internal_name]?.find(g => g.token === values?.currency?.asset)
         : null

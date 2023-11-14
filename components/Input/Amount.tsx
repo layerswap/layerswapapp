@@ -19,10 +19,16 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { currency, from, to, amount, destination_address } = values
 
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
+    const { getAutofillProvider: getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return values.from && getProvider(values.from)
+    }, [values.from, getProvider])
+
+    const wallet = provider?.getConnectedWallet()
     const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === currency?.asset)?.gas || 0
     const { getBalance, getGas } = useBalancesUpdate()
     const name = "amount"
-    const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
+    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, currency?.precision)
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);

@@ -12,7 +12,7 @@ export default function useWalletTransferOptions() {
     const { isContractWallet: isEVMContractWallet } = useBalancesState();
     const { getWithdrawalProvider: getProvider } = useWallet()
     const { layers } = useSettingsState()
-    const source_layer = layers.find(n => n.internal_name === swap?.source_network) as (Layer & { isExchange: false })
+    const source_layer = layers.find(n => n.internal_name === swap?.source_network)
     const provider = useMemo(() => {
         return source_layer && getProvider(source_layer)
     }, [source_layer, getProvider])

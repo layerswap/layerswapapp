@@ -2,6 +2,7 @@ import { Currency } from "../Models/Currency"
 import { Layer } from "../Models/Layer"
 import useEVMBalance from "../lib/balances/evm/useEVMBalance"
 import useOptimismBalance from "../lib/balances/optimism/useOptimismBalance"
+import useStarknetBalance from "../lib/balances/starknet/useStarknetBalance"
 
 export type BalanceProvider = {
     getBalance: (layer: Layer, address: string) => Promise<Balance[] | undefined> | undefined | void,
@@ -35,7 +36,8 @@ export default function useBalanceProvider() {
 
     const BalanceProviders: BalanceProvider[] = [
         useEVMBalance(),
-        useOptimismBalance()
+        useOptimismBalance(),
+        useStarknetBalance()
     ]
 
     const getBalanceProvider = (network: Layer) => {

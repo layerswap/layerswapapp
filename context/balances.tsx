@@ -8,12 +8,13 @@ import { NetworkType } from '../Models/CryptoNetwork';
 import { useSettingsState } from './settings';
 import { useSwapDataState } from './swap';
 import useBalanceProvider, { Balance, Gas } from '../hooks/useBalance';
+import useWallet from '../hooks/useWallet';
 
 export const BalancesStateContext = React.createContext<BalancesState | null>(null);
 export const BalancesStateUpdateContext = React.createContext<BalancesStateUpdate | null>(null);
 
 export type BalancesState = {
-    balances: Balance[],
+    balances: { [address: string]: Balance[] },
     gases: { [network: string]: Gas[] },
     isBalanceLoading: boolean,
     isGasLoading: boolean,
@@ -38,7 +39,8 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
     const { getBalanceProvider } = useBalanceProvider()
 
     const { address: evmAddress } = useAccount()
-    const balances = allBalances[evmAddress || '']
+    const { getAutofillProvider } = useWallet()
+    const balances = allBalances
     const gases = allGases
 
     const { swap } = useSwapDataState()
@@ -88,23 +90,26 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
     }, [swap?.source_network, swap?.destination_address, evmAddress])
 
     async function getBalance(from: Layer) {
-        const balance = allBalances[evmAddress || '']?.find(b => b?.network === from?.internal_name)
+        const provider = getAutofillProvider(from)
+        const wallet = provider?.getConnectedWallet()
+
+        const balance = allBalances[wallet?.address || '']?.find(b => b?.network === from?.internal_name)
         const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
         const source_assets = from.assets
         const source_network = source_assets?.[0].network
         if (source_network
             && isBalanceOutDated
-            && evmAddress
-            && from?.isExchange === false
-            && from?.type === NetworkType.EVM) {
+            && wallet?.address
+            && from?.isExchange === false) {
             setIsBalanceLoading(true)
 
-            const filteredBalances = balances?.some(b => b?.network === from?.internal_name) ? balances?.filter(b => b?.network !== from.internal_name) : balances || []
+            const walletBalances = balances[wallet.address]
+            const filteredBalances = walletBalances?.some(b => b?.network === from?.internal_name) ? walletBalances?.filter(b => b?.network !== from.internal_name) : walletBalances || []
 
             const provider = getBalanceProvider(from)
-            const ercAndNativeBalances = await provider?.getBalance(from, evmAddress) || []
+            const ercAndNativeBalances = await provider?.getBalance(from, wallet?.address) || []
 
-            setAllBalances((data) => ({ ...data, [evmAddress]: filteredBalances?.concat(ercAndNativeBalances) }))
+            setAllBalances((data) => ({ ...data, [wallet?.address]: filteredBalances?.concat(ercAndNativeBalances) }))
             setIsBalanceLoading(false)
         }
     }
