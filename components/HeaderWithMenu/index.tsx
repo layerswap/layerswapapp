@@ -2,7 +2,7 @@ import { useIntercom } from "react-use-intercom"
 import { useAuthState } from "../../context/authContext"
 import IconButton from "../buttons/iconButton"
 import GoHomeButton from "../utils/GoHome"
-import { ArrowLeft, ArrowRight, BellIcon, ChevronRight, ScrollText } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BellIcon, ChevronRight, FileStackIcon, LayersIcon, ScrollText } from 'lucide-react'
 import ChatIcon from "../icons/ChatIcon"
 import dynamic from "next/dynamic"
 import LayerswapMenu from "../LayerswapMenu"
@@ -113,7 +113,7 @@ const PendingSwapsPopover = () => {
                >
                   <IconButton icon={
                      <div className="relative">
-                        <BellIcon strokeWidth="2" />
+                        <ScrollText strokeWidth="2" />
                         <div className="text-xs text-[#2F4858] font-bold text-center absolute -top-3 -right-3 bg-[#facc15] rounded-full h-4 w-4">
                            {pendingSwapsCount}
                         </div>
