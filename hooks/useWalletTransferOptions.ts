@@ -1,6 +1,5 @@
 import { useSettingsState } from "../context/settings"
 import { useSwapDataState } from "../context/swap"
-import { Layer } from "../Models/Layer"
 import { NetworkType } from "../Models/CryptoNetwork"
 import { useBalancesState } from "../context/balances"
 import useWallet from "./useWallet"
