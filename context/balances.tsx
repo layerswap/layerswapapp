@@ -115,21 +115,22 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
     }
 
     async function getGas(from: Layer & { isExchange: false }, currency: Currency, userDestinationAddress: string) {
+
         if (!from || from?.isExchange) {
+
             return
         }
-        const chainId = Number(from?.chain_id)
+        const chainId = from?.chain_id
         const nativeToken = from?.assets
             .find(a =>
                 a.asset ===
                 (from as { native_currency: string }).native_currency)
         const network = from.assets?.[0].network
 
-        if (!nativeToken || !chainId || !network)
+        if (!chainId || !network)
             return
 
         const destination_address = from?.assets?.find(c => c.asset.toLowerCase() === currency?.asset?.toLowerCase())?.network?.managed_accounts?.[0]?.address as `0x${string}`
-
         const gas = allGases[from.internal_name]?.find(g => g?.token === currency?.asset)
         const isGasOutDated = !gas || new Date().getTime() - (new Date(gas.request_time).getTime() || 0) > 10000
 
@@ -143,7 +144,6 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
             && destination_address) {
             setIsGasLoading(true)
             try {
-
                 const provider = getBalanceProvider(from)
                 const gas = await provider?.getGas(from, wallet?.address, currency, userDestinationAddress, wallet) || []
 
@@ -151,7 +151,6 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
                     const filteredGases = allGases[from.internal_name]?.some(b => b?.token === currency?.asset) ? allGases[from.internal_name].filter(g => g.token !== currency.asset) : allGases[from.internal_name] || []
                     setAllGases((data) => ({ ...data, [from.internal_name]: filteredGases.concat(gas) }))
                 }
-
             }
             catch (e) { console.log(e) }
             finally { setIsGasLoading(false) }
