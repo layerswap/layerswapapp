@@ -3,6 +3,7 @@ import { Layer } from "../Models/Layer"
 import useEVMBalance from "../lib/balances/evm/useEVMBalance"
 import useOptimismBalance from "../lib/balances/optimism/useOptimismBalance"
 import useStarknetBalance from "../lib/balances/starknet/useStarknetBalance"
+import useZkSyncBalance from "../lib/balances/zksync/useZkSyncBalance"
 
 export type BalanceProvider = {
     getBalance: (layer: Layer, address: string) => Promise<Balance[] | undefined> | undefined | void,
@@ -37,7 +38,8 @@ export default function useBalanceProvider() {
     const BalanceProviders: BalanceProvider[] = [
         useEVMBalance(),
         useOptimismBalance(),
-        useStarknetBalance()
+        useStarknetBalance(),
+        useZkSyncBalance()
     ]
 
     const getBalanceProvider = (network: Layer) => {
