@@ -115,7 +115,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
     }
 
     async function getGas(from: Layer & { isExchange: false }, currency: Currency, userDestinationAddress: string) {
-        if (!from || !evmAddress || from?.isExchange) {
+        if (!from || from?.isExchange) {
             return
         }
         const chainId = Number(from?.chain_id)
@@ -133,15 +133,19 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
         const gas = allGases[from.internal_name]?.find(g => g?.token === currency?.asset)
         const isGasOutDated = !gas || new Date().getTime() - (new Date(gas.request_time).getTime() || 0) > 10000
 
+        const provider = getAutofillProvider(from)
+        const wallet = provider?.getConnectedWallet()
+
         if (chainId
             && isGasOutDated
             && currency
-            && destination_address && from?.type === NetworkType.EVM) {
+            && wallet?.address
+            && destination_address) {
             setIsGasLoading(true)
             try {
 
                 const provider = getBalanceProvider(from)
-                const gas = await provider?.getGas(from, evmAddress, currency, userDestinationAddress) || []
+                const gas = await provider?.getGas(from, wallet?.address, currency, userDestinationAddress, wallet) || []
 
                 if (gas) {
                     const filteredGases = allGases[from.internal_name]?.some(b => b?.token === currency?.asset) ? allGases[from.internal_name].filter(g => g.token !== currency.asset) : allGases[from.internal_name] || []

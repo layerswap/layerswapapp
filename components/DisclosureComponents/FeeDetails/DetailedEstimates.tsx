@@ -43,8 +43,7 @@ const DetailedEstimates: FC<EstimatesProps> = ({
         {
             source
             && source?.isExchange === false
-            && selected_currency
-            && source?.type === NetworkType.EVM &&
+            && selected_currency &&
             <NetworkGas network={source} currencies={currencies} selected_currency={selected_currency} />
         }
         <EstimatedArrival currency={selected_currency} destination={destination} />
@@ -84,8 +83,7 @@ const NetworkGas: FC<NetworkGasProps> = ({ selected_currency, network, currencie
 
     const source_native_currnecy = currencies.find(a => a.asset === network.native_currency)
 
-    const estimatedGas = (network?.type === NetworkType.EVM
-        && networkGas
+    const estimatedGas = (networkGas
         && source_native_currnecy) ?
         truncateDecimals(networkGas, source_native_currnecy?.precision) : null
 
