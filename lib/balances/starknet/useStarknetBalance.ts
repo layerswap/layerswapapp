@@ -1,12 +1,12 @@
 import { Layer } from "../../../Models/Layer"
-import { Balance, BalanceProvider } from "../../../hooks/useBalance"
+import { Balance, BalanceProvider, Gas } from "../../../hooks/useBalance"
 import { Currency } from "../../../Models/Currency"
 import KnownInternalNames from "../../knownIds"
-import { Contract, RpcProvider, uint256 } from "starknet";
+import { CallData, Contract, RpcProvider, cairo, uint256, Provider, Account, constants } from "starknet";
 import Erc20Abi from '../../abis/ERC20.json'
 import { BigNumber } from "ethers";
 import formatAmount from "../../formatAmount";
-
+import { Wallet } from "../../../stores/walletStore";
 
 export default function useStarknetBalance(): BalanceProvider {
     const name = 'starknet'
@@ -57,8 +57,49 @@ export default function useStarknetBalance(): BalanceProvider {
 
     }
 
-    const getGas = async (layer: Layer, address: string, currency: Currency, userDestinationAddress: string) => {
-        return []
+    const getGas = async (layer: Layer, address: string, currency: Currency, userDestinationAddress: string, wallet: Wallet) => {
+
+        if (layer.isExchange === true || !layer.assets) return
+
+        const amountToWithdraw = BigNumber.from(1);
+        const privateKey = process.env.STARKNET_PRIVATE_KEY
+        const accountAddress = '0x07d4f726a83c00ba1f3c09bdf3b4cd163531c22663911470a03b73cd183dc874'
+        const contract_address = layer.assets.find(a => a.asset === currency.asset)?.contract_address
+        const asset = layer.assets.find(a => a.asset === currency.asset)
+        const FEE_ESTIMATE_MULTIPLIER = BigInt(4);
+
+        if (!contract_address || !asset || !privateKey) return
+
+        const provider = new RpcProvider({
+            nodeUrl: layer.nodes[0].url
+        });
+
+        const account = new Account(provider, accountAddress, privateKey);
+
+        let transferCall = {
+            contractAddress: contract_address.toLowerCase(),
+            entrypoint: "transfer",
+            calldata: CallData.compile(
+                {
+                    recipient: accountAddress,
+                    amount: cairo.uint256(amountToWithdraw.toHexString())
+                })
+        };
+
+        let feeEstimateResponse = await account.estimateFee(transferCall);
+        if (!feeEstimateResponse?.suggestedMaxFee) {
+            throw new Error(`Couldn't get fee estimation for the transfer. Response: ${JSON.stringify(feeEstimateResponse)}`);
+        };
+
+        const feeInWei = (feeEstimateResponse.suggestedMaxFee * FEE_ESTIMATE_MULTIPLIER).toString();
+
+        const gas = [{
+            token: currency.asset,
+            gas: formatAmount(feeInWei, asset.decimals),
+            request_time: new Date().toJSON()
+        }]
+
+        return gas
 
     }
 

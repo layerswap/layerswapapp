@@ -4,10 +4,11 @@ import useEVMBalance from "../lib/balances/evm/useEVMBalance"
 import useOptimismBalance from "../lib/balances/optimism/useOptimismBalance"
 import useStarknetBalance from "../lib/balances/starknet/useStarknetBalance"
 import useZkSyncBalance from "../lib/balances/zksync/useZkSyncBalance"
+import { Wallet } from "../stores/walletStore"
 
 export type BalanceProvider = {
     getBalance: (layer: Layer, address: string) => Promise<Balance[] | undefined> | undefined | void,
-    getGas: (layer: Layer, address: string, currency: Currency, userDestinationAddress: string) => Promise<Gas[] | undefined> | undefined | void,
+    getGas: (layer: Layer, address: string, currency: Currency, userDestinationAddress: string, wallet?: Wallet) => Promise<Gas[] | undefined> | undefined | void,
     supportedNetworks: string[],
     name: string,
 }
