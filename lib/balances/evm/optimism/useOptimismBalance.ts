@@ -1,13 +1,13 @@
 import { createPublicClient, http } from "viem"
-import { Layer } from "../../../Models/Layer"
-import { Balance, BalanceProvider, Gas } from "../../../hooks/useBalance"
-import resolveChain from "../../resolveChain"
-import { Currency } from "../../../Models/Currency"
-import { useSettingsState } from "../../../context/settings"
-import { NetworkType } from "../../../Models/CryptoNetwork"
-import NetworkSettings, { GasCalculation } from "../../NetworkSettings"
-import { getErc20Balances, getNativeBalance, resolveERC20Balances, resolveNativeBalance } from "../evm/getBalance"
-import { resolveGas } from "./getGas"
+import { Layer } from "../../../../Models/Layer"
+import { Balance, BalanceProvider, Gas } from "../../../../hooks/useBalance"
+import resolveChain from "../../../resolveChain"
+import { Currency } from "../../../../Models/Currency"
+import { useSettingsState } from "../../../../context/settings"
+import { NetworkType } from "../../../../Models/CryptoNetwork"
+import NetworkSettings, { GasCalculation } from "../../../NetworkSettings"
+import { getErc20Balances, getNativeBalance, resolveERC20Balances, resolveNativeBalance } from "../getBalance"
+import getOptimismGas from "./getGas"
 
 export default function useOptimismBalance(): BalanceProvider {
     const name = 'optimism'
@@ -57,7 +57,7 @@ export default function useOptimismBalance(): BalanceProvider {
 
     }
 
-    const getGas = async (layer: Layer, address: string, currency: Currency, userDestinationAddress: string) => {
+    const getGas = async (layer: Layer, address: `0x${string}`, currency: Currency, userDestinationAddress: string) => {
 
         if (!layer || !address || layer?.isExchange) {
             return
@@ -81,18 +81,19 @@ export default function useOptimismBalance(): BalanceProvider {
                 transport: http(),
             })
 
-            const gas = await resolveGas({
+           const gasProvider = new getOptimismGas(
                 publicClient,
                 chainId,
                 contract_address,
-                account: address as `0x${string}`,
-                from: layer,
+                address,
+                layer,
                 currency,
-                destination: destination_address,
-                //TODO fix, this does not consider argent wallet
-                isSweeplessTx: address !== userDestinationAddress,
-                nativeToken: nativeToken
-            })
+                destination_address,
+                nativeToken,
+                address !== userDestinationAddress,
+            )
+
+            const gas = await gasProvider.resolveGas()
 
             let gases: Gas[] = []
 

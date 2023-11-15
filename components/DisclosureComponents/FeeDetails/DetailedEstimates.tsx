@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { CryptoNetwork, NetworkType } from "../../../Models/CryptoNetwork";
+import { CryptoNetwork } from "../../../Models/CryptoNetwork";
 import { Currency } from "../../../Models/Currency";
 import { GetExchangeFee } from "../../../lib/fees";
 import { Layer } from "../../../Models/Layer";

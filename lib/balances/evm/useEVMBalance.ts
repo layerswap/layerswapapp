@@ -7,7 +7,7 @@ import { useSettingsState } from "../../../context/settings"
 import { NetworkType } from "../../../Models/CryptoNetwork"
 import NetworkSettings, { GasCalculation } from "../../NetworkSettings"
 import { getErc20Balances, getNativeBalance, resolveERC20Balances, resolveNativeBalance } from "./getBalance"
-import { resolveGas } from "./getGas"
+import getEthereumGas from "./ethereum/getGas"
 
 export default function useEVMBalance(): BalanceProvider {
     const name = 'eth'
@@ -57,7 +57,7 @@ export default function useEVMBalance(): BalanceProvider {
 
     }
 
-    const getGas = async (layer: Layer, address: string, currency: Currency, userDestinationAddress: string) => {
+    const getGas = async (layer: Layer, address: `0x${string}`, currency: Currency, userDestinationAddress: string) => {
 
         if (!layer || !address || layer?.isExchange) {
             return
@@ -81,20 +81,21 @@ export default function useEVMBalance(): BalanceProvider {
                 transport: http(),
             })
 
-            const gas = await resolveGas({
+            let gases: Gas[] = []
+
+            const gasProvider = new getEthereumGas(
                 publicClient,
                 chainId,
                 contract_address,
-                account: address as `0x${string}`,
-                from: layer,
+                address,
+                layer,
                 currency,
-                destination: destination_address,
-                //TODO fix, this does not consider argent wallet
-                isSweeplessTx: address !== userDestinationAddress,
-                nativeToken: nativeToken
-            })
+                destination_address,
+                nativeToken,
+                address !== userDestinationAddress,
+            )
 
-            let gases: Gas[] = []
+            const gas = await gasProvider.resolveGas()
 
             return gases.concat(gas!)
 

@@ -121,10 +121,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
             return
         }
         const chainId = from?.chain_id
-        const nativeToken = from?.assets
-            .find(a =>
-                a.asset ===
-                (from as { native_currency: string }).native_currency)
+        const nativeToken = from?.assets.find(a => a.asset === from.native_currency)
         const network = from.assets?.[0].network
 
         if (!chainId || !network)

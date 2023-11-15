@@ -1,7 +1,7 @@
 import { Currency } from "../Models/Currency"
 import { Layer } from "../Models/Layer"
 import useEVMBalance from "../lib/balances/evm/useEVMBalance"
-import useOptimismBalance from "../lib/balances/optimism/useOptimismBalance"
+import useOptimismBalance from "../lib/balances/evm/optimism/useOptimismBalance"
 import useStarknetBalance from "../lib/balances/starknet/useStarknetBalance"
 import useZkSyncBalance from "../lib/balances/zksync/useZkSyncBalance"
 import { Wallet } from "../stores/walletStore"
