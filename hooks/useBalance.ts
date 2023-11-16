@@ -20,6 +20,7 @@ export default function useBalanceProvider() {
         useEVMBalance(),
         useOptimismBalance(),
         useStarknetBalance(),
+        useLoopringBalance(),
         useZkSyncBalance()
     ]
 

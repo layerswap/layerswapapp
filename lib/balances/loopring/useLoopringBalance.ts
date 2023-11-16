@@ -1,9 +1,8 @@
 import { Layer } from "../../../Models/Layer";
-import { Balance, BalanceProvider, Gas } from "../../../hooks/useBalance";
+import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../hooks/useBalance";
 import { Currency } from "../../../Models/Currency";
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
-import { createPublicClient, http } from 'viem'
 import { LoopringAPI } from "../../loopring/LoopringAPI";
 
 type PendingBalances = {
@@ -30,7 +29,7 @@ export default function useLoopringBalance(): BalanceProvider {
         KnownInternalNames.Networks.LoopringGoerli
     ]
 
-    const getBalance = async (layer: Layer, address: string) => {
+    const getBalance = async ({layer, address}: BalanceProps) => {
 
         let balances: Balance[] = [];
 
@@ -66,7 +65,7 @@ export default function useLoopringBalance(): BalanceProvider {
         return balances
     }
 
-    const getGas = async (layer: Layer, address: string, currency: Currency, userDestinationAddress: string) => {
+    const getGas = async ({layer, currency}: GasProps) => {
 
         let gas: Gas[] = [];
         if (layer.isExchange === true || !layer.assets) return
@@ -74,7 +73,7 @@ export default function useLoopringBalance(): BalanceProvider {
         try {
             const result = await LoopringAPI.exchangeAPI.getGasPrice();
             const currencyDec = layer?.assets?.find(c => c?.asset == currency.asset)?.decimals;
-            const formatedGas = formatAmount(result.gasPrice, Number(currencyDec))
+            const formatedGas = formatAmount(result.gasPrice, Number(currencyDec));
             
             gas = [{
                 token: currency.asset,
