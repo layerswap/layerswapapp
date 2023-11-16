@@ -1,12 +1,6 @@
-import React, { FC, useEffect, useState } from 'react'
-import { useAccount } from 'wagmi';
+import React, { FC, useState } from 'react'
 import { Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
-import { createPublicClient, http } from 'viem';
-import resolveChain from '../lib/resolveChain';
-import { NetworkType } from '../Models/CryptoNetwork';
-import { useSettingsState } from './settings';
-import { useSwapDataState } from './swap';
 import useBalanceProvider, { Balance, Gas } from '../hooks/useBalance';
 import useWallet from '../hooks/useWallet';
 
@@ -18,7 +12,6 @@ export type BalancesState = {
     gases: { [network: string]: Gas[] },
     isBalanceLoading: boolean,
     isGasLoading: boolean,
-    isContractWallet?: { ready: boolean, value?: boolean }
 }
 
 export type BalancesStateUpdate = {
@@ -35,59 +28,11 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
     const [allGases, setAllGases] = useState<{ [network: string]: Gas[] }>({})
     const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
     const [isGasLoading, setIsGasLoading] = useState<boolean>(false)
-    const [cachedAddress, setCachedAddress] = useState<string | undefined>()
     const { getBalanceProvider } = useBalanceProvider()
 
-    const { address: evmAddress } = useAccount()
     const { getAutofillProvider } = useWallet()
     const balances = allBalances
     const gases = allGases
-
-    const { swap } = useSwapDataState()
-    const { networks } = useSettingsState()
-
-    const [isContractWallet, setIsContractWallet] = useState<{ ready: boolean, value?: boolean }>({ ready: false })
-
-    useEffect(() => {
-        (async () => {
-            if (!swap) {
-                return
-            }
-            try {
-                const source_network = networks?.find(n => n.internal_name === swap?.source_network)
-                if (!source_network)
-                    return
-
-                if (evmAddress
-                    && source_network.type == NetworkType.EVM) {
-                    const chain = resolveChain(source_network)
-                    if (!chain) {
-                        return
-                    }
-                    const publicClient = createPublicClient({
-                        chain,
-                        transport: http()
-                    })
-
-                    const bytecode = await publicClient.getBytecode({
-                        address: evmAddress
-                    });
-
-                    const isContractWallet = !!bytecode
-
-                    setIsContractWallet({ ready: true, value: isContractWallet })
-                }
-                else {
-                    setIsContractWallet({ ready: true, value: false })
-                }
-            }
-            catch (e) {
-                //TODO handle error
-                setIsContractWallet({ ready: true })
-            }
-            setCachedAddress(evmAddress)
-        })()
-    }, [swap?.source_network, swap?.destination_address, evmAddress])
 
     async function getBalance(from: Layer) {
         const provider = getAutofillProvider(from)
@@ -120,7 +65,6 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
     async function getGas(from: Layer, currency: Currency, userDestinationAddress: string) {
 
         if (!from || from?.isExchange) {
-
             return
         }
         const chainId = from?.chain_id
@@ -168,10 +112,6 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
             gases,
             isBalanceLoading,
             isGasLoading,
-            isContractWallet: {
-                ready: cachedAddress === evmAddress && isContractWallet.ready,
-                value: isContractWallet.value
-            }
         }}>
             <BalancesStateUpdateContext.Provider value={{
                 getBalance,

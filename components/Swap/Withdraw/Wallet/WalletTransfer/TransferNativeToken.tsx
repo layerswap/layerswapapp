@@ -40,10 +40,10 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
     const { address } = useAccount();
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { canDoSweepless, ready } = useWalletTransferOptions()
+    const { canDoSweepless, isContractWallet: isContract } = useWalletTransferOptions()
 
     const sendTransactionPrepare = usePrepareSendTransaction({
-        enabled: !!depositAddress && ready,
+        enabled: !!depositAddress && isContract?.ready,
         to: depositAddress,
         value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,

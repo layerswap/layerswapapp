@@ -37,10 +37,10 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     const [buttonClicked, setButtonClicked] = useState(false)
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { canDoSweepless, ready } = useWalletTransferOptions()
+    const { canDoSweepless, isContractWallet: isContract } = useWalletTransferOptions()
 
     const contractWritePrepare = usePrepareContractWrite({
-        enabled: !!depositAddress && ready,
+        enabled: !!depositAddress && isContract?.ready,
         address: tokenContractAddress,
         abi: erc20ABI,
         functionName: 'transfer',

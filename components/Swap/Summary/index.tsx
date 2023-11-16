@@ -20,7 +20,7 @@ const SwapSummary: FC = () => {
         destination_network_asset,
     } = swap || {}
 
-    const { canDoSweepless, ready } = useWalletTransferOptions()
+    const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
 
     const params = {
         source: selectedAssetNetwork?.network?.internal_name,
@@ -52,7 +52,7 @@ const SwapSummary: FC = () => {
     const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Wallet)
     const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
 
-    if (ready) {
+    if (isContractWallet?.ready) {
         if (withdrawType === WithdrawType.Wallet && canDoSweepless) {
             fee = walletTransferFee?.fee_amount;
             min_amount = walletTransferFee?.min_amount;
