@@ -13,7 +13,7 @@ import { encodeFunctionData, http, parseUnits, createWalletClient, publicActions
 import TransactionMessage from "./transactionMessage";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import { ButtonWrapper } from "./buttons";
-import { useSwapTransactionStore } from "../../../../store/zustandStore";
+import { useSwapTransactionStore } from "../../../../../stores/swapTransactionStore";
 import useWalletTransferOptions from "../../../../../hooks/useWalletTransferOptions";
 import { SendTransactionData } from "../../../../../lib/telegram";
 

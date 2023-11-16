@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { BaseL2Asset } from "../../../Models/Layer";
 import shortenAddress from "../../utils/ShortenAddress";
 import { isValidAddress } from "../../../lib/addressValidator";
-import { useSwapDepositHintClicked } from "../../store/zustandStore";
+import { useSwapDepositHintClicked } from "../../../stores/swapTransactionStore";
 
 const ManualTransfer: FC = () => {
     const { swap } = useSwapDataState()
