@@ -4,7 +4,7 @@ import formatAmount from "../../../formatAmount";
 import getEVMGas from "../gas";
 
 export default class getEthereumGas extends getEVMGas {
-    resolveGas = async (): Promise<Gas|undefined> => {
+    resolveGas = async (): Promise<Gas | undefined> => {
         const feeData = await this.resolveFeeData()
 
         const estimatedGasLimit = this.contract_address ?

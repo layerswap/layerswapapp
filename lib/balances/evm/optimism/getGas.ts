@@ -3,7 +3,7 @@ import { Gas } from "../../../../hooks/useBalance";
 import formatAmount from "../../../formatAmount";
 import getEVMGas from "../gas";
 import { erc20ABI } from "wagmi";
-import { getL1Fee } from "../../../optimism/estimateFees";
+import { getL1Fee } from "./estimateFees";
 
 export default class getOptimismGas extends getEVMGas {
     resolveGas = async (): Promise<Gas | undefined> => {

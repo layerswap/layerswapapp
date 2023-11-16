@@ -9,7 +9,7 @@ export default function useZkSyncBalance(): BalanceProvider {
         KnownInternalNames.Networks.ZksyncMainnet
     ]
 
-    const getBalance = async ({layer, address}: BalanceProps) => {
+    const getBalance = async ({ layer, address }: BalanceProps) => {
 
         let balances: Balance[] = []
 
@@ -23,7 +23,7 @@ export default function useZkSyncBalance(): BalanceProvider {
             const zkSyncBalances = Object.entries(result?.verified.balances).map(([token, amount]) => {
                 const currency = layer?.assets?.find(c => c?.asset == token);
                 return ({
-                    network: "ZKSYNC_MAINNET",
+                    network: layer.internal_name,
                     token,
                     amount: formatAmount(amount, Number(currency?.decimals)),
                     request_time: new Date().toJSON(),
@@ -43,7 +43,7 @@ export default function useZkSyncBalance(): BalanceProvider {
         return balances
     }
 
-    const getGas = async ({layer, currency, address}: GasProps) => {
+    const getGas = async ({ layer, currency, address }: GasProps) => {
 
         if (layer.isExchange === true || !layer.assets) return
 
