@@ -17,7 +17,9 @@ export default function useEVM(): WalletProvider {
         ...withdrawalSupportedNetworks,
         KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli,
-        KnownInternalNames.Networks.BrineMainnet
+        KnownInternalNames.Networks.BrineMainnet,
+        KnownInternalNames.Networks.LoopringGoerli,
+        KnownInternalNames.Networks.LoopringMainnet
     ]
     const name = 'evm'
     const account = useAccount()

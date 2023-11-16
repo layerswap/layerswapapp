@@ -16,6 +16,8 @@
     "@eth-optimism/contracts-ts": "^0.15.0",
     "@headlessui/react": "^1.7.3",
     "@imtbl/imx-sdk": "2.1.1",
+    "@loopring-web/loopring-sdk": "3.3.5",
+    "@loopring-web/web3-provider": "1.4.13",
     "@metamask/jazzicon": "^2.0.0",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-checkbox": "^1.0.4",
