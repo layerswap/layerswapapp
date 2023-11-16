@@ -1,6 +1,5 @@
-import { Layer } from "../../../Models/Layer";
 import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../hooks/useBalance";
-import { Currency } from "../../../Models/Currency";
+import * as lp from "@loopring-web/loopring-sdk";
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
 import { LoopringAPI } from "../../loopring/LoopringAPI";
@@ -65,15 +64,19 @@ export default function useLoopringBalance(): BalanceProvider {
         return balances
     }
 
-    const getGas = async ({layer, currency}: GasProps) => {
+    const getGas = async ({layer, currency, address}: GasProps) => {
 
         let gas: Gas[] = [];
         if (layer.isExchange === true || !layer.assets) return
 
         try {
-            const result = await LoopringAPI.exchangeAPI.getGasPrice();
+
+            const { accInfo } = await LoopringAPI.exchangeAPI.getAccount({
+                owner: address!,
+            });
+            const result = await LoopringAPI.userAPI.getOffchainFeeAmt({accountId: accInfo.accountId, requestType: lp.OffchainFeeReqType.TRANSFER},"");
             const currencyDec = layer?.assets?.find(c => c?.asset == currency.asset)?.decimals;
-            const formatedGas = formatAmount(result.gasPrice, Number(currencyDec));
+            const formatedGas = formatAmount(result.fees[currency.asset].fee, Number(currencyDec));
             
             gas = [{
                 token: currency.asset,
