@@ -37,7 +37,6 @@ export default abstract class getEVMGas {
         this.isSweeplessTx = isSweeplessTx
     }
 
-
     abstract resolveGas(): Promise<Gas | unknown> | undefined
 
     protected async resolveFeeData() {

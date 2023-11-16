@@ -1,12 +1,9 @@
-import { Layer } from "../../../Models/Layer"
-import { Balance, BalanceProvider, Gas } from "../../../hooks/useBalance"
-import { Currency } from "../../../Models/Currency"
+import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../hooks/useBalance"
 import KnownInternalNames from "../../knownIds"
-import { CallData, Contract, RpcProvider, cairo, uint256, Provider, Account, constants } from "starknet";
+import { CallData, Contract, RpcProvider, cairo, uint256, Account } from "starknet";
 import Erc20Abi from '../../abis/ERC20.json'
 import { BigNumber } from "ethers";
 import formatAmount from "../../formatAmount";
-import { Wallet } from "../../../stores/walletStore";
 
 export default function useStarknetBalance(): BalanceProvider {
     const name = 'starknet'
@@ -16,14 +13,14 @@ export default function useStarknetBalance(): BalanceProvider {
         KnownInternalNames.Networks.StarkNetGoerli
     ]
 
-    const getBalance = async (layer: Layer, address: string) => {
+    const getBalance = async ({ layer, address }: BalanceProps) => {
 
         let balances: Balance[] = []
 
         if (layer.isExchange === true || !layer.assets) return
 
         const provider = new RpcProvider({
-            nodeUrl: layer.assets[0].network?.nodes[0].url!,
+            nodeUrl: layer.nodes[0].url,
         });
 
         for (let i = 0; i < layer.assets.length; i++) {
@@ -57,7 +54,7 @@ export default function useStarknetBalance(): BalanceProvider {
 
     }
 
-    const getGas = async (layer: Layer, address: string, currency: Currency, userDestinationAddress: string, wallet: Wallet) => {
+    const getGas = async ({ layer, currency }: GasProps) => {
 
         if (layer.isExchange === true || !layer.assets) return
 
@@ -93,13 +90,13 @@ export default function useStarknetBalance(): BalanceProvider {
 
         const feeInWei = (feeEstimateResponse.suggestedMaxFee * FEE_ESTIMATE_MULTIPLIER).toString();
 
-        const gas = [{
+        const gas = {
             token: currency.asset,
             gas: formatAmount(feeInWei, asset.decimals),
             request_time: new Date().toJSON()
-        }]
+        }
 
-        return gas
+        return [gas]
 
     }
 

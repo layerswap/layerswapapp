@@ -107,7 +107,10 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
             const filteredBalances = walletBalances?.some(b => b?.network === from?.internal_name) ? walletBalances?.filter(b => b?.network !== from.internal_name) : walletBalances || []
 
             const provider = getBalanceProvider(from)
-            const ercAndNativeBalances = await provider?.getBalance(from, wallet?.address) || []
+            const ercAndNativeBalances = await provider?.getBalance({
+                layer: from,
+                address: wallet?.address
+            }) || []
 
             setAllBalances((data) => ({ ...data, [wallet?.address]: filteredBalances?.concat(ercAndNativeBalances) }))
             setIsBalanceLoading(false)
@@ -142,7 +145,13 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
             setIsGasLoading(true)
             try {
                 const provider = getBalanceProvider(from)
-                const gas = await provider?.getGas(from, wallet?.address, currency, userDestinationAddress, wallet) || []
+                const gas = await provider?.getGas({
+                    layer: from,
+                    address: wallet?.address as `0x${string}`,
+                    currency,
+                    userDestinationAddress,
+                    wallet
+                }) || []
 
                 if (gas) {
                     const filteredGases = allGases[from.internal_name]?.some(b => b?.token === currency?.asset) ? allGases[from.internal_name].filter(g => g.token !== currency.asset) : allGases[from.internal_name] || []

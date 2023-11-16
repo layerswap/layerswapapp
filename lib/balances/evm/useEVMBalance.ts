@@ -1,8 +1,6 @@
 import { createPublicClient, http } from "viem"
-import { Layer } from "../../../Models/Layer"
-import { Balance, BalanceProvider, Gas } from "../../../hooks/useBalance"
+import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../hooks/useBalance"
 import resolveChain from "../../resolveChain"
-import { Currency } from "../../../Models/Currency"
 import { useSettingsState } from "../../../context/settings"
 import { NetworkType } from "../../../Models/CryptoNetwork"
 import NetworkSettings, { GasCalculation } from "../../NetworkSettings"
@@ -15,7 +13,7 @@ export default function useEVMBalance(): BalanceProvider {
     const { layers } = useSettingsState()
     const supportedNetworks = layers.filter(l => l.isExchange === false && l.type === NetworkType.EVM && NetworkSettings.KnownSettings[l.internal_name]?.GasCalculationType !== GasCalculation.OptimismType).map(l => l.internal_name)
 
-    const getBalance = async (layer: Layer, address: string) => {
+    const getBalance = async ({ layer, address }: BalanceProps) => {
 
         try {
             if (layer.isExchange) throw new Error('Provided layer is not network')
@@ -57,7 +55,7 @@ export default function useEVMBalance(): BalanceProvider {
 
     }
 
-    const getGas = async (layer: Layer, address: `0x${string}`, currency: Currency, userDestinationAddress: string) => {
+    const getGas = async ({ layer, address, currency, userDestinationAddress }: GasProps) => {
 
         if (!layer || !address || layer?.isExchange) {
             return
@@ -81,8 +79,6 @@ export default function useEVMBalance(): BalanceProvider {
                 transport: http(),
             })
 
-            let gases: Gas[] = []
-
             const gasProvider = new getEthereumGas(
                 publicClient,
                 chainId,
@@ -97,7 +93,7 @@ export default function useEVMBalance(): BalanceProvider {
 
             const gas = await gasProvider.resolveGas()
 
-            return gases.concat(gas!)
+            return [gas!]
 
         }
         catch (e) {

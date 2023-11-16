@@ -1,6 +1,4 @@
-import { Layer } from "../../../Models/Layer"
-import { Balance, BalanceProvider } from "../../../hooks/useBalance"
-import { Currency } from "../../../Models/Currency"
+import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../hooks/useBalance"
 import KnownInternalNames from "../../knownIds"
 import formatAmount from "../../formatAmount";
 import { createPublicClient, http } from 'viem'
@@ -11,13 +9,13 @@ export default function useZkSyncBalance(): BalanceProvider {
         KnownInternalNames.Networks.ZksyncMainnet
     ]
 
-    const getBalance = async (layer: Layer, address: string) => {
+    const getBalance = async ({layer, address}: BalanceProps) => {
 
         let balances: Balance[] = []
 
         if (layer.isExchange === true || !layer.assets) return
         const provider = createPublicClient({
-            transport: http(`${layer.assets[0].network?.nodes[0].url!}jsrpc`)
+            transport: http(`${layer.nodes[0].url}jsrpc`)
         })
 
         try {
@@ -45,23 +43,24 @@ export default function useZkSyncBalance(): BalanceProvider {
         return balances
     }
 
-    const getGas = async (layer: Layer, address: string, currency: Currency, userDestinationAddress: string) => {
+    const getGas = async ({layer, currency, address}: GasProps) => {
 
         if (layer.isExchange === true || !layer.assets) return
 
         const provider = createPublicClient({
-            transport: http(`${layer.assets[0].network?.nodes[0].url!}jsrpc`)
+            transport: http(`${layer.nodes[0].url}jsrpc`)
         })
 
         const result: any = await provider.request({ method: 'get_tx_fee' as any, params: ["Transfer" as any, address as `0x${string}`, currency.asset as any] })
         const currencyDec = layer?.assets?.find(c => c?.asset == currency.asset)?.decimals;
-        const gas = formatAmount(result.totalFee, Number(currencyDec))
 
-        return [{
+        const gas = {
             token: currency.asset,
-            gas: gas,
+            gas: formatAmount(result.totalFee, Number(currencyDec)),
             request_time: new Date().toJSON()
-        }]
+        }
+
+        return [gas]
     }
 
     return {
