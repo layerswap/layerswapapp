@@ -85,7 +85,7 @@ export default function useLoopringBalance(): BalanceProvider {
         catch (e) {
             console.log(e)
         }
-debugger
+
         return gas
     }
 
