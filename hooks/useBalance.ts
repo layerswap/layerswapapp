@@ -1,6 +1,7 @@
 import { Currency } from "../Models/Currency"
 import { Layer } from "../Models/Layer"
 import useEVMBalance from "../lib/balances/evm/useEVMBalance"
+import useLoopringBalance from "../lib/balances/loopring/useLoopringBalance"
 import useOptimismBalance from "../lib/balances/optimism/useOptimismBalance"
 import useStarknetBalance from "../lib/balances/starknet/useStarknetBalance"
 import useZkSyncBalance from "../lib/balances/zksync/useZkSyncBalance"
@@ -40,7 +41,8 @@ export default function useBalanceProvider() {
         useEVMBalance(),
         useOptimismBalance(),
         useStarknetBalance(),
-        useZkSyncBalance()
+        useZkSyncBalance(),
+        useLoopringBalance()
     ]
 
     const getBalanceProvider = (network: Layer) => {
