@@ -1,13 +1,30 @@
-import { Layer } from "../../../Models/Layer"
-import { Balance, BalanceProvider } from "../../../hooks/useBalance"
-import { Currency } from "../../../Models/Currency"
-import KnownInternalNames from "../../knownIds"
+import { Layer } from "../../../Models/Layer";
+import { Balance, BalanceProvider, Gas } from "../../../hooks/useBalance";
+import { Currency } from "../../../Models/Currency";
+import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
 import { createPublicClient, http } from 'viem'
 import { LoopringAPI } from "../../loopring/LoopringAPI";
 
+type PendingBalances = {
+    withdraw: string;
+    deposit: string;
+}
+
+type RawData = {
+    accountId: number;
+    tokenId: number;
+    total: string;
+    locked: string;
+    pending: PendingBalances;
+}
+
+type Balances = {
+    raw_data: RawData[];
+}
+
 export default function useLoopringBalance(): BalanceProvider {
-    const name = 'loopring'
+    const name = 'loopring';
     const supportedNetworks = [
         KnownInternalNames.Networks.LoopringMainnet,
         KnownInternalNames.Networks.LoopringGoerli
@@ -15,7 +32,7 @@ export default function useLoopringBalance(): BalanceProvider {
 
     const getBalance = async (layer: Layer, address: string) => {
 
-        let balances: Balance[] = []
+        let balances: Balance[] = [];
 
         if (layer.isExchange === true || !layer.assets) return
         try {
@@ -24,10 +41,10 @@ export default function useLoopringBalance(): BalanceProvider {
             });
 
             const tokens = layer?.assets?.map(obj => obj.contract_address).join(',');
-            const result = await LoopringAPI.userAPI.getUserBalances({ accountId: accInfo.accountId, tokens: tokens }, "") as any
+            const result: Balances = await LoopringAPI.userAPI.getUserBalances({ accountId: accInfo.accountId, tokens: tokens }, "")
 
             const loopringBalances = layer?.assets.filter(a => a.status !== 'inactive').map(asset => {
-                const amount = result.raw_data.find(d => d.tokenId == asset.contract_address)?.total
+                const amount = result.raw_data.find(d => d.tokenId == Number(asset.contract_address))?.total;
                 return ({
                     network: layer.internal_name,
                     token: asset?.asset,
@@ -51,21 +68,25 @@ export default function useLoopringBalance(): BalanceProvider {
 
     const getGas = async (layer: Layer, address: string, currency: Currency, userDestinationAddress: string) => {
 
+        let gas: Gas[] = [];
         if (layer.isExchange === true || !layer.assets) return
 
-        const provider = createPublicClient({
-            transport: http(`${layer.assets[0].network?.nodes[0].url!}jsrpc`)
-        })
-
-        const result: any = await provider.request({ method: 'get_tx_fee' as any, params: ["Transfer" as any, address as `0x${string}`, currency.asset as any] })
-        const currencyDec = layer?.assets?.find(c => c?.asset == currency.asset)?.decimals;
-        const gas = formatAmount(result.totalFee, Number(currencyDec))
-
-        return [{
-            token: currency.asset,
-            gas: gas,
-            request_time: new Date().toJSON()
-        }]
+        try {
+            const result = await LoopringAPI.exchangeAPI.getGasPrice();
+            const currencyDec = layer?.assets?.find(c => c?.asset == currency.asset)?.decimals;
+            const formatedGas = formatAmount(result.gasPrice, Number(currencyDec))
+            
+            gas = [{
+                token: currency.asset,
+                gas: formatedGas,
+                request_time: new Date().toJSON()
+            }]
+        }
+        catch (e) {
+            console.log(e)
+        }
+debugger
+        return gas
     }
 
     return {
