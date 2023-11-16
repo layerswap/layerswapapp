@@ -49,7 +49,7 @@ export default function useLoopringBalance(): BalanceProvider {
                     amount: amount ? formatAmount(amount, Number(asset?.decimals)) : 0,
                     request_time: new Date().toJSON(),
                     decimals: Number(asset?.decimals),
-                    isNativeCurrency: asset?.asset == "ETH" ? true : false
+                    isNativeCurrency: false
                 })
             });
 

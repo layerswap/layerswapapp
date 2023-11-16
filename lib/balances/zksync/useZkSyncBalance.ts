@@ -49,7 +49,7 @@ export default function useZkSyncBalance(): BalanceProvider {
                     amount: formatAmount(amount, Number(currency?.decimals)),
                     request_time: new Date().toJSON(),
                     decimals: Number(currency?.decimals),
-                    isNativeCurrency: token == "ETH" ? true : false
+                    isNativeCurrency: false
                 })
             });
 
