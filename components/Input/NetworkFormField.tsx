@@ -106,7 +106,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 />
             </div>
             {direction == "from" && from && to &&
-                <div className="col-span-2 rounded-lg h-12 w-full py-2.5 ml-2 bg-secondary-600 border border-secondary-500">
+                <div className="col-span-2 flex justify-center rounded-lg h-12 w-full py-2.5 ml-2 bg-secondary-600 border border-secondary-500">
                     <div className="inline-flex items-start flex-col">
                         <CurrencyFormField />
                     </div>

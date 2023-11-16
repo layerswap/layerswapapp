@@ -30,7 +30,7 @@ export default function PopoverSelectWrapper<T>({
     return (
         disabled ?
             <div className="relative">
-                <div className='w-full py-0 px-3 md:px-5  border-transparent bg-transparent font-semibold rounded-md'>
+                <div className='w-full py-0 px-3 md:px-5 border-transparent bg-transparent font-semibold rounded-md'>
                     <span className="flex items-center">
                         <div className="flex-shrink-0 h-6 w-6 relative">
                             {
@@ -55,7 +55,7 @@ export default function PopoverSelectWrapper<T>({
                     {
                         value &&
                         <div className="relative">
-                            <button type='button' className='w-full py-0 pl-3 md:pl-5 pr-10 border-transparent bg-transparent font-semibold rounded-md'>
+                            <button type='button' className='w-full flex border-transparent bg-transparent font-semibold rounded-md'>
                                 <span className="flex items-center">
                                     <div className="flex-shrink-0 h-6 w-6 relative">
                                         {
@@ -71,10 +71,9 @@ export default function PopoverSelectWrapper<T>({
 
                                     </div>
                                     <span className="ml-3 block truncate text-primary-text">{value.name}</span>
-                                </span>
-
-                                <span className="ml-3 absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-primary-text">
-                                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                                    <span className="ml-3 pointer-events-none text-primary-text">
+                                        <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                                    </span>
                                 </span>
                             </button>
                         </div>
