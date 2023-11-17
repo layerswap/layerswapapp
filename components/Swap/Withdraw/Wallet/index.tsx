@@ -82,7 +82,6 @@ const WalletTransfer: FC = () => {
                 depositAddress={depositAddress}
                 userDestinationAddress={swap.destination_address}
                 amount={requested_amount}
-                isContractWallet={!!isContractWallet?.isContract}
             />}
         </Wrapper>
 
