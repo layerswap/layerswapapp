@@ -193,7 +193,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
             isBalanceLoading,
             isGasLoading,
             isContractWallet: {
-                ready: true,
+                ready: cachedAddress === evmAddress && isContractWallet.ready,
                 value: isContractWallet.value
             }
         }}>

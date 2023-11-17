@@ -7,7 +7,7 @@ export default function StatusIcon({ swap, short }: { swap: SwapItem, short?: bo
     case SwapStatus.Failed:
       return (
         <>
-          <div className="inline-flex items-center">
+          <div className="inline-flex items-center space-x-1">
             <RedIcon />
             {
               !short && <p>Failed</p>
@@ -17,7 +17,7 @@ export default function StatusIcon({ swap, short }: { swap: SwapItem, short?: bo
     case SwapStatus.Completed:
       return (
         <>
-          <div className="inline-flex items-center">
+          <div className="inline-flex items-center space-x-1">
             <GreenIcon />
             {!short && <p>Completed</p>}
           </div>
@@ -26,7 +26,7 @@ export default function StatusIcon({ swap, short }: { swap: SwapItem, short?: bo
     case SwapStatus.Cancelled:
       return (
         <>
-          <div className="inline-flex items-center">
+          <div className="inline-flex items-center space-x-1">
             <GreyIcon />
             {!short && <p>Cancelled</p>}
           </div>
@@ -34,7 +34,7 @@ export default function StatusIcon({ swap, short }: { swap: SwapItem, short?: bo
     case SwapStatus.Expired:
       return (
         <>
-          <div className="inline-flex items-center">
+          <div className="inline-flex items-center space-x-1">
             <GreyIcon />
             {!short && <p>Expired</p>}
           </div>
@@ -44,7 +44,7 @@ export default function StatusIcon({ swap, short }: { swap: SwapItem, short?: bo
       const txForSwap = data.state.swapTransactions?.[swap.id];
       if (txForSwap || swap.transactions.find(t => t.type === TransactionType.Input)) {
         return <>
-          <div className="inline-flex items-center">
+          <div className="inline-flex items-center space-x-1">
             <PurpleIcon />
             {!short && <p>Processing</p>}
           </div>
@@ -52,22 +52,22 @@ export default function StatusIcon({ swap, short }: { swap: SwapItem, short?: bo
       }
       else {
         return <>
-          <div className="inline-flex items-center">
+          <div className="inline-flex items-center space-x-1">
             <YellowIcon />
             {!short && <p>Pending</p>}
-          </div>
+          </div >
         </>
       }
     case SwapStatus.LsTransferPending:
       return <>
-        <div className="inline-flex items-center">
+        <div className="inline-flex items-center space-x-1">
           <PurpleIcon />
           {!short && <p>Processing</p>}
         </div>
       </>
     case SwapStatus.UserTransferDelayed:
       return <>
-        <div className="inline-flex items-center">
+        <div className="inline-flex items-center space-x-1">
           <YellowIcon />
           {!short && <p>Delayed</p>}
         </div>
@@ -75,7 +75,7 @@ export default function StatusIcon({ swap, short }: { swap: SwapItem, short?: bo
     case SwapStatus.Created:
       return (
         <>
-          <div className="inline-flex items-center">
+          <div className="inline-flex items-center space-x-1">
             <YellowIcon />
             {!short && <p>Created</p>}
           </div>
@@ -88,40 +88,50 @@ export default function StatusIcon({ swap, short }: { swap: SwapItem, short?: bo
 
 export const RedIcon = () => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-2 h-2" viewBox="0 0 60 60" fill="none">
-      <circle cx="30" cy="30" r="30" fill="#E43636" />
-    </svg>
+    <div className="bg-[#E43636]/20 flex-none rounded-full p-1">
+      <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-2 h-2" viewBox="0 0 60 60" fill="none">
+        <circle cx="30" cy="30" r="30" fill="#E43636" />
+      </svg>
+    </div>
   )
 }
 
 export const GreenIcon = () => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-2 h-2" viewBox="0 0 60 60" fill="none">
-      <circle cx="30" cy="30" r="30" fill="#55B585" />
-    </svg>
+    <div className="bg-[#55B585]/20 flex-none rounded-full p-1">
+      <svg xmlns="http://www.w3.org/2000/svg" className="w-2 h-2" viewBox="0 0 60 60" fill="none">
+        <circle cx="30" cy="30" r="30" fill="#55B585" />
+      </svg>
+    </div>
   )
 }
 
 export const YellowIcon = () => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-2 h-2 lg:h-2 lg:w-2" viewBox="0 0 60 60" fill="none">
-      <circle cx="30" cy="30" r="30" fill="#facc15" />
-    </svg>
+    <div className="bg-[#facc15]/20 flex-none rounded-full p-1">
+      <svg xmlns="http://www.w3.org/2000/svg" className="w-2 h-2 lg:h-2 lg:w-2" viewBox="0 0 60 60" fill="none">
+        <circle cx="30" cy="30" r="30" fill="#facc15" />
+      </svg>
+    </div >
   )
 }
 
 export const GreyIcon = () => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-2 h-2 lg:h-2 lg:w-2" viewBox="0 0 60 60" fill="none">
-      <circle cx="30" cy="30" r="30" fill="#808080" />
-    </svg>
+    <div className="bg-[#808080]/20 flex-none rounded-full p-1">
+      <svg xmlns="http://www.w3.org/2000/svg" className="w-2 h-2 lg:h-2 lg:w-2" viewBox="0 0 60 60" fill="none">
+        <circle cx="30" cy="30" r="30" fill="#808080" />
+      </svg>
+    </div>
   )
 }
 
 export const PurpleIcon = () => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" className="mr-1.5 w-2 h-2 lg:h-2 lg:w-2" viewBox="0 0 60 60" fill="none">
-      <circle cx="30" cy="30" r="30" fill="#A020F0" />
-    </svg>
+    <div className="bg-[#A020F0]/20 flex-none rounded-full p-1">
+      <svg xmlns="http://www.w3.org/2000/svg" className="w-2 h-2 lg:h-2 lg:w-2" viewBox="0 0 60 60" fill="none">
+        <circle cx="30" cy="30" r="30" fill="#A020F0" />
+      </svg>
+    </div>
   )
 }

@@ -1,4 +1,4 @@
-import { BookOpen, Gift, MenuIcon, Map, Home, LogIn, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus, UserCircle2 } from "lucide-react";
+import { BookOpen, Gift, MenuIcon, Map, Home, LogIn, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus, UserCircle2, ChevronRight } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
@@ -20,6 +20,8 @@ import { shortenEmail } from '../utils/ShortenAddress';
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import Menu from "./Menu";
 import dynamic from "next/dynamic";
+import SwapsListModal from "../SwapHistory/SwapsList";
+import { SwapStatusInNumbers } from "../../lib/layerSwapApiClient";
 
 const WalletsMenu = dynamic(() => import("../ConnectedWallets").then((comp) => comp.WalletsMenu), {
     loading: () => <></>
@@ -129,9 +131,15 @@ export default function LayerswapMenu() {
                                     <>
                                         {
                                             router.pathname != '/transactions' &&
-                                            <Menu.Item pathname='/transactions' icon={<ScrollText className="h-5 w-5" />} >
-                                                Transfers
-                                            </Menu.Item>
+                                            <SwapsListModal title="Transfers" statuses={SwapStatusInNumbers.SwapsWithoutCancelledAndExpired} >
+                                                <div className="gap-4 flex relative cursor-pointer hover:bg-secondary-600 select-none w-full items-center px-4 py-3 outline-none text-primary-text">
+                                                    <div>
+                                                        <ScrollText className="h-5 w-5" />
+                                                    </div>
+                                                    <p className="text-primary-text">Transfers</p>
+                                                    <ChevronRight className="h-4 w-4 absolute right-3" />
+                                                </div>
+                                            </SwapsListModal>
                                         }
                                     </>
                                     <>
