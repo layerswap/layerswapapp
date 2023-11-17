@@ -27,6 +27,7 @@ type Props = {
     statuses: string | number;
     children: JSX.Element | JSX.Element[];
     title: string;
+    loadExplorerSwaps: boolean;
 }
 const getSwapsKey = (statuses: string | number) => (index) =>
     `/swaps?page=${index + 1}&status=${statuses}&version=${LayerSwapApiClient.apiVersion}`
@@ -37,17 +38,20 @@ const getExplorerKey = (addresses: string[]) => (index) => {
     return `/explorer/${addresses[index]}?version=${LayerSwapApiClient.apiVersion}`
 }
 
-const SwapsListModal: FC<Props> = ({ children, statuses, title }) => {
+const SwapsListModal: FC<Props> = ({ children, statuses, title, loadExplorerSwaps }) => {
     const [openTopModal, setOpenTopModal] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
-
+    const { wallets } = useWallet()
+    const addresses = wallets.map(w => w.address)
     const { mutate } = useSWRConfig()
 
     const getKey = useMemo(() => getSwapsKey(statuses), [statuses])
+    const getFromExplorerKey = useMemo(() => getExplorerKey(addresses), [addresses])
 
     const handleRefresh = useCallback(async () => {
         setRefreshing(true)
         await mutate(unstable_serialize(getKey))
+        await mutate(unstable_serialize(getFromExplorerKey))
         setRefreshing(false)
     }, [getKey])
 
@@ -71,7 +75,7 @@ const SwapsListModal: FC<Props> = ({ children, statuses, title }) => {
                             </IconButton>
                         </div>
                     }>
-                    <List statuses={statuses} refreshing={refreshing} />
+                    <List loadExplorerSwaps={loadExplorerSwaps} statuses={statuses} refreshing={refreshing} />
                 </Modal>
             </>
         }
@@ -80,7 +84,8 @@ const SwapsListModal: FC<Props> = ({ children, statuses, title }) => {
 
 type ListProps = {
     statuses: string | number;
-    refreshing: boolean
+    refreshing: boolean;
+    loadExplorerSwaps: boolean;
 }
 const container = {
     highlight: {
@@ -113,7 +118,7 @@ const item = {
     }
 }
 
-const List: FC<ListProps> = ({ statuses, refreshing }) => {
+const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
     const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
     const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
     const settings = useSettingsState()
@@ -127,12 +132,8 @@ const List: FC<ListProps> = ({ statuses, refreshing }) => {
         setOpenSwapDetailsModal(true)
     }
 
-    useEffect(() => {
-
-    }, [addresses])
-
     const getKey = useMemo(() => getSwapsKey(statuses), [statuses])
-    const getFromExplorerKey = useMemo(() => getExplorerKey(addresses), [addresses])
+    const getFromExplorerKey = getExplorerKey(addresses)
 
     const apiClient = new LayerSwapApiClient()
 
@@ -144,7 +145,7 @@ const List: FC<ListProps> = ({ statuses, refreshing }) => {
         )
 
     const { data: explorerPages, error: explorerError, isLoading: explorerSwapsLoading } = useSWRInfinite<ApiResponse<SwapItem[]>>(
-        getFromExplorerKey,
+        loadExplorerSwaps ? getFromExplorerKey : (index: number) => null,
         apiClient.fetcher,
         { revalidateAll: true, dedupingInterval: 60000, parallel: true, initialSize: addresses?.length }
     )
@@ -174,6 +175,7 @@ const List: FC<ListProps> = ({ statuses, refreshing }) => {
     const userSwaps = userSwapPages?.map(p => p.data).flat(1) || []
     const explorerSwaps = explorerPages?.map(p => p.data).flat(1) || []
 
+    //TODO filter explorer swaps by status
     explorerSwaps?.forEach(es => {
         if (!es || userSwaps?.find(us => us?.created_date === es.created_date))
             return

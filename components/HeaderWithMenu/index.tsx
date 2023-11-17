@@ -79,6 +79,7 @@ import useWallet from "../../hooks/useWallet"
 import { Partner } from "../../Models/Partner"
 import shortenAddress, { shortenEmail } from "../utils/ShortenAddress"
 import KnownInternalNames from "../../lib/knownIds"
+import SwapsListModal from "../SwapHistory/SwapsList"
 
 const PendingSwapsPopover = () => {
    const [open, setOpen] = useState(false);
@@ -249,6 +250,7 @@ const PendingSwapsModal = () => {
    return <span className="text-secondary-text cursor-pointer relative">
       {
          <>
+
             {pendingSwapsCount > 0 && !openTopModal && <motion.div
                className="relative top-"
                initial={{ y: 20, opacity: 0 }}
@@ -256,94 +258,18 @@ const PendingSwapsModal = () => {
                exit={{ y: -20, opacity: 0 }}
                transition={{ duration: 0.4 }}
             >
-               <IconButton onClick={() => setOpenTopModal(true)} icon={
-                  <div className="relative">
-                     <ScrollText strokeWidth="2" />
-                     <div className="text-xs text-[#2F4858] font-bold text-center absolute -top-3 -right-3 bg-[#facc15] rounded-full h-4 w-4">
-                        {pendingSwapsCount}
-                     </div>
-                  </div>
-               }>
-               </IconButton>
-            </motion.div>}
-            <Modal height="80%" show={openTopModal} setShow={setOpenTopModal} header={<h2 className="font-normal leading-none tracking-tight">Pending swaps</h2>}>
-               <div className="text-sm py-5 space-y-4 font-medium focus:outline-none h-full">
-                  {
-                     data?.data?.map((swap, index) => {
-                        const { source_exchange: source_exchange_internal_name,
-                           destination_network: destination_network_internal_name,
-                           source_network: source_network_internal_name,
-                           destination_exchange: destination_exchange_internal_name,
-                           source_network_asset
-                        } = swap
-                        const source_internal_name = source_exchange_internal_name || source_network_internal_name
-                        const destination_internal_name = destination_exchange_internal_name || destination_network_internal_name
-
-                        const source = layers.find(l => l.internal_name === source_internal_name)
-                        const destination = layers.find(l => l.internal_name === destination_internal_name)
-                        const output_transaction = swap.transactions.find(t => t.type === TransactionType.Output)
-                        const currency = currencies?.find(c => c.asset === source_network_asset)
-                        let min_amount =
-                           CalculateMinAllowedAmount({
-                              from: source,
-                              to: destination,
-                              currency,
-                              refuel: swap.has_refuel
-                           }, networks, currencies);
-
-                        if (!swap || !source || !currency || !destination) {
-                           return <></>
-                        }
-                        const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
-                        const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
-                        const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
-
-                        const requested_amount = (swapInputTransaction?.amount ??
-                           (Number(min_amount) > Number(swap.requested_amount) ? min_amount : swap.requested_amount)) || undefined
-
-                        const receive_amount =
-                           swapOutputTransaction?.amount
-                           || CalculateReceiveAmount({
-                              from: source,
-                              to: destination,
-                              currency,
-                              amount: requested_amount?.toString(),
-                              refuel: swap.has_refuel
-                           }, networks, currencies)
-                        const destinationNetworkNativeAsset = currencies?.find(c => c.asset == networks.find(n => n.internal_name === destination?.internal_name)?.native_currency);
-                        const destinationNetwork = GetDefaultNetwork(destination, currency?.asset)
-                        const native_usd_price = Number(destinationNetworkNativeAsset?.usd_price)
-
-                        const refuel_amount_in_usd = Number(destinationNetwork?.refuel_amount_in_usd)
-
-                        const refuelAmountInNativeCurrency = swap?.has_refuel
-                           ? ((swapRefuelTransaction?.amount ??
-                              (refuel_amount_in_usd / native_usd_price))) : undefined;
-
-                        return <div
-                           onClick={() => handleopenSwapDetails(swap)}
-                           key={swap.id}>
-                           {
-                              <Summary
-                                 currency={currency}
-                                 source={source}
-                                 destination={destination}
-                                 requestedAmount={requested_amount as number}
-                                 receiveAmount={receive_amount}
-                                 destinationAddress={swap.destination_address}
-                                 hasRefuel={swap?.has_refuel}
-                                 refuelAmount={refuelAmountInNativeCurrency}
-                                 fee={5}
-                                 swap={swap}
-                                 exchange_account_connected={swap?.exchange_account_connected}
-                                 exchange_account_name={swap?.exchange_account_name}
-                              />
-                           }
+               <SwapsListModal loadExplorerSwaps={false} title="Pending swapsss" statuses={SwapStatusInNumbers.Pending} >
+                  <IconButton icon={
+                     <div className="relative">
+                        <ScrollText strokeWidth="2" />
+                        <div className="text-xs text-[#2F4858] font-bold text-center absolute -top-3 -right-3 bg-[#facc15] rounded-full h-4 w-4">
+                           {pendingSwapsCount}
                         </div>
-                     })
-                  }
-               </div>
-            </Modal>
+                     </div>
+                  }>
+                  </IconButton>
+               </SwapsListModal>
+            </motion.div>}
             <Modal height='90%' show={openSwapDetailsModal} setShow={handleSWapDetailsShow} header={`Complete the swap`}>
                <SwapDataProvider id={selectedSwap?.id}>
                   <SwapDetails type="contained" />
@@ -448,7 +374,7 @@ const Summary: FC<SwapInfoProps> = ({ swap, currency, source: from, destination:
                         <p className="text-secondary-text text-sm">{truncateDecimals(requestedAmount, currency.precision)} {sourceCurrencyName}</p>
                      </div>
                   </div>
-                  <div><ChevronRightIcon className="text-secondary-text/30"/></div>
+                  <div><ChevronRightIcon className="text-secondary-text/30" /></div>
                   <div className="flex col-span-5 items-center gap-3 grow">
                      {destination && <Image src={resolveImgSrc(destination)} alt={destination.display_name} width={32} height={32} className="rounded-full" />}
                      <div>
