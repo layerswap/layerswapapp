@@ -113,7 +113,8 @@ export default function Layout({ children, settings, themeData }: Props) {
         </div>
       </div>
       <div id="widget_root" />
-    </div>
+    </div>,
+    ssr: false
   }))
 
 
