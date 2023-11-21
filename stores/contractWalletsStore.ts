@@ -13,7 +13,8 @@ interface WalletState {
 export type ContractWallet = {
     address?: string,
     isContract?: boolean
-    ready: boolean
+    ready: boolean,
+    network: string
 }
 
 export const useContractWalletsStore = create<WalletState>()(persist((set) => ({
@@ -23,7 +24,7 @@ export const useContractWalletsStore = create<WalletState>()(persist((set) => ({
         if (!network) { throw new Error('Network is not provided') }
 
         (async () => {
-            if (address && network.type == NetworkType.EVM && network.internal_name === KnownInternalNames.Networks.EthereumMainnet) {
+            if (address && network.type == NetworkType.EVM) {
                 let isContractWallet: boolean = false
 
                 set((state) => {
@@ -48,16 +49,17 @@ export const useContractWalletsStore = create<WalletState>()(persist((set) => ({
                         return ({
                             contractWallets: [
                                 ...state.contractWallets.filter(w => w.address !== address),
-                                { address: address, ready: true, isContract: isContractWallet }
+                                { address: address, ready: true, isContract: isContractWallet, network: network.internal_name }
                             ]
                         })
                     }
                 })
 
-                return { address: address, ready: true, value: isContractWallet }
+                return { address: address, ready: true, value: isContractWallet, network: network.internal_name }
             }
         })()
-        return { ready: true, isContract: false }
+        
+        return { ready: true, isContract: false, network: network.internal_name }
 
     },
 }),
