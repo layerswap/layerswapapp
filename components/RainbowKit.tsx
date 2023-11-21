@@ -29,7 +29,7 @@ export type RanibowKitState = {
 }
 
 export type RainbowKitStateUpdate = {
-    setInitialChain: (initialChain: number) => void,
+    setInitialChain: (initialChain: number | undefined) => void,
 }
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();

@@ -33,6 +33,7 @@ export default function useEVM(): WalletProvider {
     const connectWallet = (chain: number) => {
         const network = layers.find(l => l.isExchange !== true && Number(l.chain_id) == chain)
         if (network && requiredChainsForConnect.includes(network?.internal_name)) setInitialChain(chain)
+        else setInitialChain(undefined)
 
         return openConnectModal && openConnectModal()
     }
