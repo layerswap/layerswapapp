@@ -11,9 +11,9 @@ import { publicProvider } from 'wagmi/providers/public';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitgetWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 import { useSettingsState } from "../context/settings";
 import { Chain, WagmiConfig, configureChains, createConfig } from "wagmi";
-import { NetworkType } from "../Models/CryptoNetwork";
+import { CryptoNetwork, NetworkType } from "../Models/CryptoNetwork";
 import resolveChain from "../lib/resolveChain";
-import React from "react";
+import React, { useState } from "react";
 import NoCookies from "./NoCookies";
 import AddressIcon from "./AddressIcon";
 
@@ -21,8 +21,19 @@ type Props = {
     children: JSX.Element | JSX.Element[]
 }
 
+export const RainbowKitStateContext = React.createContext<RanibowKitState | null>(null);
+export const RainbowKitStateUpdateContext = React.createContext<RainbowKitStateUpdate | null>(null);
+
+export type RanibowKitState = {
+    initialChain: number | undefined
+}
+
+export type RainbowKitStateUpdate = {
+    setInitialChain: (initialChain: number) => void,
+}
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
+    const [initialChain, setInitialChain] = useState<number>()
 
     try {
         localStorage.getItem("ls-ls-test")
@@ -30,7 +41,7 @@ function RainbowKitComponent({ children }: Props) {
     catch (e) {
         return <NoCookies />
     }
- 
+
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
     const settingsChains = settings?.networks
         .sort((a, b) => Number(a.chain_id) - Number(b.chain_id))
@@ -98,16 +109,43 @@ function RainbowKitComponent({ children }: Props) {
 
     return (
         <WagmiConfig config={wagmiConfig}>
-            <RainbowKitProvider avatar={CustomAvatar} modalSize="compact" chains={chains} theme={theme}
+            <RainbowKitProvider initialChain={chains.find(ch => ch.id == initialChain)} avatar={CustomAvatar} modalSize="compact" chains={chains} theme={theme}
                 appInfo={{
                     appName: 'Layerswap',
                     learnMoreUrl: 'https://docs.layerswap.io/',
                     disclaimer: disclaimer
                 }}>
-                {children}
+                <RainbowKitStateContext.Provider value={{
+                    initialChain
+                }}>
+                    <RainbowKitStateUpdateContext.Provider value={{
+                        setInitialChain
+                    }}>
+                        {children}
+                    </RainbowKitStateUpdateContext.Provider>
+                </RainbowKitStateContext.Provider>
             </RainbowKitProvider>
         </WagmiConfig>
     )
+}
+
+
+export function useRainbowKitState() {
+    const data = React.useContext<RanibowKitState | null>(RainbowKitStateContext);
+    if (!data) {
+        throw new Error('useRainbowKitState must be used within a RainbowKitStateContext');
+    }
+    return data;
+}
+
+export function useRainbowKitUpdate() {
+    const updateFns = React.useContext<RainbowKitStateUpdate | null>(RainbowKitStateUpdateContext);
+
+    if (!updateFns) {
+        throw new Error('useRainbowKitUpdate must be used within a RainbowKitStateUpdateContext');
+    }
+
+    return updateFns;
 }
 
 export default RainbowKitComponent

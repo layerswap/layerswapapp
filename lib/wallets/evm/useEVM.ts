@@ -6,11 +6,15 @@ import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import { ResolveEVMWalletIcon } from "./resolveEVMIcon"
+import { useRainbowKitUpdate } from "../../../components/RainbowKit"
 
 export default function useEVM(): WalletProvider {
     const { layers } = useSettingsState()
+    const { setInitialChain } = useRainbowKitUpdate()
+
     const withdrawalSupportedNetworks = [...layers.filter(layer => layer.type === NetworkType.EVM).map(l => l.internal_name), KnownInternalNames.Networks.ZksyncMainnet]
     const autofillSupportedNetworks = [...withdrawalSupportedNetworks, KnownInternalNames.Networks.ImmutableXMainnet, KnownInternalNames.Networks.ImmutableXGoerli]
+    const requiredChainsForConnect = [KnownInternalNames.Networks.ZksyncEraMainnet]
     const name = 'evm'
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
@@ -26,7 +30,10 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-    const connectWallet = () => {
+    const connectWallet = (chain: number) => {
+        const network = layers.find(l => l.isExchange !== true && Number(l.chain_id) == chain)
+        if (network && requiredChainsForConnect.includes(network?.internal_name)) setInitialChain(chain)
+
         return openConnectModal && openConnectModal()
     }
 
