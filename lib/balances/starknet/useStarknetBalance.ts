@@ -1,6 +1,6 @@
 import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../hooks/useBalance"
 import KnownInternalNames from "../../knownIds"
-import { CallData, Contract, RpcProvider, cairo, uint256, Account } from "starknet";
+import { CallData, Contract, RpcProvider, cairo, uint256, Account, SequencerProvider } from "starknet";
 import Erc20Abi from '../../abis/ERC20.json'
 import { BigNumber } from "ethers";
 import formatAmount from "../../formatAmount";
@@ -54,36 +54,34 @@ export default function useStarknetBalance(): BalanceProvider {
 
     }
 
-    const getGas = async ({ layer, currency }: GasProps) => {
+    const getGas = async ({ layer, currency, wallet }: GasProps) => {
 
         if (layer.isExchange === true || !layer.assets) return
 
         const amountToWithdraw = BigNumber.from(1);
-        const privateKey = process.env.STARKNET_PRIVATE_KEY
-        const accountAddress = '0x07d4f726a83c00ba1f3c09bdf3b4cd163531c22663911470a03b73cd183dc874'
         const contract_address = layer.assets.find(a => a.asset === currency.asset)?.contract_address
         const asset = layer.assets.find(a => a.asset === currency.asset)
         const FEE_ESTIMATE_MULTIPLIER = BigInt(4);
 
-        if (!contract_address || !asset || !privateKey) return
+        if (!contract_address || !asset || !wallet) return
 
-        const provider = new RpcProvider({
-            nodeUrl: layer.nodes[0].url
+        const provider = new SequencerProvider({
+            baseUrl: 'https://alpha-mainnet.starknet.io',
         });
 
-        const account = new Account(provider, accountAddress, privateKey);
+        const account = new Account(provider, wallet.address, wallet.metadata?.starknetAccount?.account.signer.pk);
 
         let transferCall = {
             contractAddress: contract_address.toLowerCase(),
             entrypoint: "transfer",
             calldata: CallData.compile(
                 {
-                    recipient: accountAddress,
+                    recipient: wallet.address,
                     amount: cairo.uint256(amountToWithdraw.toHexString())
                 })
         };
 
-        let feeEstimateResponse = await account.estimateFee(transferCall);
+        let feeEstimateResponse = await account.estimateFee(transferCall, { skipValidate: true });
         if (!feeEstimateResponse?.suggestedMaxFee) {
             throw new Error(`Couldn't get fee estimation for the transfer. Response: ${JSON.stringify(feeEstimateResponse)}`);
         };
