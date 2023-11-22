@@ -100,7 +100,7 @@ export default function Layout({ children, settings, themeData }: Props) {
     if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
       SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
     }
-    Sentry.captureException(error);
+    Sentry.captureException(error, info);
     transaction.data = { error, info }
     transaction.finish();
   }
@@ -164,6 +164,7 @@ export default function Layout({ children, settings, themeData }: Props) {
         <MenuProvider>
           <AuthProvider>
             <TooltipProvider delayDuration={500}>
+              <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
                 <ThemeWrapper>
                   <TonConnectProvider basePath={basePath} themeData={themeData}>
                     <DynamicRainbowKit>
@@ -173,6 +174,7 @@ export default function Layout({ children, settings, themeData }: Props) {
                     </DynamicRainbowKit>
                   </TonConnectProvider>
                 </ThemeWrapper>
+              </ErrorBoundary>
             </TooltipProvider>
           </AuthProvider>
         </MenuProvider>

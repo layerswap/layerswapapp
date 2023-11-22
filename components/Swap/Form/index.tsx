@@ -26,7 +26,6 @@ import Image from 'next/image';
 import { ChevronRight, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import * as Sentry from "@sentry/nextjs";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -71,67 +70,56 @@ export default function Form() {
     }, [swap])
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
+        throw new Error("hi from errror")
+        // try {
+        //     const accessToken = TokenService.getAuthData()?.access_token
+        //     if (!accessToken) {
+        //         try {
+        //             var apiClient = new LayerSwapAuthApiClient();
+        //             const res = await apiClient.guestConnectAsync()
+        //             updateAuthData(res)
+        //             setUserType(UserType.GuestUser)
+        //         }
+        //         catch (error) {
+        //             toast.error(error.response?.data?.error || error.message)
+        //             return;
+        //         }
+        //     }
+        //     const swapId = await createSwap(values, query, partner);
 
-        try {
-            const accessToken = TokenService.getAuthData()?.access_token
-            if (!accessToken) {
-                try {
-                    var apiClient = new LayerSwapAuthApiClient();
-                    const res = await apiClient.guestConnectAsync()
-                    updateAuthData(res)
-                    setUserType(UserType.GuestUser)
-                }
-                catch (error) {
-                    toast.error(error.response?.data?.error || error.message)
-                    return;
-                }
-            }
-            const swapId = await createSwap(values, query, partner);
-
-            const transaction = Sentry.startTransaction({
-                name: "error_boundary_handler",
-            });
-            Sentry.configureScope((scope) => {
-                scope.setSpan(transaction);
-            });
-
-            Sentry.captureException("Test");
-            transaction.data = { swapId, values }
-            transaction.finish();
-
-            if (swapId) {
-                setSwapId(swapId)
-                var swapURL = window.location.protocol + "//"
-                    + window.location.host + `/swap/${swapId}`;
-                const params = resolvePersistantQueryParams(router.query)
-                if (params && Object.keys(params).length) {
-                    const search = new URLSearchParams(params as any);
-                    if (search)
-                        swapURL += `?${search}`
-                }
-                window.history.replaceState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
-                setShowSwapModal(true)
-            }
-        }
-        catch (error) {
-            const data: ApiError = error?.response?.data?.error
-            if (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS) {
-                toast.error("You can't transfer to that address. Please double check.")
-            }
-            else if (data?.code === LSAPIKnownErrorCode.INVALID_ADDRESS_ERROR) {
-                toast.error(`Enter a valid ${values.to?.display_name} address`)
-            }
-            else if (data?.code === LSAPIKnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.to) {
-                setNetworkToConnect({
-                    DisplayName: values.to?.display_name,
-                    AppURL: data.message
-                })
-                setShowConnectNetworkModal(true);
-            }
-            else {
-                toast.error(error.message)
-            }
-        }
+        //     if (swapId) {
+        //         setSwapId(swapId)
+        //         var swapURL = window.location.protocol + "//"
+        //             + window.location.host + `/swap/${swapId}`;
+        //         const params = resolvePersistantQueryParams(router.query)
+        //         if (params && Object.keys(params).length) {
+        //             const search = new URLSearchParams(params as any);
+        //             if (search)
+        //                 swapURL += `?${search}`
+        //         }
+        //         window.history.replaceState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
+        //         setShowSwapModal(true)
+        //     }
+        // }
+        // catch (error) {
+        //     const data: ApiError = error?.response?.data?.error
+        //     if (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS) {
+        //         toast.error("You can't transfer to that address. Please double check.")
+        //     }
+        //     else if (data?.code === LSAPIKnownErrorCode.INVALID_ADDRESS_ERROR) {
+        //         toast.error(`Enter a valid ${values.to?.display_name} address`)
+        //     }
+        //     else if (data?.code === LSAPIKnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.to) {
+        //         setNetworkToConnect({
+        //             DisplayName: values.to?.display_name,
+        //             AppURL: data.message
+        //         })
+        //         setShowConnectNetworkModal(true);
+        //     }
+        //     else {
+        //         toast.error(error.message)
+        //     }
+        // }
     }, [createSwap, query, partner, router, updateAuthData, setUserType, swap])
 
     const destAddress: string = query?.destAddress as string;
