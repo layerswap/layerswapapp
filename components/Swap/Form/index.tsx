@@ -70,6 +70,7 @@ export default function Form() {
     }, [swap])
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
+        const x = window["foo"]["bar"]
         try {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken) {
