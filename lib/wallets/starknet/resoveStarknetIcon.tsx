@@ -1,3 +1,4 @@
+import { Coins } from "lucide-react"
 import Argent from "../../../components/icons/Wallets/Argent"
 import ArgentX from "../../../components/icons/Wallets/ArgentX"
 import Braavos from "../../../components/icons/Wallets/Braavos"
@@ -11,7 +12,7 @@ export const ResolveStarknetWalletIcon = ({ connector }: { connector: string }) 
         case KnownKonnectors.Braavos:
             return Braavos
         default:
-            return () => <></>
+            return CoinsIcon
     }
 }
 
@@ -20,4 +21,8 @@ const KnownKonnectors = {
     ArgentX: 'argent x',
     ArgentMobile: 'argent mobile',
     Braavos: 'braavos',
+}
+
+const CoinsIcon = (props) => {
+    return <Coins {...props} strokeWidth={2} />
 }
