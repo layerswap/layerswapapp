@@ -26,6 +26,7 @@ import Image from 'next/image';
 import { ChevronRight, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
+import * as Sentry from "@sentry/nextjs";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -70,7 +71,7 @@ export default function Form() {
     }, [swap])
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
-        const x = window["foo"]["bar"]
+
         try {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken) {
@@ -86,6 +87,17 @@ export default function Form() {
                 }
             }
             const swapId = await createSwap(values, query, partner);
+
+            const transaction = Sentry.startTransaction({
+                name: "error_boundary_handler",
+            });
+            Sentry.configureScope((scope) => {
+                scope.setSpan(transaction);
+            });
+
+            Sentry.captureException("Test");
+            transaction.data = { swapId, values }
+            transaction.finish();
 
             if (swapId) {
                 setSwapId(swapId)
