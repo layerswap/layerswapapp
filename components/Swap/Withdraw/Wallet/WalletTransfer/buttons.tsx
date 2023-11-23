@@ -22,8 +22,10 @@ export const ConnectWalletButton: FC = () => {
     const clickHandler = useCallback(() => {
         if (!provider)
             throw new Error(`No provider from ${source_layer?.internal_name}`)
+        if (source_layer?.isExchange === true)
+            throw new Error(`Provided ${source_layer.internal_name} layer is exchange`)
 
-        return provider.connectWallet(provider?.name)
+        return provider.connectWallet(source_layer?.chain_id)
     }, [provider])
 
     return <ButtonWrapper

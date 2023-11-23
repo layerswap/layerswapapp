@@ -14,7 +14,6 @@ export default function useEVM(): WalletProvider {
 
     const withdrawalSupportedNetworks = [...layers.filter(layer => layer.type === NetworkType.EVM).map(l => l.internal_name), KnownInternalNames.Networks.ZksyncMainnet]
     const autofillSupportedNetworks = [...withdrawalSupportedNetworks, KnownInternalNames.Networks.ImmutableXMainnet, KnownInternalNames.Networks.ImmutableXGoerli]
-    const requiredChainsForConnect = [KnownInternalNames.Networks.ZksyncEraMainnet]
     const name = 'evm'
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
@@ -32,7 +31,7 @@ export default function useEVM(): WalletProvider {
 
     const connectWallet = (chain: number) => {
         const network = layers.find(l => l.isExchange !== true && Number(l.chain_id) == chain)
-        if (network && requiredChainsForConnect.includes(network?.internal_name)) setInitialChain(chain)
+        if (network) setInitialChain(chain)
         else setInitialChain(undefined)
 
         return openConnectModal && openConnectModal()

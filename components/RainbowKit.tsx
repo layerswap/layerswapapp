@@ -11,7 +11,7 @@ import { publicProvider } from 'wagmi/providers/public';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitgetWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 import { useSettingsState } from "../context/settings";
 import { Chain, WagmiConfig, configureChains, createConfig } from "wagmi";
-import { CryptoNetwork, NetworkType } from "../Models/CryptoNetwork";
+import { NetworkType } from "../Models/CryptoNetwork";
 import resolveChain from "../lib/resolveChain";
 import React, { useState } from "react";
 import NoCookies from "./NoCookies";
@@ -53,6 +53,7 @@ function RainbowKitComponent({ children }: Props) {
         settingsChains,
         [publicProvider()]
     );
+    console.log(initialChain ? [...chains.filter(ch => ch.id == initialChain)] : chains)
 
     const projectId = WALLETCONNECT_PROJECT_ID;
     const connectors = connectorsForWallets([
@@ -67,7 +68,7 @@ function RainbowKitComponent({ children }: Props) {
             groupName: 'Wallets',
             wallets: [
                 coinbaseWallet({ chains, appName: 'Layerswap' }),
-                argentWallet({ projectId, chains }),
+                argentWallet({ projectId, chains: initialChain ? [...chains.filter(ch => ch.id == initialChain)] : chains }),
                 bitgetWallet({ projectId, chains }),
                 rainbowWallet({ projectId, chains })
             ],
@@ -109,7 +110,7 @@ function RainbowKitComponent({ children }: Props) {
 
     return (
         <WagmiConfig config={wagmiConfig}>
-            <RainbowKitProvider initialChain={chains.find(ch => ch.id == initialChain)} avatar={CustomAvatar} modalSize="compact" chains={chains} theme={theme}
+            <RainbowKitProvider avatar={CustomAvatar} modalSize="compact" chains={chains} theme={theme}
                 appInfo={{
                     appName: 'Layerswap',
                     learnMoreUrl: 'https://docs.layerswap.io/',
