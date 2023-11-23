@@ -149,6 +149,7 @@ export type SwapItem = {
     exchange_account_connected: boolean;
     exchange_account_name?: string;
     fiat_session_id?: string;
+    fiat_redirect_url?: string;
     has_pending_deposit: boolean;
     sequence_number: number;
     fail_reason?: string;
