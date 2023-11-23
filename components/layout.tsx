@@ -117,6 +117,7 @@ export default function Layout({ children, settings, themeData }: Props) {
   }))
 
 
+  const DynamicSolana = dynamic(() => import("../components/Solana"), { ssr: false });
 
   return (<>
     <Head>
@@ -157,9 +158,11 @@ export default function Layout({ children, settings, themeData }: Props) {
                 <ThemeWrapper>
                   <TonConnectProvider basePath={basePath} themeData={themeData}>
                     <DynamicRainbowKit>
-                      {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                        <MaintananceContent />
-                        : children}
+                      <DynamicSolana>
+                        {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                          <MaintananceContent />
+                          : children}
+                      </DynamicSolana>
                     </DynamicRainbowKit>
                   </TonConnectProvider>
                 </ThemeWrapper>

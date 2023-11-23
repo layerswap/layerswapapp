@@ -126,7 +126,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
 
     const destinationAsset = destination?.assets?.find(a => a.asset === asset)
     const destinationChainId = destinationAsset?.network?.chain_id
-
+    console.log(inputAddressIsValid,"inputAddressIsValid")
+    console.log(inputValue,"inputValue")
+    console.log(values,"values")
     return (<>
         <div className='w-full flex flex-col justify-between h-full text-primary-text'>
             <div className='flex flex-col self-center grow w-full'>

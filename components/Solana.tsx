@@ -12,8 +12,6 @@ import {
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { ReactNode, useMemo } from "react";
 
-require("@solana/wallet-adapter-react-ui/styles.css");
-
 function Solana({ children }: { children: ReactNode }) {
     const solNetwork = WalletAdapterNetwork.Mainnet;
     const endpoint = useMemo(() => clusterApiUrl(solNetwork), [solNetwork]);
@@ -27,9 +25,11 @@ function Solana({ children }: { children: ReactNode }) {
     );
 
     return (
-        <ConnectionProvider endpoint={endpoint}>
-            <WalletProvider wallets={wallets}>
-                <WalletModalProvider>{children}</WalletModalProvider>
+        <ConnectionProvider endpoint={endpoint} >
+            <WalletProvider wallets={wallets} autoConnect={true}>
+                <WalletModalProvider>
+                        {children}
+                </WalletModalProvider>
             </WalletProvider>
         </ConnectionProvider>
     );

@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useState } from "react";
+import { ReactNode, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import useWallet from "../../hooks/useWallet";
 import { NetworkType } from "../../Models/CryptoNetwork";
@@ -22,9 +22,7 @@ import OpenMask from "../icons/Wallets/OpenMask";
 import Phantom from "../icons/Wallets/Phantom";
 import Torus from "../icons/Wallets/Torus";
 import Solflare from "../icons/Wallets/Solflare";
-import { WalletName } from "@solana/wallet-adapter-base";
-import { Wallet } from "@solana/wallet-adapter-react";
-import { useWalletMultiButton } from "../../lib/wallets/solana/useWalletMultiButton";
+import { SolanaCustomConnectButton } from "../../lib/wallets/solana/SolanaCustomWallet";
 
 const ConnectButton = ({
     children,
@@ -38,7 +36,7 @@ const ConnectButton = ({
     const { connectWallet, wallets } = useWallet();
     const [open, setOpen] = useState<boolean>();
     const { isMobile } = useWindowDimensions();
-debugger
+
     const knownConnectors = [
         {
             name: "EVM",
@@ -194,77 +192,3 @@ const KnownConnectors = {
     TON: "ton",
     Solana: "solana",
 };
-
-function SolanaCustomConnectButton({ children }: { children: ReactNode }) {
-    const [walletModalConfig, setWalletModalConfig] = useState<Readonly<{
-        onSelectWallet(walletName: WalletName): void;
-        wallets: Wallet[];
-    }> | null>(null);
-    const { buttonState, onConnect, onDisconnect, onSelectWallet } =
-        useWalletMultiButton({
-            onSelectWallet: setWalletModalConfig,
-        });
-    let label;
-    switch (buttonState) {
-        case "connected":
-            label = "Disconnect";
-            break;
-        case "connecting":
-            label = "Connecting";
-            break;
-        case "disconnecting":
-            label = "Disconnecting";
-            break;
-        case "has-wallet":
-            label = "Connect";
-            break;
-        case "no-wallet":
-            label = "Select Wallet";
-            break;
-    }
-    const handleClick = useCallback(() => {
-        switch (buttonState) {
-            case "connected":
-                return onDisconnect;
-            case "connecting":
-            case "disconnecting":
-                break;
-            case "has-wallet":
-                return onConnect;
-            case "no-wallet":
-                return onSelectWallet;
-                break;
-        }
-    }, [buttonState, onDisconnect, onConnect, onSelectWallet]);
-    return (
-        <>
-            <button
-                disabled={
-                    buttonState === "connecting" ||
-                    buttonState === "disconnecting"
-                }
-                onClick={handleClick}
-                className="-space-x-2 flex"
-            >
-                {children}
-            </button>
-            {walletModalConfig ? (
-                <div>
-                    {walletModalConfig.wallets.map((wallet) => (
-                        <button
-                            key={wallet.adapter.name}
-                            onClick={() => {
-                                walletModalConfig.onSelectWallet(
-                                    wallet.adapter.name
-                                );
-                                setWalletModalConfig(null);
-                            }}
-                        >
-                            {wallet.adapter.name}
-                        </button>
-                    ))}
-                </div>
-            ) : null}
-        </>
-    );
-}

@@ -1,6 +1,4 @@
-import { useConnectModal } from "@rainbow-me/rainbowkit"
-import { disconnect } from '@wagmi/core'
-import { useAccount } from "wagmi"
+import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import { ResolveSolanaWalletIcon } from "./resolveSolanaIcon"
@@ -10,14 +8,14 @@ export default function useSolana(): WalletProvider {
     const withdrawalSupportedNetworks = [KnownInternalNames.Networks.SolanaMainnet]
     const autofillSupportedNetworks = [KnownInternalNames.Networks.SolanaMainnet]
     const name = 'solana'
-    const { select, wallets, publicKey, disconnect, wallet, connect } = useWallet();
-    const { openConnectModal } = useConnectModal()
-debugger
+    const { publicKey, disconnect, wallet } = useWallet();
+    const { setVisible } = useWalletModal();
+
     const getWallet = () => {
         if (publicKey) {
             return {
-                address: `0x${wallet?.adapter.name}`,
-                connector: wallet?.adapter.name,
+                address: publicKey?.toBase58(),
+                connector: wallet?.adapter?.name,
                 providerName: name,
                 icon: ResolveSolanaWalletIcon({ connector: String(wallet?.adapter.name) })
             }
@@ -25,7 +23,7 @@ debugger
     }
 
     const connectWallet = () => {
-        return openConnectModal && openConnectModal()
+        return setVisible && setVisible(true)
     }
 
     const disconnectWallet = async () => {
