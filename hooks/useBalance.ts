@@ -6,6 +6,7 @@ import useOptimismBalance from "../lib/balances/evm/optimism/useOptimismBalance"
 import useStarknetBalance from "../lib/balances/starknet/useStarknetBalance"
 import useZkSyncBalance from "../lib/balances/zksync/useZkSyncBalance"
 import { Wallet } from "../stores/walletStore"
+import useSolanaBalance from "../lib/balances/solana/useSolanaBalance"
 
 export type BalanceProvider = {
     getBalance: ({ layer, address }: BalanceProps) => Promise<Balance[] | undefined> | undefined | void,
@@ -21,7 +22,8 @@ export default function useBalanceProvider() {
         useOptimismBalance(),
         useStarknetBalance(),
         useLoopringBalance(),
-        useZkSyncBalance()
+        useZkSyncBalance(),
+        useSolanaBalance()
     ]
 
     const getBalanceProvider = (network: Layer) => {

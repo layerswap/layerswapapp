@@ -67,10 +67,9 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
         if (!from || from?.isExchange) {
             return
         }
-        const chainId = from?.chain_id
         const network = from.assets?.[0].network
 
-        if (!chainId || !network)
+        if (!network)
             return
 
         const destination_address = from?.assets?.find(c => c.asset.toLowerCase() === currency?.asset?.toLowerCase())?.network?.managed_accounts?.[0]?.address as `0x${string}`
@@ -80,8 +79,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
         const provider = getAutofillProvider(from)
         const wallet = provider?.getConnectedWallet()
 
-        if (chainId
-            && isGasOutDated
+        if (isGasOutDated
             && currency
             && wallet?.address
             && destination_address) {
