@@ -128,7 +128,7 @@ export default function Layout({ children, settings, themeData }: Props) {
   }))
 
 
-  const DynamicSolana = dynamic(() => import("../components/Solana"), { ssr: false });
+  const DynamicSolana = dynamic(() => import("./SolanaProvider"), { ssr: false });
 
   return (<>
     <Head>
