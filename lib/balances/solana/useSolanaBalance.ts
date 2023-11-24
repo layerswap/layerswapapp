@@ -78,14 +78,13 @@ export default function useSolanaBalance(): BalanceProvider {
         return balances
     }
 
-    //In progress, blocked by solana connect
     const getGas = async ({ layer, currency }: GasProps) => {
 
         let gas: Gas[] = [];
         if (layer.isExchange === true || !layer.assets) return
 
         const provider = createPublicClient({
-            transport: http('https://odella-kzfk20-fast-mainnet.helius-rpc.com/')
+            transport: http(layer.assets[0].network?.nodes[0].url)
         })
 
         try {
