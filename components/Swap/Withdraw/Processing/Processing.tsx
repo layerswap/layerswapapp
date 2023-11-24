@@ -52,7 +52,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const stepStatuses = progressStatuses.stepStatuses;
 
     const outputPendingDetails = <div className='flex items-center space-x-1'>
-        <span>Estimated arrival:</span>
+        <span>Estimated arrival after confirmation:</span>
         <div className='text-primary-text'>
             {
                 destinationNetworkCurrency?.status == 'insufficient_liquidity' ?

@@ -24,9 +24,13 @@ type Props = {
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
 
-    if (!navigator?.cookieEnabled) {
+    try {
+        localStorage.getItem("ls-ls-test")
+    }
+    catch (e) {
         return <NoCookies />
     }
+ 
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
     const settingsChains = settings?.networks
         .sort((a, b) => Number(a.chain_id) - Number(b.chain_id))

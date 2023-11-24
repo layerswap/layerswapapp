@@ -2,6 +2,7 @@ import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
 import { createPublicClient, http } from 'viem';
+import { Blockhash, Keypair, SystemProgram, Transaction } from "@solana/web3.js";
 
 type SolanaBalance = {
     value: SolanaAccount[]
@@ -34,14 +35,7 @@ type SolanaGas = {
         apiVersion: string,
         slot: number
     },
-    value: {
-        blockhash: string,
-        feeCalculator: {
-            lamportsPerSignature: number
-        },
-        lastValidBlockHeight: number,
-        LastValidSlot: number
-    }
+    value: number
 }
 
 export default function useSolanaBalance(): BalanceProvider {
@@ -91,13 +85,29 @@ export default function useSolanaBalance(): BalanceProvider {
         if (layer.isExchange === true || !layer.assets) return
 
         const provider = createPublicClient({
-            transport: http()//Must be solana rpc url
+            transport: http('https://odella-kzfk20-fast-mainnet.helius-rpc.com/')
         })
 
         try {
-            const result: SolanaGas = await provider.request({ method: 'getFees' as any })
+            const accountFrom = Keypair.generate();
+            const accountTo = Keypair.generate();
+            const blockhash: any = await provider.request({ method: 'getLatestBlockhash' as any, params: [{ commitment: "processed" } as any] })
+
+            const transaction = new Transaction({
+                feePayer: accountFrom.publicKey,
+                recentBlockhash: blockhash?.value?.blockhash as Blockhash,
+            }).add(
+                SystemProgram.transfer({
+                    fromPubkey: accountFrom.publicKey,
+                    toPubkey: accountTo.publicKey,
+                    lamports: 100000,
+                }),
+            );
+            const message = transaction.compileMessage();
+
+            const result: SolanaGas = await provider.request({ method: 'getFeeForMessage' as any, params: [message.serialize().toString('base64') as any, { commitment: "processed" } as any] })
             const currencyDec = layer?.assets?.find(l => l.asset === layer.native_currency)?.decimals
-            const formatedGas = formatAmount(Math.max(result.value.feeCalculator.lamportsPerSignature, 10000000), currencyDec!)
+            const formatedGas = formatAmount(result.value, currencyDec!)
 
             gas = [{
                 token: currency.asset,
