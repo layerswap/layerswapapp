@@ -2,6 +2,8 @@ import MetaMaskIcon from "../../../components/icons/Wallets/MetaMask"
 import WalletConnectIcon from "../../../components/icons/Wallets/WalletConnect"
 import BitKeep from "../../../components/icons/Wallets/BitKeep"
 import RainbowIcon from "../../../components/icons/Wallets/Rainbow"
+import CoinbaseIcon from "../../../components/icons/Wallets/Coinbase"
+import { Coins } from "lucide-react"
 
 export const ResolveEVMWalletIcon = ({ connector }: { connector: string }) => {
     switch (connector?.toLowerCase()) {
@@ -13,8 +15,10 @@ export const ResolveEVMWalletIcon = ({ connector }: { connector: string }) => {
             return RainbowIcon
         case KnownKonnectors.BitKeep:
             return BitKeep
+        case KnownKonnectors.CoinbaseWallet:
+            return CoinbaseIcon
         default:
-            return () => <></>
+            return CoinsIcon
     }
 }
 
@@ -23,4 +27,9 @@ const KnownKonnectors = {
     WalletConnect: 'walletconnect',
     Rainbow: 'rainbow',
     BitKeep: 'bitkeep',
+    CoinbaseWallet: 'coinbasewallet'
+}
+
+const CoinsIcon = (props) => {
+    return <Coins {...props} strokeWidth={2} />
 }
