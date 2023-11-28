@@ -19,6 +19,7 @@ import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
+import * as Sentry from "@sentry/nextjs";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
