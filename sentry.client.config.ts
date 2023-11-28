@@ -11,7 +11,7 @@ Sentry.init({
   tracesSampleRate: 1,
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
+  debug: true,
 
   replaysOnErrorSampleRate: 1.0,
 
@@ -27,4 +27,18 @@ Sentry.init({
       blockAllMedia: true,
     }),
   ],
+  beforeSend(event, hint) {
+    const extension_error = event.exception?.values?.some(e => e.stacktrace?.frames?.some(f => f.filename?.includes("app://")))
+    const isKnownError = event.exception?.values?.some(e => known_errors.includes(e.value || ""))
+
+    if (isKnownError || (event.transaction !== "error_boundary_handler" && extension_error))
+      return null;
+    return event;
+  },
 });
+
+
+const known_errors = [
+  "Cannot write private member to an object whose class did not declare it",
+  "Socket stalled when trying to connect to wss://relay.walletconnect.org"
+]
