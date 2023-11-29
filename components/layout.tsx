@@ -91,7 +91,6 @@ export default function Layout({ children, settings, themeData }: Props) {
   };
 
   function logErrorToService(error, info) {
-
     const transaction = Sentry.startTransaction({
       name: "error_boundary_handler",
     });
