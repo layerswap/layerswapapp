@@ -87,7 +87,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
                 <div className={`py-3 flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
-                    <div className='px-6 flex justify-between items-center'>
+                    <div className='px-6 flex justify-between items-center pb-2'>
                         <div className="text-lg text-primary-text font-semibold">
                             <div>{title}</div>
                         </div>

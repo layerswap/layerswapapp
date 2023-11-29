@@ -290,7 +290,7 @@ function TransactionsHistory() {
                   <Modal height="fit" show={openSwapDetailsModal} setShow={setOpenSwapDetailsModal} header="Swap details">
                     <div className="mt-2">
                       {
-                        selectedSwap && <SwapDetails id={selectedSwap?.id} />
+                        selectedSwap && <SwapDetails swap={selectedSwap} />
                       }
                       {
                         selectedSwap &&

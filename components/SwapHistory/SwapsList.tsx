@@ -1,25 +1,25 @@
-import useSWR from "swr"
-import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers, TransactionType } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapItem, TransactionType } from "../../lib/layerSwapApiClient"
 import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse"
 import { useSettingsState } from "../../context/settings"
 import { SwapDataProvider } from "../../context/swap"
-import SwapDetails from "../Swap"
+import WithdrawalPage from "../Swap"
 import { CalculateMinAllowedAmount, CalculateReceiveAmount } from "../../lib/fees"
 import { GetDefaultNetwork } from "../../helpers/settingsHelper"
 import IconButton from "../buttons/iconButton"
-import { ArrowDownIcon, ArrowLeft, ArrowRight, BellIcon, ChevronRight, ChevronRightIcon, FileStackIcon, Fuel, LayersIcon, RefreshCcw, RotateCw, Scroll, ScrollText } from 'lucide-react'
+import { ArrowDownIcon, RefreshCcw, Scroll } from 'lucide-react'
 import Modal from "../modal/modal"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import { AnimatePresence, motion, useInView } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 import Summary from "./Summary";
 import useSWRInfinite from 'swr/infinite'
 import SpinIcon from "../icons/spinIcon";
 import { useSWRConfig } from "swr"
 import { unstable_serialize } from "swr/infinite"
 import useWallet from "../../hooks/useWallet"
-import useSWRMutation from 'swr/mutation'
 import Link from "next/link"
 import AppSettings from "../../lib/AppSettings"
+import axios from "axios"
+import SwapDetails from "./SwapDetailsComponent"
 
 const PAGE_SIZE = 20
 
@@ -65,12 +65,12 @@ const SwapsListModal: FC<Props> = ({ children, statuses, title, loadExplorerSwap
                     show={openTopModal}
                     setShow={setOpenTopModal}
                     header={
-                        <div className="flex space-x-2 text-center py-3">
-                            <h2 className="font-normal text-center tracking-tight">
+                        <div className="flex space-x-2 text-center">
+                            <h2 className="font-normal text-center tracking-tight mt-1">
                                 {title}
                             </h2>
                             <IconButton onClick={handleRefresh} icon={
-                                <RefreshCcw className="h-5 w-5" />
+                                <RefreshCcw className="h-6 w-6" />
                             }>
                             </IconButton>
                         </div>
@@ -137,18 +137,30 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
 
     const apiClient = new LayerSwapApiClient()
 
-    const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, mutate, isValidating } =
+    const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, mutate } =
         useSWRInfinite<ApiResponse<SwapItem[]>>(
             getKey,
             apiClient.fetcher,
             { revalidateAll: true, dedupingInterval: 10000 }
         )
 
-    const { data: explorerPages, error: explorerError, isLoading: explorerSwapsLoading } = useSWRInfinite<ApiResponse<SwapItem[]>>(
-        loadExplorerSwaps ? getFromExplorerKey : (index: number) => null,
-        apiClient.fetcher,
+    const explorerDataFetcher = async (url: string) => {
+        const uri = LayerSwapApiClient.apiBaseEndpoint + "/api" + url
+        const data = await axios.get(uri).then(res => res.data).catch(e => {
+            if (e) return { data: [] }
+        })
+        return data
+    }
+
+    const { data: explorerPages, error: explorerError, isLoading: explorerSwapsLoading, setSize: setExplorerSize, size: explorerSize } = useSWRInfinite<ApiResponse<SwapItem[]>>(
+        loadExplorerSwaps ? getFromExplorerKey : () => null,
+        explorerDataFetcher,
         { revalidateAll: true, dedupingInterval: 60000, parallel: true, initialSize: addresses?.length }
     )
+
+    useEffect(() => {
+        if (explorerSize !== addresses.length) setExplorerSize(addresses.length)
+    }, [addresses.length])
 
     const handleSWapDetailsShow = useCallback((show: boolean) => {
         setOpenSwapDetailsModal(show)
@@ -161,7 +173,7 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
 
     const explorerSwapsisEmpty =
         (explorerPages?.[0] instanceof EmptyApiResponse)
-        || (!explorerSwapsLoading && !explorerPages)
+        || (!explorerSwapsLoading && !explorerPages?.find(p => p.data && p.data.length > 0))
         || explorerError
 
     const isReachingEnd =
@@ -173,7 +185,7 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
     }
 
     const userSwaps = userSwapPages?.map(p => p.data).flat(1) || []
-    const explorerSwaps = explorerPages?.map(p => p.data).flat(1) || []
+    const explorerSwaps = explorerPages?.map(p => p?.data?.filter(s => s.status === 'completed')).flat(1) || []
 
     //TODO filter explorer swaps by status
     explorerSwaps?.forEach(es => {
@@ -203,7 +215,7 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
                 initial="initial"
                 animate={refreshing ? "loading" : "highlight"}
                 exit={"initial"}
-                className="text-sm py-5 space-y-4 font-medium focus:outline-none h-full"
+                className="text-sm py-3 space-y-4 font-medium focus:outline-none h-full"
             >
                 {
                     userSwaps?.map((swap, index) => {
@@ -235,7 +247,7 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
                         const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
                         const requested_amount = (swapInputTransaction?.amount ??
-                            (Number(min_amount) > Number(swap.requested_amount) ? min_amount : swap.requested_amount)) || undefined
+                            (Number(min_amount) > Number(swap.requested_amount) ? min_amount : swap.requested_amount))
 
                         const receive_amount =
                             swapOutputTransaction?.amount
@@ -266,7 +278,7 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
                                     currency={currency}
                                     source={source}
                                     destination={destination}
-                                    requestedAmount={requested_amount as number}
+                                    requestedAmount={requested_amount}
                                     receiveAmount={receive_amount}
                                     destinationAddress={swap.destination_address}
                                     hasRefuel={swap?.has_refuel}
@@ -276,7 +288,6 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
                                     exchange_account_connected={swap?.exchange_account_connected}
                                     exchange_account_name={swap?.exchange_account_name}
                                 />
-
                             }
                         </motion.div>
                     })
@@ -316,7 +327,12 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
         </AnimatePresence>
         <Modal height='90%' show={openSwapDetailsModal} setShow={handleSWapDetailsShow} header={`Swap`}>
             <SwapDataProvider id={selectedSwap?.id}>
-                <SwapDetails type="contained" />
+                {
+                    selectedSwap?.id ?
+                        < WithdrawalPage type="contained" />
+                        :
+                        <SwapDetails swap={selectedSwap!} />
+                }
             </SwapDataProvider>
         </Modal>
     </>
