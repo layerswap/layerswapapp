@@ -1,5 +1,5 @@
 import { AlignLeft, X } from 'lucide-react';
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import WalletTransfer from './Wallet';
 import ManualTransfer from './ManualTransfer';
 import FiatTransfer from './FiatTransfer';
@@ -11,28 +11,21 @@ import Widget from '../../Wizard/Widget';
 import SwapSummary from '../Summary';
 import Coinbase from './Coinbase';
 import External from './External';
-import LayerSwapApiClient, { WithdrawType } from '../../../lib/layerSwapApiClient';
+import { WithdrawType } from '../../../lib/layerSwapApiClient';
 import WalletIcon from '../../icons/WalletIcon';
-import { useAccount } from 'wagmi';
 import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
 import { useAccountModal } from '@rainbow-me/rainbowkit';
-import { disconnect as wagmiDisconnect } from '@wagmi/core'
-import { useWalletState, useWalletUpdate } from '../../../context/wallet';
 import { GetDefaultNetwork } from '../../../helpers/settingsHelper';
-import { disconnect as starknetDisconnect } from "get-starknet";
 import Image from 'next/image';
-import { ResolveWalletIcon } from '../../HeaderWithMenu/ConnectedWallets';
-import toast from 'react-hot-toast';
 import SpinIcon from '../../icons/spinIcon';
 import { NetworkType } from '../../../Models/CryptoNetwork';
-import { useRouter } from 'next/router';
+import useWallet from '../../../hooks/useWallet';
 import { useQueryState } from '../../../context/query';
 
 const Withdraw: FC = () => {
     const { swap } = useSwapDataState()
     const { setWithdrawType } = useSwapDataUpdate()
     const { layers } = useSettingsState()
-    const router = useRouter()
     const { appName, signature } = useQueryState()
     const source_internal_name = swap?.source_exchange ?? swap?.source_network
     const source = layers.find(n => n.internal_name === source_internal_name)
@@ -174,18 +167,12 @@ const Withdraw: FC = () => {
 }
 
 const WalletTransferContent: FC = () => {
-    const { address, connector } = useAccount();
     const { openAccountModal } = useAccountModal();
-    const { starknetAccount, imxAccount, syncWallet } = useWalletState()
-    const { setStarknetAccount, setImxAccount, setSyncWallet } = useWalletUpdate()
-
+    const { getWithdrawalProvider: getProvider, disconnectWallet } = useWallet()
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
-    const { mutateSwap } = useSwapDataUpdate()
     const [isLoading, setIsloading] = useState(false);
-    const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-        || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-    const sourceIsZkSync = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
+    const { mutateSwap } = useSwapDataUpdate()
 
     const {
         source_network: source_network_internal_name,
@@ -194,60 +181,30 @@ const WalletTransferContent: FC = () => {
 
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
+    const source_layer = layers.find(n => n.internal_name === swap?.source_network)
 
     const sourceNetworkType = GetDefaultNetwork(source_network, source_network_asset)?.type
+    const provider = useMemo(() => {
+        return source_layer && getProvider(source_layer)
+    }, [source_layer, getProvider])
 
-    const handleDisconnectCoinbase = useCallback(async () => {
-        const apiClient = new LayerSwapApiClient()
-        swap && await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
-        await mutateSwap()
-    }, [])
+    const wallet = provider?.getConnectedWallet()
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!wallet) return
         setIsloading(true);
-        try {
-            if (swap?.source_exchange) {
-                await handleDisconnectCoinbase()
-            }
-            else if (sourceNetworkType === NetworkType.EVM) {
-                await wagmiDisconnect()
-            }
-            else if (sourceNetworkType === NetworkType.Starknet) {
-                await starknetDisconnect({ clearLastWallet: true })
-                setStarknetAccount(null)
-            }
-            else if (sourceIsImmutableX) {
-                setImxAccount(null)
-            }
-            else if (sourceIsZkSync) {
-                await wagmiDisconnect()
-                setSyncWallet(null)
-            }
-        }
-        catch {
-            toast.error("Couldn't disconnect the account")
-        }
-        finally {
-            setIsloading(false);
-        }
+        await disconnectWallet(wallet.providerName, swap)
+        if (source_exchange) await mutateSwap()
+        setIsloading(false);
         e?.stopPropagation();
-    }, [sourceNetworkType, swap?.source_exchange])
+    }, [sourceNetworkType, swap?.source_exchange, disconnectWallet])
 
-    let accountAddress = ""
+    let accountAddress: string | undefined = ""
     if (swap?.source_exchange) {
         accountAddress = swap.exchange_account_name || ""
     }
-    else if (sourceNetworkType === NetworkType.EVM) {
-        accountAddress = address || "";
-    }
-    else if (sourceNetworkType === NetworkType.Starknet) {
-        accountAddress = starknetAccount?.account?.address || "";
-    }
-    else if (sourceIsImmutableX) {
-        accountAddress = imxAccount || "";
-    }
-    else if (sourceIsZkSync) {
-        accountAddress = syncWallet?.cachedAddress || "";
+    else if (wallet) {
+        accountAddress = wallet.address || "";
     }
 
     const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap?.source_exchange
@@ -270,44 +227,12 @@ const WalletTransferContent: FC = () => {
             <span className='mb-1 ml-1 text-sm'>{swap?.source_exchange ? "Connected account" : "Connected wallet"}</span>
         }
 
-        <div onClick={handleOpenAccount} className={`${canOpenAccount ? 'cursor-pointer' : 'cursor-auto'} text-left min-h-12  space-x-2 border border-secondary-700 ea7df14a1597407f9f755f05e25bab42:bg-secondary-800/50 bg-secondary-700/70 shadow-xl flex text-sm rounded-md items-center w-full pl-4 pr-2 py-1.5`}>
+        <div onClick={handleOpenAccount} className={`${canOpenAccount ? 'cursor-pointer' : 'cursor-auto'} text-left min-h-12  space-x-2 border border-secondary-600 bg-secondary-700/70 flex text-sm rounded-md items-center w-full pl-4 pr-2 py-1.5`}>
             <div className='flex text-secondary-text bg-secondary-400 flex-row items-left rounded-md p-1'>
                 {
                     !swap?.source_exchange
-                    && sourceNetworkType === NetworkType.Starknet
-                    && starknetAccount?.icon &&
-                    <Image
-                        src={starknetAccount?.icon}
-                        alt={accountAddress}
-                        width={25}
-                        height={25} />
-                }
-                {
-                    !swap?.source_exchange
-                    && sourceIsImmutableX
-                    && source_network
-                    && <Image
-                        src={resolveImgSrc(source_network)}
-                        alt={accountAddress}
-                        width={25}
-                        height={25} />
-                }
-                {
-                    !swap?.source_exchange
-                    && sourceIsZkSync
-                    && source_network
-                    && <Image
-                        src={resolveImgSrc(source_network)}
-                        alt={accountAddress}
-                        width={25}
-                        height={25} />
-                }
-                {
-                    !swap?.source_exchange
-                    && sourceNetworkType === NetworkType.EVM
-                    && connector?.name
-                    && <ResolveWalletIcon
-                        connector={connector?.name}
+                    && wallet?.connector
+                    && <wallet.icon
                         className="w-6 h-6 rounded-full"
                     />
                 }

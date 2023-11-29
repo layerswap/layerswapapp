@@ -131,7 +131,7 @@ export function CalculateMaxAllowedAmount(values: SwapFormValues, balances?: str
         }
         // in case the query parameter had bad formatting just ignoe
         catch { }
-    } else if (walletBalance && (walletBalance >= Number(minAllowedAmount) && walletBalance <= maxAmount)) {
+    } else if (walletBalance && ((walletBalance - Number(gas)) >= Number(minAllowedAmount) && (walletBalance - Number(gas)) <= maxAmount)) {
         return walletBalance - Number(gas)
     }
     return maxAmount || 0

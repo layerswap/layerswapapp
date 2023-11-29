@@ -1,15 +1,12 @@
-"use client"
-import { FC, useEffect } from 'react'
+import { FC } from 'react'
 import { Widget } from '../Widget/Index';
-import { useSwapDataState, useSwapDataUpdate } from '../../context/swap';
-import { ResolvePollingInterval } from '../utils/SwapStatus';
+import { useSwapDataState } from '../../context/swap';
 import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
 import { PublishedSwapTransactionStatus, TransactionType } from '../../lib/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
 import GasDetails from '../gasDetails';
 import { useSettingsState } from '../../context/settings';
-import { WalletDataProvider } from '../../context/wallet';
 
 type Props = {
     type: "widget" | "contained",

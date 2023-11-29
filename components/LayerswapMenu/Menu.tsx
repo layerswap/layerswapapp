@@ -37,6 +37,7 @@ const Item = (function Item({ children, pathname, onClick, icon, target = '_self
             </LinkWrapper>
             :
             <button
+                type="button"
                 onClick={onClick}
                 className={`gap-4 flex relative cursor-pointer hover:bg-secondary-600 select-none items-center px-4 py-3 outline-none w-full text-primary-text`}
             >

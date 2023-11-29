@@ -23,12 +23,9 @@ import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import StatusIcon from "../../SwapHistory/StatusIcons";
 import Image from 'next/image';
-import { ArrowRight, X } from "lucide-react";
+import { ChevronRight, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
-import { truncateDecimals } from "../../utils/RoundDecimals";
-import { SwapStatus } from "../../../Models/SwapStatus";
-import LinkWrapper from "../../LinkWraapper";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -99,7 +96,7 @@ export default function Form() {
                     if (search)
                         swapURL += `?${search}`
                 }
-                window.history.pushState({ path: swapURL }, '', swapURL);
+                window.history.replaceState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
                 setShowSwapModal(true)
             }
         }
@@ -132,6 +129,8 @@ export default function Form() {
 
     const initialValues: SwapFormValues = swap ? generateSwapInitialValuesFromSwap(swap, settings)
         : generateSwapInitialValues(settings, query)
+    const initiallyValidation = MainStepValidation({ settings, query })(initialValues)
+    const initiallyInValid = Object.values(initiallyValidation)?.filter(v => v).length > 0
 
     return <>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
@@ -155,6 +154,7 @@ export default function Form() {
             validateOnMount={true}
             validate={MainStepValidation({ settings, query })}
             onSubmit={handleSubmit}
+            isInitialValid={!initiallyInValid}
         >
             <SwapForm isPartnerWallet={!!isPartnerWallet} partner={partner} />
         </Formik>
@@ -187,8 +187,6 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
         destination_network: destination_network_internal_name,
         source_network: source_network_internal_name,
         destination_exchange: destination_exchange_internal_name,
-        source_network_asset,
-        requested_amount
     } = swap || {}
 
     const settings = useSettingsState()
@@ -196,12 +194,10 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
     if (!swap)
         return <></>
 
-    const { exchanges, networks, currencies, resolveImgSrc } = settings
+    const { exchanges, networks, resolveImgSrc } = settings
     const source = source_exchange_internal_name ? exchanges.find(e => e.internal_name === source_exchange_internal_name) : networks.find(e => e.internal_name === source_network_internal_name)
     const destination_exchange = destination_exchange_internal_name && exchanges.find(e => e.internal_name === destination_exchange_internal_name)
     const destination = destination_exchange_internal_name ? destination_exchange : networks.find(n => n.internal_name === destination_network_internal_name)
-    const currency = currencies.find(c => c.asset === source_network_asset)
-    const truncated_amount = requested_amount ? truncateDecimals(requested_amount, currency?.precision) : ''
 
     return <motion.div
         initial={{ y: 10, opacity: 0 }}
@@ -216,7 +212,7 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
             <motion.div
                 variants={textMotion}
                 className="flex items-center bg-secondary-600 rounded-r-lg">
-                <div className="text-primary-text flex px-4 p-2 items-center space-x-2">
+                <div className="text-primary-text flex px-3 p-2 items-center space-x-2">
                     <span className="flex items-center">
                         {swap && <StatusIcon swap={swap} short={true} />}
                     </span>
@@ -231,7 +227,7 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                             />
                         }
                     </div>
-                    <ArrowRight className="h-4 w-4 mx-2" />
+                    <ChevronRight className="block h-4 w-4 mx-1" />
                     <div className="flex-shrink-0 h-5 w-5 relative block">
                         {destination &&
                             <Image
@@ -243,10 +239,8 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                             />
                         }
                     </div>
-                    <div className="flex-shrink-0 relative hidden md:block">
-                        {truncated_amount} {source_network_asset}
-                    </div>
                 </div>
+
             </motion.div>
         </motion.div>
     </motion.div>

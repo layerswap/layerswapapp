@@ -1,5 +1,4 @@
-import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { FC, ReactNode, useCallback } from "react";
+import { FC, ReactNode, useCallback, useMemo } from "react";
 import {
     useSwitchNetwork,
 } from "wagmi";
@@ -7,13 +6,25 @@ import WalletIcon from "../../../../icons/WalletIcon";
 import WalletMessage from "./message";
 import { ActionData } from "./sharedTypes";
 import SubmitButton from "../../../../buttons/submitButton";
+import useWallet from "../../../../../hooks/useWallet";
+import { useSwapDataState } from "../../../../../context/swap";
+import { useSettingsState } from "../../../../../context/settings";
 
 export const ConnectWalletButton: FC = () => {
-    const { openConnectModal } = useConnectModal();
+    const { swap } = useSwapDataState()
+    const { layers } = useSettingsState()
+    const { getWithdrawalProvider: getProvider } = useWallet()
+    const source_layer = layers.find(l => l.internal_name === swap?.source_network)
+    const provider = useMemo(() => {
+        return source_layer && getProvider(source_layer)
+    }, [source_layer, getProvider])
 
     const clickHandler = useCallback(() => {
-        return openConnectModal && openConnectModal()
-    }, [openConnectModal])
+        if (!provider)
+            throw new Error(`No provider from ${source_layer?.internal_name}`)
+
+        return provider.connectWallet(provider?.name)
+    }, [provider])
 
     return <ButtonWrapper
         clcikHandler={clickHandler}

@@ -1,15 +1,13 @@
 import { useFormikContext } from "formik";
-import { ChangeEvent, forwardRef, use, useCallback, useRef, useState } from "react";
+import { forwardRef, useCallback, useRef, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import CurrencyFormField from "./CurrencyFormField";
 import NumericInput from "./NumericInput";
 import SecondaryButton from "../buttons/secondaryButton";
-import { useWalletState, useWalletUpdate } from "../../context/wallet";
-import { truncateDecimals } from "../utils/RoundDecimals";
-import { useAccount } from "wagmi";
 import { useQueryState } from "../../context/query";
+import { useBalancesState, useBalancesUpdate } from "../../context/balances";
+import { truncateDecimals } from "../utils/RoundDecimals";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
@@ -18,10 +16,10 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { networks, currencies } = useSettingsState()
     const query = useQueryState()
     const { currency, from, to, amount, destination_address } = values
-    const { address } = useAccount()
-    const { balances, isBalanceLoading, gases, isGasLoading } = useWalletState()
+
+    const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === currency?.asset)?.gas || 0
-    const { getBalance, getGas } = useWalletUpdate()
+    const { getBalance, getGas } = useBalancesUpdate()
     const name = "amount"
     const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, currency?.precision)
@@ -49,10 +47,10 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const handleSetMaxAmount = useCallback(() => {
         setFieldValue(name, maxAllowedAmount);
-        address && from && getBalance(from);
-        address && from && currency && getGas(from, currency, destination_address || address);
+        from && getBalance(from);
+        from && currency && getGas(from, currency, destination_address || "");
         updateRequestedAmountInUsd(maxAllowedAmount)
-    }, [address, from, currency, destination_address, maxAllowedAmount])
+    }, [from, currency, destination_address, maxAllowedAmount])
 
     return (<>
         <AmountLabel detailsAvailable={!!(from && to && amount)}
@@ -131,8 +129,8 @@ const AmountLabel = ({
             <p className="block font-semibold text-secondary-text text-sm">Amount</p>
             {
                 detailsAvailable &&
-                <div className="text-xs text-secondary-text flex items-center space-x-1">
-                    <span>(Min:&nbsp;</span>{minAllowedAmount}<span>&nbsp;- Max:&nbsp;</span>{isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{maxAllowedAmount}</span>}<span>)</span>
+                <div className="text-xs hidden md:flex text-secondary-text items-center">
+                    <span>(Min:&nbsp;</span>{minAllowedAmount}<span>&nbsp;-&nbsp;Max:&nbsp;</span>{isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{maxAllowedAmount}</span>}<span>)</span>
                 </div>
             }
         </div>

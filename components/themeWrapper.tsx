@@ -33,7 +33,7 @@ export default function ThemeWrapper({ children }: Props) {
                                     {icon}
                                     {message}
                                     {t.type !== 'loading' && (
-                                        <button onClick={() => toast.dismiss(t.id)}><X className="h-5" /></button>
+                                        <button type="button" onClick={() => toast.dismiss(t.id)}><X className="h-5" /></button>
                                     )}
                                 </>
                             )}
@@ -70,14 +70,14 @@ export default function ThemeWrapper({ children }: Props) {
                     </svg>
                 </div>
                 <Navbar />
-                <div className="z-[1] w-full sm:w-fit">
+                <div className="z-[1] w-full">
                     <div className="flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg">
                         <div className="flex flex-col w-full text-primary-text">
                             {children}
                         </div>
                     </div>
                 </div>
-                <div id="offset-for-stickyness"></div>
+                <div id="offset-for-stickyness" className="block md:hidden"></div>
                 <GlobalFooter />
             </div>
         </main>

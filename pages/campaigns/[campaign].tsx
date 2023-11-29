@@ -2,7 +2,6 @@ import Layout from '../../components/layout'
 import { InferGetServerSidePropsType } from 'next'
 import LayerSwapAuthApiClient from '../../lib/userAuthApiClient'
 import CampaignDetails from '../../components/Campaigns/Details'
-import ColorSchema from '../../components/ColorSchema'
 import { getServerSideProps } from '../../helpers/getSettings'
 import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings'
 
@@ -12,10 +11,9 @@ export default function RewardsPage({ settings, themeData }: InferGetServerSideP
     LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
 
     return (<>
-        <Layout settings={appSettings}>
+        <Layout settings={appSettings} themeData={themeData}>
             <CampaignDetails />
         </Layout>
-        <ColorSchema themeData={themeData} />
     </>
     )
 }

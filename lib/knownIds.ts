@@ -139,6 +139,8 @@ export default class KnownInternalNames {
         public static readonly MantaMainnet: string = "MANTA_MAINNET";
 
         public static readonly ScrollMainnet: string = "SCROLL_MAINNET";
+
+        public static readonly TONMainnet: string = "TON_MAINNET";
     }
 
     static Currencies = class {

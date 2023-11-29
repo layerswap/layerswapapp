@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { FC, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import ReactPortal from "../Common/ReactPortal";
 
 
