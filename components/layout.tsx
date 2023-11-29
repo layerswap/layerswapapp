@@ -14,7 +14,6 @@ import { SendErrorMessage } from "../lib/telegram";
 import dynamic from 'next/dynamic'
 import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
-import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
@@ -62,7 +61,6 @@ export default function Layout({ children, settings, themeData }: Props) {
     </ThemeWrapper>
 
   let appSettings = new LayerSwapAppSettings(settings)
-  LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
 
   const query: QueryParams = {
     ...router.query,

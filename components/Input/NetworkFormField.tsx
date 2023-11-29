@@ -16,6 +16,9 @@ import { useQueryState } from "../../context/query";
 import CurrencyFormField from "./CurrencyFormField";
 import { CalculateReceiveAmount } from "../../lib/fees";
 import Image from 'next/image'
+import useSWR from 'swr'
+import { ApiResponse } from "../../Models/ApiResponse";
+import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -50,9 +53,13 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
+
     const name = direction
+
     const { from, to, currency } = values
+
     const { lockFrom, lockTo, asset, lockAsset } = useQueryState()
+
     const { resolveImgSrc, layers, currencies, networks } = useSettingsState();
 
     let receive_amount = CalculateReceiveAmount(values, networks, currencies);
@@ -70,16 +77,28 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     let valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
 
+    const filterWith = direction === "from" ? to : from
+
+    const apiClient = new LayerSwapApiClient()
+
+    const { data: routes } = useSWR<ApiResponse<{
+        "network": "string",
+        "asset": "string"
+    }[]>>(
+        `/routes/${direction === "from" ? "sources" : "destinations"}${filterWith ? `?network=${filterWith.internal_name}&asset=ETH&` : "?"}version=sandbox`, apiClient.fetcher)
+
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
-        filteredLayers = FilterSourceLayers(layers, to, lockedCurrency);
+        filteredLayers = layers.filter(l => l.status === 'active' && routes?.data?.some(r => r.network === l.internal_name) && l.internal_name !== filterWith?.internal_name)
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, !!(from && lockFrom));
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        filteredLayers = FilterDestinationLayers(layers, from, lockedCurrency);
+        console.log("routes", routes)
+        filteredLayers = layers.filter(l => l.status === 'active' && routes?.data?.some(r => r.network === l.internal_name) && l.internal_name !== filterWith?.internal_name)
+        console.log("filteredLayers", filteredLayers)
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, !!(to && lockTo));
     }
     valueGrouper = groupByType

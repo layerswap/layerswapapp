@@ -10,7 +10,6 @@ export default function Transactions({ settings, themeData }: InferGetServerSide
   let appSettings = new LayerSwapAppSettings(settings)
   LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
 
-
   return (
     <>
       <Layout settings={appSettings} themeData={themeData}>

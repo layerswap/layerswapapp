@@ -1,7 +1,7 @@
 import { CryptoNetwork, NetworkCurrency } from "./CryptoNetwork";
 import { Currency } from "./Currency";
-import { Exchange, ExchangeCurrency } from "./Exchange";
-import { BaseL2Asset, ExchangeAsset, Layer, NetworkAsset } from "./Layer";
+import { ExchangeCurrency } from "./Exchange";
+import { ExchangeAsset, Layer, NetworkAsset } from "./Layer";
 import { LayerSwapSettings } from "./LayerSwapSettings";
 import { Partner } from "./Partner";
 
@@ -10,7 +10,7 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
         super();
         Object.assign(this, LayerSwapAppSettings.ResolveSettings(settings))
 
-        this.layers = LayerSwapAppSettings.ResolveLayers(this.exchanges, this.networks);
+        this.layers = LayerSwapAppSettings.ResolveLayers(this.networks);
     }
 
     layers: Layer[]
@@ -20,8 +20,12 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
         if (!item) {
             return "/images/logo_placeholder.png";
         }
+        
+        const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
+        if (!resource_storage_url)
+            throw new Error("NEXT_PUBLIC_RESOURCE_STORAGE_URL is not set up in env vars")
 
-        const basePath = new URL(this.discovery.resource_storage_url);
+        const basePath = new URL(resource_storage_url);
 
         // Shitty way to check for partner
         if ((item as Partner).is_wallet != undefined) {
@@ -38,7 +42,11 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
     }
 
     static ResolveSettings(settings: LayerSwapSettings) {
-        const basePath = new URL(settings.discovery.resource_storage_url);
+        const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
+        if (!resource_storage_url)
+            throw new Error("NEXT_PUBLIC_RESOURCE_STORAGE_URL is not set up in env vars")
+
+        const basePath = new URL(resource_storage_url);
 
         settings.networks = settings.networks.map(n => ({
             ...n,
@@ -56,20 +64,14 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
         return settings
     }
 
-    static ResolveLayers(exchanges: Exchange[], networks: CryptoNetwork[]): Layer[] {
-        const exchangeLayers: Layer[] = exchanges.map((e): Layer => ({
-            isExchange: true,
-            assets: LayerSwapAppSettings.ResolveExchangeL2Assets(e.currencies, networks),
-            ...e
-        }))
+    static ResolveLayers(networks: CryptoNetwork[]): Layer[] {
         const networkLayers: Layer[] = networks.map((n): Layer =>
         ({
             isExchange: false,
             assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n),
             ...n
         }))
-        const result = exchangeLayers.concat(networkLayers)
-        return result
+        return networkLayers
     }
 
     static ResolveExchangeL2Assets(
