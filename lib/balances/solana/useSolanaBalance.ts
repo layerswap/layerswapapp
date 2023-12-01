@@ -2,7 +2,8 @@ import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
 import { createPublicClient, http } from 'viem';
-import { Blockhash, Keypair, SystemProgram, Transaction } from "@solana/web3.js";
+import { Blockhash, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 
 type SolanaBalance = {
     value: SolanaAccount[]
@@ -44,6 +45,8 @@ export default function useSolanaBalance(): BalanceProvider {
         KnownInternalNames.Networks.SolanaMainnet
     ]
 
+    const { publicKey } = useSolanaWallet()
+
     const getBalance = async ({ layer, address }: BalanceProps) => {
 
         let balances: Balance[] = []
@@ -84,21 +87,23 @@ export default function useSolanaBalance(): BalanceProvider {
         if (layer.isExchange === true || !layer.assets) return
 
         const provider = createPublicClient({
-            transport: http(layer.assets[0].network?.nodes[0].url)
+            transport: http(layer.nodes[0].url)
         })
 
+        if (!publicKey) return
+
         try {
-            const accountFrom = Keypair.generate();
-            const accountTo = Keypair.generate();
+
+            const toPublicKey = new PublicKey(layer.assets[0].network?.managed_accounts[0].address!);
             const blockhash: any = await provider.request({ method: 'getLatestBlockhash' as any, params: [{ commitment: "processed" } as any] })
 
             const transaction = new Transaction({
-                feePayer: accountFrom.publicKey,
+                feePayer: publicKey,
                 recentBlockhash: blockhash?.value?.blockhash as Blockhash,
             }).add(
                 SystemProgram.transfer({
-                    fromPubkey: accountFrom.publicKey,
-                    toPubkey: accountTo.publicKey,
+                    fromPubkey: publicKey,
+                    toPubkey: toPublicKey,
                     lamports: 100000,
                 }),
             );
