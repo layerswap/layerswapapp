@@ -10,7 +10,6 @@ import BackgroundField from "../../backgroundField";
 import LayerSwapApiClient, { DepositAddress, DepositAddressSource, DepositType, Fee } from "../../../lib/layerSwapApiClient";
 import SubmitButton from "../../buttons/submitButton";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../../shadcn/select";
-import { BaseL2Asset } from "../../../Models/Layer";
 import shortenAddress from "../../utils/ShortenAddress";
 import { isValidAddress } from "../../../lib/addressValidator";
 import { useSwapDepositHintClicked } from "../../store/zustandStore";

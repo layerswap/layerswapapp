@@ -45,7 +45,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
-    const nativeCurrency = destination_layer?.isExchange === false ? settings?.currencies?.find(c => c.asset === destination_layer?.native_currency) : null
+    const nativeCurrency = destination_layer?.isExchange === false ? settings?.currencies?.find(c => c.asset === destination_layer?.assets.find(a => a.is_native)?.asset) : null
     const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
 
     const progressStatuses = getProgressStatuses(swap, swapStatus)
@@ -58,7 +58,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
                     <span>Up to 2 hours (delayed)</span>
                     :
-                    <AverageCompletionTime time={destination_network?.average_completion_time} />
+                    <AverageCompletionTime hours={destination_network?.average_completion_time.total_hours} minutes={destination_network?.average_completion_time.total_minutes} />
             }
         </div>
     </div>
@@ -118,11 +118,11 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         },
         "output_transfer": {
             upcoming: {
-                name: `Sending ${destinationNetworkCurrency?.name} to your address`,
+                name: `Sending ${destinationNetworkCurrency?.asset} to your address`,
                 description: null
             },
             current: {
-                name: `Sending ${destinationNetworkCurrency?.name} to your address`,
+                name: `Sending ${destinationNetworkCurrency?.asset} to your address`,
                 description: null
             },
             complete: {

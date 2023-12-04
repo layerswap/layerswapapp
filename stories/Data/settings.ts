@@ -29,16 +29,12 @@ export const Settings: LayerSwapSettings = {
                     is_default: true,
                     withdrawal_fee: 90,
                     min_deposit_amount: 9,
-                    name: "svsvsv",
-                    is_deposit_enabled: true,
-                    is_withdrawal_enabled: true,
                     is_refuel_enabled: false,
-                    max_withdrawal_amount: 8,
-                    deposit_fee: 78,
                     contract_address: "0xasd",
                     decimals: 90009,
-                    source_base_fee: 43,
-                    destination_base_fee: 8,
+                    is_native: true,
+                    precision: 6,
+                    usd_price: 10
                 },
             ],
             authorization_flow: "api_credentials",
@@ -58,16 +54,12 @@ export const Settings: LayerSwapSettings = {
                     is_default: true,
                     withdrawal_fee: 90,
                     min_deposit_amount: 9,
-                    name: "svsvsv",
-                    is_deposit_enabled: true,
-                    is_withdrawal_enabled: true,
                     is_refuel_enabled: false,
-                    max_withdrawal_amount: 8,
-                    deposit_fee: 78,
                     contract_address: "0xasd",
                     decimals: 90009,
-                    source_base_fee: 43,
-                    destination_base_fee: 8,
+                    is_native: true,
+                    precision: 6,
+                    usd_price: 10
                 },
                 {
                     asset: "ETH",
@@ -76,16 +68,12 @@ export const Settings: LayerSwapSettings = {
                     is_default: true,
                     withdrawal_fee: 90,
                     min_deposit_amount: 9,
-                    name: "svsvsv",
-                    is_deposit_enabled: true,
-                    is_withdrawal_enabled: true,
-                    is_refuel_enabled: false,
-                    max_withdrawal_amount: 8,
-                    deposit_fee: 78,
                     contract_address: "0xasd",
                     decimals: 90009,
-                    source_base_fee: 43,
-                    destination_base_fee: 8,
+                    is_native: true,
+                    precision: 6,
+                    usd_price: 10,
+                    is_refuel_enabled: true,
                 },
                 {
                     asset: "ETH",
@@ -94,16 +82,12 @@ export const Settings: LayerSwapSettings = {
                     is_default: true,
                     withdrawal_fee: 90,
                     min_deposit_amount: 9,
-                    name: "svsvsv",
-                    is_deposit_enabled: true,
-                    is_withdrawal_enabled: true,
                     is_refuel_enabled: false,
-                    max_withdrawal_amount: 8,
-                    deposit_fee: 78,
                     contract_address: "0xasd",
                     decimals: 90009,
-                    source_base_fee: 43,
-                    destination_base_fee: 8,
+                    is_native: true,
+                    precision: 6,
+                    usd_price: 10
                 },
             ],
             authorization_flow: "api_credentials",
@@ -123,16 +107,12 @@ export const Settings: LayerSwapSettings = {
                     is_default: true,
                     withdrawal_fee: 90,
                     min_deposit_amount: 9,
-                    name: "svsvsv",
-                    is_deposit_enabled: true,
-                    is_withdrawal_enabled: true,
                     is_refuel_enabled: false,
-                    max_withdrawal_amount: 8,
-                    deposit_fee: 78,
                     contract_address: "0xasd",
                     decimals: 90009,
-                    source_base_fee: 43,
-                    destination_base_fee: 8,
+                    is_native: true,
+                    precision: 6,
+                    usd_price: 10
                 },
             ],
             authorization_flow: "api_credentials",
@@ -142,7 +122,6 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Brine Testnet",
             "internal_name": "BRINE_TESTNET",
-            "native_currency": "USDC",
             "is_featured": false,
             "average_completion_time": "00:00:00",
             "chain_id": "testnet",
@@ -152,19 +131,14 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://testnet.brine.finance/history",
             "currencies": [
                 {
-                    "name": "USDC",
                     "contract_address": "0xasd",
                     "asset": "USDC",
                     "decimals": 6,
                     "status": "active",
-                    "is_deposit_enabled": false,
-                    "is_withdrawal_enabled": true,
                     "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 10,
-                    "deposit_fee": 0,
-                    "withdrawal_fee": 0,
-                    "source_base_fee": 0.0,
-                    "destination_base_fee": 0.0
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 10
                 }
             ],
             "metadata": {
@@ -186,7 +160,6 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Ethereum Goerli",
             "internal_name": "ETHEREUM_GOERLI",
-            "native_currency": "ETH",
             "is_featured": true,
             "average_completion_time": "00:09:29.7050560",
             "chain_id": "5",
@@ -196,49 +169,34 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://goerli.etherscan.io/tx/{0}",
             "currencies": [
                 {
-                    "name": "IMX",
                     "asset": "IMX",
                     "contract_address": "0x1facdd0165489f373255a90304650e15481b2c85",
                     "decimals": 18,
                     "status": "inactive",
-                    "is_deposit_enabled": false,
-                    "is_withdrawal_enabled": false,
                     "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 10,
-                    "deposit_fee": 0.509783,
-                    "withdrawal_fee": 0.202799,
-                    "source_base_fee": 1.322345,
-                    "destination_base_fee": 1.322345
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 10
                 },
                 {
-                    "name": "USDC",
                     "asset": "USDC",
                     "contract_address": "0x07865c6E87B9F70255377e024ace6630C1Eaa37F",
                     "decimals": 6,
                     "status": "active",
-                    "is_deposit_enabled": true,
-                    "is_withdrawal_enabled": true,
                     "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 100,
-                    "deposit_fee": 0.38,
-                    "withdrawal_fee": 0.15,
-                    "source_base_fee": 1,
-                    "destination_base_fee": 1
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 10
                 },
                 {
-                    "name": "ETH",
                     "asset": "ETH",
                     "decimals": 18,
                     "status": "active",
-                    "is_deposit_enabled": true,
-                    "is_withdrawal_enabled": true,
                     "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 0.1,
-                    "deposit_fee": 0.000063,
-                    "withdrawal_fee": 0.000063,
-                    "source_base_fee": 0.000542,
-                    "destination_base_fee": 0.000542,
-                    "contract_address": null
+                    "contract_address": null,
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 10
                 }
             ],
             "metadata": {
@@ -268,23 +226,17 @@ export const Settings: LayerSwapSettings = {
             "status": "active",
             "type": NetworkType.Starknet,
             "refuel_amount_in_usd": 0.5,
-            "native_currency": null,
             "transaction_explorer_template": "https://goerli.voyager.online/tx/{0}",
             "currencies": [
                 {
-                    "name": "ETH",
                     "asset": "ETH",
                     "contract_address": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
                     "decimals": 18,
                     "status": "active",
-                    "is_deposit_enabled": true,
-                    "is_withdrawal_enabled": true,
                     "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 0.1,
-                    "deposit_fee": 0.000007,
-                    "withdrawal_fee": 0.000007,
-                    "source_base_fee": 0.000552,
-                    "destination_base_fee": 0.0
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 10
                 }
             ],
             "metadata": {
@@ -308,7 +260,6 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "ImmutableX Goerli",
             "internal_name": "IMMUTABLEX_GOERLI",
-            "native_currency": "IMX",
             "is_featured": false,
             "average_completion_time": "00:13:58.3918070",
             "chain_id": "5",
@@ -318,49 +269,34 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://immutascan.io/tx/{0}",
             "currencies": [
                 {
-                    "name": "IMX",
                     "asset": "IMX",
                     "contract_address": "0x1facdd0165489f373255a90304650e15481b2c85",
                     "decimals": 18,
                     "status": "inactive",
-                    "is_deposit_enabled": true,
-                    "is_withdrawal_enabled": true,
                     "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 10,
-                    "deposit_fee": 0,
-                    "withdrawal_fee": 0.001322,
-                    "source_base_fee": 1.322345,
-                    "destination_base_fee": 1.322345
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 10
                 },
                 {
-                    "name": "ETH",
                     "asset": "ETH",
                     "decimals": 18,
                     "status": "active",
-                    "is_deposit_enabled": true,
-                    "is_withdrawal_enabled": true,
                     "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 0.1,
-                    "deposit_fee": 0,
-                    "withdrawal_fee": 0,
-                    "source_base_fee": 0.000572,
                     "contract_address": null,
-                    "destination_base_fee": 0.0
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 10
                 },
                 {
-                    "name": "USDC",
                     "asset": "USDC",
                     "contract_address": "0x07865c6E87B9F70255377e024ace6630C1Eaa37F",
                     "decimals": 6,
                     "status": "active",
-                    "is_deposit_enabled": true,
-                    "is_withdrawal_enabled": true,
                     "is_refuel_enabled": true,
-                    "max_withdrawal_amount": 100,
-                    "deposit_fee": 0,
-                    "withdrawal_fee": 0,
-                    "source_base_fee": 1.02,
-                    "destination_base_fee": 0.0
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 10
                 }
             ],
             "metadata": {
@@ -384,7 +320,6 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Arbitrum One Goerli",
             "internal_name": "ARBITRUM_GOERLI",
-            "native_currency": "ETH",
             "is_featured": true,
             "average_completion_time": "00:10:42.1351060",
             "chain_id": "421613",
@@ -394,34 +329,24 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://goerli.arbiscan.io/tx/{0}",
             "currencies": [
                 {
-                    "name": "USDC",
                     "asset": "USDC",
                     "contract_address": "0x8FB1E3fC51F3b789dED7557E680551d93Ea9d892",
                     "decimals": 6,
                     "status": "active",
-                    "is_deposit_enabled": true,
-                    "is_withdrawal_enabled": true,
                     "is_refuel_enabled": true,
-                    "max_withdrawal_amount": 100,
-                    "deposit_fee": 0,
-                    "withdrawal_fee": 0,
-                    "source_base_fee": 0.0,
-                    "destination_base_fee": 0.0
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 10
                 },
                 {
-                    "name": "ETH",
                     "asset": "ETH",
                     "decimals": 18,
                     "status": "active",
-                    "is_deposit_enabled": true,
-                    "is_withdrawal_enabled": true,
                     "is_refuel_enabled": true,
-                    "max_withdrawal_amount": 0.1,
-                    "deposit_fee": 0.000028,
-                    "withdrawal_fee": 0.000028,
-                    "source_base_fee": 0.000572,
                     "contract_address": null,
-                    "destination_base_fee": 0.0
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 10
                 }
             ],
             "metadata": {
@@ -445,7 +370,6 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Optimism Goerli",
             "internal_name": "OPTIMISM_GOERLI",
-            "native_currency": "ETH",
             "is_featured": false,
             "average_completion_time": "00:00:00",
             "chain_id": "420",
@@ -455,34 +379,24 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://goerli-optimism.etherscan.io/tx/{0}",
             "currencies": [
                 {
-                    "name": "ETH",
                     "asset": "ETH",
                     "decimals": 18,
                     "status": "active",
-                    "is_deposit_enabled": true,
-                    "is_withdrawal_enabled": true,
                     "is_refuel_enabled": false,
-                    "max_withdrawal_amount": 0.015,
-                    "deposit_fee": 0,
-                    "withdrawal_fee": 0,
-                    "source_base_fee": 0.0,
                     "contract_address": null,
-                    "destination_base_fee": 0
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 10
                 },
                 {
-                    "name": "USDC",
                     "asset": "USDC",
                     "contract_address": "0x2b8C821263A3728054218832E6449e733323f4dD",
                     "decimals": 18,
                     "status": "active",
-                    "is_deposit_enabled": true,
-                    "is_withdrawal_enabled": true,
                     "is_refuel_enabled": true,
-                    "max_withdrawal_amount": 15,
-                    "deposit_fee": 0,
-                    "withdrawal_fee": 0,
-                    "source_base_fee": 0,
-                    "destination_base_fee": 0.0
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 10
                 }
             ],
             "metadata": {

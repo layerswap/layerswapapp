@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { Fuel } from "lucide-react";
 import { FC, useMemo } from "react";
-import { Currency } from "../../../Models/Currency";
 import { Layer } from "../../../Models/Layer";
 import { useSettingsState } from "../../../context/settings";
 import { truncateDecimals } from "../../utils/RoundDecimals";
@@ -14,9 +13,10 @@ import KnownInternalNames from "../../../lib/knownIds";
 import useWallet from "../../../hooks/useWallet";
 import { useQueryState } from "../../../context/query";
 import { useSwapDataState } from "../../../context/swap";
+import { NetworkCurrency } from "../../../Models/CryptoNetwork";
 
 type SwapInfoProps = {
-    currency: Currency,
+    currency: NetworkCurrency,
     source: Layer,
     destination: Layer;
     requestedAmount: number;
@@ -30,7 +30,7 @@ type SwapInfoProps = {
 }
 
 const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name }) => {
-    const { resolveImgSrc, currencies, networks } = useSettingsState()
+    const { resolveImgSrc, layers } = useSettingsState()
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
         return from && getProvider(from)
@@ -58,7 +58,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
     const receiveAmountInUsd = receiveAmount ? (currency?.usd_price * receiveAmount).toFixed(2) : undefined
     const nativeCurrency = refuelAmount && to?.isExchange === false ?
-        currencies.find(c => c.asset === to?.native_currency) : null
+        from.assets.find(c => c.is_native) : null
 
     const truncatedRefuelAmount = (hasRefuel && refuelAmount) ?
         truncateDecimals(refuelAmount, nativeCurrency?.precision) : null
@@ -82,8 +82,8 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
-    const sourceCurrencyName = selectedAssetNetwork?.network?.currencies.find(c => c.asset === currency.asset)?.name || currency?.asset
-    const destCurrencyName = networks?.find(n => n.internal_name === to?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset)?.name || currency?.asset
+    const sourceCurrencyName = selectedAssetNetwork?.asset || currency?.asset
+    const destCurrencyName = layers?.find(n => n.internal_name === to?.internal_name)?.assets?.find(c => c?.asset === currency?.asset)?.asset || currency?.asset
 
     return (
         <div>

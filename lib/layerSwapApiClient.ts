@@ -8,6 +8,7 @@ import { NextRouter } from "next/router";
 import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
+import { CryptoNetwork } from "../Models/CryptoNetwork";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
@@ -21,14 +22,18 @@ export default class LayerSwapApiClient {
     fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
 
     async GetNetworksAsync(): Promise<ApiResponse<{
-        "network": "string",
-        "asset": "string"
+        network: string,
+        asset: string
     }>> {
         return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/routes/sources?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
     }
 
     async GetSettingsAsync(): Promise<ApiResponse<LayerSwapSettings>> {
         return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
+    }
+
+    async GetLSNetworksAsync(): Promise<ApiResponse<CryptoNetwork[]>> {
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/networks?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
     }
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<CreateSwapData>> {

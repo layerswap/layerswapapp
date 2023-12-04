@@ -1,12 +1,14 @@
 import { Chain as rainbowChain } from "@rainbow-me/rainbowkit";
-import { CryptoNetwork } from "../Models/CryptoNetwork";
 import NetworkSettings from "./NetworkSettings";
 import { SendErrorMessage } from "./telegram";
 import { parseGwei, Chain } from "viem";
+import { Layer } from "../Models/Layer";
 
-export default function resolveChain(network: CryptoNetwork): (Chain & rainbowChain) | undefined {
+export default function resolveChain(network: Layer): (Chain & rainbowChain) | undefined {
 
-    const nativeCurrency = network.currencies.find(c => c.asset === network.native_currency);
+    if (network.isExchange === true) return
+
+    const nativeCurrency = network.assets.find(c => c.is_native);
     const blockExplorersBaseURL = new URL(network.transaction_explorer_template).origin;
     const metadata = network.metadata
     const { ensRegistry, ensUniversalResolver, multicall3 } = metadata || {}
@@ -21,7 +23,7 @@ export default function resolveChain(network: CryptoNetwork): (Chain & rainbowCh
         name: network.display_name,
         network: network.internal_name,
         nativeCurrency: {
-            name: nativeCurrency.name,
+            name: nativeCurrency.asset,
             symbol: nativeCurrency.asset,
             decimals: nativeCurrency.decimals
         },

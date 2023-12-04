@@ -8,7 +8,7 @@ import ConnectNetwork from "../../ConnectNetwork";
 import toast from "react-hot-toast";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "../../../lib/generateSwapInitialValues";
-import LayerSwapApiClient, { SwapItem, TransactionType } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import Modal from "../../modal/modal";
 import SwapForm from "./Form";
 import { useRouter } from "next/router";
@@ -26,6 +26,7 @@ import Image from 'next/image';
 import { ChevronRight, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
+import { useFee } from "../../../context/feeContext";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -60,6 +61,7 @@ export default function Form() {
     const partner = query?.appName && partnerData?.data?.name?.toLowerCase() === (query?.appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
     const { swap } = useSwapDataState()
+    const { minAllowedAmount, maxAllowedAmount } = useFee()
 
     useEffect(() => {
         if (swap) {
@@ -129,8 +131,8 @@ export default function Form() {
 
     const initialValues: SwapFormValues = swap ? generateSwapInitialValuesFromSwap(swap, settings)
         : generateSwapInitialValues(settings, query)
-    const initiallyValidation = MainStepValidation({ settings, query })(initialValues)
-    const initiallyInValid = Object.values(initiallyValidation)?.filter(v => v).length > 0
+    const initiallyValidation = MainStepValidation({ minAllowedAmount, maxAllowedAmount })(initialValues)
+    const initiallyIsValid = Object.values(initiallyValidation)?.filter(v => v).length > 0
 
     return <>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
@@ -152,9 +154,9 @@ export default function Form() {
             innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
-            validate={MainStepValidation({ settings, query })}
+            validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
-            isInitialValid={!initiallyInValid}
+            isInitialValid={!initiallyIsValid}
         >
             <SwapForm isPartnerWallet={!!isPartnerWallet} partner={partner} />
         </Formik>
@@ -183,10 +185,9 @@ const textMotion = {
 
 const PendingSwap = ({ onClick }: { onClick: () => void }) => {
     const { swap } = useSwapDataState()
-    const { source_exchange: source_exchange_internal_name,
+    const { 
         destination_network: destination_network_internal_name,
         source_network: source_network_internal_name,
-        destination_exchange: destination_exchange_internal_name,
     } = swap || {}
 
     const settings = useSettingsState()
@@ -194,10 +195,9 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
     if (!swap)
         return <></>
 
-    const { exchanges, networks, resolveImgSrc } = settings
-    const source = source_exchange_internal_name ? exchanges.find(e => e.internal_name === source_exchange_internal_name) : networks.find(e => e.internal_name === source_network_internal_name)
-    const destination_exchange = destination_exchange_internal_name && exchanges.find(e => e.internal_name === destination_exchange_internal_name)
-    const destination = destination_exchange_internal_name ? destination_exchange : networks.find(n => n.internal_name === destination_network_internal_name)
+    const { resolveImgSrc, layers } = settings
+    const source = layers.find(e => e.internal_name === source_network_internal_name)
+    const destination = layers.find(n => n.internal_name === destination_network_internal_name)
 
     return <motion.div
         initial={{ y: 10, opacity: 0 }}

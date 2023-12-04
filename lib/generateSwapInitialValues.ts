@@ -34,7 +34,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         from: initialSource,
         to: initialDestination,
         amount: initialAmount,
-        currency: initialCurrency,
+        toCurrency: initialCurrency,
         destination_address: (!destinationLayer?.isExchange && initialAddress) ? initialAddress : '',
     }
 
@@ -47,6 +47,7 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
         destination_address,
         requested_amount,
         source_network_asset,
+        destination_network_asset,
         source_network,
         destination_network,
         source_exchange,
@@ -64,13 +65,15 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
         layers.find(l => l.internal_name === destination_exchange)
         : layers.find(l => l.internal_name === destination_network)
 
-    const currency = currencies.find(c => c.asset === source_network_asset)
+    const fromCurrency = currencies.find(c => c.asset === source_network_asset)
+    const toCurrency = currencies.find(c => c.asset === destination_network_asset)
 
     const result: SwapFormValues = {
         from,
         to,
         amount: requested_amount?.toString(),
-        currency,
+        fromCurrency,
+        toCurrency,
         destination_address,
         refuel: has_refuel
     }

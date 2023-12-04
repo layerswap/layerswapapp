@@ -19,6 +19,7 @@ import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
 import * as Sentry from "@sentry/nextjs";
+import { FeeProvider } from "../context/feeContext";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -165,9 +166,11 @@ export default function Layout({ children, settings, themeData }: Props) {
                 <ThemeWrapper>
                   <TonConnectProvider basePath={basePath} themeData={themeData}>
                     <DynamicRainbowKit>
-                      {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                        <MaintananceContent />
-                        : children}
+                      <FeeProvider>
+                        {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                          <MaintananceContent />
+                          : children}
+                      </FeeProvider>
                     </DynamicRainbowKit>
                   </TonConnectProvider>
                 </ThemeWrapper>

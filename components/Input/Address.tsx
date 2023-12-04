@@ -41,7 +41,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const [wrongNetwork, setWrongNetwork] = useState(false)
     const inputReference = useRef<HTMLInputElement>(null);
     const destination = values.to
-    const asset = values.currency?.asset
+    const asset = values.toCurrency?.asset
     const destinationNetwork = GetDefaultNetwork(destination, asset)
     const valid_addresses = address_book?.filter(a => (destination?.isExchange ? a.exchanges?.some(e => destination?.internal_name === e) : a.networks?.some(n => destination?.internal_name === n)) && isValidAddress(a.address, destination)) || []
 
@@ -124,8 +124,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
         close()
     }, [validInputAddress])
 
-    const destinationAsset = destination?.assets?.find(a => a.asset === asset)
-    const destinationChainId = destinationAsset?.network?.chain_id
+    const destinationAsset = values.toCurrency
+    const destinationChainId = values.to?.isExchange === false && values.to.chain_id
 
     return (<>
         <div className='w-full flex flex-col justify-between h-full text-primary-text'>
@@ -236,7 +236,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                     {
                         destination?.isExchange
                         && !inputAddressIsValid
-                        && values.currency
+                        && destinationAsset
                         && destinationNetwork
                         &&
                         <div className='text-left p-4 bg-secondary-800 text-primary-text rounded-lg border border-secondary-500'>
@@ -250,13 +250,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     <span>Select</span>
                                     <span className="inline-block mx-1">
                                         <span className='flex gap-1 items-baseline text-sm '>
-                                            <Image src={settings.resolveImgSrc(values.currency)}
+                                            <Image src={settings.resolveImgSrc(destinationAsset)}
                                                 alt="Project Logo"
                                                 height="15"
                                                 width="15"
                                                 className='rounded-sm'
                                             />
-                                            <span className="text-primary-text">{values.currency.asset}</span>
+                                            <span className="text-primary-text">{destinationAsset.asset}</span>
                                         </span>
                                     </span>
                                     <span>as asset</span>

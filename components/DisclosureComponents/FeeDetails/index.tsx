@@ -1,18 +1,17 @@
 
-import { useSettingsState } from '../../../context/settings';
-import { CalculateFee, CalculateReceiveAmount } from '../../../lib/fees';
 import { SwapFormValues } from '../../DTOs/SwapFormValues';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../shadcn/accordion';
 import { ReceiveAmounts } from './ReceiveAmounts';
 import DetailedEstimates from './DetailedEstimates';
 import Campaign from './Campaign';
+import { useFee } from '../../../context/feeContext';
+import { useSettingsState } from '../../../context/settings';
 
 export default function FeeDetails({ values }: { values: SwapFormValues }) {
-    const { networks, currencies } = useSettingsState()
-    const { currency, from, to, refuel } = values || {}
-
-    let fee = CalculateFee(values, networks);
-    let receive_amount = CalculateReceiveAmount(values, networks, currencies);
+    const { toCurrency, from, to, refuel } = values || {};
+    const { fee } = useFee()
+    const currency = toCurrency
+    const { layers } = useSettingsState()
 
     return (
         <>
@@ -21,18 +20,16 @@ export default function FeeDetails({ values }: { values: SwapFormValues }) {
                     <AccordionItem value='item-1'>
                         <AccordionTrigger className="items-center flex w-full relative gap-2 rounded-lg text-left text-base font-medium">
                             <ReceiveAmounts
-                                currencies={currencies}
                                 currency={currency}
                                 to={to}
-                                receive_amount={receive_amount}
+                                receive_amount={9} //TODO from api
                                 refuel={!!refuel}
                             />
                         </AccordionTrigger>
                         <AccordionContent className="text-sm text-secondary-text font-normal">
                             <DetailedEstimates
-                                currencies={currencies}
-                                networks={networks}
-                                fee={fee}
+                                networks={layers}
+                                fee={fee.amount}
                                 selected_currency={currency}
                                 source={from}
                                 destination={to}
@@ -43,11 +40,11 @@ export default function FeeDetails({ values }: { values: SwapFormValues }) {
             </div>
             {
                 values.to &&
-                values.currency &&
+                values.toCurrency &&
                 <Campaign
                     destination={values.to}
-                    selected_currency={values.currency}
-                    fee={fee}
+                    selected_currency={values.toCurrency}
+                    fee={fee.amount}
                 />
             }
         </>

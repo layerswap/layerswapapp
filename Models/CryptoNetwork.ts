@@ -10,14 +10,16 @@ export enum NetworkType {
     TON = 'ton'
 }
 
-
 export class CryptoNetwork {
     display_name: string;
     internal_name: string;
-    native_currency: string | null | undefined;
-    average_completion_time: string;
+    average_completion_time: {
+        total_minutes: number,
+        total_seconds: number,
+        total_hours: number
+    };
     transaction_explorer_template: string;
-    account_explorer_template?: string;
+    account_explorer_template: string;
     status: LayerStatus;
     currencies: NetworkCurrency[];
     refuel_amount_in_usd: number;
@@ -32,20 +34,15 @@ export class CryptoNetwork {
 }
 
 export class NetworkCurrency {
-    name: string;
     asset: string;
     status: LayerStatus;
-    is_deposit_enabled: boolean;
-    is_withdrawal_enabled: boolean;
     is_refuel_enabled: boolean;
-    max_withdrawal_amount: number;
-    deposit_fee: number;
-    withdrawal_fee: number;
+    is_native: boolean
     //TODO may be plain string
     contract_address: `0x${string}` | null | undefined;
     decimals: number;
-    source_base_fee: number;
-    destination_base_fee: number;
+    precision: number;
+    usd_price: number;
 }
 export class NetworkNode {
     url: string;

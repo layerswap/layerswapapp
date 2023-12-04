@@ -6,12 +6,13 @@ export class PersistantQueryParams {
     lockFrom?: boolean = false;
     lockTo?: boolean = false;
     lockAsset?: boolean = false;
+    fromAsset?: string = "";
+    toAsset?: string = "";
     destAddress?: string = "";
     hideRefuel?: boolean = false;
     hideAddress?: boolean = false;
     hideFrom?: boolean = false;
     hideTo?: boolean = false;
-    asset?: string = "";
     amount?: string = "";
     externalId?: string = ""
     signature?: string = "";
@@ -29,6 +30,7 @@ export class PersistantQueryParams {
     lockNetwork?: boolean = false;
     lockExchange?: boolean = false;
     addressSource?: string = "";
+    asset?: string = "";
 
 }
 

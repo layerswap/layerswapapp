@@ -8,8 +8,8 @@ import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 import { Partner } from '../Models/Partner';
 import { ApiError } from '../Models/ApiError';
-import { BaseL2Asset, ExchangeAsset } from '../Models/Layer';
 import { ResolvePollingInterval } from '../components/utils/SwapStatus';
+import { NetworkCurrency } from '../Models/CryptoNetwork';
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
@@ -31,7 +31,7 @@ export type UpdateInterface = {
     mutateSwap: KeyedMutator<ApiResponse<SwapItem>>
     setDepositeAddressIsfromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
-    setSelectedAssetNetwork: (assetNetwork: ExchangeAsset | BaseL2Asset) => void
+    setSelectedAssetNetwork: (assetNetwork: NetworkCurrency) => void
     setSwapId: (value: string) => void
 
 }
@@ -44,7 +44,7 @@ export type SwapData = {
     depositeAddressIsfromAccount: boolean,
     withdrawType: WithdrawType | undefined,
     swapTransaction: SwapTransaction | undefined,
-    selectedAssetNetwork: ExchangeAsset | BaseL2Asset | undefined
+    selectedAssetNetwork: NetworkCurrency | undefined
 }
 
 export function SwapDataProvider({ children }) {
@@ -65,10 +65,10 @@ export function SwapDataProvider({ children }) {
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const source_exchange = layers.find(n => n?.internal_name?.toLowerCase() === swapResponse?.data?.source_exchange?.toLowerCase())
 
-    const exchangeAssets = source_exchange?.assets?.filter(a => a?.asset === swapResponse?.data?.source_network_asset && a?.network?.status !== "inactive")
+    const exchangeAssets = source_exchange?.assets?.filter(a => a?.asset === swapResponse?.data?.source_network_asset && a?.status !== "inactive")
     const source_network = layers.find(n => n.internal_name?.toLowerCase() === swapResponse?.data?.source_network?.toLowerCase())
-    const defaultSourceNetwork = (exchangeAssets?.find(sn => sn?.is_default) || exchangeAssets?.[0] || source_network?.assets?.[0])
-    const [selectedAssetNetwork, setSelectedAssetNetwork] = useState<ExchangeAsset | BaseL2Asset | undefined>(defaultSourceNetwork)
+    const defaultSourceNetwork = exchangeAssets?.[0] || source_network?.assets?.[0]
+    const [selectedAssetNetwork, setSelectedAssetNetwork] = useState<NetworkCurrency | undefined>(defaultSourceNetwork)
 
     const swapStatus = swapResponse?.data?.status;
     useEffect(() => {
@@ -93,9 +93,9 @@ export function SwapDataProvider({ children }) {
         if (!values)
             throw new Error("No swap data")
 
-        const { to, currency, from, refuel } = values
+        const { to, fromCurrency, toCurrency, from, refuel } = values
 
-        if (!to || !currency || !from || !values.amount || !values.destination_address)
+        if (!to || !fromCurrency || !toCurrency || !from || !values.amount || !values.destination_address)
             throw new Error("Form data is missing")
 
         const sourceLayer = from
@@ -105,8 +105,8 @@ export function SwapDataProvider({ children }) {
             amount: values.amount,
             source: sourceLayer?.internal_name,
             destination: destinationLayer?.internal_name,
-            source_asset: currency.asset,
-            destination_asset: currency.asset,
+            source_asset: fromCurrency.asset,
+            destination_asset: toCurrency.asset,
             destination_address: values.destination_address,
             app_name: partner ? query?.appName : (apiVersion === 'sandbox' ? 'LayerswapSandbox' : 'Layerswap'),
             reference_id: query.externalId,

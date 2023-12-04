@@ -1,18 +1,17 @@
 import { FC } from "react";
-import { Currency } from "../../../Models/Currency";
 import { Layer } from "../../../Models/Layer";
 import { GetDefaultNetwork, GetNetworkCurrency } from "../../../helpers/settingsHelper";
 import { CaluclateRefuelAmount } from "../../../lib/fees";
 import { truncateDecimals } from "../../utils/RoundDecimals";
+import { NetworkCurrency } from "../../../Models/CryptoNetwork";
 
 type WillReceiveProps = {
     receive_amount?: number;
-    currency?: Currency | null;
+    currency?: NetworkCurrency | null;
     to: Layer | undefined | null;
-    currencies: Currency[];
     refuel: boolean
 }
-export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency, to, currencies, refuel }) => {
+export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency, to, refuel }) => {
     const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(currency?.precision) || "")
     const destinationNetworkCurrency = (to && currency) ? GetNetworkCurrency(to, currency.asset) : null
 
@@ -29,11 +28,10 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency,
                                 <>{parsedReceiveAmount}</>
                                 &nbsp;
                                 <span>
-                                    {destinationNetworkCurrency?.name}
+                                    {destinationNetworkCurrency?.asset}
                                 </span>
                             </p>
                             {refuel && <Refuel
-                                currencies={currencies}
                                 currency={currency}
                                 to={to}
                                 refuel={refuel}
@@ -46,27 +44,24 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency,
     </>
 }
 type RefuelProps = {
-    currency?: Currency | null;
+    currency?: NetworkCurrency | null;
     to?: Layer | null;
-    currencies: Currency[];
     refuel: boolean
 }
-export const Refuel: FC<RefuelProps> = ({ to, currency, currencies, refuel }) => {
-    const destination_native_asset = GetDefaultNetwork(to, currency?.asset)?.native_currency
-    const refuel_native_currency = currencies.find(c => c.asset === destination_native_asset)
+export const Refuel: FC<RefuelProps> = ({ to, currency, refuel }) => {
+    const destination_native_asset = GetDefaultNetwork(to, currency?.asset)?.assets.find(c => c.is_native)
     const refuelCalculations = CaluclateRefuelAmount({
-        allCurrencies: currencies,
         refuelEnabled: refuel,
         currency,
         to
     })
     const { refuelAmountInNativeCurrency } = refuelCalculations
-    const truncated_refuel = truncateDecimals(refuelAmountInNativeCurrency, refuel_native_currency?.precision)
+    const truncated_refuel = truncateDecimals(refuelAmountInNativeCurrency, destination_native_asset?.precision)
 
     return <>
         {
             truncated_refuel > 0 ? <p className='text-[12px] text-secondary-text/50'>
-                <>+</> <span>{truncated_refuel} {destination_native_asset}</span>
+                <>+</> <span>{truncated_refuel} {destination_native_asset?.asset}</span>
             </p>
                 : null
         }

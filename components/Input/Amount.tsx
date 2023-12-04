@@ -1,74 +1,88 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { useSettingsState } from "../../context/settings";
-import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import NumericInput from "./NumericInput";
 import SecondaryButton from "../buttons/secondaryButton";
 import { useQueryState } from "../../context/query";
 import { useBalancesState, useBalancesUpdate } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
+import { useFee } from "../../context/feeContext";
+import debounce from 'lodash/debounce';
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const { values, setFieldValue, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
-    const { networks, currencies } = useSettingsState()
-    const query = useQueryState()
-    const { currency, from, to, amount, destination_address } = values
+    const { fromCurrency, from, to, amount, destination_address } = values || {};
+    const { mutateFee, minAllowedAmount, maxAllowedAmount  } = useFee()
 
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
-    const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === currency?.asset)?.gas || 0
+    const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.asset)?.gas || 0
     const { getBalance, getGas } = useBalancesUpdate()
     const name = "amount"
-    const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
-    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, currency?.precision)
+    const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
+    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
 
-    const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
-    const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances as string, walletBalance?.amount, gasAmount, minAllowedAmount)
-    const maxAllowedDisplayAmont = truncateDecimals(maxAllowedAmount, currency?.precision)
+    const maxAllowedDisplayAmount = maxAllowedAmount && truncateDecimals(maxAllowedAmount, fromCurrency?.precision)
 
-    const placeholder = (currency && from && to && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAllowedDisplayAmont}` : '0.01234'
-    const step = 1 / Math.pow(10, currency?.precision || 1)
+    const placeholder = (fromCurrency && from && to && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAllowedDisplayAmount}` : '0.01234'
+    const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
     const amountRef = useRef(ref)
 
     const updateRequestedAmountInUsd = useCallback((requestedAmount: number) => {
-        if (currency?.usd_price && !isNaN(requestedAmount)) {
-            setRequestedAmountInUsd((currency?.usd_price * requestedAmount).toFixed(2));
+        if (fromCurrency?.usd_price && !isNaN(requestedAmount)) {
+            setRequestedAmountInUsd((fromCurrency?.usd_price * requestedAmount).toFixed(2));
         } else {
             setRequestedAmountInUsd(undefined);
         }
-    }, [requestedAmountInUsd, currency]);
+    }, [requestedAmountInUsd, fromCurrency]);
 
     const handleSetMinAmount = () => {
         setFieldValue(name, minAllowedAmount);
-        updateRequestedAmountInUsd(minAllowedAmount);
+        if (minAllowedAmount)
+            updateRequestedAmountInUsd(minAllowedAmount);
     }
 
     const handleSetMaxAmount = useCallback(() => {
         setFieldValue(name, maxAllowedAmount);
         from && getBalance(from);
-        from && currency && getGas(from, currency, destination_address || "");
-        updateRequestedAmountInUsd(maxAllowedAmount)
-    }, [from, currency, destination_address, maxAllowedAmount])
+        from && fromCurrency && getGas(from, fromCurrency, destination_address || "");
+        if (maxAllowedAmount)
+            updateRequestedAmountInUsd(maxAllowedAmount)
+    }, [from, fromCurrency, destination_address, maxAllowedAmount])
+
+    const handleAmountChangeDebounced = debounce((newAmount) => {
+        mutateFee()
+    }, 500);
+
+    useEffect(() => {
+        if (amount) {
+            handleAmountChangeDebounced({ amount });
+        }
+
+        return () => {
+            handleAmountChangeDebounced.cancel();
+        };
+    }, [amount]);
 
     return (<>
         <AmountLabel detailsAvailable={!!(from && to && amount)}
-            maxAllowedAmount={maxAllowedDisplayAmont}
+            maxAllowedAmount={maxAllowedDisplayAmount}
             minAllowedAmount={minAllowedAmount}
             isBalanceLoading={(isBalanceLoading || isGasLoading)}
         />
         <div className="flex w-full justify-between bg-secondary-700 rounded-lg">
             <div className="relative">
                 <NumericInput
-                    disabled={!currency}
+                    disabled={!fromCurrency}
                     placeholder={placeholder}
                     min={minAllowedAmount}
                     max={maxAllowedAmount}
                     step={isNaN(step) ? 0.01 : step}
                     name={name}
                     ref={amountRef}
-                    precision={currency?.precision}
+                    precision={fromCurrency?.precision}
                     className="rounded-r-none text-primary-text w-full !pb-6 text-lg"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
@@ -84,7 +98,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
             </div>
             <div className="inline-flex items-center">
                 {
-                    from && to && currency ? <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 pt-2 px-2">
+                    from && to && fromCurrency ? <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 pt-2 px-2">
                         <div className="flex">
                             <SecondaryButton onClick={handleSetMinAmount} size="xs">
                                 MIN
@@ -114,8 +128,8 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
 type AmountLabelProps = {
     detailsAvailable: boolean;
-    minAllowedAmount: number;
-    maxAllowedAmount: number;
+    minAllowedAmount: number | undefined;
+    maxAllowedAmount: number | undefined;
     isBalanceLoading: boolean;
 }
 const AmountLabel = ({

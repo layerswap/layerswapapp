@@ -1,11 +1,11 @@
-import { Currency } from "../../Models/Currency";
+import { NetworkCurrency } from "../../Models/CryptoNetwork";
 import { Layer } from "../../Models/Layer";
-
 
 export type SwapFormValues = {
   amount?: string;
   destination_address?: string;
-  currency?: Currency;
+  fromCurrency?: NetworkCurrency;
+  toCurrency?: NetworkCurrency;
   refuel?: boolean;
   from?: Layer;
   to?: Layer;

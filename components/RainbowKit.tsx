@@ -32,7 +32,7 @@ function RainbowKitComponent({ children }: Props) {
     }
 
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
-    const settingsChains = settings?.networks
+    const settingsChains = settings?.layers
         .sort((a, b) => Number(a.chain_id) - Number(b.chain_id))
         .filter(net => net.type === NetworkType.EVM
             && net.nodes?.some(n => n.url?.length > 0))

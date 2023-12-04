@@ -1,8 +1,8 @@
 import { createPublicClient, http, parseAbi } from "viem";
-import { CryptoNetwork } from "../Models/CryptoNetwork";
 import resolveChain from "./resolveChain";
+import { Layer } from "../Models/Layer";
 
-const isArgentWallet = async (address: string, source_network: CryptoNetwork) => {
+const isArgentWallet = async (address: string, source_network: Layer) => {
 
     const publicClient = createPublicClient({
         chain: resolveChain(source_network),

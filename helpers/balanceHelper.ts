@@ -1,10 +1,10 @@
 import { erc20ABI } from 'wagmi';
 import { encodeFunctionData, PublicClient, formatGwei, serializeTransaction, TransactionSerializedEIP1559 } from 'viem'
 import { multicall, fetchBalance, FetchBalanceResult } from '@wagmi/core'
-import { BaseL2Asset, Layer, NetworkAsset } from '../Models/Layer';
-import { Currency } from '../Models/Currency';
+import { Layer } from '../Models/Layer';
 import { getL1Fee } from '../lib/optimism/estimateFees';
 import NetworkSettings, { GasCalculation } from '../lib/NetworkSettings';
+import { NetworkCurrency } from '../Models/CryptoNetwork';
 
 export type ERC20ContractRes = ({
     error: Error;
@@ -43,9 +43,9 @@ type ResolveGasArguments = {
     contract_address: `0x${string}`,
     account: `0x${string}`,
     from: Layer & { isExchange: false },
-    currency: Currency,
+    currency: NetworkCurrency,
     destination: `0x${string}`
-    nativeToken: NetworkAsset,
+    nativeToken: NetworkCurrency,
     isSweeplessTx: boolean
 }
 
@@ -114,7 +114,7 @@ export const resolveERC20Balances = async (
 type GetBalanceArgs = {
     address: string,
     chainId: number,
-    assets: NetworkAsset[],
+    assets: NetworkCurrency[],
     publicClient: PublicClient,
     hasMulticall: boolean
 }
@@ -197,7 +197,7 @@ export const resolveNativeBalance = async (
     from: Layer & { isExchange: false },
     nativeTokenRes: FetchBalanceResult
 ) => {
-    const native_currency = from.assets.find(a => a.asset === from.native_currency)
+    const native_currency = from.assets.find(a => a.is_native)
     if (!native_currency) {
         return null
     }

@@ -5,8 +5,6 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import { Layer } from "../../Models/Layer";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
-import { FilterDestinationLayers, FilterSourceLayers, GetNetworkCurrency } from "../../helpers/settingsHelper";
-import { Currency } from "../../Models/Currency";
 import ExchangeSettings from "../../lib/ExchangeSettings";
 import { SortingByOrder } from "../../lib/sorting"
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
@@ -14,11 +12,10 @@ import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import { useQueryState } from "../../context/query";
 import CurrencyFormField from "./CurrencyFormField";
-import { CalculateReceiveAmount } from "../../lib/fees";
-import Image from 'next/image'
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
+import { NetworkCurrency } from "../../Models/CryptoNetwork";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -56,36 +53,29 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     const name = direction
 
-    const { from, to, currency } = values
+    const { from, to, fromCurrency, toCurrency } = values
+    const { lockFrom, lockTo } = useQueryState()
 
-    const { lockFrom, lockTo, asset, lockAsset } = useQueryState()
-
-    const { resolveImgSrc, layers, currencies, networks } = useSettingsState();
-
-    let receive_amount = CalculateReceiveAmount(values, networks, currencies);
-    const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(currency?.precision) || "");
-    const destinationNetworkCurrency = (to && currency) ? GetNetworkCurrency(to, currency.asset) : null;
-    const destinationImg = destinationNetworkCurrency && resolveImgSrc(destinationNetworkCurrency);
+    const { resolveImgSrc, layers } = useSettingsState();
 
     let placeholder = "";
     let searchHint = "";
     let filteredLayers: Layer[];
     let menuItems: SelectMenuItem<Layer>[];
-    const lockedCurrency = lockAsset ?
-        currencies?.find(c => c?.asset?.toUpperCase() === (asset as string)?.toUpperCase())
-        : null
 
     let valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
 
     const filterWith = direction === "from" ? to : from
+    const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
 
     const apiClient = new LayerSwapApiClient()
 
+    const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}${(filterWith && filterWithAsset) ? `?${direction === 'to' ? 'source_network' : 'destination_network'}=${filterWith.internal_name}&${direction === 'to' ? 'source_asset' : 'destination_asset'}=${filterWithAsset}&` : "?"}version=sandbox`
+
     const { data: routes } = useSWR<ApiResponse<{
-        "network": "string",
-        "asset": "string"
-    }[]>>(
-        `/routes/${direction === "from" ? "sources" : "destinations"}${filterWith ? `?network=${filterWith.internal_name}&asset=ETH&` : "?"}version=sandbox`, apiClient.fetcher)
+        network: string,
+        asset: string
+    }[]>>(routesEndpoint, apiClient.fetcher)
 
     if (direction === "from") {
         placeholder = "Source";
@@ -96,9 +86,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        console.log("routes", routes)
         filteredLayers = layers.filter(l => l.status === 'active' && routes?.data?.some(r => r.network === l.internal_name) && l.internal_name !== filterWith?.internal_name)
-        console.log("filteredLayers", filteredLayers)
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, !!(to && lockTo));
     }
     valueGrouper = groupByType
@@ -124,44 +112,11 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     searchHint={searchHint}
                 />
             </div>
-            {direction == "from" && from && to &&
-                <div className="col-span-2 rounded-lg h-12 w-full py-2.5 ml-2 bg-secondary-600 border border-secondary-500">
-                    <div className="inline-flex items-start flex-col">
-                        <CurrencyFormField />
-                    </div>
+            <div className="col-span-2 rounded-lg h-12 w-full py-2.5 ml-2 bg-secondary-600 border border-secondary-500">
+                <div className="inline-flex items-start w-full h-full align-sub">
+                    <CurrencyFormField direction={name} />
                 </div>
-            }
-            {direction == "to" && from && to &&
-                <div className="col-span-2 rounded-lg h-12 w-full py-2.5 ml-2 bg-secondary-600 border border-secondary-500 flex justify-center items-center">
-                    <span className="text-sm md:text-base">
-                        {
-                            parsedReceiveAmount > 0 ?
-                                <div className="font-semibold md:font-bold text-right leading-4">
-                                    <p className="flex items-center">
-                                        {destinationImg && <div className="flex-shrink-0 h-6 w-6 relative">
-                                            <Image
-                                                src={destinationImg}
-                                                alt="Destination icon"
-                                                height="40"
-                                                width="40"
-                                                loading="eager"
-                                                priority
-                                                className="rounded-md object-contain"
-                                            />
-                                        </div>
-                                        }
-                                        <span className="ml-3">
-                                            {destinationNetworkCurrency?.name}
-                                        </span>
-                                    </p>
-                                </div>
-                                : '-'
-                        }
-                    </span>
-                </div>
-            }
-            {direction && (!from || !to) &&
-                <div className="col-span-2 rounded-lg h-12 w-full pl-3 pr-2 py-3.5 ml-2 bg-secondary-600 border border-secondary-500"></div>}
+            </div>
         </div>
     </div>)
 });
@@ -188,9 +143,9 @@ function groupByType(values: ISelectMenuItem[]) {
     return groups;
 }
 
-function GenerateMenuItems(layers: Layer[], resolveImgSrc: (item: Layer | Currency) => string, direction: SwapDirection, lock: boolean): SelectMenuItem<Layer>[] {
+function GenerateMenuItems(layers: Layer[], resolveImgSrc: (item: Layer | NetworkCurrency) => string, direction: SwapDirection, lock: boolean): SelectMenuItem<Layer>[] {
 
-    let layerIsAvailable = (layer: Layer) => {
+    let layerIsAvailable = () => {
         if (lock) {
             return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
         }
@@ -210,7 +165,7 @@ function GenerateMenuItems(layers: Layer[], resolveImgSrc: (item: Layer | Curren
             name: l.display_name,
             order: order || 100,
             imgSrc: resolveImgSrc && resolveImgSrc(l),
-            isAvailable: layerIsAvailable(l),
+            isAvailable: layerIsAvailable(),
             group: getGroupName(l)
         }
         return res;

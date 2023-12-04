@@ -1,11 +1,10 @@
 import React, { FC, useEffect, useState } from 'react'
 import { useAccount } from 'wagmi';
 import { Layer } from '../Models/Layer';
-import { Currency } from '../Models/Currency';
 import { Balance, Gas, getErc20Balances, getNativeBalance, resolveERC20Balances, resolveGas, resolveNativeBalance } from '../helpers/balanceHelper';
 import { createPublicClient, http } from 'viem';
 import resolveChain from '../lib/resolveChain';
-import { NetworkType } from '../Models/CryptoNetwork';
+import { NetworkCurrency, NetworkType } from '../Models/CryptoNetwork';
 import { useSettingsState } from './settings';
 import { useSwapDataState } from './swap';
 
@@ -22,7 +21,7 @@ export type BalancesState = {
 
 export type BalancesStateUpdate = {
     getBalance: (from: Layer) => Promise<void>,
-    getGas: (from: Layer, currency: Currency, userDestinationAddress: string) => Promise<void>,
+    getGas: (from: Layer, currency: NetworkCurrency, userDestinationAddress: string) => Promise<void>,
 }
 
 type Props = {
@@ -41,7 +40,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
     const gases = allGases
 
     const { swap } = useSwapDataState()
-    const { networks } = useSettingsState()
+    const { layers } = useSettingsState()
 
     const [isContractWallet, setIsContractWallet] = useState<{ ready: boolean, value?: boolean }>({ ready: false })
 
@@ -51,7 +50,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
                 return
             }
             try {
-                const source_network = networks?.find(n => n.internal_name === swap?.source_network)
+                const source_network = layers?.find(n => n.internal_name === swap?.source_network)
                 if (!source_network)
                     return
 
@@ -89,8 +88,8 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
     async function getBalance(from: Layer) {
         const balance = allBalances[evmAddress || '']?.find(b => b?.network === from?.internal_name)
         const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
-        const source_assets = from.assets
-        const source_network = source_assets?.[0].network
+        const source_network = from
+        
         if (source_network
             && isBalanceOutDated
             && evmAddress
@@ -129,22 +128,19 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
         }
     }
 
-    async function getGas(from: Layer & { isExchange: false }, currency: Currency, userDestinationAddress: string) {
+    async function getGas(from: Layer & { isExchange: false }, currency: NetworkCurrency, userDestinationAddress: string) {
         if (!from || !evmAddress || from?.isExchange) {
             return
         }
         const chainId = Number(from?.chain_id)
         const nativeToken = from?.assets
-            .find(a =>
-                a.asset ===
-                (from as { native_currency: string }).native_currency)
-        const network = from.assets?.[0].network
+            .find(a => a.asset === from.assets.find(a => a.is_native)?.asset)
 
-        if (!nativeToken || !chainId || !network)
+        if (!nativeToken || !chainId || !from)
             return
 
         const contract_address = from?.assets?.find(a => a?.asset === currency?.asset)?.contract_address as `0x${string}`
-        const destination_address = from?.assets?.find(c => c.asset.toLowerCase() === currency?.asset?.toLowerCase())?.network?.managed_accounts?.[0]?.address as `0x${string}`
+        const destination_address = from?.managed_accounts?.[0]?.address as `0x${string}`
 
 
         const gas = allGases[from.internal_name]?.find(g => g?.token === currency?.asset)
@@ -158,7 +154,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
             try {
 
                 const publicClient = createPublicClient({
-                    chain: resolveChain(network),
+                    chain: resolveChain(from),
                     transport: http(),
                 })
 
