@@ -168,12 +168,15 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
             mutate()
     }, [])
 
+    const userSwaps = userSwapPages?.map(p => p.data).flat(1) || []
+    const explorerSwaps = explorerPages?.map(p => p?.data?.filter(s => s.status === 'completed')).flat(1) || []
+
     const userSwapsisEmpty =
         (userSwapPages?.[0] instanceof EmptyApiResponse)
 
     const explorerSwapsisEmpty =
         (explorerPages?.[0] instanceof EmptyApiResponse)
-        || (!explorerSwapsLoading && !explorerPages?.find(p => p.data && p.data.length > 0))
+        || (!explorerSwapsLoading && !(explorerSwaps?.length >= 1))
         || explorerError
 
     const isReachingEnd =
@@ -183,9 +186,6 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
         setSize(size + 1)
         setCachedSize(size + 1)
     }
-
-    const userSwaps = userSwapPages?.map(p => p.data).flat(1) || []
-    const explorerSwaps = explorerPages?.map(p => p?.data?.filter(s => s.status === 'completed')).flat(1) || []
 
     //TODO filter explorer swaps by status
     explorerSwaps?.forEach(es => {
@@ -218,7 +218,7 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
                 className="text-sm py-3 space-y-4 font-medium focus:outline-none h-full"
             >
                 {
-                    userSwaps?.map((swap, index) => {
+                    userSwaps?.map((swap) => {
                         const { source_exchange: source_exchange_internal_name,
                             destination_network: destination_network_internal_name,
                             source_network: source_network_internal_name,
@@ -283,7 +283,7 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
                                     destinationAddress={swap.destination_address}
                                     hasRefuel={swap?.has_refuel}
                                     refuelAmount={refuelAmountInNativeCurrency}
-                                    fee={5}
+                                    fee={5} // wtf?
                                     swap={swap}
                                     exchange_account_connected={swap?.exchange_account_connected}
                                     exchange_account_name={swap?.exchange_account_name}
