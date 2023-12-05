@@ -45,6 +45,9 @@ export default function useStarknet(): WalletProvider {
                         starknetAccount: res
                     }
                 })
+            } else if (res?.isConnected === false) {
+                await disconnectWallet()
+                connectWallet(chain)
             }
         }
         catch (e) {
