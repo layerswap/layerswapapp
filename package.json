@@ -26,6 +26,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tooltip": "^1.0.7",
     "@rainbow-me/rainbowkit": "^1.1.2",
+    "@sentry/nextjs": "^7.80.1",
     "@solana/web3.js": "^1.73.0",
     "@stripe/crypto": "^0.0.4",
     "@stripe/stripe-js": "^1.53.0",
