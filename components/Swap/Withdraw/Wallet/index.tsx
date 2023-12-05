@@ -38,7 +38,7 @@ const WalletTransfer: FC = () => {
         data: generatedDeposit
     } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
 
-    const managedDepositAddress = sourceAsset?.network?.managed_accounts?.[0]?.address;
+    const managedDepositAddress = source_network?.managed_accounts?.[0]?.address;
     const generatedDepositAddress = generatedDeposit?.data?.address
 
     const depositAddress = ready ?

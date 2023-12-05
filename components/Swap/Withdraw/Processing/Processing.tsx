@@ -27,12 +27,11 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const swapStatus = swap.status;
     const storedWalletTransactions = useSwapTransactionStore()
 
-    const source_network = settings.networks?.find(e => e.internal_name === swap.source_network)
-    const destination_network = settings.networks?.find(e => e.internal_name === swap.destination_network)
+    const source_network = settings.layers?.find(e => e.internal_name === swap.source_network)
     const destination_layer = settings.layers?.find(e => e.internal_name === swap.destination_network)
 
     const input_tx_explorer = source_network?.transaction_explorer_template
-    const output_tx_explorer = destination_network?.transaction_explorer_template
+    const output_tx_explorer = destination_layer?.transaction_explorer_template
 
     const destinationNetworkCurrency = destination_layer ? GetNetworkCurrency(destination_layer, swap?.destination_network_asset) : null
 
@@ -45,7 +44,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
-    const nativeCurrency = destination_layer?.isExchange === false ? settings?.currencies?.find(c => c.asset === destination_layer?.assets.find(a => a.is_native)?.asset) : null
+    const nativeCurrency = destination_layer?.isExchange === false ? destination_layer.assets?.find(c => c.asset === destination_layer?.assets.find(a => a.is_native)?.asset) : null
     const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
 
     const progressStatuses = getProgressStatuses(swap, swapStatus)
@@ -58,7 +57,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
                     <span>Up to 2 hours (delayed)</span>
                     :
-                    <AverageCompletionTime hours={destination_network?.average_completion_time.total_hours} minutes={destination_network?.average_completion_time.total_minutes} />
+                    <AverageCompletionTime hours={destination_layer?.average_completion_time.total_hours} minutes={destination_layer?.average_completion_time.total_minutes} />
             }
         </div>
     </div>

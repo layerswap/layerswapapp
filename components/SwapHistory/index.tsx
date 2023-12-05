@@ -23,7 +23,7 @@ import { truncateDecimals } from "../utils/RoundDecimals";
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
   const settings = useSettingsState()
-  const { exchanges, networks, currencies, resolveImgSrc } = settings
+  const { layers, resolveImgSrc } = settings
   const [isLastPage, setIsLastPage] = useState(false)
   const [swaps, setSwaps] = useState<SwapItem[]>()
   const [loading, setLoading] = useState(false)
@@ -189,10 +189,9 @@ function TransactionsHistory() {
                               source_network_asset
                             } = swap
 
-                            const source = source_exchange_internal_name ? exchanges.find(e => e.internal_name === source_exchange_internal_name) : networks.find(e => e.internal_name === source_network_internal_name)
-                            const source_currency = currencies?.find(c => c.asset === source_network_asset)
-                            const destination_exchange = destination_exchange_internal_name && exchanges.find(e => e.internal_name === destination_exchange_internal_name)
-                            const destination = destination_exchange_internal_name ? destination_exchange : networks.find(n => n.internal_name === destination_network_internal_name)
+                            const source = layers.find(e => e.internal_name === source_network_internal_name)
+                            const source_currency = source?.assets?.find(c => c.asset === source_network_asset)
+                            const destination = layers.find(n => n.internal_name === destination_network_internal_name)
                             const output_transaction = swap.transactions.find(t => t.type === TransactionType.Output)
                             return <tr onClick={() => handleopenSwapDetails(swap)} key={swap.id}>
 

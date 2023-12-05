@@ -1,15 +1,15 @@
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./addressValidator";
-import { FilterCurrencies, FilterDestinationLayers, FilterSourceLayers } from "../helpers/settingsHelper";
+import { FilterDestinationLayers, FilterSourceLayers } from "../helpers/settingsHelper";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { SwapItem } from "./layerSwapApiClient";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
     const { destAddress, amount, asset, from, to, lockAsset } = queryParams
-    const { currencies, layers } = settings || {}
+    const { layers } = settings || {}
 
-    const lockedCurrency = lockAsset ? currencies?.find(c => c?.asset?.toUpperCase() === asset?.toUpperCase()) : undefined
+    const lockedCurrency = lockAsset ? layers.find(l => l.internal_name === to)?.assets?.find(c => c?.asset?.toUpperCase() === asset?.toUpperCase()) : undefined
     const sourceLayer = layers.find(l => l.internal_name.toUpperCase() === from?.toUpperCase())
     const destinationLayer = layers.find(l => l.internal_name.toUpperCase() === to?.toUpperCase())
 
@@ -19,13 +19,13 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
     const initialSource = sourceLayer ? sourceItems.find(i => i == sourceLayer) : undefined
     const initialDestination = destinationLayer ? destinationItems.find(i => i === destinationLayer) : undefined
 
-    const filteredCurrencies = lockedCurrency ? [lockedCurrency] : FilterCurrencies(currencies, sourceLayer, destinationLayer);
+    const filteredCurrencies = lockedCurrency ? [lockedCurrency] : layers.find(l => l.internal_name === to)?.assets
 
     let initialAddress =
         destAddress && initialDestination && isValidAddress(destAddress, destinationLayer) ? destAddress : "";
 
     let initialCurrency =
-        filteredCurrencies.find(c => c.asset?.toUpperCase() == asset?.toUpperCase()) || filteredCurrencies?.[0]
+        filteredCurrencies?.find(c => c.asset?.toUpperCase() == asset?.toUpperCase()) || filteredCurrencies?.[0]
 
     let initialAmount =
         (lockedCurrency && amount) || (initialCurrency ? amount : '')
@@ -55,7 +55,7 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
         has_refuel
     } = swap
 
-    const { currencies, layers } = settings || {}
+    const { layers } = settings || {}
 
     const from = source_exchange ?
         layers.find(l => l.internal_name === source_exchange)
@@ -65,8 +65,8 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
         layers.find(l => l.internal_name === destination_exchange)
         : layers.find(l => l.internal_name === destination_network)
 
-    const fromCurrency = currencies.find(c => c.asset === source_network_asset)
-    const toCurrency = currencies.find(c => c.asset === destination_network_asset)
+    const fromCurrency = from?.assets.find(c => c.asset === source_network_asset)
+    const toCurrency = to?.assets.find(c => c.asset === destination_network_asset)
 
     const result: SwapFormValues = {
         from,

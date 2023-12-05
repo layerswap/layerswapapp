@@ -12,6 +12,7 @@ export type Layer = {
     created_date: string;
     img_url: string;
     chain_id: string | null | undefined;
+    metadata: Metadata | null | undefined;
     average_completion_time: {
         total_minutes: number,
         total_seconds: number,
@@ -28,7 +29,6 @@ type LayerData = ({
     isExchange: false;
     assets: NetworkCurrency[];
     type: NetworkType,
-    metadata: Metadata | null | undefined;
     managed_accounts: ManagedAccount[];
     nodes: NetworkNodes[];
 })

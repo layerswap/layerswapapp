@@ -18,11 +18,11 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
     const { swap } = useSwapDataState()
-    const { networks, layers } = useSettingsState()
+    const { layers } = useSettingsState()
     const { setSwapTransaction } = useSwapTransactionStore();
 
     const { source_network: source_network_internal_name } = swap || {}
-    const source_network = networks.find(n => n.internal_name === source_network_internal_name)
+    const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -49,7 +49,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
         try {
             const ImtblClient = (await import('../../../../lib/imtbl')).default;
             const imtblClient = new ImtblClient(source_network?.internal_name)
-            const source_currency = source_network.currencies.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
+            const source_currency = source_network.assets.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
             if (!source_currency) {
                 throw new Error("No source currency could be found");
             }

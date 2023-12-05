@@ -31,7 +31,7 @@ let settings = new LayerSwapAppSettings(Settings)
 
 const isChain = (c: Chain | undefined): c is Chain => c != undefined
 const settingsChains = settings
-    .networks
+    .layers
     .filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0))
     .map(resolveChain).filter(isChain)
 
@@ -76,7 +76,7 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
     return <WagmiConfig config={wagmiConfig}>
         <IntercomProvider appId='123'>
             <SettingsStateContext.Provider value={appSettings}>
-                <Layout settings={appSettings} themeData={themeData}>
+                <Layout settings={settings} themeData={themeData}>
                     <RainbowKitComponent>
                         <SwapDataStateContext.Provider value={swapContextInitialValues}>
                             <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>

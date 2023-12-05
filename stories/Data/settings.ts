@@ -2,17 +2,6 @@ import { NetworkType } from "../../Models/CryptoNetwork";
 import { LayerSwapSettings } from "../../Models/LayerSwapSettings";
 
 export const Settings: LayerSwapSettings = {
-    "discovery": {
-        "identity_url": "https://identity-api-dev.layerswap.cloud",
-        "resource_storage_url": "https://devlslayerswapbridgesa.blob.core.windows.net/",
-        "o_auth_providers": [
-            {
-                "provider": "COINBASE",
-                "oauth_connect_url": "https://www.coinbase.com/oauth/authorize?client_id=6ee7b63f40353593848f27c4a4189f215cbc7c67b59c29ef4d23050aa90bfb0f&redirect_uri=https%3A%2F%2Fbridge-api-dev.layerswap.cloud%2Fapi%2Fcallback%2Fcoinbase&response_type=code&account=all&scope=wallet%3Auser%3Aemail%2Cwallet%3Aaddresses%3Aread%2Cwallet%3Aaddresses%3Acreate&state=",
-                "oauth_authorize_url": "https://www.coinbase.com/oauth/authorize?client_id=6ee7b63f40353593848f27c4a4189f215cbc7c67b59c29ef4d23050aa90bfb0f&redirect_uri=https%3A%2F%2Fbridge-api-dev.layerswap.cloud%2Fapi%2Fcallback%2Fcoinbase&response_type=code&account=all&scope=wallet%3Atransactions%3Aread%2Cwallet%3Auser%3Aread%2Cwallet%3Aaccounts%3Aread%2Cwallet%3Atransactions%3Asend%2Cwallet%3Auser%3Aemail&meta[send_limit_amount]=1&meta[send_limit_currency]=USD&meta[send_limit_period]=month&state="
-            }
-        ]
-    },
     "exchanges": [
         {
             display_name: "Coinbase",
@@ -123,7 +112,12 @@ export const Settings: LayerSwapSettings = {
             "display_name": "Brine Testnet",
             "internal_name": "BRINE_TESTNET",
             "is_featured": false,
-            "average_completion_time": "00:00:00",
+            "average_completion_time": {
+                total_minutes: 30,
+                total_hours: 1,
+                total_seconds: 128
+            },
+            "account_explorer_template": "https://etherscan.io/",
             "chain_id": "testnet",
             "status": "active",
             "type": NetworkType.EVM,
@@ -161,7 +155,12 @@ export const Settings: LayerSwapSettings = {
             "display_name": "Ethereum Goerli",
             "internal_name": "ETHEREUM_GOERLI",
             "is_featured": true,
-            "average_completion_time": "00:09:29.7050560",
+            "average_completion_time": {
+                total_minutes: 30,
+                total_hours: 1,
+                total_seconds: 128
+            },
+            "account_explorer_template": "https://etherscan.io/",
             "chain_id": "5",
             "status": "active",
             "type": NetworkType.EVM,
@@ -221,7 +220,12 @@ export const Settings: LayerSwapSettings = {
             "display_name": "StarkNet Goerli",
             "internal_name": "STARKNET_GOERLI",
             "is_featured": false,
-            "average_completion_time": "00:01:52.0070860",
+            "average_completion_time": {
+                total_minutes: 30,
+                total_hours: 1,
+                total_seconds: 128
+            },
+            "account_explorer_template": "https://etherscan.io/",
             "chain_id": "0x534e5f474f45524c49",
             "status": "active",
             "type": NetworkType.Starknet,
@@ -261,7 +265,12 @@ export const Settings: LayerSwapSettings = {
             "display_name": "ImmutableX Goerli",
             "internal_name": "IMMUTABLEX_GOERLI",
             "is_featured": false,
-            "average_completion_time": "00:13:58.3918070",
+            "average_completion_time": {
+                total_minutes: 30,
+                total_hours: 1,
+                total_seconds: 128
+            },
+            "account_explorer_template": "https://etherscan.io/",
             "chain_id": "5",
             "status": "active",
             "type": NetworkType.StarkEx,
@@ -321,7 +330,12 @@ export const Settings: LayerSwapSettings = {
             "display_name": "Arbitrum One Goerli",
             "internal_name": "ARBITRUM_GOERLI",
             "is_featured": true,
-            "average_completion_time": "00:10:42.1351060",
+            "average_completion_time": {
+                total_minutes: 30,
+                total_hours: 1,
+                total_seconds: 128
+            },
+            "account_explorer_template": "https://etherscan.io/",
             "chain_id": "421613",
             "status": "active",
             "type": NetworkType.EVM,
@@ -371,7 +385,12 @@ export const Settings: LayerSwapSettings = {
             "display_name": "Optimism Goerli",
             "internal_name": "OPTIMISM_GOERLI",
             "is_featured": false,
-            "average_completion_time": "00:00:00",
+            "average_completion_time": {
+                total_minutes: 30,
+                total_hours: 1,
+                total_seconds: 128
+            },
+            "account_explorer_template": "https://etherscan.io/",
             "chain_id": "420",
             "status": "active",
             "type": NetworkType.EVM,
@@ -418,36 +437,4 @@ export const Settings: LayerSwapSettings = {
             "created_date": "2023-08-31T12:50:56.277466+00:00"
         }
     ],
-    "currencies": [
-        {
-            "asset": "MNT",
-            "precision": 6,
-            "usd_price": 0.5
-        },
-        {
-            "asset": "ETH",
-            "precision": 6,
-            "usd_price": 1704.35
-        },
-        {
-            "asset": "USDC",
-            "precision": 2,
-            "usd_price": 0.998718
-        },
-        {
-            "asset": "IMX",
-            "precision": 6,
-            "usd_price": 0.581917
-        },
-        {
-            "asset": "BNB",
-            "precision": 6,
-            "usd_price": 223.2
-        },
-        {
-            "asset": "MATIC",
-            "precision": 6,
-            "usd_price": 0.87477
-        }
-    ]
 }
