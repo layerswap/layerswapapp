@@ -2,7 +2,7 @@ import { FC } from "react";
 import { NetworkCurrency, NetworkType } from "../../../Models/CryptoNetwork";
 import { Layer } from "../../../Models/Layer";
 import { truncateDecimals } from "../../utils/RoundDecimals";
-import { GetDefaultNetwork, GetNetworkCurrency } from "../../../helpers/settingsHelper";
+import { GetDefaultAsset } from "../../../helpers/settingsHelper";
 import AverageCompletionTime from "../../Common/AverageCompletionTime";
 import { useBalancesState } from "../../../context/balances";
 import { useFormikContext } from "formik";
@@ -80,8 +80,7 @@ type EstimatedArrivalProps = {
     currency?: NetworkCurrency | null
 }
 const EstimatedArrival: FC<EstimatedArrivalProps> = ({ currency, destination }) => {
-    const destinationNetworkCurrency = (destination && currency) ? GetNetworkCurrency(destination, currency.asset) : null
-    const destinationNetwork = GetDefaultNetwork(destination, currency?.asset)
+    const destinationNetworkCurrency = (destination && currency) ? GetDefaultAsset(destination, currency.asset) : null
 
     return <div className="mt-2 flex flex-row items-baseline justify-between">
         <label className="block text-left text-primary-text-placeholder">
@@ -92,7 +91,7 @@ const EstimatedArrival: FC<EstimatedArrivalProps> = ({ currency, destination }) 
                 destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
                     <span>Up to 2 hours (delayed)</span>
                     :
-                    <AverageCompletionTime hours={destinationNetwork?.average_completion_time.total_hours} minutes={destinationNetwork?.average_completion_time.total_minutes} />
+                    <AverageCompletionTime hours={destination?.average_completion_time.total_hours} minutes={destination?.average_completion_time.total_minutes} />
             }
         </span>
     </div>

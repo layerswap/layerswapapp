@@ -13,7 +13,6 @@ import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
 import shortenAddress from "../utils/ShortenAddress";
 import AddressIcon from "../AddressIcon";
-import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import WalletIcon from "../icons/WalletIcon";
 import useWallet from "../../hooks/useWallet";
 
@@ -42,7 +41,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const inputReference = useRef<HTMLInputElement>(null);
     const destination = values.to
     const asset = values.toCurrency?.asset
-    const destinationNetwork = GetDefaultNetwork(destination, asset)
     const valid_addresses = address_book?.filter(a => (destination?.isExchange ? a.exchanges?.some(e => destination?.internal_name === e) : a.networks?.some(n => destination?.internal_name === n)) && isValidAddress(a.address, destination)) || []
 
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
@@ -216,7 +214,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         && !inputValue
                         && destination
                         && !destination?.isExchange
-                        && destinationNetwork
                         && provider
                         && !connectedWallet &&
                         <div onClick={() => { connectWallet(provider.name) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
@@ -237,7 +234,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         destination?.isExchange
                         && !inputAddressIsValid
                         && destinationAsset
-                        && destinationNetwork
+                        && destination
                         &&
                         <div className='text-left p-4 bg-secondary-800 text-primary-text rounded-lg border border-secondary-500'>
                             <div className="flex items-center">
@@ -265,13 +262,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     <span>Select</span>
                                     <span className="inline-block mx-1">
                                         <span className='flex gap-1 items-baseline text-sm '>
-                                            <Image src={settings.resolveImgSrc(destinationNetwork)}
+                                            <Image src={settings.resolveImgSrc(destination)}
                                                 alt="Project Logo"
                                                 height="15"
                                                 width="15"
                                                 className='rounded-sm'
                                             />
-                                            <span className="text-primary-text">{destinationNetwork?.display_name}</span>
+                                            <span className="text-primary-text">{destination?.display_name}</span>
                                         </span>
                                     </span>
                                     <span>as network</span>

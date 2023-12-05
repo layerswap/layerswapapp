@@ -1,33 +1,8 @@
-import { CryptoNetwork, NetworkCurrency } from "../Models/CryptoNetwork";
-import { Exchange } from "../Models/Exchange";
+import { NetworkCurrency } from "../Models/CryptoNetwork";
 import { Layer } from "../Models/Layer";
 import { THEME_COLORS } from "../Models/Theme";
 
-export function mapNetworkCurrencies(exchanges: Exchange[], networks: CryptoNetwork[]): Exchange[] {
-    return exchanges.map(e => {
-        const currencies = e.currencies.map(ec => {
-            const network = networks.find(n => n.internal_name.toLowerCase() === ec.network?.toLowerCase())
-            const networkCurrency = network?.currencies?.find(nc => nc.asset.toLowerCase() === ec.asset.toLowerCase())
-            return { ...networkCurrency, ...ec }
-        })
-        return { ...e, currencies: currencies }
-    })
-}
-
-export function GetNetworkCurrency(layer: Layer, asset: string): NetworkCurrency | undefined {
-    return layer
-        ?.assets
-        ?.find(a => a.asset === asset)
-}
-
-export function GetDefaultNetwork(layer: Layer | undefined | null, asset: string | undefined | null): Layer | undefined | null {
-    return layer
-}
-
-export function GetDefaultAsset(layer: Layer & { isExchange: true }, asset: string): NetworkCurrency | undefined
-export function GetDefaultAsset(layer: Layer & { isExchange: false }, asset: string): NetworkCurrency | undefined
-export function GetDefaultAsset(layer: Layer, asset: string): NetworkCurrency | undefined
-export function GetDefaultAsset(layer: Layer, asset: string) {
+export function GetDefaultAsset(layer: Layer, asset: string): NetworkCurrency | undefined {
     return layer
         ?.assets
         ?.find(a => a.asset === asset)
@@ -71,9 +46,9 @@ const IsAvailableForLayer = (asset: string, source: Layer, destination: Layer) =
             && (c.status !== 'inactive'))
 
     const destinationAssetIsAvailable = destination
-    ?.assets
-    .some(c => c?.asset === asset
-        && (c.status !== 'inactive'))
+        ?.assets
+        .some(c => c?.asset === asset
+            && (c.status !== 'inactive'))
 
     return sourceASsetIsAvailable && destinationAssetIsAvailable
 }
@@ -97,16 +72,6 @@ export function FilterDestinationLayers(layers: Layer[], source?: Layer | null, 
     })
 
     return filteredLayers;
-}
-
-export function FilterCurrencies(currencies: NetworkCurrency[], source: Layer | undefined | null, destination: Layer | undefined | null): NetworkCurrency[] {
-    if (!source || !destination) {
-        return []
-    }
-    const filteredCurrencies = currencies.filter(c => {
-        return IsAvailableForLayer(c.asset, source, destination)
-    })
-    return filteredCurrencies;
 }
 
 export const getThemeData = async (query: any) => {

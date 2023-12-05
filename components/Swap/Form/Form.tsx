@@ -20,7 +20,7 @@ import ToggleButton from "../../buttons/toggleButton";
 import { ArrowUpDown, Fuel } from 'lucide-react'
 import { useAuthState } from "../../../context/authContext";
 import WarningMessage from "../../WarningMessage";
-import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetworkCurrency } from "../../../helpers/settingsHelper";
+import { FilterDestinationLayers, FilterSourceLayers, GetDefaultAsset } from "../../../helpers/settingsHelper";
 import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
@@ -91,7 +91,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
 
     useEffect(() => {
-        if (!destination?.isExchange && (!source || !toAsset || !GetNetworkCurrency(source, toAsset)?.is_refuel_enabled)) {
+        if (!destination?.isExchange && (!source || !toAsset || !GetDefaultAsset(source, toAsset)?.is_refuel_enabled)) {
             handleConfirmToggleChange(false)
         }
     }, [toAsset, destination, source])
@@ -171,8 +171,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     }, [contract_address, values.from, values.fromCurrency, address])
 
     //TODO review this function, maybe unnecessary
-    const destinationNetwork = GetDefaultNetwork(destination, values?.toCurrency?.asset)
-    const destination_native_currency = !destination?.isExchange && destinationNetwork?.assets.find(c => c.is_native)?.asset
+    const destination_native_currency = !destination?.isExchange && destination?.assets.find(c => c.is_native)?.asset
 
     const averageTimeInMinutes = (values?.to?.isExchange === false && values?.to?.average_completion_time.total_minutes) || 0
 
@@ -250,7 +249,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                     }
                     <div className="w-full">
                         {
-                            destination && toAsset && !destination.isExchange && GetNetworkCurrency(destination, toAsset)?.is_refuel_enabled && !query?.hideRefuel &&
+                            destination && toAsset && !destination.isExchange && GetDefaultAsset(destination, toAsset)?.is_refuel_enabled && !query?.hideRefuel &&
                             <div className="flex items-center justify-between px-3.5 py-3 bg-secondary-700 border border-secondary-500 rounded-lg mb-4">
                                 <div className="flex items-center space-x-2">
                                     <Fuel className='h-8 w-8 text-primary' />
@@ -270,7 +269,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                         <FeeDetails values={values} />
                         {
                             //TODO refactor
-                            destination && toAsset && GetNetworkCurrency(destination, toAsset)?.status == 'insufficient_liquidity' &&
+                            destination && toAsset && GetDefaultAsset(destination, toAsset)?.status == 'insufficient_liquidity' &&
                             <WarningMessage messageType="warning" className="mt-4">
                                 <span className="font-normal"><span>We&apos;re experiencing delays for transfers of</span> <span>{values?.toCurrency?.asset}</span> <span>to</span> <span>{values?.to?.display_name}</span><span>. Estimated arrival time can take up to 2 hours.</span></span>
                             </WarningMessage>
@@ -278,7 +277,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
                         {
                             //TODO refactor 
-                            destination && toAsset && GetNetworkCurrency(destination, toAsset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
+                            destination && toAsset && GetDefaultAsset(destination, toAsset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
                             <WarningMessage messageType="warning" className="mt-4">
                                 <span className="font-normal"><span>{destination?.display_name}</span> <span>network congestion. Transactions can take up to 1 hour.</span></span>
                             </WarningMessage>

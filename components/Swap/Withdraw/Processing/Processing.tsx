@@ -1,13 +1,12 @@
 import { ExternalLink } from 'lucide-react';
 import { FC } from 'react'
-import KnownInternalNames from '../../../../lib/knownIds';
 import Widget from '../../../Wizard/Widget';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
-import { GetNetworkCurrency } from '../../../../helpers/settingsHelper';
+import { GetDefaultAsset } from '../../../../helpers/settingsHelper';
 import AverageCompletionTime from '../../../Common/AverageCompletionTime';
-import { SwapItem, Transaction, TransactionStatus, TransactionType } from '../../../../lib/layerSwapApiClient';
+import { SwapItem, TransactionStatus, TransactionType } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
@@ -33,7 +32,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_layer?.transaction_explorer_template
 
-    const destinationNetworkCurrency = destination_layer ? GetNetworkCurrency(destination_layer, swap?.destination_network_asset) : null
+    const destinationNetworkCurrency = destination_layer ? GetDefaultAsset(destination_layer, swap?.destination_network_asset) : null
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id]

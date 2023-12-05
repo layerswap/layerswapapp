@@ -15,7 +15,6 @@ import { WithdrawType } from '../../../lib/layerSwapApiClient';
 import WalletIcon from '../../icons/WalletIcon';
 import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
 import { useAccountModal } from '@rainbow-me/rainbowkit';
-import { GetDefaultNetwork } from '../../../helpers/settingsHelper';
 import Image from 'next/image';
 import SpinIcon from '../../icons/spinIcon';
 import { NetworkType } from '../../../Models/CryptoNetwork';
@@ -41,7 +40,7 @@ const Withdraw: FC = () => {
     const sourceIsCoinbase = swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
 
     const source_layer = layers.find(n => n.internal_name === swap?.source_network)
-    const sourceNetworkType = GetDefaultNetwork(source_layer, swap?.source_network_asset)?.type
+    const sourceNetworkType = source_layer?.type
     const manualIsAvailable = !(sourceIsStarknet || sourceIsImmutableX || isFiat)
     const walletIsAvailable = !isFiat
         && !swap?.source_exchange
@@ -176,14 +175,13 @@ const WalletTransferContent: FC = () => {
 
     const {
         source_network: source_network_internal_name,
-        source_exchange: source_exchange_internal_name,
-        source_network_asset } = swap || {}
+        source_exchange: source_exchange_internal_name } = swap || {}
 
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
     const source_layer = layers.find(n => n.internal_name === swap?.source_network)
 
-    const sourceNetworkType = GetDefaultNetwork(source_network, source_network_asset)?.type
+    const sourceNetworkType = source_network?.type
     const provider = useMemo(() => {
         return source_layer && getProvider(source_layer)
     }, [source_layer, getProvider])

@@ -5,7 +5,6 @@ import { useSwapDataState } from "../../../context/swap"
 import Summary from "./Summary"
 import { ApiResponse } from "../../../Models/ApiResponse"
 import LayerSwapApiClient, { DepositType, Fee, TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
-import { GetDefaultNetwork } from "../../../helpers/settingsHelper"
 import useWalletTransferOptions from "../../../hooks/useWalletTransferOptions"
 
 const SwapSummary: FC = () => {
@@ -69,8 +68,7 @@ const SwapSummary: FC = () => {
         (Number(min_amount) > Number(swap.requested_amount) ? min_amount : swap.requested_amount)) || undefined
 
     const destinationNetworkNativeAsset = layers.find(n => n.internal_name === destination_layer?.internal_name)?.assets.find(a => a.is_native);
-    const destinationNetwork = GetDefaultNetwork(destination_layer, asset?.asset)
-    const refuel_amount_in_usd = Number(destinationNetwork?.refuel_amount_in_usd)
+    const refuel_amount_in_usd = Number(destination_layer?.refuel_amount_in_usd)
     const native_usd_price = Number(destinationNetworkNativeAsset?.usd_price)
     const currency_usd_price = Number(asset?.usd_price)
 

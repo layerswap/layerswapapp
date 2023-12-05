@@ -1,5 +1,4 @@
-import { SwapFormValues } from "../components/DTOs/SwapFormValues";
-import { GetDefaultNetwork, GetNetworkCurrency } from "../helpers/settingsHelper";
+import { GetDefaultAsset } from "../helpers/settingsHelper";
 import { NetworkCurrency } from "../Models/CryptoNetwork";
 import { Layer } from "../Models/Layer";
 
@@ -35,9 +34,9 @@ function ResolveRefuelNetwork(args: CaluclateRefuelArgs): Layer | undefined |nul
 
     if (!currency || !to || !refuelEnabled)
         return
-    const destinationNetwork = GetDefaultNetwork(to, currency?.asset)
+    const destinationNetwork = to
 
-    const destinationNetworkCurrency = GetNetworkCurrency(to, currency?.asset)
+    const destinationNetworkCurrency = GetDefaultAsset(to, currency?.asset)
     const destinationNetworkNativeAsset = to.assets?.find(c => c.is_native);
 
     if (!destinationNetworkCurrency || !destinationNetworkNativeAsset)
