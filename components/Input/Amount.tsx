@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useMemo, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
 import { useSettingsState } from "../../context/settings";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -48,6 +48,14 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         from && getBalance(from);
         from && currency && getGas(from, currency, destination_address || "");
     }, [from, currency, destination_address, maxAllowedAmount])
+
+    useEffect(() => {
+        values.from && getBalance(values.from)
+    }, [values.from, values.destination_address, wallet?.address])
+    const contract_address = values.from?.isExchange == false ? values.from.assets.find(a => a.asset === values?.currency?.asset)?.contract_address : null
+    useEffect(() => {
+        wallet?.address && values.from && values.currency && getGas(values.from, values.currency, values.destination_address || wallet.address)
+    }, [contract_address, values.from, values.currency, wallet?.address])
 
     return (<>
         <NumericInput

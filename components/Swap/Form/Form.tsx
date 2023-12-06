@@ -1,5 +1,5 @@
 import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
 import React from "react";
@@ -25,13 +25,10 @@ import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetw
 import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
-import { useBalancesUpdate } from "../../../context/balances";
-import { useAccount } from "wagmi";
 import GasDetails from "../../gasDetails";
 import { useQueryState } from "../../../context/query";
 import FeeDetails from "../../DisclosureComponents/FeeDetails";
 import dynamic from "next/dynamic";
-import AmountField from "../../Input/Amount";
 import { Balance, Gas } from "../../../hooks/useBalance";
 
 type Props = {
@@ -41,6 +38,11 @@ type Props = {
 const Address = dynamic(() => import("../../Input/Address"), {
     loading: () => <></>
 })
+
+const AmountField = dynamic(() => import("../../Input/Amount"), {
+    loading: () => <></>
+})
+
 
 const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
     loading: () => <></>
@@ -58,9 +60,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const source = values.from
     const asset = values.currency?.asset
     const { authData } = useAuthState()
-    const { getBalance, getGas } = useBalancesUpdate()
 
-    const { address } = useAccount()
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
@@ -154,16 +154,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         setValuesSwapperDisabled(false)
 
     }, [source, destination, query, settings, lockedCurrency])
-
-    useEffect(() => {
-        values.from && getBalance(values.from)
-    }, [values.from, values.destination_address, address])
-
-    const contract_address = values.from?.isExchange == false ? values.from.assets.find(a => a.asset === values?.currency?.asset)?.contract_address : null
-
-    useEffect(() => {
-        address && values.from && values.currency && getGas(values.from, values.currency, values.destination_address || address)
-    }, [contract_address, values.from, values.currency, address])
 
     const destinationNetwork = GetDefaultNetwork(destination, values?.currency?.asset)
     const destination_native_currency = !destination?.isExchange && destinationNetwork?.native_currency
