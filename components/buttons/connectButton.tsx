@@ -22,7 +22,6 @@ import OpenMask from "../icons/Wallets/OpenMask";
 import Phantom from "../icons/Wallets/Phantom";
 import Torus from "../icons/Wallets/Torus";
 import Solflare from "../icons/Wallets/Solflare";
-import { SolanaCustomConnectButton } from "../../lib/wallets/solana/SolanaCustomWallet";
 
 const ConnectButton = ({
     children,
@@ -173,12 +172,10 @@ const ResolveConnectorIcon = ({
             );
         case KnownConnectors.Solana:
             return (
-                <div>
-                    <SolanaCustomConnectButton>
-                        <Phantom className={className} />
-                        <Torus className={className} />
-                        <Solflare className={className} />
-                    </SolanaCustomConnectButton>
+                <div className="-space-x-2 flex">
+                    <Phantom className={className} />
+                    <Torus className={className} />
+                    <Solflare className={className} />
                 </div>
             );
         default:

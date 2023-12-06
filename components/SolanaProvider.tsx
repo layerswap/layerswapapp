@@ -11,6 +11,7 @@ import {
 } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { ReactNode, useMemo } from "react";
+import { SolanaModal } from "../lib/wallets/solana/SolanaModal";
 
 function SolanaProvider({ children }: { children: ReactNode }) {
     const solNetwork = WalletAdapterNetwork.Mainnet;
@@ -28,7 +29,8 @@ function SolanaProvider({ children }: { children: ReactNode }) {
         <ConnectionProvider endpoint={endpoint} >
             <WalletProvider wallets={wallets} autoConnect={true}>
                 <WalletModalProvider>
-                        {children}
+                    {children}
+                    <SolanaModal />
                 </WalletModalProvider>
             </WalletProvider>
         </ConnectionProvider>

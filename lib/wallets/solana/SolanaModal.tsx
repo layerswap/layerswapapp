@@ -1,19 +1,19 @@
 import { WalletName } from "@solana/wallet-adapter-base";
 import { useWalletMultiButton } from "./useWalletMultiButton";
 import { Wallet } from "@solana/wallet-adapter-react";
-import { ReactNode, useCallback, useState } from "react";
+import { useState } from "react";
 require("@solana/wallet-adapter-react-ui/styles.css");
 
-export function SolanaCustomConnectButton({ children }: { children: ReactNode }) {
+export function SolanaModal() {
     const [walletModalConfig, setWalletModalConfig] = useState<Readonly<{
         onSelectWallet(walletName: WalletName): void;
         wallets: Wallet[];
     }> | null>(null);
-    const { buttonState, onConnect, onDisconnect, onSelectWallet } =
+    const { buttonState } =
         useWalletMultiButton({
             onSelectWallet: setWalletModalConfig,
         });
-    let label;
+    let label: string = '';
     switch (buttonState) {
         case "connected":
             label = "Disconnect";
@@ -31,32 +31,9 @@ export function SolanaCustomConnectButton({ children }: { children: ReactNode })
             label = "Select Wallet";
             break;
     }
-    const handleClick = useCallback(() => {
-        switch (buttonState) {
-            case "connected":
-                return onDisconnect;
-            case "connecting":
-            case "disconnecting":
-                break;
-            case "has-wallet":
-                return onConnect;
-            case "no-wallet":
-                return onSelectWallet;
-                break;
-        }
-    }, [buttonState, onDisconnect, onConnect, onSelectWallet]);
+
     return (
         <>
-            <button
-                disabled={
-                    buttonState === "connecting" ||
-                    buttonState === "disconnecting"
-                }
-                onClick={handleClick}
-                className="-space-x-2 flex"
-            >
-                {children}
-            </button>
             {walletModalConfig ? (
                 <div>
                     {walletModalConfig.wallets.map((wallet) => (
