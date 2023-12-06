@@ -20,8 +20,9 @@ import Argent from "../icons/Wallets/Argent";
 import TonKeeper from "../icons/Wallets/TonKeeper";
 import OpenMask from "../icons/Wallets/OpenMask";
 import Phantom from "../icons/Wallets/Phantom";
-import Torus from "../icons/Wallets/Torus";
 import Solflare from "../icons/Wallets/Solflare";
+import CoinbaseIcon from "../icons/Wallets/Coinbase";
+import GlowIcon from "../icons/Wallets/Glow";
 
 const ConnectButton = ({
     children,
@@ -174,8 +175,9 @@ const ResolveConnectorIcon = ({
             return (
                 <div className="-space-x-2 flex">
                     <Phantom className={className} />
-                    <Torus className={className} />
                     <Solflare className={className} />
+                    <WalletConnectIcon className={className} />
+                    <CoinbaseIcon className={className} />
                 </div>
             );
         default:
