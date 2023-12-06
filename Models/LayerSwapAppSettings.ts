@@ -36,11 +36,11 @@ export class LayerSwapAppSettings {
         return basePath.href;
     }
 
-    static ResolveLayers(networks: CryptoNetwork[]): Layer[] {
+    static ResolveLayers(networks: any[]): Layer[] {
         const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
         if (!resource_storage_url)
             throw new Error("NEXT_PUBLIC_RESOURCE_STORAGE_URL is not set up in env vars")
-
+console.log(networks,"networks")
         const basePath = new URL(resource_storage_url);
 
         const networkLayers: Layer[] = networks.map((n): Layer =>

@@ -11,7 +11,8 @@ type PopoverSelectWrapper = {
     value?: ISelectMenuItem;
     placeholder?: string;
     searchHint?: string;
-    disabled?: boolean
+    disabled?: boolean;
+    direction?: string;
 }
 
 export default function PopoverSelectWrapper<T>({
@@ -19,7 +20,8 @@ export default function PopoverSelectWrapper<T>({
     value,
     values,
     disabled,
-    placeholder
+    placeholder,
+    direction
 }: PopoverSelectWrapper) {
     const [showModal, setShowModal] = useState(false)
 
@@ -70,7 +72,6 @@ export default function PopoverSelectWrapper<T>({
                                                         className="rounded-md object-contain"
                                                     />
                                                 }
-
                                             </div>
                                             <span className="ml-3 block truncate text-primary-text">{value.name}</span>
                                         </span>
@@ -82,7 +83,7 @@ export default function PopoverSelectWrapper<T>({
                                 </div>
                             </PopoverTrigger>
                             <PopoverContent className="w-fit">
-                                <PopoverSelect setValue={handleSelect} value={value} values={values} />
+                                <PopoverSelect setValue={handleSelect} value={value} values={values} direction={direction} />
                             </PopoverContent>
                         </Popover>
                 }
@@ -95,9 +96,7 @@ export default function PopoverSelectWrapper<T>({
                             {placeholder}
                         </span>
                     </span>
-               
                 </div>
             </div>
-
     )
 }

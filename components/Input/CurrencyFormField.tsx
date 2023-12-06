@@ -73,7 +73,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         setFieldValue(name, item.baseObject, true)
     }, [name])
 
-    return <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />;
+    return <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} direction={direction} />;
 };
 
 export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolveImgSrc: (item: Layer | NetworkCurrency) => string, routes?: { network: string, asset: string }[], lockedCurrency?: NetworkCurrency, from?: Layer, to?: Layer, direction?: string, balances?: Balance[]): SelectMenuItem<NetworkCurrency>[] {
