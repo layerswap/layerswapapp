@@ -75,7 +75,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
 
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap, selectedAssetNetwork } = useSwapDataState()
-    // const { setSelectedAssetNetwork } = useSwapDataUpdate()
+    
     const {
         source_network: source_network_internal_name,
         source_exchange: source_exchange_internal_name,
