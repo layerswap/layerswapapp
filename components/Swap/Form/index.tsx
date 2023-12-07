@@ -26,6 +26,7 @@ import Image from 'next/image';
 import { ChevronRight, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
+import ResizablePanel from "../../ResizablePanel";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -134,7 +135,7 @@ export default function Form() {
 
     return <>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
-            <AnimatePresence exitBeforeEnter>
+            <AnimatePresence mode='wait'>
                 {
                     swap &&
                     !showSwapModal &&
@@ -145,8 +146,10 @@ export default function Form() {
         <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
             {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
         </Modal>
-        <Modal height='90%' show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`}>
-            <SwapDetails type="contained" />
+        <Modal height='fit' show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`}>
+            <ResizablePanel>
+                <SwapDetails type="contained" />
+            </ResizablePanel>
         </Modal>
         <Formik
             innerRef={formikRef}
