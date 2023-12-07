@@ -28,7 +28,7 @@ export default function useWallet() {
         useSolana()
     ]
 
-    async function handleConnect(providerName: string, chain?: string | number) {
+    async function handleConnect(providerName: string, chain?: string | number | undefined | null) {
         const provider = WalletProviders.find(provider => provider.name === providerName)
         try {
             await provider?.connectWallet(chain)
