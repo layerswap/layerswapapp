@@ -29,7 +29,6 @@ export default function FeeDetails({ values }: { values: SwapFormValues }) {
                         <AccordionContent className="text-sm text-secondary-text font-normal">
                             <DetailedEstimates
                                 networks={layers}
-                                fee={fee.amount}
                                 selected_currency={currency}
                                 source={from}
                                 destination={to}
@@ -44,7 +43,7 @@ export default function FeeDetails({ values }: { values: SwapFormValues }) {
                 <Campaign
                     destination={values.to}
                     selected_currency={values.toCurrency}
-                    fee={fee.amount}
+                    fee={fee.walletFee}
                 />
             }
         </>

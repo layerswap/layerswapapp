@@ -3,7 +3,7 @@ import { ApiResponse } from "../../../../Models/ApiResponse"
 import { useSettingsState } from "../../../../context/settings"
 import { useSwapDataState } from "../../../../context/swap"
 import KnownInternalNames from "../../../../lib/knownIds"
-import LayerSwapApiClient, { DepositAddress, DepositType, Fee } from "../../../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { DepositAddress } from "../../../../lib/layerSwapApiClient"
 import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep"
 import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw"
 import useSWR from 'swr'
@@ -12,17 +12,17 @@ import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw"
 import { Layer } from "../../../../Models/Layer"
 import useWalletTransferOptions from "../../../../hooks/useWalletTransferOptions"
 import { useBalancesState } from "../../../../context/balances"
-
+import { useFee } from "../../../../context/feeContext"
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
     const { isContractWallet } = useBalancesState();
+    const { minAllowedAmount } = useFee()
 
-    const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_network_asset } = swap || {}
+    const { source_network: source_network_internal_name } = swap || {}
     const source_network = layers.find(n => n.internal_name === source_network_internal_name) as (Layer & { isExchange: false })
-    const destination = layers.find(n => n.internal_name === destination_network)
     const sourceAsset = source_network?.assets?.find(c => c.asset.toLowerCase() === swap?.source_network_asset.toLowerCase())
 
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
@@ -46,20 +46,7 @@ const WalletTransfer: FC = () => {
         : undefined
 
     const sourceChainId = (source_network && source_network.isExchange === false) ? Number(source_network?.chain_id) : null
-    const feeParams = {
-        source: source_network_internal_name,
-        destination: destination?.internal_name,
-        source_asset: source_network_asset,
-        destination_asset: destination_network_asset,
-        refuel: swap?.has_refuel
-    }
-
-    const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
-    const walletTransferFee = ready ?
-        feeData?.data?.find(f => f?.deposit_type === (canDoSweepless ? DepositType.Wallet : DepositType.Manual))
-        : undefined
-
-    const requested_amount = Number(walletTransferFee?.min_amount) > Number(swap?.requested_amount) ? walletTransferFee?.min_amount : swap?.requested_amount
+    const requested_amount = Number(minAllowedAmount) > Number(swap?.requested_amount) ? minAllowedAmount : swap?.requested_amount
 
     if (sourceIsImmutableX)
         return <Wrapper>

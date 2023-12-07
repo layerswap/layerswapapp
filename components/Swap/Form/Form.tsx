@@ -50,7 +50,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     } = useFormikContext<SwapFormValues>();
 
     const { to: destination } = values
-    const { minAllowedAmount, valuesChanger } = useFee()
+    const { minAllowedAmount, valuesChanger, fee } = useFee()
     const settings = useSettingsState();
     const source = values.from
     const toAsset = values.toCurrency?.asset
@@ -173,7 +173,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     //TODO review this function, maybe unnecessary
     const destination_native_currency = !destination?.isExchange && destination?.assets.find(c => c.is_native)?.asset
 
-    const averageTimeInMinutes = (values?.to?.isExchange === false && values?.to?.average_completion_time.total_minutes) || 0
+    const averageTimeInMinutes = (values?.to?.isExchange === false && fee?.avgCompletionTime?.total_minutes) || 0
 
     const hideAddress = query?.hideAddress
         && query?.to

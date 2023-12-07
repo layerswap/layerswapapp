@@ -7,24 +7,24 @@ import AverageCompletionTime from "../../Common/AverageCompletionTime";
 import { useBalancesState } from "../../../context/balances";
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { Fee, useFee } from "../../../context/feeContext";
 
 type EstimatesProps = {
     networks: Layer[]
     source?: Layer | null,
     destination?: Layer | null,
     selected_currency?: NetworkCurrency | null,
-    fee: number | undefined
 }
 const DetailedEstimates: FC<EstimatesProps> = ({
     source,
     destination,
-    selected_currency,
-    fee }) => {
+    selected_currency }) => {
 
     const { values } = useFormikContext<SwapFormValues>();
-    const { fromCurrency } = values
+    const { fromCurrency } = values;
+    const { fee } = useFee()
 
-    const parsedFee = fee && parseFloat(fee.toFixed(fromCurrency?.precision))
+    const parsedFee = fee && parseFloat(Number(fee.walletFee).toFixed(fromCurrency?.precision))
     const currencyName = fromCurrency?.asset || " "
 
     return <>
@@ -41,9 +41,9 @@ const DetailedEstimates: FC<EstimatesProps> = ({
             && source?.isExchange === false
             && selected_currency
             && source?.type === NetworkType.EVM &&
-            <NetworkGas network={source} selected_currency={selected_currency} />
+            <NetworkGas network={source} selected_currency={selected_currency}  />
         }
-        <EstimatedArrival currency={selected_currency} destination={destination} />
+        <EstimatedArrival currency={selected_currency} destination={destination} fee={fee} />
     </>
 }
 type NetworkGasProps = {
@@ -77,9 +77,10 @@ const NetworkGas: FC<NetworkGasProps> = ({ selected_currency, network }) => {
 }
 type EstimatedArrivalProps = {
     destination?: Layer | null,
-    currency?: NetworkCurrency | null
+    currency?: NetworkCurrency | null,
+    fee: Fee
 }
-const EstimatedArrival: FC<EstimatedArrivalProps> = ({ currency, destination }) => {
+const EstimatedArrival: FC<EstimatedArrivalProps> = ({ currency, destination, fee }) => {
     const destinationNetworkCurrency = (destination && currency) ? GetDefaultAsset(destination, currency.asset) : null
 
     return <div className="mt-2 flex flex-row items-baseline justify-between">
@@ -91,7 +92,7 @@ const EstimatedArrival: FC<EstimatedArrivalProps> = ({ currency, destination }) 
                 destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
                     <span>Up to 2 hours (delayed)</span>
                     :
-                    <AverageCompletionTime hours={destination?.average_completion_time.total_hours} minutes={destination?.average_completion_time.total_minutes} />
+                    <AverageCompletionTime hours={fee?.avgCompletionTime?.total_hours} minutes={fee?.avgCompletionTime?.total_minutes} />
             }
         </span>
     </div>

@@ -13,11 +13,6 @@ export enum NetworkType {
 export class CryptoNetwork {
     display_name: string;
     internal_name: string;
-    average_completion_time: {
-        total_minutes: number,
-        total_seconds: number,
-        total_hours: number
-    };
     transaction_explorer_template: string;
     account_explorer_template: string;
     status: LayerStatus;

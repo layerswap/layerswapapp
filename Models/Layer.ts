@@ -13,11 +13,6 @@ export type Layer = {
     img_url: string;
     chain_id: string | null | undefined;
     metadata: Metadata | null | undefined;
-    average_completion_time: {
-        total_minutes: number,
-        total_seconds: number,
-        total_hours: number
-    };
 } & LayerData
 
 type LayerData = ({

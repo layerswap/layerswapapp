@@ -112,11 +112,6 @@ export const Settings: LayerSwapSettings = {
             "display_name": "Brine Testnet",
             "internal_name": "BRINE_TESTNET",
             "is_featured": false,
-            "average_completion_time": {
-                total_minutes: 30,
-                total_hours: 1,
-                total_seconds: 128
-            },
             "account_explorer_template": "https://etherscan.io/",
             "chain_id": "testnet",
             "status": "active",
@@ -155,11 +150,6 @@ export const Settings: LayerSwapSettings = {
             "display_name": "Ethereum Goerli",
             "internal_name": "ETHEREUM_GOERLI",
             "is_featured": true,
-            "average_completion_time": {
-                total_minutes: 30,
-                total_hours: 1,
-                total_seconds: 128
-            },
             "account_explorer_template": "https://etherscan.io/",
             "chain_id": "5",
             "status": "active",
@@ -220,11 +210,7 @@ export const Settings: LayerSwapSettings = {
             "display_name": "StarkNet Goerli",
             "internal_name": "STARKNET_GOERLI",
             "is_featured": false,
-            "average_completion_time": {
-                total_minutes: 30,
-                total_hours: 1,
-                total_seconds: 128
-            },
+            
             "account_explorer_template": "https://etherscan.io/",
             "chain_id": "0x534e5f474f45524c49",
             "status": "active",
@@ -265,11 +251,6 @@ export const Settings: LayerSwapSettings = {
             "display_name": "ImmutableX Goerli",
             "internal_name": "IMMUTABLEX_GOERLI",
             "is_featured": false,
-            "average_completion_time": {
-                total_minutes: 30,
-                total_hours: 1,
-                total_seconds: 128
-            },
             "account_explorer_template": "https://etherscan.io/",
             "chain_id": "5",
             "status": "active",
@@ -330,11 +311,6 @@ export const Settings: LayerSwapSettings = {
             "display_name": "Arbitrum One Goerli",
             "internal_name": "ARBITRUM_GOERLI",
             "is_featured": true,
-            "average_completion_time": {
-                total_minutes: 30,
-                total_hours: 1,
-                total_seconds: 128
-            },
             "account_explorer_template": "https://etherscan.io/",
             "chain_id": "421613",
             "status": "active",
@@ -385,11 +361,6 @@ export const Settings: LayerSwapSettings = {
             "display_name": "Optimism Goerli",
             "internal_name": "OPTIMISM_GOERLI",
             "is_featured": false,
-            "average_completion_time": {
-                total_minutes: 30,
-                total_hours: 1,
-                total_seconds: 128
-            },
             "account_explorer_template": "https://etherscan.io/",
             "chain_id": "420",
             "status": "active",

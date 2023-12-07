@@ -5,7 +5,7 @@ import { useSwapDataState } from '../../../../context/swap';
 import { useInterval } from '../../../../hooks/useInterval';
 import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
 import { parseJwt } from '../../../../lib/jwtParser';
-import LayerSwapApiClient, { WithdrawType } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import { OpenLink } from '../../../../lib/openLink';
 import TokenService from '../../../../lib/TokenService';
 import SubmitButton from '../../../buttons/submitButton';

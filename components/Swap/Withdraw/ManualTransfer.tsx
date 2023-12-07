@@ -1,19 +1,17 @@
-import { FC, useCallback, useState } from "react"
+import { FC, useCallback } from "react"
 import useSWR from "swr"
-import { AlignLeft, ArrowLeftRight, Megaphone } from "lucide-react"
+import { ArrowLeftRight } from "lucide-react"
 import Image from 'next/image';
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { useSettingsState } from "../../../context/settings";
-import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
+import { useSwapDataState } from "../../../context/swap";
 import KnownInternalNames from "../../../lib/knownIds";
 import BackgroundField from "../../backgroundField";
 import LayerSwapApiClient, { DepositAddress, DepositAddressSource, DepositType, Fee } from "../../../lib/layerSwapApiClient";
 import SubmitButton from "../../buttons/submitButton";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../../shadcn/select";
 import shortenAddress from "../../utils/ShortenAddress";
 import { isValidAddress } from "../../../lib/addressValidator";
 import { useSwapDepositHintClicked } from "../../store/zustandStore";
-import { NetworkCurrency } from "../../../Models/CryptoNetwork";
 
 const ManualTransfer: FC = () => {
     const { swap } = useSwapDataState()
@@ -75,7 +73,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
 
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap, selectedAssetNetwork } = useSwapDataState()
-    
+
     const {
         source_network: source_network_internal_name,
         source_exchange: source_exchange_internal_name,
@@ -167,7 +165,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                     {requested_amount}
                 </p>
             </BackgroundField>
-            <BackgroundField header={'Asset'} withoutBorder Explorable={asset?.contract_address != null && isValidAddress(asset?.contract_address,source)} toExplore={asset?.contract_address != null ?source?.account_explorer_template?.replace("{0}", asset?.contract_address) : undefined}>
+            <BackgroundField header={'Asset'} withoutBorder Explorable={asset?.contract_address != null && isValidAddress(asset?.contract_address, source)} toExplore={asset?.contract_address != null ? source?.account_explorer_template?.replace("{0}", asset?.contract_address) : undefined}>
                 <div className="flex items-center gap-2">
                     <div className="flex-shrink-0 h-7 w-7 relative">
                         {

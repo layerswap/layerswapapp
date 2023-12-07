@@ -15,6 +15,7 @@ import { Gauge } from '../../../gauge';
 import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
 import { useSwapTransactionStore } from '../../../store/zustandStore';
+import { useFee } from '../../../../context/feeContext';
 
 type Props = {
     settings: LayerSwapAppSettings;
@@ -24,7 +25,8 @@ type Props = {
 const Processing: FC<Props> = ({ settings, swap }) => {
 
     const swapStatus = swap.status;
-    const storedWalletTransactions = useSwapTransactionStore()
+    const storedWalletTransactions = useSwapTransactionStore();
+    const { fee } = useFee()
 
     const source_network = settings.layers?.find(e => e.internal_name === swap.source_network)
     const destination_layer = settings.layers?.find(e => e.internal_name === swap.destination_network)
@@ -56,7 +58,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
                     <span>Up to 2 hours (delayed)</span>
                     :
-                    <AverageCompletionTime hours={destination_layer?.average_completion_time.total_hours} minutes={destination_layer?.average_completion_time.total_minutes} />
+                    <AverageCompletionTime hours={fee?.avgCompletionTime?.total_hours} minutes={fee?.avgCompletionTime?.total_minutes} />
             }
         </div>
     </div>

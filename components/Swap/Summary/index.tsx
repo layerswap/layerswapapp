@@ -6,6 +6,7 @@ import Summary from "./Summary"
 import { ApiResponse } from "../../../Models/ApiResponse"
 import LayerSwapApiClient, { DepositType, Fee, TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
 import useWalletTransferOptions from "../../../hooks/useWalletTransferOptions"
+import { useFee } from "../../../context/feeContext"
 
 const SwapSummary: FC = () => {
     const { layers } = useSettingsState()
@@ -29,9 +30,7 @@ const SwapSummary: FC = () => {
         refuel: swap?.has_refuel
     }
 
-    const apiClient = new LayerSwapApiClient()
-    const { data: feeData } = useSWR<ApiResponse<Fee[]>>([params], selectedAssetNetwork ? ([params]) => apiClient.GetFee(params) : null, { dedupingInterval: 60000 })
-    //const { fee: calculatedFee } = useFee()
+    const { fee: feeData, minAllowedAmount } = useFee()
 
     const source_layer = layers.find(n => n.internal_name === (source_exchange_internal_name ?? source_network_internal_name))
     const asset = source_layer?.assets?.find(currency => currency?.asset === destination_network_asset)
@@ -48,16 +47,16 @@ const SwapSummary: FC = () => {
     let fee: number | undefined
     let min_amount: number | undefined
 
-    const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Wallet)
-    const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
+    const walletTransferFee = feeData?.walletFee;
+    const manualTransferFee = feeData?.manualFee;
 
     if (ready) {
         if (withdrawType === WithdrawType.Wallet && canDoSweepless) {
-            fee = walletTransferFee?.fee_amount;
-            min_amount = walletTransferFee?.min_amount;
+            fee = walletTransferFee;
+            min_amount = minAllowedAmount;
         } else {
-            fee = manualTransferFee?.fee_amount;
-            min_amount = manualTransferFee?.min_amount;
+            fee = manualTransferFee;
+            min_amount = minAllowedAmount;
         }
     }
 

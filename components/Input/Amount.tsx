@@ -1,10 +1,8 @@
 import { useFormikContext } from "formik";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
-import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import NumericInput from "./NumericInput";
 import SecondaryButton from "../buttons/secondaryButton";
-import { useQueryState } from "../../context/query";
 import { useBalancesState, useBalancesUpdate } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useFee } from "../../context/feeContext";
@@ -18,7 +16,6 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { mutateFee, minAllowedAmount, maxAllowedAmount  } = useFee()
 
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
-    const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.asset)?.gas || 0
     const { getBalance, getGas } = useBalancesUpdate()
     const name = "amount"
     const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
