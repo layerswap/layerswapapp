@@ -12,7 +12,6 @@ import useSWR from 'swr'
 import KnownInternalNames from "../../../lib/knownIds";
 import useWallet from "../../../hooks/useWallet";
 import { useQueryState } from "../../../context/query";
-import { useSwapDataState } from "../../../context/swap";
 import { NetworkCurrency } from "../../../Models/CryptoNetwork";
 
 type SwapInfoProps = {
@@ -37,8 +36,6 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     }, [from, getProvider])
 
     const wallet = provider?.getConnectedWallet()
-
-    const { selectedAssetNetwork } = useSwapDataState()
 
     const {
         hideFrom,

@@ -22,7 +22,7 @@ export default function FeeDetails({ values }: { values: SwapFormValues }) {
                             <ReceiveAmounts
                                 currency={currency}
                                 to={to}
-                                receive_amount={9} //TODO from api
+                                receive_amount={fee.walletReceiveAmount}
                                 refuel={!!refuel}
                             />
                         </AccordionTrigger>

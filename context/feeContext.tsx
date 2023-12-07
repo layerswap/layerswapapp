@@ -23,6 +23,8 @@ export type Fee = {
         total_seconds: number,
         total_hours: number
     } | undefined;
+    walletReceiveAmount: number | undefined,
+    manualReceiveAmount: number | undefined
 }
 
 export function FeeProvider({ children }) {
@@ -43,8 +45,12 @@ export function FeeProvider({ children }) {
         `/routes/limits/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?version=sandbox` : null, apiClient.fetcher)
 
     const { data: lsFee, mutate: mutateFee } = useSWR<ApiResponse<{
-        wallet_total_fee_in_usd: number,
+        wallet_fee_in_usd: number,
+        wallet_fee: number,
+        wallet_receive_amount: number,
         manual_fee_in_usd: number,
+        manual_fee: number,
+        manual_receive_amount: number,
         avg_completion_time: {
             total_minutes: number,
             total_seconds: number,
@@ -55,8 +61,10 @@ export function FeeProvider({ children }) {
         `/routes/rate/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?amount=${amount}&version=sandbox` : null, apiClient.fetcher)
 
     const fee = {
-        walletFee: Number(lsFee?.data?.wallet_total_fee_in_usd) / Number(lsFee?.data?.fee_usd_price),
-        manualFee: Number(lsFee?.data?.manual_fee_in_usd) / Number(lsFee?.data?.fee_usd_price),
+        walletFee: lsFee?.data?.wallet_fee,
+        manualFee: lsFee?.data?.manual_fee,
+        walletReceiveAmount: lsFee?.data?.wallet_receive_amount,
+        manualReceiveAmount: lsFee?.data?.manual_receive_amount,
         avgCompletionTime: lsFee?.data?.avg_completion_time
     }
 
