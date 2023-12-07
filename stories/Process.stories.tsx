@@ -83,7 +83,7 @@ const Comp: FC<{ settings: any, swap: SwapItem, theme?: "default" | "light" }> =
     const wagmiConfig = createConfig({
         autoConnect: true,
         connectors,
-        publicClient,
+        publicClient, 
     })
     const appSettings = new LayerSwapAppSettings(settings?.data)
     if (!appSettings) {
