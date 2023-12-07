@@ -26,10 +26,6 @@ const SwapSummary: FC = () => {
     const destination_layer = layers?.find(l => l.internal_name === (destination_exchange_internal_name ?? destination_network_internal_name))
     const destinationAsset = destination_layer?.assets?.find(currency => currency?.asset === destination_network_asset)
 
-    if (!swap || !source_layer || !sourceAsset || !destinationAsset || !destination_layer) {
-        return <></>
-    }
-
     useEffect(() => {
         valuesChanger({
             amount: swap?.requested_amount.toString(),
@@ -38,9 +34,13 @@ const SwapSummary: FC = () => {
             to: destination_layer,
             fromCurrency: sourceAsset,
             toCurrency: destinationAsset,
-            refuel: swap.has_refuel
+            refuel: swap?.has_refuel
         })
     }, [swap])
+
+    if (!swap || !source_layer || !sourceAsset || !destinationAsset || !destination_layer) {
+        return <></>
+    }
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
