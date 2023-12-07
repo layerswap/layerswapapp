@@ -3,7 +3,9 @@ import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 import { CoinbaseWalletAdapter } from "@solana/wallet-adapter-coinbase";
 import { WalletConnectWalletAdapter } from "@solana/wallet-adapter-walletconnect";
-import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare"
+import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
+import { GlowWalletAdapter } from "@solana/wallet-adapter-glow";
+
 import {
     ConnectionProvider,
     WalletProvider,
@@ -21,17 +23,11 @@ function SolanaProvider({ children }: { children: ReactNode }) {
             new PhantomWalletAdapter(),
             new CoinbaseWalletAdapter(),
             new SolflareWalletAdapter(),
+            new GlowWalletAdapter(),
             new WalletConnectWalletAdapter({
                 network: solNetwork, 
                 options: {
-                    relayUrl: 'wss://relay.walletconnect.com',
                     projectId: WALLETCONNECT_PROJECT_ID,
-                    metadata: {
-                        name: 'Example App',
-                        description: 'Example App',
-                        url: 'https://github.com/solana-labs/wallet-adapter',
-                        icons: ['https://avatars.githubusercontent.com/u/35608259?s=200'],
-                    },
                 },
             })
         ],
