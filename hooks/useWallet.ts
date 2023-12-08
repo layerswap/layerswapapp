@@ -6,6 +6,7 @@ import useTON from "../lib/wallets/ton/useTON"
 import useEVM from "../lib/wallets/evm/useEVM"
 import useStarknet from "../lib/wallets/starknet/useStarknet"
 import useImmutableX from "../lib/wallets/immutableX/useIMX"
+import useSolana from "../lib/wallets/solana/useSolana"
 
 
 export type WalletProvider = {
@@ -24,6 +25,7 @@ export default function useWallet() {
         useEVM(),
         useStarknet(),
         useImmutableX(),
+        useSolana()
     ]
 
     async function handleConnect(providerName: string, chain?: string | number) {
