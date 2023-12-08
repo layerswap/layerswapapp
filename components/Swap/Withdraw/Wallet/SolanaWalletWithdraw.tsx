@@ -5,9 +5,7 @@ import toast from 'react-hot-toast';
 import { useSwapTransactionStore } from '../../../store/zustandStore';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSwapDataState } from '../../../../context/swap';
-import { ChangeNetworkButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
-import { useNetwork } from 'wagmi';
 import { Transaction, Connection, PublicKey, TransactionInstruction, TransactionResponse } from '@solana/web3.js';
 import useWallet from '../../../../hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
@@ -26,19 +24,16 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const { setSwapTransaction } = useSwapTransactionStore();
     const { swap } = useSwapDataState();
-    const { chain } = useNetwork();
 
     const { networks, layers } = useSettingsState();
     const { source_network: source_network_internal_name } = swap || {};
     const source_network = networks.find(n => n.internal_name === source_network_internal_name);
     const source_layer = layers.find(l => l.internal_name === source_network_internal_name)
     const source_currency = source_network?.currencies?.find(c => c.asset.toLocaleUpperCase() === swap?.source_network_asset.toLocaleUpperCase());
-    const l1Network = networks.find(n => n.internal_name === source_network?.metadata?.L1Network);
 
-    const decimals = source_currency?.decimals;
     const provider = getWithdrawalProvider(source_layer!);
     const wallet = provider?.getConnectedWallet();
-    const { publicKey, signTransaction } = useSolanaWallet();
+    const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
     const solanaNode = source_network?.nodes[0].url;
 
     const handleTransaction = async (swapId: string, publishedTransaction: TransactionResponse, txHash: string) => {
@@ -68,7 +63,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const handleTransfer = useCallback(async () => {
 
-        if (!swap || !publicKey || !signTransaction) return
+        if (!swap || !walletPublicKey || !signTransaction) return
 
         setLoading(true)
         try {
@@ -77,27 +72,27 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 "confirmed"
             );
 
-            const mintToken = new PublicKey(source_currency?.contract_address!);
+            const sourceToken = new PublicKey(source_currency?.contract_address!);
             const recipientAddress = new PublicKey(depositAddress);
 
             const transactionInstructions: TransactionInstruction[] = [];
             const associatedTokenFrom = await getAssociatedTokenAddress(
-                mintToken,
-                publicKey
+                sourceToken,
+                walletPublicKey
             );
             const fromAccount = await getAccount(connection, associatedTokenFrom);
             const associatedTokenTo = await getAssociatedTokenAddress(
-                mintToken,
+                sourceToken,
                 recipientAddress
             );
 
             if (!(await connection.getAccountInfo(associatedTokenTo))) {
                 transactionInstructions.push(
                     createAssociatedTokenAccountInstruction(
-                        publicKey,
+                        walletPublicKey,
                         associatedTokenTo,
                         recipientAddress,
-                        mintToken
+                        sourceToken
                     )
                 );
             }
@@ -105,8 +100,8 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 createTransferInstruction(
                     fromAccount.address,
                     associatedTokenTo,
-                    publicKey,
-                    amount * Math.pow(10, Number(decimals))
+                    walletPublicKey,
+                    amount * Math.pow(10, Number(source_currency?.decimals))
                 )
             );
 
@@ -114,7 +109,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             const signature = await configureAndSendCurrentTransaction(
                 transaction,
                 connection,
-                publicKey,
+                walletPublicKey,
                 signTransaction
             );
             const txReceipt = await connection.getTransaction(signature);
@@ -136,16 +131,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         }
         setLoading(false)
 
-    }, [swap, depositAddress, source_currency, publicKey,  amount, signTransaction])
-
-    if (l1Network && chain?.id !== Number(l1Network.chain_id)) {
-        return (
-            <ChangeNetworkButton
-                chainId={Number(l1Network?.chain_id)}
-                network={l1Network?.display_name}
-            />
-        )
-    }
+    }, [swap, depositAddress, source_currency, walletPublicKey,  amount, signTransaction])
 
     return (
         <>
