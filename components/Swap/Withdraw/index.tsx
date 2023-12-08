@@ -158,7 +158,7 @@ const Withdraw: FC = () => {
             </Widget.Content>
             {
                 activeTab?.footer &&
-                <Widget.Footer>
+                <Widget.Footer sticky={false}>
                     {activeTab?.footer}
                 </Widget.Footer>
             }
