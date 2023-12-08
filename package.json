@@ -27,6 +27,7 @@
     "@radix-ui/react-tooltip": "^1.0.7",
     "@rainbow-me/rainbowkit": "^1.1.2",
     "@sentry/nextjs": "^7.80.1",
+    "@solana/spl-token": "^0.3.9",
     "@solana/wallet-adapter-base": "0.9.18",
     "@solana/wallet-adapter-coinbase": "^0.1.18",
     "@solana/wallet-adapter-glow": "^0.1.18",
