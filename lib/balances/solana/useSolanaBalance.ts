@@ -2,8 +2,9 @@ import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
 import { createPublicClient, http } from 'viem';
-import { Blockhash, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { Connection, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
+import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
 
 type SolanaBalance = {
     value: SolanaAccount[]
@@ -45,37 +46,41 @@ export default function useSolanaBalance(): BalanceProvider {
         KnownInternalNames.Networks.SolanaMainnet
     ]
 
-    const { publicKey } = useSolanaWallet()
+    const { publicKey: walletPublicKey } = useSolanaWallet()
 
     const getBalance = async ({ layer, address }: BalanceProps) => {
 
         let balances: Balance[] = []
 
         if (layer.isExchange === true || !layer.assets) return
+
         const provider = createPublicClient({
-            transport: http(`https://odella-kzfk20-fast-mainnet.helius-rpc.com/`)
+            transport: http(layer.nodes[0].url)
         })
 
-        try {
-            const currency = layer.assets.find(a => a.asset === 'USDC')
-            if (!currency) return
+        for (let i = 0; i < layer.assets.length; i++) {
+            try {
+                const asset = layer.assets[i]
 
-            const result: SolanaBalance = await provider.request({ method: 'getTokenAccountsByOwner' as any, params: [address as any, { mint: currency?.contract_address } as any, { encoding: "jsonParsed" } as any] });
+                const result: SolanaBalance = await provider.request({ method: 'getTokenAccountsByOwner' as any, params: [address as any, { mint: asset?.contract_address } as any, { encoding: "jsonParsed" } as any] });
 
-            balances = [
-                {
+                const balance = {
                     network: layer.internal_name,
-                    token: currency.asset,
+                    token: asset.asset,
                     amount: result.value[0].account.data.parsed.info.tokenAmount.uiAmount,
                     request_time: new Date().toJSON(),
-                    decimals: Number(currency?.decimals),
+                    decimals: Number(asset?.decimals),
                     isNativeCurrency: false
                 }
-            ]
 
-        }
-        catch (e) {
-            console.log(e)
+                balances = [
+                    ...balances,
+                    balance
+                ]
+            }
+            catch (e) {
+                console.log(e)
+            }
         }
 
         return balances
@@ -90,23 +95,56 @@ export default function useSolanaBalance(): BalanceProvider {
             transport: http(layer.nodes[0].url)
         })
 
-        if (!publicKey) return
+        if (!walletPublicKey) return
 
         try {
 
-            const toPublicKey = new PublicKey(layer.assets[0].network?.managed_accounts[0].address!);
+            const connection = new Connection(
+                `${layer.nodes[0].url}`,
+                "confirmed"
+            );
+
+            const asset = layer.assets.find(a => currency.asset === a.asset)
+
+            const sourceToken = new PublicKey(asset?.contract_address!);
+            const recipientAddress = new PublicKey(layer.assets[0].network?.managed_accounts[0].address!);
+
+            const transactionInstructions: TransactionInstruction[] = [];
+            const associatedTokenFrom = await getAssociatedTokenAddress(
+                sourceToken,
+                walletPublicKey
+            );
+            const fromAccount = await getAccount(connection, associatedTokenFrom);
+            const associatedTokenTo = await getAssociatedTokenAddress(
+                sourceToken,
+                recipientAddress
+            );
+
+            if (!(await connection.getAccountInfo(associatedTokenTo))) {
+                transactionInstructions.push(
+                    createAssociatedTokenAccountInstruction(
+                        walletPublicKey,
+                        associatedTokenTo,
+                        recipientAddress,
+                        sourceToken
+                    )
+                );
+            }
+            transactionInstructions.push(
+                createTransferInstruction(
+                    fromAccount.address,
+                    associatedTokenTo,
+                    walletPublicKey,
+                    20000 * Math.pow(10, Number(asset?.decimals))
+                )
+            );
             const blockhash: any = await provider.request({ method: 'getLatestBlockhash' as any, params: [{ commitment: "processed" } as any] })
 
             const transaction = new Transaction({
-                feePayer: publicKey,
-                recentBlockhash: blockhash?.value?.blockhash as Blockhash,
-            }).add(
-                SystemProgram.transfer({
-                    fromPubkey: publicKey,
-                    toPubkey: toPublicKey,
-                    lamports: 100000,
-                }),
-            );
+                feePayer: walletPublicKey,
+                blockhash: blockhash.value.blockhash,
+                lastValidBlockHeight: blockhash.value.lastValidBlockHeight
+            }).add(...transactionInstructions);
             const message = transaction.compileMessage();
 
             const result: SolanaGas = await provider.request({ method: 'getFeeForMessage' as any, params: [message.serialize().toString('base64') as any, { commitment: "processed" } as any] })
