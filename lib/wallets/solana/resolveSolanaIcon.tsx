@@ -14,6 +14,8 @@ export const ResolveSolanaWalletIcon = ({ connector }: { connector: string }) =>
             return WalletConnectIcon
         case KnownKonnectors.Coinbase:
             return CoinbaseIcon
+        case KnownKonnectors.Glow:
+            return GlowIcon
         default:
             return () => <></>
     }
@@ -23,5 +25,6 @@ const KnownKonnectors = {
     Solflare: 'solflare',
     Phantom: 'phantom',
     WalletConnect: "walletConnect",
-    Coinbase: "coinbase"
+    Coinbase: "coinbase wallet",
+    Glow: "glow"
 }

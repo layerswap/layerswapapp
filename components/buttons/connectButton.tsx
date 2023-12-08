@@ -178,6 +178,7 @@ const ResolveConnectorIcon = ({
                     <Solflare className={className} />
                     <WalletConnectIcon className={className} />
                     <CoinbaseIcon className={className} />
+                    <GlowIcon className={className} />
                 </div>
             );
         default:
@@ -190,4 +191,5 @@ const KnownConnectors = {
     EVM: "evm",
     TON: "ton",
     Solana: "solana",
+    Glow: "glow"
 };

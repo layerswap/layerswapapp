@@ -85,7 +85,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 sourceToken,
                 recipientAddress
             );
-
+            
             if (!(await connection.getAccountInfo(associatedTokenTo))) {
                 transactionInstructions.push(
                     createAssociatedTokenAccountInstruction(
