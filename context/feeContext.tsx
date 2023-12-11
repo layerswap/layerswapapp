@@ -8,8 +8,8 @@ import { truncateDecimals } from '../components/utils/RoundDecimals';
 const FeeStateContext = createContext<ContextType | null>(null);
 
 type ContextType = {
-    minAllowedAmount: number,
-    maxAllowedAmount: number,
+    minAllowedAmount: number | undefined,
+    maxAllowedAmount: number | undefined,
     fee: Fee,
     mutateFee: () => void,
     valuesChanger: (values: SwapFormValues) => void,
@@ -69,8 +69,8 @@ export function FeeProvider({ children }) {
         avgCompletionTime: lsFee?.data?.avg_completion_time
     }
 
-    const minAllowedAmount = truncateDecimals(Number(amountRange?.data?.min_amount_in_usd) / Number(fromCurrency?.usd_price), fromCurrency?.precision)
-    const maxAllowedAmount = truncateDecimals(Number(amountRange?.data?.max_amount_in_usd) / Number(fromCurrency?.usd_price), fromCurrency?.precision)
+    const minAllowedAmount = amountRange?.data && fromCurrency && truncateDecimals(Number(amountRange?.data?.min_amount_in_usd) / Number(fromCurrency?.usd_price), fromCurrency?.precision) 
+    const maxAllowedAmount = amountRange?.data && fromCurrency && truncateDecimals(Number(amountRange?.data?.max_amount_in_usd) / Number(fromCurrency?.usd_price), fromCurrency?.precision)
 
     return (
         <FeeStateContext.Provider value={{ minAllowedAmount, maxAllowedAmount, fee, mutateFee, valuesChanger, isFeeLoading }}>
