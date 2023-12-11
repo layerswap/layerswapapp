@@ -13,7 +13,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { values, setFieldValue, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromCurrency, from, to, amount, destination_address } = values || {};
-    const { mutateFee, minAllowedAmount, maxAllowedAmount  } = useFee()
+    const { mutateFee, minAllowedAmount, maxAllowedAmount } = useFee()
 
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const { getBalance, getGas } = useBalancesUpdate()
@@ -141,7 +141,8 @@ const AmountLabel = ({
             {
                 detailsAvailable &&
                 <div className="text-xs hidden md:flex text-secondary-text items-center">
-                    <span>(Min:&nbsp;</span>{minAllowedAmount}<span>&nbsp;-&nbsp;Max:&nbsp;</span>{isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{maxAllowedAmount}</span>}<span>)</span>
+                    <span>(Min:&nbsp;</span>{isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{minAllowedAmount}</span>}
+                    <span>&nbsp;-&nbsp;Max:&nbsp;</span>{isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{maxAllowedAmount}</span>}<span>)</span>
                 </div>
             }
         </div>

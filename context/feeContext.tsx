@@ -12,7 +12,8 @@ type ContextType = {
     maxAllowedAmount: number,
     fee: Fee,
     mutateFee: () => void,
-    valuesChanger: (values: SwapFormValues) => void
+    valuesChanger: (values: SwapFormValues) => void,
+    isFeeLoading: boolean
 }
 
 export type Fee = {
@@ -44,7 +45,7 @@ export function FeeProvider({ children }) {
     }>>((from && fromCurrency && to && toCurrency) ?
         `/routes/limits/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?version=sandbox` : null, apiClient.fetcher)
 
-    const { data: lsFee, mutate: mutateFee } = useSWR<ApiResponse<{
+    const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<{
         wallet_fee_in_usd: number,
         wallet_fee: number,
         wallet_receive_amount: number,
@@ -72,7 +73,7 @@ export function FeeProvider({ children }) {
     const maxAllowedAmount = truncateDecimals(Number(amountRange?.data?.max_amount_in_usd) / Number(fromCurrency?.usd_price), fromCurrency?.precision)
 
     return (
-        <FeeStateContext.Provider value={{ minAllowedAmount, maxAllowedAmount, fee, mutateFee, valuesChanger }}>
+        <FeeStateContext.Provider value={{ minAllowedAmount, maxAllowedAmount, fee, mutateFee, valuesChanger, isFeeLoading }}>
             {children}
         </FeeStateContext.Provider>
     )

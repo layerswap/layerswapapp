@@ -22,7 +22,7 @@ const DetailedEstimates: FC<EstimatesProps> = ({
 
     const { values } = useFormikContext<SwapFormValues>();
     const { fromCurrency } = values;
-    const { fee } = useFee()
+    const { fee, isFeeLoading } = useFee()
 
     const parsedFee = fee && parseFloat(Number(fee.walletFee).toFixed(fromCurrency?.precision))
     const currencyName = fromCurrency?.asset || " "
@@ -33,7 +33,7 @@ const DetailedEstimates: FC<EstimatesProps> = ({
                 Layerswap fee
             </label>
             <div className="text-right">
-                <span>{parsedFee}</span> <span>{currencyName}</span>
+                {isFeeLoading ? <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' /> : <span>{parsedFee || 0}</span>} <span>{currencyName}</span>
             </div>
         </div>
         {
@@ -41,7 +41,7 @@ const DetailedEstimates: FC<EstimatesProps> = ({
             && source?.isExchange === false
             && selected_currency
             && source?.type === NetworkType.EVM &&
-            <NetworkGas network={source} selected_currency={selected_currency}  />
+            <NetworkGas network={source} selected_currency={selected_currency} />
         }
         <EstimatedArrival currency={selected_currency} destination={destination} fee={fee} />
     </>
