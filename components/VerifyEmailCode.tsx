@@ -13,7 +13,7 @@ import NumericInput from './Input/NumericInput';
 import Modal from './modal/modal';
 import TimerWithContext from './TimerComponent';
 import { classNames } from './utils/classNames';
-import Widget from './Wizard/Widget';
+import { Widget } from './Widget/Index';
 interface VerifyEmailCodeProps {
     onSuccessfullVerify: (authresponse: AuthConnectResponse) => Promise<void>;
     disclosureLogin?: boolean

@@ -7,7 +7,6 @@ import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import KnownInternalNames from '../../../lib/knownIds';
 import { Tab, TabHeader } from '../../Tabs/Index';
-import Widget from '../../Wizard/Widget';
 import SwapSummary from '../Summary';
 import Coinbase from './Coinbase';
 import External from './External';
@@ -21,6 +20,8 @@ import SpinIcon from '../../icons/spinIcon';
 import { NetworkType } from '../../../Models/CryptoNetwork';
 import useWallet from '../../../hooks/useWallet';
 import { useQueryState } from '../../../context/query';
+import { Widget } from '../../Widget/Index';
+import { useComponentsConfigs } from '../../../stores/componentsConfigs';
 
 const Withdraw: FC = () => {
     const { swap } = useSwapDataState()
@@ -120,6 +121,8 @@ const Withdraw: FC = () => {
         activeTab && setWithdrawType(activeTab.id)
     }, [activeTab])
 
+    const { isModalOpen } = useComponentsConfigs()
+console.log(isModalOpen)
     return (
         <>
             <Widget.Content>
@@ -158,7 +161,7 @@ const Withdraw: FC = () => {
             </Widget.Content>
             {
                 activeTab?.footer &&
-                <Widget.Footer sticky={false}>
+                <Widget.Footer sticky={isModalOpen ? false : true}>
                     {activeTab?.footer}
                 </Widget.Footer>
             }

@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useMemo, useRef } from "react";
+import { forwardRef, useCallback, useRef } from "react";
 import { useSettingsState } from "../../context/settings";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -9,7 +9,6 @@ import SecondaryButton from "../buttons/secondaryButton";
 import { useQueryState } from "../../context/query";
 import { useBalancesState, useBalancesUpdate } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
-import useWallet from "../../hooks/useWallet";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 

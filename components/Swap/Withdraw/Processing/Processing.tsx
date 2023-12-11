@@ -1,13 +1,12 @@
 import { ExternalLink } from 'lucide-react';
 import { FC } from 'react'
-import KnownInternalNames from '../../../../lib/knownIds';
-import Widget from '../../../Wizard/Widget';
+import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
 import { GetNetworkCurrency } from '../../../../helpers/settingsHelper';
 import AverageCompletionTime from '../../../Common/AverageCompletionTime';
-import { SwapItem, Transaction, TransactionStatus, TransactionType } from '../../../../lib/layerSwapApiClient';
+import { SwapItem, TransactionStatus, TransactionType } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';

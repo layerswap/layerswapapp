@@ -23,7 +23,7 @@ import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import StatusIcon from "../../SwapHistory/StatusIcons";
 import Image from 'next/image';
-import { ChevronRight, X } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import ResizablePanel from "../../ResizablePanel";
@@ -33,7 +33,7 @@ type NetworkToConnect = {
     AppURL: string;
 }
 const SwapDetails = dynamic(() => import(".."), {
-    loading: () => <div className="p-4 w-full">
+    loading: () => <div className="w-full h-[450px]">
         <div className="animate-pulse flex space-x-4">
             <div className="flex-1 space-y-6 py-1">
                 <div className="h-32 bg-secondary-700 rounded-lg"></div>
