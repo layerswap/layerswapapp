@@ -9,7 +9,6 @@ import SecondaryButton from "../buttons/secondaryButton";
 import { useQueryState } from "../../context/query";
 import { useBalancesState, useBalancesUpdate } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
-import useWallet from "../../hooks/useWallet";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
