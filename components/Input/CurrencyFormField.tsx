@@ -30,7 +30,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const assets = direction === 'from' ? from?.assets : to?.assets;
 
     const filterWith = direction === "from" ? to : from
-    const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
+    const filterWithAsset = fromCurrency?.asset
 
     const apiClient = new LayerSwapApiClient()
 
@@ -82,7 +82,7 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
         if (lockedCurrency) {
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
-        else if (from && to && routes?.some(r => r.asset !== currency.asset && r.network !== (direction === 'from' ? from.internal_name : to.internal_name))) {
+        else if (from && to && !routes?.find(r => r.asset === currency.asset && r.network === to.internal_name)) {
             return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
         }
         else {

@@ -100,8 +100,8 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         <label htmlFor={name} className="block font-semibold text-secondary-text text-sm">
             {label}
         </label>
-        <div ref={ref} className={`mt-1.5 grid grid-flow-row-dense grid-cols-6 items-center pr-2`}>
-            <div className={`col-span-4`}>
+        <div ref={ref} className="mt-1.5 grid grid-flow-row-dense grid-cols-8 md:grid-cols-6 items-center pr-2">
+            <div className="col-span-5 md:col-span-4">
                 <CommandSelectWrapper
                     disabled={false}
                     valueGrouper={valueGrouper}
@@ -112,7 +112,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     searchHint={searchHint}
                 />
             </div>
-            <div className="col-span-2 rounded-lg h-12 w-full py-2.5 ml-2 bg-secondary-600 border border-secondary-500">
+            <div className="col-span-3 md:col-span-2 rounded-lg h-12 w-full py-2.5 ml-2 bg-secondary-600 border border-secondary-500">
                 <div className="inline-flex items-start w-full h-full align-sub">
                     <CurrencyFormField direction={name} />
                 </div>

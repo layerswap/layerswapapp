@@ -14,6 +14,7 @@ import { SelectProps } from '../Shared/Props/SelectProps'
 import Modal from '../../modal/modal';
 import { Info } from 'lucide-react';
 import SpinIcon from '../../icons/spinIcon';
+import { LayerDisabledReason } from '../Popover/PopoverSelect';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
@@ -43,7 +44,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                     {show ? <>
                         <CommandInput autoFocus={isDesktop} placeholder={searchHint} />
                         {
-                            !values.some(v => v.isAvailable.value === true) &&
+                            value?.isAvailable.disabledReason === LayerDisabledReason.LockNetworkIsTrue &&
                             <div className='text-xs text-left text-secondary-text mb-2'>
                                 <Info className='h-3 w-3 inline-block mb-0.5' /><span>&nbsp;You&apos;re accessing Layerswap from a partner&apos;s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.</span>
                             </div>

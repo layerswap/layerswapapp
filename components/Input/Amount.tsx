@@ -93,23 +93,23 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     ) : null}
                 </NumericInput>
             </div>
-            <div className="inline-flex items-center">
-                {
-                    from && to && fromCurrency ? <div>
-                        <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 pt-2 px-2">
-                            <div className="flex">
-                                <SecondaryButton onClick={handleSetMinAmount} size="xs">
-                                    MIN
-                                </SecondaryButton>
-                                <SecondaryButton onClick={handleSetMaxAmount} size="xs" className="ml-1.5">
-                                    MAX
-                                </SecondaryButton>
-                            </div>
+            {
+                from && to && fromCurrency ? <div>
+                    <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 pt-2 px-2">
+                        <div className="flex">
+                            <SecondaryButton onClick={handleSetMinAmount} size="xs">
+                                MIN
+                            </SecondaryButton>
+                            <SecondaryButton onClick={handleSetMaxAmount} size="xs" className="ml-1.5">
+                                MAX
+                            </SecondaryButton>
                         </div>
-                        <div className="text-xs text-right">
+                    </div>
+                    <div className="text-xs text-right">
+                        <div className='bg-secondary-700 py-1.5 px-2 pl-0 text-xs'>
                             {
                                 walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) &&
-                                <div className='bg-secondary-700 py-2 px-2 pl-0 text-xs'>
+                                <div>
                                     <span>Balance:&nbsp;</span>
                                     {isBalanceLoading ?
                                         <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
@@ -119,10 +119,10 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                             }
                         </div>
                     </div>
-                        : <></>
-                }
+                </div>
+                    : <></>
+            }
 
-            </div>
         </div>
     </>)
 });

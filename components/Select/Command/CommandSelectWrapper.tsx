@@ -43,7 +43,7 @@ export default function CommandSelectWrapper<T>({
                     disabled={disabled}
                     className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-secondary-600 border border-secondary-500 font-semibold"
                 >
-                    <span className='flex grow text-left items-center'>
+                    <span className='flex grow text-left items-center text-xs md:text-base'>
                         {
                             value && <div className="flex items-center">
                                 <div className="flex-shrink-0 h-6 w-6 relative">
