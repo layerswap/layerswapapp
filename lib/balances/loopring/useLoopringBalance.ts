@@ -1,8 +1,6 @@
 import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../hooks/useBalance";
-import * as lp from "@loopring-web/loopring-sdk";
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
-import { LoopringAPI } from "../../loopring/LoopringAPI";
 
 type PendingBalances = {
     withdraw: string;
@@ -17,6 +15,7 @@ type RawData = {
     pending: PendingBalances;
 }
 
+
 type Balances = {
     raw_data: RawData[];
 }
@@ -28,12 +27,12 @@ export default function useLoopringBalance(): BalanceProvider {
         KnownInternalNames.Networks.LoopringGoerli
     ]
 
-    const getBalance = async ({layer, address}: BalanceProps) => {
-
+    const getBalance = async ({ layer, address }: BalanceProps) => {
         let balances: Balance[] = [];
 
         if (layer.isExchange === true || !layer.assets) return
         try {
+            const LoopringAPI = (await import("../../loopring/LoopringAPI")).LoopringAPI
             const { accInfo } = await LoopringAPI.exchangeAPI.getAccount({
                 owner: address,
             });
@@ -64,20 +63,20 @@ export default function useLoopringBalance(): BalanceProvider {
         return balances
     }
 
-    const getGas = async ({layer, currency, address}: GasProps) => {
-
+    const getGas = async ({ layer, currency, address }: GasProps) => {
+        debugger
         let gas: Gas[] = [];
         if (layer.isExchange === true || !layer.assets) return
 
         try {
-
+            const LoopringAPI = (await import("../../loopring/LoopringAPI")).LoopringAPI
             const { accInfo } = await LoopringAPI.exchangeAPI.getAccount({
                 owner: address!,
             });
-            const result = await LoopringAPI.userAPI.getOffchainFeeAmt({accountId: accInfo.accountId, requestType: lp.OffchainFeeReqType.TRANSFER},"");
+            const result = await LoopringAPI.userAPI.getOffchainFeeAmt({ accountId: accInfo.accountId, requestType: 3 }, "");
             const currencyDec = layer?.assets?.find(c => c?.asset == currency.asset)?.decimals;
             const formatedGas = formatAmount(result.fees[currency.asset].fee, Number(currencyDec));
-            
+
             gas = [{
                 token: currency.asset,
                 gas: formatedGas,
