@@ -13,7 +13,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { values, setFieldValue, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromCurrency, from, to, amount, destination_address } = values || {};
-    const { mutateFee, minAllowedAmount, maxAllowedAmount } = useFee()
+    const { minAllowedAmount, maxAllowedAmount } = useFee()
 
     const { balances, isBalanceLoading, isGasLoading } = useBalancesState()
     const { getBalance, getGas } = useBalancesUpdate()
@@ -48,20 +48,6 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         if (maxAllowedAmount)
             updateRequestedAmountInUsd(maxAllowedAmount)
     }, [from, fromCurrency, destination_address, maxAllowedAmount])
-
-    const handleAmountChangeDebounced = debounce((newAmount) => {
-        mutateFee()
-    }, 500);
-
-    useEffect(() => {
-        if (amount) {
-            handleAmountChangeDebounced({ amount });
-        }
-
-        return () => {
-            handleAmountChangeDebounced.cancel();
-        };
-    }, [amount]);
 
     return (<>
         <AmountLabel detailsAvailable={!!(from && to && amount)}

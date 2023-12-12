@@ -100,7 +100,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, !!(to && lockTo));
     }
     valueGrouper = groupByType
-console.log(menuItems)
+
     const value = menuItems.find(x => x.id == (direction === "from" ? from : to)?.internal_name);
     const handleSelect = useCallback((item: SelectMenuItem<Layer>) => {
         setFieldValue(name, item.baseObject, true)

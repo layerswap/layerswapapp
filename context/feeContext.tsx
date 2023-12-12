@@ -1,4 +1,4 @@
-import { createContext, useState, useContext } from 'react'
+import { createContext, useState, useContext, useEffect } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import useSWR from 'swr';
@@ -32,10 +32,21 @@ export function FeeProvider({ children }) {
 
     const [values, setValues] = useState<SwapFormValues>()
     const { fromCurrency, toCurrency, from, to, amount } = values || {}
+    const [debouncedAmount, setDebouncedAmount] = useState(amount);
 
     const valuesChanger = (values: SwapFormValues) => {
         setValues(values)
     }
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedAmount(amount);
+        }, 1000);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [amount, 1000]);
 
     const apiClient = new LayerSwapApiClient()
 
@@ -59,7 +70,7 @@ export function FeeProvider({ children }) {
         },
         fee_usd_price: number
     }>>((from && fromCurrency && to && toCurrency && amount) ?
-        `/routes/rate/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?amount=${amount}&version=sandbox` : null, apiClient.fetcher)
+        `/routes/rate/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?amount=${debouncedAmount}&version=sandbox` : null, apiClient.fetcher, { dedupingInterval: 2000 })
 
     const fee = {
         walletFee: lsFee?.data?.wallet_fee,
@@ -69,7 +80,7 @@ export function FeeProvider({ children }) {
         avgCompletionTime: lsFee?.data?.avg_completion_time
     }
 
-    const minAllowedAmount = amountRange?.data && fromCurrency && truncateDecimals(Number(amountRange?.data?.min_amount_in_usd) / Number(fromCurrency?.usd_price), fromCurrency?.precision) 
+    const minAllowedAmount = amountRange?.data && fromCurrency && truncateDecimals(Number(amountRange?.data?.min_amount_in_usd) / Number(fromCurrency?.usd_price), fromCurrency?.precision)
     const maxAllowedAmount = amountRange?.data && fromCurrency && truncateDecimals(Number(amountRange?.data?.max_amount_in_usd) / Number(fromCurrency?.usd_price), fromCurrency?.precision)
 
     return (
