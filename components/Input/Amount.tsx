@@ -15,7 +15,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { fromCurrency, from, to, amount, destination_address } = values || {};
     const { mutateFee, minAllowedAmount, maxAllowedAmount } = useFee()
 
-    const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
+    const { balances, isBalanceLoading, isGasLoading } = useBalancesState()
     const { getBalance, getGas } = useBalancesUpdate()
     const name = "amount"
     const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)

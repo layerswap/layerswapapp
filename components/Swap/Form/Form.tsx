@@ -100,12 +100,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         setAddressConfirmed(false)
     }, [source])
 
-    useEffect(() => {
-        if (!destination?.isExchange && values.refuel && values.amount && minAllowedAmount && Number(values.amount) < minAllowedAmount) {
-            setFieldValue('amount', minAllowedAmount)
-        }
-    }, [values.refuel, destination])
-
     const previouslySelectedDestination = useRef(destination);
 
     //If destination changed to exchange, remove destination_address
@@ -120,7 +114,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     }, [destination])
 
     useEffect(() => {
-        if (!destination?.isExchange && values.refuel && minAllowedAmount && Number(values.amount) < minAllowedAmount) {
+        if (!destination?.isExchange && values.refuel && minAllowedAmount && (Number(values.amount) < minAllowedAmount)) {
             setFieldValue('amount', minAllowedAmount)
         }
     }, [values.refuel, destination])
@@ -187,8 +181,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     }, [values.amount, walletBalance, networkGas])
 
     const mightBeAutOfGas = !!(networkGas && walletBalance?.isNativeCurrency && Number(values.amount)
-        + networkGas?.gas > walletBalance.amount && minAllowedAmount
-        && walletBalance.amount > minAllowedAmount
+        + networkGas?.gas > walletBalance.amount
+        && minAllowedAmount && (walletBalance.amount > minAllowedAmount)
     )
     const gasToReserveFormatted = mightBeAutOfGas ? truncateDecimals(networkGas?.gas, values?.fromCurrency?.precision) : 0
 

@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback } from "react";
+import { forwardRef, useCallback, useEffect, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
@@ -69,28 +69,38 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
 
     const apiClient = new LayerSwapApiClient()
+    const version = process.env.NEXT_PUBLIC_API_VERSION
 
-    const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}${(filterWith && filterWithAsset) ? `?${direction === 'to' ? 'source_network' : 'destination_network'}=${filterWith.internal_name}&${direction === 'to' ? 'source_asset' : 'destination_asset'}=${filterWithAsset}&` : "?"}version=sandbox`
+    const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}${(filterWith && filterWithAsset) ? `?${direction === 'to' ? 'source_network' : 'destination_network'}=${filterWith.internal_name}&${direction === 'to' ? 'source_asset' : 'destination_asset'}=${filterWithAsset}&` : "?"}version=${version}`
 
-    const { data: routes } = useSWR<ApiResponse<{
+    const { data: routes, isLoading } = useSWR<ApiResponse<{
         network: string,
         asset: string
     }[]>>(routesEndpoint, apiClient.fetcher)
 
+    const [routesData, setRoutesData] = useState<{
+        network: string,
+        asset: string
+    }[]>()
+
+    useEffect(() => {
+        if (!isLoading && routes?.data) setRoutesData(routes.data)
+    }, [routes])
+
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
-        filteredLayers = layers.filter(l => l.status === 'active' && routes?.data?.some(r => r.network === l.internal_name) && l.internal_name !== filterWith?.internal_name)
+        filteredLayers = layers.filter(l => l.status === 'active' && routesData?.some(r => r.network === l.internal_name) && l.internal_name !== filterWith?.internal_name)
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, !!(from && lockFrom));
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        filteredLayers = layers.filter(l => l.status === 'active' && routes?.data?.some(r => r.network === l.internal_name) && l.internal_name !== filterWith?.internal_name)
+        filteredLayers = layers.filter(l => l.status === 'active' && routesData?.some(r => r.network === l.internal_name) && l.internal_name !== filterWith?.internal_name)
         menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, !!(to && lockTo));
     }
     valueGrouper = groupByType
-
+console.log(menuItems)
     const value = menuItems.find(x => x.id == (direction === "from" ? from : to)?.internal_name);
     const handleSelect = useCallback((item: SelectMenuItem<Layer>) => {
         setFieldValue(name, item.baseObject, true)
