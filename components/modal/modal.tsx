@@ -4,7 +4,6 @@ import { FC } from "react"
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { Leaflet, LeafletHeight } from "./leaflet";
 import ReactPortal from "../Common/ReactPortal";
-import { useComponentsConfigs } from "../../stores/componentsConfigs";
 
 export interface ModalProps {
     header?: ReactNode;
@@ -19,14 +18,10 @@ export interface ModalProps {
 const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow }) => {
     const { isMobile, isDesktop } = useWindowDimensions()
     const mobileModalRef = useRef(null)
-    const { setIsModalOpen } = useComponentsConfigs()
 
     useEffect(() => {
         if (isMobile && show) {
             window.document.body.style.overflow = 'hidden'
-            setIsModalOpen(true)
-        } else {
-            setIsModalOpen(false)
         }
         return () => { window.document.body.style.overflow = '' }
     }, [isMobile, show])

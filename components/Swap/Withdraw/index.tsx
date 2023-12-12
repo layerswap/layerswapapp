@@ -122,7 +122,7 @@ const Withdraw: FC = () => {
     }, [activeTab])
 
     const { isModalOpen } = useComponentsConfigs()
-console.log(isModalOpen)
+
     return (
         <>
             <Widget.Content>

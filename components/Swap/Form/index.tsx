@@ -27,6 +27,7 @@ import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import ResizablePanel from "../../ResizablePanel";
+import { useComponentsConfigs } from "../../../stores/componentsConfigs";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -51,6 +52,11 @@ export default function Form() {
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
+    const { setIsModalOpen } = useComponentsConfigs()
+
+    useEffect(() => {
+        setIsModalOpen(showSwapModal)
+    }, [showSwapModal])
 
     const settings = useSettingsState();
     const query = useQueryState()
