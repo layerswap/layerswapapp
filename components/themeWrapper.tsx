@@ -71,7 +71,7 @@ export default function ThemeWrapper({ children }: Props) {
                 </div>
                 <Navbar />
                 <div className="z-[1] w-full">
-                    <div className="flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg">
+                    <div className="flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg mb-6">
                         <div className="flex flex-col w-full text-primary-text">
                             {children}
                         </div>
