@@ -1,25 +1,33 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
+import { forwardRef, useCallback, useRef, useState } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import NumericInput from "./NumericInput";
 import SecondaryButton from "../buttons/secondaryButton";
 import { useBalancesState, useBalancesUpdate } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useFee } from "../../context/feeContext";
-import debounce from 'lodash/debounce';
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const { values, setFieldValue, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromCurrency, from, to, amount, destination_address } = values || {};
-    const { minAllowedAmount, maxAllowedAmount } = useFee()
+    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
 
-    const { balances, isBalanceLoading, isGasLoading } = useBalancesState()
+    const { balances, isBalanceLoading, isGasLoading, gases } = useBalancesState()
     const { getBalance, getGas } = useBalancesUpdate()
     const name = "amount"
     const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
+    const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.asset)?.gas || 0
+
+    const maxAllowedAmount = (walletBalance &&
+        maxAmountFromApi &&
+        minAllowedAmount &&
+        ((walletBalance.amount - gasAmount) >= minAllowedAmount &&
+            (walletBalance.amount - gasAmount) <= maxAmountFromApi)) ?
+        walletBalance.amount - Number(gasAmount)
+        : maxAmountFromApi
 
     const maxAllowedDisplayAmount = maxAllowedAmount && truncateDecimals(maxAllowedAmount, fromCurrency?.precision)
 
@@ -41,10 +49,10 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
             updateRequestedAmountInUsd(minAllowedAmount);
     }
 
-    const handleSetMaxAmount = useCallback(() => {
-        setFieldValue(name, maxAllowedAmount);
-        from && getBalance(from);
+    const handleSetMaxAmount = useCallback(async () => {
+        from && await getBalance(from);
         from && fromCurrency && getGas(from, fromCurrency, destination_address || "");
+        setFieldValue(name, maxAllowedAmount);
         if (maxAllowedAmount)
             updateRequestedAmountInUsd(maxAllowedAmount)
     }, [from, fromCurrency, destination_address, maxAllowedAmount])
@@ -66,7 +74,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     name={name}
                     ref={amountRef}
                     precision={fromCurrency?.precision}
-                    className="rounded-r-none text-primary-text w-full !pb-6 text-lg"
+                    className="rounded-r-none text-primary-text w-full !pb-6 text-lg truncate"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value))
@@ -80,33 +88,35 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                 </NumericInput>
             </div>
             {
-                from && to && fromCurrency ? <div>
-                    <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 pt-2 px-2">
-                        <div className="flex">
-                            <SecondaryButton onClick={handleSetMinAmount} size="xs">
-                                MIN
-                            </SecondaryButton>
-                            <SecondaryButton onClick={handleSetMaxAmount} size="xs" className="ml-1.5">
-                                MAX
-                            </SecondaryButton>
+                from && to && fromCurrency ?
+                    <div>
+                        <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 pt-2 px-2">
+                            <div className="flex">
+                                <SecondaryButton onClick={handleSetMinAmount} size="xs">
+                                    MIN
+                                </SecondaryButton>
+                                <SecondaryButton onClick={handleSetMaxAmount} size="xs" className="ml-1.5">
+                                    MAX
+                                </SecondaryButton>
+                            </div>
+                        </div>
+                        <div className="text-xs text-right">
+                            <div className='bg-secondary-700 py-1.5 px-2 pl-0 text-xs'>
+                                {
+                                    walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) &&
+                                    <div>
+                                        <span>Balance:&nbsp;</span>
+                                        {isBalanceLoading ?
+                                            <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                            :
+                                            <span>{walletBalanceAmount}</span>}
+                                    </div>
+                                }
+                            </div>
                         </div>
                     </div>
-                    <div className="text-xs text-right">
-                        <div className='bg-secondary-700 py-1.5 px-2 pl-0 text-xs'>
-                            {
-                                walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) &&
-                                <div>
-                                    <span>Balance:&nbsp;</span>
-                                    {isBalanceLoading ?
-                                        <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                                        :
-                                        <span>{walletBalanceAmount}</span>}
-                                </div>
-                            }
-                        </div>
-                    </div>
-                </div>
-                    : <></>
+                    :
+                    <></>
             }
 
         </div>

@@ -39,7 +39,15 @@ type Props = {
     partner?: Partner,
 }
 const Address = dynamic(() => import("../../Input/Address"), {
-    loading: () => <></>
+    loading: () => <div className="w-full">
+        <div className="animate-pulse flex space-x-4">
+            <div className="flex-1 space-y-3 py-1">
+                <div className="h-12 bg-secondary-700 rounded-lg"></div>
+                <div className="h-24 bg-secondary-700 rounded-lg"></div>
+                <div className="h-24 bg-secondary-700 rounded-lg"></div>
+            </div>
+        </div>
+    </div>
 })
 
 const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {

@@ -122,10 +122,8 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     searchHint={searchHint}
                 />
             </div>
-            <div className="col-span-3 md:col-span-2 rounded-lg h-12 w-full py-2.5 ml-2 bg-secondary-600 border border-secondary-500">
-                <div className="inline-flex items-start w-full h-full align-sub">
-                    <CurrencyFormField direction={name} />
-                </div>
+            <div className="col-span-3 md:col-span-2 w-full ml-2">
+                <CurrencyFormField direction={name} />
             </div>
         </div>
     </div>)
