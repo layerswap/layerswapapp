@@ -100,7 +100,7 @@ export default function Layout({ children, settings, themeData }: Props) {
       SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
     }
     Sentry.captureException(error, info);
-    transaction.finish();
+    transaction?.finish();
   }
 
   themeData = themeData || THEME_COLORS.default

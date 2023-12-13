@@ -1,8 +1,6 @@
 import axios from "axios";
 import { AuthGetCodeResponse, AuthConnectResponse } from "../Models/LayerSwapAuth";
 
-
-
 export default class LayerSwapAuthApiClient {
     static identityBaseEndpoint: string = getIdentityBasePath()
 
@@ -33,7 +31,7 @@ export default class LayerSwapAuthApiClient {
 }
 
 function getIdentityBasePath() {
-    const res = process.env.NEXT_PUBLIC_IDENTITY_BASE_PATH
+    const res = process.env.NEXT_PUBLIC_IDENTITY_API
     if (!res) {
         throw new Error("NEXT_PUBLIC_IDENTITY_API is not set up in env vars")
     }

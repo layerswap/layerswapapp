@@ -210,7 +210,7 @@ export const Settings: LayerSwapSettings = {
             "display_name": "StarkNet Goerli",
             "internal_name": "STARKNET_GOERLI",
             "is_featured": false,
-            
+
             "account_explorer_template": "https://etherscan.io/",
             "chain_id": "0x534e5f474f45524c49",
             "status": "active",
@@ -409,3 +409,113 @@ export const Settings: LayerSwapSettings = {
         }
     ],
 }
+export const SettingChains: any = [
+    {
+        "id": 5,
+        "name": "Ethereum Goerli",
+        "network": "ETHEREUM_GOERLI",
+        "nativeCurrency": {
+            "name": "IMX",
+            "symbol": "IMX",
+            "decimals": 18
+        },
+        "iconUrl": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_goerli.png",
+        "rpcUrls": {
+            "default": {
+                "http": [
+                    "https://eth-goerli.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef"
+                ]
+            },
+            "public": {
+                "http": [
+                    "https://eth-goerli.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef"
+                ]
+            }
+        },
+        "blockExplorers": {
+            "default": {
+                "name": "name",
+                "url": "https://goerli.etherscan.io"
+            }
+        },
+        "contracts": {
+            "multicall3": {
+                "address": "0xca11bde05977b3631167028862be2a173976ca11" as `0x${string}`,
+                "blockCreated": 1746963
+            }
+        },
+        "fees": {}
+    },
+    {
+        "id": 421613,
+        "name": "Arbitrum One Goerli",
+        "network": "ARBITRUM_GOERLI",
+        "nativeCurrency": {
+            "name": "USDC",
+            "symbol": "USDC",
+            "decimals": 6
+        },
+        "iconUrl": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_goerli.png",
+        "rpcUrls": {
+            "default": {
+                "http": [
+                    "https://arbitrum-goerli.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef"
+                ]
+            },
+            "public": {
+                "http": [
+                    "https://arbitrum-goerli.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef"
+                ]
+            }
+        },
+        "blockExplorers": {
+            "default": {
+                "name": "name",
+                "url": "https://goerli.arbiscan.io"
+            }
+        },
+        "contracts": {
+            "multicall3": {
+                "address": "0xca11bde05977b3631167028862be2a173976ca11" as `0x${string}`,
+                "blockCreated": 1746963
+            }
+        },
+        "fees": {}
+    },
+    {
+        "id": 420,
+        "name": "Optimism Goerli",
+        "network": "OPTIMISM_GOERLI",
+        "nativeCurrency": {
+            "name": "ETH",
+            "symbol": "ETH",
+            "decimals": 18
+        },
+        "iconUrl": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/optimism_goerli.png",
+        "rpcUrls": {
+            "default": {
+                "http": [
+                    "https://optimism-goerli.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef"
+                ]
+            },
+            "public": {
+                "http": [
+                    "https://optimism-goerli.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef"
+                ]
+            }
+        },
+        "blockExplorers": {
+            "default": {
+                "name": "name",
+                "url": "https://goerli-optimism.etherscan.io"
+            }
+        },
+        "contracts": {
+            "multicall3": {
+                "address": "0xca11bde05977b3631167028862be2a173976ca11",
+                "blockCreated": 1746963
+            }
+        },
+        "fees": {}
+    }
+]

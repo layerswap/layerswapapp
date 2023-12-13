@@ -43,7 +43,7 @@ export class LayerSwapAppSettings {
 
         const basePath = new URL(resource_storage_url);
 
-        const networkLayers: Layer[] = networks.map((n): Layer =>
+        const networkLayers: Layer[] = networks?.map((n): Layer =>
         ({
             isExchange: false,
             assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n),
@@ -54,7 +54,7 @@ export class LayerSwapAppSettings {
     }
 
     static ResolveNetworkL2Assets(network: CryptoNetwork): NetworkCurrency[] {
-        return network?.currencies.map(c => ({
+        return network?.currencies?.map(c => ({
             asset: c.asset,
             status: c.status,
             contract_address: c.contract_address,
