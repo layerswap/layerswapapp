@@ -97,11 +97,10 @@ export default function Layout({ children, settings, themeData }: Props) {
     Sentry.configureScope((scope) => {
       scope.setSpan(transaction);
     });
-    if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
+    if (process.env.NEXT_PUBLIC_VERCEL_ENV && !error.stack.includes("chrome-extension")) {
       SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
     }
     Sentry.captureException(error, info);
-    transaction.data = { error, info }
     transaction.finish();
   }
 
@@ -128,6 +127,7 @@ export default function Layout({ children, settings, themeData }: Props) {
   }))
 
 
+  const DynamicSolana = dynamic(() => import("./SolanaProvider"), { ssr: false });
 
   return (<>
     <Head>
@@ -168,9 +168,11 @@ export default function Layout({ children, settings, themeData }: Props) {
                 <ThemeWrapper>
                   <TonConnectProvider basePath={basePath} themeData={themeData}>
                     <DynamicRainbowKit>
-                      {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                        <MaintananceContent />
-                        : children}
+                      <DynamicSolana>
+                        {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                          <MaintananceContent />
+                          : children}
+                      </DynamicSolana>
                     </DynamicRainbowKit>
                   </TonConnectProvider>
                 </ThemeWrapper>

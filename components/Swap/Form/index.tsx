@@ -8,7 +8,7 @@ import ConnectNetwork from "../../ConnectNetwork";
 import toast from "react-hot-toast";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "../../../lib/generateSwapInitialValues";
-import LayerSwapApiClient, { SwapItem, TransactionType } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import Modal from "../../modal/modal";
 import SwapForm from "./Form";
 import { useRouter } from "next/router";
@@ -32,7 +32,7 @@ type NetworkToConnect = {
     AppURL: string;
 }
 const SwapDetails = dynamic(() => import(".."), {
-    loading: () => <div className="p-4 w-full">
+    loading: () => <div className="py-4 w-full">
         <div className="animate-pulse flex space-x-4">
             <div className="flex-1 space-y-6 py-1">
                 <div className="h-32 bg-secondary-700 rounded-lg"></div>
