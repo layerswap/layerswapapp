@@ -120,7 +120,6 @@ export type CreateSwapParams = {
     destination: string,
     source_asset: string,
     destination_asset: string
-    source_address: string | undefined,
     destination_address: string,
     app_name?: string,
     reference_id?: string,
@@ -150,9 +149,10 @@ export type SwapItem = {
     exchange_account_connected: boolean;
     exchange_account_name?: string;
     fiat_session_id?: string;
+    fiat_redirect_url?: string;
     has_pending_deposit: boolean;
     sequence_number: number;
-    fail_reason: string;
+    fail_reason?: string;
 }
 
 export type AddressBookItem = {

@@ -1,7 +1,7 @@
 import { SwapStatus } from "../../Models/SwapStatus"
 import { PublishedSwapTransactions, SwapItem, TransactionType } from "../../lib/layerSwapApiClient"
 
-export default function StatusIcon({  swap }: { swap: SwapItem }) {
+export default function StatusIcon({ swap, short }: { swap: SwapItem, short?: boolean }) {
   const status = swap.status;
   switch (status) {
     case SwapStatus.Failed:
@@ -9,7 +9,9 @@ export default function StatusIcon({  swap }: { swap: SwapItem }) {
         <>
           <div className="inline-flex items-center">
             <RedIcon />
-            <p>Failed</p>
+            {
+              !short && <p>Failed</p>
+            }
           </div>
         </>)
     case SwapStatus.Completed:
@@ -17,7 +19,7 @@ export default function StatusIcon({  swap }: { swap: SwapItem }) {
         <>
           <div className="inline-flex items-center">
             <GreenIcon />
-            <p>Completed</p>
+            {!short && <p>Completed</p>}
           </div>
         </>
       )
@@ -26,7 +28,7 @@ export default function StatusIcon({  swap }: { swap: SwapItem }) {
         <>
           <div className="inline-flex items-center">
             <GreyIcon />
-            <p>Cancelled</p>
+            {!short && <p>Cancelled</p>}
           </div>
         </>)
     case SwapStatus.Expired:
@@ -34,7 +36,7 @@ export default function StatusIcon({  swap }: { swap: SwapItem }) {
         <>
           <div className="inline-flex items-center">
             <GreyIcon />
-            <p>Expired</p>
+            {!short && <p>Expired</p>}
           </div>
         </>)
     case SwapStatus.UserTransferPending:
@@ -44,7 +46,7 @@ export default function StatusIcon({  swap }: { swap: SwapItem }) {
         return <>
           <div className="inline-flex items-center">
             <PurpleIcon />
-            <p>Processing</p>
+            {!short && <p>Processing</p>}
           </div>
         </>
       }
@@ -52,7 +54,7 @@ export default function StatusIcon({  swap }: { swap: SwapItem }) {
         return <>
           <div className="inline-flex items-center">
             <YellowIcon />
-            <p>Pending</p>
+            {!short && <p>Pending</p>}
           </div>
         </>
       }
@@ -60,14 +62,14 @@ export default function StatusIcon({  swap }: { swap: SwapItem }) {
       return <>
         <div className="inline-flex items-center">
           <PurpleIcon />
-          <p>Processing</p>
+          {!short && <p>Processing</p>}
         </div>
       </>
     case SwapStatus.UserTransferDelayed:
       return <>
         <div className="inline-flex items-center">
           <YellowIcon />
-          <p>Delayed</p>
+          {!short && <p>Delayed</p>}
         </div>
       </>
     case SwapStatus.Created:
@@ -75,7 +77,7 @@ export default function StatusIcon({  swap }: { swap: SwapItem }) {
         <>
           <div className="inline-flex items-center">
             <YellowIcon />
-            <p>Created</p>
+            {!short && <p>Created</p>}
           </div>
         </>)
     default:

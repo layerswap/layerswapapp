@@ -1,6 +1,6 @@
-import { Context, useCallback, useEffect, useState, createContext, useContext } from 'react'
+import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, SwapItem, PublishedSwapTransactions, PublishedSwapTransactionStatus, SwapTransaction, WithdrawType } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, SwapItem, PublishedSwapTransactions, SwapTransaction, WithdrawType } from '../lib/layerSwapApiClient';
 import { useRouter } from 'next/router';
 import { useSettingsState } from './settings';
 import { QueryParams } from '../Models/QueryParams';
@@ -8,8 +8,8 @@ import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 import { Partner } from '../Models/Partner';
 import { ApiError } from '../Models/ApiError';
-import { useAccount } from 'wagmi';
 import { BaseL2Asset, ExchangeAsset } from '../Models/Layer';
+import { ResolvePollingInterval } from '../components/utils/SwapStatus';
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
@@ -29,10 +29,11 @@ export type UpdateInterface = {
     setAddressConfirmed: (value: boolean) => void;
     setInterval: (value: number) => void,
     mutateSwap: KeyedMutator<ApiResponse<SwapItem>>
-    setWalletAddress: (value: string) => void,
     setDepositeAddressIsfromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
     setSelectedAssetNetwork: (assetNetwork: ExchangeAsset | BaseL2Asset) => void
+    setSwapId: (value: string) => void
+
 }
 
 export type SwapData = {
@@ -50,13 +51,10 @@ export function SwapDataProvider({ children }) {
     const [addressConfirmed, setAddressConfirmed] = useState<boolean>(false)
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
-    const [walletAddress, setWalletAddress] = useState<string>()
     const [depositeAddressIsfromAccount, setDepositeAddressIsfromAccount] = useState<boolean>()
     const router = useRouter();
-    const swapId = router.query.swapId?.toString()
-    const { address } = useAccount()
+    const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
     const { layers } = useSettingsState()
-
 
     const layerswapApiClient = new LayerSwapApiClient()
     const apiVersion = LayerSwapApiClient.apiVersion
@@ -71,6 +69,13 @@ export function SwapDataProvider({ children }) {
     const source_network = layers.find(n => n.internal_name?.toLowerCase() === swapResponse?.data?.source_network?.toLowerCase())
     const defaultSourceNetwork = (exchangeAssets?.find(sn => sn?.is_default) || exchangeAssets?.[0] || source_network?.assets?.[0])
     const [selectedAssetNetwork, setSelectedAssetNetwork] = useState<ExchangeAsset | BaseL2Asset | undefined>(defaultSourceNetwork)
+
+    const swapStatus = swapResponse?.data?.status;
+    useEffect(() => {
+        if (swapStatus)
+            setInterval(ResolvePollingInterval(swapStatus))
+        return () => setInterval(0)
+    }, [swapStatus])
 
     useEffect(() => {
         setSelectedAssetNetwork(defaultSourceNetwork)
@@ -92,12 +97,9 @@ export function SwapDataProvider({ children }) {
 
         if (!to || !currency || !from || !values.amount || !values.destination_address)
             throw new Error("Form data is missing")
-        const getStarknet = (await import('get-starknet-core')).getStarknet;
-        const starknet = getStarknet()
 
         const sourceLayer = from
         const destinationLayer = to
-        const starknetAddress = (await starknet?.getLastConnectedWallet())?.account?.address
 
         const data: CreateSwapParams = {
             amount: values.amount,
@@ -105,9 +107,8 @@ export function SwapDataProvider({ children }) {
             destination: destinationLayer?.internal_name,
             source_asset: currency.asset,
             destination_asset: currency.asset,
-            source_address: address || starknetAddress,
             destination_address: values.destination_address,
-            app_name: partner ? query?.appName : (apiVersion === 'sandbox' ? 'LayerswapSandbox' : 'Layerswap' ),
+            app_name: partner ? query?.appName : (apiVersion === 'sandbox' ? 'LayerswapSandbox' : 'Layerswap'),
             reference_id: query.externalId,
         }
 
@@ -136,9 +137,9 @@ export function SwapDataProvider({ children }) {
         setInterval: setInterval,
         mutateSwap: mutate,
         setDepositeAddressIsfromAccount,
-        setWalletAddress,
         setWithdrawType,
         setSelectedAssetNetwork,
+        setSwapId
     };
     return (
         <SwapDataStateContext.Provider value={{

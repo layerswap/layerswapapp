@@ -1,10 +1,9 @@
 import { Disclosure } from '@headlessui/react';
 import { Album, ChevronDown, Mail, ScrollText, User } from 'lucide-react';
 import { Field, Form, Formik, FormikErrors } from 'formik';
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
-import LayerswapApiClient, { SwapItem, SwapType } from '../lib/layerSwapApiClient';
-import { useAuthDataUpdate, useAuthState, UserType } from '../context/authContext';
+import { useAuthDataUpdate, useAuthState } from '../context/authContext';
 import { useTimerState } from '../context/timerContext';
 import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
@@ -21,7 +20,7 @@ type Props = {
 }
 
 const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
-    const { codeRequested, tempEmail, userType } = useAuthState()
+    const { codeRequested, tempEmail } = useAuthState()
     const { setCodeRequested, updateTempEmail } = useAuthDataUpdate();
     const initialValues: EmailFormValues = { email: tempEmail ?? "" };
     const { start: startTimer } = useTimerState()

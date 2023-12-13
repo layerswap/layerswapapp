@@ -6,11 +6,11 @@ const MockFunctions: UpdateInterface = {
     cancelSwap: () => { throw new Error("Not implemented") },
     setAddressConfirmed: () => { throw new Error("Not implemented") },
     mutateSwap: () => { throw new Error("Not implemented") },
-    setWalletAddress: () => { throw new Error("Not implemented") },
     setDepositeAddressIsfromAccount: () => { throw new Error("Not implemented") },
-    setWithdrawType: () => { throw new Error("Not implemented") },
+    setWithdrawType: () => {  },
     setSelectedAssetNetwork: () => { throw new Error("Not implemented") },
     setInterval: () => { console.log("set interval called") },
+    setSwapId: () => { throw new Error("Not implemented") },
 }
 
 

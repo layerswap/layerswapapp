@@ -1,10 +1,9 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
-import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
+import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import { useSettingsState } from '../../../../context/settings';
-import { useWalletState, useWalletUpdate } from '../../../../context/wallet';
 import { useAccount } from 'wagmi';
 import { LoopringAPI } from '../../../../lib/loopring/LoopringAPI';
 import { ConnectorNames } from '@loopring-web/loopring-sdk';
@@ -28,13 +27,12 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
     const [inactive, setInactive] = useState(false);
-    const { lprAccount } = useWalletState();
+    const [lprAccount, setLprAccount] = useState<string | null>()
+
     const { swap } = useSwapDataState();
     const { networks } = useSettingsState();
     const { setSwapTransaction } = useSwapTransactionStore();
     const { isConnected, address: fromAddress } = useAccount();
-
-    const { setLprAccount } = useWalletUpdate();
 
     const web3 = useWeb3Signer();
     const { source_network: source_network_internal_name } = swap || {}
@@ -65,7 +63,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 return
             }
 
-            const response = await LoopringAPI.userAPI.unLockAccount(
+            await LoopringAPI.userAPI.unLockAccount(
                 {
                     keyPair: {
                         web3,
@@ -82,7 +80,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 account.accInfo.publicKey
             );
             setLprAccount(account.accInfo.owner)
-            const res = await connectProvides.MetaMask({ chainId: 1 })
+            await connectProvides.MetaMask({ chainId: 1 })
         }
         catch (e) {
             toast(e.message)

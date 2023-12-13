@@ -13,6 +13,12 @@ type SwapTransactionStore = {
     setSwapTransaction: (Id: string, status: PublishedSwapTransactionStatus, txHash: string, failReason?: string) => void;
 };
 
+type SwapDepositHintClickedStore = {
+    swapTransactions: Record<string, boolean>;
+    setSwapDepositHintClicked: (Id: string) => void;
+};
+
+
 export const useSwapTransactionStore = create(
     persist<SwapTransactionStore>(
         (set, get) => ({
@@ -35,5 +41,26 @@ export const useSwapTransactionStore = create(
             name: 'swapTransactions',
             storage: createJSONStorage(() => localStorage),
         }
-    )
+    ),
+)
+
+export const useSwapDepositHintClicked = create(
+    persist<SwapDepositHintClickedStore>(
+        (set, get) => ({
+            swapTransactions: {},
+            setSwapDepositHintClicked: (Id) => {
+                set((state) => {
+                    const txForSwap = {
+                        ...state.swapTransactions,
+                        [Id]: true
+                    };
+                    return { swapTransactions: txForSwap };
+                });
+            },
+        }),
+        {
+            name: 'swapDepositHintClicked',
+            storage: createJSONStorage(() => sessionStorage),
+        }
+    ),
 )
