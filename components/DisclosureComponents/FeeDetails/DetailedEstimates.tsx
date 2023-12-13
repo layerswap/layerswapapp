@@ -113,7 +113,7 @@ const EstimatedArrival: FC<EstimatedArrivalProps> = ({ currency, destination }) 
         <span className="text-right">
             {
                 destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
-                    "Up to 2 hours (delayed)"
+                    <span>Up to 2 hours (delayed)</span>
                     :
                     <AverageCompletionTime time={destinationNetwork?.average_completion_time} />
             }

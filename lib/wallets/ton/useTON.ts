@@ -3,20 +3,22 @@ import { Address } from "@ton/core";
 import KnownInternalNames from "../../knownIds";
 import { Wallet } from "../../../stores/walletStore";
 import { WalletProvider } from "../../../hooks/useWallet";
-
+import TON from "../../../components/icons/Wallets/TON";
 
 export default function useTON(): WalletProvider {
-    const SupportedNetworks = [KnownInternalNames.Networks.TONMainnet]
+    const withdrawalSupportedNetworks = [KnownInternalNames.Networks.TONMainnet]
+    const autofillSupportedNetworks = withdrawalSupportedNetworks
     const name = 'ton'
     const wallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
 
     const getWallet = () => {
-        if (wallet && wallet.account.address && wallet.provider) {
+        if (wallet) {
             const w: Wallet = {
                 address: Address.parse(wallet.account.address).toString({ bounceable: false }),
                 connector: name,
                 providerName: name,
+                icon: TON
             }
             return w
         }
@@ -39,7 +41,8 @@ export default function useTON(): WalletProvider {
         getConnectedWallet: getWallet,
         connectWallet,
         disconnectWallet,
-        SupportedNetworks,
+        autofillSupportedNetworks,
+        withdrawalSupportedNetworks,
         name
     }
 }

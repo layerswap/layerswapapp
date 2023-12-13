@@ -17,7 +17,6 @@ type Props = {
 const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { connectWallet } = useWallet()
     const { swap } = useSwapDataState()
     const { networks, layers } = useSettingsState()
     const { setSwapTransaction } = useSwapTransactionStore();
@@ -25,7 +24,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const { source_network: source_network_internal_name } = swap || {}
     const source_network = networks.find(n => n.internal_name === source_network_internal_name)
     const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
-    const { getProvider } = useWallet()
+    const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
         return source_layer && getProvider(source_layer)
     }, [source_layer, getProvider])
@@ -35,9 +34,11 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const handleConnect = useCallback(async () => {
         if (!provider)
             throw new Error(`No provider from ${source_layer?.internal_name}`)
+        if (source_layer?.isExchange === true)
+            throw new Error(`Source is exchange`)
 
         setLoading(true)
-        await provider?.connectWallet()
+        await provider?.connectWallet(source_layer?.chain_id)
         setLoading(false)
     }, [provider, source_layer])
 

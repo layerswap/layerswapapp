@@ -15,7 +15,6 @@ import shortenAddress from "../utils/ShortenAddress";
 import AddressIcon from "../AddressIcon";
 import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import WalletIcon from "../icons/WalletIcon";
-import { NetworkType } from "../../Models/CryptoNetwork";
 import useWallet from "../../hooks/useWallet";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
@@ -53,7 +52,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const destinationIsStarknet = destination?.internal_name === KnownInternalNames.Networks.StarkNetGoerli
         || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
-    const { connectWallet, disconnectWallet, getProvider } = useWallet()
+    const { connectWallet, disconnectWallet, getAutofillProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
         return values?.to && getProvider(values?.to)
     }, [values?.to, getProvider])
@@ -78,7 +77,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
             setAddressConfirmed(true)
             setFieldValue("destination_address", connectedWallet?.address)
         }
-    }, [connectedWallet?.address, destination?.isExchange, destination, disconnectWallet])
+    }, [connectedWallet?.address, destination?.isExchange, destination])
 
     useEffect(() => {
         if (canFocus) {
@@ -197,7 +196,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                             <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
                                 {
                                     destinationIsStarknet && connectedWallet ?
-                                        <Image src={connectedWallet.icon || ''} alt={connectedWallet?.address} width={25} height={25} />
+                                        <connectedWallet.icon className='rounded-md' alt={connectedWallet?.address} width={25} height={25} />
                                         :
                                         <AddressIcon address={validInputAddress} size={25} />
                                 }

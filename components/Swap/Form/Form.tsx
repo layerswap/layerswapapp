@@ -4,8 +4,7 @@ import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
 import React from "react";
 import NetworkFormField from "../../Input/NetworkFormField";
-import AmountField from "../../Input/Amount";
-import LayerSwapApiClient, { AddressBookItem, TransactionType } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
 import Modal from "../../modal/modal";
@@ -13,14 +12,13 @@ import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import { useSettingsState } from "../../../context/settings";
 import { isValidAddress } from "../../../lib/addressValidator";
 import { CalculateMinAllowedAmount } from "../../../lib/fees";
-import Address from "../../Input/Address";
 import shortenAddress from "../../utils/ShortenAddress";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
 import ClickTooltip from "../../Tooltips/ClickTooltip";
 import ToggleButton from "../../buttons/toggleButton";
-import { ArrowRight, ArrowUpDown, Fuel } from 'lucide-react'
+import { ArrowUpDown, Fuel } from 'lucide-react'
 import { useAuthState } from "../../../context/authContext";
 import WarningMessage from "../../WarningMessage";
 import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetworkCurrency } from "../../../helpers/settingsHelper";
@@ -33,11 +31,16 @@ import GasDetails from "../../gasDetails";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { useQueryState } from "../../../context/query";
 import FeeDetails from "../../DisclosureComponents/FeeDetails";
+import dynamic from "next/dynamic";
+import AmountField from "../../Input/Amount";
 
 type Props = {
     isPartnerWallet?: boolean,
     partner?: Partner,
 }
+const Address = dynamic(() => import("../../Input/Address"), {
+    loading: () => <></>
+})
 
 const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const {
@@ -45,6 +48,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         setValues,
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
+
+    useEffect(() => {
+        //prefetch address component
+        const Address = import("../../Input/Address")
+    }, [])
+
     const { to: destination } = values
     const settings = useSettingsState();
     const source = values.from
@@ -187,10 +196,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         && walletBalance.amount > minAllowedAmount
     )
     const gasToReserveFormatted = mightBeAutOfGas ? truncateDecimals(networkGas?.gas, values?.currency?.precision) : 0
+
     return <>
         <Widget className="sm:min-h-[504px]">
             <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-
                 <Widget.Content>
                     <div className='flex-col relative flex justify-between w-full space-y-4 mb-3.5 leading-4'>
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
@@ -255,7 +264,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                             <ClickTooltip text={`You will get a small amount of ${destination_native_currency} that you can use to pay for gas fees.`} />
                                         </p>
                                         <p className="font-light text-xs">
-                                            <span>Get&nbsp;</span><span className="font-semibold">{destination_native_currency}</span><span>&nbsp;to pay fees in&nbsp;</span>{values.to?.display_name}
+                                            <span>Get&nbsp;</span><span className="font-semibold">{destination_native_currency}</span><span>&nbsp;to pay fees in&nbsp;</span><span>{values.to?.display_name}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -267,24 +276,24 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                             //TODO refactor
                             destination && asset && GetNetworkCurrency(destination, asset)?.status == 'insufficient_liquidity' &&
                             <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal">We&apos;re experiencing delays for transfers of {values?.currency?.asset} to {values?.to?.display_name}. Estimated arrival time can take up to 2 hours.</span>
+                                <span className="font-normal"><span>We&apos;re experiencing delays for transfers of</span> <span>{values?.currency?.asset}</span> <span>to</span> <span>{values?.to?.display_name}</span><span>. Estimated arrival time can take up to 2 hours.</span></span>
                             </WarningMessage>
                         }
                         {
                             destination && asset && GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
                             <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
+                                <span className="font-normal"><span>{destination?.display_name}</span> <span>network congestion. Transactions can take up to 1 hour.</span></span>
                             </WarningMessage>
                         }
                         {
-                            mightBeAutOfGas &&
+                            mightBeAutOfGas && gasToReserveFormatted > 0 &&
                             <WarningMessage messageType="warning" className="mt-4">
                                 <div className="font-normal text-primary-text">
                                     <div>
                                         You might not be able to complete the transaction.
                                     </div>
                                     <div onClick={handleReserveGas} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
-                                        Reserve {gasToReserveFormatted} {values?.currency?.asset} for gas.
+                                        <span>Reserve</span> <span>{gasToReserveFormatted}</span> <span>{values?.currency?.asset}</span> <span>for gas.</span>
                                     </div>
                                 </div>
                             </WarningMessage>
@@ -320,7 +329,8 @@ function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: str
 }
 
 const TruncatedAdrress = ({ address }: { address: string }) => {
-    return <div className="tracking-wider text-primary-text">{shortenAddress(address)}</div>
+    const shortAddress = shortenAddress(address)
+    return <div className="tracking-wider text-primary-text">{shortAddress}</div>
 }
 
 type AddressButtonProps = {
@@ -350,7 +360,7 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWall
             {values.destination_address ?
                 <TruncatedAdrress address={values.destination_address} />
                 :
-                "Enter your address here"
+                <span>Enter your address here</span>
             }
         </div>
     </button>

@@ -18,6 +18,8 @@ import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
+import TonConnectProvider from "./TonConnectProvider";
+import * as Sentry from "@sentry/nextjs";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -89,22 +91,43 @@ export default function Layout({ children, settings, themeData }: Props) {
   };
 
   function logErrorToService(error, info) {
-    if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
+    const transaction = Sentry.startTransaction({
+      name: "error_boundary_handler",
+    });
+    Sentry.configureScope((scope) => {
+      scope.setSpan(transaction);
+    });
+    if (process.env.NEXT_PUBLIC_VERCEL_ENV && !error.stack.includes("chrome-extension")) {
       SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
     }
+    Sentry.captureException(error, info);
+    transaction.finish();
   }
 
   themeData = themeData || THEME_COLORS.default
 
   const basePath = router?.basePath ?? ""
 
-  const DynamicRainbowKit = dynamic(() => import("./RainbowKit"), {
-    loading: () => <></>
-  })
+  const DynamicRainbowKit = (dynamic(() => import("./RainbowKit"), {
+    loading: () => <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
+      <div className='text-center text-xl text-secondary-100'>
+      </div>
+      <div className="relative px-6">
+        <div className="flex items-start">
+          <div className={`flex flex-nowrap grow`}>
+            <div className="w-full pb-6 flex flex-col justify-between space-y-5 text-secondary-text h-full">
+              <div className="sm:min-h-[504px]"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="widget_root" />
+    </div>,
+    ssr: false
+  }))
 
-  const DynamicTonConnect = dynamic(() => import("./TonConnectProvider"), {
-    loading: () => <></>
-  })
+
+  const DynamicSolana = dynamic(() => import("./SolanaProvider"), { ssr: false });
 
   return (<>
     <Head>
@@ -143,13 +166,15 @@ export default function Layout({ children, settings, themeData }: Props) {
             <TooltipProvider delayDuration={500}>
               <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
                 <ThemeWrapper>
-                  <DynamicTonConnect basePath={basePath} themeData={themeData}>
+                  <TonConnectProvider basePath={basePath} themeData={themeData}>
                     <DynamicRainbowKit>
-                      {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                        <MaintananceContent />
-                        : children}
+                      <DynamicSolana>
+                        {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                          <MaintananceContent />
+                          : children}
+                      </DynamicSolana>
                     </DynamicRainbowKit>
-                  </DynamicTonConnect>
+                  </TonConnectProvider>
                 </ThemeWrapper>
               </ErrorBoundary>
             </TooltipProvider>
