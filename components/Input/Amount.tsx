@@ -74,14 +74,14 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     name={name}
                     ref={amountRef}
                     precision={fromCurrency?.precision}
-                    className="rounded-r-none text-primary-text w-full !pb-6 text-lg truncate"
+                    className="rounded-r-none text-primary-text w-full !pb-8 text-lg truncate"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value))
                     }}
                 >
                     {requestedAmountInUsd ? (
-                        <span className="absolute block w-full min-w-0 rounded-lg font-semibold border-0 pl-3 text-xs pb-2">
+                        <span className="absolute block w-full min-w-0 rounded-lg font-semibold border-0 pl-3 text-xs pb-4">
                             ${requestedAmountInUsd}
                         </span>
                     ) : null}

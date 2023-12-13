@@ -41,7 +41,7 @@ export function FeeProvider({ children }) {
     useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedAmount(amount);
-        }, 1000);
+        }, 500);
 
         return () => {
             clearTimeout(handler);
@@ -49,12 +49,13 @@ export function FeeProvider({ children }) {
     }, [amount, 1000]);
 
     const apiClient = new LayerSwapApiClient()
+    const version = LayerSwapApiClient.apiVersion
 
     const { data: amountRange } = useSWR<ApiResponse<{
         max_amount_in_usd: number,
         min_amount_in_usd: number
     }>>((from && fromCurrency && to && toCurrency) ?
-        `/routes/limits/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?version=sandbox` : null, apiClient.fetcher)
+        `/routes/limits/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?version=${version}` : null, apiClient.fetcher)
 
     const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<{
         wallet_fee_in_usd: number,
@@ -70,7 +71,7 @@ export function FeeProvider({ children }) {
         },
         fee_usd_price: number
     }>>((from && fromCurrency && to && toCurrency && amount) ?
-        `/routes/rate/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?amount=${debouncedAmount}&version=sandbox` : null, apiClient.fetcher, { dedupingInterval: 2000 })
+        `/routes/rate/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?amount=${debouncedAmount}&version=${version}` : null, apiClient.fetcher, { dedupingInterval: 2000 })
 
     const fee = {
         walletFee: lsFee?.data?.wallet_fee,

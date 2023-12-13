@@ -69,7 +69,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
 
     const apiClient = new LayerSwapApiClient()
-    const version = process.env.NEXT_PUBLIC_API_VERSION
+    const version = LayerSwapApiClient.apiVersion
 
     const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}${(filterWith && filterWithAsset) ? `?${direction === 'to' ? 'source_network' : 'destination_network'}=${filterWith.internal_name}&${direction === 'to' ? 'source_asset' : 'destination_asset'}=${filterWithAsset}&` : "?"}version=${version}`
 

@@ -33,8 +33,9 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
 
     const apiClient = new LayerSwapApiClient()
+    const version = LayerSwapApiClient.apiVersion
 
-    const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}${(filterWith && filterWithAsset) ? `?${direction === 'to' ? 'source_network' : 'destination_network'}=${filterWith.internal_name}&${direction === 'to' ? 'source_asset' : 'destination_asset'}=${filterWithAsset}&` : "?"}version=sandbox`
+    const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}${(filterWith && filterWithAsset) ? `?${direction === 'to' ? 'source_network' : 'destination_network'}=${filterWith.internal_name}&${direction === 'to' ? 'source_asset' : 'destination_asset'}=${filterWithAsset}&` : "?"}version=${version}`
 
     const { data: routes } = useSWR<ApiResponse<{
         network: string,
@@ -58,7 +59,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         const currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset)
         if (currencyIsAvailable) return
 
-        const default_currency = currencyMenuItems?.find(c => c.baseObject?.asset?.toUpperCase() === (query?.asset as string)?.toUpperCase()) || currencyMenuItems?.[0]
+        const default_currency = currencyMenuItems?.find(c => c.baseObject?.asset?.toUpperCase() === (query?.asset)?.toUpperCase()) || currencyMenuItems?.[0]
 
         if (default_currency) {
             setFieldValue(name, default_currency.baseObject)
