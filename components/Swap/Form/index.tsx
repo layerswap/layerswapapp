@@ -8,7 +8,7 @@ import ConnectNetwork from "../../ConnectNetwork";
 import toast from "react-hot-toast";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "../../../lib/generateSwapInitialValues";
-import LayerSwapApiClient, { SwapItem, TransactionType } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import Modal from "../../modal/modal";
 import SwapForm from "./Form";
 import { useRouter } from "next/router";
