@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useMemo, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useMemo, useRef } from "react";
 import { useSettingsState } from "../../context/settings";
 import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "../../lib/fees";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
@@ -18,10 +18,16 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { currency, from, to, amount, destination_address } = values
 
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
+    const { getAutofillProvider: getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return values.from && getProvider(values.from)
+    }, [values.from, getProvider])
+
+    const wallet = provider?.getConnectedWallet()
     const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === currency?.asset)?.gas || 0
     const { getBalance, getGas } = useBalancesUpdate()
     const name = "amount"
-    const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
+    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, currency?.precision)
 
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
@@ -41,6 +47,14 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         from && getBalance(from);
         from && currency && getGas(from, currency, destination_address || "");
     }, [from, currency, destination_address, maxAllowedAmount])
+
+    useEffect(() => {
+        values.from && getBalance(values.from)
+    }, [values.from, values.destination_address, wallet?.address])
+    const contract_address = values.from?.isExchange == false ? values.from.assets.find(a => a.asset === values?.currency?.asset)?.contract_address : null
+    useEffect(() => {
+        wallet?.address && values.from && values.currency && getGas(values.from, values.currency, values.destination_address || wallet.address)
+    }, [contract_address, values.from, values.currency, wallet?.address])
 
     return (<>
         <NumericInput

@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { FilterCurrencies, GetNetworkCurrency } from "../../helpers/settingsHelper";
@@ -11,8 +11,9 @@ import { SortingByOrder } from "../../lib/sorting";
 import { Layer } from "../../Models/Layer";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
-import { Balance } from "../../helpers/balanceHelper";
 import { useQueryState } from "../../context/query";
+import { Balance } from "../../hooks/useBalance";
+import useWallet from "../../hooks/useWallet";
 
 const CurrencyFormField: FC = () => {
     const {
@@ -24,6 +25,12 @@ const CurrencyFormField: FC = () => {
     const name = "currency"
     const query = useQueryState()
     const { balances } = useBalancesState()
+    const { getAutofillProvider: getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return from && getProvider(from)
+    }, [from, getProvider])
+
+    const wallet = provider?.getConnectedWallet()
     const lockedCurrency = query?.lockAsset ? currencies?.find(c => c?.asset?.toUpperCase() === (query?.asset as string)?.toUpperCase()) : undefined
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : FilterCurrencies(currencies, from, to)
@@ -32,7 +39,7 @@ const CurrencyFormField: FC = () => {
         from,
         resolveImgSrc,
         lockedCurrency,
-        balances
+        balances[wallet?.address || '']
     ) : []
 
     useEffect(() => {
