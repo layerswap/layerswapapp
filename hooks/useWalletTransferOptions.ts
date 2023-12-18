@@ -11,9 +11,8 @@ export default function useWalletTransferOptions() {
     const { checkContractWallet, contractWallets } = useContractWalletsStore()
     const [isContractWallet, setIsContractWallet] = useState<ContractWallet | null>()
     const { getWithdrawalProvider: getProvider } = useWallet()
-    const { layers, networks } = useSettingsState()
+    const { layers } = useSettingsState()
     const source_layer = layers.find(n => n.internal_name === swap?.source_network)
-    const source_network = networks.find(n => n.internal_name === swap?.source_network)
     const provider = useMemo(() => {
         return source_layer && getProvider(source_layer)
     }, [source_layer, getProvider])
@@ -21,7 +20,7 @@ export default function useWalletTransferOptions() {
     const wallet = provider?.getConnectedWallet()
 
     useEffect(() => {
-        setIsContractWallet(contractWallets.find(w => w.address === wallet?.address && w.network === source_layer?.internal_name) ?? checkContractWallet(wallet?.address, source_network))
+        setIsContractWallet(contractWallets.find(w => w.address === wallet?.address && w.network === source_layer?.internal_name) ?? checkContractWallet(wallet?.address, source_layer))
     }, [])
 
     const canDoSweepless = source_layer?.isExchange == false

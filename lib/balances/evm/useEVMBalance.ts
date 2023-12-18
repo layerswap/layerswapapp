@@ -18,10 +18,7 @@ export default function useEVMBalance(): BalanceProvider {
         try {
             if (layer.isExchange) throw new Error('Provided layer is not network')
 
-            const source_assets = layer.assets
-            const source_network = source_assets?.[0].network
-
-            const chain = resolveChain(source_network!)
+            const chain = resolveChain(layer)
             if (!chain) return
 
             const publicClient = createPublicClient({
@@ -62,20 +59,17 @@ export default function useEVMBalance(): BalanceProvider {
         }
         const chainId = Number(layer?.chain_id)
         const nativeToken = layer?.assets
-            .find(a =>
-                a.asset ===
-                (layer as { native_currency: string }).native_currency)
-        const network = layer.assets?.[0].network
+            .find(a => a.is_native)
 
-        if (!nativeToken || !chainId || !network)
+        if (!nativeToken || !chainId || !layer)
             return
 
         const contract_address = layer?.assets?.find(a => a?.asset === currency?.asset)?.contract_address as `0x${string}`
-        const destination_address = layer?.assets?.find(c => c.asset.toLowerCase() === currency?.asset?.toLowerCase())?.network?.managed_accounts?.[0]?.address as `0x${string}`
+        const destination_address = layer?.managed_accounts?.[0]?.address as `0x${string}`
 
         try {
             const publicClient = createPublicClient({
-                chain: resolveChain(network),
+                chain: resolveChain(layer),
                 transport: http(),
             })
 

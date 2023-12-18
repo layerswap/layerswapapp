@@ -1,4 +1,3 @@
-import { Currency } from "../Models/Currency"
 import { Layer } from "../Models/Layer"
 import useEVMBalance from "../lib/balances/evm/useEVMBalance"
 import useLoopringBalance from "../lib/balances/loopring/useLoopringBalance"
@@ -7,6 +6,7 @@ import useStarknetBalance from "../lib/balances/starknet/useStarknetBalance"
 import useZkSyncBalance from "../lib/balances/zksync/useZkSyncBalance"
 import { Wallet } from "../stores/walletStore"
 import useSolanaBalance from "../lib/balances/solana/useSolanaBalance"
+import { NetworkCurrency } from "../Models/CryptoNetwork"
 
 export type BalanceProvider = {
     getBalance: ({ layer, address }: BalanceProps) => Promise<Balance[] | undefined> | undefined | void,
@@ -43,7 +43,7 @@ export type BalanceProps = {
 
 export type GasProps = {
     layer: Layer,
-    currency: Currency,
+    currency: NetworkCurrency,
     address?: `0x${string}`,
     userDestinationAddress?: string,
     wallet?: Wallet

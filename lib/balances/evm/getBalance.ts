@@ -1,9 +1,10 @@
 import { PublicClient } from "viem"
-import { Layer, NetworkAsset } from "../../../Models/Layer"
+import { Layer } from "../../../Models/Layer"
 import formatAmount from "../../formatAmount"
 import { erc20ABI } from "wagmi"
 import { multicall, fetchBalance, FetchBalanceResult } from '@wagmi/core'
 import { Balance } from "../../../hooks/useBalance"
+import { NetworkCurrency } from "../../../Models/CryptoNetwork"
 
 export type ERC20ContractRes = ({
     error: Error;
@@ -38,7 +39,7 @@ export const resolveERC20Balances = async (
 type GetBalanceArgs = {
     address: string,
     chainId: number,
-    assets: NetworkAsset[],
+    assets: NetworkCurrency[],
     publicClient: PublicClient,
     hasMulticall: boolean
 }
@@ -121,7 +122,7 @@ export const resolveNativeBalance = async (
     from: Layer & { isExchange: false },
     nativeTokenRes: FetchBalanceResult
 ) => {
-    const native_currency = from.assets.find(a => a.asset === from.native_currency)
+    const native_currency = from.assets.find(a => a.is_native)
     if (!native_currency) {
         return null
     }
