@@ -7,6 +7,7 @@ import {
   useBalancesState,
 } from "../../../context/balances";
 import ModalContent from "./ModalContent";
+import FeeDetails from "../../DisclosureComponents/FeeDetails";
 
 const RefuelBoxComponent = ({
   values,
@@ -16,23 +17,30 @@ const RefuelBoxComponent = ({
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [noBalance, setNoBalance] = useState<boolean>(false);
 
-  const notEnoughAmountMessage = `I don't have ${values?.from?.native_currency} in ${values?.to?.display_name}, some amount of USDC will be converted to ${values?.from?.native_currency} so you can pay the fees in ${values?.to?.display_name}.`;
+  const from_native_currency = values?.from?.native_currency;
+
+
+  const notEnoughAmountMessage = `I don't have ${from_native_currency} in ${values?.to?.display_name}, some amount of USDC will be converted to ${values?.from?.native_currency} so you can pay the fees in ${values?.to?.display_name}.`;
   const enoughAmountMessage = "Need gas?";
 
   const { balances } = useBalancesState();
   const balanceInfo = Object.values(balances)[0]?.map((item) => {
     return item;
   });
+  
   const nativeCurrencyName = values?.to?.native_currency;
+  const networkName = values?.to?.internal_name;
 
   useEffect(() => {
     for (const address in balances) {
       if (balances.hasOwnProperty(address)) {
         // Find the ETH balance for the current address
         const ethBalance = balances[address]?.find(
-          (balance) => balance.token === nativeCurrencyName
+          (balance) =>
+            balance.token === nativeCurrencyName &&
+            balance.network.toLowerCase === networkName.toLowerCase
         );
-        if (ethBalance?.amount === 0) {
+        if (!ethBalance?.amount) {
           setNoBalance(true);
           break;
         }
@@ -59,9 +67,9 @@ const RefuelBoxComponent = ({
               setShow={setOpenModal}
             >
               <ModalContent
-                noBalance={noBalance}
                 balanceInfo={balanceInfo}
                 values={values}
+                from_native_currency={from_native_currency}
               />
             </Modal>
 
@@ -96,7 +104,10 @@ const RefuelBoxComponent = ({
           value={noBalance ? true : !!values?.refuel}
           onChange={handleConfirmToggleChange}
         />
+                       
+
       </div>
+      <FeeDetails values={values} />
     </BalancesDataProvider>
   );
 };
