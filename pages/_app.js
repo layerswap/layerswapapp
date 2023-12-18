@@ -6,7 +6,6 @@ import { SWRConfig } from 'swr'
 
 const INTERCOM_APP_ID = 'h5zisg78'
 import "@rainbow-me/rainbowkit/styles.css";
-import useStorage from "../hooks/useStorage";
 
 function App({ Component, pageProps }) {
   const router = useRouter()

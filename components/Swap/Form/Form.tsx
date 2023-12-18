@@ -25,20 +25,26 @@ import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetw
 import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
-import { useBalancesState, useBalancesUpdate } from "../../../context/balances";
-import { useAccount } from "wagmi";
 import GasDetails from "../../gasDetails";
-import { truncateDecimals } from "../../utils/RoundDecimals";
 import { useQueryState } from "../../../context/query";
 import FeeDetails from "../../DisclosureComponents/FeeDetails";
 import dynamic from "next/dynamic";
-import AmountField from "../../Input/Amount";
+import { Balance, Gas } from "../../../hooks/useBalance";
 
 type Props = {
     isPartnerWallet?: boolean,
     partner?: Partner,
 }
 const Address = dynamic(() => import("../../Input/Address"), {
+    loading: () => <></>
+})
+
+const AmountField = dynamic(() => import("../../Input/Amount"), {
+    loading: () => <></>
+})
+
+
+const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
     loading: () => <></>
 })
 
@@ -49,19 +55,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    useEffect(() => {
-        //prefetch address component
-        const Address = import("../../Input/Address")
-    }, [])
-
     const { to: destination } = values
     const settings = useSettingsState();
     const source = values.from
     const asset = values.currency?.asset
     const { authData } = useAuthState()
-    const { getBalance, getGas } = useBalancesUpdate()
-    const { balances, gases } = useBalancesState()
-    const { address } = useAccount()
+
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
@@ -156,20 +155,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
     }, [source, destination, query, settings, lockedCurrency])
 
-    useEffect(() => {
-        values.from && getBalance(values.from)
-    }, [values.from, values.destination_address, address])
-
-    const contract_address = values.from?.isExchange == false ? values.from.assets.find(a => a.asset === values?.currency?.asset)?.contract_address : null
-    const walletBalance = balances?.find(b => b?.network === values?.from?.internal_name && b?.token === values?.currency?.asset)
-    const networkGas = values.from?.internal_name ?
-        gases?.[values.from?.internal_name]?.find(g => g.token === values?.currency?.asset)
-        : null
-
-    useEffect(() => {
-        address && values.from && values.currency && getGas(values.from, values.currency, values.destination_address || address)
-    }, [contract_address, values.from, values.currency, address])
-
     const destinationNetwork = GetDefaultNetwork(destination, values?.currency?.asset)
     const destination_native_currency = !destination?.isExchange && destinationNetwork?.native_currency
 
@@ -186,16 +171,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         && (query?.lockTo || query?.hideTo)
         && isValidAddress(query?.destAddress as string, destination)
 
-    const handleReserveGas = useCallback(() => {
+    const handleReserveGas = useCallback((walletBalance: Balance, networkGas: Gas) => {
         if (walletBalance && networkGas)
             setFieldValue('amount', walletBalance?.amount - networkGas?.gas)
-    }, [values.amount, walletBalance, networkGas])
-
-    const mightBeAutOfGas = !!(networkGas && walletBalance?.isNativeCurrency && Number(values.amount)
-        + networkGas?.gas > walletBalance.amount
-        && walletBalance.amount > minAllowedAmount
-    )
-    const gasToReserveFormatted = mightBeAutOfGas ? truncateDecimals(networkGas?.gas, values?.currency?.precision) : 0
+    }, [values.amount])
 
     return <>
         <Widget className="sm:min-h-[504px]">
@@ -285,19 +264,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                 <span className="font-normal"><span>{destination?.display_name}</span> <span>network congestion. Transactions can take up to 1 hour.</span></span>
                             </WarningMessage>
                         }
-                        {
-                            mightBeAutOfGas && gasToReserveFormatted > 0 &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <div className="font-normal text-primary-text">
-                                    <div>
-                                        You might not be able to complete the transaction.
-                                    </div>
-                                    <div onClick={handleReserveGas} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
-                                        <span>Reserve</span> <span>{gasToReserveFormatted}</span> <span>{values?.currency?.asset}</span> <span>for gas.</span>
-                                    </div>
-                                </div>
-                            </WarningMessage>
-                        }
+                        <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
                     </div>
                 </Widget.Content>
                 <Widget.Footer>

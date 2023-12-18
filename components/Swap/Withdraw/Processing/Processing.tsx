@@ -14,7 +14,7 @@ import { SwapFailReasons } from '../../../../Models/RangeError';
 import { Gauge } from '../../../gauge';
 import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
-import { useSwapTransactionStore } from '../../../store/zustandStore';
+import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 
 type Props = {
     settings: LayerSwapAppSettings;

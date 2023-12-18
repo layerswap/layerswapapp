@@ -37,8 +37,11 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
 
     return (
         <Modal height='full' show={show} setShow={setShow}>
-            {show ?
-                <CommandWrapper>
+            <CommandWrapper filter={(item: string | undefined, search: string | undefined) => {
+                if (!search || !item) return 1
+                return item.toLowerCase().indexOf(search.toLowerCase()) !== -1 ? 1 : 0
+            }}>
+                {show ? <>
                     <CommandInput autoFocus={isDesktop} placeholder={searchHint} />
                     {
                         !values.some(v => v.isAvailable.value === true) &&
@@ -62,9 +65,8 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
                                 </CommandGroup>)
                         })}
                     </CommandList>
-                </CommandWrapper>
-                : <></>
-            }
+                </> : <></>}
+            </CommandWrapper>
         </Modal>
     )
 }

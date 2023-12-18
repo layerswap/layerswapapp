@@ -13,7 +13,7 @@ import { encodeFunctionData, http, parseUnits, createWalletClient, publicActions
 import TransactionMessage from "./transactionMessage";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import { ButtonWrapper } from "./buttons";
-import { useSwapTransactionStore } from "../../../../store/zustandStore";
+import { useSwapTransactionStore } from "../../../../../stores/swapTransactionStore";
 import useWalletTransferOptions from "../../../../../hooks/useWalletTransferOptions";
 import { SendTransactionData } from "../../../../../lib/telegram";
 
@@ -30,17 +30,16 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     swapId,
     sequenceNumber,
     userDestinationAddress,
-    isContractWallet
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const { address } = useAccount();
     const [buttonClicked, setButtonClicked] = useState(false)
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { canDoSweepless, ready } = useWalletTransferOptions()
+    const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
 
     const contractWritePrepare = usePrepareContractWrite({
-        enabled: !!depositAddress && ready,
+        enabled: !!depositAddress && isContractWallet?.ready,
         address: tokenContractAddress,
         abi: erc20ABI,
         functionName: 'transfer',
@@ -89,7 +88,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         try {
             if (contractWrite?.data?.hash) {
                 setSwapTransaction(swapId, PublishedSwapTransactionStatus.Pending, contractWrite?.data?.hash);
-                if (isContractWallet)
+                if (!!isContractWallet?.isContract)
                     SendTransactionData(swapId, contractWrite?.data?.hash)
             }
         }
@@ -97,7 +96,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             //TODO log to logger
             console.error(e.message)
         }
-    }, [contractWrite?.data?.hash, swapId, isContractWallet])
+    }, [contractWrite?.data?.hash, swapId, isContractWallet?.isContract])
 
     const clickHandler = useCallback(() => {
         setButtonClicked(true)
