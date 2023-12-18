@@ -9,6 +9,7 @@ import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
 import { CryptoNetwork } from "../Models/CryptoNetwork";
+import { Exchange } from "../Models/Exchange";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
@@ -26,6 +27,10 @@ export default class LayerSwapApiClient {
         asset: string
     }>> {
         return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/routes/sources?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
+    }
+
+    async GetExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/exchanges?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
     }
 
     async GetSettingsAsync(): Promise<ApiResponse<LayerSwapSettings>> {

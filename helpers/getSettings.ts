@@ -9,15 +9,16 @@ export async function getServerSideProps(context) {
     );
 
     const apiClient = new LayerSwapApiClient()
-    const { data } = await apiClient.GetLSNetworksAsync()
-  
-    if (!data) return
-  
+    const { data: netWorkData } = await apiClient.GetLSNetworksAsync()
+    const { data: exchangeData } = await apiClient.GetExchangesAsync()
+
+    if (!netWorkData || !exchangeData) return
+
     const settings = {
-      networks: data,
-      exchanges: [],
+        networks: netWorkData,
+        exchanges: exchangeData,
     }
-  
+
     const themeData = await getThemeData(context.query)
 
     return {
