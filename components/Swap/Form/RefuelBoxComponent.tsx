@@ -19,7 +19,6 @@ const RefuelBoxComponent = ({
 
   const from_native_currency = values?.from?.native_currency;
 
-
   const notEnoughAmountMessage = `I don't have ${from_native_currency} in ${values?.to?.display_name}, some amount of USDC will be converted to ${values?.from?.native_currency} so you can pay the fees in ${values?.to?.display_name}.`;
   const enoughAmountMessage = "Need gas?";
 
@@ -27,25 +26,13 @@ const RefuelBoxComponent = ({
   const balanceInfo = Object.values(balances)[0]?.map((item) => {
     return item;
   });
-  
+
   const nativeCurrencyName = values?.to?.native_currency;
-  const networkName = values?.to?.internal_name;
+  const currentBalance = balanceInfo.find(i => i.token === nativeCurrencyName)
+
 
   useEffect(() => {
-    for (const address in balances) {
-      if (balances.hasOwnProperty(address)) {
-        // Find the ETH balance for the current address
-        const ethBalance = balances[address]?.find(
-          (balance) =>
-            balance.token === nativeCurrencyName &&
-            balance.network.toLowerCase === networkName.toLowerCase
-        );
-        if (!ethBalance?.amount) {
-          setNoBalance(true);
-          break;
-        }
-      }
-    }
+    currentBalance?.amount == 0 ? setNoBalance(true) : setNoBalance(false)
   }, [values]);
 
   const displayPriceMessage = noBalance
@@ -70,6 +57,7 @@ const RefuelBoxComponent = ({
                 balanceInfo={balanceInfo}
                 values={values}
                 from_native_currency={from_native_currency}
+                currentBalance={currentBalance}
               />
             </Modal>
 

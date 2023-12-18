@@ -3,11 +3,10 @@ import { CalculateReceiveAmount } from "../../../lib/fees";
 import { useSettingsState } from "../../../context/settings";
 
 
-const ModalContent = ({ balanceInfo, values, from_native_currency }) => {
+const ModalContent = ({ balanceInfo, values, from_native_currency, currentBalance }) => {
   const { networks, currencies } = useSettingsState();
   let receive_amount = CalculateReceiveAmount(values, networks, currencies);
 
-  const balancetoShow = balanceInfo.find(i => i.token === 'ETH')
   
   
   return (
@@ -27,7 +26,7 @@ const ModalContent = ({ balanceInfo, values, from_native_currency }) => {
           </span>
           <div>
             <span className="font-light text">
-              {balancetoShow.amount} {from_native_currency}
+              {currentBalance.amount} {from_native_currency}
             </span>
           </div>
         </div>
