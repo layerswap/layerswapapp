@@ -36,9 +36,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const wallet = provider?.getConnectedWallet()
 
-    const filterWith = direction === "from" ? to : from
-    const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
-
     const apiClient = new LayerSwapApiClient()
     const version = LayerSwapApiClient.apiVersion
 
@@ -81,20 +78,20 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         else if (fromCurrency || toCurrency) {
             setFieldValue(name, null)
         }
-    }, [from, to, fromCurrency, toCurrency, query])
+    }, [from, to, query])
 
     useEffect(() => {
-        if (direction === "to" && fromCurrency) {
+        if (direction === "to" && fromCurrency && toCurrency && destinationRoutes?.data) {
             if (!destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === toCurrency?.asset)) {
-                setFieldValue(name, fromCurrency)
+                setFieldValue(name, null)
             }
         }
     }, [fromCurrency, direction, to, destinationRoutes])
 
     useEffect(() => {
-        if (direction === "from" && toCurrency) {
+        if (direction === "from" && toCurrency && fromCurrency && sourceRoutes?.data) {
             if (!sourceRoutes?.data?.filter(r => r.network === from?.internal_name)?.some(r => r.asset === fromCurrency?.asset)) {
-                setFieldValue(name, toCurrency)
+                setFieldValue(name, null)
             }
         }
     }, [toCurrency, direction, from, sourceRoutes])

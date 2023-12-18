@@ -30,35 +30,55 @@ export default function PopoverSelectWrapper<T>({
         setShowModal(false)
     }, [])
 
-    if (!value) return <Placeholder placeholder={placeholder} />
+    if (!values) return <Placeholder placeholder={placeholder} />
     if (value?.isAvailable.disabledReason === CurrencyDisabledReason.LockAssetIsTrue) return <LockedAsset value={value} />
 
     return (
         <Popover open={showModal} onOpenChange={() => setShowModal(!showModal)}>
             <PopoverTrigger placeholder={placeholder} asChild>
-                <div className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-secondary-600 border border-secondary-500 font-semibold align-sub ">
-                    <button type='button' className='w-full py-0 border-transparent bg-transparent font-semibold rounded-md flex items-center justify-between'>
-                        <span className="flex items-center text-xs md:text-base">
-                            <div className="flex-shrink-0 h-6 w-6 relative">
-                                {
-                                    value.imgSrc && <Image
-                                        src={value.imgSrc}
-                                        alt="Project Logo"
-                                        priority
-                                        height="40"
-                                        width="40"
-                                        className="rounded-md object-contain"
-                                    />
-                                }
-                            </div>
-                            <span className="ml-3 block truncate text-primary-text">{value.name}</span>
-                        </span>
+                {
+                    value ?
+                        <div className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-secondary-600 border border-secondary-500 font-semibold align-sub ">
+                            <button type='button' className='w-full py-0 border-transparent bg-transparent font-semibold rounded-md flex items-center justify-between'>
+                                <span className="flex items-center text-xs md:text-base">
+                                    <div className="flex-shrink-0 h-6 w-6 relative">
+                                        {
+                                            value.imgSrc && <Image
+                                                src={value.imgSrc}
+                                                alt="Project Logo"
+                                                priority
+                                                height="40"
+                                                width="40"
+                                                className="rounded-md object-contain"
+                                            />
+                                        }
+                                    </div>
+                                    <span className="ml-3 block truncate text-primary-text">{value.name}</span>
+                                </span>
 
-                        <span className="ml-1 flex items-center pointer-events-none text-primary-text">
-                            <ChevronDown className="h-4 w-4" aria-hidden="true" />
-                        </span>
-                    </button>
-                </div>
+                                <span className="ml-1 flex items-center pointer-events-none text-primary-text">
+                                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                                </span>
+                            </button>
+                        </div>
+                        :
+                        <div className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-secondary-600 border border-secondary-500 font-semibold align-sub ">
+                            <button type='button' className='w-full py-0 border-transparent bg-transparent font-semibold rounded-md flex items-center justify-between'>
+                                <div className="disabled:cursor-not-allowed relative grow flex items-center text-left w-full font-semibold">
+                                    <span className="flex grow text-left items-center">
+                                        <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                                            {placeholder}
+                                        </span>
+                                    </span>
+                                </div>
+
+
+                                <span className="ml-1 flex items-center pointer-events-none text-primary-text">
+                                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                                </span>
+                            </button>
+                        </div>
+                }
             </PopoverTrigger>
             <PopoverContent className="w-fit">
                 <PopoverSelect setValue={handleSelect} value={value} values={values} direction={direction} />

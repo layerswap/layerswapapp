@@ -12,7 +12,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const { values, setFieldValue, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
-    const { fromCurrency, from, to, amount, destination_address } = values || {};
+    const { fromCurrency, from, to, amount, destination_address, toCurrency } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
 
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
@@ -38,7 +38,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const maxAllowedDisplayAmount = maxAllowedAmount && truncateDecimals(maxAllowedAmount, fromCurrency?.precision)
 
-    const placeholder = (fromCurrency && from && to && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAllowedDisplayAmount}` : '0.01234'
+    const placeholder = (fromCurrency && from && to && toCurrency && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAllowedDisplayAmount}` : '0.01234'
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
     const amountRef = useRef(ref)
 
@@ -68,6 +68,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         values.from && getBalance(values.from)
     }, [values.from, values.destination_address, wallet?.address])
     const contract_address = values.from?.isExchange == false ? values.from.assets.find(a => a.asset === values?.fromCurrency?.asset)?.contract_address : null
+
     useEffect(() => {
         wallet?.address && values.from && values.fromCurrency && getGas(values.from, values.fromCurrency, values.destination_address || wallet.address)
     }, [contract_address, values.from, values.fromCurrency, wallet?.address])
@@ -107,10 +108,10 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     <div>
                         <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 pt-2 px-2">
                             <div className="flex">
-                                <SecondaryButton onClick={handleSetMinAmount} size="xs">
+                                <SecondaryButton disabled={!minAllowedAmount} onClick={handleSetMinAmount} size="xs">
                                     MIN
                                 </SecondaryButton>
-                                <SecondaryButton onClick={handleSetMaxAmount} size="xs" className="ml-1.5">
+                                <SecondaryButton disabled={!maxAllowedAmount} onClick={handleSetMaxAmount} size="xs" className="ml-1.5">
                                     MAX
                                 </SecondaryButton>
                             </div>
