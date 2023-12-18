@@ -1,5 +1,5 @@
 import { useField, useFormikContext } from "formik";
-import { ChangeEvent, FC, forwardRef } from "react";
+import { ChangeEvent, FC, forwardRef, useEffect, useRef, useState } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 
@@ -19,11 +19,13 @@ type Input = {
     children?: JSX.Element | JSX.Element[] | null;
     ref?: any;
     onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+    onFocus?: () => void;
+    onBlur?: () => void;
 }
 
 // Use with Formik
 const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    function NumericInput({ label, pattern, disabled, placeholder, min, max, minLength, maxLength, precision, step, name, className, children, onChange }, ref) {
+    function NumericInput({ label, pattern, disabled, placeholder, min, max, minLength, maxLength, precision, step, name, className, children, onChange, onFocus, onBlur }, ref) {
         const { handleChange } = useFormikContext<SwapFormValues>();
         const [field] = useField(name)
 
@@ -47,6 +49,8 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     minLength={minLength}
                     maxLength={maxLength}
                     onInput={(event: React.ChangeEvent<HTMLInputElement>) => { replaceComma(event); limitDecimalPlaces(event, precision) }}
+                    onFocus={onFocus}
+                    onBlur={onBlur}
                     type="text"
                     step={step}
                     name={name}

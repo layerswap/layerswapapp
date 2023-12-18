@@ -14,6 +14,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromCurrency, from, to, amount, destination_address, toCurrency } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
+    const [isAmountVisible, setIsAmountVisible] = useState(false);
 
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const { getAutofillProvider: getProvider } = useWallet()
@@ -80,7 +81,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
             isBalanceLoading={(isBalanceLoading || isGasLoading)}
         />
         <div className="flex w-full justify-between bg-secondary-700 rounded-lg">
-            <div className="relative">
+            <div className="relative w-full">
                 <NumericInput
                     disabled={!fromCurrency}
                     placeholder={placeholder}
@@ -90,13 +91,15 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     name={name}
                     ref={amountRef}
                     precision={fromCurrency?.precision}
-                    className="rounded-r-none text-primary-text w-full !pb-8 text-lg truncate"
+                    onFocus={() => setIsAmountVisible(false)}
+                    onBlur={() => setIsAmountVisible(true)}
+                    className={`${!isAmountVisible || !amountRef.current.value ? "text-2xl" : "!pb-8"} rounded-r-none text-primary-text w-full truncate`}
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-                        updateRequestedAmountInUsd(parseFloat(e.target.value))
+                        updateRequestedAmountInUsd(parseFloat(e.target.value));
                     }}
                 >
-                    {requestedAmountInUsd ? (
+                    {requestedAmountInUsd && isAmountVisible ? (
                         <span className="absolute block w-full min-w-0 rounded-lg font-semibold border-0 pl-3 text-xs pb-4">
                             ${requestedAmountInUsd}
                         </span>
@@ -105,8 +108,8 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
             </div>
             {
                 from && to && fromCurrency ?
-                    <div>
-                        <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 pt-2 px-2">
+                    <div className="flex flex-col justify-center">
+                        <div className={`${!walletBalanceAmount ? "" : "pt-2"} text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 px-2`}>
                             <div className="flex">
                                 <SecondaryButton disabled={!minAllowedAmount} onClick={handleSetMinAmount} size="xs">
                                     MIN
@@ -116,10 +119,10 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                                 </SecondaryButton>
                             </div>
                         </div>
-                        <div className="text-xs text-right">
-                            <div className='bg-secondary-700 py-1.5 px-2 pl-0 text-xs'>
-                                {
-                                    walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) &&
+                        {
+                            walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) &&
+                            <div className="text-xs text-right">
+                                <div className='bg-secondary-700 py-1.5 px-2 text-xs'>
                                     <div>
                                         <span>Balance:&nbsp;</span>
                                         {isBalanceLoading ?
@@ -127,15 +130,15 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                                             :
                                             <span>{walletBalanceAmount}</span>}
                                     </div>
-                                }
+                                </div>
                             </div>
-                        </div>
+                        }
                     </div>
                     :
                     <></>
             }
 
-        </div>
+        </div >
     </>)
 });
 
