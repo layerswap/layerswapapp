@@ -1,7 +1,6 @@
 import React, { Context, useCallback, useState } from 'react'
 import { LSAPIKnownErrorCode } from '../Models/ApiError';
 import { Steps } from '../Models/Wizard';
-import { number } from 'starknet';
 
 const FormWizardStateContext = React.createContext<WizardProvider<any> | null>(null);
 const FormWizardStateUpdateContext = React.createContext<UpdateInterface<any> | null>(null);

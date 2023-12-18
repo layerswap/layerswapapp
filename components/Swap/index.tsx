@@ -11,7 +11,7 @@ import { useSettingsState } from '../../context/settings';
 type Props = {
     type: "widget" | "contained",
 }
-import { useSwapTransactionStore } from '../store/zustandStore';
+import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 
 const SwapDetails: FC<Props> = ({ type }) => {
     const { swap } = useSwapDataState()

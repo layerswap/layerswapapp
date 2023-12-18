@@ -50,7 +50,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
-
     const name = direction
 
     const { from, to, fromCurrency, toCurrency } = values

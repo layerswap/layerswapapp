@@ -33,7 +33,6 @@ export type UpdateInterface = {
     setWithdrawType: (value: WithdrawType) => void
     setSelectedAssetNetwork: (assetNetwork: NetworkCurrency) => void
     setSwapId: (value: string) => void
-
 }
 
 export type SwapData = {

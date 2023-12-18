@@ -1,11 +1,12 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import NumericInput from "./NumericInput";
 import SecondaryButton from "../buttons/secondaryButton";
 import { useBalancesState, useBalancesUpdate } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useFee } from "../../context/feeContext";
+import useWallet from "../../hooks/useWallet";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
@@ -14,12 +15,18 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { fromCurrency, from, to, amount, destination_address } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
 
-    const { balances, isBalanceLoading, isGasLoading, gases } = useBalancesState()
+    const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
+    const { getAutofillProvider: getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return values.from && getProvider(values.from)
+    }, [values.from, getProvider])
+
+    const wallet = provider?.getConnectedWallet()
+    const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.asset)?.gas || 0
     const { getBalance, getGas } = useBalancesUpdate()
     const name = "amount"
-    const walletBalance = balances?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
+    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
-    const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.asset)?.gas || 0
 
     const maxAllowedAmount = (walletBalance &&
         maxAmountFromApi &&
@@ -56,6 +63,14 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         if (maxAllowedAmount)
             updateRequestedAmountInUsd(maxAllowedAmount)
     }, [from, fromCurrency, destination_address, maxAllowedAmount])
+
+    useEffect(() => {
+        values.from && getBalance(values.from)
+    }, [values.from, values.destination_address, wallet?.address])
+    const contract_address = values.from?.isExchange == false ? values.from.assets.find(a => a.asset === values?.fromCurrency?.asset)?.contract_address : null
+    useEffect(() => {
+        wallet?.address && values.from && values.fromCurrency && getGas(values.from, values.fromCurrency, values.destination_address || wallet.address)
+    }, [contract_address, values.from, values.fromCurrency, wallet?.address])
 
     return (<>
         <AmountLabel detailsAvailable={!!(from && to && amount)}

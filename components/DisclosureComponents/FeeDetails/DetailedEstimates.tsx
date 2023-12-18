@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { NetworkCurrency, NetworkType } from "../../../Models/CryptoNetwork";
+import { NetworkCurrency } from "../../../Models/CryptoNetwork";
 import { Layer } from "../../../Models/Layer";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { GetDefaultAsset } from "../../../helpers/settingsHelper";
@@ -39,8 +39,7 @@ const DetailedEstimates: FC<EstimatesProps> = ({
         {
             source
             && source?.isExchange === false
-            && selected_currency
-            && source?.type === NetworkType.EVM &&
+            && selected_currency &&
             <NetworkGas network={source} selected_currency={selected_currency} />
         }
         <EstimatedArrival currency={selected_currency} destination={destination} fee={fee} />
@@ -61,19 +60,18 @@ const NetworkGas: FC<NetworkGasProps> = ({ selected_currency, network }) => {
 
     const source_native_currnecy = network.assets.find(a => a.is_native)
 
-    const estimatedGas = (network?.type === NetworkType.EVM
-        && networkGas
-        && source_native_currnecy) ?
-        truncateDecimals(networkGas, source_native_currnecy?.precision) : null
+    const estimatedGas = (networkGas && source_native_currnecy) ?
+        truncateDecimals(networkGas, source_native_currnecy?.precision)
+        : truncateDecimals(networkGas, selected_currency?.precision)
 
     return <div className="mt-2 flex flex-row items-baseline justify-between">
         <label className="inline-flex items-center text-left text-primary-text-placeholder">
             Estimated gas
         </label>
         <div className="text-right flex items-center gap-1">
-            {isGasLoading ? <div className='h-[10px] w-10 bg-gray-500 rounded-sm animate-pulse' /> : estimatedGas} <span>{network?.assets.find(a => a.is_native)?.asset}</span>
-        </div>
-    </div>
+            {isGasLoading ? <div className='h-[10px] w-10 bg-gray-500 rounded-sm animate-pulse' /> : estimatedGas} <span>{network?.assets.find(a => a.is_native)?.asset ?? selected_currency.asset}</span>
+        </div >
+    </div >
 }
 type EstimatedArrivalProps = {
     destination?: Layer | null,

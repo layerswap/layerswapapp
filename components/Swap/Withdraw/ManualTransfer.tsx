@@ -11,7 +11,7 @@ import LayerSwapApiClient, { DepositAddress, DepositAddressSource, DepositType, 
 import SubmitButton from "../../buttons/submitButton";
 import shortenAddress from "../../utils/ShortenAddress";
 import { isValidAddress } from "../../../lib/addressValidator";
-import { useSwapDepositHintClicked } from "../../store/zustandStore";
+import { useSwapDepositHintClicked } from "../../../stores/swapTransactionStore";
 
 const ManualTransfer: FC = () => {
     const { swap } = useSwapDataState()

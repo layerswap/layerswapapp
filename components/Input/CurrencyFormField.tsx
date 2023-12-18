@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
@@ -9,12 +9,13 @@ import { SortingByOrder } from "../../lib/sorting";
 import { Layer } from "../../Models/Layer";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
-import { Balance } from "../../helpers/balanceHelper";
 import { useQueryState } from "../../context/query";
 import { NetworkCurrency } from "../../Models/CryptoNetwork";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import useSWR from "swr";
 import { ApiResponse } from "../../Models/ApiResponse";
+import { Balance } from "../../hooks/useBalance";
+import useWallet from "../../hooks/useWallet";
 
 const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
@@ -26,8 +27,14 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency'
     const query = useQueryState()
     const { balances } = useBalancesState()
-    const lockedCurrency = query?.lockAsset ? from?.assets?.find(c => c?.asset?.toUpperCase() === (query?.asset as string)?.toUpperCase()) : undefined
+    const lockedCurrency = query?.lockAsset ? from?.assets?.find(c => c?.asset?.toUpperCase() === (query?.asset)?.toUpperCase()) : undefined
     const assets = direction === 'from' ? from?.assets : to?.assets;
+    const { getAutofillProvider: getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return from && getProvider(from)
+    }, [from, getProvider])
+
+    const wallet = provider?.getConnectedWallet()
 
     const filterWith = direction === "from" ? to : from
     const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
@@ -59,7 +66,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         from,
         to,
         direction,
-        balances
+        balances[wallet?.address || '']
     )
 
     const currencyAsset = direction === 'from' ? fromCurrency?.asset : toCurrency?.asset;
