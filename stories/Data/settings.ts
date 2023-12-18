@@ -4,29 +4,15 @@ import { LayerSwapSettings } from "../../Models/LayerSwapSettings";
 export const Settings: LayerSwapSettings = {
     "exchanges": [
         {
+            metadata: {
+
+            },
             display_name: "Coinbase",
             internal_name: "COINBASE",
             status: "active",
             type: "cex",
             is_featured: false,
             created_date: "2021-12-30T21:52:48.380446+00:00",
-            currencies: [
-                {
-                    asset: "ETH",
-                    network: "ETHEREUM_MAINNET",
-                    status: "active",
-                    is_default: true,
-                    withdrawal_fee: 90,
-                    min_deposit_amount: 9,
-                    is_refuel_enabled: false,
-                    contract_address: "0xasd",
-                    decimals: 90009,
-                    is_native: true,
-                    precision: 6,
-                    usd_price: 10
-                },
-            ],
-            authorization_flow: "api_credentials",
         },
         {
             "display_name": "Fake CEX (for testing)",
@@ -35,51 +21,9 @@ export const Settings: LayerSwapSettings = {
             "type": "cex",
             "is_featured": true,
             "created_date": "2021-12-30T21:52:48.380446+00:00",
-            "currencies": [
-                {
-                    asset: "ETH",
-                    network: "ETHEREUM_MAINNET",
-                    status: "active",
-                    is_default: true,
-                    withdrawal_fee: 90,
-                    min_deposit_amount: 9,
-                    is_refuel_enabled: false,
-                    contract_address: "0xasd",
-                    decimals: 90009,
-                    is_native: true,
-                    precision: 6,
-                    usd_price: 10
-                },
-                {
-                    asset: "ETH",
-                    network: "ETHEREUM_MAINNET",
-                    status: "active",
-                    is_default: true,
-                    withdrawal_fee: 90,
-                    min_deposit_amount: 9,
-                    contract_address: "0xasd",
-                    decimals: 90009,
-                    is_native: true,
-                    precision: 6,
-                    usd_price: 10,
-                    is_refuel_enabled: true,
-                },
-                {
-                    asset: "ETH",
-                    network: "ETHEREUM_MAINNET",
-                    status: "active",
-                    is_default: true,
-                    withdrawal_fee: 90,
-                    min_deposit_amount: 9,
-                    is_refuel_enabled: false,
-                    contract_address: "0xasd",
-                    decimals: 90009,
-                    is_native: true,
-                    precision: 6,
-                    usd_price: 10
-                },
-            ],
-            authorization_flow: "api_credentials",
+            metadata: {
+
+            },
         },
         {
             "display_name": "Stripe (Only US)",
@@ -88,23 +32,9 @@ export const Settings: LayerSwapSettings = {
             "type": "fiat",
             "is_featured": false,
             "created_date": "2021-12-30T21:52:48.380446+00:00",
-            "currencies": [
-                {
-                    asset: "ETH",
-                    network: "ETHEREUM_MAINNET",
-                    status: "active",
-                    is_default: true,
-                    withdrawal_fee: 90,
-                    min_deposit_amount: 9,
-                    is_refuel_enabled: false,
-                    contract_address: "0xasd",
-                    decimals: 90009,
-                    is_native: true,
-                    precision: 6,
-                    usd_price: 10
-                },
-            ],
-            authorization_flow: "api_credentials",
+            metadata: {
+
+            },
         }
     ],
     "networks": [
