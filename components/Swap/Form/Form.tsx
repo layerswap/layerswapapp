@@ -136,7 +136,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     //TODO always map to toAsset from query
     const lockedCurrency = query?.lockAsset ? values.to?.assets?.find(c => c?.asset?.toUpperCase() === toAsset?.toUpperCase()) : null;
     const apiVersion = LayerSwapApiClient.apiVersion
-    console.log(process.env,9999);
     const sourceRoutesEndpoint = `/routes/sources?destination_network=${source?.internal_name}&destination_asset=${fromCurrency?.asset}${apiVersion ? '&version=' : ''}${apiVersion}`
     const destinationRoutesEndpoint = `/routes/destinations?source_network=${destination?.internal_name}&source_asset=${toCurrency?.asset}${apiVersion ? '&version=' : ''}${apiVersion}`
     const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<{

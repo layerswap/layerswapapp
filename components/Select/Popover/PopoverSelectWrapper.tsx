@@ -64,7 +64,6 @@ export default function PopoverSelectWrapper<T>({
                 <PopoverSelect setValue={handleSelect} value={value} values={values} direction={direction} />
             </PopoverContent>
         </Popover>
-
     )
 }
 

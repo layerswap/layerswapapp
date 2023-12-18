@@ -37,16 +37,24 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}${(filterWith && filterWithAsset) ? `?${direction === 'to' ? 'source_network' : 'destination_network'}=${filterWith.internal_name}&${direction === 'to' ? 'source_asset' : 'destination_asset'}=${filterWithAsset}&` : "?"}version=${version}`
 
-    const { data: routes } = useSWR<ApiResponse<{
+    const sourceRoutesURL = `/routes/sources${(to && toCurrency) ? `?destination_network=${to.internal_name}&destination_asset=${toCurrency.asset}&` : "?"}version=${version}`
+    const destinationRoutesURL = `/routes/destinations${(from && fromCurrency) ? `?source_network=${from.internal_name}&source_asset=${fromCurrency.asset}&` : "?"}version=${version}`
+
+    const { data: sourceRoutes } = useSWR<ApiResponse<{
         network: string,
         asset: string
-    }[]>>(routesEndpoint, apiClient.fetcher)
+    }[]>>(sourceRoutesURL, apiClient.fetcher)
+
+    const { data: destinationRoutes } = useSWR<ApiResponse<{
+        network: string,
+        asset: string
+    }[]>>(destinationRoutesURL, apiClient.fetcher)
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : assets
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
         resolveImgSrc,
-        routes?.data,
+        direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
         lockedCurrency,
         from,
         to,
@@ -56,7 +64,8 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const currencyAsset = direction === 'from' ? fromCurrency?.asset : toCurrency?.asset;
     useEffect(() => {
-        const currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset)
+        let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset)
+
         if (currencyIsAvailable) return
 
         const default_currency = currencyMenuItems?.find(c => c.baseObject?.asset?.toUpperCase() === (query?.asset)?.toUpperCase()) || currencyMenuItems?.[0]
@@ -69,10 +78,28 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         }
     }, [from, to, fromCurrency, toCurrency, query])
 
+    useEffect(() => {
+        if (direction === "to" && fromCurrency) {
+            if (!destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === toCurrency?.asset)) {
+                setFieldValue(name, fromCurrency)
+            }
+        }
+    }, [fromCurrency, direction, to, destinationRoutes])
+
+    useEffect(() => {
+        if (direction === "from" && toCurrency) {
+            if (!sourceRoutes?.data?.filter(r => r.network === from?.internal_name)?.some(r => r.asset === fromCurrency?.asset)) {
+                setFieldValue(name, toCurrency)
+            }
+        }
+    }, [toCurrency, direction, from, sourceRoutes])
+
     const value = currencyMenuItems?.find(x => x.id == currencyAsset);
+
     const handleSelect = useCallback((item: SelectMenuItem<NetworkCurrency>) => {
         setFieldValue(name, item.baseObject, true)
-    }, [name])
+    }, [name, direction, toCurrency, fromCurrency, from, to])
+
 
     return <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} direction={direction} />;
 };
@@ -83,9 +110,9 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
         if (lockedCurrency) {
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
-        else if (from && to && routes?.some(r => r.asset !== currency.asset && r.network !== (direction === 'from' ? from.internal_name : to.internal_name))) {
-            return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
-        }
+        // else if (from && to && routes?.some(r => r.asset !== currency.asset && r.network !== (direction === 'from' ? from.internal_name : to.internal_name))) {
+        //     return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
+        // }
         else {
             return { value: true, disabledReason: null }
         }
