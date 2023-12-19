@@ -78,7 +78,7 @@ export default function ThemeWrapper({ children }: Props) {
                             <AnimatePresence>
                                 {
                                     isLoading &&
-                                    <Loa />
+                                    <LoadingAnimation />
                                 }
                                 {
                                     <motion.div
@@ -101,7 +101,7 @@ export default function ThemeWrapper({ children }: Props) {
     </div>
 }
 
-const Loa = () => <div
+const LoadingAnimation = () => <div
     className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}
 >
     <div className='text-center text-xl text-secondary-100'>
