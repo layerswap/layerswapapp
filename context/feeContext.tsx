@@ -55,7 +55,9 @@ export function FeeProvider({ children }) {
         max_amount_in_usd: number,
         min_amount_in_usd: number
     }>>((from && fromCurrency && to && toCurrency) ?
-        `/routes/limits/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?version=${version}` : null, apiClient.fetcher)
+        `/routes/limits/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?version=${version}` : null, apiClient.fetcher, {
+        refreshInterval: 5,
+    })
 
     const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<{
         wallet_fee_in_usd: number,
