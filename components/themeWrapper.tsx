@@ -2,12 +2,14 @@ import { X } from "lucide-react";
 import toast, { ToastBar, Toaster } from "react-hot-toast"
 import Navbar from "./navbar"
 import GlobalFooter from "./globalFooter";
+import { useLoadingState } from "../context/loadingContext";
+import { AnimatePresence, motion } from "framer-motion";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
 }
 export default function ThemeWrapper({ children }: Props) {
-
+    const { isLoading } = useLoadingState()
     return <div className='styled-scroll'>
         <div className="invisible light"></div>
         <main className="styled-scroll">
@@ -73,8 +75,23 @@ export default function ThemeWrapper({ children }: Props) {
                 <div className="w-full">
                     <div className="z-[1] flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg">
                         <div className="flex flex-col w-full text-primary-text">
-                            {children}
-                        </div>
+                            <AnimatePresence>
+                                {
+                                    isLoading &&
+                                    <Loa />
+                                }
+                                {
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{
+                                            duration: 0.3
+                                        }}
+                                        className={`${isLoading ? 'invisible' : ''}`}>
+                                        {children}
+                                    </motion.div>
+                                }
+                            </AnimatePresence>                        </div>
                     </div>
                 </div>
                 <div id="offset-for-stickyness" className="block md:hidden"></div>
@@ -83,3 +100,64 @@ export default function ThemeWrapper({ children }: Props) {
         </main>
     </div>
 }
+
+const Loa = () => <div
+    className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}
+>
+    <div className='text-center text-xl text-secondary-100'>
+    </div>
+    <div className="relative px-6">
+        <div className="flex items-start">
+            <div className={`flex flex-nowrap grow`}>
+                <div className="w-full pb-6 flex flex-col justify-between space-y-5 text-secondary-text h-full">
+                    <div className="sm:min-h-[504px] flex flex-col justify-between">
+                        <div className="relative m-auto origin-center">
+                            <motion.div
+                                animate={{
+                                    scale: [1.2, 0.8, 1.2],
+                                    filter: ['blur(0px)', 'blur(0px)', 'blur(1px)']
+                                }}
+                                transition={{
+                                    duration: 1,
+                                    ease: "easeInOut",
+                                    repeat: Infinity,
+                                }}
+                                exit={{ opacity: 0 }}
+                                className="absolute origin-center w-5 h-5 bg-primary-500/90 rounded-sm">
+                            </motion.div>
+                            <motion.div
+                                animate={{
+                                    scale: [1.2, 0.8, 1.2],
+                                    filter: ['blur(0px)', 'blur(0px)', 'blur(1px)']
+                                }}
+                                transition={{
+                                    duration: 1,
+                                    ease: "easeInOut",
+                                    repeat: Infinity,
+                                    delay: 0.1
+                                }}
+                                exit={{ opacity: 0 }}
+                                className="absolute origin-center left-1 top-1 w-5 h-5 bg-primary-500/60 rounded-sm">
+                            </motion.div>
+                            <motion.div
+                                animate={{
+                                    scale: [1.2, 0.8, 1.2],
+                                    filter: ['blur(0px)', 'blur(0px)', 'blur(1px)']
+                                }}
+                                transition={{
+                                    duration: 1,
+                                    ease: "easeInOut",
+                                    repeat: Infinity,
+                                    delay: 0.2
+                                }}
+                                exit={{ opacity: 0 }}
+                                className="absolute origin-center left-2 top-2 w-5 h-5 bg-primary-500/50 rounded-sm">
+                            </motion.div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="widget_root" />
+</div>

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import Head from "next/head"
 import { useRouter } from "next/router";
 import ThemeWrapper from "./themeWrapper";
@@ -20,6 +20,8 @@ import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
 import * as Sentry from "@sentry/nextjs";
+import LoadingCard from "./LoadingCard";
+import { LoadingProvider } from "../context/loadingContext";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -28,6 +30,19 @@ type Props = {
   themeData?: ThemeData | null
 };
 
+const DynamicRainbowKit = (dynamic(() => import("./RainbowKit"), {
+  loading: (props) => {
+    return <LoadingCard name="DynamicRainbowKit" />
+  },
+  ssr: false
+}))
+
+const DynamicSolana = dynamic(() => import("./SolanaProvider"), {
+  loading: (props) => {
+    return <LoadingCard name="DynamicSolana" />
+  },
+  ssr: false
+});
 export default function Layout({ children, settings, themeData }: Props) {
   const router = useRouter();
 
@@ -108,26 +123,7 @@ export default function Layout({ children, settings, themeData }: Props) {
 
   const basePath = router?.basePath ?? ""
 
-  const DynamicRainbowKit = (dynamic(() => import("./RainbowKit"), {
-    loading: () => <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
-      <div className='text-center text-xl text-secondary-100'>
-      </div>
-      <div className="relative px-6">
-        <div className="flex items-start">
-          <div className={`flex flex-nowrap grow`}>
-            <div className="w-full pb-6 flex flex-col justify-between space-y-5 text-secondary-text h-full">
-              <div className="sm:min-h-[504px]"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div id="widget_root" />
-    </div>,
-    ssr: false
-  }))
 
-
-  const DynamicSolana = dynamic(() => import("./SolanaProvider"), { ssr: false });
 
   return (<>
     <Head>
@@ -159,28 +155,30 @@ export default function Layout({ children, settings, themeData }: Props) {
       themeData &&
       <ColorSchema themeData={themeData} />
     }
-    <QueryProvider query={query}>
-      <SettingsProvider data={appSettings}>
-        <MenuProvider>
-          <AuthProvider>
-            <TooltipProvider delayDuration={500}>
-              <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
-                <ThemeWrapper>
-                  <TonConnectProvider basePath={basePath} themeData={themeData}>
-                    <DynamicRainbowKit>
-                      <DynamicSolana>
-                        {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                          <MaintananceContent />
-                          : children}
-                      </DynamicSolana>
-                    </DynamicRainbowKit>
-                  </TonConnectProvider>
-                </ThemeWrapper>
-              </ErrorBoundary>
-            </TooltipProvider>
-          </AuthProvider>
-        </MenuProvider>
-      </SettingsProvider >
-    </QueryProvider>
+    <LoadingProvider>
+      <QueryProvider query={query}>
+        <SettingsProvider data={appSettings}>
+          <MenuProvider>
+            <AuthProvider>
+              <TooltipProvider delayDuration={500}>
+                <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+                  <ThemeWrapper>
+                    <TonConnectProvider basePath={basePath} themeData={themeData}>
+                      <DynamicRainbowKit>
+                        <DynamicSolana>
+                          {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                            <MaintananceContent />
+                            : children}
+                        </DynamicSolana>
+                      </DynamicRainbowKit>
+                    </TonConnectProvider>
+                  </ThemeWrapper>
+                </ErrorBoundary>
+              </TooltipProvider>
+            </AuthProvider>
+          </MenuProvider>
+        </SettingsProvider >
+      </QueryProvider>
+    </LoadingProvider>
   </>)
 }
