@@ -71,12 +71,16 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         if (currencyIsAvailable) return
 
         const default_currency = currencyMenuItems?.find(c => c.baseObject?.asset?.toUpperCase() === (query?.asset)?.toUpperCase()) || currencyMenuItems?.[0]
+        const selected_currency = currencyMenuItems?.find(c => c.baseObject?.asset?.toUpperCase() === (direction === 'to' ? fromCurrency?.asset : toCurrency?.asset)?.toUpperCase())
 
-        if (default_currency) {
-            setFieldValue(name, default_currency.baseObject)
+        if (direction === "to" && selected_currency && destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === selected_currency.name)) {
+            setFieldValue(name, selected_currency.baseObject)
         }
-        else if (fromCurrency || toCurrency) {
-            setFieldValue(name, null)
+        else if (direction === "from" && selected_currency && sourceRoutes?.data?.filter(r => r.network === from?.internal_name)?.some(r => r.asset === selected_currency.name)) {
+            setFieldValue(name, selected_currency.baseObject)
+        }
+        else if (default_currency) {
+            setFieldValue(name, default_currency.baseObject)
         }
     }, [from, to, query])
 

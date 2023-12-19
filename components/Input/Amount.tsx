@@ -39,7 +39,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const maxAllowedDisplayAmount = maxAllowedAmount && truncateDecimals(maxAllowedAmount, fromCurrency?.precision)
 
-    const placeholder = (fromCurrency && from && to && toCurrency && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAllowedDisplayAmount}` : '0.01234'
+    const placeholder = (fromCurrency && toCurrency && from && to && minAllowedAmount && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAllowedDisplayAmount}` : '0.01234'
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
     const amountRef = useRef(ref)
 
@@ -83,7 +83,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         <div className="flex w-full justify-between bg-secondary-700 rounded-lg">
             <div className="relative w-full">
                 <NumericInput
-                    disabled={!fromCurrency}
+                    disabled={!fromCurrency || !toCurrency}
                     placeholder={placeholder}
                     min={minAllowedAmount}
                     max={maxAllowedAmount}
@@ -93,7 +93,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     precision={fromCurrency?.precision}
                     onFocus={() => setIsAmountVisible(false)}
                     onBlur={() => setIsAmountVisible(true)}
-                    className={`${!isAmountVisible || !amountRef.current.value ? "text-2xl" : "!pb-8"} rounded-r-none text-primary-text w-full truncate`}
+                    className={`${!isAmountVisible || !amountRef.current.value ? "text-xl" : "!pb-8"} rounded-r-none text-primary-text w-full truncate`}
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value));
