@@ -109,7 +109,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
             {
                 from && to && fromCurrency ?
                     <div className="flex flex-col justify-center">
-                        <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 px-2">
+                        <div className={`${walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ? "pt-2" : ""} text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 px-2`}>
                             <div className="flex">
                                 <SecondaryButton disabled={!minAllowedAmount} onClick={handleSetMinAmount} size="xs">
                                     MIN

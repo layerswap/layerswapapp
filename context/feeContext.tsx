@@ -56,7 +56,7 @@ export function FeeProvider({ children }) {
         min_amount_in_usd: number
     }>>((from && fromCurrency && to && toCurrency) ?
         `/routes/limits/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?version=${version}` : null, apiClient.fetcher, {
-        refreshInterval: 5,
+        refreshInterval: 5000,
     })
 
     const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<{
