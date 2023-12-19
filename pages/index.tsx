@@ -5,8 +5,7 @@ import { LayerSwapSettings } from '../Models/LayerSwapSettings'
 import { validateSignature } from '../helpers/validateSignature'
 import { mapNetworkCurrencies } from '../helpers/settingsHelper'
 import { THEME_COLORS, ThemeData } from '../Models/Theme'
-import dynamic from 'next/dynamic'
-import LoadingCard from '../components/LoadingCard'
+import Swap from '../components/swapComponent'
 type IndexProps = {
   settings?: LayerSwapSettings,
   themeData?: ThemeData,
@@ -14,16 +13,10 @@ type IndexProps = {
   validSignatureisPresent?: boolean,
 }
 
-const DynamicSwap = (dynamic(() => import('../components/swapComponent'), {
-  loading: (props) => {
-    return <LoadingCard name='DynamicSwap' />
-  },
-}))
-
 export default function Home({ settings, inMaintanance, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (<>
     <Layout settings={settings} themeData={themeData}>
-      <DynamicSwap />
+      <Swap />
     </Layout>
   </>)
 }

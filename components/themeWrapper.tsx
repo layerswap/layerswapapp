@@ -9,7 +9,6 @@ type Props = {
     children: JSX.Element | JSX.Element[]
 }
 export default function ThemeWrapper({ children }: Props) {
-    const { isLoading } = useLoadingState()
     return <div className='styled-scroll'>
         <div className="invisible light"></div>
         <main className="styled-scroll">
@@ -75,23 +74,8 @@ export default function ThemeWrapper({ children }: Props) {
                 <div className="w-full">
                     <div className="z-[1] flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg">
                         <div className="flex flex-col w-full text-primary-text">
-                            <AnimatePresence>
-                                {
-                                    isLoading &&
-                                    <LoadingAnimation />
-                                }
-                                {
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        transition={{
-                                            duration: 0.3
-                                        }}
-                                        className={`${isLoading ? 'invisible' : ''}`}>
-                                        {children}
-                                    </motion.div>
-                                }
-                            </AnimatePresence>                        </div>
+                            {children}
+                        </div>
                     </div>
                 </div>
                 <div id="offset-for-stickyness" className="block md:hidden"></div>

@@ -21,7 +21,6 @@ import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
 import * as Sentry from "@sentry/nextjs";
 import LoadingCard from "./LoadingCard";
-import { LoadingProvider } from "../context/loadingContext";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -155,7 +154,6 @@ export default function Layout({ children, settings, themeData }: Props) {
       themeData &&
       <ColorSchema themeData={themeData} />
     }
-    <LoadingProvider>
       <QueryProvider query={query}>
         <SettingsProvider data={appSettings}>
           <MenuProvider>
@@ -179,6 +177,5 @@ export default function Layout({ children, settings, themeData }: Props) {
           </MenuProvider>
         </SettingsProvider >
       </QueryProvider>
-    </LoadingProvider>
   </>)
 }

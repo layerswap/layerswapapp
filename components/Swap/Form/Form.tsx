@@ -28,7 +28,6 @@ import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
 import { useQueryState } from "../../../context/query";
 import FeeDetails from "../../DisclosureComponents/FeeDetails";
-import dynamic from "next/dynamic";
 import { Balance, Gas } from "../../../hooks/useBalance";
 import AmountField from "../../Input/Amount"
 import Address from "../../Input/Address"
