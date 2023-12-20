@@ -71,8 +71,8 @@ export default function ThemeWrapper({ children }: Props) {
                     </svg>
                 </div>
                 <Navbar />
-                <div className="w-full">
-                    <div className="z-[1] flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg">
+                <div className="w-full max-w-lg z-[1]">
+                    <div className="flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg">
                         <div className="flex flex-col w-full text-primary-text">
                             {children}
                         </div>
