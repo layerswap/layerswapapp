@@ -30,31 +30,13 @@ import FeeDetails from "../../DisclosureComponents/FeeDetails";
 import dynamic from "next/dynamic";
 import { useFee } from "../../../context/feeContext";
 import { Balance, Gas } from "../../../hooks/useBalance";
-
+import AmountField from "../../Input/Amount"
+import Address from "../../Input/Address"
+import ReserveGasNote from "../../ReserveGasNote"
 type Props = {
     isPartnerWallet?: boolean,
     partner?: Partner,
 }
-const Address = dynamic(() => import("../../Input/Address"), {
-    loading: () => <div className="w-full">
-        <div className="animate-pulse flex space-x-4">
-            <div className="flex-1 space-y-3 py-1">
-                <div className="h-12 bg-secondary-700 rounded-lg"></div>
-                <div className="h-24 bg-secondary-700 rounded-lg"></div>
-                <div className="h-24 bg-secondary-700 rounded-lg"></div>
-            </div>
-        </div>
-    </div>
-})
-
-const AmountField = dynamic(() => import("../../Input/Amount"), {
-    loading: () => <></>
-})
-
-
-const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
-    loading: () => <></>
-})
 
 const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const {

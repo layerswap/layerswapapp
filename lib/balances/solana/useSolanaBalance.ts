@@ -58,7 +58,6 @@ export default function useSolanaBalance(): BalanceProvider {
                         balance
                     ]
                 }
-
             }
             catch (e) {
                 console.log(e)
