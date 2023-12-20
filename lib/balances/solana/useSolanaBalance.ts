@@ -12,10 +12,8 @@ export default function useSolanaBalance(): BalanceProvider {
         KnownInternalNames.Networks.SolanaMainnet
     ]
 
-    const { publicKey: walletPublicKey } = useSolanaWallet()
-
-    const getBalance = async ({ layer }: BalanceProps) => {
-
+    const getBalance = async ({ layer, address }: BalanceProps) => {
+        const walletPublicKey = new PublicKey(address)
         let balances: Balance[] = []
 
         if (layer.isExchange === true || !layer.assets || !walletPublicKey) return
@@ -67,7 +65,11 @@ export default function useSolanaBalance(): BalanceProvider {
         return balances
     }
 
-    const getGas = async ({ layer, currency }: GasProps) => {
+    const getGas = async ({ layer, currency, address }: GasProps) => {
+        if (!address)
+            return
+
+        const walletPublicKey = new PublicKey(address)
 
         let gas: Gas[] = [];
         if (layer.isExchange === true || !layer.assets) return
