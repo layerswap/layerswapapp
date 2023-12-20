@@ -49,7 +49,7 @@ const GLobalFooter = () => {
 
     return (
         <footer className="z-0 hidden md:flex fixed bottom-0 py-4 justify-between items-center w-full px-6 lg:px-8 mt-auto">
-            <div className="">
+            <div>
                 <div className="flex mt-3 md:mt-0 gap-6">
                     <Link target="_blank" href="https://docs.layerswap.io/information/privacy-policy" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
                         Privacy Policy
