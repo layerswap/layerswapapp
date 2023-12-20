@@ -19,8 +19,8 @@ const WalletTransfer: FC = () => {
     const { layers } = useSettingsState()
     const { minAllowedAmount } = useFee()
 
-    const source_layer = layers.find(n => n.internal_name === source_network_internal_name) as (Layer & { isExchange: false })
     const { source_network: source_network_internal_name } = swap || {}
+    const source_layer = layers.find(n => n.internal_name === source_network_internal_name) as (Layer & { isExchange: false })
     const sourceAsset = source_layer?.assets?.find(c => c.asset.toLowerCase() === swap?.source_network_asset.toLowerCase())
 
     const sourceIsImmutableX = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
