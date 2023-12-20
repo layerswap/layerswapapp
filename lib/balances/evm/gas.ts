@@ -10,7 +10,7 @@ export default abstract class getEVMGas {
     protected chainId: number
     protected contract_address: `0x${string}`
     protected account: `0x${string}`
-    protected from: Layer & { isExchange: false }
+    protected from: Layer
     protected currency: NetworkCurrency
     protected destination: `0x${string}`
     protected nativeToken: NetworkCurrency
@@ -20,7 +20,7 @@ export default abstract class getEVMGas {
         chainId: number,
         contract_address: `0x${string}`,
         account: `0x${string}`,
-        from: Layer & { isExchange: false },
+        from: Layer,
         currency: NetworkCurrency,
         destination: `0x${string}`,
         nativeToken: NetworkCurrency,

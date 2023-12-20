@@ -18,7 +18,7 @@ export type ERC20ContractRes = ({
 
 export const resolveERC20Balances = async (
     multicallRes: ERC20ContractRes[],
-    from: Layer & { isExchange: false },
+    from: Layer,
 ) => {
     const assets = from?.assets?.filter(a => a.contract_address && a.status !== 'inactive')
     if (!assets)
@@ -119,7 +119,7 @@ export const getNativeBalance = async (address: `0x${string}`, chainId: number):
 }
 
 export const resolveNativeBalance = async (
-    from: Layer & { isExchange: false },
+    from: Layer,
     nativeTokenRes: FetchBalanceResult
 ) => {
     const native_currency = from.assets.find(a => a.is_native)

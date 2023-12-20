@@ -6,8 +6,6 @@ import { Layer } from "../Models/Layer";
 
 export default function resolveChain(network: Layer): (Chain & rainbowChain) | undefined {
 
-    if (network.isExchange === true) return
-
     const nativeCurrency = network.assets.find(c => c.is_native);
     const blockExplorersBaseURL = new URL(network.transaction_explorer_template).origin;
     const metadata = network.metadata

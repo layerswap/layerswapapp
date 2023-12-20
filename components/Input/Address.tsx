@@ -41,7 +41,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const inputReference = useRef<HTMLInputElement>(null);
     const destination = values.to
     const asset = values.toCurrency?.asset
-    const valid_addresses = address_book?.filter(a => (destination?.isExchange ? a.exchanges?.some(e => destination?.internal_name === e) : a.networks?.some(n => destination?.internal_name === n)) && isValidAddress(a.address, destination)) || []
+    const valid_addresses = address_book?.filter(a => a.networks?.some(n => destination?.internal_name === n) && isValidAddress(a.address, destination)) || []
 
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const placeholder = "Enter your address here"
@@ -59,7 +59,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const settings = useSettingsState()
 
     useEffect(() => {
-        if (destination && !destination?.isExchange && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address) {
+        if (destination && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address) {
             //TODO move to wallet implementation
             if (connectedWallet
                 && connectedWallet.providerName === 'starknet'
@@ -75,7 +75,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
             setAddressConfirmed(true)
             setFieldValue("destination_address", connectedWallet?.address)
         }
-    }, [connectedWallet?.address, destination?.isExchange, destination])
+    }, [connectedWallet?.address, destination])
 
     useEffect(() => {
         if (canFocus) {
@@ -123,7 +123,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     }, [validInputAddress])
 
     const destinationAsset = values.toCurrency
-    const destinationChainId = values.to?.isExchange === false && values.to.chain_id
+    const destinationChainId = values?.to?.chain_id
 
     return (<>
         <div className='w-full flex flex-col justify-between h-full text-primary-text'>
@@ -213,7 +213,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         !disabled
                         && !inputValue
                         && destination
-                        && !destination?.isExchange
                         && provider
                         && !connectedWallet &&
                         <div onClick={() => { connectWallet(provider.name) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
@@ -231,8 +230,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         </div>
                     }
                     {
-                        destination?.isExchange
-                        && !inputAddressIsValid
+                        !inputAddressIsValid
                         && destinationAsset
                         && destination
                         &&

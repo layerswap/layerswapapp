@@ -38,7 +38,6 @@ const DetailedEstimates: FC<EstimatesProps> = ({
         </div>
         {
             source
-            && source?.isExchange === false
             && selected_currency &&
             <NetworkGas network={source} selected_currency={selected_currency} />
         }
@@ -46,7 +45,7 @@ const DetailedEstimates: FC<EstimatesProps> = ({
     </>
 }
 type NetworkGasProps = {
-    network: Layer & { isExchange: false },
+    network: Layer,
     selected_currency: NetworkCurrency,
 }
 const NetworkGas: FC<NetworkGasProps> = ({ selected_currency, network }) => {

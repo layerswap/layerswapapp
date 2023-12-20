@@ -18,7 +18,7 @@ export default function useSolanaBalance(): BalanceProvider {
 
         let balances: Balance[] = []
 
-        if (layer.isExchange === true || !layer.assets || !walletPublicKey) return
+        if (!layer.assets || !walletPublicKey) return
 
         const connection = new Connection(
             `${layer.nodes[0].url}`,
@@ -70,7 +70,7 @@ export default function useSolanaBalance(): BalanceProvider {
     const getGas = async ({ layer, currency }: GasProps) => {
 
         let gas: Gas[] = [];
-        if (layer.isExchange === true || !layer.assets) return
+        if (!layer.assets) return
 
         const connection = new Connection(
             `${layer.nodes[0].url}`,

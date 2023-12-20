@@ -1,4 +1,5 @@
 import { CryptoNetwork, NetworkCurrency } from "./CryptoNetwork";
+import { Exchange } from "./Exchange";
 import { Layer } from "./Layer";
 import { LayerSwapSettings } from "./LayerSwapSettings";
 import { Partner } from "./Partner";
@@ -6,8 +7,10 @@ import { Partner } from "./Partner";
 export class LayerSwapAppSettings {
     constructor(settings: LayerSwapSettings | any) {
         this.layers = LayerSwapAppSettings.ResolveLayers(settings.networks);
+        this.exchanges = settings.exchanges
     }
 
+    exchanges: Exchange[]
     layers: Layer[]
 
     resolveImgSrc = (item: Layer | NetworkCurrency | Pick<Layer, 'internal_name'> | { asset: string } | Partner) => {
@@ -36,7 +39,7 @@ export class LayerSwapAppSettings {
         return basePath.href;
     }
 
-    static ResolveLayers(networks: any[]): Layer[] {
+    static ResolveLayers(networks: CryptoNetwork[]): Layer[] {
         const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
         if (!resource_storage_url)
             throw new Error("NEXT_PUBLIC_RESOURCE_STORAGE_URL is not set up in env vars")
@@ -45,7 +48,6 @@ export class LayerSwapAppSettings {
 
         const networkLayers: Layer[] = networks?.map((n): Layer =>
         ({
-            isExchange: false,
             assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n),
             img_url: `${basePath}layerswap/networks/${n?.internal_name?.toLowerCase()}.png`,
             ...n,

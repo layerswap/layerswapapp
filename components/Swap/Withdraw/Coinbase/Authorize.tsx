@@ -43,7 +43,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const exchange_internal_name = swap?.source_exchange
     const asset_name = swap?.source_network_asset
 
-    const exchange = layers.find(e => e.isExchange && e.internal_name?.toLowerCase() === exchange_internal_name?.toLowerCase()) as Layer & { isExchange: true }
+    const exchange = layers.find(e => e.internal_name?.toLowerCase() === exchange_internal_name?.toLowerCase()) as Layer
     const currency = exchange?.assets.find(c => asset_name?.toLocaleUpperCase() === c.asset?.toLocaleUpperCase())
 
     const oauthProviders = {} as any //TODO config oauth_providers

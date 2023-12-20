@@ -15,7 +15,7 @@ export default function useLoopringBalance(): BalanceProvider {
 
         const uri = 'https://api3.loopring.io/api/v3'
 
-        if (layer.isExchange === true || !layer.assets) return
+        if (!layer.assets) return
         try {
 
             const account: { data: AccountInfo } = await axios.get(`${uri}/account?owner=${address}`)
@@ -48,7 +48,7 @@ export default function useLoopringBalance(): BalanceProvider {
 
     const getGas = async ({ layer, currency, address }: GasProps) => {
         let gas: Gas[] = [];
-        if (layer.isExchange === true || !layer.assets) return
+        if (!layer.assets) return
 
         const uri = 'https://api3.loopring.io/api/v3'
 

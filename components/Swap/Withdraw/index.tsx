@@ -29,7 +29,6 @@ const Withdraw: FC = () => {
     const source_internal_name = swap?.source_exchange ?? swap?.source_network
     const source = layers.find(n => n.internal_name === source_internal_name)
 
-    let isFiat = source?.isExchange && source?.type === "fiat"
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
@@ -41,9 +40,8 @@ const Withdraw: FC = () => {
 
     const source_layer = layers.find(n => n.internal_name === swap?.source_network)
     const sourceNetworkType = source_layer?.type
-    const manualIsAvailable = !(sourceIsStarknet || sourceIsImmutableX || isFiat)
-    const walletIsAvailable = !isFiat
-        && !swap?.source_exchange
+    const manualIsAvailable = !(sourceIsStarknet || sourceIsImmutableX)
+    const walletIsAvailable = !swap?.source_exchange
         && (sourceNetworkType === NetworkType.EVM
             || sourceNetworkType === NetworkType.Starknet
             || sourceIsImmutableX || sourceIsZkSync)
@@ -60,15 +58,6 @@ const Withdraw: FC = () => {
             enabled: true,
             icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
             content: <External />
-        }]
-    }
-    else if (isFiat) {
-        tabs = [{
-            id: WithdrawType.Stripe,
-            label: "Stripe",
-            enabled: true,
-            icon: <AlignLeft />,
-            content: <FiatTransfer />
         }]
     }
     else if (sourceIsStarknet || sourceIsImmutableX) {
@@ -124,12 +113,9 @@ const Withdraw: FC = () => {
             <Widget.Content>
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
                     <div className='grid grid-cols-1 gap-4 '>
-                        {
-                            !isFiat &&
-                            <div className="bg-secondary-700 rounded-lg px-3 py-4 border border-secondary-500 w-full relative z-10 space-y-4">
-                                <SwapSummary />
-                            </div>
-                        }
+                        <div className="bg-secondary-700 rounded-lg px-3 py-4 border border-secondary-500 w-full relative z-10 space-y-4">
+                            <SwapSummary />
+                        </div>
                         <span>
 
                             {

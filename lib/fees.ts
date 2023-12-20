@@ -42,7 +42,7 @@ function ResolveRefuelNetwork(args: CaluclateRefuelArgs): Layer | undefined |nul
     if (!destinationNetworkCurrency || !destinationNetworkNativeAsset)
         return
 
-    if (!to?.isExchange && destinationNetworkCurrency.is_refuel_enabled && Number(destinationNetwork?.refuel_amount_in_usd) > 0 && currency.usd_price > 0 && destinationNetworkNativeAsset.usd_price > 0) {
+    if (destinationNetworkCurrency.is_refuel_enabled && Number(destinationNetwork?.refuel_amount_in_usd) > 0 && currency.usd_price > 0 && destinationNetworkNativeAsset.usd_price > 0) {
         return destinationNetwork
     }
 }

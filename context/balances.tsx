@@ -41,11 +41,10 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
         const balance = allBalances[wallet?.address || '']?.find(b => b?.network === from?.internal_name)
         const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
         const source_network = from
-        
+
         if (source_network
             && isBalanceOutDated
-            && wallet?.address
-            && from?.isExchange === false) {
+            && wallet?.address) {
             setIsBalanceLoading(true)
 
             const walletBalances = balances[wallet.address]
@@ -64,7 +63,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
 
     async function getGas(from: Layer, currency: NetworkCurrency, userDestinationAddress: string) {
 
-        if (!from || from?.isExchange) {
+        if (!from) {
             return
         }
         const network = from
