@@ -123,7 +123,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                     }
                 </div>
                 {
-                    refuelAmount &&
+                    hasRefuel && refuelAmount !== undefined &&
                     <div
                         className="flex items-center justify-between w-full ">
                         <div className='flex items-center gap-3 text-sm'>

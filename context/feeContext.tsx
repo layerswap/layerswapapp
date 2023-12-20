@@ -56,7 +56,7 @@ export function FeeProvider({ children }) {
         min_amount_in_usd: number
     }>>((from && fromCurrency && to && toCurrency) ?
         `/routes/limits/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?version=${version}` : null, apiClient.fetcher, {
-        refreshInterval: 5,
+        refreshInterval: 10000,
     })
 
     const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<{
@@ -72,8 +72,8 @@ export function FeeProvider({ children }) {
             total_hours: number
         },
         fee_usd_price: number
-    }>>((from && fromCurrency && to && toCurrency && amount) ?
-        `/routes/rate/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?amount=${debouncedAmount}&version=${version}` : null, apiClient.fetcher, { dedupingInterval: 2000 })
+    }>>((from && fromCurrency && to && toCurrency && debouncedAmount) ?
+        `/routes/rate/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?amount=${debouncedAmount}&version=${version}` : null, apiClient.fetcher, { refreshInterval: 10000 })
 
     const fee = {
         walletFee: lsFee?.data?.wallet_fee,
