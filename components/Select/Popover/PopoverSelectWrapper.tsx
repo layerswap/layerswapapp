@@ -35,7 +35,7 @@ export default function PopoverSelectWrapper<T>({
 
     return (
         <Popover open={showModal} onOpenChange={() => setShowModal(!showModal)}>
-            <PopoverTrigger placeholder={placeholder} asChild>
+            <PopoverTrigger asChild>
                 {
                     value ?
                         <div className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-secondary-600 border border-secondary-500 font-semibold align-sub ">

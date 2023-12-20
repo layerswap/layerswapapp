@@ -60,7 +60,6 @@ export function FilterDestinationLayers(layers: Layer[], source?: Layer | null, 
 
     const filteredLayers = layers.filter(l => {
         const isAvailable = l.status != "inactive"
-            && !(l.isExchange === true && l.type === 'fiat')
             && source?.internal_name !== l.internal_name;
 
         const layerHasAvailableL2 = l.assets?.some(l2Asset =>

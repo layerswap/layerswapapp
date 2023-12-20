@@ -31,15 +31,13 @@ const getGroupName = (layer: Layer) => {
     else if (new Date(layer.created_date).getTime() >= (new Date().getTime() - 2629800000)) {
         return "New";
     }
-    else if (!layer.isExchange) {
+    else if (layer) {
         return "Networks";
+
     }
-    else if (layer.type === 'fiat') {
-        return "Fiat";
-    }
-    else if (layer.type === 'cex') {
-        return "Exchanges";
-    }
+    // else if (layer.type === 'cex') {
+    //     return "Exchanges";
+    // }
     else {
         return "Other";
     }
@@ -163,9 +161,7 @@ function GenerateMenuItems(layers: Layer[], resolveImgSrc: (item: Layer | Networ
 
     return layers.map(l => {
         let orderProp: keyof NetworkSettings | keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
-        const order = (l.isExchange ?
-            ExchangeSettings.KnownSettings[l.internal_name]?.[orderProp]
-            : NetworkSettings.KnownSettings[l.internal_name]?.[orderProp])
+        const order = NetworkSettings.KnownSettings[l.internal_name]?.[orderProp]
         const res: SelectMenuItem<Layer> = {
             baseObject: l,
             id: l.internal_name,

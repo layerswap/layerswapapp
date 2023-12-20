@@ -47,9 +47,6 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount 
 
         if (Object.keys(errors).length === 0) return errors
 
-        const errorsOrder: FormikErrors<SwapFormValues> = {
-            [values.from?.isExchange ? "exchange" : "network"]: null
-        }
-        return Object.assign(errorsOrder, errors);
+        return errors;
     };
 }

@@ -109,10 +109,7 @@ export function SwapDataProvider({ children }) {
             destination_address: values.destination_address,
             app_name: partner ? query?.appName : (apiVersion === 'sandbox' ? 'LayerswapSandbox' : 'Layerswap'),
             reference_id: query.externalId,
-        }
-
-        if (!destinationLayer?.isExchange) {
-            data.refuel = !!refuel
+            refuel: !!refuel
         }
 
         const swapResponse = await layerswapApiClient.CreateSwapAsync(data)

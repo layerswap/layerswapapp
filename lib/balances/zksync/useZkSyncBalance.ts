@@ -34,7 +34,7 @@ export default function useZkSyncBalance(): BalanceProvider {
 
         let balances: Balance[] = []
 
-        if (layer.isExchange === true || !layer.assets) return
+        if (!layer.assets) return
         const provider = createPublicClient({
             transport: http(`${layer.nodes[0].url}jsrpc`)
         })
@@ -67,7 +67,7 @@ export default function useZkSyncBalance(): BalanceProvider {
     const getGas = async ({ layer, currency, address }: GasProps) => {
 
         let gas: Gas[] = [];
-        if (layer.isExchange === true || !layer.assets) return
+        if (!layer.assets) return
 
         const provider = createPublicClient({
             transport: http(`${layer.nodes[0].url}jsrpc`)

@@ -35,7 +35,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         to: initialDestination,
         amount: initialAmount,
         toCurrency: initialCurrency,
-        destination_address: (!destinationLayer?.isExchange && initialAddress) ? initialAddress : '',
+        destination_address: initialAddress ? initialAddress : '',
     }
 
     return result

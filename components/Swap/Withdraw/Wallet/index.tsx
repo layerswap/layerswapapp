@@ -19,8 +19,8 @@ const WalletTransfer: FC = () => {
     const { layers } = useSettingsState()
     const { minAllowedAmount } = useFee()
 
-    const source_layer = layers.find(n => n.internal_name === source_network_internal_name) as (Layer & { isExchange: false })
     const { source_network: source_network_internal_name } = swap || {}
+    const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
     const sourceAsset = source_layer?.assets?.find(c => c.asset.toLowerCase() === swap?.source_network_asset.toLowerCase())
 
     const sourceIsImmutableX = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
@@ -43,7 +43,7 @@ const WalletTransfer: FC = () => {
         (canDoSweepless ? managedDepositAddress : generatedDepositAddress)
         : undefined
 
-    const sourceChainId = (source_layer && source_layer.isExchange === false) ? Number(source_layer?.chain_id) : null
+    const sourceChainId = source_layer ? Number(source_layer?.chain_id) : null
     const requested_amount = Number(minAllowedAmount) > Number(swap?.requested_amount) ? minAllowedAmount : swap?.requested_amount
 
     if (sourceIsImmutableX)

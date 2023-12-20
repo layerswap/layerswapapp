@@ -34,8 +34,6 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const handleConnect = useCallback(async () => {
         if (!provider)
             throw new Error(`No provider from ${source_layer?.internal_name}`)
-        if (source_layer?.isExchange === true)
-            throw new Error(`Source is exchange`)
 
         setLoading(true)
         await provider?.connectWallet(source_layer?.chain_id)

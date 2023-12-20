@@ -11,12 +11,11 @@ export default function useEVMBalance(): BalanceProvider {
     const name = 'eth'
 
     const { layers } = useSettingsState()
-    const supportedNetworks = layers.filter(l => l.isExchange === false && l.type === NetworkType.EVM && NetworkSettings.KnownSettings[l.internal_name]?.GasCalculationType !== GasCalculation.OptimismType).map(l => l.internal_name)
+    const supportedNetworks = layers.filter(l => l.type === NetworkType.EVM && NetworkSettings.KnownSettings[l.internal_name]?.GasCalculationType !== GasCalculation.OptimismType).map(l => l.internal_name)
 
     const getBalance = async ({ layer, address }: BalanceProps) => {
 
         try {
-            if (layer.isExchange) throw new Error('Provided layer is not network')
 
             const chain = resolveChain(layer)
             if (!chain) return
@@ -54,7 +53,7 @@ export default function useEVMBalance(): BalanceProvider {
 
     const getGas = async ({ layer, address, currency, userDestinationAddress }: GasProps) => {
 
-        if (!layer || !address || layer?.isExchange) {
+        if (!layer || !address) {
             return
         }
         const chainId = Number(layer?.chain_id)
