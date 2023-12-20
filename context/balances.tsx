@@ -1,8 +1,9 @@
 import React, { FC, useState } from 'react'
 import { Layer } from '../Models/Layer';
 import { Currency } from '../Models/Currency';
-import useBalanceProvider, { Balance, Gas } from '../hooks/useBalance';
+import useBalanceProvider from '../hooks/useBalance';
 import useWallet from '../hooks/useWallet';
+import { Balance, Gas } from '../Models/Balance';
 
 export const BalancesStateContext = React.createContext<BalancesState | null>(null);
 export const BalancesStateUpdateContext = React.createContext<BalancesStateUpdate | null>(null);

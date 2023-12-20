@@ -28,10 +28,10 @@ import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
 import { useQueryState } from "../../../context/query";
 import FeeDetails from "../../DisclosureComponents/FeeDetails";
-import { Balance, Gas } from "../../../hooks/useBalance";
 import AmountField from "../../Input/Amount"
 import Address from "../../Input/Address"
 import ReserveGasNote from "../../ReserveGasNote"
+import { Balance, Gas } from "../../../Models/Balance";
 type Props = {
     isPartnerWallet?: boolean,
     partner?: Partner,
