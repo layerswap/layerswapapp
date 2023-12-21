@@ -52,8 +52,12 @@ export function FeeProvider({ children }) {
     const version = LayerSwapApiClient.apiVersion
 
     const { data: amountRange } = useSWR<ApiResponse<{
-        max_amount_in_usd: number,
-        min_amount_in_usd: number
+        manual_min_amount: number
+        manual_min_amount_in_usd: number
+        max_amount: number
+        max_amount_in_usd: number
+        wallet_min_amount: number
+        wallet_min_amount_in_usd: number
     }>>((from && fromCurrency && to && toCurrency) ?
         `/routes/limits/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?version=${version}` : null, apiClient.fetcher, {
         refreshInterval: 10000,
@@ -83,11 +87,8 @@ export function FeeProvider({ children }) {
         avgCompletionTime: lsFee?.data?.avg_completion_time
     }
 
-    const minAllowedAmount = amountRange?.data && fromCurrency && truncateDecimals(Number(amountRange?.data?.min_amount_in_usd) / Number(fromCurrency?.usd_price), fromCurrency?.precision)
-    const maxAllowedAmount = amountRange?.data && fromCurrency && truncateDecimals(Number(amountRange?.data?.max_amount_in_usd) / Number(fromCurrency?.usd_price), fromCurrency?.precision)
-
     return (
-        <FeeStateContext.Provider value={{ minAllowedAmount, maxAllowedAmount, fee, mutateFee, valuesChanger, isFeeLoading }}>
+        <FeeStateContext.Provider value={{ minAllowedAmount: amountRange?.data?.manual_min_amount, maxAllowedAmount: amountRange?.data?.max_amount, fee, mutateFee, valuesChanger, isFeeLoading }}>
             {children}
         </FeeStateContext.Provider>
     )
