@@ -3,7 +3,6 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import useSWR from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
-import { truncateDecimals } from '../components/utils/RoundDecimals';
 
 const FeeStateContext = createContext<ContextType | null>(null);
 
@@ -53,7 +52,9 @@ export function FeeProvider({ children }) {
 
     const { data: amountRange } = useSWR<ApiResponse<{
         max_amount_in_usd: number,
-        min_amount_in_usd: number
+        min_amount_in_usd: number,
+        max_amount: number,
+        min_amount: number
     }>>((from && fromCurrency && to && toCurrency) ?
         `/routes/limits/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?version=${version}` : null, apiClient.fetcher, {
         refreshInterval: 10000,
@@ -83,11 +84,8 @@ export function FeeProvider({ children }) {
         avgCompletionTime: lsFee?.data?.avg_completion_time
     }
 
-    const minAllowedAmount = amountRange?.data && fromCurrency && truncateDecimals(Number(amountRange?.data?.min_amount_in_usd) / Number(fromCurrency?.usd_price), fromCurrency?.precision)
-    const maxAllowedAmount = amountRange?.data && fromCurrency && truncateDecimals(Number(amountRange?.data?.max_amount_in_usd) / Number(fromCurrency?.usd_price), fromCurrency?.precision)
-
     return (
-        <FeeStateContext.Provider value={{ minAllowedAmount, maxAllowedAmount, fee, mutateFee, valuesChanger, isFeeLoading }}>
+        <FeeStateContext.Provider value={{ minAllowedAmount: amountRange?.data?.min_amount, maxAllowedAmount: amountRange?.data?.max_amount, fee, mutateFee, valuesChanger, isFeeLoading }}>
             {children}
         </FeeStateContext.Provider>
     )

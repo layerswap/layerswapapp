@@ -45,13 +45,13 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    const { to: destination, fromCurrency, toCurrency, from: source } = values
+    const { to: destination, fromCurrency, toCurrency, from: source, fromExchange, toExchange } = values
     const { minAllowedAmount, valuesChanger, fee } = useFee()
     const toAsset = values.toCurrency?.asset
     const { authData } = useAuthState()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const address_book_endpoint = authData?.access_token ? `/address_book/recent_addresses` : null
+    const address_book_endpoint = authData?.access_token ? `/swaps/recent_addresses` : null
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
     const partnerImage = partner?.logo_url
@@ -128,13 +128,13 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         network: string,
         asset: string
     }[]>>((source && fromCurrency) ?
-        sourceRoutesEndpoint : `/routes/sources?${apiVersion ? '&version=' : ''}${apiVersion}`, layerswapApiClient.fetcher)
+        sourceRoutesEndpoint : `/routes/sources?${apiVersion ? 'version=' : ''}${apiVersion}`, layerswapApiClient.fetcher)
 
     const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<{
         network: string,
         asset: string
     }[]>>((destination && toCurrency) ?
-        destinationRoutesEndpoint : `/routes/destinations?${apiVersion ? '&version=' : ''}${apiVersion}`, layerswapApiClient.fetcher)
+        destinationRoutesEndpoint : `/routes/destinations?${apiVersion ? 'version=' : ''}${apiVersion}`, layerswapApiClient.fetcher)
 
     const sourceCanBeSwapped = destinationRoutes?.data?.some(l => l.network === source?.internal_name)
     const destinationCanBeSwapped = sourceRoutes?.data?.some(l => l.network === destination?.internal_name)
@@ -169,7 +169,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
                             <NetworkFormField direction="from" label="From" />
                         </div>}
-                        {!query?.hideFrom && !query?.hideTo && <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className={`${sourceLoading || destinationLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[74px] z-10 border-4 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
+                        {!query?.hideFrom && !query?.hideTo && <button type="button" disabled={valuesSwapperDisabled || sourceLoading || destinationLoading} onClick={valuesSwapper} className={`${sourceLoading || destinationLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[74px] z-10 border-4 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
                             <motion.div
                                 animate={animate}
                                 transition={{ duration: 0.3 }}
@@ -238,6 +238,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                 </div>
                                 <ToggleButton name="refuel" value={!!values?.refuel} onChange={handleConfirmToggleChange} />
                             </div>
+                        }
+                        {
+                            ((fromExchange || toExchange) && (source || destination)) &&
+                            <NetworkFormField direction={"from"} label={""}/>
                         }
                         <FeeDetails values={values} />
                         {

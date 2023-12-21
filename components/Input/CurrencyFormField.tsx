@@ -137,7 +137,8 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
             order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
             imgSrc: resolveImgSrc && resolveImgSrc(c),
             isAvailable: currencyIsAvailable(c),
-            details: `${formatted_balance_amount}`
+            details: `${formatted_balance_amount}`,
+            type: 'currency'
         };
         return res
     }).sort(SortingByOrder);
