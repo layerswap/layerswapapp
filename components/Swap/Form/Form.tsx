@@ -51,7 +51,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const { authData } = useAuthState()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const address_book_endpoint = authData?.access_token ? `/address_book/recent_addresses` : null
+    const address_book_endpoint = authData?.access_token ? `/swaps/recent_addresses` : null
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
     const partnerImage = partner?.logo_url
