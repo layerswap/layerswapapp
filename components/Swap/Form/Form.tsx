@@ -33,6 +33,7 @@ import { Balance, Gas } from "../../../hooks/useBalance";
 import AmountField from "../../Input/Amount"
 import Address from "../../Input/Address"
 import ReserveGasNote from "../../ReserveGasNote"
+import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 type Props = {
     isPartnerWallet?: boolean,
     partner?: Partner,
@@ -241,7 +242,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                         }
                         {
                             ((fromExchange || toExchange) && (source || destination)) &&
-                            <NetworkFormField direction={"from"} label={""}/>
+                            <div className="mb-4">
+                                <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
+                            </div>
                         }
                         <FeeDetails values={values} />
                         {
