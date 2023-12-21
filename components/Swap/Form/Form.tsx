@@ -83,7 +83,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
 
     useEffect(() => {
-        if (!destination?.isExchange && (!source || !toAsset || !GetDefaultAsset(source, toAsset)?.is_refuel_enabled)) {
+        if (!source || !toAsset || !GetDefaultAsset(source, toAsset)?.is_refuel_enabled) {
             handleConfirmToggleChange(false)
         }
     }, [toAsset, destination, source])
@@ -96,8 +96,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
     //If destination changed to exchange, remove destination_address
     useEffect(() => {
-        if ((previouslySelectedDestination.current && destination?.isExchange != previouslySelectedDestination.current?.isExchange
-            || (destination?.isExchange && previouslySelectedDestination.current?.isExchange && destination?.internal_name != previouslySelectedDestination.current?.internal_name)
+        if ((previouslySelectedDestination.current &&
+            (destination?.internal_name != previouslySelectedDestination.current?.internal_name)
             || destination && !isValidAddress(values.destination_address, destination)) && !lockAddress) {
             setFieldValue("destination_address", '')
             setDepositeAddressIsfromAccount(false)
@@ -106,7 +106,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     }, [destination])
 
     useEffect(() => {
-        if (!destination?.isExchange && values.refuel && minAllowedAmount && (Number(values.amount) < minAllowedAmount)) {
+        if (values.refuel && minAllowedAmount && (Number(values.amount) < minAllowedAmount)) {
             setFieldValue('amount', minAllowedAmount)
         }
     }, [values.refuel, destination])
@@ -146,9 +146,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         valuesSwapperDisabled = true;
     }
 
-    const destination_native_currency = !destination?.isExchange && destination?.assets.find(c => c.is_native)?.asset
+    const destination_native_currency = destination?.assets.find(c => c.is_native)?.asset
 
-    const averageTimeInMinutes = (values?.to?.isExchange === false && fee?.avgCompletionTime?.total_minutes) || 0
+    const averageTimeInMinutes = fee?.avgCompletionTime?.total_minutes || 0
 
     const hideAddress = query?.hideAddress
         && query?.to
@@ -222,7 +222,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                     }
                     <div className="w-full">
                         {
-                            destination && toAsset && !destination.isExchange && GetDefaultAsset(destination, toAsset)?.is_refuel_enabled && !query?.hideRefuel &&
+                            destination && toAsset && GetDefaultAsset(destination, toAsset)?.is_refuel_enabled && !query?.hideRefuel &&
                             <div className="flex items-center justify-between px-3.5 py-3 bg-secondary-700 border border-secondary-500 rounded-lg mb-4">
                                 <div className="flex items-center space-x-2">
                                     <Fuel className='h-8 w-8 text-primary' />
@@ -301,7 +301,7 @@ type AddressButtonProps = {
 const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, partnerImage, disabled }) => {
     const destination = values?.to
     return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text-placeholder bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full px-3.5 py-3">
-        {isPartnerWallet && !destination?.isExchange &&
+        {isPartnerWallet &&
             <div className="shrink-0 flex items-center pointer-events-none">
                 {
                     partnerImage &&

@@ -23,8 +23,7 @@ export default function useWalletTransferOptions() {
         setIsContractWallet(contractWallets.find(w => w.address === wallet?.address && w.network === source_layer?.internal_name) ?? checkContractWallet(wallet?.address, source_layer))
     }, [])
 
-    const canDoSweepless = source_layer?.isExchange == false
-        && ((source_layer.type == NetworkType.EVM && !(isContractWallet?.network === source_layer.internal_name && isContractWallet?.isContract)) || source_layer.type == NetworkType.Starknet)
+    const canDoSweepless = ((source_layer?.type == NetworkType.EVM && !(isContractWallet?.network === source_layer.internal_name && isContractWallet?.isContract)) || source_layer?.type == NetworkType.Starknet)
         || wallet?.address?.toLowerCase() === swap?.destination_address.toLowerCase()
 
     return { canDoSweepless, isContractWallet }

@@ -4,15 +4,17 @@ import { LayerSwapSettings } from "../../Models/LayerSwapSettings";
 export const Settings: LayerSwapSettings = {
     "exchanges": [
         {
-            metadata: {
-
-            },
-            display_name: "Coinbase",
-            internal_name: "COINBASE",
-            status: "active",
-            type: "cex",
-            is_featured: false,
-            created_date: "2021-12-30T21:52:48.380446+00:00",
+            "display_name": "Coinbase",
+            "internal_name": "COINBASE",
+            "status": "active",
+            "type": "cex",
+            "is_featured": false,
+            "metadata": {},
+            "created_date": "2021-07-15T20:32:51.223453+00:00",
+            "o_auth": {
+                "connect_url": "https://www.coinbase.com/oauth/authorize?client_id=d1794c48e67c2eea97cef6154f42d0e099b13805264e739c96a9175a4acd9308&redirect_uri=https%3A%2F%2Fbridge-api-dev.layerswap.cloud%2Fapi%2Fcallback%2Fcoinbase&response_type=code&account=all&scope=wallet%3Auser%3Aemail%2Cwallet%3Aaddresses%3Aread%2Cwallet%3Aaddresses%3Acreate&state=",
+                "authorize_url": "https://www.coinbase.com/oauth/authorize?client_id=d1794c48e67c2eea97cef6154f42d0e099b13805264e739c96a9175a4acd9308&redirect_uri=https%3A%2F%2Fbridge-api-dev.layerswap.cloud%2Fapi%2Fcallback%2Fcoinbase&response_type=code&account=all&scope=wallet%3Atransactions%3Aread%2Cwallet%3Auser%3Aread%2Cwallet%3Aaccounts%3Aread%2Cwallet%3Atransactions%3Asend%2Cwallet%3Auser%3Aemail&meta[send_limit_amount]=1&meta[send_limit_currency]=USD&meta[send_limit_period]=month&state="
+            }
         },
         {
             "display_name": "Fake CEX (for testing)",
@@ -20,21 +22,9 @@ export const Settings: LayerSwapSettings = {
             "status": "active",
             "type": "cex",
             "is_featured": true,
-            "created_date": "2021-12-30T21:52:48.380446+00:00",
-            metadata: {
-
-            },
-        },
-        {
-            "display_name": "Stripe (Only US)",
-            "internal_name": "STRIPE",
-            "status": "active",
-            "type": "fiat",
-            "is_featured": false,
-            "created_date": "2021-12-30T21:52:48.380446+00:00",
-            metadata: {
-
-            },
+            "metadata": {},
+            "created_date": "2023-01-13T13:23:55.633636+00:00",
+            "o_auth": null
         }
     ],
     "networks": [

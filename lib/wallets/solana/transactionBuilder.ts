@@ -4,7 +4,7 @@ import { createAssociatedTokenAccountInstruction, createTransferInstruction, get
 import { NetworkCurrency } from "../../../Models/CryptoNetwork";
 
 const transactionBuilder = async (layer: Layer, currency: NetworkCurrency, walletPublicKey: PublicKey) => {
-    if (layer.isExchange === true || !layer.assets) return
+    if (!layer.assets) return
 
     const connection = new Connection(
         `${layer.nodes[0].url}`,

@@ -54,26 +54,25 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
 
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
     const receiveAmountInUsd = receiveAmount ? (currency?.usd_price * receiveAmount).toFixed(2) : undefined
-    const nativeCurrency = refuelAmount && to?.isExchange === false ?
-        from.assets.find(c => c.is_native) : null
+    const nativeCurrency = refuelAmount && from.assets.find(c => c.is_native)
 
-    const truncatedRefuelAmount = (hasRefuel && refuelAmount) ?
+    const truncatedRefuelAmount = nativeCurrency && (hasRefuel && refuelAmount) ?
         truncateDecimals(refuelAmount, nativeCurrency?.precision) : null
-    const refuelAmountInUsd = ((nativeCurrency?.usd_price || 1) * (truncatedRefuelAmount || 0)).toFixed(2)
+    const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.usd_price || 1) * (truncatedRefuelAmount || 0)).toFixed(2)
 
     let sourceAccountAddress = ""
     if (hideFrom && account) {
         sourceAccountAddress = shortenAddress(account);
     }
-    else if (wallet && !from?.isExchange) {
+    else if (wallet) {
         sourceAccountAddress = shortenAddress(wallet.address);
     }
     else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
         sourceAccountAddress = shortenEmail(exchange_account_name, 10);
     }
-    else if (from?.isExchange) {
-        sourceAccountAddress = "Exchange"
-    }
+    // else if (from?.isExchange) {
+    //     sourceAccountAddress = "Exchange"
+    // }
     else {
         sourceAccountAddress = "Network"
     }
@@ -123,7 +122,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                     }
                 </div>
                 {
-                    hasRefuel && refuelAmount !== undefined &&
+                    hasRefuel && refuelAmount !== undefined && nativeCurrency &&
                     <div
                         className="flex items-center justify-between w-full ">
                         <div className='flex items-center gap-3 text-sm'>
