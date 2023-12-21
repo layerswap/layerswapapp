@@ -18,14 +18,13 @@ const ManualTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const hintsStore = useSwapDepositHintClicked()
     const hintClicked = hintsStore.swapTransactions[swap?.id || ""]
-    const {
-        source_network: source_network_internal_name } = swap || {}
+    const { source_network: source_network_internal_name } = swap || {}
 
     const layerswapApiClient = new LayerSwapApiClient()
     const {
         data: generatedDeposit,
         isLoading
-    } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`,
+    } = useSWR<ApiResponse<DepositAddress>>(`/networks/${source_network_internal_name}/deposit_addresses`,
         layerswapApiClient.fetcher,
         {
             dedupingInterval: 60000,

@@ -71,7 +71,7 @@ export default class LayerSwapApiClient {
     }
 
     async GenerateDepositAddress(network: string): Promise<ApiResponse<DepositAddress>> {
-        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/deposit_addresses/${network}`);
+        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/networks/${network}/deposit_addresses`);
     }
 
     async WithdrawFromExchange(swapId: string, exchange: string, twoFactorCode?: string): Promise<ApiResponse<void>> {
