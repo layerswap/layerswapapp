@@ -29,13 +29,22 @@ import GasDetails from "../../gasDetails";
 import { useQueryState } from "../../../context/query";
 import FeeDetails from "../../DisclosureComponents/FeeDetails";
 import AmountField from "../../Input/Amount"
-import Address from "../../Input/Address"
-import ReserveGasNote from "../../ReserveGasNote"
 import { Balance, Gas } from "../../../Models/Balance";
+import dynamic from "next/dynamic";
 type Props = {
     isPartnerWallet?: boolean,
     partner?: Partner,
 }
+
+const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
+    loading: () => <></>,
+    ssr: false
+});
+
+const Address = dynamic(() => import("../../Input/Address"), {
+    loading: () => <></>,
+});
+
 
 const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const {
@@ -87,6 +96,14 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     useEffect(() => {
         setAddressConfirmed(false)
     }, [source])
+
+    useEffect(() => {
+        async () => {
+            const Address = (await import("../../Input/Address")).default
+            const nam = Address.name
+            console.log("component name", nam)
+        }
+    }, [destination])
 
     useEffect(() => {
         if (!destination?.isExchange && values.refuel && values.amount && Number(values.amount) < minAllowedAmount) {
@@ -253,7 +270,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                 <span className="font-normal"><span>{destination?.display_name}</span> <span>network congestion. Transactions can take up to 1 hour.</span></span>
                             </WarningMessage>
                         }
-                        <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                        {
+                            values.amount &&
+                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                        }
                     </div>
                 </Widget.Content>
                 <Widget.Footer>

@@ -3,8 +3,6 @@ import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../Model
 import { NetworkType } from "../../../Models/CryptoNetwork"
 import NetworkSettings, { GasCalculation } from "../../NetworkSettings"
 
-
-
 export default function useEVMBalance(): BalanceProvider {
     const name = 'eth'
 
