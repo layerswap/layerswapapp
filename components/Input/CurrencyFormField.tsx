@@ -19,7 +19,7 @@ import useWallet from "../../hooks/useWallet";
 
 const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
-        values: { to, fromCurrency, toCurrency, from },
+        values: { to, fromCurrency, toCurrency, from, currencyGroup },
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
@@ -71,7 +71,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         if (currencyIsAvailable) return
 
         const default_currency = currencyMenuItems?.find(c => c.baseObject?.asset?.toUpperCase() === (query?.asset)?.toUpperCase()) || currencyMenuItems?.[0]
-        const selected_currency = currencyMenuItems?.find(c => c.baseObject?.asset?.toUpperCase() === (direction === 'to' ? fromCurrency?.asset : toCurrency?.asset)?.toUpperCase())
+        const selected_currency = currencyMenuItems?.find(c => c.baseObject?.asset?.toUpperCase() === (currencyGroup?.name || (direction === 'to' ? fromCurrency?.asset : toCurrency?.asset))?.toUpperCase())
 
         if (direction === "to" && selected_currency && destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === selected_currency.name)) {
             setFieldValue(name, selected_currency.baseObject)

@@ -52,7 +52,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     } = useFormikContext<SwapFormValues>();
     const name = direction
 
-    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange } = values
+    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, currencyGroup } = values
     const { lockFrom, lockTo } = useQueryState()
 
     const { resolveImgSrc, layers, exchanges } = useSettingsState();
@@ -67,10 +67,14 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const filterWith = direction === "from" ? to : from
     const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
 
+    const filterWithExchange = direction === 'from' ? toExchange : fromExchange
+
     const apiClient = new LayerSwapApiClient()
     const version = LayerSwapApiClient.apiVersion
 
-    const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}${(filterWith && filterWithAsset) ? `?${direction === 'to' ? 'source_network' : 'destination_network'}=${filterWith.internal_name}&${direction === 'to' ? 'source_asset' : 'destination_asset'}=${filterWithAsset}&` : "?"}version=${version}`
+    const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}${(filterWith && filterWithAsset) ?
+        `?${direction === 'to' ? 'source_network' : 'destination_network'}=${filterWith.internal_name}&${direction === 'to' ? 'source_asset' : 'destination_asset'}=${filterWithAsset}&` :
+        (filterWithExchange && currencyGroup) ? `?${direction === 'from' ? 'destination_asset_group' : 'source_asset_group'}=${currencyGroup.name}&` : "?"}version=${version}`
 
     const { data: routes, isLoading } = useSWR<ApiResponse<{
         network: string,

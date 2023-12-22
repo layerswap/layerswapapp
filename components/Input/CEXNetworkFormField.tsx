@@ -7,6 +7,7 @@ import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
+import Image from "next/image";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -20,8 +21,8 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     } = useFormikContext<SwapFormValues>();
     const name = direction
 
-    const { from, to, fromCurrency, toCurrency } = values
-    const { layers } = useSettingsState();
+    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange } = values
+    const { layers, resolveImgSrc } = useSettingsState();
 
     const filterWith = direction === "from" ? to : from
     const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
@@ -48,11 +49,22 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     const menuItems = routesData && GenerateMenuItems(routesData);
 
     const handleSelect = useCallback((item: SelectMenuItem<{ network: string, asset: string }>) => {
+        if (!item) return
         const layer = layers.find(l => l.internal_name === item.baseObject.network)
         const currency = layer?.assets.find(a => a.asset === item.baseObject.asset)
         setFieldValue(name, layer, true)
         setFieldValue(`${name}Currency`, currency, true)
     }, [name])
+
+    const value = menuItems?.find(item => item.baseObject.asset === (direction === 'from' ? fromCurrency : toCurrency)?.asset && item.baseObject.network === (direction === 'from' ? from : to)?.internal_name)
+
+    //Setting default value
+    useEffect(() => {
+        if (!menuItems) return
+        else if (value) return
+        const item = menuItems[0]
+        handleSelect(item)
+    }, [routesData])
 
     if (!menuItems) return
 
@@ -60,8 +72,8 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         <label htmlFor={name} className="block font-semibold text-secondary-text text-sm">
             {direction === 'from' ? 'Transfer via' : 'Receive in'}
         </label>
-        <div ref={ref} className="mt-1.5 items-center pr-2">
-            <Select onValueChange={(v) => handleSelect(menuItems.find(m => m.id === v)!)} defaultValue={menuItems[0].id}>
+        <div ref={ref} >
+            <Select value={value?.id} onValueChange={(v) => handleSelect(menuItems.find(m => m.id === v)!)}>
                 <SelectTrigger className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
                     <SelectValue />
                 </SelectTrigger>
@@ -70,11 +82,36 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                         <SelectLabel className="!text-primary-text">Networks</SelectLabel>
                         {
                             menuItems?.map((route, index) => {
+                                const network = layers.find(l => l.internal_name === route.baseObject.network)
+                                const currency = network?.assets.find(a => a.asset === route.baseObject.asset)
+
                                 return (
                                     <SelectItem key={index} value={route.id}>
-                                        <div className="flex items-center gap-1">
-                                            <p>{route.baseObject.asset}</p>
-                                            <p>{route.baseObject.network}</p>
+                                        <div className="flex justify-between w-[200px]">
+                                            <div className="inline-flex items-center gap-1 w-full">
+                                                <div className="flex-shrink-0 h-6 w-6 relative">
+                                                    <Image
+                                                        src={resolveImgSrc(network)}
+                                                        alt="Network Logo"
+                                                        height="40"
+                                                        width="40"
+                                                        loading="eager"
+                                                        className="rounded-md object-contain" />
+                                                </div>
+                                                <p>{network?.display_name}</p>
+                                            </div>
+                                            <div className="inline-flex items-center gap-1">
+                                                <div className="flex-shrink-0 h-6 w-6 relative">
+                                                    <Image
+                                                        src={resolveImgSrc(currency)}
+                                                        alt="Token Logo"
+                                                        height="40"
+                                                        width="40"
+                                                        loading="eager"
+                                                        className="rounded-md object-contain" />
+                                                </div>
+                                                <p>{currency?.asset}</p>
+                                            </div>
                                         </div>
                                     </SelectItem>
                                 )
@@ -84,7 +121,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                 </SelectContent>
             </Select>
         </div>
-    </div>)
+    </div >)
 });
 
 function GenerateMenuItems(items: { network: string, asset: string }[]): SelectMenuItem<{ network: string, asset: string }>[] {
@@ -96,7 +133,7 @@ function GenerateMenuItems(items: { network: string, asset: string }[]): SelectM
             name: e.network,
             order: 100,
             imgSrc: '',
-            isAvailable: { value: false, disabledReason: null },
+            isAvailable: { value: true, disabledReason: null },
             type: 'cex',
         }
         return res;
