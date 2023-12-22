@@ -53,6 +53,7 @@ const EnhancedAmountField = forwardRef(function EnhancedAmountField(_, ref: any)
     useEffect(() => {
         values.from && fetchBalance(values.from)
     }, [values.from, values.destination_address, wallet?.address])
+    
     const contract_address = values.from?.isExchange == false ? values.from.assets.find(a => a.asset === values?.currency?.asset)?.contract_address : null
     useEffect(() => {
         wallet?.address && values.from && values.currency && fetchGas(values.from, values.currency, values.destination_address || wallet.address)

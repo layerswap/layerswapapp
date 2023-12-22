@@ -21,6 +21,8 @@ import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
 import * as Sentry from "@sentry/nextjs";
 import LoadingCard from "./LoadingCard";
+import DynamicRainbowKit from "./RainbowKit";
+import DynamicSolana from "./SolanaProvider";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -29,19 +31,6 @@ type Props = {
   themeData?: ThemeData | null
 };
 
-const DynamicRainbowKit = (dynamic(() => import("./RainbowKit"), {
-  loading: (props) => {
-    return <LoadingCard name="DynamicRainbowKit" />
-  },
-  ssr: false
-}))
-
-const DynamicSolana = dynamic(() => import("./SolanaProvider"), {
-  loading: (props) => {
-    return <LoadingCard name="DynamicSolana" />
-  },
-  ssr: false
-});
 export default function Layout({ children, settings, themeData }: Props) {
   const router = useRouter();
 
@@ -154,28 +143,28 @@ export default function Layout({ children, settings, themeData }: Props) {
       themeData &&
       <ColorSchema themeData={themeData} />
     }
-      <QueryProvider query={query}>
-        <SettingsProvider data={appSettings}>
-          <MenuProvider>
-            <AuthProvider>
-              <TooltipProvider delayDuration={500}>
-                <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
-                  <ThemeWrapper>
-                    <TonConnectProvider basePath={basePath} themeData={themeData}>
-                      <DynamicRainbowKit>
-                        <DynamicSolana>
-                          {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                            <MaintananceContent />
-                            : children}
-                        </DynamicSolana>
-                      </DynamicRainbowKit>
-                    </TonConnectProvider>
-                  </ThemeWrapper>
-                </ErrorBoundary>
-              </TooltipProvider>
-            </AuthProvider>
-          </MenuProvider>
-        </SettingsProvider >
-      </QueryProvider>
+    <QueryProvider query={query}>
+      <SettingsProvider data={appSettings}>
+        <MenuProvider>
+          <AuthProvider>
+            <TooltipProvider delayDuration={500}>
+              <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+                <ThemeWrapper>
+                  <TonConnectProvider basePath={basePath} themeData={themeData}>
+                    <DynamicRainbowKit>
+                      <DynamicSolana>
+                        {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                          <MaintananceContent />
+                          : children}
+                      </DynamicSolana>
+                    </DynamicRainbowKit>
+                  </TonConnectProvider>
+                </ThemeWrapper>
+              </ErrorBoundary>
+            </TooltipProvider>
+          </AuthProvider>
+        </MenuProvider>
+      </SettingsProvider >
+    </QueryProvider>
   </>)
 }

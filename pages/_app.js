@@ -15,7 +15,7 @@ function App({ Component, pageProps }) {
         revalidateOnFocus: false,
       }}
     >
-      <IntercomProvider appId={INTERCOM_APP_ID}>
+      <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
         <Component key={router.asPath} {...pageProps} />
       </IntercomProvider>
     </SWRConfig>)

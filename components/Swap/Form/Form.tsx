@@ -31,6 +31,7 @@ import FeeDetails from "../../DisclosureComponents/FeeDetails";
 import AmountField from "../../Input/Amount"
 import { Balance, Gas } from "../../../Models/Balance";
 import dynamic from "next/dynamic";
+
 type Props = {
     isPartnerWallet?: boolean,
     partner?: Partner,
@@ -38,7 +39,6 @@ type Props = {
 
 const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
     loading: () => <></>,
-    ssr: false
 });
 
 const Address = dynamic(() => import("../../Input/Address"), {
@@ -98,11 +98,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     }, [source])
 
     useEffect(() => {
-        async () => {
-            const Address = (await import("../../Input/Address")).default
-            const nam = Address.name
-            console.log("component name", nam)
-        }
+        (async () => {
+            (await import("../../Input/Address")).default
+        })()
     }, [destination])
 
     useEffect(() => {
@@ -317,6 +315,9 @@ type AddressButtonProps = {
     disabled: boolean;
 }
 const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, partnerImage, disabled }) => {
+    useEffect(() => {
+        console.log("AddressButton mounted", Date.now())
+    }, [])
     const destination = values?.to
     return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text-placeholder bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full px-3.5 py-3">
         {isPartnerWallet && !destination?.isExchange &&

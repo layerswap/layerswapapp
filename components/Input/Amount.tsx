@@ -16,8 +16,7 @@ const EnhancedAmountField = dynamic(() => import("./EnhancedAmount"), {
         name="amount"
         className="rounded-r-none text-primary-text"
     >
-    </NumericInput>,
-    ssr: false
+    </NumericInput>
 });
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
