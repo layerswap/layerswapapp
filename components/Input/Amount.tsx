@@ -24,10 +24,9 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const wallet = provider?.getConnectedWallet()
     const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.asset)?.gas || 0
-    const { getBalance, getGas } = useBalancesUpdate()
+    const { getBalance, getGas, getDestinationBalance } = useBalancesUpdate()
     const name = "amount"
     const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
-    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
 
     const maxAllowedAmount = (walletBalance &&
         maxAmountFromApi &&
@@ -59,6 +58,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const handleSetMaxAmount = useCallback(async () => {
         from && await getBalance(from);
+        to && await getDestinationBalance(to);
         from && fromCurrency && getGas(from, fromCurrency, destination_address || "");
         setFieldValue(name, maxAllowedAmount);
         if (maxAllowedAmount)
@@ -66,7 +66,8 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     }, [from, fromCurrency, destination_address, maxAllowedAmount])
 
     useEffect(() => {
-        values.from && getBalance(values.from)
+        values.from && getBalance(values.from);
+        values.to && getDestinationBalance(values.to);
     }, [values.from, values.destination_address, wallet?.address])
     const contract_address = values?.from?.assets.find(a => a.asset === values?.fromCurrency?.asset)?.contract_address
 
@@ -109,7 +110,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
             {
                 from && to && fromCurrency ?
                     <div className="flex flex-col justify-center">
-                        <div className={`${walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ? "pt-2" : ""} text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 px-2`}>
+                        <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 px-2">
                             <div className="flex">
                                 <SecondaryButton disabled={!minAllowedAmount} onClick={handleSetMinAmount} size="xs">
                                     MIN
@@ -119,25 +120,10 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                                 </SecondaryButton>
                             </div>
                         </div>
-                        {
-                            walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) &&
-                            <div className="text-xs text-right">
-                                <div className='bg-secondary-700 py-1.5 px-2 text-xs'>
-                                    <div>
-                                        <span>Balance:&nbsp;</span>
-                                        {isBalanceLoading ?
-                                            <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                                            :
-                                            <span>{walletBalanceAmount}</span>}
-                                    </div>
-                                </div>
-                            </div>
-                        }
                     </div>
                     :
                     <></>
             }
-
         </div >
     </>)
 });

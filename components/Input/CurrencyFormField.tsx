@@ -26,7 +26,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const { resolveImgSrc } = useSettingsState();
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency'
     const query = useQueryState()
-    const { balances } = useBalancesState()
+    const { balances, isBalanceLoading } = useBalancesState()
     const lockedCurrency = query?.lockAsset ? from?.assets?.find(c => c?.asset?.toUpperCase() === (query?.asset)?.toUpperCase()) : undefined
     const assets = direction === 'from' ? from?.assets : to?.assets;
     const { getAutofillProvider: getProvider } = useWallet()
@@ -35,6 +35,10 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     }, [from, getProvider])
 
     const wallet = provider?.getConnectedWallet()
+    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
+    const destinationBalance = wallet && balances[wallet.address]?.find(b => b?.network === to?.internal_name && b?.token === toCurrency?.asset)
+    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
+    const destinationBalanceAmount = destinationBalance?.amount && truncateDecimals(destinationBalance?.amount, toCurrency?.precision)
 
     const apiClient = new LayerSwapApiClient()
     const version = LayerSwapApiClient.apiVersion
@@ -107,7 +111,39 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
 
-    return <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} direction={direction} />;
+    return (
+        <div className="relative">
+            {from && to && fromCurrency && toCurrency && direction === "from" &&
+                walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) &&
+                <div className="text-xs text-right absolute right-0 -top-6">
+                    <div className='bg-secondary-700 py-1.5 px-2 text-xs'>
+                        <div>
+                            <span>Balance:&nbsp;</span>
+                            {isBalanceLoading ?
+                                <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                :
+                                <span>{walletBalanceAmount}</span>}
+                        </div>
+                    </div>
+                </div>
+            }
+            {from && to && fromCurrency && toCurrency && direction === "to" &&
+                destinationBalanceAmount != undefined && !isNaN(destinationBalanceAmount) &&
+                <div className="text-xs text-right absolute right-0 -top-6">
+                    <div className='bg-secondary-700 py-1.5 px-2 text-xs'>
+                        <div>
+                            <span>Balance:&nbsp;</span>
+                            {isBalanceLoading ?
+                                <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                :
+                                <span>{destinationBalanceAmount}</span>}
+                        </div>
+                    </div>
+                </div>
+            }
+            <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} direction={direction} />
+        </div>
+    )
 };
 
 export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolveImgSrc: (item: Layer | NetworkCurrency) => string, routes?: { network: string, asset: string }[], lockedCurrency?: NetworkCurrency, from?: Layer, to?: Layer, direction?: string, balances?: Balance[]): SelectMenuItem<NetworkCurrency>[] {
@@ -128,7 +164,9 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
         const currency = c
         const displayName = lockedCurrency?.asset ?? currency.asset;
         const balance = balances?.find(b => b?.token === c?.asset && from?.internal_name === b.network)
+        const destinationBalance = balances?.find(b => b?.token === c?.asset && to?.internal_name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
+        const formatted_destBalance_amount = destinationBalance ? Number(truncateDecimals(destinationBalance?.amount, c.precision)) : ''
 
         const res: SelectMenuItem<NetworkCurrency> = {
             baseObject: c,
@@ -137,8 +175,10 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
             order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
             imgSrc: resolveImgSrc && resolveImgSrc(c),
             isAvailable: currencyIsAvailable(c),
-            details: `${formatted_balance_amount}`
+            details: `${formatted_balance_amount}`,
+            destDetails: `${formatted_destBalance_amount}`,
         };
+        console.log(res,"res")
         return res
     }).sort(SortingByOrder);
 }
