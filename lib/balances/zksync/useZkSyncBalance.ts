@@ -1,7 +1,6 @@
-import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../hooks/useBalance";
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
-import { createPublicClient, http } from 'viem';
+import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../Models/Balance";
 
 type Balances = {
     [currency: string]: string;
@@ -35,6 +34,8 @@ export default function useZkSyncBalance(): BalanceProvider {
         let balances: Balance[] = []
 
         if (layer.isExchange === true || !layer.assets) return
+
+        const { createPublicClient, http } = await import('viem');
         const provider = createPublicClient({
             transport: http(`${layer.nodes[0].url}jsrpc`)
         })
@@ -69,6 +70,7 @@ export default function useZkSyncBalance(): BalanceProvider {
         let gas: Gas[] = [];
         if (layer.isExchange === true || !layer.assets) return
 
+        const { createPublicClient, http } = await import('viem');
         const provider = createPublicClient({
             transport: http(`${layer.nodes[0].url}jsrpc`)
         })

@@ -1,10 +1,13 @@
-import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../hooks/useBalance";
+
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
-import { Connection, PublicKey } from "@solana/web3.js";
-import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
-import { getAssociatedTokenAddress } from '@solana/spl-token';
-import transactionBuilder from "../../wallets/solana/transactionBuilder";
+import {
+    Balance,
+    BalanceProps,
+    BalanceProvider,
+    Gas,
+    GasProps
+} from "../../../Models/Balance";
 
 export default function useSolanaBalance(): BalanceProvider {
     const name = 'solana'
@@ -12,10 +15,10 @@ export default function useSolanaBalance(): BalanceProvider {
         KnownInternalNames.Networks.SolanaMainnet
     ]
 
-    const { publicKey: walletPublicKey } = useSolanaWallet()
-
-    const getBalance = async ({ layer }: BalanceProps) => {
-
+    const getBalance = async ({ layer, address }: BalanceProps) => {
+        const { PublicKey, Connection } = await import("@solana/web3.js");
+        const { getAssociatedTokenAddress } = await import('@solana/spl-token');
+        const walletPublicKey = new PublicKey(address)
         let balances: Balance[] = []
 
         if (layer.isExchange === true || !layer.assets || !walletPublicKey) return
@@ -25,7 +28,7 @@ export default function useSolanaBalance(): BalanceProvider {
             "confirmed"
         );
 
-        async function getTokenBalanceWeb3(connection: Connection, tokenAccount) {
+        async function getTokenBalanceWeb3(connection: any, tokenAccount) {
             const info = await connection.getTokenAccountBalance(tokenAccount);
             if (!info.value.uiAmount) console.log('No balance found');
             return info.value.uiAmount;
@@ -58,7 +61,6 @@ export default function useSolanaBalance(): BalanceProvider {
                         balance
                     ]
                 }
-
             }
             catch (e) {
                 console.log(e)
@@ -68,7 +70,12 @@ export default function useSolanaBalance(): BalanceProvider {
         return balances
     }
 
-    const getGas = async ({ layer, currency }: GasProps) => {
+    const getGas = async ({ layer, currency, address }: GasProps) => {
+        if (!address)
+            return
+        const { PublicKey, Connection } = await import("@solana/web3.js");
+
+        const walletPublicKey = new PublicKey(address)
 
         let gas: Gas[] = [];
         if (layer.isExchange === true || !layer.assets) return
@@ -78,10 +85,11 @@ export default function useSolanaBalance(): BalanceProvider {
             "confirmed"
         );
 
-
         if (!walletPublicKey) return
 
         try {
+            const transactionBuilder = ((await import("../../wallets/solana/transactionBuilder")).default);
+
             const transaction = await transactionBuilder(layer, currency, walletPublicKey)
 
             if (!transaction) return

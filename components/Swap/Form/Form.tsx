@@ -28,25 +28,23 @@ import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
 import { useQueryState } from "../../../context/query";
 import FeeDetails from "../../DisclosureComponents/FeeDetails";
+import AmountField from "../../Input/Amount"
+import { Balance, Gas } from "../../../Models/Balance";
 import dynamic from "next/dynamic";
-import { Balance, Gas } from "../../../hooks/useBalance";
 
 type Props = {
     isPartnerWallet?: boolean,
     partner?: Partner,
 }
-const Address = dynamic(() => import("../../Input/Address"), {
-    loading: () => <></>
-})
-
-const AmountField = dynamic(() => import("../../Input/Amount"), {
-    loading: () => <></>
-})
-
 
 const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
-    loading: () => <></>
-})
+    loading: () => <></>,
+});
+
+const Address = dynamic(() => import("../../Input/Address"), {
+    loading: () => <></>,
+});
+
 
 const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const {
@@ -98,6 +96,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     useEffect(() => {
         setAddressConfirmed(false)
     }, [source])
+
+    useEffect(() => {
+        (async () => {
+            (await import("../../Input/Address")).default
+        })()
+    }, [destination])
 
     useEffect(() => {
         if (!destination?.isExchange && values.refuel && values.amount && Number(values.amount) < minAllowedAmount) {
@@ -264,7 +268,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                 <span className="font-normal"><span>{destination?.display_name}</span> <span>network congestion. Transactions can take up to 1 hour.</span></span>
                             </WarningMessage>
                         }
-                        <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                        {
+                            values.amount &&
+                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                        }
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
@@ -308,6 +315,9 @@ type AddressButtonProps = {
     disabled: boolean;
 }
 const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, partnerImage, disabled }) => {
+    useEffect(() => {
+        console.log("AddressButton mounted", Date.now())
+    }, [])
     const destination = values?.to
     return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text-placeholder bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full px-3.5 py-3">
         {isPartnerWallet && !destination?.isExchange &&

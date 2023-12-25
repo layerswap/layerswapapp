@@ -14,8 +14,8 @@ import { Chain, WagmiConfig, configureChains, createConfig } from "wagmi";
 import { NetworkType } from "../Models/CryptoNetwork";
 import resolveChain from "../lib/resolveChain";
 import React from "react";
-import NoCookies from "./NoCookies";
 import AddressIcon from "./AddressIcon";
+import NoCookies from "./NoCookies";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -24,13 +24,13 @@ type Props = {
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
 
-    try {
-        localStorage.getItem("ls-ls-test")
-    }
-    catch (e) {
-        return <NoCookies />
-    }
- 
+    // TODO implement local storage check with server side rendering
+    // try {
+    //     localStorage.getItem("ls-ls-test")
+    // }
+    // catch (e) {
+    //     return <NoCookies />
+    // }
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
     const settingsChains = settings?.networks
         .sort((a, b) => Number(a.chain_id) - Number(b.chain_id))
@@ -49,7 +49,7 @@ function RainbowKitComponent({ children }: Props) {
             groupName: 'Popular',
             wallets: [
                 metaMaskWallet({ projectId, chains }),
-                walletConnectWallet({ projectId, chains }),
+                // walletConnectWallet({ projectId, chains }),
             ],
         },
         {

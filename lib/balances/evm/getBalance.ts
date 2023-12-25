@@ -3,7 +3,7 @@ import { Layer, NetworkAsset } from "../../../Models/Layer"
 import formatAmount from "../../formatAmount"
 import { erc20ABI } from "wagmi"
 import { multicall, fetchBalance, FetchBalanceResult } from '@wagmi/core'
-import { Balance } from "../../../hooks/useBalance"
+import { Balance } from "../../../Models/Balance"
 
 export type ERC20ContractRes = ({
     error: Error;

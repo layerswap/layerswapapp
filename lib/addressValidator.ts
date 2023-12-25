@@ -1,8 +1,8 @@
 import { keccak256 } from "js-sha3";
 import KnownInternalNames from "./knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
-import { PublicKey } from '@solana/web3.js'
-import { Layer } from "../Models/Layer";
+// import { PublicKey } from '@solana/web3.js'
+// import { Layer } from "../Models/Layer";
 
 export function isValidAddress(address?: string, network?: {internal_name: string} | null): boolean {
     if (!address) {
@@ -33,15 +33,16 @@ export function isValidAddress(address?: string, network?: {internal_name: strin
         }
         return false
     }
-    else if (network?.internal_name === KnownInternalNames.Networks.SolanaMainnet || network?.internal_name === KnownInternalNames.Networks.SolanaTestnet || network?.internal_name === KnownInternalNames.Networks.SolanaDevnet) {
-        try {
-            let pubkey = new PublicKey(address)
-            let isSolana = PublicKey.isOnCurve(pubkey.toBuffer())
-            return isSolana
-        } catch (error) {
-            return false
-        }
-    }
+    //TODO lazy load or validate other way
+    // else if (network?.internal_name === KnownInternalNames.Networks.SolanaMainnet || network?.internal_name === KnownInternalNames.Networks.SolanaTestnet || network?.internal_name === KnownInternalNames.Networks.SolanaDevnet) {
+    //     try {
+    //         let pubkey = new PublicKey(address)
+    //         let isSolana = PublicKey.isOnCurve(pubkey.toBuffer())
+    //         return isSolana
+    //     } catch (error) {
+    //         return false
+    //     }
+    // }
     else if (network?.internal_name === KnownInternalNames.Networks.SorareStage) {
         if (/^(0x)?[0-9a-f]{64}$/.test(address) || /^(0x)?[0-9A-F]{64}$/.test(address) || /^(0x)?[0-9a-f]{66}$/.test(address) || /^(0x)?[0-9A-F]{66}$/.test(address)) {
             return true;

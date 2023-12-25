@@ -1,8 +1,10 @@
 import { BalancesStateUpdate } from "../../../context/balances"
 
 const MockFunctions: BalancesStateUpdate = {
-    getBalance: () => { throw new Error("Not implemented") },
-    getGas: () => { throw new Error("Not implemented") },
+    setAllBalances: () => { throw new Error("Not implemented") },
+    setAllGases: () => { throw new Error("Not implemented") },
+    setIsBalanceLoading: () => { throw new Error("Not implemented") },
+    setIsGasLoading: () => { throw new Error("Not implemented") },
 }
 
 export default MockFunctions

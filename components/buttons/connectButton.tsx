@@ -22,7 +22,6 @@ import OpenMask from "../icons/Wallets/OpenMask";
 import Phantom from "../icons/Wallets/Phantom";
 import Solflare from "../icons/Wallets/Solflare";
 import CoinbaseIcon from "../icons/Wallets/Coinbase";
-import GlowIcon from "../icons/Wallets/Glow";
 
 const ConnectButton = ({
     children,
