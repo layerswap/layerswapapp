@@ -134,7 +134,7 @@ export default function Form() {
 
     return <>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
-            <AnimatePresence exitBeforeEnter>
+            <AnimatePresence mode='wait'>
                 {
                     swap &&
                     !showSwapModal &&
