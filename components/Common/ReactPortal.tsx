@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 type Props = {
@@ -8,6 +8,8 @@ type Props = {
 
 const ReactPortal: FC<Props> = ({ children, wrapperId = "react-portal-wrapper" }) => {
     const ref = useRef<Element | null>(null);
+    const [mounted, setMounted] = useState(false)
+
     useEffect(() => {
         let element = document.getElementById(wrapperId);
         if (!element) {
@@ -16,9 +18,10 @@ const ReactPortal: FC<Props> = ({ children, wrapperId = "react-portal-wrapper" }
             document.body.appendChild(element);
         }
         ref.current = element
+        setMounted(true)
     }, [wrapperId]);
 
-    return ref.current ? createPortal(children, ref.current) : null;
+    return ref.current && mounted ? createPortal(children, ref.current) : null;
 };
 
 export default ReactPortal

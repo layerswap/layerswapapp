@@ -315,9 +315,6 @@ type AddressButtonProps = {
     disabled: boolean;
 }
 const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, partnerImage, disabled }) => {
-    useEffect(() => {
-        console.log("AddressButton mounted", Date.now())
-    }, [])
     const destination = values?.to
     return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text-placeholder bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full px-3.5 py-3">
         {isPartnerWallet && !destination?.isExchange &&
