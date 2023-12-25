@@ -10,7 +10,6 @@ import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import ErrorFallback from "./ErrorFallback";
 import { SendErrorMessage } from "../lib/telegram";
-import dynamic from 'next/dynamic'
 import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
 import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
@@ -19,9 +18,8 @@ import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
 import * as Sentry from "@sentry/nextjs";
-import LoadingCard from "./LoadingCard";
-import DynamicRainbowKit from "./RainbowKit";
-import DynamicSolana from "./SolanaProvider";
+import RainbowKit from "./RainbowKit";
+import Solana from "./SolanaProvider";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -57,7 +55,7 @@ export default function Layout({ children, settings, themeData }: Props) {
       ])
     })
   }, [])
-  
+
   if (!settings)
     return <ThemeWrapper>
       <MaintananceContent />
@@ -147,13 +145,13 @@ export default function Layout({ children, settings, themeData }: Props) {
             <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
               <ThemeWrapper>
                 <TonConnectProvider basePath={basePath} themeData={themeData}>
-                  <DynamicRainbowKit>
-                    <DynamicSolana>
+                  <RainbowKit>
+                    <Solana>
                       {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
                         <MaintananceContent />
                         : children}
-                    </DynamicSolana>
-                  </DynamicRainbowKit>
+                    </Solana>
+                  </RainbowKit>
                 </TonConnectProvider>
               </ThemeWrapper>
             </ErrorBoundary>
