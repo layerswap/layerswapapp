@@ -28,7 +28,7 @@ const DetailedEstimates: FC<EstimatesProps> = ({
     const parsedFee = fee && parseFloat(Number(fee.walletFee).toFixed(fromCurrency?.precision))
     const currencyName = fromCurrency?.asset || " "
 
-    return <div className="flex justify-between w-full items-center divide-x divide-secondary-800">
+    return <div className="flex justify-between w-full items-center">
         <div className="flex flex-row items-baseline justify-between gap-1 pr-1">
             <label className="inline-flex items-center text-left text-primary-text-placeholder">
                 Fee

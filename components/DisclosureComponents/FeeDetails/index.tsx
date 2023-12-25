@@ -33,14 +33,16 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                     </FeeDetails.Item>
                 }
 
-                <FeeDetails.Item>
-                    <DetailedEstimates
-                        networks={layers}
-                        selected_currency={currency}
-                        source={from}
-                        destination={to}
-                    />
-                </FeeDetails.Item>
+                {from && to &&
+                    <FeeDetails.Item>
+                        <DetailedEstimates
+                            networks={layers}
+                            selected_currency={currency}
+                            source={from}
+                            destination={to}
+                        />
+                    </FeeDetails.Item>
+                }
 
                 <FeeDetails.Item>
                     <ReceiveAmounts

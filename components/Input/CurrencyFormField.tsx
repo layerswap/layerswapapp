@@ -5,7 +5,7 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import CurrencySettings from "../../lib/CurrencySettings";
-import { SortingByOrder } from "../../lib/sorting";
+import { SortingByAvailability } from "../../lib/sorting";
 import { Layer } from "../../Models/Layer";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
@@ -138,9 +138,9 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
         if (lockedCurrency) {
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
-        // else if (from && to && routes?.some(r => r.asset !== currency.asset && r.network !== (direction === 'from' ? from.internal_name : to.internal_name))) {
-        //     return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
-        // }
+        else if (from && to && !routes?.filter(r => r.network === (direction === 'from' ? from.internal_name : to.internal_name)).some(r => r.asset === currency.asset)) {
+            return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
+        }
         else {
             return { value: true, disabledReason: null }
         }
@@ -167,7 +167,7 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
         };
 
         return res
-    }).sort(SortingByOrder);
+    }).sort(SortingByAvailability);
 }
 
 export enum CurrencyDisabledReason {

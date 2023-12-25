@@ -23,6 +23,7 @@ type SwapDirection = "from" | "to";
 type Props = {
     direction: SwapDirection,
     label: string,
+    className?:string,
 }
 const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10 };
 const getGroupName = (value: Layer | Exchange, type: 'cex' | 'layer') => {
@@ -45,7 +46,7 @@ const getGroupName = (value: Layer | Exchange, type: 'cex' | 'layer') => {
     }
 }
 
-const NetworkFormField = forwardRef(function NetworkFormField({ direction, label }: Props, ref: any) {
+const NetworkFormField = forwardRef(function NetworkFormField({ direction, label, className }: Props, ref: any) {
     const {
         values,
         setFieldValue,
@@ -118,7 +119,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         }
     }, [name])
 
-    return (<div className="rounded-xl p-3 bg-secondary-700">
+    return (<div className={`p-3 bg-secondary-700 ${className}`}>
         <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
             {label}
         </label>

@@ -1,7 +1,7 @@
 import { ReactNode } from "react"
 
 const FeeDetails = ({ children }: { children: ReactNode }) => {
-    return <div className="flex flex-col divide-y divide-secondary-500 rounded-md bg-secondary-700 overflow-hidden text-sm">
+    return <div className="flex flex-col divide-y-2 divide-secondary-900 rounded-md bg-secondary-700 overflow-hidden text-sm">
         {children}
     </div>
 }

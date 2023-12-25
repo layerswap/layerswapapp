@@ -9,15 +9,12 @@ import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
 import Modal from "../../modal/modal";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
-import { useSettingsState } from "../../../context/settings";
 import { isValidAddress } from "../../../lib/addressValidator";
 import shortenAddress from "../../utils/ShortenAddress";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
-import ClickTooltip from "../../Tooltips/ClickTooltip";
-import ToggleButton from "../../buttons/toggleButton";
-import { ArrowUpDown, Fuel, Loader2 } from 'lucide-react'
+import { ArrowUpDown, Loader2 } from 'lucide-react'
 import { useAuthState } from "../../../context/authContext";
 import WarningMessage from "../../WarningMessage";
 import { GetDefaultAsset } from "../../../helpers/settingsHelper";
@@ -27,13 +24,12 @@ import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
 import { useQueryState } from "../../../context/query";
 import FeeDetailsComponent from "../../DisclosureComponents/FeeDetails";
-import dynamic from "next/dynamic";
 import { useFee } from "../../../context/feeContext";
 import { Balance, Gas } from "../../../hooks/useBalance";
 import AmountField from "../../Input/Amount"
 import Address from "../../Input/Address"
 import ReserveGasNote from "../../ReserveGasNote"
-import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
+
 type Props = {
     isPartnerWallet?: boolean,
     partner?: Partner,
@@ -164,25 +160,30 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         <Widget className="sm:min-h-[504px]">
             <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
                 <Widget.Content>
-                    <div className='flex-col relative flex justify-between w-full space-y-4 mb-3.5 leading-4'>
+                    <div className='flex-col relative flex justify-between w-full space-y-0.5 mb-3.5 leading-4'>
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="from" label="From" />
+                            <NetworkFormField direction="from" label="From" className="rounded-t-xl pb-6" />
                         </div>}
-                        {!query?.hideFrom && !query?.hideTo && <button type="button" disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || !!fromExchange || !!toExchange} onClick={valuesSwapper} className={`${sourceLoading || destinationLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[74px] z-10 border-4 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
-                            <motion.div
-                                animate={animate}
-                                transition={{ duration: 0.3 }}
-                                onTap={() => !valuesSwapperDisabled && cycle()}
-                            >
-                                {sourceLoading || destinationLoading ?
-                                    <Loader2 className="opacity-50 w-8 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30 animate-spin" />
-                                    :
-                                    <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-8 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />
-                                }
-                            </motion.div>
-                        </button>}
+                        {!query?.hideFrom && !query?.hideTo &&
+                            <button
+                                type="button"
+                                disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || !!fromExchange || !!toExchange}
+                                onClick={valuesSwapper}
+                                className={`${sourceLoading || destinationLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[89px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
+                                <motion.div
+                                    animate={animate}
+                                    transition={{ duration: 0.3 }}
+                                    onTap={() => !valuesSwapperDisabled && cycle()}
+                                >
+                                    {sourceLoading || destinationLoading ?
+                                        <Loader2 className="opacity-50 w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30 animate-spin" />
+                                        :
+                                        <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />
+                                    }
+                                </motion.div>
+                            </button>}
                         {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="to" label="To" />
+                            <NetworkFormField direction="to" label="To" className="rounded-b-xl pt-2" />
                         </div>}
                     </div>
                     <div className="mb-6 leading-4">

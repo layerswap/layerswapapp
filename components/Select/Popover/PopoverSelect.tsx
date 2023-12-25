@@ -3,7 +3,6 @@ import { CommandItem, CommandList, CommandWrapper } from '../../shadcn/command';
 import SelectItem from '../Shared/SelectItem';
 
 export default function PopoverSelect({ values, value, setValue, direction }: SelectProps) {
-
     return (
         <CommandWrapper>
             <CommandList>
