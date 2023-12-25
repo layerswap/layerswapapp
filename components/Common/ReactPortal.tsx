@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 type Props = {
@@ -7,20 +7,18 @@ type Props = {
 }
 
 const ReactPortal: FC<Props> = ({ children, wrapperId = "react-portal-wrapper" }) => {
-    let element = document.getElementById(wrapperId);
-    // if element is not found with wrapperId,
-    // create and append to body
-    if (!element) {
-        element = createWrapperAndAppendToBody(wrapperId);
-    }
-    return createPortal(children, element);
-}
+    const ref = useRef<Element | null>(null);
+    useEffect(() => {
+        let element = document.getElementById(wrapperId);
+        if (!element) {
+            element = document.createElement('div');
+            element.setAttribute("id", wrapperId);
+            document.body.appendChild(element);
+        }
+        ref.current = element
+    }, [wrapperId]);
 
-function createWrapperAndAppendToBody(wrapperId) {
-    const wrapperElement = document.createElement('div');
-    wrapperElement.setAttribute("id", wrapperId);
-    document.body.appendChild(wrapperElement);
-    return wrapperElement;
-}
+    return ref.current ? createPortal(children, ref.current) : null;
+};
 
 export default ReactPortal

@@ -58,7 +58,7 @@ export default function Layout({ children, settings, themeData }: Props) {
       ])
     })
   }, [])
-
+  
   if (!settings)
     return <ThemeWrapper>
       <MaintananceContent />
@@ -110,8 +110,6 @@ export default function Layout({ children, settings, themeData }: Props) {
   themeData = themeData || THEME_COLORS.default
 
   const basePath = router?.basePath ?? ""
-
-
 
   return (<>
     <Head>
