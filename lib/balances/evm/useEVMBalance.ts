@@ -1,11 +1,7 @@
-import { createPublicClient, http } from "viem"
-import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../hooks/useBalance"
-import resolveChain from "../../resolveChain"
 import { useSettingsState } from "../../../context/settings"
+import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../Models/Balance"
 import { NetworkType } from "../../../Models/CryptoNetwork"
 import NetworkSettings, { GasCalculation } from "../../NetworkSettings"
-import { getErc20Balances, getNativeBalance, resolveERC20Balances, resolveNativeBalance } from "./getBalance"
-import getEthereumGas from "./ethereum/getGas"
 
 export default function useEVMBalance(): BalanceProvider {
     const name = 'eth'
@@ -16,18 +12,28 @@ export default function useEVMBalance(): BalanceProvider {
     const getBalance = async ({ layer, address }: BalanceProps) => {
 
         try {
+
             if (layer.isExchange) throw new Error('Provided layer is not network')
 
             const source_assets = layer.assets
             const source_network = source_assets?.[0].network
-
+            const resolveChain = (await import("../../resolveChain")).default
             const chain = resolveChain(source_network!)
             if (!chain) return
 
+            const { createPublicClient, http } = await import("viem")
             const publicClient = createPublicClient({
                 chain,
                 transport: http()
             })
+
+            const {
+                getErc20Balances,
+                getNativeBalance,
+                resolveERC20Balances,
+                resolveNativeBalance
+            } = await import("./getBalance")
+
             const erc20BalancesContractRes = await getErc20Balances({
                 address: address,
                 chainId: Number(layer?.chain_id),
@@ -74,11 +80,15 @@ export default function useEVMBalance(): BalanceProvider {
         const destination_address = layer?.assets?.find(c => c.asset.toLowerCase() === currency?.asset?.toLowerCase())?.network?.managed_accounts?.[0]?.address as `0x${string}`
 
         try {
+
+            const { createPublicClient, http } = await import("viem")
+            const resolveChain = (await import("../../resolveChain")).default
             const publicClient = createPublicClient({
                 chain: resolveChain(network),
                 transport: http(),
             })
 
+            const getEthereumGas = (await import("./ethereum/getGas")).default
             const gasProvider = new getEthereumGas(
                 publicClient,
                 chainId,

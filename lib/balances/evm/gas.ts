@@ -2,7 +2,7 @@ import { PublicClient, encodeFunctionData } from "viem";
 import { erc20ABI } from "wagmi";
 import { Layer, NetworkAsset } from "../../../Models/Layer";
 import { Currency } from "../../../Models/Currency";
-import { Gas } from "../../../hooks/useBalance";
+import { Gas } from "../../../Models/Balance";
 
 export default abstract class getEVMGas {
 

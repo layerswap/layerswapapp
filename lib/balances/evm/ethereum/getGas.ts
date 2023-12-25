@@ -1,7 +1,7 @@
 import { formatGwei } from "viem";
-import { Gas } from "../../../../hooks/useBalance";
 import formatAmount from "../../../formatAmount";
 import getEVMGas from "../gas";
+import { Gas } from "../../../../Models/Balance";
 
 export default class getEthereumGas extends getEVMGas {
     resolveGas = async (): Promise<Gas | undefined> => {

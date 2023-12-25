@@ -12,7 +12,7 @@ import NumericInput from '../../../Input/NumericInput';
 import MessageComponent from '../../../MessageComponent';
 import Modal from '../../../modal/modal';
 import TimerWithContext from '../../../TimerComponent';
-import Widget from '../../../Wizard/Widget';
+import { Widget } from '../../../Widget/Index';
 
 const TIMER_SECONDS = 120
 
@@ -38,7 +38,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
     const formikRef = useRef<FormikProps<CodeFormValues>>(null);
 
     const handleSubmit = useCallback(async (values: CodeFormValues) => {
-        if (!swap|| !swap.source_exchange)
+        if (!swap || !swap.source_exchange)
             return
         setLoading(true)
         try {

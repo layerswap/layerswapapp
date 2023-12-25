@@ -3,7 +3,6 @@ import resolveChain from '../lib/resolveChain';
 import { createPublicClient, http } from 'viem';
 import { CryptoNetwork, NetworkType } from '../Models/CryptoNetwork';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import KnownInternalNames from '../lib/knownIds';
 
 interface WalletState {
     contractWallets: ContractWallet[];

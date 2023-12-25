@@ -4,7 +4,7 @@ import ReactPortal from "../Common/ReactPortal";
 
 
 const variants = {
-    enter: ({ direction, width }) => {
+    enter: () => {
         return ({
             opacity: 0,
             y: '100%',
@@ -16,7 +16,7 @@ const variants = {
             y: 0,
         })
     },
-    exit: ({ direction, width }) => {
+    exit: () => {
         return ({
             y: '100%',
             zIndex: 0,

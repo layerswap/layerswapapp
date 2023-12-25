@@ -22,7 +22,7 @@ export interface LeafletProps {
 export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, description, position }, topmostRef) {
     const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
-    const transitionProps = { type: "spring", stiffness: 500, damping: 33 };
+    const transitionProps = { type: "spring", stiffness: 500, damping: 40 };
 
     async function handleDragEnd(_, info) {
         const offset = info.offset.y;
@@ -96,11 +96,10 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                         }>
                         </IconButton>
                     </div>
-                    <div className={`select-text max-h-full overflow-y-auto styled-scroll px-6 h-full`}>
+                    <div className='select-text max-h-full overflow-y-auto styled-scroll px-6 h-full'>
                         {children}
                     </div>
                 </div>
-
             </motion.div>
         </div>
     )

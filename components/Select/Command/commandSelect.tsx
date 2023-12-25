@@ -13,6 +13,7 @@ import SelectItem from '../Shared/SelectItem';
 import { SelectProps } from '../Shared/Props/SelectProps'
 import Modal from '../../modal/modal';
 import { Info } from 'lucide-react';
+import { LayerDisabledReason } from '../Popover/PopoverSelect';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
@@ -37,31 +38,29 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
         <Modal height='full' show={show} setShow={setShow}>
             {show ?
                 <CommandWrapper>
-                    {show ? <>
-                        <CommandInput autoFocus={isDesktop} placeholder={searchHint} />
-                        {
-                            !values.some(v => v.isAvailable.value === true) &&
-                            <div className='text-xs text-left text-secondary-text mb-2'>
-                                <Info className='h-3 w-3 inline-block mb-0.5' /><span>&nbsp;You&apos;re accessing Layerswap from a partner&apos;s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.</span>
-                            </div>
-                        }
-                        <CommandList>
-                            <CommandEmpty>No results found.</CommandEmpty>
-                            {groups.filter(g => g.items?.length > 0).map((group) => {
-                                return (
-                                    <CommandGroup key={group.name} heading={group.name}>
-                                        {group.items.map(item =>
-                                            <CommandItem disabled={!item.isAvailable.value} value={item.name} key={item.id} onSelect={() => {
-                                                setValue(item)
-                                                setShow(false)
-                                            }}>
-                                                <SelectItem item={item} />
-                                            </CommandItem>)
-                                        }
-                                    </CommandGroup>)
-                            })}
-                        </CommandList>
-                    </> : <></>}
+                    <CommandInput autoFocus={isDesktop} placeholder={searchHint} />
+                    {
+                        values.some(v => v.isAvailable.value === false && v.isAvailable.disabledReason === LayerDisabledReason.LockNetworkIsTrue) &&
+                        <div className='text-xs text-left text-secondary-text mb-2'>
+                            <Info className='h-3 w-3 inline-block mb-0.5' /><span>&nbsp;You&apos;re accessing Layerswap from a partner&apos;s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.</span>
+                        </div>
+                    }
+                    <CommandList>
+                        <CommandEmpty>No results found.</CommandEmpty>
+                        {groups.filter(g => g.items?.length > 0).map((group) => {
+                            return (
+                                <CommandGroup key={group.name} heading={group.name}>
+                                    {group.items.map(item =>
+                                        <CommandItem disabled={!item.isAvailable.value} value={item.name} key={item.id} onSelect={() => {
+                                            setValue(item)
+                                            setShow(false)
+                                        }}>
+                                            <SelectItem item={item} />
+                                        </CommandItem>)
+                                    }
+                                </CommandGroup>)
+                        })}
+                    </CommandList>
                 </CommandWrapper>
                 : <></>
             }
