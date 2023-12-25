@@ -116,7 +116,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
             {from && to && fromCurrency && toCurrency && direction === "from" &&
                 walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) &&
                 <div className="text-xs text-right absolute right-0 -top-6">
-                    <div className='bg-secondary-700 py-1.5 px-2 text-xs'>
+                    <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
                         <div>
                             <span>Balance:&nbsp;</span>
                             {isBalanceLoading ?
@@ -130,7 +130,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
             {from && to && fromCurrency && toCurrency && direction === "to" &&
                 destinationBalanceAmount != undefined && !isNaN(destinationBalanceAmount) &&
                 <div className="text-xs text-right absolute right-0 -top-6">
-                    <div className='bg-secondary-700 py-1.5 px-2 text-xs'>
+                    <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
                         <div>
                             <span>Balance:&nbsp;</span>
                             {isBalanceLoading ?
@@ -178,7 +178,7 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
             details: `${formatted_balance_amount}`,
             destDetails: `${formatted_destBalance_amount}`,
         };
-        console.log(res,"res")
+        
         return res
     }).sort(SortingByOrder);
 }

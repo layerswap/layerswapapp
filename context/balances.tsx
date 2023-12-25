@@ -65,7 +65,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
     async function getDestinationBalance(to: Layer) {
         const provider = getAutofillProvider(to)
         const wallet = provider?.getConnectedWallet()
-        console.log(wallet,"wallet2")
+        
         const balance = allBalances[wallet?.address || '']?.find(b => b?.network === to?.internal_name)
         const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
         const destination_network = to
