@@ -121,8 +121,6 @@ const Withdraw: FC = () => {
         activeTab && setWithdrawType(activeTab.id)
     }, [activeTab])
 
-    const { isModalOpen } = useComponentsConfigs()
-
     return (
         <>
             <Widget.Content>
@@ -161,7 +159,7 @@ const Withdraw: FC = () => {
             </Widget.Content>
             {
                 activeTab?.footer &&
-                <Widget.Footer sticky={isModalOpen ? false : true}>
+                <Widget.Footer>
                     {activeTab?.footer}
                 </Widget.Footer>
             }
