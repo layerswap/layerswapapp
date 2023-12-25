@@ -3,12 +3,12 @@ import { CommandItem, CommandList, CommandWrapper } from '../../shadcn/command';
 import SelectItem from '../Shared/SelectItem';
 
 export default function PopoverSelect({ values, value, setValue, direction }: SelectProps) {
-
+    console.log(values,"values")
     return (
         <CommandWrapper>
             <CommandList>
                 {values.map(item =>
-                    <CommandItem disabled={!item.isAvailable.value} value={item.id} key={item.id} onSelect={() => {
+                    <CommandItem className={`${item.isAvailable.value && !item.isAvailable.disabledReason ? "border-b border-gray-300" : ""}`} disabled={!item.isAvailable.value} value={item.id} key={item.id} onSelect={() => {
                         setValue(item)
                     }}>
                         <SelectItem item={item} direction={direction} />

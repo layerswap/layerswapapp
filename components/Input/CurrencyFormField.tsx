@@ -5,7 +5,7 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import CurrencySettings from "../../lib/CurrencySettings";
-import { SortingByOrder } from "../../lib/sorting";
+import { SortingByAvailability } from "../../lib/sorting";
 import { Layer } from "../../Models/Layer";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
@@ -37,12 +37,10 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const wallet = provider?.getConnectedWallet()
     const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
     const destinationBalance = wallet && balances[wallet.address]?.find(b => b?.network === to?.internal_name && b?.token === toCurrency?.asset)
-    
+
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
     const destinationBalanceAmount = destinationBalance?.amount && truncateDecimals(destinationBalance?.amount, toCurrency?.precision)
-console.log(balances, "balances")
-console.log(from, "from")
-console.log(to, "to")
+
     const apiClient = new LayerSwapApiClient()
     const version = LayerSwapApiClient.apiVersion
 
@@ -155,9 +153,9 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
         if (lockedCurrency) {
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
-        // else if (from && to && routes?.some(r => r.asset !== currency.asset && r.network !== (direction === 'from' ? from.internal_name : to.internal_name))) {
-        //     return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
-        // }
+        else if (from && to && !routes?.filter(r => r.network === (direction === 'from' ? from.internal_name : to.internal_name)).some(r => r.asset === currency.asset)) {
+            return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
+        }
         else {
             return { value: true, disabledReason: null }
         }
@@ -181,9 +179,9 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
             details: `${formatted_balance_amount}`,
             destDetails: `${formatted_destBalance_amount}`,
         };
-        
+
         return res
-    }).sort(SortingByOrder);
+    }).sort(SortingByAvailability);
 }
 
 export enum CurrencyDisabledReason {
