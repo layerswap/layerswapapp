@@ -21,7 +21,6 @@ import { NetworkType } from '../../../Models/CryptoNetwork';
 import useWallet from '../../../hooks/useWallet';
 import { useQueryState } from '../../../context/query';
 import { Widget } from '../../Widget/Index';
-import { useComponentsConfigs } from '../../../stores/componentsConfigs';
 
 const Withdraw: FC = () => {
     const { swap } = useSwapDataState()
