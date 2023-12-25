@@ -94,13 +94,17 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     precision={fromCurrency?.precision}
                     onFocus={() => setIsAmountVisible(false)}
                     onBlur={() => setIsAmountVisible(true)}
-                    className={`${!isAmountVisible || !amountRef.current.value ? "text-xl" : ""} rounded-r-none text-primary-text pr-0`}
+                    className="rounded-r-none text-primary-text pr-0 w-full"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value));
                     }}
                 >
-
+                    {requestedAmountInUsd && isAmountVisible ? (
+                        <span className="absolute mr-2 text-xs right-0 bottom-[18px]">
+                            (${requestedAmountInUsd})
+                        </span>
+                    ) : null}
                 </NumericInput>
             </div>
             {
@@ -108,11 +112,6 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     <div className="flex flex-col justify-center">
                         <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 px-2">
                             <div className="flex">
-                                {requestedAmountInUsd && isAmountVisible ? (
-                                    <span className="mr-2 text-xs flex items-center w-full">
-                                        (${requestedAmountInUsd})
-                                    </span>
-                                ) : null}
                                 <SecondaryButton disabled={!minAllowedAmount} onClick={handleSetMinAmount} size="xs">
                                     MIN
                                 </SecondaryButton>
