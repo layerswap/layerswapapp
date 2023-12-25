@@ -17,9 +17,9 @@ export default function SelectItem({ item, direction }: { item: ISelectMenuItem,
                 {item.name}
             </p>
             {
-                item.details && direction == 'from' &&
+                item.details && 
                 <p className="text-primary-text-muted">
-                    {item.details}
+                    {direction == "from" ? item.details : item.destDetails}
                 </p>
             }
         </div>
