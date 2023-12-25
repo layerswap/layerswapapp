@@ -24,13 +24,6 @@ type Props = {
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
 
-    // TODO implement local storage check with server side rendering
-    // try {
-    //     localStorage.getItem("ls-ls-test")
-    // }
-    // catch (e) {
-    //     return <NoCookies />
-    // }
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
     const settingsChains = settings?.networks
         .sort((a, b) => Number(a.chain_id) - Number(b.chain_id))
