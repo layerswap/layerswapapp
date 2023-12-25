@@ -8,7 +8,6 @@ import { AuthProvider } from "../context/authContext";
 import { SettingsProvider } from "../context/settings";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
-import { MenuProvider } from "../context/menu";
 import ErrorFallback from "./ErrorFallback";
 import { SendErrorMessage } from "../lib/telegram";
 import dynamic from 'next/dynamic'
@@ -143,25 +142,23 @@ export default function Layout({ children, settings, themeData }: Props) {
     }
     <QueryProvider query={query}>
       <SettingsProvider data={appSettings}>
-        <MenuProvider>
-          <AuthProvider>
-            <TooltipProvider delayDuration={500}>
-              <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
-                <ThemeWrapper>
-                  <TonConnectProvider basePath={basePath} themeData={themeData}>
-                    <DynamicRainbowKit>
-                      <DynamicSolana>
-                        {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                          <MaintananceContent />
-                          : children}
-                      </DynamicSolana>
-                    </DynamicRainbowKit>
-                  </TonConnectProvider>
-                </ThemeWrapper>
-              </ErrorBoundary>
-            </TooltipProvider>
-          </AuthProvider>
-        </MenuProvider>
+        <AuthProvider>
+          <TooltipProvider delayDuration={500}>
+            <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+              <ThemeWrapper>
+                <TonConnectProvider basePath={basePath} themeData={themeData}>
+                  <DynamicRainbowKit>
+                    <DynamicSolana>
+                      {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                        <MaintananceContent />
+                        : children}
+                    </DynamicSolana>
+                  </DynamicRainbowKit>
+                </TonConnectProvider>
+              </ThemeWrapper>
+            </ErrorBoundary>
+          </TooltipProvider>
+        </AuthProvider>
       </SettingsProvider >
     </QueryProvider>
   </>)

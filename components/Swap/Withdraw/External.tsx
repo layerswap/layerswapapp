@@ -1,5 +1,5 @@
 import { FC } from 'react'
-import Widget from '../../Wizard/Widget';
+import { Widget } from '../../Widget/Index';
 
 
 const External: FC = () => {
