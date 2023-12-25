@@ -63,7 +63,7 @@ const ConnectButton = ({
     );
     return isMobile ? (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger>{children}</DialogTrigger>
+            <DialogTrigger aria-label="Connect wallet">{children}</DialogTrigger>
             <DialogContent className="sm:max-w-[425px] text-primary-text">
                 <DialogHeader>
                     <DialogTitle className="text-center">
@@ -101,6 +101,7 @@ const ConnectButton = ({
     ) : (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger
+                aria-label="Connect wallet"
                 disabled={filteredConnectors.length == 0}
                 className={`${className} disabled:opacity-50 disabled:cursor-not-allowed `}
             >
