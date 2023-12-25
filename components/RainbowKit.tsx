@@ -42,7 +42,7 @@ function RainbowKitComponent({ children }: Props) {
             groupName: 'Popular',
             wallets: [
                 metaMaskWallet({ projectId, chains }),
-                // walletConnectWallet({ projectId, chains }),
+                walletConnectWallet({ projectId, chains }),
             ],
         },
         {
