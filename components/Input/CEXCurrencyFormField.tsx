@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback } from "react";
+import { FC, useCallback, useEffect } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
@@ -59,6 +59,11 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const value = currencyMenuItems?.find(x => x.id == currencyGroup?.name);
 
+    useEffect(() => {
+        if (value) return
+        setFieldValue(name, currencyMenuItems[0])
+    }, [])
+
     const handleSelect = useCallback((item: SelectMenuItem<AssetGroup>) => {
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
@@ -81,6 +86,8 @@ export function GenerateCurrencyMenuItems(currencies: AssetGroup[], resolveImgSr
         }
     }
 
+    const storageUrl = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
+
     return currencies?.map(c => {
         const currency = c
         const displayName = lockedCurrency?.name ?? currency.name;
@@ -90,7 +97,7 @@ export function GenerateCurrencyMenuItems(currencies: AssetGroup[], resolveImgSr
             id: c.name,
             name: displayName || "-",
             order: CurrencySettings.KnownSettings[c.name]?.Order ?? 5,
-            imgSrc: resolveImgSrc(undefined),
+            imgSrc: `${storageUrl}layerswap/currencies/${c.name.toLowerCase()}.png`,
             isAvailable: currencyIsAvailable(),
             type: 'currency'
         };
