@@ -21,7 +21,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     } = useFormikContext<SwapFormValues>();
     const name = direction
 
-    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange } = values
+    const { from, to, fromCurrency, toCurrency } = values
     const { layers, resolveImgSrc } = useSettingsState();
 
     const filterWith = direction === "from" ? to : from
@@ -68,13 +68,13 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     if (!menuItems) return
 
-    return (<div className="rounded-lg border border-secondary-500 flex justify-between items-center px-4 py-3 bg-secondary-700">
-        <label htmlFor={name} className="block font-semibold text-secondary-text text-sm">
+    return (<div className=" flex justify-between items-center w-full">
+        <label htmlFor={name} className="block text-secondary-text">
             {direction === 'from' ? 'Transfer via' : 'Receive in'}
         </label>
-        <div ref={ref} >
+        <div className="w-fit" ref={ref} >
             <Select value={value?.id} onValueChange={(v) => handleSelect(menuItems.find(m => m.id === v)!)}>
-                <SelectTrigger className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
+                <SelectTrigger className="w-full border-none !text-primary-text !h-fit !p-0">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -87,9 +87,9 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
                                 return (
                                     <SelectItem key={index} value={route.id}>
-                                        <div className="flex justify-between w-[200px]">
+                                        <div className="flex justify-between gap-1">
                                             <div className="inline-flex items-center gap-1 w-full">
-                                                <div className="flex-shrink-0 h-6 w-6 relative">
+                                                <div className="flex-shrink-0 h-5 w-5 relative">
                                                     <Image
                                                         src={resolveImgSrc(network)}
                                                         alt="Network Logo"
@@ -101,7 +101,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                                                 <p>{network?.display_name}</p>
                                             </div>
                                             <div className="inline-flex items-center gap-1">
-                                                <div className="flex-shrink-0 h-6 w-6 relative">
+                                                <div className="flex-shrink-0 h-5 w-5 relative">
                                                     <Image
                                                         src={resolveImgSrc(currency)}
                                                         alt="Token Logo"

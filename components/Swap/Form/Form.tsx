@@ -26,7 +26,7 @@ import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
 import { useQueryState } from "../../../context/query";
-import FeeDetails from "../../DisclosureComponents/FeeDetails";
+import FeeDetailsComponent from "../../DisclosureComponents/FeeDetails";
 import dynamic from "next/dynamic";
 import { useFee } from "../../../context/feeContext";
 import { Balance, Gas } from "../../../hooks/useBalance";
@@ -147,8 +147,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         valuesSwapperDisabled = true;
     }
 
-    const destination_native_currency = destination?.assets.find(c => c.is_native)?.asset
-
     const averageTimeInMinutes = fee?.avgCompletionTime?.total_minutes || 0
 
     const hideAddress = query?.hideAddress
@@ -193,7 +191,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                     {
                         !hideAddress ?
                             <div className="w-full mb-3.5 leading-4">
-                                <label htmlFor="destination_address" className="block font-semibold text-secondary-text text-sm">
+                                <label htmlFor="destination_address" className="block font-semibold text-secondary-text text-xs">
                                     {`To ${values?.to?.display_name || ''} address`}
                                 </label>
                                 <AddressButton
@@ -222,31 +220,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                             : <></>
                     }
                     <div className="w-full">
-                        {
-                            destination && toAsset && GetDefaultAsset(destination, toAsset)?.is_refuel_enabled && !query?.hideRefuel &&
-                            <div className="flex items-center justify-between px-3.5 py-3 bg-secondary-700 border border-secondary-500 rounded-lg mb-4">
-                                <div className="flex items-center space-x-2">
-                                    <Fuel className='h-8 w-8 text-primary' />
-                                    <div>
-                                        <p className="font-medium flex items-center">
-                                            <span>Need gas?</span>
-                                            <ClickTooltip text={`You will get a small amount of ${destination_native_currency} that you can use to pay for gas fees.`} />
-                                        </p>
-                                        <p className="font-light text-xs">
-                                            <span>Get&nbsp;</span><span className="font-semibold">{destination_native_currency}</span><span>&nbsp;to pay fees in&nbsp;</span><span>{values.to?.display_name}</span>
-                                        </p>
-                                    </div>
-                                </div>
-                                <ToggleButton name="refuel" value={!!values?.refuel} onChange={handleConfirmToggleChange} />
-                            </div>
-                        }
-                        {
-                            ((fromExchange || toExchange) && (source || destination)) &&
-                            <div className="mb-4">
-                                <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
-                            </div>
-                        }
-                        <FeeDetails values={values} />
+                        <FeeDetailsComponent values={values} />
                         {
                             //TODO refactor
                             destination && toAsset && GetDefaultAsset(destination, toAsset)?.status == 'insufficient_liquidity' &&

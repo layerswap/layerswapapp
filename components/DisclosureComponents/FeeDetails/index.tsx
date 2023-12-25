@@ -6,38 +6,54 @@ import DetailedEstimates from './DetailedEstimates';
 import Campaign from './Campaign';
 import { useFee } from '../../../context/feeContext';
 import { useSettingsState } from '../../../context/settings';
+import RefuelToggle from './Refuel';
+import CEXNetworkFormField from '../../Input/CEXNetworkFormField';
+import FeeDetails from './FeeDetailsComponent';
 
-export default function FeeDetails({ values }: { values: SwapFormValues }) {
-    const { toCurrency, from, to, refuel } = values || {};
+export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
+    const { toCurrency, from, to, refuel, fromExchange, toExchange } = values || {};
     const { fee } = useFee()
     const currency = toCurrency
     const { layers } = useSettingsState()
 
     return (
         <>
-            <div className="mx-auto relative w-full rounded-lg border border-secondary-500 hover:border-secondary-300 bg-secondary-700 px-3.5 py-3 z-[1] transition-all duration-200">
-                <Accordion type="single" collapsible>
-                    <AccordionItem value='item-1'>
-                        <AccordionTrigger className="items-center flex w-full relative gap-2 rounded-lg text-left text-base font-medium">
-                            <ReceiveAmounts
-                                currency={currency}
-                                to={to}
-                                receive_amount={fee.walletReceiveAmount}
-                                refuel={!!refuel}
-                            />
-                        </AccordionTrigger>
-                        <AccordionContent className="text-sm text-secondary-text font-normal">
-                            <DetailedEstimates
-                                networks={layers}
-                                selected_currency={currency}
-                                source={from}
-                                destination={to}
-                            />
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
-            </div>
-            {
+            <FeeDetails>
+
+                {
+                    ((fromExchange || toExchange) && (from || to)) &&
+                    <FeeDetails.Item>
+                        <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
+                    </FeeDetails.Item>
+                }
+
+                {refuel &&
+                    <FeeDetails.Item>
+                        <RefuelToggle />
+                    </FeeDetails.Item>
+                }
+
+                <FeeDetails.Item>
+                    <DetailedEstimates
+                        networks={layers}
+                        selected_currency={currency}
+                        source={from}
+                        destination={to}
+                    />
+                </FeeDetails.Item>
+
+                <FeeDetails.Item>
+                    <ReceiveAmounts
+                        currency={currency}
+                        to={to}
+                        receive_amount={fee.walletReceiveAmount}
+                        refuel={!!refuel}
+                    />
+                </FeeDetails.Item>
+
+            </FeeDetails>
+
+            {/* {
                 values.to &&
                 values.toCurrency &&
                 <Campaign
@@ -45,7 +61,7 @@ export default function FeeDetails({ values }: { values: SwapFormValues }) {
                     selected_currency={values.toCurrency}
                     fee={fee.walletFee}
                 />
-            }
+            } */}
         </>
     )
 }

@@ -37,12 +37,9 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const wallet = provider?.getConnectedWallet()
     const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
     const destinationBalance = wallet && balances[wallet.address]?.find(b => b?.network === to?.internal_name && b?.token === toCurrency?.asset)
-    
+
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
     const destinationBalanceAmount = destinationBalance?.amount && truncateDecimals(destinationBalance?.amount, toCurrency?.precision)
-console.log(balances, "balances")
-console.log(from, "from")
-console.log(to, "to")
     const apiClient = new LayerSwapApiClient()
     const version = LayerSwapApiClient.apiVersion
 
@@ -113,33 +110,19 @@ console.log(to, "to")
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
+    const balanceAmount = direction === 'from' ? walletBalanceAmount : destinationBalanceAmount
 
     return (
         <div className="relative">
-            {from && to && fromCurrency && toCurrency && direction === "from" &&
-                walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) &&
-                <div className="text-xs text-right absolute right-0 -top-6">
+            {(direction === 'from' ? (from && fromCurrency) : (to && toCurrency)) && balanceAmount != undefined && !isNaN(balanceAmount) &&
+                <div className="text-xs text-right absolute right-0 -top-7">
                     <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
                         <div>
                             <span>Balance:&nbsp;</span>
                             {isBalanceLoading ?
                                 <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
                                 :
-                                <span>{walletBalanceAmount}</span>}
-                        </div>
-                    </div>
-                </div>
-            }
-            {from && to && fromCurrency && toCurrency && direction === "to" &&
-                destinationBalanceAmount != undefined && !isNaN(destinationBalanceAmount) &&
-                <div className="text-xs text-right absolute right-0 -top-6">
-                    <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
-                        <div>
-                            <span>Balance:&nbsp;</span>
-                            {isBalanceLoading ?
-                                <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                                :
-                                <span>{destinationBalanceAmount}</span>}
+                                <span>{balanceAmount}</span>}
                         </div>
                     </div>
                 </div>
@@ -182,7 +165,7 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
             type: 'currency',
             destDetails: `${formatted_destBalance_amount}`,
         };
-        
+
         return res
     }).sort(SortingByOrder);
 }
