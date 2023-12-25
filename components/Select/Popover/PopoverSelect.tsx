@@ -8,7 +8,7 @@ export default function PopoverSelect({ values, value, setValue, direction }: Se
         <CommandWrapper>
             <CommandList>
                 {values.map(item =>
-                    <CommandItem className={`${item.isAvailable.value && !item.isAvailable.disabledReason ? "border-b border-gray-300" : ""}`} disabled={!item.isAvailable.value} value={item.id} key={item.id} onSelect={() => {
+                    <CommandItem disabled={!item.isAvailable.value} value={item.id} key={item.id} onSelect={() => {
                         setValue(item)
                     }}>
                         <SelectItem item={item} direction={direction} />
