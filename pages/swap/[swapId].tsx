@@ -7,24 +7,7 @@ import LayerSwapAuthApiClient from '../../lib/userAuthApiClient';
 import { TimerProvider } from '../../context/timerContext';
 import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings';
 import { getThemeData } from '../../helpers/settingsHelper';
-import dynamic from 'next/dynamic';
-
-const SwapWithdrawal = (dynamic(() => import('../../components/SwapWithdrawal'), {
-  loading: () => <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
-    <div className='text-center text-xl text-secondary-100'>
-    </div>
-    <div className="relative px-6">
-      <div className="flex items-start">
-        <div className={`flex flex-nowrap grow`}>
-          <div className="w-full pb-6 flex flex-col justify-between space-y-5 text-secondary-text h-full">
-            <div className="sm:min-h-[504px]"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div id="widget_root" />
-  </div>
-}))
+import SwapWithdrawal from '../../components/SwapWithdrawal'
 
 const SwapDetails = ({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
