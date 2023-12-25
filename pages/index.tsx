@@ -5,8 +5,7 @@ import { LayerSwapSettings } from '../Models/LayerSwapSettings'
 import { validateSignature } from '../helpers/validateSignature'
 import { mapNetworkCurrencies } from '../helpers/settingsHelper'
 import { THEME_COLORS, ThemeData } from '../Models/Theme'
-import dynamic from 'next/dynamic'
-
+import Swap from '../components/swapComponent'
 type IndexProps = {
   settings?: LayerSwapSettings,
   themeData?: ThemeData,
@@ -14,27 +13,10 @@ type IndexProps = {
   validSignatureisPresent?: boolean,
 }
 
-const DynamicSwap = (dynamic(() => import('../components/swapComponent'), {
-  loading: () => <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
-    <div className='text-center text-xl text-secondary-100'>
-    </div>
-    <div className="relative px-6">
-      <div className="flex items-start">
-        <div className={`flex flex-nowrap grow`}>
-          <div className="w-full pb-6 flex flex-col justify-between space-y-5 text-secondary-text h-full">
-            <div className="sm:min-h-[504px]"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div id="widget_root" />
-  </div>
-}))
-
 export default function Home({ settings, inMaintanance, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (<>
     <Layout settings={settings} themeData={themeData}>
-      <DynamicSwap />
+      <Swap />
     </Layout>
   </>)
 }

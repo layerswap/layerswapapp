@@ -13,6 +13,7 @@ import SelectItem from '../Shared/SelectItem';
 import { SelectProps } from '../Shared/Props/SelectProps'
 import Modal from '../../modal/modal';
 import { Info } from 'lucide-react';
+import { LayerDisabledReason } from '../Popover/PopoverSelect';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
@@ -32,19 +33,14 @@ export class SelectMenuItemGroup {
 
 export default function CommandSelect({ values, setValue, show, setShow, searchHint, valueGrouper }: CommandSelectProps) {
     const { isDesktop } = useWindowDimensions();
-
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
-
     return (
         <Modal height='full' show={show} setShow={setShow}>
-            <CommandWrapper filter={(item: string | undefined, search: string | undefined) => {
-                if (!search || !item) return 1
-                return item.toLowerCase().indexOf(search.toLowerCase()) !== -1 ? 1 : 0
-            }}>
-                {show ? <>
+            {show ?
+                <CommandWrapper>
                     <CommandInput autoFocus={isDesktop} placeholder={searchHint} />
                     {
-                        !values.some(v => v.isAvailable.value === true) &&
+                        values.some(v => v.isAvailable.value === false && v.isAvailable.disabledReason === LayerDisabledReason.LockNetworkIsTrue) &&
                         <div className='text-xs text-left text-secondary-text mb-2'>
                             <Info className='h-3 w-3 inline-block mb-0.5' /><span>&nbsp;You&apos;re accessing Layerswap from a partner&apos;s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.</span>
                         </div>
@@ -65,8 +61,9 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
                                 </CommandGroup>)
                         })}
                     </CommandList>
-                </> : <></>}
-            </CommandWrapper>
+                </CommandWrapper>
+                : <></>
+            }
         </Modal>
     )
 }

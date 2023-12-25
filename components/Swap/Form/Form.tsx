@@ -28,25 +28,14 @@ import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
 import { useQueryState } from "../../../context/query";
 import FeeDetails from "../../DisclosureComponents/FeeDetails";
-import dynamic from "next/dynamic";
 import { Balance, Gas } from "../../../hooks/useBalance";
-
+import AmountField from "../../Input/Amount"
+import Address from "../../Input/Address"
+import ReserveGasNote from "../../ReserveGasNote"
 type Props = {
     isPartnerWallet?: boolean,
     partner?: Partner,
 }
-const Address = dynamic(() => import("../../Input/Address"), {
-    loading: () => <></>
-})
-
-const AmountField = dynamic(() => import("../../Input/Amount"), {
-    loading: () => <></>
-})
-
-
-const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
-    loading: () => <></>
-})
 
 const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const {
