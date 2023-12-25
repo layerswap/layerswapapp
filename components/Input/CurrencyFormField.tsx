@@ -37,9 +37,12 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const wallet = provider?.getConnectedWallet()
     const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
     const destinationBalance = wallet && balances[wallet.address]?.find(b => b?.network === to?.internal_name && b?.token === toCurrency?.asset)
+    
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
     const destinationBalanceAmount = destinationBalance?.amount && truncateDecimals(destinationBalance?.amount, toCurrency?.precision)
-
+console.log(balances, "balances")
+console.log(from, "from")
+console.log(to, "to")
     const apiClient = new LayerSwapApiClient()
     const version = LayerSwapApiClient.apiVersion
 

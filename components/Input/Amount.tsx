@@ -63,12 +63,12 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         setFieldValue(name, maxAllowedAmount);
         if (maxAllowedAmount)
             updateRequestedAmountInUsd(maxAllowedAmount)
-    }, [from, fromCurrency, destination_address, maxAllowedAmount])
+    }, [from, to, fromCurrency, destination_address, maxAllowedAmount])
 
     useEffect(() => {
         values.from && getBalance(values.from);
         values.to && getDestinationBalance(values.to);
-    }, [values.from, values.destination_address, wallet?.address])
+    }, [values.from, values.to, values.destination_address, wallet?.address])
     const contract_address = values?.from?.assets.find(a => a.asset === values?.fromCurrency?.asset)?.contract_address
 
     useEffect(() => {
