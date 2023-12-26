@@ -59,17 +59,21 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         max-sm:fixed
                         max-sm:inset-x-0
                         max-sm:bottom-0 
-                        max-sm:z-30 max-sm:bg-secondary-900 max-sm:shadow-widget-footer max-sm:p-4 max-sm:px-6 max-sm:w-full ${hidden ? 'adnimation-slide-out' : ''}`}>
+                        max-sm:z-30
+                        max-sm:bg-secondary-900 
+                        max-sm:shadow-widget-footer 
+                        max-sm:p-4 
+                        max-sm:px-6 
+                        max-sm:w-full ${hidden ? 'adnimation-slide-out' : ''}`}>
                     {children}
                 </motion.div>
-                <ReactPortal wrapperId='offset-for-stickyness'>
-                    <div style={{ height: `${height}px` }}
-                        className={`text-primary-text text-base mt-3        
+                
+                <div style={{ height: `${height}px` }}
+                    className={`text-primary-text text-base mt-3        
                              max-sm:inset-x-0
                              max-sm:bottom-0 
-                             max-sm:p-4 max-sm:w-full invisible`}>
-                    </div>
-                </ReactPortal>
+                             max-sm:p-4 max-sm:w-full invisible sm:hidden`}>
+                </div>
             </ >
             :
             <>

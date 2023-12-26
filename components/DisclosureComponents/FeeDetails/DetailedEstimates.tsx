@@ -52,7 +52,7 @@ const NetworkGas: FC<NetworkGasProps> = ({ selected_currency, network, currencie
 
     const { gases, isGasLoading } = useBalancesState()
     const networkGas = network.internal_name ?
-        gases?.[network.internal_name]?.find(g => g.token === selected_currency.asset)?.gas : null
+        gases?.[network.internal_name]?.find(g => g?.token === selected_currency.asset)?.gas : null
 
     if (!networkGas)
         return <></>
