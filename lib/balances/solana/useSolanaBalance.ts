@@ -16,22 +16,23 @@ export default function useSolanaBalance(): BalanceProvider {
     ]
 
     const getBalance = async ({ layer, address }: BalanceProps) => {
-        const { PublicKey, Connection } = await import("@solana/web3.js");
+        const SolanaWeb3 = await import("@solana/web3.js");
+        const { PublicKey, Connection } = SolanaWeb3
+        class SolanaConnection extends Connection { }
         const { getAssociatedTokenAddress } = await import('@solana/spl-token');
         const walletPublicKey = new PublicKey(address)
         let balances: Balance[] = []
 
         if (layer.isExchange === true || !layer.assets || !walletPublicKey) return
 
-        const connection = new Connection(
+        const connection = new SolanaConnection(
             `${layer.nodes[0].url}`,
             "confirmed"
         );
 
-        async function getTokenBalanceWeb3(connection: any, tokenAccount) {
+        async function getTokenBalanceWeb3(connection: SolanaConnection, tokenAccount) {
             const info = await connection.getTokenAccountBalance(tokenAccount);
-            if (!info.value.uiAmount) console.log('No balance found');
-            return info.value.uiAmount;
+            return info?.value?.uiAmount;
         }
 
         const assets = layer.assets.filter(a => a.status !== 'inactive')
@@ -46,7 +47,7 @@ export default function useSolanaBalance(): BalanceProvider {
                 );
                 const result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
 
-                if (result) {
+                if (result != null && !isNaN(result)) {
                     const balance = {
                         network: layer.internal_name,
                         token: asset.asset,
