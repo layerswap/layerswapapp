@@ -92,7 +92,7 @@ export function SwapDataProvider({ children }) {
         if (!values)
             throw new Error("No swap data")
 
-        const { to, fromCurrency, toCurrency, from, refuel } = values
+        const { to, fromCurrency, toCurrency, from, refuel, fromExchange, toExchange } = values
 
         if (!to || !fromCurrency || !toCurrency || !from || !values.amount || !values.destination_address)
             throw new Error("Form data is missing")
@@ -106,6 +106,8 @@ export function SwapDataProvider({ children }) {
             destination: destinationLayer?.internal_name,
             source_asset: fromCurrency.asset,
             destination_asset: toCurrency.asset,
+            source_exchange: fromExchange?.internal_name,
+            destination_exchange: toExchange?.internal_name,
             destination_address: values.destination_address,
             app_name: partner ? query?.appName : (apiVersion === 'sandbox' ? 'LayerswapSandbox' : 'Layerswap'),
             reference_id: query.externalId,

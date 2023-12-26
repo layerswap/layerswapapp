@@ -38,7 +38,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const maxAllowedDisplayAmount = maxAllowedAmount && truncateDecimals(maxAllowedAmount, fromCurrency?.precision)
 
-    const placeholder = (fromCurrency && toCurrency && from && to && minAllowedAmount && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAllowedDisplayAmount}` : '0.01234'
+    const placeholder = (fromCurrency && toCurrency && from && to && minAllowedAmount && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAllowedDisplayAmount}` : '0.0'
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
     const amountRef = useRef(ref)
 
@@ -104,7 +104,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     }}
                 >
                     {requestedAmountInUsd && isAmountVisible ? (
-                        <span className="absolute mr-2 text-xs right-0 bottom-[18px]">
+                        <span className="absolute text-xs right-0 bottom-[16px]">
                             (${requestedAmountInUsd})
                         </span>
                     ) : null}
@@ -145,14 +145,14 @@ const AmountLabel = ({
 }: AmountLabelProps) => {
     return <div className="flex items-center w-full justify-between">
         <div className="flex items-center space-x-2">
-            <p className="block font-semibold text-secondary-text text-sm">Amount</p>
-            {
+            <p className="block font-semibold text-secondary-text text-xs mb-1">Amount</p>
+            {/* {
                 detailsAvailable &&
                 <div className="text-xs hidden md:flex text-secondary-text items-center">
                     <span>(Min:&nbsp;</span>{isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{minAllowedAmount}</span>}
                     <span>&nbsp;-&nbsp;Max:&nbsp;</span>{isBalanceLoading ? <span className="ml-1 h-3 w-6 rounded-sm bg-gray-500 animate-pulse" /> : <span>{maxAllowedAmount}</span>}<span>)</span>
                 </div>
-            }
+            } */}
         </div>
     </div>
 }

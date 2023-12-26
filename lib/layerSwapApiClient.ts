@@ -137,6 +137,8 @@ export type CreateSwapParams = {
     destination: string,
     source_asset: string,
     destination_asset: string
+    source_exchange?: string
+    destination_exchange?: string
     destination_address: string,
     app_name?: string,
     reference_id?: string,

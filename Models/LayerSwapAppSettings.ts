@@ -13,7 +13,7 @@ export class LayerSwapAppSettings {
     exchanges: Exchange[]
     layers: Layer[]
 
-    resolveImgSrc = (item: Layer | NetworkCurrency | Pick<Layer, 'internal_name'> | { asset: string } | Partner) => {
+    resolveImgSrc = (item: Layer | NetworkCurrency | Pick<Layer, 'internal_name'> | { asset: string } | Partner | undefined) => {
 
         if (!item) {
             return "/images/logo_placeholder.png";
