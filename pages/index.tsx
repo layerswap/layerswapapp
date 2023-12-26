@@ -1,4 +1,3 @@
-import Swap from '../components/swapComponent'
 import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
@@ -6,7 +5,7 @@ import { LayerSwapSettings } from '../Models/LayerSwapSettings'
 import { validateSignature } from '../helpers/validateSignature'
 import { mapNetworkCurrencies } from '../helpers/settingsHelper'
 import { THEME_COLORS, ThemeData } from '../Models/Theme'
-
+import Swap from '../components/swapComponent'
 type IndexProps = {
   settings?: LayerSwapSettings,
   themeData?: ThemeData,

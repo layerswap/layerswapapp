@@ -1,5 +1,3 @@
-import { FC } from "react"
-
 type ContetProps = {
     center?: boolean,
     children?: JSX.Element | JSX.Element[];

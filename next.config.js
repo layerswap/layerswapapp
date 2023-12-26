@@ -54,7 +54,6 @@ module.exports = (phase, { defaultConfig }) => {
 // Injected content via Sentry wizard below
 
 const { withSentryConfig } = require("@sentry/nextjs");
-
 module.exports = withSentryConfig(
   module.exports,
   {

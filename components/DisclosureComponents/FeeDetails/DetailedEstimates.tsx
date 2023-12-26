@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { CryptoNetwork, NetworkType } from "../../../Models/CryptoNetwork";
+import { CryptoNetwork } from "../../../Models/CryptoNetwork";
 import { Currency } from "../../../Models/Currency";
 import { Layer } from "../../../Models/Layer";
 import { truncateDecimals } from "../../utils/RoundDecimals";
@@ -37,8 +37,7 @@ const DetailedEstimates: FC<EstimatesProps> = ({
         {
             source
             && source?.isExchange === false
-            && selected_currency
-            && source?.type === NetworkType.EVM &&
+            && selected_currency &&
             <NetworkGas network={source} currencies={currencies} selected_currency={selected_currency} />
         }
         <EstimatedArrival currency={selected_currency} destination={destination} />
@@ -60,17 +59,16 @@ const NetworkGas: FC<NetworkGasProps> = ({ selected_currency, network, currencie
 
     const source_native_currnecy = currencies.find(a => a.asset === network.native_currency)
 
-    const estimatedGas = (network?.type === NetworkType.EVM
-        && networkGas
-        && source_native_currnecy) ?
-        truncateDecimals(networkGas, source_native_currnecy?.precision) : null
+    const estimatedGas = (networkGas && source_native_currnecy) ?
+        truncateDecimals(networkGas, source_native_currnecy?.precision) 
+        : truncateDecimals(networkGas, selected_currency?.precision)
 
     return <div className="mt-2 flex flex-row items-baseline justify-between">
         <label className="inline-flex items-center text-left text-primary-text-placeholder">
             Estimated gas
         </label>
         <div className="text-right flex items-center gap-1">
-            {isGasLoading ? <div className='h-[10px] w-10 bg-gray-500 rounded-sm animate-pulse' /> : estimatedGas} <span>{network?.native_currency}</span>
+            {isGasLoading ? <div className='h-[10px] w-10 bg-gray-500 rounded-sm animate-pulse' /> : estimatedGas} <span>{network?.native_currency ?? selected_currency.asset}</span>
         </div>
     </div>
 }

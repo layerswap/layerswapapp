@@ -10,7 +10,6 @@ import { OpenLink } from '../../../../lib/openLink';
 import TokenService from '../../../../lib/TokenService';
 import SubmitButton from '../../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../../Carousel';
-import Widget from '../../../Wizard/Widget';
 import { FirstScreen, FourthScreen, LastScreen, SecondScreen, ThirdScreen } from './ConnectGuideScreens';
 import KnownInternalNames from '../../../../lib/knownIds';
 import { Layer } from '../../../../Models/Layer';
@@ -19,6 +18,7 @@ import IconButton from '../../../buttons/iconButton';
 import { motion } from 'framer-motion';
 import { useCoinbaseStore } from './CoinbaseStore';
 import { useRouter } from 'next/router';
+import { Widget } from '../../../Widget/Index';
 
 type Props = {
     onAuthorized: () => void,
