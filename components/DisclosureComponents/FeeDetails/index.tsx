@@ -8,6 +8,7 @@ import RefuelToggle from './Refuel';
 import CEXNetworkFormField from '../../Input/CEXNetworkFormField';
 import FeeDetails from './FeeDetailsComponent';
 import { useQueryState } from '../../../context/query';
+import Campaign from './Campaign';
 
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
     const { toCurrency, from, to, refuel, fromExchange, toExchange } = values || {};
@@ -31,9 +32,9 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                     <FeeDetails.Item>
                         <RefuelToggle />
                     </FeeDetails.Item>
-                    }
+                }
 
-                {/* {from && to &&
+                {from && to &&
                     <FeeDetails.Item>
                         <DetailedEstimates
                             networks={layers}
@@ -42,20 +43,20 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                             destination={to}
                         />
                     </FeeDetails.Item>
-                } */}
+                }
 
-                {/* <FeeDetails.Item>
+                <FeeDetails.Item>
                     <ReceiveAmounts
                         currency={currency}
                         to={to}
                         receive_amount={fee.walletReceiveAmount}
                         refuel={!!refuel}
                     />
-                </FeeDetails.Item> */}
+                </FeeDetails.Item>
 
             </FeeDetails>
 
-            {/* {
+            {
                 values.to &&
                 values.toCurrency &&
                 <Campaign
@@ -63,7 +64,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                     selected_currency={values.toCurrency}
                     fee={fee.walletFee}
                 />
-            } */}
+            }
         </>
     )
 }

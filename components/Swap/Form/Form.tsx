@@ -22,14 +22,12 @@ import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import GasDetails from "../../gasDetails";
 import { useQueryState } from "../../../context/query";
-import FeeDetailsComponent from "../../DisclosureComponents/FeeDetails";
 import { useFee } from "../../../context/feeContext";
 import { Balance, Gas } from "../../../hooks/useBalance";
 import Address from "../../Input/Address"
 import ReserveGasNote from "../../ReserveGasNote"
 import DetailedEstimates from "../../DisclosureComponents/FeeDetails/DetailedEstimates";
 import { useSettingsState } from "../../../context/settings";
-import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 
 type Props = {
     isPartnerWallet?: boolean,
