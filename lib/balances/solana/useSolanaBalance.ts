@@ -25,7 +25,7 @@ export default function useSolanaBalance(): BalanceProvider {
 
         async function getTokenBalanceWeb3(connection: Connection, tokenAccount) {
             const info = await connection.getTokenAccountBalance(tokenAccount);
-            if (!info.value.uiAmount) console.log('No balance found');
+            if (!info.value.uiAmount && info.value.uiAmount !== 0) console.log('No balance found');
             return info.value.uiAmount;
         }
 
@@ -41,7 +41,7 @@ export default function useSolanaBalance(): BalanceProvider {
                 );
                 const result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
 
-                if (result) {
+                if (result || result === 0) {
                     const balance = {
                         network: layer.internal_name,
                         token: asset.asset,

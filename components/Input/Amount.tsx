@@ -30,7 +30,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const name = "amount"
     const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === currency?.asset)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, currency?.precision)
-
+console.log(balances,"balances")
     const minAllowedAmount = CalculateMinAllowedAmount(values, networks, currencies);
     const maxAllowedAmount = CalculateMaxAllowedAmount(values, query.balances as string, walletBalance?.amount, gasAmount, minAllowedAmount)
     const maxAllowedDisplayAmont = truncateDecimals(maxAllowedAmount, currency?.precision)
