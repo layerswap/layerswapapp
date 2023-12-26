@@ -18,7 +18,6 @@ export default function useSolanaBalance(): BalanceProvider {
     const getBalance = async ({ layer, address }: BalanceProps) => {
         const SolanaWeb3 = await import("@solana/web3.js");
         const { PublicKey, Connection } = SolanaWeb3
-        const S = await import("@solana/web3.js")
         class SolanaConnection extends Connection { }
         const { getAssociatedTokenAddress } = await import('@solana/spl-token');
         const walletPublicKey = new PublicKey(address)
