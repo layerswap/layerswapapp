@@ -162,14 +162,14 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                 <Widget.Content>
                     <div className='flex-col relative flex justify-between w-full space-y-0.5 mb-3.5 leading-4'>
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="from" label="From" className="rounded-t-xl pb-6" />
+                            <NetworkFormField direction="from" label="From" className="rounded-t-lg pb-5" />
                         </div>}
                         {!query?.hideFrom && !query?.hideTo &&
                             <button
                                 type="button"
                                 disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || !!fromExchange || !!toExchange}
                                 onClick={valuesSwapper}
-                                className={`${sourceLoading || destinationLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[89px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
+                                className={`${sourceLoading || destinationLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[86px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
                                 <motion.div
                                     animate={animate}
                                     transition={{ duration: 0.3 }}
@@ -183,7 +183,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                 </motion.div>
                             </button>}
                         {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="to" label="To" className="rounded-b-xl pt-2" />
+                            <NetworkFormField direction="to" label="To" className="rounded-b-lg" />
                         </div>}
                     </div>
                     <div className="mb-6 leading-4">

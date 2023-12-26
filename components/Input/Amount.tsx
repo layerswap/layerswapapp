@@ -24,7 +24,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const wallet = provider?.getConnectedWallet()
     const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.asset)?.gas || 0
-    const { getBalance, getGas, getDestinationBalance } = useBalancesUpdate()
+    const { getBalance, getGas } = useBalancesUpdate()
     const name = "amount"
     const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
 
@@ -58,7 +58,6 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const handleSetMaxAmount = useCallback(async () => {
         from && await getBalance(from);
-        to && await getDestinationBalance(to);
         from && fromCurrency && getGas(from, fromCurrency, destination_address || "");
         setFieldValue(name, maxAllowedAmount);
         if (maxAllowedAmount)
@@ -67,8 +66,12 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     useEffect(() => {
         values.from && getBalance(values.from);
-        values.to && getDestinationBalance(values.to);
-    }, [values.from, values.to, values.destination_address, wallet?.address])
+    }, [values.from, values.destination_address, wallet?.address])
+
+    useEffect(() => {
+        values.to && getBalance(values.to);
+    }, [values.to, values.destination_address, wallet?.address])
+
     const contract_address = values?.from?.assets.find(a => a.asset === values?.fromCurrency?.asset)?.contract_address
 
     useEffect(() => {
@@ -101,7 +104,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     }}
                 >
                     {requestedAmountInUsd && isAmountVisible ? (
-                        <span className="absolute mr-2 text-xs right-0 bottom-[18px]">
+                        <span className="absolute text-xs right-0 bottom-[16px]">
                             (${requestedAmountInUsd})
                         </span>
                     ) : null}
