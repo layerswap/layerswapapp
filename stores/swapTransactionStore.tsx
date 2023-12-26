@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { PublishedSwapTransactionStatus } from '../../lib/layerSwapApiClient';
+import { PublishedSwapTransactionStatus } from '../lib/layerSwapApiClient';
 
 type SwapTransaction = {
     hash: string;
@@ -21,7 +21,7 @@ type SwapDepositHintClickedStore = {
 
 export const useSwapTransactionStore = create(
     persist<SwapTransactionStore>(
-        (set, get) => ({
+        (set) => ({
             swapTransactions: {},
             setSwapTransaction: (Id, status, txHash, failReason) => {
                 set((state) => {

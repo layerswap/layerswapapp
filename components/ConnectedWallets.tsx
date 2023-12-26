@@ -1,20 +1,12 @@
-import CoinbaseIcon from "./icons/Wallets/Coinbase"
-import MetaMaskIcon from "./icons/Wallets/MetaMask"
-import RainbowIcon from "./icons/Wallets/Rainbow"
-import WalletConnectIcon from "./icons/Wallets/WalletConnect"
 import WalletIcon from "./icons/WalletIcon"
 import shortenAddress from "./utils/ShortenAddress"
-import BitKeep from "./icons/Wallets/BitKeep"
-import Argent from "./icons/Wallets/Argent"
 import useWallet from "../hooks/useWallet"
 import ConnectButton from "./buttons/connectButton"
 import SubmitButton from "./buttons/submitButton"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./shadcn/dialog"
 import { useState } from "react"
 import { Plus } from "lucide-react"
-import Braavos from "./icons/Wallets/Braavos"
 import AddressIcon from "./AddressIcon"
-import TON from "./icons/Wallets/TON"
 import { Wallet } from "../stores/walletStore"
 
 export const WalletsHeader = () => {
@@ -24,7 +16,7 @@ export const WalletsHeader = () => {
     if (wallets.length > 0) {
         return (
             <>
-                <button type="button" onClick={() => setOpenDialog(true)} className="-mx-2 p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
+                <button type="button" aria-label="Connected wallets" onClick={() => setOpenDialog(true)} className="-mx-2 p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
                     <WalletsIcons wallets={wallets} />
                 </button>
                 <ConnectedWalletsDialog openDialog={openDialog} setOpenDialog={setOpenDialog} />
@@ -43,7 +35,7 @@ export const WalletsHeader = () => {
 
 const WalletsIcons = ({ wallets }: { wallets: Wallet[] }) => {
     const firstWallet = wallets[0]
-    const secondWallet =  wallets[1]
+    const secondWallet = wallets[1]
 
     return (
         <div className="-space-x-2 flex">

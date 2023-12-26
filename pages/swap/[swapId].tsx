@@ -3,12 +3,11 @@ import Layout from '../../components/layout';
 import { InferGetServerSidePropsType } from 'next';
 import React from 'react';
 import { SwapDataProvider } from '../../context/swap';
-import SwapWithdrawal from '../../components/SwapWithdrawal';
 import LayerSwapAuthApiClient from '../../lib/userAuthApiClient';
 import { TimerProvider } from '../../context/timerContext';
-import { THEME_COLORS } from '../../Models/Theme';
 import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings';
 import { getThemeData } from '../../helpers/settingsHelper';
+import SwapWithdrawal from '../../components/SwapWithdrawal'
 
 const SwapDetails = ({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
