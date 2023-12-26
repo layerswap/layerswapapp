@@ -2,7 +2,7 @@ import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useMemo } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
+import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import CurrencySettings from "../../lib/CurrencySettings";
 import { SortingByAvailability } from "../../lib/sorting";
@@ -146,19 +146,11 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
         }
     }
 
-    let currencyGroups = (currency: NetworkCurrency) => {
-        const isCurrencyInRoute = (from || to) && routes?.some(r => r.network === (direction === 'from' ? from?.internal_name : to?.internal_name) && r.asset === currency.asset);
-
-        return { isInRoute: isCurrencyInRoute };
-    };
-
-
     return currencies?.map(c => {
         const currency = c
         const displayName = lockedCurrency?.asset ?? currency.asset;
         const balance = balances?.find(b => b?.token === c?.asset && from?.internal_name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
-        const groupInfo = currencyGroups(c);
 
         const res: SelectMenuItem<NetworkCurrency> = {
             baseObject: c,
@@ -168,7 +160,6 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
             imgSrc: resolveImgSrc && resolveImgSrc(c),
             isAvailable: currencyIsAvailable(c),
             details: `${formatted_balance_amount}`,
-            isInRoute: groupInfo.isInRoute,
             type: "currency"
         };
 

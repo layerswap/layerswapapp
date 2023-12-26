@@ -6,7 +6,6 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     name: string;
     order: number;
     imgSrc: string;
-    isInRoute?: boolean;
     isAvailable: {
         value: boolean;
         disabledReason: LayerDisabledReason | CurrencyDisabledReason | null
@@ -36,7 +35,6 @@ export interface ISelectMenuItem {
     name: string;
     imgSrc: string;
     group?: string;
-    isInRoute?: boolean;
     isAvailable: {
         value: boolean;
         disabledReason: LayerDisabledReason | CurrencyDisabledReason | null
