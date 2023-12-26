@@ -1,10 +1,13 @@
-import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../hooks/useBalance";
+
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
-import { Connection, PublicKey } from "@solana/web3.js";
-import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
-import { getAssociatedTokenAddress } from '@solana/spl-token';
-import transactionBuilder from "../../wallets/solana/transactionBuilder";
+import {
+    Balance,
+    BalanceProps,
+    BalanceProvider,
+    Gas,
+    GasProps
+} from "../../../Models/Balance";
 
 export default function useSolanaBalance(): BalanceProvider {
     const name = 'solana'
@@ -13,6 +16,8 @@ export default function useSolanaBalance(): BalanceProvider {
     ]
 
     const getBalance = async ({ layer, address }: BalanceProps) => {
+        const { PublicKey, Connection } = await import("@solana/web3.js");
+        const { getAssociatedTokenAddress } = await import('@solana/spl-token');
         const walletPublicKey = new PublicKey(address)
         let balances: Balance[] = []
 
@@ -23,7 +28,7 @@ export default function useSolanaBalance(): BalanceProvider {
             "confirmed"
         );
 
-        async function getTokenBalanceWeb3(connection: Connection, tokenAccount) {
+        async function getTokenBalanceWeb3(connection: any, tokenAccount) {
             const info = await connection.getTokenAccountBalance(tokenAccount);
             if (!info.value.uiAmount && info.value.uiAmount !== 0) console.log('No balance found');
             return info.value.uiAmount;
@@ -68,6 +73,7 @@ export default function useSolanaBalance(): BalanceProvider {
     const getGas = async ({ layer, currency, address }: GasProps) => {
         if (!address)
             return
+        const { PublicKey, Connection } = await import("@solana/web3.js");
 
         const walletPublicKey = new PublicKey(address)
 
@@ -79,10 +85,11 @@ export default function useSolanaBalance(): BalanceProvider {
             "confirmed"
         );
 
-
         if (!walletPublicKey) return
 
         try {
+            const transactionBuilder = ((await import("../../wallets/solana/transactionBuilder")).default);
+
             const transaction = await transactionBuilder(layer, currency, walletPublicKey)
 
             if (!transaction) return

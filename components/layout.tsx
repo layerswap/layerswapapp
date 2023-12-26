@@ -8,10 +8,8 @@ import { AuthProvider } from "../context/authContext";
 import { SettingsProvider } from "../context/settings";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
-import { MenuProvider } from "../context/menu";
 import ErrorFallback from "./ErrorFallback";
 import { SendErrorMessage } from "../lib/telegram";
-import dynamic from 'next/dynamic'
 import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
 import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
@@ -20,7 +18,8 @@ import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
 import * as Sentry from "@sentry/nextjs";
-import LoadingCard from "./LoadingCard";
+import RainbowKit from "./RainbowKit";
+import Solana from "./SolanaProvider";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -29,19 +28,6 @@ type Props = {
   themeData?: ThemeData | null
 };
 
-const DynamicRainbowKit = (dynamic(() => import("./RainbowKit"), {
-  loading: (props) => {
-    return <LoadingCard name="DynamicRainbowKit" />
-  },
-  ssr: false
-}))
-
-const DynamicSolana = dynamic(() => import("./SolanaProvider"), {
-  loading: (props) => {
-    return <LoadingCard name="DynamicSolana" />
-  },
-  ssr: false
-});
 export default function Layout({ children, settings, themeData }: Props) {
   const router = useRouter();
 
@@ -122,8 +108,6 @@ export default function Layout({ children, settings, themeData }: Props) {
 
   const basePath = router?.basePath ?? ""
 
-
-
   return (<>
     <Head>
       <title>Layerswap</title>
@@ -154,28 +138,26 @@ export default function Layout({ children, settings, themeData }: Props) {
       themeData &&
       <ColorSchema themeData={themeData} />
     }
-      <QueryProvider query={query}>
-        <SettingsProvider data={appSettings}>
-          <MenuProvider>
-            <AuthProvider>
-              <TooltipProvider delayDuration={500}>
-                <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
-                  <ThemeWrapper>
-                    <TonConnectProvider basePath={basePath} themeData={themeData}>
-                      <DynamicRainbowKit>
-                        <DynamicSolana>
-                          {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                            <MaintananceContent />
-                            : children}
-                        </DynamicSolana>
-                      </DynamicRainbowKit>
-                    </TonConnectProvider>
-                  </ThemeWrapper>
-                </ErrorBoundary>
-              </TooltipProvider>
-            </AuthProvider>
-          </MenuProvider>
-        </SettingsProvider >
-      </QueryProvider>
+    <QueryProvider query={query}>
+      <SettingsProvider data={appSettings}>
+        <AuthProvider>
+          <TooltipProvider delayDuration={500}>
+            <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+              <ThemeWrapper>
+                <TonConnectProvider basePath={basePath} themeData={themeData}>
+                  <RainbowKit>
+                    <Solana>
+                      {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                        <MaintananceContent />
+                        : children}
+                    </Solana>
+                  </RainbowKit>
+                </TonConnectProvider>
+              </ThemeWrapper>
+            </ErrorBoundary>
+          </TooltipProvider>
+        </AuthProvider>
+      </SettingsProvider >
+    </QueryProvider>
   </>)
 }

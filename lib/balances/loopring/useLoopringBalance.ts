@@ -1,7 +1,7 @@
-import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../hooks/useBalance";
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
 import axios from "axios";
+import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../Models/Balance";
 
 export default function useLoopringBalance(): BalanceProvider {
     const name = 'loopring';

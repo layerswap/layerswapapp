@@ -12,8 +12,8 @@ import { Layer } from "../../Models/Layer";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useQueryState } from "../../context/query";
-import { Balance } from "../../hooks/useBalance";
 import useWallet from "../../hooks/useWallet";
+import { Balance } from "../../Models/Balance";
 
 const CurrencyFormField: FC = () => {
     const {
