@@ -18,12 +18,15 @@ import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import { NetworkCurrency } from "../../Models/CryptoNetwork";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
+import AmountField from "./Amount";
+import { Refuel } from "../DisclosureComponents/FeeDetails/ReceiveAmounts";
+import { useFee } from "../../context/feeContext";
 
 type SwapDirection = "from" | "to";
 type Props = {
     direction: SwapDirection,
     label: string,
-    className?:string,
+    className?: string,
 }
 const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10 };
 const getGroupName = (value: Layer | Exchange, type: 'cex' | 'layer') => {
@@ -53,7 +56,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     } = useFormikContext<SwapFormValues>();
     const name = direction
 
-    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, currencyGroup } = values
+    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, currencyGroup, refuel } = values
     const { lockFrom, lockTo } = useQueryState()
 
     const { resolveImgSrc, layers, exchanges } = useSettingsState();
@@ -119,23 +122,52 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         }
     }, [name])
 
+    const { fee } = useFee()
+
+    const parsedReceiveAmount = parseFloat(fee.walletReceiveAmount?.toFixed(toCurrency?.precision) || "")
+    const destinationNetworkCurrency = (to && toCurrency) ? toCurrency : null
+
     return (<div className={`p-3 bg-secondary-700 ${className}`}>
         <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
             {label}
         </label>
-        <div ref={ref} className="mt-1.5 grid grid-flow-row-dense grid-cols-8 md:grid-cols-6 items-center pr-2">
-            <div className="col-span-5 md:col-span-4">
-                <CommandSelectWrapper
-                    disabled={false}
-                    valueGrouper={valueGrouper}
-                    placeholder={placeholder}
-                    setValue={handleSelect}
-                    value={value}
-                    values={menuItems}
-                    searchHint={searchHint}
-                />
+        <div className="border border-secondary-500 rounded-lg mt-1.5 pb-2">
+            <div ref={ref}>
+                <div className="w-full">
+                    <CommandSelectWrapper
+                        disabled={false}
+                        valueGrouper={valueGrouper}
+                        placeholder={placeholder}
+                        setValue={handleSelect}
+                        value={value}
+                        values={menuItems}
+                        searchHint={searchHint}
+                        className="rounded-b-none border-t-0 border-x-0"
+                    />
+                </div>
             </div>
-            <div className="col-span-3 md:col-span-2 w-full ml-2">
+            <div className="flex justify-between items-center mt-2 pl-3 pr-4">
+                {
+                    direction === 'from' ?
+                        <AmountField />
+                        :
+                        parsedReceiveAmount > 0 ?
+                            <div className="font-semibold md:font-bold text-right leading-4">
+                                <p>
+                                    <>{parsedReceiveAmount}</>
+                                    &nbsp;
+                                    <span>
+                                        {destinationNetworkCurrency?.asset}
+                                    </span>
+                                </p>
+                                {refuel && <Refuel
+                                    currency={toCurrency}
+                                    to={to}
+                                    refuel={refuel}
+                                />}
+                            </div>
+                            : '-'
+                }
                 {
                     value?.type === 'cex' ?
                         <CurrencyGroupFormField direction={name} />
@@ -144,6 +176,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 }
             </div>
         </div>
+
     </div>)
 });
 

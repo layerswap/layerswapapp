@@ -9,6 +9,7 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Fee, useFee } from "../../../context/feeContext";
 import { Clock9, Fuel } from "lucide-react";
+import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 
 type EstimatesProps = {
     networks: Layer[]
@@ -37,9 +38,14 @@ const DetailedEstimates: FC<EstimatesProps> = ({
                 {isFeeLoading ? <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' /> : <span>{parsedFee || 0}</span>} <span>{currencyName}</span>
             </div>
         </div>
-        <div>
-            <EstimatedArrival currency={selected_currency} destination={destination} fee={fee} />
-        </div>
+        {
+            ((values.fromExchange || values.toExchange) && (source || destination)) ?
+                <CEXNetworkFormField direction={values.fromExchange ? 'from' : 'to'} />
+                :
+                <div>
+                    <EstimatedArrival currency={selected_currency} destination={destination} fee={fee} />
+                </div>
+        }
     </div>
 }
 type NetworkGasProps = {

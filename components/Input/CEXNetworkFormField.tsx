@@ -68,9 +68,9 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     if (!menuItems) return
 
-    return (<div className=" flex justify-between items-center w-full">
+    return (<div className="flex justify-between items-center w-fit gap-1">
         <label htmlFor={name} className="block text-secondary-text">
-            {direction === 'from' ? 'Transfer via' : 'Receive in'}
+            {direction === 'from' ? 'via' : 'in'}
         </label>
         <div className="w-fit" ref={ref} >
             <Select value={value?.id} onValueChange={(v) => handleSelect(menuItems.find(m => m.id === v)!)}>
@@ -98,7 +98,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                                                         loading="eager"
                                                         className="rounded-md object-contain" />
                                                 </div>
-                                                <p>{network?.display_name}</p>
+                                                <p>{network?.display_name.slice(0, 3)}</p>
                                             </div>
                                             <div className="inline-flex items-center gap-1">
                                                 <div className="flex-shrink-0 h-5 w-5 relative">

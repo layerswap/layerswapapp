@@ -113,7 +113,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     return (
         <div className="relative">
-            {(direction === 'from' ? (from && fromCurrency) : (to && toCurrency)) && balanceAmount != undefined && !isNaN(balanceAmount) &&
+            {/* {(direction === 'from' ? (from && fromCurrency) : (to && toCurrency)) && balanceAmount != undefined && !isNaN(balanceAmount) &&
                 <div className="text-xs text-right absolute right-0 -top-7">
                     <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
                         <div>
@@ -125,7 +125,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
                         </div>
                     </div>
                 </div>
-            }
+            } */}
             <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />
         </div>
     )

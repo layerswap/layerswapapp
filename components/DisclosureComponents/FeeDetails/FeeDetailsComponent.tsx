@@ -10,7 +10,7 @@ const Item = (function Item({ children, icon }: FeeDetailsItemProps) {
 
     return (
         <div
-            className={`gap-4 flex relative items-center outline-none w-full text-primary-text px-4 py-3`}
+            className={`gap-4\ flex relative items-center outline-none w-full text-primary-text px-4 py-3`}
         >
             {icon &&
                 <div>

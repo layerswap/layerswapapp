@@ -20,15 +20,16 @@ import WarningMessage from "../../WarningMessage";
 import { GetDefaultAsset } from "../../../helpers/settingsHelper";
 import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
-import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
 import { useQueryState } from "../../../context/query";
 import FeeDetailsComponent from "../../DisclosureComponents/FeeDetails";
 import { useFee } from "../../../context/feeContext";
 import { Balance, Gas } from "../../../hooks/useBalance";
-import AmountField from "../../Input/Amount"
 import Address from "../../Input/Address"
 import ReserveGasNote from "../../ReserveGasNote"
+import DetailedEstimates from "../../DisclosureComponents/FeeDetails/DetailedEstimates";
+import { useSettingsState } from "../../../context/settings";
+import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 
 type Props = {
     isPartnerWallet?: boolean,
@@ -46,6 +47,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const { minAllowedAmount, valuesChanger, fee } = useFee()
     const toAsset = values.toCurrency?.asset
     const { authData } = useAuthState()
+    const { layers } = useSettingsState()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/swaps/recent_addresses` : null
@@ -162,9 +164,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                 <Widget.Content>
                     <div className='flex-col relative flex justify-between w-full space-y-0.5 mb-3.5 leading-4'>
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="from" label="From" className="rounded-t-lg pb-5" />
+                            <NetworkFormField direction="from" label="From" className="rounded-t-xl" />
                         </div>}
-                        {!query?.hideFrom && !query?.hideTo &&
+                        {/* {!query?.hideFrom && !query?.hideTo &&
                             <button
                                 type="button"
                                 disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || !!fromExchange || !!toExchange}
@@ -181,13 +183,20 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                         <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />
                                     }
                                 </motion.div>
-                            </button>}
+                            </button>} */}
+                        <div className="gap-4 flex relative items-center outline-none w-full text-primary-text px-4 py-3 bg-secondary-700 text-xs md:text-base">
+                            <DetailedEstimates
+                                networks={layers}
+                                selected_currency={toCurrency}
+                                source={source}
+                                destination={destination}
+                            />
+                        </div>
+              
+
                         {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="to" label="To" className="rounded-b-lg" />
+                            <NetworkFormField direction="to" label="To" className="rounded-b-xl" />
                         </div>}
-                    </div>
-                    <div className="mb-6 leading-4">
-                        <AmountField />
                     </div>
                     {
                         !hideAddress ?
@@ -220,8 +229,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                             </div>
                             : <></>
                     }
-                    <div className="w-full">
-                        <FeeDetailsComponent values={values} />
+                    <>
+                        {/* <FeeDetailsComponent values={values} /> */}
                         {
                             //TODO refactor
                             destination && toAsset && GetDefaultAsset(destination, toAsset)?.status == 'insufficient_liquidity' &&
@@ -238,7 +247,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                             </WarningMessage>
                         }
                         <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
-                    </div>
+                    </>
                 </Widget.Content>
                 <Widget.Footer>
                     <SwapButton

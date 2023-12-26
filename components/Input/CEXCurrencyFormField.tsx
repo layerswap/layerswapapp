@@ -61,7 +61,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     useEffect(() => {
         if (value) return
-        setFieldValue(name, currencyMenuItems[0])
+        setFieldValue(name, currencyMenuItems?.[0])
     }, [])
 
     const handleSelect = useCallback((item: SelectMenuItem<AssetGroup>) => {
@@ -69,7 +69,9 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
 
-    return <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />;
+    return <div className="relative">
+        <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />
+    </div>
 };
 
 export function GenerateCurrencyMenuItems(currencies: AssetGroup[], resolveImgSrc: (item: Layer | NetworkCurrency | undefined) => string, routes?: { network: string, asset: string }[], lockedCurrency?: AssetGroup | undefined, from?: Layer, to?: Layer, direction?: string, balances?: Balance[]): SelectMenuItem<AssetGroup>[] {

@@ -12,7 +12,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const { values, setFieldValue, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
-    const { fromCurrency, from, to, amount, destination_address, toCurrency } = values || {};
+    const { fromCurrency, from, to, destination_address, toCurrency } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
     const [isAmountVisible, setIsAmountVisible] = useState(false);
 
@@ -79,12 +79,12 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     }, [contract_address, values.from, values.fromCurrency, wallet?.address])
 
     return (<>
-        <AmountLabel detailsAvailable={!!(from && to && amount)}
+        {/* <AmountLabel detailsAvailable={!!(from && to && amount)}
             maxAllowedAmount={maxAllowedDisplayAmount}
             minAllowedAmount={minAllowedAmount}
             isBalanceLoading={(isBalanceLoading || isGasLoading)}
-        />
-        <div className="flex w-full justify-between bg-secondary-700 rounded-lg">
+        /> */}
+        <div className="flex w-full justify-between items-center bg-secondary-700">
             <div className="relative w-full">
                 <NumericInput
                     disabled={!fromCurrency || !toCurrency}
@@ -97,17 +97,17 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     precision={fromCurrency?.precision}
                     onFocus={() => setIsAmountVisible(false)}
                     onBlur={() => setIsAmountVisible(true)}
-                    className="rounded-r-none text-primary-text pr-0 w-full"
+                    className="rounded-r-none text-primary-text w-full pl-0.5 p-0 focus:ring-0 h-fit"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value));
                     }}
                 >
-                    {requestedAmountInUsd && isAmountVisible ? (
-                        <span className="absolute text-xs right-0 bottom-[16px]">
+                    {/* {requestedAmountInUsd && isAmountVisible ? (
+                        <span className="absolute text-xs right-0 bottom-[2px]">
                             (${requestedAmountInUsd})
                         </span>
-                    ) : null}
+                    ) : null} */}
                 </NumericInput>
             </div>
             {
