@@ -13,7 +13,6 @@ type PopoverSelectWrapper = {
     placeholder?: string;
     searchHint?: string;
     disabled?: boolean;
-    direction?: string;
 }
 
 export default function PopoverSelectWrapper<T>({
@@ -21,7 +20,6 @@ export default function PopoverSelectWrapper<T>({
     value,
     values,
     placeholder,
-    direction
 }: PopoverSelectWrapper) {
     const [showModal, setShowModal] = useState(false)
 
@@ -81,7 +79,7 @@ export default function PopoverSelectWrapper<T>({
                 }
             </PopoverTrigger>
             <PopoverContent className="w-fit">
-                <PopoverSelect setValue={handleSelect} value={value} values={values} direction={direction} />
+                <PopoverSelect setValue={handleSelect} value={value} values={values} />
             </PopoverContent>
         </Popover>
     )

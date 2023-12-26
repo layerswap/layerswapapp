@@ -15,8 +15,7 @@ export type BalancesState = {
 }
 
 export type BalancesStateUpdate = {
-    getBalance: (from: Layer) => Promise<void>,
-    getDestinationBalance: (from: Layer) => Promise<void>,
+    getBalance: (network: Layer) => Promise<void>,
     getGas: (from: Layer, currency: NetworkCurrency, userDestinationAddress: string) => Promise<void>,
 }
 
@@ -35,52 +34,24 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
     const balances = allBalances
     const gases = allGases
 
-    async function getBalance(from: Layer) {
-        const provider = getAutofillProvider(from)
+    async function getBalance(network: Layer) {
+        const provider = getAutofillProvider(network)
         const wallet = provider?.getConnectedWallet()
-        
-        const balance = allBalances[wallet?.address || '']?.find(b => b?.network === from?.internal_name)
-        const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
-        const source_network = from
 
-        if (source_network
+        const balance = allBalances[wallet?.address || '']?.find(b => b?.network === network?.internal_name)
+        const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
+
+        if (network
             && isBalanceOutDated
             && wallet?.address) {
             setIsBalanceLoading(true)
 
             const walletBalances = balances[wallet.address]
-            const filteredBalances = walletBalances?.some(b => b?.network === from?.internal_name) ? walletBalances?.filter(b => b?.network !== from.internal_name) : walletBalances || []
+            const filteredBalances = walletBalances?.some(b => b?.network === network?.internal_name) ? walletBalances?.filter(b => b?.network !== network.internal_name) : walletBalances || []
 
-            const provider = getBalanceProvider(from)
+            const provider = getBalanceProvider(network)
             const ercAndNativeBalances = await provider?.getBalance({
-                layer: from,
-                address: wallet?.address
-            }) || []
-
-            setAllBalances((data) => ({ ...data, [wallet?.address]: filteredBalances?.concat(ercAndNativeBalances) }))
-            setIsBalanceLoading(false)
-        }
-    }
-
-    async function getDestinationBalance(to: Layer) {
-        const provider = getAutofillProvider(to)
-        const wallet = provider?.getConnectedWallet()
-        
-        const balance = allBalances[wallet?.address || '']?.find(b => b?.network === to?.internal_name)
-        const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
-        const destination_network = to
-
-        if (destination_network
-            && isBalanceOutDated
-            && wallet?.address) {
-            setIsBalanceLoading(true)
-
-            const walletBalances = balances[wallet.address]
-            const filteredBalances = walletBalances?.some(b => b?.network === to?.internal_name) ? walletBalances?.filter(b => b?.network !== to.internal_name) : walletBalances || []
-
-            const provider = getBalanceProvider(to)
-            const ercAndNativeBalances = await provider?.getBalance({
-                layer: to,
+                layer: network,
                 address: wallet?.address
             }) || []
 
@@ -140,8 +111,7 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
         }}>
             <BalancesStateUpdateContext.Provider value={{
                 getBalance,
-                getGas,
-                getDestinationBalance
+                getGas
             }}>
                 {children}
             </BalancesStateUpdateContext.Provider>

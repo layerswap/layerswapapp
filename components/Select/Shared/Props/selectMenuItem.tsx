@@ -12,7 +12,6 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     };
     group?: string;
     details?: string;
-    destDetails?: string;
     baseObject: T;
     constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, group?: string, details?: string) {
         this.baseObject = baseObject;
@@ -39,5 +38,5 @@ export interface ISelectMenuItem {
         disabledReason: LayerDisabledReason | CurrencyDisabledReason | null
     };
     details?: string;
-    destDetails?: string;
+    order?: number;
 }

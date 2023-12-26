@@ -1,7 +1,7 @@
 import { ISelectMenuItem } from "./Props/selectMenuItem";
 import Image from 'next/image'
 
-export default function SelectItem({ item, direction }: { item: ISelectMenuItem, direction?: string | undefined }) {
+export default function SelectItem({ item }: { item: ISelectMenuItem }) {
     return (<div className="flex items-center w-full">
         <div className="flex-shrink-0 h-6 w-6 relative">
             {item.imgSrc && <Image
@@ -17,9 +17,9 @@ export default function SelectItem({ item, direction }: { item: ISelectMenuItem,
                 {item.name}
             </p>
             {
-                item.details && 
+                item.details &&
                 <p className="text-primary-text-muted">
-                    {direction == "from" ? item.details : item.destDetails}
+                    {item.details}
                 </p>
             }
         </div>
