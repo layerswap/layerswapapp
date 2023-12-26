@@ -4,5 +4,4 @@ export interface SelectProps {
     values: ISelectMenuItem[],
     value?: ISelectMenuItem;
     setValue: (value: ISelectMenuItem) => void;
-    direction?: string | undefined;
 }

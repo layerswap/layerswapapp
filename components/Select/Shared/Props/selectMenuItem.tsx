@@ -13,7 +13,6 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     type: ItemType
     group?: string;
     details?: string;
-    destDetails?: string;
     baseObject: T;
     constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, type: ItemType, group?: string, details?: string) {
         this.baseObject = baseObject;
@@ -42,7 +41,6 @@ export interface ISelectMenuItem {
     };
     type: ItemType
     details?: string;
-    destDetails?: string;
+    order?: number;
 }
-
 type ItemType = 'layer' | 'cex' | 'currency'

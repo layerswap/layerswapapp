@@ -15,7 +15,7 @@ export type BalancesState = {
 }
 
 export type BalancesStateUpdate = {
-    getBalance: (from: Layer) => Promise<void>,
+    getBalance: (network: Layer) => Promise<void>,
     getGas: (from: Layer, currency: NetworkCurrency, userDestinationAddress: string) => Promise<void>,
 }
 
@@ -37,12 +37,11 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
     async function getBalance(network: Layer) {
         const provider = getAutofillProvider(network)
         const wallet = provider?.getConnectedWallet()
-        
+
         const balance = allBalances[wallet?.address || '']?.find(b => b?.network === network?.internal_name)
         const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
-        const source_network = network
 
-        if (source_network
+        if (network
             && isBalanceOutDated
             && wallet?.address) {
             setIsBalanceLoading(true)

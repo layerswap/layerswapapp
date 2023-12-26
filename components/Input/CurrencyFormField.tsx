@@ -19,10 +19,10 @@ import useWallet from "../../hooks/useWallet";
 
 const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
-        values: { to, fromCurrency, toCurrency, from, currencyGroup },
+        values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
-
+    const { to, fromCurrency, toCurrency, from, currencyGroup } = values
     const { resolveImgSrc } = useSettingsState();
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency'
     const query = useQueryState()
@@ -60,10 +60,9 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
         resolveImgSrc,
+        values,
         direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
         lockedCurrency,
-        from,
-        to,
         direction,
         balances[wallet?.address || '']
     )
@@ -127,18 +126,19 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
                     </div>
                 </div>
             }
-            <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} direction={direction} />
+            <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />
         </div>
     )
 };
 
-export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolveImgSrc: (item: Layer | NetworkCurrency) => string, routes?: { network: string, asset: string }[], lockedCurrency?: NetworkCurrency, from?: Layer, to?: Layer, direction?: string, balances?: Balance[]): SelectMenuItem<NetworkCurrency>[] {
+export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolveImgSrc: (item: Layer | NetworkCurrency) => string, values: SwapFormValues, routes?: { network: string, asset: string }[], lockedCurrency?: NetworkCurrency, direction?: string, balances?: Balance[]): SelectMenuItem<NetworkCurrency>[] {
+    const { to, from } = values
 
     let currencyIsAvailable = (currency: NetworkCurrency) => {
         if (lockedCurrency) {
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
-        else if (from && to && !routes?.filter(r => r.network === (direction === 'from' ? from.internal_name : to.internal_name)).some(r => r.asset === currency.asset)) {
+        else if (from && to && !routes?.filter(r => r.network === (direction === 'from' ? from?.internal_name : to?.internal_name)).some(r => r.asset === currency.asset)) {
             return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
         }
         else {
@@ -150,9 +150,7 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
         const currency = c
         const displayName = lockedCurrency?.asset ?? currency.asset;
         const balance = balances?.find(b => b?.token === c?.asset && from?.internal_name === b.network)
-        const destinationBalance = balances?.find(b => b?.token === c?.asset && to?.internal_name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
-        const formatted_destBalance_amount = destinationBalance ? Number(truncateDecimals(destinationBalance?.amount, c.precision)) : ''
 
         const res: SelectMenuItem<NetworkCurrency> = {
             baseObject: c,
@@ -162,8 +160,7 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
             imgSrc: resolveImgSrc && resolveImgSrc(c),
             isAvailable: currencyIsAvailable(c),
             details: `${formatted_balance_amount}`,
-            type: 'currency',
-            destDetails: `${formatted_destBalance_amount}`,
+            type: 'currency'
         };
 
         return res
