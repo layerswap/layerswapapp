@@ -3,7 +3,6 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import useSWR from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
-import { truncateDecimals } from '../components/utils/RoundDecimals';
 
 const FeeStateContext = createContext<ContextType | null>(null);
 

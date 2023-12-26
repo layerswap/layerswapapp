@@ -40,7 +40,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const [wrongNetwork, setWrongNetwork] = useState(false)
     const inputReference = useRef<HTMLInputElement>(null);
     const destination = values.to
-    const asset = values.toCurrency?.asset
     const valid_addresses = address_book?.filter(a => a.networks?.some(n => destination?.internal_name === n) && isValidAddress(a.address, destination)) || []
 
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
@@ -232,12 +231,12 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                     {
                         !inputAddressIsValid
                         && destinationAsset
-                        && destination
+                        && values.toExchange
                         &&
                         <div className='text-left p-4 bg-secondary-800 text-primary-text rounded-lg border border-secondary-500'>
                             <div className="flex items-center">
                                 <Info className='h-5 w-5 text-primary-600 mr-3' />
-                                <label className="block text-sm md:text-base font-medium leading-6">How to find your {destination?.display_name} deposit address</label>
+                                <label className="block text-sm md:text-base font-medium leading-6">How to find your {values.toExchange.display_name} deposit address</label>
                             </div>
                             <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-primary-text">
                                 <li>Go to the Deposits page</li>
@@ -260,7 +259,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     <span>Select</span>
                                     <span className="inline-block mx-1">
                                         <span className='flex gap-1 items-baseline text-sm '>
-                                            <Image src={settings.resolveImgSrc(destination)}
+                                            <Image src={settings.resolveImgSrc(values.toExchange)}
                                                 alt="Project Logo"
                                                 height="15"
                                                 width="15"

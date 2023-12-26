@@ -64,7 +64,7 @@ export default function PopoverSelectWrapper<T>({
                             <button type='button' className='w-full py-0 border-transparent bg-transparent font-semibold rounded-md flex items-center justify-between'>
                                 <div className="disabled:cursor-not-allowed relative grow flex items-center text-left w-full font-semibold">
                                     <span className="flex grow text-left items-center">
-                                        <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                                        <span className="block text-xs md:text-base font-medium text-primary-text-placeholder flex-auto items-center">
                                             {placeholder}
                                         </span>
                                     </span>
@@ -90,7 +90,7 @@ const Placeholder = ({ placeholder }: { placeholder: string | undefined }) => {
         <div className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-secondary-600 border border-secondary-500 font-semibold align-sub ">
             <div className="disabled:cursor-not-allowed relative grow flex items-center text-left w-full font-semibold">
                 <span className="flex grow text-left items-center">
-                    <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                    <span className="block text-xs md:text-base font-medium text-primary-text-placeholder flex-auto items-center">
                         {placeholder}
                     </span>
                 </span>
