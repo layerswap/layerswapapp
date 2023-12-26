@@ -36,7 +36,6 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const [carouselFinished, setCarouselFinished] = useState(alreadyFamiliar)
 
     const [authWindow, setAuthWindow] = useState<Window | null>()
-    const [authorizedAmount, setAuthorizedAmount] = useState<number>()
     const [firstScreen, setFirstScreen] = useState<boolean>(true)
 
     const carouselRef = useRef<CarouselRef | null>(null)
@@ -62,10 +61,8 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
             //throws error when accessing href TODO research safe way
         }
         if (authWindowHref && authWindowHref?.indexOf(window.location.origin) !== -1) {
-            const authWindowURL = new URL(authWindowHref)
-            const authorizedAmount = authWindowURL.searchParams.get("send_limit_amount")
-            setAuthorizedAmount(Number(authorizedAmount))
             authWindow?.close()
+            onAuthorized()
         }
     }, [authWindow])
 
@@ -73,25 +70,6 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
         checkShouldStartPolling,
         authWindow && !authWindow.closed ? 1000 : null,
     )
-
-    const handleDisconnectCoinbase = useCallback(async () => {
-        const apiClient = new LayerSwapApiClient()
-        if (swap)
-            await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
-    }, [swap])
-
-    useEffect(() => {
-        if (authorizedAmount) {
-            if (Number(authorizedAmount) < Number(minimalAuthorizeAmount)) {
-                toast.dismiss();
-                toast.error("You have not authorized enough to be able to complete the transfer. Please authorize again.");
-                handleDisconnectCoinbase();
-            }
-            else {
-                onAuthorized()
-            }
-        }
-    }, [authorizedAmount, minimalAuthorizeAmount, onAuthorized])
 
     const handleConnect = useCallback(() => {
         try {
@@ -137,7 +115,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     }
 
     return (
-        <Widget>
+        <>
             <Widget.Content>
                 {
                     !hideHeader ?
@@ -168,7 +146,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                     </div>
                 }
             </Widget.Content>
-            <Widget.Footer sticky={stickyFooter}>
+            <Widget.Footer sticky={true}>
                 <div>
                     {
                         <div className="flex items-center mb-3">
@@ -210,7 +188,7 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                     </div>
                 </div>
             </Widget.Footer>
-        </Widget >
+        </ >
     )
 }
 

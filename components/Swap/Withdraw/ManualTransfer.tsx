@@ -42,10 +42,6 @@ const ManualTransfer: FC = () => {
             hintsStore.setSwapDepositHintClicked(swap?.id)
     }, [swap, hintsStore])
 
-    if (isLoading) {
-        return <Sceleton />
-    }
-
     return (
         <div className='rounded-md bg-secondary-700 border border-secondary-500 w-full h-full items-center relative'>
             <div className={!hintClicked ? "absolute w-full h-full flex flex-col items-center px-3 pb-3 text-center" : "hidden"}>

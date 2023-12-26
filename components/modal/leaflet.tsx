@@ -1,4 +1,4 @@
-import { Dispatch, PropsWithChildren, SetStateAction, useEffect, useRef } from 'react'
+import { Dispatch, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef } from 'react'
 import { motion, useAnimation } from "framer-motion";
 import { forwardRef } from 'react';
 import IconButton from '../buttons/iconButton';
@@ -46,8 +46,9 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     }, [controls, show, transitionProps]);
 
     const handleCloseModal = () => {
-        setShow(false)
+        setShow(false);
     }
+
     let wrapperHeightClass = ''
     switch (height) {
         case 'full':
@@ -62,6 +63,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
         default:
             wrapperHeightClass = ''
     }
+
     return (
         <div ref={topmostRef}>
             <motion.div
@@ -75,7 +77,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
-                className={`${wrapperHeightClass} group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'rounded-t-2xl border-t border-secondary-500' : ''}  bg-secondary-900 ${className} shadow-lg`}
+                className={`${wrapperHeightClass} max-h-full overflow-y-auto group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'rounded-t-2xl border-t border-secondary-500' : ''}  bg-secondary-900 ${className} shadow-lg`}
                 initial={{ y: "20%" }}
                 animate={controls}
                 exit={{ y: "100%" }}
@@ -86,7 +88,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
-                <div className={`py-3 flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
+                <div className={`py-3 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
                     <div className='px-6 flex justify-between items-center'>
                         <div className="text-lg text-primary-text font-semibold">
                             <div>{title}</div>

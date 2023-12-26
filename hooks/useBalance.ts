@@ -94,7 +94,7 @@ export default function useBalanceProvider() {
                 }) || []
 
                 if (gas) {
-                    const filteredGases = gases[from.internal_name]?.some(b => b?.token === currency?.asset) ? gases[from.internal_name].filter(g => g.token !== currency.asset) : gases[from.internal_name] || []
+                    const filteredGases = gases[from.internal_name]?.some(b => b?.token === currency?.asset) ? gases[from.internal_name].filter(g => g?.token !== currency.asset) : gases[from.internal_name] || []
                     setAllGases((data) => ({ ...data, [from.internal_name]: filteredGases.concat(gas) }))
                 }
             }
