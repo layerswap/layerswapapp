@@ -138,14 +138,14 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
         if (lockedCurrency) {
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
-        else if (from && to && !routes?.filter(r => r.network === (direction === 'from' ? from?.internal_name : to?.internal_name)).some(r => r.asset === currency.asset)) {
+        else if ((from || to) && !routes?.filter(r => r.network === (direction === 'from' ? from?.internal_name : to?.internal_name)).some(r => r.asset === currency.asset)) {
             return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
         }
         else {
             return { value: true, disabledReason: null }
         }
     }
-
+    
     return currencies?.map(c => {
         const currency = c
         const displayName = lockedCurrency?.asset ?? currency.asset;
