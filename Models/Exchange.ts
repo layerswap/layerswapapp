@@ -1,4 +1,3 @@
-import { NetworkCurrency } from "./CryptoNetwork";
 import { LayerStatus } from "./Layer";
 
 export class Exchange {

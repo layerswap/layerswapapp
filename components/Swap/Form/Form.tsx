@@ -109,7 +109,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     }, [values.refuel, destination])
 
     const valuesSwapper = useCallback(() => {
-        setValues({ ...values, from: values.to, to: values.from, fromCurrency: values.toCurrency, toCurrency: values.fromCurrency }, true)
+        setValues({ ...values, from: values.to, to: values.from, fromCurrency: values.toCurrency, toCurrency: values.fromCurrency, toExchange: values.fromExchange, fromExchange: values.toExchange }, true)
     }, [values])
 
     const [animate, cycle] = useCycle(
@@ -167,7 +167,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                         {!query?.hideFrom && !query?.hideTo &&
                             <button
                                 type="button"
-                                disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || !!fromExchange || !!toExchange}
+                                disabled={valuesSwapperDisabled || sourceLoading || destinationLoading}
                                 onClick={valuesSwapper}
                                 className={`${sourceLoading || destinationLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[86px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
                                 <motion.div
