@@ -11,7 +11,7 @@ import { useSettingsState } from '../../context/settings';
 type Props = {
     type: "widget" | "contained",
 }
-import { useSwapTransactionStore } from '../store/zustandStore';
+import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 
 const SwapDetails: FC<Props> = ({ type }) => {
     const { swap } = useSwapDataState()
@@ -24,6 +24,18 @@ const SwapDetails: FC<Props> = ({ type }) => {
 
     const sourceNetwork = settings.layers.find(l => l.internal_name === swap?.source_network)
     const currency = settings.currencies.find(c => c.asset === swap?.source_network_asset)
+
+    if (!swap) return <>
+        <div className="w-full h-[430px]">
+            <div className="animate-pulse flex space-x-4">
+                <div className="flex-1 space-y-6 py-1">
+                    <div className="h-32 bg-secondary-700 rounded-lg"></div>
+                    <div className="h-40 bg-secondary-700 rounded-lg"></div>
+                    <div className="h-12 bg-secondary-700 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+    </>
 
     return (
         <>

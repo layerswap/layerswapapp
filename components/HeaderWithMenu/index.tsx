@@ -31,9 +31,11 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
       <div className="w-full grid grid-cols-5 px-6 mt-3" >
          {
             goBack &&
-            <IconButton onClick={goBack} icon={
-               <ArrowLeft strokeWidth="2" />
-            }>
+            <IconButton onClick={goBack}
+               aria-label="Go back"
+               icon={
+                  <ArrowLeft strokeWidth="2" />
+               }>
             </IconButton>
          }
 

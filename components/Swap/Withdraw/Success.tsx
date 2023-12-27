@@ -4,7 +4,7 @@ import { FC, useCallback } from 'react'
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState } from '../../../context/swap';
 import MessageComponent from '../../MessageComponent';
-import Widget from '../../Wizard/Widget';
+import { Widget } from '../../Widget/Index';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import GoHomeButton from '../../utils/GoHome';
 import { TransactionType } from '../../../lib/layerSwapApiClient';

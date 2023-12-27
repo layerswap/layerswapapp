@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import Head from "next/head"
 import { useRouter } from "next/router";
 import ThemeWrapper from "./themeWrapper";
@@ -8,10 +8,8 @@ import { AuthProvider } from "../context/authContext";
 import { SettingsProvider } from "../context/settings";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
-import { MenuProvider } from "../context/menu";
 import ErrorFallback from "./ErrorFallback";
 import { SendErrorMessage } from "../lib/telegram";
-import dynamic from 'next/dynamic'
 import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
 import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
@@ -20,6 +18,8 @@ import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
 import * as Sentry from "@sentry/nextjs";
+import RainbowKit from "./RainbowKit";
+import Solana from "./SolanaProvider";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -108,26 +108,6 @@ export default function Layout({ children, settings, themeData }: Props) {
 
   const basePath = router?.basePath ?? ""
 
-  const DynamicRainbowKit = (dynamic(() => import("./RainbowKit"), {
-    loading: () => <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
-      <div className='text-center text-xl text-secondary-100'>
-      </div>
-      <div className="relative px-6">
-        <div className="flex items-start">
-          <div className={`flex flex-nowrap grow`}>
-            <div className="w-full pb-6 flex flex-col justify-between space-y-5 text-secondary-text h-full">
-              <div className="sm:min-h-[504px]"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div id="widget_root" />
-    </div>,
-    ssr: false
-  }))
-
-
-
   return (<>
     <Head>
       <title>Layerswap</title>
@@ -160,23 +140,23 @@ export default function Layout({ children, settings, themeData }: Props) {
     }
     <QueryProvider query={query}>
       <SettingsProvider data={appSettings}>
-        <MenuProvider>
-          <AuthProvider>
-            <TooltipProvider delayDuration={500}>
-              <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
-                <ThemeWrapper>
-                  <TonConnectProvider basePath={basePath} themeData={themeData}>
-                    <DynamicRainbowKit>
+        <AuthProvider>
+          <TooltipProvider delayDuration={500}>
+            <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+              <ThemeWrapper>
+                <TonConnectProvider basePath={basePath} themeData={themeData}>
+                  <RainbowKit>
+                    <Solana>
                       {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
                         <MaintananceContent />
                         : children}
-                    </DynamicRainbowKit>
-                  </TonConnectProvider>
-                </ThemeWrapper>
-              </ErrorBoundary>
-            </TooltipProvider>
-          </AuthProvider>
-        </MenuProvider>
+                    </Solana>
+                  </RainbowKit>
+                </TonConnectProvider>
+              </ThemeWrapper>
+            </ErrorBoundary>
+          </TooltipProvider>
+        </AuthProvider>
       </SettingsProvider >
     </QueryProvider>
   </>)
