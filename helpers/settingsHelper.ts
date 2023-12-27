@@ -13,7 +13,7 @@ export function FilterSourceLayers(layers: Layer[], destination?: Layer | null, 
         layers.some(l => IsAvailableForLayer(asset, source, l))
 
     const filteredLayers = layers.filter(l => {
-        const isAvailable = l.status != 'inactive' && destination?.internal_name !== l.internal_name
+        const isAvailable = destination?.internal_name !== l.internal_name
 
         const layerHasAvailableL2 = l.assets?.some(l2Asset =>
             (!lockedCurrency || l2Asset?.asset === lockedCurrency?.asset)
@@ -42,13 +42,11 @@ const IsAvailableForLayer = (asset: string, source: Layer, destination: Layer) =
 
     const sourceASsetIsAvailable = source
         ?.assets
-        .some(c => c?.asset === asset
-            && (c.status !== 'inactive'))
+        .some(c => c?.asset === asset)
 
     const destinationAssetIsAvailable = destination
         ?.assets
-        .some(c => c?.asset === asset
-            && (c.status !== 'inactive'))
+        .some(c => c?.asset === asset)
 
     return sourceASsetIsAvailable && destinationAssetIsAvailable
 }
@@ -59,8 +57,7 @@ export function FilterDestinationLayers(layers: Layer[], source?: Layer | null, 
         layers.some(l => IsAvailableForLayer(asset, l, destination))
 
     const filteredLayers = layers.filter(l => {
-        const isAvailable = l.status != "inactive"
-            && source?.internal_name !== l.internal_name;
+        const isAvailable = source?.internal_name !== l.internal_name;
 
         const layerHasAvailableL2 = l.assets?.some(l2Asset =>
             (!lockedCurrency || l2Asset?.asset === lockedCurrency?.asset)

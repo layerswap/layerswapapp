@@ -2,7 +2,6 @@ import { FC } from "react";
 import { NetworkCurrency } from "../../../Models/CryptoNetwork";
 import { Layer } from "../../../Models/Layer";
 import { truncateDecimals } from "../../utils/RoundDecimals";
-import { GetDefaultAsset } from "../../../helpers/settingsHelper";
 import AverageCompletionTime from "../../Common/AverageCompletionTime";
 import { useBalancesState } from "../../../context/balances";
 import { useFormikContext } from "formik";
@@ -74,17 +73,11 @@ type EstimatedArrivalProps = {
     fee: Fee
 }
 const EstimatedArrival: FC<EstimatedArrivalProps> = ({ currency, destination, fee }) => {
-    const destinationNetworkCurrency = (destination && currency) ? GetDefaultAsset(destination, currency.asset) : null
 
     return <div className="flex flex-row items-center gap-2 w-full pl-1">
         <Clock9 className="h-4 w-4 text-secondary-text" />
         <span className="text-right">
-            {
-                destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
-                    <span>Up to 2 hours (delayed)</span>
-                    :
-                    <AverageCompletionTime hours={fee?.avgCompletionTime?.total_hours} minutes={fee?.avgCompletionTime?.total_minutes} />
-            }
+            <AverageCompletionTime hours={fee?.avgCompletionTime?.total_hours} minutes={fee?.avgCompletionTime?.total_minutes} />
         </span>
     </div>
 }

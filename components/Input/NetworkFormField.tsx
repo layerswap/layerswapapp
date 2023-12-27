@@ -94,13 +94,13 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
-        filteredLayers = layers.filter(l => l.status === 'active' && routesData?.some(r => r.network === l.internal_name) && l.internal_name !== filterWith?.internal_name)
+        filteredLayers = layers.filter(l => routesData?.some(r => r.network === l.internal_name) && l.internal_name !== filterWith?.internal_name)
         menuItems = GenerateMenuItems(filteredLayers, toExchange ? [] : exchanges, resolveImgSrc, direction, !!(from && lockFrom));
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        filteredLayers = layers.filter(l => l.status === 'active' && routesData?.some(r => r.network === l.internal_name) && l.internal_name !== filterWith?.internal_name)
+        filteredLayers = layers.filter(l => routesData?.some(r => r.network === l.internal_name) && l.internal_name !== filterWith?.internal_name)
         menuItems = GenerateMenuItems(filteredLayers, fromExchange ? [] : exchanges, resolveImgSrc, direction, !!(to && lockTo));
     }
     valueGrouper = groupByType

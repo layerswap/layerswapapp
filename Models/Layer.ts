@@ -4,7 +4,6 @@ export type LayerStatus = "active" | "inactive" | 'insufficient_liquidity';
 export type Layer = {
     display_name: string;
     internal_name: string;
-    status: LayerStatus;
     is_featured: boolean;
     created_date: string;
     img_url: string;

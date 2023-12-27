@@ -1,5 +1,3 @@
-import { LayerStatus } from "./Layer";
-
 export enum NetworkType {
     EVM = "evm",
     Starknet = "starknet",
@@ -15,7 +13,6 @@ export class CryptoNetwork {
     internal_name: string;
     transaction_explorer_template: string;
     account_explorer_template: string;
-    status: LayerStatus;
     currencies: NetworkCurrency[];
     refuel_amount_in_usd: number;
     chain_id: string;
@@ -30,7 +27,6 @@ export class CryptoNetwork {
 
 export class NetworkCurrency {
     asset: string;
-    status: LayerStatus;
     is_refuel_enabled: boolean;
     is_native: boolean
     //TODO may be plain string
