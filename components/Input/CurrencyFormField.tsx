@@ -24,7 +24,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     } = useFormikContext<SwapFormValues>();
     const { to, fromCurrency, toCurrency, from, currencyGroup } = values
     const { resolveImgSrc } = useSettingsState();
-    const name = direction === 'from' ? 'fromCurrency' : 'toCurrency'
+    const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { balances, isBalanceLoading } = useBalancesState()
     const lockedCurrency = query?.lockAsset ? from?.assets?.find(c => c?.asset?.toUpperCase() === (query?.asset)?.toUpperCase()) : undefined
@@ -46,16 +46,17 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const sourceRoutesURL = `/routes/sources${(to && toCurrency) ? `?destination_network=${to.internal_name}&destination_asset=${toCurrency.asset}&` : "?"}version=${version}`
     const destinationRoutesURL = `/routes/destinations${(from && fromCurrency) ? `?source_network=${from.internal_name}&source_asset=${fromCurrency.asset}&` : "?"}version=${version}`
 
-    const { data: sourceRoutes } = useSWR<ApiResponse<{
+    const { data: sourceRoutes, error: sourceRoutesError } = useSWR<ApiResponse<{
         network: string,
         asset: string
     }[]>>(sourceRoutesURL, apiClient.fetcher)
 
-    const { data: destinationRoutes } = useSWR<ApiResponse<{
+    const { data: destinationRoutes, error: destRoutesError } = useSWR<ApiResponse<{
         network: string,
         asset: string
     }[]>>(destinationRoutesURL, apiClient.fetcher)
-
+    console.log(sourceRoutesError, "sourceRoutesError")
+    console.log(destRoutesError, "destRoutesError")
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : assets
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
@@ -85,23 +86,31 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         else if (default_currency) {
             setFieldValue(name, default_currency.baseObject)
         }
+
+
     }, [from, to, query])
 
     useEffect(() => {
-        if (direction === "to" && fromCurrency && toCurrency && destinationRoutes?.data) {
-            if (!destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === toCurrency?.asset)) {
+        if (direction === "to" && fromCurrency && toCurrency) {
+            if (destinationRoutes && !destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === toCurrency?.asset)) {
                 setFieldValue(name, null)
+            } else if (destRoutesError) {
+                setFieldValue('toCurrency', null)
+                setFieldValue('to', null)
             }
         }
-    }, [fromCurrency, direction, to, destinationRoutes])
+    }, [fromCurrency, direction, to, destinationRoutes, destRoutesError])
 
     useEffect(() => {
-        if (direction === "from" && toCurrency && fromCurrency && sourceRoutes?.data) {
-            if (!sourceRoutes?.data?.filter(r => r.network === from?.internal_name)?.some(r => r.asset === fromCurrency?.asset)) {
+        if (direction === "from" && toCurrency && fromCurrency) {
+            if (sourceRoutes?.data && !sourceRoutes?.data?.filter(r => r.network === from?.internal_name)?.some(r => r.asset === fromCurrency?.asset)) {
                 setFieldValue(name, null)
+            } else if (sourceRoutesError) {
+                setFieldValue('fromCurrency', null)
+                setFieldValue('from', null)
             }
         }
-    }, [toCurrency, direction, from, sourceRoutes])
+    }, [toCurrency, direction, from, sourceRoutes, sourceRoutesError])
 
     const value = currencyMenuItems?.find(x => x.id == currencyAsset);
 
@@ -145,7 +154,7 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
             return { value: true, disabledReason: null }
         }
     }
-    
+
     return currencies?.map(c => {
         const currency = c
         const displayName = lockedCurrency?.asset ?? currency.asset;
