@@ -55,8 +55,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         network: string,
         asset: string
     }[]>>(destinationRoutesURL, apiClient.fetcher)
-    console.log(sourceRoutesError, "sourceRoutesError")
-    console.log(destRoutesError, "destRoutesError")
+
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : assets
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
