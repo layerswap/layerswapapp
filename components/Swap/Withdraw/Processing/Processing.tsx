@@ -54,12 +54,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const outputPendingDetails = <div className='flex items-center space-x-1'>
         <span>Estimated arrival after confirmation:</span>
         <div className='text-primary-text'>
-            {
-                destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
-                    <span>Up to 2 hours (delayed)</span>
-                    :
-                    <AverageCompletionTime hours={fee?.avgCompletionTime?.total_hours} minutes={fee?.avgCompletionTime?.total_minutes} />
-            }
+            <AverageCompletionTime hours={fee?.avgCompletionTime?.total_hours} minutes={fee?.avgCompletionTime?.total_minutes} />
         </div>
     </div>
 

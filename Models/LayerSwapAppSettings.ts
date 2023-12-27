@@ -58,7 +58,6 @@ export class LayerSwapAppSettings {
     static ResolveNetworkL2Assets(network: CryptoNetwork): NetworkCurrency[] {
         return network?.currencies?.map(c => ({
             asset: c.asset,
-            status: c.status,
             contract_address: c.contract_address,
             decimals: c.decimals,
             precision: c.precision,

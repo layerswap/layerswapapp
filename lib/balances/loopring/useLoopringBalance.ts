@@ -23,7 +23,7 @@ export default function useLoopringBalance(): BalanceProvider {
             const tokens = layer?.assets?.map(obj => obj.contract_address).join(',');
             const result: { data: LpBalance[] } = await axios.get(`${uri}/user/balances?accountId=${accInfo.accountId}&tokens=${tokens}`)
 
-            const loopringBalances = layer?.assets.filter(a => a.status !== 'inactive').map(asset => {
+            const loopringBalances = layer?.assets?.map(asset => {
                 const amount = result.data.find(d => d.tokenId == Number(asset.contract_address))?.total;
                 return ({
                     network: layer.internal_name,

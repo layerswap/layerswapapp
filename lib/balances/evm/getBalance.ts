@@ -20,7 +20,7 @@ export const resolveERC20Balances = async (
     multicallRes: ERC20ContractRes[],
     from: Layer,
 ) => {
-    const assets = from?.assets?.filter(a => a.contract_address && a.status !== 'inactive')
+    const assets = from?.assets?.filter(a => a.contract_address)
     if (!assets)
         return null
     const contractBalances = multicallRes?.map((d, index) => {
@@ -51,7 +51,7 @@ export const getErc20Balances = async ({
     hasMulticall = false
 }: GetBalanceArgs): Promise<ERC20ContractRes[] | null> => {
 
-    const contracts = assets?.filter(a => a.contract_address && a.status !== 'inactive').map(a => ({
+    const contracts = assets?.filter(a => a.contract_address).map(a => ({
         address: a?.contract_address as `0x${string}`,
         abi: erc20ABI,
         functionName: 'balanceOf',

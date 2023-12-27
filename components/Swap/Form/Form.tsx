@@ -224,7 +224,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                         <FeeDetailsComponent values={values} />
                         {
                             //TODO refactor
-                            destination && toAsset && GetDefaultAsset(destination, toAsset)?.status == 'insufficient_liquidity' &&
+                            destination && toAsset &&
                             <WarningMessage messageType="warning" className="mt-4">
                                 <span className="font-normal"><span>We&apos;re experiencing delays for transfers of</span> <span>{values?.toCurrency?.asset}</span> <span>to</span> <span>{values?.to?.display_name}</span><span>. Estimated arrival time can take up to 2 hours.</span></span>
                             </WarningMessage>
@@ -232,7 +232,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
                         {
                             //TODO refactor 
-                            destination && toAsset && GetDefaultAsset(destination, toAsset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
+                            destination && toAsset && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
                             <WarningMessage messageType="warning" className="mt-4">
                                 <span className="font-normal"><span>{destination?.display_name}</span> <span>network congestion. Transactions can take up to 1 hour.</span></span>
                             </WarningMessage>

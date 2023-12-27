@@ -31,11 +31,9 @@ export default function useSolanaBalance(): BalanceProvider {
             return info.value.uiAmount;
         }
 
-        const assets = layer.assets.filter(a => a.status !== 'inactive')
-
-        for (let i = 0; i < assets.length; i++) {
+        for (let i = 0; i < layer.assets.length; i++) {
             try {
-                const asset = assets[i]
+                const asset = layer.assets[i]
                 const sourceToken = new PublicKey(asset?.contract_address!);
                 const associatedTokenFrom = await getAssociatedTokenAddress(
                     sourceToken,
