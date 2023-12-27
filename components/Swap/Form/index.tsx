@@ -97,7 +97,7 @@ export default function Form() {
                     if (search)
                         swapURL += `?${search}`
                 }
-                window.history.replaceState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
+                window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
                 setShowSwapModal(true)
             }
             mutate(`/swaps?status=${SwapStatusInNumbers.Pending}&version=${LayerSwapApiClient.apiVersion}`)
@@ -134,11 +134,29 @@ export default function Form() {
     const initiallyValidation = MainStepValidation({ settings, query })(initialValues)
     const initiallyInValid = Object.values(initiallyValidation)?.filter(v => v).length > 0
 
+
+    const handleClosesSwapModal = () => {
+        let homeURL = window.location.protocol + "//"
+            + window.location.host
+
+        const params = resolvePersistantQueryParams(router.query)
+        if (params && Object.keys(params).length) {
+            const search = new URLSearchParams(params as any);
+            if (search)
+                homeURL += `?${search}`
+        }
+        window.history.replaceState({ ...window.history.state, as: homeURL, url: homeURL }, '', homeURL);
+    }
+
     return <>
         <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
             {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
         </Modal>
-        <Modal height='fit' show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`}>
+        <Modal height='fit'
+            show={showSwapModal}
+            setShow={setShowSwapModal}
+            header={`Complete the swap`}
+            onClose={handleClosesSwapModal}>
             <ResizablePanel>
                 <SwapDetails type="contained" />
             </ResizablePanel>
@@ -154,89 +172,4 @@ export default function Form() {
             <SwapForm isPartnerWallet={!!isPartnerWallet} partner={partner} />
         </Formik>
     </>
-}
-const textMotion = {
-    rest: {
-        color: "grey",
-        x: 0,
-        transition: {
-            duration: 0.4,
-            type: "tween",
-            ease: "easeIn"
-        }
-    },
-    hover: {
-        color: "blue",
-        x: 30,
-        transition: {
-            duration: 0.4,
-            type: "tween",
-            ease: "easeOut"
-        }
-    }
-};
-
-const PendingSwap = ({ onClick }: { onClick: () => void }) => {
-    const { swap } = useSwapDataState()
-    const { source_exchange: source_exchange_internal_name,
-        destination_network: destination_network_internal_name,
-        source_network: source_network_internal_name,
-        destination_exchange: destination_exchange_internal_name,
-    } = swap || {}
-
-    const settings = useSettingsState()
-
-    if (!swap)
-        return <></>
-
-    const { exchanges, networks, resolveImgSrc } = settings
-    const source = source_exchange_internal_name ? exchanges.find(e => e.internal_name === source_exchange_internal_name) : networks.find(e => e.internal_name === source_network_internal_name)
-    const destination_exchange = destination_exchange_internal_name && exchanges.find(e => e.internal_name === destination_exchange_internal_name)
-    const destination = destination_exchange_internal_name ? destination_exchange : networks.find(n => n.internal_name === destination_network_internal_name)
-
-    return <motion.div
-        initial={{ y: 10, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: -10, opacity: 0 }}
-        transition={{ duration: 0.2 }}
-    >
-        <motion.div
-            onClick={onClick}
-            initial="rest" whileHover="hover" animate="rest"
-            className="relative bg-secondary-600 rounded-r-lg">
-            <motion.div
-                variants={textMotion}
-                className="flex items-center bg-secondary-600 rounded-r-lg">
-                <div className="text-primary-text flex px-3 p-2 items-center space-x-2">
-                    <span className="flex items-center">
-                        {swap && <StatusIcon swap={swap} short={true} />}
-                    </span>
-                    <div className="flex-shrink-0 h-5 w-5 relative">
-                        {source &&
-                            <Image
-                                src={resolveImgSrc(source)}
-                                alt="From Logo"
-                                height="60"
-                                width="60"
-                                className="rounded-md object-contain"
-                            />
-                        }
-                    </div>
-                    <ChevronRight className="block h-4 w-4 mx-1" />
-                    <div className="flex-shrink-0 h-5 w-5 relative block">
-                        {destination &&
-                            <Image
-                                src={resolveImgSrc(destination)}
-                                alt="To Logo"
-                                height="60"
-                                width="60"
-                                className="rounded-md object-contain"
-                            />
-                        }
-                    </div>
-                </div>
-
-            </motion.div>
-        </motion.div>
-    </motion.div>
 }
