@@ -12,11 +12,16 @@ export async function getServerSideProps(context) {
     const { data: networkData } = await apiClient.GetLSNetworksAsync()
     const { data: exchangeData } = await apiClient.GetExchangesAsync()
 
+    const { data: sourceRoutes } = await apiClient.GetSourceRoutesAsync()
+    const { data: destinationRoutes } = await apiClient.GetDestinationRoutesAsync()
+
     if (!networkData || !exchangeData) return
 
     const settings = {
         networks: networkData,
         exchanges: exchangeData,
+        sourceRoutes: sourceRoutes,
+        destinationRoutes: destinationRoutes
     }
 
     const themeData = await getThemeData(context.query)

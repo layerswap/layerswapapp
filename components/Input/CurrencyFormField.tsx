@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useMemo } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
@@ -23,6 +23,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const { to, fromCurrency, toCurrency, from, currencyGroup } = values
+    const [allRoutes, setAllRoutes] = useState<string[]>([]);
     const { resolveImgSrc } = useSettingsState();
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
@@ -47,16 +48,17 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const destinationRoutesURL = `/routes/destinations${(from && fromCurrency) ? `?source_network=${from.internal_name}&source_asset=${fromCurrency.asset}&` : "?"}version=${version}`
 
     const { data: sourceRoutes, error: sourceRoutesError } = useSWR<ApiResponse<{
-        network: string,
-        asset: string
+        network: string;
+        asset: string;
     }[]>>(sourceRoutesURL, apiClient.fetcher)
 
     const { data: destinationRoutes, error: destRoutesError } = useSWR<ApiResponse<{
-        network: string,
-        asset: string
+        network: string;
+        asset: string;
     }[]>>(destinationRoutesURL, apiClient.fetcher)
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : assets
+
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
         resolveImgSrc,

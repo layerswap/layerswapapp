@@ -1,17 +1,21 @@
 import { CryptoNetwork, NetworkCurrency } from "./CryptoNetwork";
 import { Exchange } from "./Exchange";
 import { Layer } from "./Layer";
-import { LayerSwapSettings } from "./LayerSwapSettings";
+import { LayerSwapSettings, Route } from "./LayerSwapSettings";
 import { Partner } from "./Partner";
 
 export class LayerSwapAppSettings {
     constructor(settings: LayerSwapSettings | any) {
-        this.layers = LayerSwapAppSettings.ResolveLayers(settings.networks);
+        this.layers = LayerSwapAppSettings.ResolveLayers(settings.networks, settings.sourceRoutes, settings.destinationRoutes);
         this.exchanges = settings.exchanges
+        this.sourceRoutes = settings.sourceRoutes
+        this.destinationRoutes = settings.destinationRoutes
     }
 
     exchanges: Exchange[]
     layers: Layer[]
+    sourceRoutes: Route[] 
+    destinationRoutes: Route[] 
 
     resolveImgSrc = (item: Layer | NetworkCurrency | Pick<Layer, 'internal_name'> | { asset: string } | Partner | undefined) => {
 
@@ -39,23 +43,26 @@ export class LayerSwapAppSettings {
         return basePath.href;
     }
 
-    static ResolveLayers(networks: CryptoNetwork[]): Layer[] {
+    static ResolveLayers(networks: CryptoNetwork[], sourceRoutes: Route[], destinationRoutes: Route[]): Layer[] {
         const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
         if (!resource_storage_url)
             throw new Error("NEXT_PUBLIC_RESOURCE_STORAGE_URL is not set up in env vars")
 
         const basePath = new URL(resource_storage_url);
-
+        
         const networkLayers: Layer[] = networks?.map((n): Layer =>
         ({
-            assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n),
+            assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n, sourceRoutes, destinationRoutes),
             img_url: `${basePath}layerswap/networks/${n?.internal_name?.toLowerCase()}.png`,
             ...n,
         }))
         return networkLayers
     }
 
-    static ResolveNetworkL2Assets(network: CryptoNetwork): NetworkCurrency[] {
+    static ResolveNetworkL2Assets(network: CryptoNetwork, sourceRoutes: Route[], destinationRoutes: Route[]): NetworkCurrency[] {
+
+        console.log(sourceRoutes,"sourceRoutes")
+
         return network?.currencies?.map(c => ({
             asset: c.asset,
             contract_address: c.contract_address,
@@ -64,6 +71,8 @@ export class LayerSwapAppSettings {
             usd_price: c.usd_price,
             is_native: c.is_native,
             is_refuel_enabled: c.is_refuel_enabled,
+            availableInSource: false,
+            availableInDestination: false,
         }))
     }
 }
