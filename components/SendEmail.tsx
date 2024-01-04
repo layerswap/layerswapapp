@@ -127,7 +127,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                     </Disclosure>
                                 </div>
                                 :
-                                <Widget>
+                                <div>
                                     <Widget.Content center={true}>
                                         <User className='w-16 h-16 text-primary self-center mt-auto' />
                                         <div>
@@ -196,7 +196,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                             Continue
                                         </SubmitButton>
                                     </Widget.Footer>
-                                </Widget>
+                                </div>
                         }
                     </Form>
                 )}
