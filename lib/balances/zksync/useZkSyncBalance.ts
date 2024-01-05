@@ -6,8 +6,8 @@ type Balances = {
     [currency: string]: string;
 };
 
-type VerifiedObject = {
-    verified: {
+type CommitedObject = {
+    committed: {
         balances: Balances;
         nonce: number;
         pubKeyHash: string;
@@ -41,8 +41,8 @@ export default function useZkSyncBalance(): BalanceProvider {
         })
 
         try {
-            const result: VerifiedObject = await provider.request({ method: 'account_info' as any, params: [address as `0x${string}`] });
-            const zkSyncBalances = Object.entries(result.verified.balances).map(([token, amount]) => {
+            const result: CommitedObject = await provider.request({ method: 'account_info' as any, params: [address as `0x${string}`] });
+            const zkSyncBalances = Object.entries(result.committed.balances).map(([token, amount]) => {
                 const currency = layer?.assets?.find(c => c?.asset == token);
                 return ({
                     network: layer.internal_name,
@@ -53,7 +53,7 @@ export default function useZkSyncBalance(): BalanceProvider {
                     isNativeCurrency: false
                 })
             });
-
+            
             balances = [
                 ...zkSyncBalances,
             ]
