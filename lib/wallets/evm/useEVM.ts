@@ -31,7 +31,7 @@ export default function useEVM(): WalletProvider {
                 address: account.address,
                 connector: account.connector?.id,
                 providerName: name,
-                icon: ResolveEVMWalletIcon({ connector: account.connector?.id })
+                icon: ResolveEVMWalletIcon({ connector: account.connector})
             }
         }
     }
