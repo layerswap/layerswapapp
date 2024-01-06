@@ -25,7 +25,6 @@ export const ResolveEVMWalletIcon = ({ connector }: { connector: Connector<any, 
     }
 
     if (icon == null) {
-        debugger;
         switch (connector?.name?.toLowerCase()) {
             case KnownKonnectorNames.Phantom:
                 icon = Phantom;
