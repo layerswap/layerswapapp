@@ -34,6 +34,8 @@ export class NetworkCurrency {
     decimals: number;
     precision: number;
     usd_price: number;
+    availableInSource: boolean;
+    availableInDestination: boolean;
 }
 export class NetworkNode {
     url: string;

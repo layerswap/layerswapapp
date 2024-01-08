@@ -33,14 +33,14 @@ export default class LayerSwapApiClient {
         network: string;
         asset: string;
     }[]>> {
-        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/sources?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/routes/sources?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
     }
 
     async GetDestinationRoutesAsync(): Promise<ApiResponse<{
         network: string;
         asset: string;
     }[]>> {
-        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/destinations?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/routes/destinations?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
     }
 
     async GetExchangesAsync(): Promise<ApiResponse<Exchange[]>> {

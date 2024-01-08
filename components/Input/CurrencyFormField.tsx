@@ -57,10 +57,18 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         asset: string;
     }[]>>(destinationRoutesURL, apiClient.fetcher)
 
-    const filteredCurrencies = lockedCurrency ? [lockedCurrency] : assets
+    const currencies = lockedCurrency ? [lockedCurrency] : assets
+
+    const filteredCurrencies = currencies?.filter(currency => {
+        if (direction === "from") {
+            return currency.availableInSource;
+        } else {
+            return currency.availableInDestination;
+        }
+    });
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
-        filteredCurrencies!,
+        currencies!,
         resolveImgSrc,
         values,
         direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
@@ -87,7 +95,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         else if (default_currency) {
             setFieldValue(name, default_currency.baseObject)
         }
-
 
     }, [from, to, query])
 
