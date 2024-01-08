@@ -1,6 +1,6 @@
-import { FC, useCallback, useState } from "react"
+import { FC, useCallback } from "react"
 import useSWR from "swr"
-import { AlignLeft, ArrowLeftRight, Megaphone } from "lucide-react"
+import { ArrowLeftRight } from "lucide-react"
 import Image from 'next/image';
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { useSettingsState } from "../../../context/settings";
@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { BaseL2Asset } from "../../../Models/Layer";
 import shortenAddress from "../../utils/ShortenAddress";
 import { isValidAddress } from "../../../lib/addressValidator";
-import { useSwapDepositHintClicked } from "../../store/zustandStore";
+import { useSwapDepositHintClicked } from "../../../stores/swapTransactionStore";
 
 const ManualTransfer: FC = () => {
     const { swap } = useSwapDataState()
@@ -42,13 +42,9 @@ const ManualTransfer: FC = () => {
             hintsStore.setSwapDepositHintClicked(swap?.id)
     }, [swap, hintsStore])
 
-    if (isLoading) {
-        return <Sceleton />
-    }
-
     return (
         <div className='rounded-md bg-secondary-700 border border-secondary-500 w-full h-full items-center relative'>
-            <div className={!hintClicked ? "absolute w-full h-full flex flex-col items-center px-4 pb-4 text-center" : "hidden"}>
+            <div className={!hintClicked ? "absolute w-full h-full flex flex-col items-center px-3 pb-3 text-center" : "hidden"}>
                 <div className="flex flex-col items-center justify-center h-full pb-2">
                     <div className="max-w-xs">
                         <p className="text-base text-primary-text">
@@ -59,7 +55,7 @@ const ManualTransfer: FC = () => {
                         </p>
                     </div>
                 </div>
-                <SubmitButton isDisabled={false} isSubmitting={false} size="small" onClick={handleCloseNote}>
+                <SubmitButton isDisabled={false} isSubmitting={false} size="medium" onClick={handleCloseNote}>
                     OK
                 </SubmitButton>
             </div>

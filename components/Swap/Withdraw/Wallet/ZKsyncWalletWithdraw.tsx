@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import * as zksync from 'zksync';
 import { utils } from 'ethers';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
-import { useSwapTransactionStore } from '../../../store/zustandStore';
+import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSwapDataState } from '../../../../context/swap';
 import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';

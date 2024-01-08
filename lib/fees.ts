@@ -7,11 +7,6 @@ import { Currency } from "../Models/Currency";
 import { Layer } from "../Models/Layer";
 import KnownInternalNames from "./knownIds";
 
-export function GetExchangeFee(asset?: string, layer?: Layer | null): number {
-    if (!layer?.isExchange)
-        return 0
-    return layer?.assets?.find(ec => ec.asset === asset)?.withdrawal_fee || 0
-}
 export function CalculateMinimalAuthorizeAmount(usd_price: number, amount: number) {
     return Math.ceil((usd_price * amount) + (usd_price * amount * 0.02))
 }
@@ -102,12 +97,6 @@ export function CalculateReceiveAmount(values: SwapFormValues, allNetworks: Cryp
             refuelEnabled: !!values.refuel
         })
         var result = amount - fee - refuelAmountInSelectedCurrency;
-        const sourceLayer = values?.from
-
-        if (sourceLayer?.isExchange && sourceLayer?.authorization_flow == "o_auth2") {
-            let exchangeFee = GetExchangeFee(values.currency?.asset, values.from);
-            result -= exchangeFee;
-        }
 
         return Number(result.toFixed(values.currency?.precision));
     }
@@ -132,7 +121,10 @@ export function CalculateMaxAllowedAmount(values: SwapFormValues, balances?: str
         // in case the query parameter had bad formatting just ignoe
         catch { }
     } else if (walletBalance && ((walletBalance - Number(gas)) >= Number(minAllowedAmount) && (walletBalance - Number(gas)) <= maxAmount)) {
-        return walletBalance - Number(gas)
+        if ((from?.assets?.[0].network?.native_currency === currency?.asset) || !from?.assets?.[0].network?.native_currency) {
+            return walletBalance - Number(gas)
+        }
+        else return walletBalance
     }
     return maxAmount || 0
 }

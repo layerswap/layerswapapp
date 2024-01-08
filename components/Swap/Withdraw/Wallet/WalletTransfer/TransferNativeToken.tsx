@@ -5,7 +5,6 @@ import {
     useSendTransaction,
     useWaitForTransaction,
     useNetwork,
-    erc20ABI
 } from "wagmi";
 import { parseEther, createPublicClient, http } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
@@ -16,7 +15,7 @@ import MessageComponent from "../../../../MessageComponent";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import TransactionMessage from "./transactionMessage";
 import { ButtonWrapper } from "./buttons";
-import { useSwapTransactionStore } from "../../../../store/zustandStore";
+import { useSwapTransactionStore } from "../../../../../stores/swapTransactionStore";
 import useWalletTransferOptions from "../../../../../hooks/useWalletTransferOptions";
 import { SendTransactionData } from "../../../../../lib/telegram";
 
@@ -32,7 +31,6 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     swapId,
     userDestinationAddress,
     sequenceNumber,
-    isContractWallet
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const [buttonClicked, setButtonClicked] = useState(false)
@@ -40,10 +38,10 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
     const { address } = useAccount();
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { canDoSweepless, ready } = useWalletTransferOptions()
+    const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
 
     const sendTransactionPrepare = usePrepareSendTransaction({
-        enabled: !!depositAddress && ready,
+        enabled: !!depositAddress && isContractWallet?.ready,
         to: depositAddress,
         value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,
@@ -83,7 +81,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         try {
             if (transaction?.data?.hash) {
                 setSwapTransaction(swapId, PublishedSwapTransactionStatus.Pending, transaction?.data?.hash)
-                if (isContractWallet)
+                if (!!isContractWallet?.isContract)
                     SendTransactionData(swapId, transaction?.data?.hash)
             }
         }
@@ -91,7 +89,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
             //TODO log to logger
             console.error(e.message)
         }
-    }, [transaction?.data?.hash, swapId, isContractWallet])
+    }, [transaction?.data?.hash, swapId, isContractWallet?.isContract])
 
     const waitForTransaction = useWaitForTransaction({
         hash: transaction?.data?.hash || savedTransactionHash,

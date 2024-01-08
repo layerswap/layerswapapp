@@ -1,4 +1,3 @@
-import { FC } from 'react';
 import { WithdrawType } from '../../lib/layerSwapApiClient';
 
 export {default as TabHeader} from './Header';

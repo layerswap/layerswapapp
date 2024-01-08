@@ -67,7 +67,7 @@ const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel({ onFi
     return (
         <div
             {...handlers}
-            className="overflow-hidden h-full pb-7"
+            className="overflow-hidden h-full"
         >
             <div
                 className="whitespace-nowrap transition-transform duration-500 inner h-full"
