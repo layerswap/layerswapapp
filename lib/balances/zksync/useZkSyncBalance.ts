@@ -1,6 +1,8 @@
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
 import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../Models/Balance";
+import { useFormikContext } from "formik";
+import { SwapFormValues } from "../../../components/DTOs/SwapFormValues";
 
 type Balances = {
     [currency: string]: string;
@@ -42,18 +44,21 @@ export default function useZkSyncBalance(): BalanceProvider {
 
         try {
             const result: CommitedObject = await provider.request({ method: 'account_info' as any, params: [address as `0x${string}`] });
-            const zkSyncBalances = Object.entries(result.committed.balances).map(([token, amount]) => {
-                const currency = layer?.assets?.find(c => c?.asset == token);
+
+            const zkSyncBalances = layer.assets.map((a) => {
+                const currency = layer?.assets?.find(c => c?.asset == a.asset);
+                const amount = currency && result.committed.balances[currency.asset];
+
                 return ({
                     network: layer.internal_name,
-                    token,
+                    token: a.asset,
                     amount: formatAmount(amount, Number(currency?.decimals)),
                     request_time: new Date().toJSON(),
                     decimals: Number(currency?.decimals),
                     isNativeCurrency: false
                 })
             });
-            
+
             balances = [
                 ...zkSyncBalances,
             ]
