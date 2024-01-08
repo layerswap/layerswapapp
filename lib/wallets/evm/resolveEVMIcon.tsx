@@ -6,33 +6,40 @@ import CoinbaseIcon from "../../../components/icons/Wallets/Coinbase"
 import { Coins } from "lucide-react"
 import Phantom from "../../../components/icons/Wallets/Phantom"
 import { Connector } from "wagmi"
+import AddressIcon from "../../../components/AddressIcon"
 
-export const ResolveEVMWalletIcon = ({ connector }: { connector: Connector<any, any>}) => {
+export const ResolveEVMWalletIcon = ({ connector, address }: { connector: Connector<any, any>, address: string }) => {
     let icon: ((props: any) => JSX.Element) | null = null;
 
     // Check first by id then by name
     switch (connector?.id?.toLowerCase()) {
-        case KnownKonnectorIds.MetaMask:
-            icon = MetaMaskIcon;
+        // case KnownKonnectorIds.MetaMask:
+        //     icon = MetaMaskIcon;
+        //     break;
         case KnownKonnectorIds.WalletConnect:
             icon = WalletConnectIcon;
+            break;
         case KnownKonnectorIds.Rainbow:
             icon = RainbowIcon;
+            break;
         case KnownKonnectorIds.BitKeep:
             icon = BitKeep;
+            break;
         case KnownKonnectorIds.CoinbaseWallet:
             icon = CoinbaseIcon;
+            break;
     }
 
     if (icon == null) {
         switch (connector?.name?.toLowerCase()) {
             case KnownKonnectorNames.Phantom:
                 icon = Phantom;
+                break;
         }
     }
 
     if (icon == null) {
-        icon = CoinsIcon
+        icon = AddressIconWrapper(address)
     }
 
     return icon;
@@ -50,6 +57,6 @@ const KnownKonnectorNames = {
     Phantom: 'phantom',
 }
 
-const CoinsIcon = (props) => {
-    return <Coins {...props} strokeWidth={2} />
+const AddressIconWrapper = (address: string) => (props) => {
+    return <AddressIcon {...props} address={address} size={24} />
 }
