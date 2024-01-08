@@ -20,7 +20,7 @@ import { shortenEmail } from '../utils/ShortenAddress';
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import Menu from "./Menu";
 import dynamic from "next/dynamic";
-import SwapsListModal from "../SwapHistory/SwapsList";
+import SwapsListModal from "../SwapHistory/Modal";
 import { SwapStatusInNumbers } from "../../lib/layerSwapApiClient";
 
 const WalletsMenu = dynamic(() => import("../ConnectedWallets").then((comp) => comp.WalletsMenu), {

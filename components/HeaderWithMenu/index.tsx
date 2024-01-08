@@ -14,8 +14,7 @@ import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers } from "../../lib/lay
 import { ApiResponse } from "../../Models/ApiResponse"
 import { useRouter } from "next/router"
 import { SwapDataProvider } from "../../context/swap"
-import SwapDetails from "../Swap"
-import SwapsListModal from "../SwapHistory/SwapsList"
+import SwapsListModal from "../SwapHistory/Modal"
 
 const WalletsHeader = dynamic(() => import("../ConnectedWallets").then((comp) => comp.WalletsHeader), {
    loading: () => <></>
@@ -70,7 +69,6 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
 }
 
 const PendingSwapsModal = () => {
-   const [openTopModal, setOpenTopModal] = useState(false);
    const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
    const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
 
@@ -78,20 +76,15 @@ const PendingSwapsModal = () => {
    const { data, mutate } =
       useSWR<ApiResponse<SwapItem[]>>(
          `/swaps?status=${SwapStatusInNumbers.Pending}&version=${LayerSwapApiClient.apiVersion}`,
-         apiClient.fetcher
-      )
+         apiClient.fetcher)
+
    const pendingSwapsCount = Number(data?.data?.length)
 
-   const handleSWapDetailsShow = useCallback((show: boolean) => {
-      setOpenSwapDetailsModal(show)
-      if (!show)
-         mutate()
-   }, [])
    return <span className="text-secondary-text cursor-pointer relative">
       {
          <>
 
-            {pendingSwapsCount > 0 && !openTopModal && <motion.div
+            {pendingSwapsCount > 0 && <motion.div
                className="relative top-"
                initial={{ y: 20, opacity: 0 }}
                animate={{ y: 0, opacity: 1 }}
@@ -110,11 +103,6 @@ const PendingSwapsModal = () => {
                   </IconButton>
                </SwapsListModal>
             </motion.div>}
-            <Modal height='90%' show={openSwapDetailsModal} setShow={handleSWapDetailsShow} header={`Complete the swap`}>
-               <SwapDataProvider id={selectedSwap?.id}>
-                  <SwapDetails type="contained" />
-               </SwapDataProvider>
-            </Modal>
          </>
       }
    </span >

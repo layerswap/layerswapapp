@@ -1,92 +1,24 @@
-import LayerSwapApiClient, { SwapItem, TransactionType } from "../../lib/layerSwapApiClient"
-import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse"
-import { useSettingsState } from "../../context/settings"
-import { SwapDataProvider } from "../../context/swap"
-import WithdrawalPage from "../Swap"
-import { CalculateMinAllowedAmount, CalculateReceiveAmount } from "../../lib/fees"
-import { GetDefaultNetwork } from "../../helpers/settingsHelper"
-import IconButton from "../buttons/iconButton"
-import { ArrowDownIcon, RefreshCcw, Scroll } from 'lucide-react'
-import Modal from "../modal/modal"
+import LayerSwapApiClient, { SwapItem, TransactionType } from "../../../lib/layerSwapApiClient"
+import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
+import { useSettingsState } from "../../../context/settings"
+import { SwapDataProvider } from "../../../context/swap"
+import WithdrawalPage from "../../Swap"
+import { CalculateMinAllowedAmount, CalculateReceiveAmount } from "../../../lib/fees"
+import { GetDefaultNetwork } from "../../../helpers/settingsHelper"
+import { ArrowDownIcon, Scroll } from 'lucide-react'
+import Modal from "../../modal/modal"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import Summary from "./Summary";
+import Summary from "../Summary";
 import useSWRInfinite from 'swr/infinite'
-import SpinIcon from "../icons/spinIcon";
-import { useSWRConfig } from "swr"
-import { unstable_serialize } from "swr/infinite"
-import useWallet from "../../hooks/useWallet"
+import SpinIcon from "../../icons/spinIcon";
+import useWallet from "../../../hooks/useWallet"
 import Link from "next/link"
-import AppSettings from "../../lib/AppSettings"
+import AppSettings from "../../../lib/AppSettings"
 import axios from "axios"
-import SwapDetails from "./SwapDetailsComponent"
+import SwapDetails from "../SwapDetailsComponent"
 
 const PAGE_SIZE = 20
-
-type Props = {
-    statuses: string | number;
-    children: JSX.Element | JSX.Element[];
-    title: string;
-    loadExplorerSwaps: boolean;
-}
-const getSwapsKey = (statuses: string | number) => (index) =>
-    `/swaps?page=${index + 1}&status=${statuses}&version=${LayerSwapApiClient.apiVersion}`
-
-const getExplorerKey = (addresses: string[]) => (index) => {
-    if (!addresses?.[index])
-        return null;
-    return `/explorer/${addresses[index]}?version=${LayerSwapApiClient.apiVersion}`
-}
-
-const SwapsListModal: FC<Props> = ({ children, statuses, title, loadExplorerSwaps }) => {
-    const [openTopModal, setOpenTopModal] = useState(false);
-    const [refreshing, setRefreshing] = useState(false);
-    const { wallets } = useWallet()
-    const addresses = wallets.map(w => w.address)
-    const { mutate } = useSWRConfig()
-
-    const getKey = useMemo(() => getSwapsKey(statuses), [statuses])
-    const getFromExplorerKey = useMemo(() => getExplorerKey(addresses), [addresses])
-
-    const handleRefresh = useCallback(async () => {
-        setRefreshing(true)
-        await mutate(unstable_serialize(getKey))
-        await mutate(unstable_serialize(getFromExplorerKey))
-        setRefreshing(false)
-    }, [getKey])
-
-    return <span className="text-secondary-text cursor-pointer relative">
-        {
-            <>
-                <span onClick={() => setOpenTopModal(true)}>
-                    {children}
-                </span>
-                <Modal height="full"
-                    show={openTopModal}
-                    setShow={setOpenTopModal}
-                    header={
-                        <div className="flex space-x-2 text-center">
-                            <h2 className="font-normal text-center tracking-tight mt-1">
-                                {title}
-                            </h2>
-                            <IconButton onClick={handleRefresh} icon={
-                                <RefreshCcw className="h-6 w-6" />
-                            }>
-                            </IconButton>
-                        </div>
-                    }>
-                    <List loadExplorerSwaps={loadExplorerSwaps} statuses={statuses} refreshing={refreshing} />
-                </Modal>
-            </>
-        }
-    </span >
-}
-
-type ListProps = {
-    statuses: string | number;
-    refreshing: boolean;
-    loadExplorerSwaps: boolean;
-}
 const container = {
     highlight: {
         transition: {
@@ -116,6 +48,21 @@ const item = {
             duration: 0.5,
         }
     }
+}
+
+type ListProps = {
+    statuses: string | number;
+    refreshing: boolean;
+    loadExplorerSwaps: boolean;
+}
+
+const getSwapsKey = (statuses: string | number) => (index) =>
+    `/swaps?page=${index + 1}&status=${statuses}&version=${LayerSwapApiClient.apiVersion}`
+
+const getExplorerKey = (addresses: string[]) => (index) => {
+    if (!addresses?.[index])
+        return null;
+    return `/explorer/${addresses[index]}?version=${LayerSwapApiClient.apiVersion}`
 }
 
 const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
@@ -338,4 +285,4 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
     </>
 }
 
-export default SwapsListModal
+export default List
