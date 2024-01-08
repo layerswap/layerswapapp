@@ -5,7 +5,7 @@ import { NetworkType } from "../../../Models/CryptoNetwork"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
-import { ResolveEVMWalletIcon } from "./resolveEVMIcon"
+import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 
 export default function useEVM(): WalletProvider {
     const { layers } = useSettingsState()
@@ -31,7 +31,7 @@ export default function useEVM(): WalletProvider {
                 address: account.address,
                 connector: account.connector?.id,
                 providerName: name,
-                icon: ResolveEVMWalletIcon({ connector: account.connector, address: account.address})
+                icon: resolveWalletConnectorIcon({ connector: account.connector.id, address: account.address})
             }
         }
     }
