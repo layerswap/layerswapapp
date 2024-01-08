@@ -43,7 +43,9 @@ export const Settings: LayerSwapSettings = {
                     "is_refuel_enabled": false,
                     "is_native": true,
                     "precision": 6,
-                    "usd_price": 10
+                    "usd_price": 10,
+                    "availableInDestination": true,
+                    "availableInSource": true
                 }
             ],
             "metadata": {
@@ -79,7 +81,9 @@ export const Settings: LayerSwapSettings = {
                     "is_refuel_enabled": false,
                     "is_native": true,
                     "precision": 6,
-                    "usd_price": 10
+                    "usd_price": 10,
+                    "availableInDestination": true,
+                    "availableInSource": true
                 },
                 {
                     "asset": "USDC",
@@ -88,7 +92,9 @@ export const Settings: LayerSwapSettings = {
                     "is_refuel_enabled": false,
                     "is_native": true,
                     "precision": 6,
-                    "usd_price": 10
+                    "usd_price": 10,
+                    "availableInDestination": true,
+                    "availableInSource": true
                 },
                 {
                     "asset": "ETH",
@@ -97,7 +103,9 @@ export const Settings: LayerSwapSettings = {
                     "contract_address": null,
                     "is_native": true,
                     "precision": 6,
-                    "usd_price": 10
+                    "usd_price": 10,
+                    "availableInDestination": true,
+                    "availableInSource": true
                 }
             ],
             "metadata": {
@@ -136,7 +144,9 @@ export const Settings: LayerSwapSettings = {
                     "is_refuel_enabled": false,
                     "is_native": true,
                     "precision": 6,
-                    "usd_price": 10
+                    "usd_price": 10,
+                    "availableInDestination": true,
+                    "availableInSource": true
                 }
             ],
             "metadata": {
@@ -174,7 +184,9 @@ export const Settings: LayerSwapSettings = {
                     "is_refuel_enabled": false,
                     "is_native": true,
                     "precision": 6,
-                    "usd_price": 10
+                    "usd_price": 10,
+                    "availableInDestination": true,
+                    "availableInSource": true
                 },
                 {
                     "asset": "ETH",
@@ -183,7 +195,9 @@ export const Settings: LayerSwapSettings = {
                     "contract_address": null,
                     "is_native": true,
                     "precision": 6,
-                    "usd_price": 10
+                    "usd_price": 10,
+                    "availableInDestination": true,
+                    "availableInSource": true
                 },
                 {
                     "asset": "USDC",
@@ -192,7 +206,9 @@ export const Settings: LayerSwapSettings = {
                     "is_refuel_enabled": true,
                     "is_native": true,
                     "precision": 6,
-                    "usd_price": 10
+                    "usd_price": 10,
+                    "availableInDestination": true,
+                    "availableInSource": true
                 }
             ],
             "metadata": {
@@ -230,7 +246,9 @@ export const Settings: LayerSwapSettings = {
                     "is_refuel_enabled": true,
                     "is_native": true,
                     "precision": 6,
-                    "usd_price": 10
+                    "usd_price": 10,
+                    "availableInDestination": true,
+                    "availableInSource": true
                 },
                 {
                     "asset": "ETH",
@@ -239,7 +257,9 @@ export const Settings: LayerSwapSettings = {
                     "contract_address": null,
                     "is_native": true,
                     "precision": 6,
-                    "usd_price": 10
+                    "usd_price": 10,
+                    "availableInDestination": true,
+                    "availableInSource": true
                 }
             ],
             "metadata": {
@@ -277,7 +297,9 @@ export const Settings: LayerSwapSettings = {
                     "contract_address": null,
                     "is_native": true,
                     "precision": 6,
-                    "usd_price": 10
+                    "usd_price": 10,
+                    "availableInDestination": true,
+                    "availableInSource": true
                 },
                 {
                     "asset": "USDC",
@@ -286,7 +308,9 @@ export const Settings: LayerSwapSettings = {
                     "is_refuel_enabled": true,
                     "is_native": true,
                     "precision": 6,
-                    "usd_price": 10
+                    "usd_price": 10,
+                    "availableInDestination": true,
+                    "availableInSource": true
                 }
             ],
             "metadata": {
