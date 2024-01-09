@@ -13,6 +13,7 @@ import { useSettingsState } from '../../../../context/settings';
 import { useNetwork } from 'wagmi';
 import { Transaction } from 'zksync';
 import FailIcon from '../../../icons/FailIcon';
+import ClickTooltip from '../../../Tooltips/ClickTooltip';
 
 type Props = {
     depositAddress: string,
@@ -168,18 +169,26 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     {
                         syncWallet && !accountIsActivated &&
                         <>
-                            <div className="flex text-center mb-2 space-x-2">
+                            <div className="flex w-full">
                                 {/* here may be some icon */}
                                 {/* <div className='relative'>
                                     <FailIcon className="relative top-0 left-0 w-6 h-6 md:w-7 md:h-7" />
                                 </div> */}
-                                <div className="text-left space-y-1">
-                                    <p className="text-md font-semibold self-center text-primary-text">
-                                        Bla bla header
+                                <div className="w-full">
+                                    <p className="text-md items-center flex font-semibold self-center text-primary-text">
+                                        <span>Account Activation</span>
+                                        <ClickTooltip moreClassNames='text-secondary-text'
+                                            text={
+                                                <p>
+                                                    <span>You can learn more about account activation and the associated fee </span>
+                                                    <a target='_blank' className='text-primary underline hover:no-underline decoration-primary cursor-pointer' href="https://docs.zksync.io/userdocs/faq/#what-is-the-account-activation-fee">in the zkSync Lite FAQ</a>
+                                                </p>
+                                            } />
                                     </p>
-                                    <p className="text-sm text-secondary-text break-all">
-                                        jiga juga thing explained in details
+                                    <p className="text-sm text-primary-text break-all">
+                                        Sign a message to activate your zkSync Lite account.
                                     </p>
+                                    <p className='flex mt-4 w-full justify-between text-sm text-secondary-text'><span className='font-semibold'>One time activation fee</span> <span className='text-primary-text'>12.3$</span></p>
                                 </div>
                             </div>
                             <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={activateAccout} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
