@@ -6,6 +6,9 @@ import { validateSignature } from '../helpers/validateSignature'
 import { mapNetworkCurrencies } from '../helpers/settingsHelper'
 import { THEME_COLORS, ThemeData } from '../Models/Theme'
 import Swap from '../components/swapComponent'
+import { SWRConfig, mutate } from 'swr'
+import { useEffect, useRef } from 'react'
+import { SwapStatus } from '../Models/SwapStatus'
 type IndexProps = {
   settings?: LayerSwapSettings,
   themeData?: ThemeData,
@@ -15,10 +18,34 @@ type IndexProps = {
 
 export default function Home({ settings, inMaintanance, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (<>
-    <Layout settings={settings} themeData={themeData}>
-      <Swap />
-    </Layout>
+    <SWRConfig value={{ use: [updatePendingCount] }}>
+      <Layout settings={settings} themeData={themeData}>
+        <Swap />
+      </Layout>
+    </SWRConfig>
   </>)
+}
+const swapsStatuses: { [key: string]: SwapStatus } = {}
+
+function updatePendingCount(useSWRNext) {
+  return (key, fetcher, config) => {
+    const swr = useSWRNext(key, fetcher, config)
+    useEffect(() => {
+      const swapKeyPattern = /^\/swaps\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/;
+      // Update ref if data is not undefined.
+      const swap = swr.data?.data
+      if (swapKeyPattern.test(key) && swap) {
+        const status = swap.status
+        if (swapsStatuses[swap.id] !== status) {
+          mutate(`/swaps/count?version=${LayerSwapApiClient.apiVersion}`)
+          console.log("mutated")
+        }
+        swapsStatuses[swap.id] = status
+      }
+    }, [swr.data, key])
+
+    return useSWRNext(key, fetcher, config)
+  }
 }
 
 export async function getServerSideProps(context) {

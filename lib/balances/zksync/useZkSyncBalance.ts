@@ -1,8 +1,6 @@
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
 import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../Models/Balance";
-import { useFormikContext } from "formik";
-import { SwapFormValues } from "../../../components/DTOs/SwapFormValues";
 
 type Balances = {
     [currency: string]: string;

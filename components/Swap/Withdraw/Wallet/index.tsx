@@ -50,7 +50,6 @@ const WalletTransfer: FC = () => {
         destination_asset: destination_network_asset,
         refuel: swap?.has_refuel
     }
-
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
     const walletTransferFee = isContractWallet?.ready ?
         feeData?.data?.find(f => f?.deposit_type === (canDoSweepless ? DepositType.Wallet : DepositType.Manual))

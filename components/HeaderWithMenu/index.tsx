@@ -80,7 +80,7 @@ const PendingSwapsModal = () => {
    return <span className="text-secondary-text cursor-pointer relative">
       {
          <>
-
+         
             {pendingSwapsCount > 0 && <motion.div
                className="relative top-"
                initial={{ y: 20, opacity: 0 }}
