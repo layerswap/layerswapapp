@@ -3,7 +3,7 @@ import { SwapItem, TransactionStatus, TransactionType } from '../lib/layerSwapAp
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapData, SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
-import { Chain, WagmiConfig, configureChains, createConfig } from 'wagmi';
+import { WagmiConfig, configureChains, createConfig } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { BalancesStateContext, BalancesStateUpdateContext } from '../context/balances';
@@ -12,14 +12,12 @@ import { FC } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange, cancelled, expired } from './Data/swaps'
 import { SettingChains, Settings } from './Data/settings';
-import { NetworkType } from '../Models/CryptoNetwork';
 import { AuthDataUpdateContext, AuthStateContext, UserType } from '../context/authContext';
 import { IntercomProvider } from 'react-use-intercom';
 import { THEME_COLORS } from '../Models/Theme';
 import Layout from '../components/layout';
 import RainbowKitComponent from '../components/RainbowKit';
 import SwapDetails from '../components/Swap';
-import resolveChain from '../lib/resolveChain';
 import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
 import WalletMockFunctions from './Mocks/context/BalancesMockFunctions';

@@ -1,6 +1,6 @@
+import { useMeasure } from "@uidotdev/usehooks";
 import { AnimatePresence, motion } from "framer-motion";
 import { ReactNode } from "react";
-import { useMeasure } from "@uidotdev/usehooks";
 
 export default function ResizablePanel({ children, className }: { children: ReactNode, className?: string }) {
     let [ref, { height }] = useMeasure();

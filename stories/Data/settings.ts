@@ -45,7 +45,7 @@ export const Settings: LayerSwapSettings = {
                     "precision": 6,
                     "usd_price": 10,
                     "availableInDestination": true,
-                    "availableInSource": true
+                    "availableInSource": true,
                 }
             ],
             "metadata": {
@@ -83,7 +83,7 @@ export const Settings: LayerSwapSettings = {
                     "precision": 6,
                     "usd_price": 10,
                     "availableInDestination": true,
-                    "availableInSource": true
+                    "availableInSource": true,
                 },
                 {
                     "asset": "USDC",
@@ -94,7 +94,7 @@ export const Settings: LayerSwapSettings = {
                     "precision": 6,
                     "usd_price": 10,
                     "availableInDestination": true,
-                    "availableInSource": true
+                    "availableInSource": true,
                 },
                 {
                     "asset": "ETH",
@@ -105,7 +105,7 @@ export const Settings: LayerSwapSettings = {
                     "precision": 6,
                     "usd_price": 10,
                     "availableInDestination": true,
-                    "availableInSource": true
+                    "availableInSource": true,
                 }
             ],
             "metadata": {
@@ -146,7 +146,7 @@ export const Settings: LayerSwapSettings = {
                     "precision": 6,
                     "usd_price": 10,
                     "availableInDestination": true,
-                    "availableInSource": true
+                    "availableInSource": true,
                 }
             ],
             "metadata": {
@@ -186,7 +186,7 @@ export const Settings: LayerSwapSettings = {
                     "precision": 6,
                     "usd_price": 10,
                     "availableInDestination": true,
-                    "availableInSource": true
+                    "availableInSource": true,
                 },
                 {
                     "asset": "ETH",
@@ -197,7 +197,7 @@ export const Settings: LayerSwapSettings = {
                     "precision": 6,
                     "usd_price": 10,
                     "availableInDestination": true,
-                    "availableInSource": true
+                    "availableInSource": true,
                 },
                 {
                     "asset": "USDC",
@@ -208,7 +208,7 @@ export const Settings: LayerSwapSettings = {
                     "precision": 6,
                     "usd_price": 10,
                     "availableInDestination": true,
-                    "availableInSource": true
+                    "availableInSource": true,
                 }
             ],
             "metadata": {
@@ -248,7 +248,7 @@ export const Settings: LayerSwapSettings = {
                     "precision": 6,
                     "usd_price": 10,
                     "availableInDestination": true,
-                    "availableInSource": true
+                    "availableInSource": true,
                 },
                 {
                     "asset": "ETH",
@@ -259,7 +259,7 @@ export const Settings: LayerSwapSettings = {
                     "precision": 6,
                     "usd_price": 10,
                     "availableInDestination": true,
-                    "availableInSource": true
+                    "availableInSource": true,
                 }
             ],
             "metadata": {
@@ -299,7 +299,7 @@ export const Settings: LayerSwapSettings = {
                     "precision": 6,
                     "usd_price": 10,
                     "availableInDestination": true,
-                    "availableInSource": true
+                    "availableInSource": true,
                 },
                 {
                     "asset": "USDC",
@@ -310,7 +310,7 @@ export const Settings: LayerSwapSettings = {
                     "precision": 6,
                     "usd_price": 10,
                     "availableInDestination": true,
-                    "availableInSource": true
+                    "availableInSource": true,
                 }
             ],
             "metadata": {

@@ -23,7 +23,7 @@ type Props = {
 
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
-
+    console.log(settings)
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
     const settingsChains = settings?.layers
         .sort((a, b) => Number(a.chain_id) - Number(b.chain_id))
