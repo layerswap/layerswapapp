@@ -6,12 +6,13 @@ import * as zksync from 'zksync';
 import { utils } from 'ethers';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { PublishedSwapTransactionStatus, PublishedSwapTransactions } from '../../../../lib/layerSwapApiClient';
 import { useSwapDataState } from '../../../../context/swap';
 import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
 import { useNetwork } from 'wagmi';
 import { Transaction } from 'zksync';
+import FailIcon from '../../../icons/FailIcon';
 
 type Props = {
     depositAddress: string,
@@ -24,6 +25,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>();
     const [syncTransfer, setSyncTransfer] = useState<Transaction>();
     const [txHash, setTxHash] = useState('');
+    const [accountIsActivated, setAccountIsActivated] = useState(false);
 
     const { setSwapTransaction } = useSwapTransactionStore();
     const { swap } = useSwapDataState();
@@ -54,7 +56,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, txHash, txReceipt?.failReason);
                     toast(String(txReceipt.failReason))
                     setLoading(false)
-                } else if(txReceipt.executed && txReceipt.success) {
+                } else if (txReceipt.executed && txReceipt.success) {
                     setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Completed, txHash);
                     setTransferDone(true);
                 } else {
@@ -66,21 +68,14 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             getTxReceipt();
     }, [syncTransfer, swap, txHash]);
 
-    const handleConnect = useCallback(async () => {
+    const handleAuthorize = useCallback(async () => {
         if (!signer)
             return
         setLoading(true)
         try {
             const syncProvider = await zksync.getDefaultProvider(defaultProvider);
             const wallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
-
-            const pubKeyHash = await wallet.getCurrentPubKeyHash()
-            if (!pubKeyHash || pubKeyHash == "sync:0000000000000000000000000000000000000000") {
-                toast("Account is locked")
-                setLoading(false)
-                return
-            }
-
+            setAccountIsActivated(await wallet.isSigningKeySet())
             setSyncWallet(wallet)
         }
         catch (e) {
@@ -89,11 +84,38 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         finally {
             setLoading(false)
         }
-    }, [signer, defaultProvider])
+    }, [signer, defaultProvider, source_currency])
+
+    const activateAccout = useCallback(async () => {
+        if (!syncWallet)
+            return
+        setLoading(true)
+        try {
+            if (await syncWallet.isSigningKeySet()) {
+                setAccountIsActivated(true)
+                return
+            }
+            const changePubkeyHandle = await syncWallet.setSigningKey({ ethAuthType: "ECDSALegacyMessage", feeToken: Number(source_currency?.contract_address) });
+            const receipt = await changePubkeyHandle.awaitReceipt()
+            if (receipt.success)
+                setAccountIsActivated(true)
+            else if (receipt.failReason)
+                toast(receipt.failReason)
+
+            else
+                toast("Activation failed")
+        }
+        catch (e) {
+            toast(e.message)
+        }
+        finally {
+            setLoading(false)
+        }
+    }, [syncWallet, source_currency])
 
     const handleTransfer = useCallback(async () => {
 
-        if (!swap) return
+        if (!swap || !syncWallet) return
 
         setLoading(true)
         try {
@@ -136,14 +158,37 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         <>
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
                 <div className='space-y-4'>
+
                     {
                         !syncWallet &&
-                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleAuthorize} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Authorize to Send on zkSync
                         </SubmitButton>
                     }
                     {
-                        syncWallet &&
+                        syncWallet && !accountIsActivated &&
+                        <>
+                            <div className="flex text-center mb-2 space-x-2">
+                                {/* here may be some icon */}
+                                {/* <div className='relative'>
+                                    <FailIcon className="relative top-0 left-0 w-6 h-6 md:w-7 md:h-7" />
+                                </div> */}
+                                <div className="text-left space-y-1">
+                                    <p className="text-md font-semibold self-center text-primary-text">
+                                        Bla bla header
+                                    </p>
+                                    <p className="text-sm text-secondary-text break-all">
+                                        jiga juga thing explained in details
+                                    </p>
+                                </div>
+                            </div>
+                            <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={activateAccout} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                                Activate account
+                            </SubmitButton>
+                        </>
+                    }
+                    {
+                        syncWallet && accountIsActivated &&
                         <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>
