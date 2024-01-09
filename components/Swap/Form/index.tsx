@@ -23,17 +23,18 @@ import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import StatusIcon from "../../SwapHistory/StatusIcons";
 import Image from 'next/image';
-import { ChevronRight, X } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useFee } from "../../../context/feeContext";
+import ResizablePanel from "../../ResizablePanel";
 
 type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
 const SwapDetails = dynamic(() => import(".."), {
-    loading: () => <div className="py-4 w-full">
+    loading: () => <div className="w-full h-[450px]">
         <div className="animate-pulse flex space-x-4">
             <div className="flex-1 space-y-6 py-1">
                 <div className="h-32 bg-secondary-700 rounded-lg"></div>
@@ -136,7 +137,7 @@ export default function Form() {
 
     return <>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
-            <AnimatePresence exitBeforeEnter>
+            <AnimatePresence mode='wait'>
                 {
                     swap &&
                     !showSwapModal &&
@@ -147,8 +148,10 @@ export default function Form() {
         <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
             {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
         </Modal>
-        <Modal height='90%' show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`}>
-            <SwapDetails type="contained" />
+        <Modal height='fit' show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`}>
+            <ResizablePanel>
+                <SwapDetails type="contained" />
+            </ResizablePanel>
         </Modal>
         <Formik
             innerRef={formikRef}

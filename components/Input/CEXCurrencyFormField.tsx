@@ -12,7 +12,7 @@ import { NetworkCurrency } from "../../Models/CryptoNetwork";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import useSWR from "swr";
 import { ApiResponse } from "../../Models/ApiResponse";
-import { Balance } from "../../hooks/useBalance";
+import { Balance } from "../../Models/Balance";
 
 const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const {

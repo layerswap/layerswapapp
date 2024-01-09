@@ -1,6 +1,6 @@
 import { ExternalLink } from 'lucide-react';
 import { FC } from 'react'
-import Widget from '../../../Wizard/Widget';
+import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';

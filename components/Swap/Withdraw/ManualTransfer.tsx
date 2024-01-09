@@ -40,13 +40,9 @@ const ManualTransfer: FC = () => {
             hintsStore.setSwapDepositHintClicked(swap?.id)
     }, [swap, hintsStore])
 
-    if (isLoading) {
-        return <Sceleton />
-    }
-
     return (
         <div className='rounded-md bg-secondary-700 border border-secondary-500 w-full h-full items-center relative'>
-            <div className={!hintClicked ? "absolute w-full h-full flex flex-col items-center px-4 pb-4 text-center" : "hidden"}>
+            <div className={!hintClicked ? "absolute w-full h-full flex flex-col items-center px-3 pb-3 text-center" : "hidden"}>
                 <div className="flex flex-col items-center justify-center h-full pb-2">
                     <div className="max-w-xs">
                         <p className="text-base text-primary-text">
@@ -57,7 +53,7 @@ const ManualTransfer: FC = () => {
                         </p>
                     </div>
                 </div>
-                <SubmitButton isDisabled={false} isSubmitting={false} size="small" onClick={handleCloseNote}>
+                <SubmitButton isDisabled={false} isSubmitting={false} size="medium" onClick={handleCloseNote}>
                     OK
                 </SubmitButton>
             </div>

@@ -1,9 +1,9 @@
 import { TransactionSerializedEIP1559, encodeFunctionData, formatGwei, serializeTransaction } from "viem";
-import { Gas } from "../../../../hooks/useBalance";
 import formatAmount from "../../../formatAmount";
 import getEVMGas from "../gas";
 import { erc20ABI } from "wagmi";
 import { getL1Fee } from "./estimateFees";
+import { Gas } from "../../../../Models/Balance";
 
 export default class getOptimismGas extends getEVMGas {
     resolveGas = async (): Promise<Gas | undefined> => {

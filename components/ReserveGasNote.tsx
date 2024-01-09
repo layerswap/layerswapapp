@@ -5,8 +5,8 @@ import WarningMessage from "./WarningMessage"
 import { useFormikContext } from "formik"
 import { SwapFormValues } from "./DTOs/SwapFormValues"
 import { truncateDecimals } from "./utils/RoundDecimals"
-import { Balance, Gas } from "../hooks/useBalance"
 import { useFee } from "../context/feeContext"
+import { Balance, Gas } from "../Models/Balance"
 
 const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, networkGas: Gas) => void }) => {
     const {
@@ -24,7 +24,7 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, netwo
 
     const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === values?.from?.internal_name && b?.token === values?.fromCurrency?.asset)
     const networkGas = values.from?.internal_name ?
-        gases?.[values.from?.internal_name]?.find(g => g.token === values?.fromCurrency?.asset)
+        gases?.[values.from?.internal_name]?.find(g => g?.token === values?.fromCurrency?.asset)
         : null
 
     const mightBeAutOfGas = !!(networkGas && walletBalance?.isNativeCurrency && Number(values.amount)

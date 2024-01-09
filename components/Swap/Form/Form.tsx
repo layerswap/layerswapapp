@@ -25,15 +25,23 @@ import GasDetails from "../../gasDetails";
 import { useQueryState } from "../../../context/query";
 import FeeDetailsComponent from "../../DisclosureComponents/FeeDetails";
 import { useFee } from "../../../context/feeContext";
-import { Balance, Gas } from "../../../hooks/useBalance";
 import AmountField from "../../Input/Amount"
-import Address from "../../Input/Address"
-import ReserveGasNote from "../../ReserveGasNote"
+import dynamic from "next/dynamic";
+import { Balance, Gas } from "../../../Models/Balance";
 
 type Props = {
     isPartnerWallet?: boolean,
     partner?: Partner,
 }
+
+const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
+    loading: () => <></>,
+});
+
+const Address = dynamic(() => import("../../Input/Address"), {
+    loading: () => <></>,
+});
+
 
 const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const {
@@ -89,6 +97,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         setAddressConfirmed(false)
     }, [source])
 
+    useEffect(() => {
+        (async () => {
+            (await import("../../Input/Address")).default
+        })()
+    }, [destination])
+    
     const previouslySelectedDestination = useRef(destination);
 
     //If destination changed to exchange, remove destination_address
@@ -167,6 +181,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                         {!query?.hideFrom && !query?.hideTo &&
                             <button
                                 type="button"
+                                aria-label="Reverse the source and destination"
                                 disabled={valuesSwapperDisabled || sourceLoading || destinationLoading}
                                 onClick={valuesSwapper}
                                 className={`${sourceLoading || destinationLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[86px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
@@ -237,7 +252,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                 <span className="font-normal"><span>{destination?.display_name}</span> <span>network congestion. Transactions can take up to 1 hour.</span></span>
                             </WarningMessage>
                         }
-                        <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                        {
+                            values.amount &&
+                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                        }
                     </div>
                 </Widget.Content>
                 <Widget.Footer>

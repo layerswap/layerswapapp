@@ -36,9 +36,12 @@ const DetailedEstimates: FC<EstimatesProps> = ({
                 {isFeeLoading ? <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' /> : <span>{parsedFee || 0}</span>} <span>{currencyName}</span>
             </div>
         </div>
-        <div>
-            <EstimatedArrival currency={selected_currency} destination={destination} fee={fee} />
-        </div>
+        {
+            source
+            && selected_currency &&
+            <NetworkGas network={source} selected_currency={selected_currency} />
+        }
+        <EstimatedArrival currency={selected_currency} destination={destination} fee={fee} />
     </div>
 }
 type NetworkGasProps = {
@@ -49,7 +52,7 @@ const NetworkGas: FC<NetworkGasProps> = ({ selected_currency, network }) => {
 
     const { gases, isGasLoading } = useBalancesState()
     const networkGas = network.internal_name ?
-        gases?.[network.internal_name]?.find(g => g.token === selected_currency.asset)?.gas : null
+        gases?.[network.internal_name]?.find(g => g?.token === selected_currency.asset)?.gas : null
 
     if (!networkGas)
         return <></>

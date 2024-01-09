@@ -1,9 +1,7 @@
-import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../hooks/useBalance"
 import KnownInternalNames from "../../knownIds"
-import { CallData, Contract, RpcProvider, cairo, uint256, Account, SequencerProvider } from "starknet";
 import Erc20Abi from '../../abis/ERC20.json'
-import { BigNumber } from "ethers";
 import formatAmount from "../../formatAmount";
+import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../Models/Balance";
 
 export default function useStarknetBalance(): BalanceProvider {
     const name = 'starknet'
@@ -14,6 +12,12 @@ export default function useStarknetBalance(): BalanceProvider {
     ]
 
     const getBalance = async ({ layer, address }: BalanceProps) => {
+        const {
+            Contract,
+            RpcProvider,
+            uint256,
+        } = await import("starknet");
+        const { BigNumber } = await import("ethers");
 
         let balances: Balance[] = []
 
@@ -55,6 +59,14 @@ export default function useStarknetBalance(): BalanceProvider {
     }
 
     const getGas = async ({ layer, currency, wallet }: GasProps) => {
+
+        const { CallData,
+            cairo,
+            Account,
+            SequencerProvider
+        } = await import("starknet");
+
+        const { BigNumber } = await import("ethers");
 
         if (!layer.assets) return
 

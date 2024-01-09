@@ -5,7 +5,7 @@ import { useBalancesState } from "../context/balances"
 const GasDetails = ({ network, currency }: { network: Layer, currency: NetworkCurrency }) => {
 
     const { gases } = useBalancesState()
-    const networkGas = gases?.[network?.internal_name]?.find(g => g.token === currency?.asset)
+    const networkGas = gases?.[network?.internal_name]?.find(g => g?.token === currency?.asset)
 
     if (!networkGas?.gasDetails) return
 

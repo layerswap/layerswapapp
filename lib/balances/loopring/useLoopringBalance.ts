@@ -1,7 +1,7 @@
-import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../hooks/useBalance";
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
 import axios from "axios";
+import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../Models/Balance";
 
 export default function useLoopringBalance(): BalanceProvider {
     const name = 'loopring';
@@ -59,7 +59,7 @@ export default function useLoopringBalance(): BalanceProvider {
 
             const result: { data: LpFee } = await axios.get(`${uri}/user/offchainFee?accountId=${accInfo.accountId}&requestType=3`)
             const currencyDec = layer?.assets?.find(c => c?.asset == currency.asset)?.decimals;
-            const formatedGas = formatAmount(result.data.fees.find(f => f.token === currency.asset)?.fee, Number(currencyDec));
+            const formatedGas = formatAmount(result.data.fees.find(f => f?.token === currency.asset)?.fee, Number(currencyDec));
 
             gas = [{
                 token: currency.asset,

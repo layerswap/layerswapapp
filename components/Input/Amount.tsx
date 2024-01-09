@@ -7,6 +7,7 @@ import { useBalancesState, useBalancesUpdate } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useFee } from "../../context/feeContext";
 import useWallet from "../../hooks/useWallet";
+import useBalance from "../../hooks/useBalance";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
@@ -24,7 +25,8 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const wallet = provider?.getConnectedWallet()
     const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.asset)?.gas || 0
-    const { getBalance, getGas } = useBalancesUpdate()
+    const { fetchBalance, fetchGas } = useBalance()
+
     const name = "amount"
     const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
 
@@ -57,25 +59,25 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     }
 
     const handleSetMaxAmount = useCallback(async () => {
-        from && await getBalance(from);
-        from && fromCurrency && getGas(from, fromCurrency, destination_address || "");
+        from && await fetchBalance(from);
+        from && fromCurrency && fetchGas(from, fromCurrency, destination_address || "");
         setFieldValue(name, maxAllowedAmount);
         if (maxAllowedAmount)
             updateRequestedAmountInUsd(maxAllowedAmount)
     }, [from, to, fromCurrency, destination_address, maxAllowedAmount])
 
     useEffect(() => {
-        values.from && getBalance(values.from);
+        values.from && fetchBalance(values.from);
     }, [values.from, values.destination_address, wallet?.address])
 
     useEffect(() => {
-        values.to && getBalance(values.to);
+        values.to && fetchBalance(values.to);
     }, [values.to, values.destination_address, wallet?.address])
 
     const contract_address = values?.from?.assets.find(a => a.asset === values?.fromCurrency?.asset)?.contract_address
 
     useEffect(() => {
-        wallet?.address && values.from && values.fromCurrency && getGas(values.from, values.fromCurrency, values.destination_address || wallet.address)
+        wallet?.address && values.from && values.fromCurrency && fetchGas(values.from, values.fromCurrency, values.destination_address || wallet.address)
     }, [contract_address, values.from, values.fromCurrency, wallet?.address])
 
     return (<>
