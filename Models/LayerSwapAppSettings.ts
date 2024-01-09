@@ -49,8 +49,6 @@ export class LayerSwapAppSettings {
             throw new Error("NEXT_PUBLIC_RESOURCE_STORAGE_URL is not set up in env vars")
 
         const basePath = new URL(resource_storage_url);
-        console.log(sourceRoutes,"sourceRoutes2")
-        console.log(destinationRoutes,"destinationRoutes2")
         const networkLayers: Layer[] = networks?.map((n): Layer =>
         ({
             assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n, sourceRoutes, destinationRoutes),
