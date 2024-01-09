@@ -21,10 +21,6 @@ import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 import { useQueryState } from "../../../context/query";
 import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
-import StatusIcon from "../../SwapHistory/StatusIcons";
-import Image from 'next/image';
-import { ChevronRight } from "lucide-react";
-import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import ResizablePanel from "../../ResizablePanel";
 
@@ -100,7 +96,7 @@ export default function Form() {
                 window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
                 setShowSwapModal(true)
             }
-            mutate(`/swaps?status=${SwapStatusInNumbers.Pending}&version=${LayerSwapApiClient.apiVersion}`)
+            mutate(`/swaps/count?version=${LayerSwapApiClient.apiVersion}`)
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error

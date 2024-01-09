@@ -69,16 +69,13 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
 }
 
 const PendingSwapsModal = () => {
-   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
-   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
-
    const apiClient = new LayerSwapApiClient()
    const { data, mutate } =
-      useSWR<ApiResponse<SwapItem[]>>(
-         `/swaps?status=${SwapStatusInNumbers.Pending}&version=${LayerSwapApiClient.apiVersion}`,
+      useSWR<ApiResponse<{ count: number }>>(
+         `/swaps/count?version=${LayerSwapApiClient.apiVersion}`,
          apiClient.fetcher)
 
-   const pendingSwapsCount = Number(data?.data?.length)
+   const pendingSwapsCount = Number(data?.data?.count)
 
    return <span className="text-secondary-text cursor-pointer relative">
       {
