@@ -7,21 +7,26 @@ import { Coins } from "lucide-react"
 import Phantom from "../../../components/icons/Wallets/Phantom"
 import { Connector } from "wagmi"
 
-export const ResolveEVMWalletIcon = ({ connector }: { connector: Connector<any, any>}) => {
+export const ResolveEVMWalletIcon = ({ connector }: { connector: Connector<any, any> }) => {
     let icon: ((props: any) => JSX.Element) | null = null;
 
     // Check first by id then by name
     switch (connector?.id?.toLowerCase()) {
         case KnownKonnectorIds.MetaMask:
             icon = MetaMaskIcon;
+            break;
         case KnownKonnectorIds.WalletConnect:
             icon = WalletConnectIcon;
+            break;
         case KnownKonnectorIds.Rainbow:
             icon = RainbowIcon;
+            break;
         case KnownKonnectorIds.BitKeep:
             icon = BitKeep;
+            break;
         case KnownKonnectorIds.CoinbaseWallet:
             icon = CoinbaseIcon;
+            break;
     }
 
     if (icon == null) {
