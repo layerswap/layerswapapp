@@ -131,7 +131,7 @@ export default function Form() {
     const initiallyInValid = Object.values(initiallyValidation)?.filter(v => v).length > 0
 
 
-    const handleClosesSwapModal = () => {
+    const handleCloseSwapModal = () => {
         let homeURL = window.location.protocol + "//"
             + window.location.host
 
@@ -152,7 +152,7 @@ export default function Form() {
             show={showSwapModal}
             setShow={setShowSwapModal}
             header={`Complete the swap`}
-            onClose={handleClosesSwapModal}>
+            onClose={handleCloseSwapModal}>
             <ResizablePanel>
                 <SwapDetails type="contained" />
             </ResizablePanel>

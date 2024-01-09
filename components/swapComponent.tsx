@@ -36,7 +36,6 @@ function updatePendingCount(useSWRNext) {
         const status = swap.status
         if (swapsStatuses[swap.id] !== status) {
           mutate(`/swaps/count?version=${LayerSwapApiClient.apiVersion}`)
-          console.log("mutated")
         }
         swapsStatuses[swap.id] = status
       }
