@@ -60,8 +60,8 @@ export class LayerSwapAppSettings {
 
     static ResolveNetworkL2Assets(network: CryptoNetwork, sourceRoutes: Route[], destinationRoutes: Route[]): NetworkCurrency[] {
         return network?.currencies?.map(c => {
-            const availableInSource = sourceRoutes.some(r => r.asset === c.asset && r.network === network.internal_name)
-            const availableInDestination = destinationRoutes.some(r => r.asset === c.asset && r.network === network.internal_name)
+            const availableInSource = sourceRoutes?.some(r => r.asset === c.asset && r.network === network.internal_name)
+            const availableInDestination = destinationRoutes?.some(r => r.asset === c.asset && r.network === network.internal_name)
 
             return ({
                 asset: c.asset,
