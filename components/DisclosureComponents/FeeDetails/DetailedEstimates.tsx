@@ -75,9 +75,9 @@ type EstimatedArrivalProps = {
     currency?: NetworkCurrency | null,
     fee: Fee
 }
-const EstimatedArrival: FC<EstimatedArrivalProps> = ({ currency, destination, fee }) => {
+const EstimatedArrival: FC<EstimatedArrivalProps> = ({ fee }) => {
 
-    return <div className="flex flex-row items-center gap-2 w-full pl-1">
+    return <div className="flex flex-row items-center gap-2 w-fit pl-1">
         <Clock9 className="h-4 w-4 text-secondary-text" />
         <span className="text-right">
             <AverageCompletionTime hours={fee?.avgCompletionTime?.total_hours} minutes={fee?.avgCompletionTime?.total_minutes} />
