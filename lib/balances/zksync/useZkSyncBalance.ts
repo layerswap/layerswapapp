@@ -3,8 +3,6 @@ import formatAmount from "../../formatAmount";
 import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../Models/Balance";
 import ZkSyncLiteRPCClient from "./zksyncLiteRpcClient";
 
-
-
 export default function useZkSyncBalance(): BalanceProvider {
     const name = 'zksync_lite'
     const supportedNetworks = [
@@ -19,18 +17,20 @@ export default function useZkSyncBalance(): BalanceProvider {
 
         try {
             const result = await client.getAccountInfo(layer.nodes[0].url, address);
-            const zkSyncBalances = Object.entries(result.committed.balances).map(([token, amount]) => {
-                const currency = layer?.assets?.find(c => c?.asset == token);
+            const zkSyncBalances = layer.assets.map((a) => {
+                const currency = layer?.assets?.find(c => c?.asset == a.asset);
+                const amount = currency && result.committed.balances[currency.asset];
+
                 return ({
                     network: layer.internal_name,
-                    token,
+                    token: a.asset,
                     amount: formatAmount(amount, Number(currency?.decimals)),
                     request_time: new Date().toJSON(),
                     decimals: Number(currency?.decimals),
                     isNativeCurrency: false
                 })
             });
-            
+
             balances = [
                 ...zkSyncBalances,
             ]
