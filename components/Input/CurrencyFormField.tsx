@@ -68,7 +68,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     });
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
-        currencies!,
+        filteredCurrencies!,
         resolveImgSrc,
         values,
         direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
