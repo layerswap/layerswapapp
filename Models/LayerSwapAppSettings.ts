@@ -51,26 +51,19 @@ export class LayerSwapAppSettings {
         const basePath = new URL(resource_storage_url);
         const networkLayers: Layer[] = networks?.map((n): Layer =>
         ({
-            assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n, sourceRoutes, destinationRoutes),
+            assets: LayerSwapAppSettings.ResolveNetworkAssets(n, sourceRoutes, destinationRoutes),
             img_url: `${basePath}layerswap/networks/${n?.internal_name?.toLowerCase()}.png`,
             ...n,
         }))
         return networkLayers
     }
 
-    static ResolveNetworkL2Assets(network: CryptoNetwork, sourceRoutes: Route[], destinationRoutes: Route[]): NetworkCurrency[] {
+    static ResolveNetworkAssets(network: CryptoNetwork, sourceRoutes: Route[], destinationRoutes: Route[]): NetworkCurrency[] {
         return network?.currencies?.map(c => {
             const availableInSource = sourceRoutes?.some(r => r.asset === c.asset && r.network === network.internal_name)
             const availableInDestination = destinationRoutes?.some(r => r.asset === c.asset && r.network === network.internal_name)
-
             return ({
-                asset: c.asset,
-                contract_address: c.contract_address,
-                decimals: c.decimals,
-                precision: c.precision,
-                usd_price: c.usd_price,
-                is_native: c.is_native,
-                is_refuel_enabled: c.is_refuel_enabled,
+                ...c,
                 availableInSource,
                 availableInDestination,
             })
