@@ -34,7 +34,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const { swap } = useSwapDataState();
     const { chain } = useNetwork();
     const signer = useEthersSigner();
-    const {isConnected} = useAccount();
+    const { isConnected } = useAccount();
 
     const { networks, layers, currencies } = useSettingsState();
     const { source_network: source_network_internal_name } = swap || {};
@@ -105,6 +105,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         try {
             if (await syncWallet.isSigningKeySet()) {
                 setAccountIsActivated(true)
+                setLoading(false);
                 return
             }
             const changePubkeyHandle = await syncWallet.setSigningKey({ ethAuthType: "ECDSA", feeToken: Number(source_currency?.contract_address) });
@@ -149,8 +150,9 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 return
             }
         }
-        setLoading(false)
-
+        finally {
+            setLoading(false)
+        }
     }, [syncWallet, swap, depositAddress, source_currency, amount])
 
     if (!signer || !isConnected) {
