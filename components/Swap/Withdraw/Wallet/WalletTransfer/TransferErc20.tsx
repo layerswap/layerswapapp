@@ -16,6 +16,9 @@ import { ButtonWrapper } from "./buttons";
 import { useSwapTransactionStore } from "../../../../../stores/swapTransactionStore";
 import useWalletTransferOptions from "../../../../../hooks/useWalletTransferOptions";
 import { SendTransactionData } from "../../../../../lib/telegram";
+import useTransactionTracking from "../../../../../hooks/useTransactionTracking";
+import { useSettingsState } from "../../../../../context/settings";
+import { useSwapDataState } from "../../../../../context/swap";
 
 type TransferERC20ButtonProps = BaseTransferButtonProps & {
     tokenContractAddress: `0x${string}`,
@@ -37,6 +40,8 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
     const { setSwapTransaction } = useSwapTransactionStore();
     const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
+    const { layers } = useSettingsState()
+    const { swap } = useSwapDataState()
 
     const contractWritePrepare = usePrepareContractWrite({
         enabled: !!depositAddress && isContractWallet?.ready,
@@ -103,7 +108,12 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         contractWrite?.write && contractWrite?.write()
     }, [contractWrite])
 
-    const waitForTransaction = useWaitForTransaction({
+    const { getTrackingProvider } = useTransactionTracking()
+    const source_layer = layers.find(l => l.internal_name === swap?.source_network)
+
+    const txTrackingProvider = getTrackingProvider(source_layer!)!.provider
+
+    const waitForTransaction = txTrackingProvider({
         hash: contractWrite?.data?.hash || savedTransactionHash,
         onSuccess: async (trxRcpt) => {
             setApplyingTransaction(true)

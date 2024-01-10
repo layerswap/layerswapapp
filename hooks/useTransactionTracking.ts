@@ -12,16 +12,7 @@ export default function useTransactionTracking() {
         return provider
     }
 
-    const onSuccess = () => {
-
-    }
-
-    const onError = () => {
-
-    }
-
     return {
-        onSuccess,
-        onError
+        getTrackingProvider
     }
 }
