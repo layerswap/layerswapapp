@@ -1,4 +1,4 @@
-import { Link, ArrowLeftRight } from 'lucide-react';
+import { ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
@@ -6,14 +6,15 @@ import * as zksync from 'zksync';
 import { utils } from 'ethers';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import { PublishedSwapTransactionStatus, PublishedSwapTransactions } from '../../../../lib/layerSwapApiClient';
+import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSwapDataState } from '../../../../context/swap';
 import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
-import { useNetwork } from 'wagmi';
+import { useAccount, useNetwork } from 'wagmi';
 import { Transaction } from 'zksync';
-import FailIcon from '../../../icons/FailIcon';
 import ClickTooltip from '../../../Tooltips/ClickTooltip';
+import SignatureIcon from '../../../icons/SignatureIcon';
+import formatAmount from '../../../../lib/formatAmount';
 
 type Props = {
     depositAddress: string,
@@ -27,13 +28,15 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [syncTransfer, setSyncTransfer] = useState<Transaction>();
     const [txHash, setTxHash] = useState('');
     const [accountIsActivated, setAccountIsActivated] = useState(false);
+    const [activationFee, setActivationFee] = useState<({ feeInAsset: number, feeInUsd: number } | undefined)>(undefined);
 
     const { setSwapTransaction } = useSwapTransactionStore();
     const { swap } = useSwapDataState();
-    const signer = useEthersSigner();
     const { chain } = useNetwork();
+    const signer = useEthersSigner();
+    const {isConnected} = useAccount();
 
-    const { networks, layers } = useSettingsState();
+    const { networks, layers, currencies } = useSettingsState();
     const { source_network: source_network_internal_name } = swap || {};
     const source_network = networks.find(n => n.internal_name === source_network_internal_name);
     const source_layer = layers.find(l => l.internal_name === source_network_internal_name)
@@ -77,6 +80,14 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             const syncProvider = await zksync.getDefaultProvider(defaultProvider);
             const wallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
             setAccountIsActivated(await wallet.isSigningKeySet())
+            if (!accountIsActivated) {
+                let activationFee = await syncProvider.getTransactionFee({
+                    ChangePubKey: 'ECDSA'
+                }, wallet.address(), Number(source_currency?.contract_address));
+                const formatedGas = formatAmount(activationFee.totalFee, Number(source_currency?.decimals))
+                let assetUsdPrice = currencies.find(x => x.asset == source_currency?.asset)?.usd_price;
+                setActivationFee({ feeInAsset: formatedGas, feeInUsd: formatedGas * (assetUsdPrice ?? 0) })
+            }
             setSyncWallet(wallet)
         }
         catch (e) {
@@ -96,7 +107,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 setAccountIsActivated(true)
                 return
             }
-            const changePubkeyHandle = await syncWallet.setSigningKey({ ethAuthType: "ECDSALegacyMessage", feeToken: Number(source_currency?.contract_address) });
+            const changePubkeyHandle = await syncWallet.setSigningKey({ ethAuthType: "ECDSA", feeToken: Number(source_currency?.contract_address) });
             const receipt = await changePubkeyHandle.awaitReceipt()
             if (receipt.success)
                 setAccountIsActivated(true)
@@ -142,7 +153,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     }, [syncWallet, swap, depositAddress, source_currency, amount])
 
-    if (!signer) {
+    if (!signer || !isConnected) {
         return <ConnectWalletButton />
     }
 
@@ -162,37 +173,37 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
                     {
                         !syncWallet &&
-                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleAuthorize} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleAuthorize} icon={<SignatureIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Authorize to Send on zkSync
                         </SubmitButton>
                     }
                     {
                         syncWallet && !accountIsActivated &&
                         <>
-                            <div className="flex w-full">
-                                {/* here may be some icon */}
-                                {/* <div className='relative'>
-                                    <FailIcon className="relative top-0 left-0 w-6 h-6 md:w-7 md:h-7" />
-                                </div> */}
-                                <div className="w-full">
-                                    <p className="text-md items-center flex font-semibold self-center text-primary-text">
-                                        <span>Account Activation</span>
-                                        <ClickTooltip moreClassNames='text-secondary-text'
-                                            text={
-                                                <p>
-                                                    <span>You can learn more about account activation and the associated fee </span>
-                                                    <a target='_blank' className='text-primary underline hover:no-underline decoration-primary cursor-pointer' href="https://docs.zksync.io/userdocs/faq/#what-is-the-account-activation-fee">in the zkSync Lite FAQ</a>
-                                                </p>
-                                            } />
-                                    </p>
-                                    <p className="text-sm text-primary-text break-all">
-                                        Sign a message to activate your zkSync Lite account.
-                                    </p>
-                                    <p className='flex mt-4 w-full justify-between text-sm text-secondary-text'><span className='font-semibold'>One time activation fee</span> <span className='text-primary-text'>12.3$</span></p>
-                                </div>
+                            <div className="w-full">
+                                <p className="text-base items-center flex font-semibold self-center text-primary-text">
+                                    <span>Account Activation</span>
+                                    <ClickTooltip moreClassNames='text-secondary-text'
+                                        text={
+                                            <p>
+                                                <span>
+                                                    <span>The connected address is not </span>
+                                                    <span className='italic'>active</span>
+                                                    <span><span> in the zkSync Lite network.</span>
+                                                        <p>You can learn more about account activation and the associated fee</p>
+                                                    </span>
+                                                </span>
+                                                <a target='_blank' className='text-primary underline hover:no-underline decoration-primary cursor-pointer' href="https://docs.zksync.io/userdocs/faq/#what-is-the-account-activation-fee">in the zkSync Lite FAQ</a>
+                                            </p>
+                                        } />
+                                </p>
+                                <p className="text-sm text-primary-text break-normal">
+                                    Sign a message to activate your zkSync Lite account.
+                                </p>
+                                <p className='flex mt-4 w-full justify-between items-center text-sm text-secondary-text'><span className='font-bold sm:inline hidden'>One time activation fee</span> <span className='font-bold sm:hidden'>Fee</span> <span className='text-primary-text text-sm sm:text-base flex items-center'>{activationFee?.feeInAsset}{source_currency?.asset}<span className='text-secondary-text text-sm'>({activationFee?.feeInUsd.toFixed(2)}$)</span></span></p>
                             </div>
-                            <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={activateAccout} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                                Activate account
+                            <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={activateAccout} icon={<SignatureIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                                Sign to activate
                             </SubmitButton>
                         </>
                     }

@@ -1,47 +1,24 @@
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
 import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../Models/Balance";
+import ZkSyncLiteRPCClient from "./zksyncLiteRpcClient";
 
-type Balances = {
-    [currency: string]: string;
-};
 
-type CommitedObject = {
-    committed: {
-        balances: Balances;
-        nonce: number;
-        pubKeyHash: string;
-    };
-};
-
-type zkSyncGas = {
-    feeType: string,
-    gasFee: string,
-    gasPriceWei: string,
-    gasTxAmount: string,
-    totalFee: string,
-    zkpFee: string
-}
 
 export default function useZkSyncBalance(): BalanceProvider {
     const name = 'zksync_lite'
     const supportedNetworks = [
         KnownInternalNames.Networks.ZksyncMainnet
     ]
-
+    const client = new ZkSyncLiteRPCClient();
     const getBalance = async ({ layer, address }: BalanceProps) => {
 
         let balances: Balance[] = []
 
         if (layer.isExchange === true || !layer.assets) return
 
-        const { createPublicClient, http } = await import('viem');
-        const provider = createPublicClient({
-            transport: http(`${layer.nodes[0].url}jsrpc`)
-        })
-
         try {
-            const result: CommitedObject = await provider.request({ method: 'account_info' as any, params: [address as `0x${string}`] });
+            const result = await client.getAccountInfo(layer.nodes[0].url, address);
             const zkSyncBalances = Object.entries(result.committed.balances).map(([token, amount]) => {
                 const currency = layer?.assets?.find(c => c?.asset == token);
                 return ({
@@ -68,15 +45,10 @@ export default function useZkSyncBalance(): BalanceProvider {
     const getGas = async ({ layer, currency, address }: GasProps) => {
 
         let gas: Gas[] = [];
-        if (layer.isExchange === true || !layer.assets) return
-
-        const { createPublicClient, http } = await import('viem');
-        const provider = createPublicClient({
-            transport: http(`${layer.nodes[0].url}jsrpc`)
-        })
+        if (layer.isExchange === true || !layer.assets || !address) return
 
         try {
-            const result: zkSyncGas = await provider.request({ method: 'get_tx_fee' as any, params: ["Transfer" as any, address as `0x${string}`, currency.asset as any] })
+            const result = await client.getTransferFee(layer.nodes[0].url, address, currency.asset);
             const currencyDec = layer?.assets?.find(c => c?.asset == currency.asset)?.decimals;
             const formatedGas = formatAmount(result.totalFee, Number(currencyDec))
 
