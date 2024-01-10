@@ -108,22 +108,24 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         contractWrite?.write && contractWrite?.write()
     }, [contractWrite])
 
-    const { getTrackingProvider } = useTransactionTracking()
     const source_layer = layers.find(l => l.internal_name === swap?.source_network)
+    const { getTransactionStatus } = useTransactionTracking(contractWrite?.data?.hash || savedTransactionHash, source_layer!)
 
-    const txTrackingProvider = getTrackingProvider(source_layer!)!.provider
+    const txStatus = getTransactionStatus()
 
-    const waitForTransaction = txTrackingProvider({
-        hash: contractWrite?.data?.hash || savedTransactionHash,
-        onSuccess: async (trxRcpt) => {
+    useEffect(() => {
+        if (txStatus === 'completed') {
             setApplyingTransaction(true)
-            setSwapTransaction(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
+            setSwapTransaction(swapId, PublishedSwapTransactionStatus.Completed, contractWrite?.data?.hash!);
             setApplyingTransaction(false)
-        },
-        onError: async (err) => {
+        } else if (txStatus === 'failed') {
             if (contractWrite?.data?.hash)
-                setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, contractWrite.data.hash, err.message);
+                setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, contractWrite.data.hash, '');
         }
+    }, [txStatus])
+
+    const waitForTransaction = useWaitForTransaction({
+        hash: contractWrite?.data?.hash || savedTransactionHash,
     })
 
     const isError = [
