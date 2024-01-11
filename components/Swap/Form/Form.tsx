@@ -102,7 +102,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
             (await import("../../Input/Address")).default
         })()
     }, [destination])
-    
     const previouslySelectedDestination = useRef(destination);
 
     //If destination changed to exchange, remove destination_address
@@ -237,13 +236,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                     }
                     <div className="w-full">
                         <FeeDetailsComponent values={values} />
-                        {
-                            //TODO refactor
-                            destination && toAsset &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal"><span>We&apos;re experiencing delays for transfers of</span> <span>{values?.toCurrency?.asset}</span> <span>to</span> <span>{values?.to?.display_name}</span><span>. Estimated arrival time can take up to 2 hours.</span></span>
-                            </WarningMessage>
-                        }
 
                         {
                             //TODO refactor 
