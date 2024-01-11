@@ -155,8 +155,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
 function groupByType(values: ISelectMenuItem[]) {
     let groups: SelectMenuItemGroup[] = [];
-    console.log(groups, "groups")
-    console.log(values, "values")
     values.forEach((v) => {
         let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });
         group.items.push(v);
