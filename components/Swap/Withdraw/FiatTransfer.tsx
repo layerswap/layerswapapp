@@ -2,7 +2,7 @@ import { Context, FC, createContext, useContext, useEffect, useRef, useState } f
 import { useSwapDataState } from "../../../context/swap";
 import { StripeOnramp, loadStripeOnramp } from "@stripe/crypto";
 import { PublishedSwapTransactionStatus } from "../../../lib/layerSwapApiClient";
-import { useSwapTransactionStore } from "../../store/zustandStore";
+import { useSwapTransactionStore } from "../../../stores/swapTransactionStore";
 import inIframe from "../../utils/inIframe";
 import SubmitButton from "../../buttons/submitButton";
 import { ExternalLink } from "lucide-react";

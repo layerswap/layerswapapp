@@ -10,7 +10,7 @@ import { LSAPIKnownErrorCode } from '../../../../Models/ApiError';
 import toast from 'react-hot-toast';
 import { useSettingsState } from '../../../../context/settings';
 import { TimerProvider, useTimerState } from '../../../../context/timerContext';
-import { useSwapTransactionStore } from '../../../store/zustandStore';
+import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 const TIMER_SECONDS = 120
 
 const Coinbase: FC = () => {
@@ -85,7 +85,8 @@ const TransferElements: FC = () => {
 
     return (
         <>
-            <Modal height='full'
+            <Modal
+                height='90%'
                 show={showCoinbaseConnectModal}
                 setShow={setShowCoinbaseConnectModal}
                 header={`Connect your Coinbase account`}
@@ -98,6 +99,7 @@ const TransferElements: FC = () => {
                 />
             </Modal>
             <Modal
+                height='90%'
                 show={openCoinbase2FA}
                 setShow={setOpenCoinbase2FA}
             >

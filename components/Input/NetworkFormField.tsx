@@ -12,7 +12,6 @@ import { SortingByOrder } from "../../lib/sorting"
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
-import { useRouter } from "next/router";
 import { useQueryState } from "../../context/query";
 
 type SwapDirection = "from" | "to";
@@ -48,7 +47,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
-    const router = useRouter()
     const name = direction
     const { from, to } = values
     const { lockFrom, lockTo, asset, lockAsset } = useQueryState()

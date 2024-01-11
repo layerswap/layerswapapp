@@ -11,29 +11,26 @@ import TransferFromWallet from "./WalletTransfer"
 import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw"
 import { Layer } from "../../../../Models/Layer"
 import useWalletTransferOptions from "../../../../hooks/useWalletTransferOptions"
-import { useBalancesState } from "../../../../context/balances"
 import SolanaWalletWithdrawStep from "./SolanaWalletWithdraw"
-
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 const WalletTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
-    const { isContractWallet } = useBalancesState();
 
-    const { source_network: source_network_internal_name, destination_address, destination_network, destination_network_asset, source_network_asset } = swap || {}
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name) as (Layer & { isExchange: false })
+    const { source_network: source_network_internal_name, destination_network, destination_network_asset, source_network_asset } = swap || {}
+    const source_layer = layers.find(n => n.internal_name === source_network_internal_name) as (Layer & { isExchange: false })
     const destination = layers.find(n => n.internal_name === destination_network)
-    const sourceAsset = source_network?.assets?.find(c => c.asset.toLowerCase() === swap?.source_network_asset.toLowerCase())
+    const sourceAsset = source_layer?.assets?.find(c => c.asset.toLowerCase() === swap?.source_network_asset.toLowerCase())
 
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsZkSync = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
     const sourceIsSolana = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
-    
-    const { canDoSweepless, ready } = useWalletTransferOptions()
-    const shouldGetGeneratedAddress = ready && !canDoSweepless
-    const generateDepositParams = shouldGetGeneratedAddress ? [source_network_internal_name] : null
+
+    const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
+    const shouldGetGeneratedAddress = isContractWallet?.ready && !canDoSweepless
+    const generateDepositParams = shouldGetGeneratedAddress ? [source_network_internal_name] : null    
 
     const layerswapApiClient = new LayerSwapApiClient()
     const {
@@ -43,11 +40,11 @@ const WalletTransfer: FC = () => {
     const managedDepositAddress = sourceAsset?.network?.managed_accounts?.[0]?.address;
     const generatedDepositAddress = generatedDeposit?.data?.address
 
-    const depositAddress = ready ?
+    const depositAddress = isContractWallet?.ready ?
         (canDoSweepless ? managedDepositAddress : generatedDepositAddress)
         : undefined
 
-    const sourceChainId = (source_network && source_network.isExchange === false) ? Number(source_network?.chain_id) : null
+    const sourceChainId = (source_layer && source_layer.isExchange === false) ? Number(source_layer?.chain_id) : null
     const feeParams = {
         source: source_network_internal_name,
         destination: destination?.internal_name,
@@ -57,7 +54,7 @@ const WalletTransfer: FC = () => {
     }
 
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
-    const walletTransferFee = ready ?
+    const walletTransferFee = isContractWallet?.ready ?
         feeData?.data?.find(f => f?.deposit_type === (canDoSweepless ? DepositType.Wallet : DepositType.Manual))
         : undefined
 
@@ -81,17 +78,16 @@ const WalletTransfer: FC = () => {
         </Wrapper>
     else
         return <Wrapper>
-            {swap && source_network && sourceAsset && requested_amount && sourceChainId && <TransferFromWallet
+            {swap && source_layer && sourceAsset && requested_amount && sourceChainId && <TransferFromWallet
                 sequenceNumber={swap?.sequence_number}
                 swapId={swap.id}
-                networkDisplayName={source_network?.display_name}
+                networkDisplayName={source_layer?.display_name}
                 tokenDecimals={sourceAsset?.decimals}
                 tokenContractAddress={sourceAsset.contract_address}
                 chainId={sourceChainId}
                 depositAddress={depositAddress}
                 userDestinationAddress={swap.destination_address}
                 amount={requested_amount}
-                isContractWallet={!!isContractWallet?.value}
             />}
         </Wrapper>
 

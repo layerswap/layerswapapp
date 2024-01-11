@@ -22,7 +22,6 @@ import OpenMask from "../icons/Wallets/OpenMask";
 import Phantom from "../icons/Wallets/Phantom";
 import Solflare from "../icons/Wallets/Solflare";
 import CoinbaseIcon from "../icons/Wallets/Coinbase";
-import GlowIcon from "../icons/Wallets/Glow";
 
 const ConnectButton = ({
     children,
@@ -64,7 +63,7 @@ const ConnectButton = ({
     );
     return isMobile ? (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger>{children}</DialogTrigger>
+            <DialogTrigger aria-label="Connect wallet">{children}</DialogTrigger>
             <DialogContent className="sm:max-w-[425px] text-primary-text">
                 <DialogHeader>
                     <DialogTitle className="text-center">
@@ -102,6 +101,7 @@ const ConnectButton = ({
     ) : (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger
+                aria-label="Connect wallet"
                 disabled={filteredConnectors.length == 0}
                 className={`${className} disabled:opacity-50 disabled:cursor-not-allowed `}
             >
