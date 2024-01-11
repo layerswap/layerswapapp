@@ -25,11 +25,11 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 40 };
 
-    const closeModal = () => {
+    const closeModal = useCallback(() => {
         setShow(false);
         onClose && onClose()
-    }
-    
+    }, [setShow, onClose])
+
     async function handleDragEnd(_, info) {
         const offset = info.offset.y;
         const velocity = info.velocity.y;
@@ -41,7 +41,6 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
             controls.start({ y: 0, transition: transitionProps });
         }
     }
-
 
     useEffect(() => {
         if (show) {
@@ -71,7 +70,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
         <div ref={topmostRef}>
             <motion.div
                 key="backdrop"
-                className={`${position} inset-0 z-20 bg-black/50 block`}
+                className={`${position} asdasdasdaasdsddd inset-0 z-40 bg-black/50 block`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
