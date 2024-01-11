@@ -4,6 +4,7 @@ import { isValidAddress } from "./addressValidator";
 import { FilterDestinationLayers, FilterSourceLayers } from "../helpers/settingsHelper";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { SwapItem } from "./layerSwapApiClient";
+import { groupBy } from "../components/utils/groupBy";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
     const { destAddress, amount, asset, from, to, lockAsset } = queryParams
@@ -55,18 +56,22 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
         has_refuel
     } = swap
 
-    const { layers } = settings || {}
+    const { layers, exchanges, destinationRoutes, sourceRoutes } = settings || {}
 
-    const from = source_exchange ?
-        layers.find(l => l.internal_name === source_exchange)
-        : layers.find(l => l.internal_name === source_network)
+    const from = layers.find(l => l.internal_name === source_network);
+    const to = layers.find(l => l.internal_name === destination_network);
 
-    const to = destination_exchange ?
-        layers.find(l => l.internal_name === destination_exchange)
-        : layers.find(l => l.internal_name === destination_network)
+    const fromExchange = exchanges.find(e => e.internal_name === source_exchange);
+    const toExchange = exchanges.find(e => e.internal_name === destination_exchange);
 
-    const fromCurrency = from?.assets.find(c => c.asset === source_network_asset)
-    const toCurrency = to?.assets.find(c => c.asset === destination_network_asset)
+    const direction = fromExchange ? 'from' : 'to';
+    const routes = direction === 'from' ? sourceRoutes : destinationRoutes;
+    const assets = routes && groupBy(routes, ({ asset }) => asset)
+    const assetNames = assets && Object.keys(assets).map(a => ({ name: a, networks: assets[a] }))
+    const currencyGroup = assetNames.find(a => a.name === (direction === 'from' ? source_network_asset : destination_network_asset))
+
+    const fromCurrency = from?.assets.find(c => c.asset === source_network_asset);
+    const toCurrency = to?.assets.find(c => c.asset === destination_network_asset);
 
     const result: SwapFormValues = {
         from,
@@ -75,7 +80,10 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
         fromCurrency,
         toCurrency,
         destination_address,
-        refuel: has_refuel
+        refuel: has_refuel,
+        fromExchange,
+        toExchange,
+        currencyGroup
     }
 
     return result

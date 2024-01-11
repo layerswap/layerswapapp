@@ -13,6 +13,7 @@ import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import useSWR from "swr";
 import { ApiResponse } from "../../Models/ApiResponse";
 import { Balance } from "../../Models/Balance";
+import { groupBy } from "../utils/groupBy";
 
 const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
@@ -61,7 +62,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     useEffect(() => {
         if (value) return
-        setFieldValue(name, currencyMenuItems[0])
+        setFieldValue(name, currencyMenuItems?.[0])
     }, [])
 
     const handleSelect = useCallback((item: SelectMenuItem<AssetGroup>) => {
@@ -110,14 +111,6 @@ export enum CurrencyDisabledReason {
     InsufficientLiquidity = 'Temporarily disabled. Please check later.',
     InvalidRoute = 'Invalid route'
 }
-
-
-const groupBy = <T, K extends keyof any>(list: T[], getKey: (item: T) => K) => list.reduce((previous, currentItem) => {
-    const group = getKey(currentItem);
-    if (!previous[group]) previous[group] = [];
-    previous[group].push(currentItem);
-    return previous;
-}, {} as Record<K, T[]>);
 
 export type AssetGroup = {
     name: string;
