@@ -157,7 +157,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                                 {
                                     source_network_internal_name === KnownInternalNames.Networks.StarkNetMainnet
                                         ? <span>Please switch to Starknet Mainnet with your wallet and click Connect again</span>
-                                        : <span>Please switch to Starknet Goerli with your wallet and click Connect again</span>
+                                        : <span>Please switch to {source_layer?.display_name} with your wallet and click Connect again</span>
                                 }
                             </span>
                         </WarningMessage>

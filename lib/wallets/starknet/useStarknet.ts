@@ -6,7 +6,11 @@ import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 
 export default function useStarknet(): WalletProvider {
-    const withdrawalSupportedNetworks = [KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetGoerli]
+    const withdrawalSupportedNetworks = [
+        KnownInternalNames.Networks.StarkNetMainnet,
+        KnownInternalNames.Networks.StarkNetGoerli,
+        KnownInternalNames.Networks.StarkNetSepolia
+    ]
     const autofillSupportedNetworks = withdrawalSupportedNetworks
     const name = 'starknet'
     const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';

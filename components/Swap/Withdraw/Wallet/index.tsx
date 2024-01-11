@@ -25,7 +25,7 @@ const WalletTransfer: FC = () => {
 
     const sourceIsImmutableX = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsZkSync = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
-    const sourceIsStarknet = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
+    const sourceIsStarknet = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.StarkNetSepolia?.toUpperCase()
 
     const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
     const shouldGetGeneratedAddress = isContractWallet?.ready && !canDoSweepless
