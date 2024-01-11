@@ -2,7 +2,6 @@ import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
-import { useSwapTransactionStore } from '../../../store/zustandStore';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSwapDataState } from '../../../../context/swap';
 import { useSettingsState } from '../../../../context/settings';
@@ -11,6 +10,7 @@ import useWallet from '../../../../hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
+import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 
 type Props = {
     depositAddress: string,
