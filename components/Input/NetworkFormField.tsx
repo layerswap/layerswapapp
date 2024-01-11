@@ -25,18 +25,26 @@ type Props = {
     label: string,
     className?: string,
 }
-const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10 };
-const getGroupName = (value: Layer | Exchange, type: 'cex' | 'layer') => {
-
+type LayerIsAvailable = {
+    value: boolean;
+    disabledReason: LayerDisabledReason;
+} | {
+    value: boolean;
+    disabledReason: null;
+}
+const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
+const getGroupName = (value: Layer | Exchange, type: 'cex' | 'layer', layerIsAvailable?: LayerIsAvailable) => {
     if (value.is_featured) {
         return "Popular";
+    }
+    else if (layerIsAvailable?.disabledReason && !layerIsAvailable.value) {
+        return "Unavailable";
     }
     else if (new Date(value.created_date).getTime() >= (new Date().getTime() - 2629800000)) {
         return "New";
     }
     else if (type === 'layer') {
         return "Networks";
-
     }
     else if (type === 'cex') {
         return "Exchanges";
@@ -94,11 +102,11 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         searchHint = "Swap from";
         filteredLayers = layers.filter(l => l.internal_name !== filterWith?.internal_name)
         menuItems = GenerateMenuItems(filteredLayers, toExchange ? [] : exchanges, resolveImgSrc, direction, !!(from && lockFrom), routesData, filterWith);
-    } 
+    }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        filteredLayers = layers.filter(l =>  l.internal_name !== filterWith?.internal_name)
+        filteredLayers = layers.filter(l => l.internal_name !== filterWith?.internal_name)
         menuItems = GenerateMenuItems(filteredLayers, fromExchange ? [] : exchanges, resolveImgSrc, direction, !!(to && lockTo), routesData, filterWith);
     }
     valueGrouper = groupByType
@@ -147,6 +155,8 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
 function groupByType(values: ISelectMenuItem[]) {
     let groups: SelectMenuItemGroup[] = [];
+    console.log(groups, "groups")
+    console.log(values, "values")
     values.forEach((v) => {
         let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });
         group.items.push(v);
@@ -192,7 +202,7 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
             imgSrc: resolveImgSrc && resolveImgSrc(l),
             isAvailable: layerIsAvailable(l),
             type: 'layer',
-            group: getGroupName(l, 'layer')
+            group: getGroupName(l, 'layer', layerIsAvailable(l))
         }
         return res;
     }).sort(SortingByOrder);
