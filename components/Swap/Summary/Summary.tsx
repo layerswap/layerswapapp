@@ -73,9 +73,9 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
         sourceAccountAddress = shortenEmail(exchange_account_name, 10);
     }
-    // else if (from?.isExchange) {
-    //     sourceAccountAddress = "Exchange"
-    // }
+    else if (sourceExchange) {
+        sourceAccountAddress = "Exchange"
+    }
     else {
         sourceAccountAddress = "Network"
     }

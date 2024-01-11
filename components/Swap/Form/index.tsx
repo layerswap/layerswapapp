@@ -188,9 +188,11 @@ const textMotion = {
 
 const PendingSwap = ({ onClick }: { onClick: () => void }) => {
     const { swap } = useSwapDataState()
-    const { 
+    const {
         destination_network: destination_network_internal_name,
         source_network: source_network_internal_name,
+        destination_exchange,
+        source_exchange
     } = swap || {}
 
     const settings = useSettingsState()
@@ -198,9 +200,12 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
     if (!swap)
         return <></>
 
-    const { resolveImgSrc, layers } = settings
+    const { resolveImgSrc, layers, exchanges } = settings
     const source = layers.find(e => e.internal_name === source_network_internal_name)
     const destination = layers.find(n => n.internal_name === destination_network_internal_name)
+
+    const sourceExchange = exchanges.find(e => e.internal_name === source_exchange)
+    const destExchange = exchanges.find(e => e.internal_name === destination_exchange)
 
     return <motion.div
         initial={{ y: 10, opacity: 0 }}
@@ -220,26 +225,38 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                         {swap && <StatusIcon swap={swap} short={true} />}
                     </span>
                     <div className="flex-shrink-0 h-5 w-5 relative">
-                        {source &&
+                        {sourceExchange ? <Image
+                            src={resolveImgSrc(sourceExchange)}
+                            alt="From Logo"
+                            height="60"
+                            width="60"
+                            className="rounded-md object-contain"
+                        /> : source ?
                             <Image
                                 src={resolveImgSrc(source)}
                                 alt="From Logo"
                                 height="60"
                                 width="60"
                                 className="rounded-md object-contain"
-                            />
+                            /> : null
                         }
                     </div>
                     <ChevronRight className="block h-4 w-4 mx-1" />
                     <div className="flex-shrink-0 h-5 w-5 relative block">
-                        {destination &&
+                        {destExchange ? <Image
+                            src={resolveImgSrc(destination)}
+                            alt="To Logo"
+                            height="60"
+                            width="60"
+                            className="rounded-md object-contain"
+                        /> : destination ?
                             <Image
                                 src={resolveImgSrc(destination)}
                                 alt="To Logo"
                                 height="60"
                                 width="60"
                                 className="rounded-md object-contain"
-                            />
+                            /> : null
                         }
                     </div>
                 </div>
