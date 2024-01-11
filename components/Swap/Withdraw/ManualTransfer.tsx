@@ -202,7 +202,8 @@ const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = 
         source_network_asset } = swap || {}
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
-    const exchangeAssets = source_exchange?.assets?.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network?.status !== "inactive")
+    const exchangeAssets = source_exchange?.assets?.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network?.status !== "inactive" && a.network?.currencies.find(c => c.asset === a.asset)?.is_deposit_enabled)
+    console.log(source_exchange)
     const defaultSourceNetwork = exchangeAssets?.find(sn => sn.is_default) || exchangeAssets?.[0]
 
     const handleChangeSelectedNetwork = useCallback((n: string) => {
@@ -251,25 +252,5 @@ const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = 
         }
     </div>
 }
-
-
-const Sceleton = () => {
-    return <div className="animate-pulse rounded-lg p-4 flex items-center text-center bg-secondary-700 border border-secondary-500">
-        <div className="flex-1 space-y-6 py-1 p-8 pt-4 items-center">
-            <div className="h-2 bg-secondary-text rounded self-center w-16 m-auto"></div>
-            <div className="space-y-3">
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="h-2 bg-secondary-text rounded col-span-2"></div>
-                    <div className="h-2 bg-secondary-text rounded col-span-1"></div>
-                </div>
-                <div className="h-2 bg-secondary-text rounded"></div>
-
-            </div>
-            <div className="h-2 bg-secondary-text rounded"></div>
-        </div>
-    </div>
-}
-
-
 
 export default ManualTransfer
