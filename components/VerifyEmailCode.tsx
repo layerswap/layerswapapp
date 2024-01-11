@@ -166,7 +166,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                 </div>
                             </div>
                             :
-                            <Widget>
+                            <>
                                 <Widget.Content center={true}>
                                     <MailOpen className='w-16 h-16 mt-auto text-primary self-center' />
                                     <div className='text-center mt-5'>
@@ -221,7 +221,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                         </SubmitButton>
                                     </TimerWithContext>
                                 </Widget.Footer>
-                            </Widget>
+                            </>
                     }
                 </Form >
             )}
