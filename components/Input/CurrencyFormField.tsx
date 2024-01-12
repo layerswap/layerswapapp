@@ -99,7 +99,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     useEffect(() => {
         if (direction === "to" && fromCurrency && toCurrency) {
-            if (destinationRoutes && !destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === toCurrency?.asset)) {
+            if (destinationRoutes?.data && !destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === toCurrency?.asset)) {
                 setFieldValue(name, null)
             } else if (destRoutesError) {
                 setFieldValue('toCurrency', null)

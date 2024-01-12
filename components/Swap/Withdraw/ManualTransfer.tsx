@@ -58,7 +58,7 @@ const ManualTransfer: FC = () => {
                     OK
                 </SubmitButton>
             </div>
-            <div className={hintClicked ? "flex" : "invisible"}>
+            <div className={hintClicked ? "" : "invisible"}>
                 <TransferInvoice address={generatedDepositAddress} shouldGenerateAddress={shouldGenerateAddress} />
             </div>
         </div>

@@ -15,7 +15,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
-    const { sourceRoutes, destinationRoutes } = useSettingsState();
+    const { sourceRoutes, destinationRoutes,  } = useSettingsState();
     const name = 'currencyGroup'
 
     const query = useQueryState()
@@ -37,6 +37,28 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         if (value) return
         setFieldValue(name, currencyMenuItems?.[0])
     }, [])
+
+    // useEffect(() => {
+    //     if (direction === "to" && fromCurrency && toCurrency) {
+    //         if (destinationRoutes && !destinationRoutes?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === toCurrency?.asset)) {
+    //             setFieldValue(name, null)
+    //         } else if (destRoutesError) {
+    //             setFieldValue('toCurrency', null)
+    //             setFieldValue('to', null)
+    //         }
+    //     }
+    // }, [fromCurrency, direction, to, destinationRoutes, destRoutesError])
+
+    // useEffect(() => {
+    //     if (direction === "from" && toCurrency && fromCurrency) {
+    //         if (sourceRoutes && !sourceRoutes?.filter(r => r.network === from?.internal_name)?.some(r => r.asset === fromCurrency?.asset)) {
+    //             setFieldValue(name, null)
+    //         } else if (sourceRoutesError) {
+    //             setFieldValue('fromCurrency', null)
+    //             setFieldValue('from', null)
+    //         }
+    //     }
+    // }, [toCurrency, direction, from, sourceRoutes, sourceRoutesError])
 
     const handleSelect = useCallback((item: SelectMenuItem<AssetGroup>) => {
         setFieldValue(name, item.baseObject, true)

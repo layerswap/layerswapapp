@@ -89,12 +89,21 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
             <div className="font-normal flex flex-col w-full relative z-10 space-y-4">
                 <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3">
-                        {sourceExchange ? <Image src={resolveImgSrc(sourceExchange)} alt={sourceExchange.display_name} width={32} height={32} className="rounded-full" /> : source ? <Image src={resolveImgSrc(source)} alt={source.display_name} width={32} height={32} className="rounded-full" /> : null}
+                        {sourceExchange ?
+                            <Image src={resolveImgSrc(sourceExchange)} alt={sourceExchange.display_name} width={32} height={32} className="rounded-full" />
+                            : source ?
+                                <Image src={resolveImgSrc(source)} alt={source.display_name} width={32} height={32} className="rounded-full" />
+                                :
+                                null
+                        }
                         <div>
                             <p className="text-primary-text text-sm leading-5">{sourceExchange ? sourceExchange?.display_name : source?.display_name}</p>
-                            {
-                                sourceAccountAddress &&
-                                <p className="text-sm text-secondary-text">{sourceAccountAddress}</p>
+                            {sourceExchange ?
+                                <p className="text-sm text-secondary-text">Exchange</p>
+                                : sourceAccountAddress ?
+                                    <p className="text-sm text-secondary-text">{sourceAccountAddress}</p>
+                                    :
+                                    null
                             }
                         </div>
                     </div>
@@ -105,10 +114,16 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                 </div>
                 <div className="flex items-center justify-between  w-full ">
                     <div className="flex items-center gap-3">
-                        {destExchange ? <Image src={resolveImgSrc(destExchange)} alt={destExchange.display_name} width={32} height={32} className="rounded-full" /> : destination ? <Image src={resolveImgSrc(destination)} alt={destination.display_name} width={32} height={32} className="rounded-full" /> : null}
+                        {destExchange ?
+                            <Image src={resolveImgSrc(destExchange)} alt={destExchange.display_name} width={32} height={32} className="rounded-full" />
+                            : destination ?
+                                <Image src={resolveImgSrc(destination)} alt={destination.display_name} width={32} height={32} className="rounded-full" />
+                                :
+                                null
+                        }
                         <div>
                             <p className="text-primary-text text-sm leading-5">{destExchange ? destExchange?.display_name : destination?.display_name}</p>
-                            <p className="text-sm text-secondary-text">{shortenAddress(destAddress as string)}</p>
+                            <p className="text-sm text-secondary-text">{shortenAddress(destAddress)}</p>
                         </div>
                     </div>
                     {
