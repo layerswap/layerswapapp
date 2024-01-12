@@ -21,7 +21,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     } = useFormikContext<SwapFormValues>();
     const name = direction
 
-    const { from, to, fromCurrency, toCurrency } = values
+    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange } = values
     const { layers, resolveImgSrc } = useSettingsState();
 
     const filterWith = direction === "from" ? to : from
@@ -46,7 +46,14 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         if (!isLoading && routes?.data) setRoutesData(routes.data)
     }, [routes])
 
-    const menuItems = routesData && GenerateMenuItems(routesData);
+    const historicalNetworksEndpoint = (fromExchange || toExchange) && (`/exchanges/${direction === 'from' ? `historical_sources?source_exchange=${fromExchange?.internal_name}` : `historical_destinations?destination_exchange=${toExchange?.internal_name}`}&version=${version}`)
+
+    const { data: historicalNetworks } = useSWR<ApiResponse<{
+        network: string,
+        asset: string
+    }[]>>(historicalNetworksEndpoint, apiClient.fetcher)
+
+    const menuItems = routesData && historicalNetworks && GenerateMenuItems(routesData, historicalNetworks?.data).filter(item => layers.find(l => l.internal_name === item.baseObject.network));
 
     const handleSelect = useCallback((item: SelectMenuItem<{ network: string, asset: string }>) => {
         if (!item) return
@@ -64,7 +71,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         else if (value) return
         const item = menuItems[0]
         handleSelect(item)
-    }, [routesData])
+    }, [routesData, historicalNetworks])
 
     if (!menuItems) return
 
@@ -81,7 +88,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                     <SelectGroup>
                         <SelectLabel className="!text-primary-text">Networks</SelectLabel>
                         {
-                            menuItems?.map((route, index) => {
+                            menuItems.sort((a, b) => a.order - b.order)?.map((route, index) => {
                                 const network = layers.find(l => l.internal_name === route.baseObject.network)
                                 const currency = network?.assets.find(a => a.asset === route.baseObject.asset)
 
@@ -124,19 +131,22 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     </div >)
 });
 
-function GenerateMenuItems(items: { network: string, asset: string }[]): SelectMenuItem<{ network: string, asset: string }>[] {
+function GenerateMenuItems(items: { network: string, asset: string }[], historicalNetworks: { network: string, asset: string }[] | undefined): SelectMenuItem<{ network: string, asset: string }>[] {
 
     const menuItems = items.map((e, index) => {
-        const res: SelectMenuItem<{ network: string, asset: string }> = {
+
+        const order = historicalNetworks?.indexOf(historicalNetworks.find(n => n.asset === e.asset && n.network === e.network) || { network: '', asset: '' }) || 100
+
+        const item: SelectMenuItem<{ network: string, asset: string }> = {
             baseObject: e,
             id: index.toString(),
             name: e.network,
-            order: 100,
+            order: order > 0 ? order : 100,
             imgSrc: '',
             isAvailable: { value: true, disabledReason: null },
             type: 'cex',
         }
-        return res;
+        return item;
     })
 
     return menuItems
