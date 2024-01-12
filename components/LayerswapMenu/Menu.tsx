@@ -67,11 +67,9 @@ type MenuIemProps = {
 
 const Footer = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     return (
-        <>
-            <div className={`text-primary-text text-base border-t border-secondary-500 fixed inset-x-0 bottom-0 z-30 bg-secondary-900 shadow-widget-footer px-6 py-4 w-full `}>
-                {children}
-            </div>
-        </>
+        <div className={`text-primary-text text-base border-t border-secondary-500 fixed inset-x-0 bottom-0 z-30 bg-secondary-900 shadow-widget-footer px-6 py-4 w-full `}>
+            {children}
+        </div>
     )
 }
 

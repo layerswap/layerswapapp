@@ -1,10 +1,9 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import React, { Dispatch, ReactNode, SetStateAction, useEffect, useRef } from "react";
 import { FC } from "react"
 import useWindowDimensions from "../../hooks/useWindowDimensions";
-import { ReactPortal } from "../Wizard/Widget";
 import { Leaflet, LeafletHeight } from "./leaflet";
-
+import ReactPortal from "../Common/ReactPortal";
 
 export interface ModalProps {
     header?: ReactNode;
@@ -40,7 +39,7 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
                             </ReactPortal>
                         }
                         {
-                        isMobile &&
+                            isMobile &&
                             <Leaflet position="fixed" height={height == 'full' ? '80%' : height == 'fit' ? 'fit' : 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
                                 {children}
                             </Leaflet>

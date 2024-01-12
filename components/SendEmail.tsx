@@ -8,7 +8,7 @@ import { useTimerState } from '../context/timerContext';
 import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import SubmitButton from './buttons/submitButton';
-import Widget from './Wizard/Widget';
+import { Widget } from './Widget/Index';
 
 type EmailFormValues = {
     email: string;
@@ -127,7 +127,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                     </Disclosure>
                                 </div>
                                 :
-                                <Widget>
+                                <div>
                                     <Widget.Content center={true}>
                                         <User className='w-16 h-16 text-primary self-center mt-auto' />
                                         <div>
@@ -196,7 +196,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                             Continue
                                         </SubmitButton>
                                     </Widget.Footer>
-                                </Widget>
+                                </div>
                         }
                     </Form>
                 )}

@@ -8,7 +8,7 @@ import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
 import useWallet from '../../../../hooks/useWallet';
-import { useSwapTransactionStore } from '../../../store/zustandStore';
+import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 
 type Props = {
     depositAddress?: string

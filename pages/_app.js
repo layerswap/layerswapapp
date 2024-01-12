@@ -6,7 +6,6 @@ import { SWRConfig } from 'swr'
 
 const INTERCOM_APP_ID = 'h5zisg78'
 import "@rainbow-me/rainbowkit/styles.css";
-import useStorage from "../hooks/useStorage";
 
 function App({ Component, pageProps }) {
   const router = useRouter()
@@ -16,7 +15,7 @@ function App({ Component, pageProps }) {
         revalidateOnFocus: false,
       }}
     >
-      <IntercomProvider appId={INTERCOM_APP_ID}>
+      <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
         <Component key={router.asPath} {...pageProps} />
       </IntercomProvider>
     </SWRConfig>)

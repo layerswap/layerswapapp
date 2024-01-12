@@ -1,4 +1,13 @@
-import sdk, { AmmpoolAPI, DelegateAPI, ExchangeAPI, GlobalAPI, NFTAPI, UserAPI, WalletAPI, WsAPI } from "@loopring-web/loopring-sdk";
+import sdk, { 
+    AmmpoolAPI, 
+    DelegateAPI, 
+    ExchangeAPI, 
+    GlobalAPI, 
+    NFTAPI, 
+    UserAPI, 
+    WalletAPI, 
+    WsAPI 
+} from "@loopring-web/loopring-sdk";
 
 export class LoopringAPI {
     public static userAPI: UserAPI;

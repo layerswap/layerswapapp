@@ -5,12 +5,23 @@ import { NetworkType } from "../../../Models/CryptoNetwork"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
-import { ResolveEVMWalletIcon } from "./resolveEVMIcon"
+import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
+import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 
 export default function useEVM(): WalletProvider {
     const { layers } = useSettingsState()
-    const withdrawalSupportedNetworks = [...layers.filter(layer => layer.type === NetworkType.EVM).map(l => l.internal_name), KnownInternalNames.Networks.ZksyncMainnet]
-    const autofillSupportedNetworks = [...withdrawalSupportedNetworks, KnownInternalNames.Networks.ImmutableXMainnet, KnownInternalNames.Networks.ImmutableXGoerli]
+    const withdrawalSupportedNetworks = [
+        ...layers.filter(layer => layer.type === NetworkType.EVM).map(l => l.internal_name),
+        KnownInternalNames.Networks.ZksyncMainnet
+    ]
+    const autofillSupportedNetworks = [
+        ...withdrawalSupportedNetworks,
+        KnownInternalNames.Networks.ImmutableXMainnet,
+        KnownInternalNames.Networks.ImmutableXGoerli,
+        KnownInternalNames.Networks.BrineMainnet,
+        KnownInternalNames.Networks.LoopringGoerli,
+        KnownInternalNames.Networks.LoopringMainnet
+    ]
     const name = 'evm'
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
@@ -21,7 +32,7 @@ export default function useEVM(): WalletProvider {
                 address: account.address,
                 connector: account.connector?.id,
                 providerName: name,
-                icon: ResolveEVMWalletIcon({ connector: account.connector?.id })
+                icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account.connector), address: account.address})
             }
         }
     }

@@ -20,9 +20,11 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
       <div className="w-full grid grid-cols-5 px-6 mt-3" >
          {
             goBack &&
-            <IconButton onClick={goBack} icon={
-               <ArrowLeft strokeWidth="3" />
-            }>
+            <IconButton onClick={goBack}
+               aria-label="Go back"
+               icon={
+                  <ArrowLeft strokeWidth="3" />
+               }>
             </IconButton>
          }
          <div className='justify-self-center self-center col-start-2 col-span-3 mx-auto overflow-hidden md:hidden'>
