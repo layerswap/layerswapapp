@@ -77,7 +77,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
 
     useEffect(() => {
         try {
-            if (transaction?.data?.hash) {
+            if (transaction?.data?.hash && transaction?.data?.hash as `0x${string}`) {
                 setSwapTransaction(swapId, PublishedSwapTransactionStatus.Pending, transaction?.data?.hash)
                 if (!!isContractWallet?.isContract)
                     SendTransactionData(swapId, transaction?.data?.hash)
@@ -104,8 +104,6 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
 
     const clickHandler = useCallback(async () => {
         setButtonClicked(true)
-        debugger;
-        // WTFFF getting chain switch error here. Fuck argent
         if (sendTransactionPrepare?.status == "idle") {
             await sendTransactionPrepare.refetch();
         }
@@ -123,8 +121,6 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         waitForTransaction
     ].find(d => d.isLoading)
 
-    console.log(sendTransactionPrepare);
-
     return <>
         {
             buttonClicked &&
@@ -138,7 +134,6 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         {
             !isLoading &&
             <>
-                <p><span>Is contract</span> <span>{JSON.stringify(isContractWallet)}</span></p>
                 <ButtonWrapper
                     clcikHandler={clickHandler}
                     disabled={sendTransactionPrepare?.isLoading}
