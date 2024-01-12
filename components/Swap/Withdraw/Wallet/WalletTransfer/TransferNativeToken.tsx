@@ -39,15 +39,13 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     const { address } = useAccount();
     const { setSwapTransaction } = useSwapTransactionStore();
     const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
-
     const sendTransactionPrepare = usePrepareSendTransaction({
-        enabled: !!depositAddress && isContractWallet?.ready,
-        to: depositAddress,
+        to: isContractWallet?.ready ? depositAddress : undefined,
         value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,
     })
     const encodedData: `0x${string}` = (canDoSweepless && address !== userDestinationAddress) ? `0x${sequenceNumber}` : "0x"
-    
+
     const tx = {
         to: depositAddress,
         value: amount ? parseEther(amount?.toString()) : undefined,
@@ -79,7 +77,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
 
     useEffect(() => {
         try {
-            if (transaction?.data?.hash) {
+            if (transaction?.data?.hash && transaction?.data?.hash as `0x${string}`) {
                 setSwapTransaction(swapId, PublishedSwapTransactionStatus.Pending, transaction?.data?.hash)
                 if (!!isContractWallet?.isContract)
                     SendTransactionData(swapId, transaction?.data?.hash)
@@ -106,6 +104,9 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
 
     const clickHandler = useCallback(async () => {
         setButtonClicked(true)
+        if (sendTransactionPrepare?.status == "idle") {
+            await sendTransactionPrepare.refetch();
+        }
         return transaction?.sendTransaction && transaction?.sendTransaction()
     }, [transaction, estimatedGas])
 
@@ -132,14 +133,16 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         }
         {
             !isLoading &&
-            <ButtonWrapper
-                clcikHandler={clickHandler}
-                disabled={sendTransactionPrepare?.isLoading || sendTransactionPrepare.status === "idle"}
-                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
-            >
-                {(isError && buttonClicked) ? <span>Try again</span>
-                    : <span>Send from wallet</span>}
-            </ButtonWrapper>
+            <>
+                <ButtonWrapper
+                    clcikHandler={clickHandler}
+                    disabled={sendTransactionPrepare?.isLoading}
+                    icon={<WalletIcon className="stroke-2 w-6 h-6" />}
+                >
+                    {(isError && buttonClicked) ? <span>Try again</span>
+                        : <span>Send from wallet</span>}
+                </ButtonWrapper>
+            </>
         }
         <Modal
             height="80%"

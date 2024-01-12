@@ -10,7 +10,6 @@ export default function useZkSyncBalance(): BalanceProvider {
     ]
     const client = new ZkSyncLiteRPCClient();
     const getBalance = async ({ layer, address }: BalanceProps) => {
-
         let balances: Balance[] = []
 
         if (layer.isExchange === true || !layer.assets) return
