@@ -4,7 +4,6 @@ import Image from 'next/image';
 import SwapButton from "../../buttons/swapButton";
 import React from "react";
 import NetworkFormField from "../../Input/NetworkFormField";
-import AmountField from "../../Input/Amount";
 import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
@@ -13,7 +12,6 @@ import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import { useSettingsState } from "../../../context/settings";
 import { isValidAddress } from "../../../lib/addressValidator";
 import { CalculateMinAllowedAmount } from "../../../lib/fees";
-import Address from "../../Input/Address";
 import shortenAddress from "../../utils/ShortenAddress";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
@@ -27,20 +25,28 @@ import { FilterDestinationLayers, FilterSourceLayers, GetDefaultNetwork, GetNetw
 import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
-import { useWalletState, useWalletUpdate } from "../../../context/wallet";
-import { useAccount } from "wagmi";
 import GasDetails from "../../gasDetails";
-import { truncateDecimals } from "../../utils/RoundDecimals";
 import { useQueryState } from "../../../context/query";
 import FeeDetails from "../../DisclosureComponents/FeeDetails";
+import AmountField from "../../Input/Amount"
+import { Balance, Gas } from "../../../Models/Balance";
+import dynamic from "next/dynamic";
 
 type Props = {
-    isPartnerWallet: boolean,
+    isPartnerWallet?: boolean,
     partner?: Partner,
 }
 
-const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
+const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
+    loading: () => <></>,
+});
 
+const Address = dynamic(() => import("../../Input/Address"), {
+    loading: () => <></>,
+});
+
+
+const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const {
         values,
         setValues,
@@ -52,9 +58,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const source = values.from
     const asset = values.currency?.asset
     const { authData } = useAuthState()
-    const { getBalance, getGas } = useWalletUpdate()
-    const { balances, gases } = useWalletState()
-    const { address } = useAccount()
+
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/address_book/recent` : null
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
@@ -69,7 +73,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const lockAddress =
         (values.destination_address && values.to)
         && isValidAddress(values.destination_address, values.to)
-        && (((query.lockAddress || query.hideAddress) && (query.addressSource !== "imxMarketplace" || settings.validSignatureisPresent)));
+        && (((query.lockAddress || query.hideAddress) && (query.appName !== "imxMarketplace" || settings.validSignatureisPresent)));
 
     const actionDisplayName = query?.actionButtonText || "Swap now"
 
@@ -92,6 +96,12 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     useEffect(() => {
         setAddressConfirmed(false)
     }, [source])
+
+    useEffect(() => {
+        (async () => {
+            (await import("../../Input/Address")).default
+        })()
+    }, [destination])
 
     useEffect(() => {
         if (!destination?.isExchange && values.refuel && values.amount && Number(values.amount) < minAllowedAmount) {
@@ -149,20 +159,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
     }, [source, destination, query, settings, lockedCurrency])
 
-    useEffect(() => {
-        values.from && getBalance(values.from)
-    }, [values.from, values.destination_address, address])
-
-    const contract_address = values.from?.isExchange == false ? values.from.assets.find(a => a.asset === values?.currency?.asset)?.contract_address : null
-    const walletBalance = balances?.find(b => b?.network === values?.from?.internal_name && b?.token === values?.currency?.asset)
-    const networkGas = values.from?.internal_name ?
-        gases?.[values.from?.internal_name]?.find(g => g.token === values?.currency?.asset)
-        : null
-
-    useEffect(() => {
-        address && values.from && values.currency && getGas(values.from, values.currency, values.destination_address || address)
-    }, [contract_address, values.from, values.currency, address])
-
     const destinationNetwork = GetDefaultNetwork(destination, values?.currency?.asset)
     const destination_native_currency = !destination?.isExchange && destinationNetwork?.native_currency
 
@@ -179,33 +175,33 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         && (query?.lockTo || query?.hideTo)
         && isValidAddress(query?.destAddress as string, destination)
 
-    const handleReserveGas = useCallback(() => {
+    const handleReserveGas = useCallback((walletBalance: Balance, networkGas: Gas) => {
         if (walletBalance && networkGas)
             setFieldValue('amount', walletBalance?.amount - networkGas?.gas)
-    }, [values.amount, walletBalance, networkGas])
+    }, [values.amount])
 
-    const mightBeAutOfGas = !!(networkGas && walletBalance?.isNativeCurrency && Number(values.amount)
-        + networkGas?.gas > walletBalance.amount
-        && walletBalance.amount > minAllowedAmount
-    )
-    const gasToReserveFormatted = mightBeAutOfGas ? truncateDecimals(networkGas?.gas, values?.currency?.precision) : 0
     return <>
-        <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-            <Widget className="sm:min-h-[504px]">
+        <Widget className="sm:min-h-[504px]">
+            <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
                 <Widget.Content>
                     <div className='flex-col relative flex justify-between w-full space-y-4 mb-3.5 leading-4'>
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
                             <NetworkFormField direction="from" label="From" />
                         </div>}
-                        {!query?.hideFrom && !query?.hideTo && <button type="button" disabled={valuesSwapperDisabled} onClick={valuesSwapper} className='absolute right-[calc(50%-16px)] top-[74px] z-10 border-4 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed hover:text-primary disabled:text-secondary-text duration-200 transition'>
-                            <motion.div
-                                animate={animate}
-                                transition={{ duration: 0.3 }}
-                                onTap={() => !valuesSwapperDisabled && cycle()}
-                            >
-                                <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-8 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />
-                            </motion.div>
-                        </button>}
+                        {!query?.hideFrom && !query?.hideTo &&
+                            <button type="button"
+                                aria-label="Reverse the source and destination"
+                                disabled={valuesSwapperDisabled}
+                                onClick={valuesSwapper}
+                                className='absolute right-[calc(50%-16px)] top-[74px] z-10 border-4 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed hover:text-primary disabled:text-secondary-text duration-200 transition'>
+                                <motion.div
+                                    animate={animate}
+                                    transition={{ duration: 0.3 }}
+                                    onTap={() => !valuesSwapperDisabled && cycle()}
+                                >
+                                    <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-8 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />
+                                </motion.div>
+                            </button>}
                         {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
                             <NetworkFormField direction="to" label="To" />
                         </div>}
@@ -221,7 +217,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                 </label>
                                 <AddressButton
                                     disabled={!values.to || !values.from}
-                                    isPartnerWallet={isPartnerWallet}
+                                    isPartnerWallet={!!isPartnerWallet}
                                     openAddressModal={() => setShowAddressModal(true)}
                                     partnerImage={partnerImage}
                                     values={values} />
@@ -236,7 +232,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                         disabled={lockAddress || (!values.to || !values.from)}
                                         name={"destination_address"}
                                         partnerImage={partnerImage}
-                                        isPartnerWallet={isPartnerWallet}
+                                        isPartnerWallet={!!isPartnerWallet}
                                         partner={partner}
                                         address_book={address_book?.data}
                                     />
@@ -256,7 +252,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                             <ClickTooltip text={`You will get a small amount of ${destination_native_currency} that you can use to pay for gas fees.`} />
                                         </p>
                                         <p className="font-light text-xs">
-                                            <span>Get&nbsp;</span><span className="font-semibold">{destination_native_currency}</span><span>&nbsp;to pay fees in&nbsp;</span>{values.to?.display_name}
+                                            <span>Get&nbsp;</span><span className="font-semibold">{destination_native_currency}</span><span>&nbsp;to pay fees in&nbsp;</span><span>{values.to?.display_name}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -268,27 +264,18 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                             //TODO refactor
                             destination && asset && GetNetworkCurrency(destination, asset)?.status == 'insufficient_liquidity' &&
                             <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal">We&apos;re experiencing delays for transfers of {values?.currency?.asset} to {values?.to?.display_name}. Estimated arrival time can take up to 2 hours.</span>
+                                <span className="font-normal"><span>We&apos;re experiencing delays for transfers of</span> <span>{values?.currency?.asset}</span> <span>to</span> <span>{values?.to?.display_name}</span><span>. Estimated arrival time can take up to 2 hours.</span></span>
                             </WarningMessage>
                         }
                         {
                             destination && asset && GetNetworkCurrency(destination, asset)?.status !== 'insufficient_liquidity' && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
                             <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal">{destination?.display_name} network congestion. Transactions can take up to 1 hour.</span>
+                                <span className="font-normal"><span>{destination?.display_name}</span> <span>network congestion. Transactions can take up to 1 hour.</span></span>
                             </WarningMessage>
                         }
                         {
-                            mightBeAutOfGas &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <div className="font-normal text-primary-text">
-                                    <div>
-                                        You might not be able to complete the transaction.
-                                    </div>
-                                    <div onClick={handleReserveGas} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
-                                        Reserve {gasToReserveFormatted} {values?.currency?.asset} for gas.
-                                    </div>
-                                </div>
-                            </WarningMessage>
+                            values.amount &&
+                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
                         }
                     </div>
                 </Widget.Content>
@@ -301,9 +288,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                         {ActionText(errors, actionDisplayName as string)}
                     </SwapButton>
                 </Widget.Footer>
-            </Widget>
-        </Form >
-
+            </Form >
+        </Widget>
         {
             process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
             && values.from
@@ -322,7 +308,8 @@ function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: str
 }
 
 const TruncatedAdrress = ({ address }: { address: string }) => {
-    return <div className="tracking-wider text-primary-text">{shortenAddress(address)}</div>
+    const shortAddress = shortenAddress(address)
+    return <div className="tracking-wider text-primary-text">{shortAddress}</div>
 }
 
 type AddressButtonProps = {
@@ -352,11 +339,12 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWall
             {values.destination_address ?
                 <TruncatedAdrress address={values.destination_address} />
                 :
-                "Enter your address here"
+                <span>Enter your address here</span>
             }
         </div>
     </button>
 }
+
 
 
 

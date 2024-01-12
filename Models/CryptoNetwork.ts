@@ -5,8 +5,9 @@ export enum NetworkType {
     Starknet = "starknet",
     Solana = "solana",
     Cosmos = "cosmos",
-    StarkEx = "starkex",
-    ZkSyncLite = "zksynclite",
+    StarkEx = "stark_ex",
+    ZkSyncLite = "zk_sync_lite",
+    TON = 'ton'
 }
 
 
@@ -40,7 +41,8 @@ export class NetworkCurrency {
     max_withdrawal_amount: number;
     deposit_fee: number;
     withdrawal_fee: number;
-    contract_address: string | null | undefined;
+    //TODO may be plain string
+    contract_address: `0x${string}` | null | undefined;
     decimals: number;
     source_base_fee: number;
     destination_base_fee: number;
@@ -49,10 +51,10 @@ export class NetworkNode {
     url: string;
 }
 export class ManagedAccount {
-    address: string;
+    address: `0x${string}`;
 }
 export class Metadata {
-    multicall3: {
+    multicall3?: {
         address: `0x${string}`
         blockCreated: number
     }
@@ -63,4 +65,5 @@ export class Metadata {
         address: `0x${string}`
     }
     WatchdogContractAddress?: `0x${string}`
+    L1Network?: string
 }

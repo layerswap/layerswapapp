@@ -1,16 +1,11 @@
-import Swap from '../components/swapComponent'
 import Layout from '../components/layout'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { InferGetServerSidePropsType } from 'next'
 import { LayerSwapSettings } from '../Models/LayerSwapSettings'
-import LayerSwapAuthApiClient from '../lib/userAuthApiClient'
 import { validateSignature } from '../helpers/validateSignature'
 import { mapNetworkCurrencies } from '../helpers/settingsHelper'
-import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings'
 import { THEME_COLORS, ThemeData } from '../Models/Theme'
-import ColorSchema from '../components/ColorSchema'
-const { parseColor } = require("tailwindcss/lib/util/color");
-
+import Swap from '../components/swapComponent'
 type IndexProps = {
   settings?: LayerSwapSettings,
   themeData?: ThemeData,
@@ -20,10 +15,9 @@ type IndexProps = {
 
 export default function Home({ settings, inMaintanance, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (<>
-    <Layout settings={settings}>
+    <Layout settings={settings} themeData={themeData}>
       <Swap />
     </Layout>
-    <ColorSchema themeData={themeData} />
   </>)
 }
 

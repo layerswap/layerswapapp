@@ -1,40 +1,51 @@
-"use client"
-import { FC, useEffect } from 'react'
+import { FC } from 'react'
 import { Widget } from '../Widget/Index';
-import { useSwapDataState, useSwapDataUpdate } from '../../context/swap';
-import { ResolvePollingInterval } from '../utils/SwapStatus';
+import { useSwapDataState } from '../../context/swap';
 import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
-import { TransactionType } from '../../lib/layerSwapApiClient';
+import { PublishedSwapTransactionStatus, TransactionType } from '../../lib/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
 import GasDetails from '../gasDetails';
 import { useSettingsState } from '../../context/settings';
 
+type Props = {
+    type: "widget" | "contained",
+}
+import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 
-const SwapDetails: FC = () => {
+const SwapDetails: FC<Props> = ({ type }) => {
     const { swap } = useSwapDataState()
     const settings = useSettingsState()
     const swapStatus = swap?.status;
-    const { setInterval } = useSwapDataUpdate()
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input) ? swap?.transactions?.find(t => t.type === TransactionType.Input) : JSON.parse(localStorage.getItem("swapTransactions") || "{}")?.[swap?.id || '']
-    useEffect(() => {
-        if (swapStatus)
-            setInterval(ResolvePollingInterval(swapStatus))
-        return () => setInterval(0)
-    }, [swapStatus])
+    const storedWalletTransactions = useSwapTransactionStore()
+
+    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
+    const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id || '']
 
     const sourceNetwork = settings.layers.find(l => l.internal_name === swap?.source_network)
-
     const currency = settings.currencies.find(c => c.asset === swap?.source_network_asset)
+
+    if (!swap) return <>
+        <div className="w-full h-[430px]">
+            <div className="animate-pulse flex space-x-4">
+                <div className="flex-1 space-y-6 py-1">
+                    <div className="h-32 bg-secondary-700 rounded-lg"></div>
+                    <div className="h-40 bg-secondary-700 rounded-lg"></div>
+                    <div className="h-12 bg-secondary-700 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+    </>
+
     return (
         <>
-            <Widget>
+            <Container type={type}>
                 {
-                    (swapStatus === SwapStatus.UserTransferPending && !swapInputTransaction) ?
+                    ((swapStatus === SwapStatus.UserTransferPending
+                        && !(swapInputTransaction || (storedWalletTransaction && storedWalletTransaction.status !== PublishedSwapTransactionStatus.Error)))) ?
                         <Withdraw /> : <Processing />
                 }
-            </Widget>
-
+            </Container>
             {
                 process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
                 && sourceNetwork
@@ -43,6 +54,18 @@ const SwapDetails: FC = () => {
             }
         </>
     )
+}
+
+const Container = ({ type, children }: Props & {
+    children: JSX.Element | JSX.Element[]
+}) => {
+    if (type === "widget")
+        return <Widget><>{children}</></Widget>
+    else
+        return <div className="w-full flex flex-col justify-between h-full space-y-5 text-secondary-text">
+            {children}
+        </div>
+
 }
 
 export default SwapDetails

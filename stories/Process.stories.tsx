@@ -6,8 +6,8 @@ import { SettingsStateContext } from '../context/settings';
 import { Chain, WagmiConfig, configureChains, createConfig } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
+import { BalancesStateContext, BalancesStateUpdateContext } from '../context/balances';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, bitgetWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
-import { WalletStateContext } from '../context/wallet';
 import { FC } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange, cancelled, expired } from './Data/swaps'
@@ -15,7 +15,6 @@ import { Settings } from './Data/settings';
 import { NetworkType } from '../Models/CryptoNetwork';
 import { AuthDataUpdateContext, AuthStateContext, UserType } from '../context/authContext';
 import { IntercomProvider } from 'react-use-intercom';
-import ColorSchema from '../components/ColorSchema';
 import { THEME_COLORS } from '../Models/Theme';
 import Layout from '../components/layout';
 import RainbowKitComponent from '../components/RainbowKit';
@@ -23,7 +22,9 @@ import SwapDetails from '../components/Swap';
 import resolveChain from '../lib/resolveChain';
 import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
-import WalletStateMock from './Mocks/context/WalletState';
+import WalletMockFunctions from './Mocks/context/BalancesMockFunctions';
+
+import BalancesStateMock from './Mocks/context/BalancesState';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 let settings = new LayerSwapAppSettings(Settings)
@@ -75,21 +76,22 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
     return <WagmiConfig config={wagmiConfig}>
         <IntercomProvider appId='123'>
             <SettingsStateContext.Provider value={appSettings}>
-                <Layout settings={appSettings}>
+                <Layout settings={appSettings} themeData={themeData}>
                     <RainbowKitComponent>
                         <SwapDataStateContext.Provider value={swapContextInitialValues}>
                             <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
                                 <AuthDataUpdateContext.Provider value={AuthMockFunctions}>
                                     <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
-                                        <WalletStateContext.Provider value={WalletStateMock}>
-                                            <SwapDetails />
-                                        </WalletStateContext.Provider>
+                                        <BalancesStateContext.Provider value={BalancesStateMock}>
+                                            <BalancesStateUpdateContext.Provider value={WalletMockFunctions}>
+                                                <SwapDetails type='widget' />
+                                            </BalancesStateUpdateContext.Provider>
+                                        </BalancesStateContext.Provider>
                                     </SwapDataUpdateContext.Provider>
                                 </AuthDataUpdateContext.Provider>
                             </AuthStateContext.Provider>
                         </SwapDataStateContext.Provider >
                     </RainbowKitComponent>
-                    <ColorSchema themeData={themeData} />
                 </Layout>
             </SettingsStateContext.Provider>
         </IntercomProvider>

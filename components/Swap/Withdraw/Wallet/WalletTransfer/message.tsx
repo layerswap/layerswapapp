@@ -1,12 +1,17 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import FailIcon from "../../../../icons/FailIcon";
+import Modal from "../../../../modal/modal";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
-type WalletMessageProps = {
+export type WalletMessageProps = {
     header: string;
-    details?: string;
-    status: 'pending' | 'error'
+    details: string;
+    status: 'pending' | 'error';
+    showInModal?: boolean;
 }
-const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
+const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, showInModal }) => {
+    const [showErrorModal, setShowErrorModal] = useState(false);
+
     return <div className="flex text-center mb-2 space-x-2">
         <div className='relative'>
             {
@@ -20,14 +25,37 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status }) => {
                     </>
             }
         </div>
-        <div className="text-left space-y-1">
-            <p className="text-md font-semibold self-center text-primary-text">
-                {header}
-            </p>
-            <p className="text-sm text-primary-text break-all">
-                {details}
-            </p>
-        </div>
+        {
+            showInModal ?
+                <div className="text-left space-y-1 w-full max-w-2xl">
+                    <button onClick={() => setShowErrorModal(true)} className="flex justify-between w-full">
+                        <p className="text-md font-semibold self-center text-primary-text">
+                            {header}
+                        </p>
+                       {showErrorModal? <ChevronDown className="text-primary-text" />: <ChevronUp className="text-primary-text" />}
+                    </button>
+                    {/* TODO handle overflow */}
+                    <Modal height="fit" show={showErrorModal} setShow={setShowErrorModal}>
+                        <div className="text-left space-y-1">
+                            <p className="text-md font-semibold self-center text-primary-text">
+                                {header}x
+                            </p>
+                            <p className="text-sm text-secondary-text break-normal whitespace-pre-wrap">
+                                {details}
+                            </p>
+                        </div>
+                    </Modal>
+                </div>
+                :
+                <div className="text-left space-y-1">
+                    <p className="text-md font-semibold self-center text-primary-text">
+                        {header}
+                    </p>
+                    <p className="text-sm text-secondary-text break-all">
+                        {details}
+                    </p>
+                </div>
+        }
     </div>
 }
 

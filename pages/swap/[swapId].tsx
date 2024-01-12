@@ -1,16 +1,13 @@
 import LayerSwapApiClient from '../../lib/layerSwapApiClient';
 import Layout from '../../components/layout';
-import { LayerSwapSettings } from '../../Models/LayerSwapSettings';
 import { InferGetServerSidePropsType } from 'next';
 import React from 'react';
 import { SwapDataProvider } from '../../context/swap';
-import SwapWithdrawal from '../../components/SwapWithdrawal';
 import LayerSwapAuthApiClient from '../../lib/userAuthApiClient';
-import { validateSignature } from '../../helpers/validateSignature';
 import { TimerProvider } from '../../context/timerContext';
-import { THEME_COLORS } from '../../Models/Theme';
-import ColorSchema from '../../components/ColorSchema';
 import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings';
+import { getThemeData } from '../../helpers/settingsHelper';
+import SwapWithdrawal from '../../components/SwapWithdrawal'
 
 const SwapDetails = ({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
@@ -18,14 +15,13 @@ const SwapDetails = ({ settings, themeData }: InferGetServerSidePropsType<typeof
   LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
 
   return (<>
-    <Layout settings={appSettings}>
+    <Layout settings={appSettings} themeData={themeData}>
       <SwapDataProvider >
         <TimerProvider>
           <SwapWithdrawal />
         </TimerProvider>
       </SwapDataProvider >
     </Layout>
-    <ColorSchema themeData={themeData} />
   </>)
 }
 
@@ -44,7 +40,7 @@ export const getServerSideProps = async (ctx) => {
   var apiClient = new LayerSwapApiClient();
   const { data } = await apiClient.GetSettingsAsync()
   const settings = data
-  let themeData = await getThemeData(ctx.query.theme || ctx.query.addressSource)
+  let themeData = await getThemeData(ctx.query)
   return {
     props: {
       settings,
@@ -52,15 +48,5 @@ export const getServerSideProps = async (ctx) => {
     }
   }
 }
-const getThemeData = async (theme_name: string) => {
-  try {
-    // const internalApiClient = new InternalApiClient()
-    // const themeData = await internalApiClient.GetThemeData(theme_name);
-    // result.themeData = themeData as ThemeData;
-    return THEME_COLORS[theme_name] || null;
-  }
-  catch (e) {
-    console.log(e)
-  }
-}
+
 export default SwapDetails

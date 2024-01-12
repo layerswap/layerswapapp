@@ -2,12 +2,13 @@ import { X } from "lucide-react";
 import toast, { ToastBar, Toaster } from "react-hot-toast"
 import Navbar from "./navbar"
 import GlobalFooter from "./globalFooter";
+import { useLoadingState } from "../context/loadingContext";
+import { AnimatePresence, motion } from "framer-motion";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
 }
 export default function ThemeWrapper({ children }: Props) {
-
     return <div className='styled-scroll'>
         <div className="invisible light"></div>
         <main className="styled-scroll">
@@ -33,7 +34,7 @@ export default function ThemeWrapper({ children }: Props) {
                                     {icon}
                                     {message}
                                     {t.type !== 'loading' && (
-                                        <button onClick={() => toast.dismiss(t.id)}><X className="h-5" /></button>
+                                        <button type="button" onClick={() => toast.dismiss(t.id)}><X className="h-5" /></button>
                                     )}
                                 </>
                             )}
@@ -70,14 +71,14 @@ export default function ThemeWrapper({ children }: Props) {
                     </svg>
                 </div>
                 <Navbar />
-                <div>
+                <div className="w-full max-w-lg z-[1]">
                     <div className="flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg">
                         <div className="flex flex-col w-full text-primary-text">
                             {children}
                         </div>
                     </div>
                 </div>
-                <div id="offset-for-stickyness"></div>
+                <div id="offset-for-stickyness" className="block md:hidden"></div>
                 <GlobalFooter />
             </div>
         </main>

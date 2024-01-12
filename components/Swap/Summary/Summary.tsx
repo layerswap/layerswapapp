@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { Fuel } from "lucide-react";
-import { useAccount } from "wagmi";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { Currency } from "../../../Models/Currency";
 import { Layer } from "../../../Models/Layer";
 import { useSettingsState } from "../../../context/settings";
@@ -11,48 +10,53 @@ import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import useSWR from 'swr'
-import { GetDefaultNetwork } from "../../../helpers/settingsHelper";
-import { useWalletState } from "../../../context/wallet";
 import KnownInternalNames from "../../../lib/knownIds";
-import { NetworkType } from "../../../Models/CryptoNetwork";
-import { useRouter } from "next/router";
+import useWallet from "../../../hooks/useWallet";
 import { useQueryState } from "../../../context/query";
+import { useSwapDataState } from "../../../context/swap";
 
 type SwapInfoProps = {
     currency: Currency,
     source: Layer,
     destination: Layer;
     requestedAmount: number;
-    receiveAmount: number;
+    receiveAmount?: number;
     destinationAddress: string;
     hasRefuel?: boolean;
     refuelAmount?: number;
-    fee: number,
+    fee?: number,
     exchange_account_connected: boolean;
     exchange_account_name?: string;
 }
 
 const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name }) => {
     const { resolveImgSrc, currencies, networks } = useSettingsState()
-    const { address: evmAddress } = useAccount();
-    const { starknetAccount, imxAccount } = useWalletState()
+    const { getWithdrawalProvider: getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return from && getProvider(from)
+    }, [from, getProvider])
+
+    const wallet = provider?.getConnectedWallet()
+
+    const { selectedAssetNetwork } = useSwapDataState()
+
     const {
         hideFrom,
         hideTo,
         account,
-        addressSource,
+        appName,
         hideAddress
     } = useQueryState()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(addressSource && `/apps?name=${addressSource}`, layerswapApiClient.fetcher)
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = partnerData?.data
 
     const source = hideFrom ? partner : from
     const destination = hideTo ? partner : to
 
     const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
-    const receiveAmountInUsd = (currency?.usd_price * receiveAmount).toFixed(2)
+    const receiveAmountInUsd = receiveAmount ? (currency?.usd_price * receiveAmount).toFixed(2) : undefined
     const nativeCurrency = refuelAmount && to?.isExchange === false ?
         currencies.find(c => c.asset === to?.native_currency) : null
 
@@ -60,26 +64,15 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
         truncateDecimals(refuelAmount, nativeCurrency?.precision) : null
     const refuelAmountInUsd = ((nativeCurrency?.usd_price || 1) * (truncatedRefuelAmount || 0)).toFixed(2)
 
-    const sourceNetworkType = GetDefaultNetwork(from, currency?.asset)?.type
-    const sourceIsImmutableX = from?.internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-        || from?.internal_name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-
     let sourceAccountAddress = ""
     if (hideFrom && account) {
-        sourceAccountAddress = shortenAddress(account as string);
+        sourceAccountAddress = shortenAddress(account);
     }
-    else if (sourceNetworkType === NetworkType.EVM && evmAddress && !from?.isExchange) {
-        sourceAccountAddress = shortenAddress(evmAddress);
-    }
-    else if (sourceNetworkType === NetworkType.Starknet && starknetAccount && !from?.isExchange) {
-        sourceAccountAddress = starknetAccount?.account?.address ?
-            shortenAddress(starknetAccount?.account?.address) : "";
+    else if (wallet && !from?.isExchange) {
+        sourceAccountAddress = shortenAddress(wallet.address);
     }
     else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
         sourceAccountAddress = shortenEmail(exchange_account_name, 10);
-    }
-    else if (sourceIsImmutableX && imxAccount) {
-        sourceAccountAddress = shortenAddress(imxAccount);
     }
     else if (from?.isExchange) {
         sourceAccountAddress = "Exchange"
@@ -89,7 +82,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
-    const sourceCurrencyName = networks?.find(n => n.internal_name === from?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset)?.name || currency?.asset
+    const sourceCurrencyName = selectedAssetNetwork?.network?.currencies.find(c => c.asset === currency.asset)?.name || currency?.asset
     const destCurrencyName = networks?.find(n => n.internal_name === to?.internal_name)?.currencies?.find(c => c?.asset === currency?.asset)?.name || currency?.asset
 
     return (
@@ -120,7 +113,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                         </div>
                     </div>
                     {
-                        fee >= 0 ?
+                        fee != undefined && receiveAmount != undefined && fee >= 0 ?
                             <div className="flex flex-col justify-end">
                                 <p className="text-primary-text text-sm">{truncateDecimals(receiveAmount, currency.precision)} {destCurrencyName}</p>
                                 <p className="text-secondary-text text-sm flex justify-end">${receiveAmountInUsd}</p>

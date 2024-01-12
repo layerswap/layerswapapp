@@ -6,10 +6,11 @@ import Coinbase2FA from './Coinbase2FA';
 import { ArrowLeftRight, Link } from 'lucide-react';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import LayerSwapApiClient, { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { KnownErrorCode } from '../../../../Models/ApiError';
+import { LSAPIKnownErrorCode } from '../../../../Models/ApiError';
 import toast from 'react-hot-toast';
 import { useSettingsState } from '../../../../context/settings';
 import { TimerProvider, useTimerState } from '../../../../context/timerContext';
+import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 const TIMER_SECONDS = 120
 
 const Coinbase: FC = () => {
@@ -20,12 +21,13 @@ const Coinbase: FC = () => {
 
 const TransferElements: FC = () => {
     const { swap, codeRequested } = useSwapDataState()
-    const { setCodeRequested, setSwapPublishedTx, mutateSwap } = useSwapDataUpdate()
+    const { setCodeRequested, mutateSwap } = useSwapDataUpdate()
     const { networks } = useSettingsState()
     const {
         destination_network: destination_network_internal_name,
     } = swap || {}
     const { start: startTimer } = useTimerState()
+    const { setSwapTransaction } = useSwapTransactionStore();
 
     const [showCoinbaseConnectModal, setShowCoinbaseConnectModal] = useState(false)
     const [openCoinbase2FA, setOpenCoinbase2FA] = useState(false)
@@ -46,12 +48,12 @@ const TransferElements: FC = () => {
                 await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange)
             }
             catch (e) {
-                if (e?.response?.data?.error?.code === KnownErrorCode.COINBASE_INVALID_2FA) {
+                if (e?.response?.data?.error?.code === LSAPIKnownErrorCode.COINBASE_INVALID_2FA) {
                     startTimer(TIMER_SECONDS)
                     setCodeRequested(true)
                     setOpenCoinbase2FA(true)
                 }
-                else if (e?.response?.data?.error?.code === KnownErrorCode.INVALID_CREDENTIALS || e?.response?.data?.error?.code === KnownErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
+                else if (e?.response?.data?.error?.code === LSAPIKnownErrorCode.INVALID_CREDENTIALS || e?.response?.data?.error?.code === LSAPIKnownErrorCode.COINBASE_AUTHORIZATION_LIMIT_EXCEEDED) {
                     setCodeRequested(false)
                     alert("You have not authorized enough to be able to complete the transfer. Please authorize again.")
                 }
@@ -71,7 +73,7 @@ const TransferElements: FC = () => {
 
     const handleSuccess = useCallback(async (swapId: string) => {
         setOpenCoinbase2FA(false)
-        setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, "_")
+        setSwapTransaction(swapId, PublishedSwapTransactionStatus.Completed, "_")
     }, [])
 
     const handleAuthorized = async () => {
@@ -83,7 +85,8 @@ const TransferElements: FC = () => {
 
     return (
         <>
-            <Modal height='full'
+            <Modal
+                height='90%'
                 show={showCoinbaseConnectModal}
                 setShow={setShowCoinbaseConnectModal}
                 header={`Connect your Coinbase account`}
@@ -96,6 +99,7 @@ const TransferElements: FC = () => {
                 />
             </Modal>
             <Modal
+                height='90%'
                 show={openCoinbase2FA}
                 setShow={setOpenCoinbase2FA}
             >

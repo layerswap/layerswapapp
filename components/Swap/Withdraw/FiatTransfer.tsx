@@ -1,7 +1,11 @@
 import { Context, FC, createContext, useContext, useEffect, useRef, useState } from "react";
-import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
+import { useSwapDataState } from "../../../context/swap";
 import { StripeOnramp, loadStripeOnramp } from "@stripe/crypto";
 import { PublishedSwapTransactionStatus } from "../../../lib/layerSwapApiClient";
+import { useSwapTransactionStore } from "../../../stores/swapTransactionStore";
+import inIframe from "../../utils/inIframe";
+import SubmitButton from "../../buttons/submitButton";
+import { ExternalLink } from "lucide-react";
 
 type ContextState = {
     onramp: StripeOnramp | null
@@ -12,10 +16,23 @@ const FiatTransfer: FC = () => {
     const secret = process.env.NEXT_PUBLIC_STRIPE_SECRET || ""
     const stripeOnrampPromise = loadStripeOnramp(secret);
 
-    return <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500'>
-        <CryptoElements stripeOnramp={stripeOnrampPromise}>
-            {stripeSessionId && <OnrampElement clientSecret={stripeSessionId} swapId={swap.id} />}
-        </CryptoElements>
+    const [embedded, setEmbedded] = useState<boolean>()
+
+    useEffect(() => {
+        setEmbedded(inIframe())
+    }, [])
+
+    return <div className='rounded-xl bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500'>
+        {
+            embedded ?
+                <SubmitButton onClick={() => window.open(swap?.fiat_redirect_url, '_blank')} icon={<ExternalLink className='h-5 w-5' strokeWidth={2} />} isDisabled={!swap} isSubmitting={false}>
+                    Continue in Stripe
+                </SubmitButton>
+                :
+                <CryptoElements stripeOnramp={stripeOnrampPromise}>
+                    {stripeSessionId && <OnrampElement clientSecret={stripeSessionId} swapId={swap.id} />}
+                </CryptoElements>
+        }
     </div>
 }
 
@@ -59,12 +76,12 @@ type OnrampElementProps = {
 // React element to render Onramp UI
 export const OnrampElement: FC<OnrampElementProps> = ({
     clientSecret,
-    swapId
+    swapId,
 }) => {
     const stripeOnramp = useStripeOnramp();
     const onrampElementRef = useRef<HTMLDivElement>(null);
-    const { setSwapPublishedTx } = useSwapDataUpdate()
     const [loading, setLoading] = useState(false)
+    const { setSwapTransaction } = useSwapTransactionStore();
 
     useEffect(() => {
         const containerRef = onrampElementRef.current;
@@ -90,7 +107,7 @@ export const OnrampElement: FC<OnrampElementProps> = ({
                         // TODO handle
                         return
                     }
-                    await setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, e.payload.session.id);
+                    await setSwapTransaction(swapId, PublishedSwapTransactionStatus.Completed, e.payload.session.id);
                 }
 
                 session.addEventListener("onramp_session_updated", eventListener)

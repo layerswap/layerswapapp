@@ -39,6 +39,12 @@ export default function Document() {
               'window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }',
           }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              'if(typeof window !== "undefined" && !window.location.pathname.includes("nocookies")){try { localStorage.getItem("ls-ls-test"); }catch (e) { window.location.href = "/nocookies"; }}',
+          }}
+        />
       </Head>
       <body>
         <Main />

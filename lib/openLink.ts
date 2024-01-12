@@ -12,7 +12,7 @@ const setTempData = (data: LinkTempData) => sessionStorage.setItem(TEMP_DATA_ITE
 export const clearTempData = () => sessionStorage.removeItem(TEMP_DATA_ITEM_NAME)
 
 type OpenLinkArgs = {
-  addressSource?: string;
+  appName?: string;
   link: string;
   query: any;
   swapId: string;

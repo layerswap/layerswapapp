@@ -2,7 +2,7 @@ import { FC } from "react";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
 
 type Props = {
-    themeData?: ThemeData
+    themeData?: ThemeData | null
 }
 const ColorSchema: FC<Props> = ({ themeData }) => {
     themeData = themeData || THEME_COLORS.default

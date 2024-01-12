@@ -5,13 +5,10 @@ import { useSwapDataState } from "../../../context/swap"
 import Summary from "./Summary"
 import { ApiResponse } from "../../../Models/ApiResponse"
 import LayerSwapApiClient, { DepositType, Fee, TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
-import { useAccount } from "wagmi"
-import { truncateDecimals } from "../../utils/RoundDecimals"
-import { CanDoSweeplessTransfer } from "../../../lib/fees"
 import { GetDefaultNetwork } from "../../../helpers/settingsHelper"
+import useWalletTransferOptions from "../../../hooks/useWalletTransferOptions"
 
 const SwapSummary: FC = () => {
-    const { isConnected, address } = useAccount()
     const { layers, currencies, networks } = useSettingsState()
     const { swap, withdrawType, selectedAssetNetwork } = useSwapDataState()
     const {
@@ -21,8 +18,9 @@ const SwapSummary: FC = () => {
         destination_network: destination_network_internal_name,
         source_network_asset,
         destination_network_asset,
-        destination_address
     } = swap || {}
+
+    const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
 
     const params = {
         source: selectedAssetNetwork?.network?.internal_name,
@@ -44,24 +42,30 @@ const SwapSummary: FC = () => {
         return <></>
     }
 
-
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
-    let fee: number
+    let fee: number | undefined
+    let min_amount: number | undefined
 
     const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Wallet)
     const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
 
+    if (isContractWallet?.ready) {
+        if (withdrawType === WithdrawType.Wallet && canDoSweepless) {
+            fee = walletTransferFee?.fee_amount;
+            min_amount = walletTransferFee?.min_amount;
+        } else {
+            fee = manualTransferFee?.fee_amount;
+            min_amount = manualTransferFee?.min_amount;
+        }
+    }
+
     if (swap?.fee && swapOutputTransaction) {
         fee = swap?.fee
-    } else if (withdrawType === WithdrawType.Wallet && CanDoSweeplessTransfer(source_layer, address, destination_address)) {
-        fee = walletTransferFee?.fee_amount || 0;
-    } else {
-        fee = manualTransferFee?.fee_amount || 0;
     }
-    const min_amount = withdrawType === WithdrawType.Wallet ? walletTransferFee?.min_amount : manualTransferFee?.min_amount
+
     const requested_amount = (swapInputTransaction?.amount ??
         (Number(min_amount) > Number(swap.requested_amount) ? min_amount : swap.requested_amount)) || undefined
 
@@ -78,8 +82,9 @@ const SwapSummary: FC = () => {
     const refuelAmountInSelectedCurrency = swap?.has_refuel &&
         (refuel_amount_in_usd / currency_usd_price);
 
-    const receive_amount = swapOutputTransaction?.amount
-        ?? (Number(requested_amount) - fee - Number(refuelAmountInSelectedCurrency))
+    const receive_amount = fee != undefined ? (swapOutputTransaction?.amount
+        ?? (Number(requested_amount) - fee - Number(refuelAmountInSelectedCurrency)))
+        : undefined
 
     return <Summary
         currency={currency}

@@ -13,7 +13,7 @@ import NumericInput from './Input/NumericInput';
 import Modal from './modal/modal';
 import TimerWithContext from './TimerComponent';
 import { classNames } from './utils/classNames';
-import Widget from './Wizard/Widget';
+import { Widget } from './Widget/Index';
 interface VerifyEmailCodeProps {
     onSuccessfullVerify: (authresponse: AuthConnectResponse) => Promise<void>;
     disclosureLogin?: boolean
@@ -166,7 +166,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                 </div>
                             </div>
                             :
-                            <Widget>
+                            <>
                                 <Widget.Content center={true}>
                                     <MailOpen className='w-16 h-16 mt-auto text-primary self-center' />
                                     <div className='text-center mt-5'>
@@ -221,7 +221,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                         </SubmitButton>
                                     </TimerWithContext>
                                 </Widget.Footer>
-                            </Widget>
+                            </>
                     }
                 </Form >
             )}

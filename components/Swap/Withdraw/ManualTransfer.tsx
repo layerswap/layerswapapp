@@ -1,8 +1,6 @@
-import { FC, useCallback, useState } from "react"
+import { FC, useCallback } from "react"
 import useSWR from "swr"
-import QRCode from "qrcode.react"
-import colors from 'tailwindcss/colors';
-import { AlignLeft, ArrowLeftRight, Megaphone } from "lucide-react"
+import { ArrowLeftRight } from "lucide-react"
 import Image from 'next/image';
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { useSettingsState } from "../../../context/settings";
@@ -13,12 +11,14 @@ import LayerSwapApiClient, { DepositAddress, DepositAddressSource, DepositType, 
 import SubmitButton from "../../buttons/submitButton";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../../shadcn/select";
 import { BaseL2Asset } from "../../../Models/Layer";
-import SpinIcon from "../../icons/spinIcon";
+import shortenAddress from "../../utils/ShortenAddress";
+import { isValidAddress } from "../../../lib/addressValidator";
+import { useSwapDepositHintClicked } from "../../../stores/swapTransactionStore";
 
 const ManualTransfer: FC = () => {
     const { swap } = useSwapDataState()
-    const [messageClicked, setMessageClicked] = useState(false)
-
+    const hintsStore = useSwapDepositHintClicked()
+    const hintClicked = hintsStore.swapTransactions[swap?.id || ""]
     const {
         source_network: source_network_internal_name } = swap || {}
 
@@ -35,36 +35,34 @@ const ManualTransfer: FC = () => {
     )
 
     let generatedDepositAddress = generatedDeposit?.data?.address
-    let shouldGenerateAddress = !generatedDepositAddress && messageClicked
+    let shouldGenerateAddress = !generatedDepositAddress && hintClicked
 
     const handleCloseNote = useCallback(async () => {
-        setMessageClicked(true)
-    }, [])
-
-    if (isLoading) {
-        return <div className='flex justify-center'>
-            <AlignLeft className='w-36 h-36 text-[#141c31]' />
-        </div>
-    }
+        if (swap)
+            hintsStore.setSwapDepositHintClicked(swap?.id)
+    }, [swap, hintsStore])
 
     return (
-        !(generatedDepositAddress || messageClicked) ?
-            <div className="rounded-lg p-4 flex flex-col items-center text-center bg-secondary-700 border border-secondary-500 gap-5">
-                <Megaphone className="h-10 w-10 text-secondary-text" />
-                <div className="max-w-xs">
-                    <h3 className="text-lg text-primary-text">
-                        About manual transfers
-                    </h3>
-                    <p className="text-sm">
-                        Transfer assets to Layerswap’s deposit address to complete the swap.
-                    </p>
+        <div className='rounded-md bg-secondary-700 border border-secondary-500 w-full h-full items-center relative'>
+            <div className={!hintClicked ? "absolute w-full h-full flex flex-col items-center px-3 pb-3 text-center" : "hidden"}>
+                <div className="flex flex-col items-center justify-center h-full pb-2">
+                    <div className="max-w-xs">
+                        <p className="text-base text-primary-text">
+                            About manual transfers
+                        </p>
+                        <p className="text-xs text-secondary-text">
+                            Transfer assets to Layerswap’s deposit address to complete the swap.
+                        </p>
+                    </div>
                 </div>
-                <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleCloseNote}>
-                    Got it
+                <SubmitButton isDisabled={false} isSubmitting={false} size="medium" onClick={handleCloseNote}>
+                    OK
                 </SubmitButton>
             </div>
-            :
-            <TransferInvoice address={generatedDepositAddress} shouldGenerateAddress={shouldGenerateAddress} />
+            <div className={hintClicked ? "flex" : "invisible"}>
+                <TransferInvoice address={generatedDepositAddress} shouldGenerateAddress={shouldGenerateAddress} />
+            </div>
+        </div>
     )
 
 }
@@ -82,11 +80,9 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
         source_network_asset
     } = swap || {}
 
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name)
-
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
-    const asset = source_network?.assets?.find(currency => currency?.asset === destination_network_asset)
+    const asset = selectedAssetNetwork?.network?.currencies.find(c => c.asset == destination_network_asset)
 
     const layerswapApiClient = new LayerSwapApiClient()
     const generateDepositParams = shouldGenerateAddress ? [selectedAssetNetwork?.network_internal_name ?? null] : null
@@ -106,7 +102,6 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
     const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
     const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
 
-
     const requested_amount = Number(manualTransferFee?.min_amount) > Number(swap?.requested_amount) ? manualTransferFee?.min_amount : swap?.requested_amount
     const depositAddress = existingDepositAddress || generatedDeposit?.data?.address
 
@@ -114,82 +109,63 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
         setSelectedAssetNetwork(n)
     }, [])
 
-    return <div className='rounded-md bg-secondary-700 border border-secondary-500 divide-y divide-secondary-500 text-primary-text'>
-        <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
-            {
-                source_exchange &&
-                <ExchangeNetworkPicker onChange={handleChangeSelectedNetwork} />
-            }
-            <div className='p-2 bg-primary-text/30 bg-opacity-30 rounded-xl'>
-                <div className='p-2 bg-primary-text/70 bg-opacity-70 rounded-lg'>
-                    {depositAddress ? <QRCode
-                        className="p-2 bg-primary-text rounded-md"
-                        value={depositAddress}
-                        size={120}
-                        bgColor={colors.white}
-                        fgColor="#000000"
-                        level={"H"}
-                    />
-                        :
-                        <div className="relative h-[120px] w-[120px]">
-                            <div className="absolute top-[calc(50%-10px)] left-[calc(50%-10px)]">
-                                <SpinIcon className="animate-spin h-5 w-5 text-secondary-500" />
-                            </div>
+    return <div className='divide-y divide-secondary-500 text-primary-text h-full'>
+        {source_exchange && <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
+            <ExchangeNetworkPicker onChange={handleChangeSelectedNetwork} />
+        </div>
+        }
+        <div className="flex divide-x divide-secondary-500">
+            <BackgroundField Copiable={true} QRable={true} header={"Deposit address"} toCopy={depositAddress} withoutBorder>
+                <div>
+                    {
+                        depositAddress ?
+                            <p className='break-all'>
+                                {depositAddress}
+                            </p>
+                            :
+                            <div className='bg-gray-500 w-56 h-5 animate-pulse rounded-md' />
+                    }
+                    {
+                        (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
+                        <div className='flex text-xs items-center py-1 mt-1 border-2 border-secondary-300 rounded border-dashed text-secondary-text'>
+                            <p>
+                                This address might not be activated. You can ignore it.
+                            </p>
                         </div>
                     }
                 </div>
-            </div>
+            </BackgroundField>
         </div>
         {
             (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
-            <BackgroundField header={'Send type'} withoutBorder>
-                <div className='flex items-center space-x-2'>
-                    <ArrowLeftRight className='h-4 w-4' />
-                    <p>
-                        To Another Loopring L2 Account
-                    </p>
+            <div className='grid grid-cols-3 divide-x divide-secondary-500'>
+                <div className="col-span-2">
+                    <BackgroundField header={'Send type'} withoutBorder>
+                        <div className='flex items-center text-xs sm:text-sm'>
+                            <ArrowLeftRight className='hidden sm:inline-block sm:h-4 sm:w-4' />
+                            <p>
+                                To Another Loopring L2 Account
+                            </p>
+                        </div>
+                    </BackgroundField>
                 </div>
-            </BackgroundField>
-        }
-        <BackgroundField Copiable={true} toCopy={depositAddress} header={'Deposit Address'} withoutBorder>
-            <div>
-                {
-                    depositAddress ?
-                        <p className='break-all'>
-                            {depositAddress}
-                        </p>
-                        :
-                        <div className='bg-gray-500 w-56 h-5 animate-pulse rounded-md' />
-                }
-                {
-                    (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
-                    <div className='flex text-xs items-center px-2 py-1 mt-1 border-2 border-secondary-100 rounded border-dashed text-secondary-text'>
-                        <p>
-                            You might get a warning that this is not an activated address. You can ignore it.
-                        </p>
-                    </div>
-                }
-            </div>
-        </BackgroundField>
-        {
-            (source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli || source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet) &&
-            <div className='flex space-x-4'>
                 <BackgroundField header={'Address Type'} withoutBorder>
-                    <p>
+                    <p className="text-xs sm:text-sm">
                         EOA Wallet
                     </p>
                 </BackgroundField>
             </div>
         }
+
         <div className='flex divide-x divide-secondary-500'>
             <BackgroundField Copiable={true} toCopy={requested_amount} header={'Amount'} withoutBorder>
                 <p>
                     {requested_amount}
                 </p>
             </BackgroundField>
-            <BackgroundField header={'Asset'} withoutBorder>
-                <div className="flex items-center">
-                    <div className="flex-shrink-0 h-5 w-5 relative">
+            <BackgroundField header={'Asset'} withoutBorder Explorable={asset?.contract_address != null && isValidAddress(asset?.contract_address, selectedAssetNetwork?.network)} toExplore={asset?.contract_address != null ? selectedAssetNetwork?.network?.account_explorer_template?.replace("{0}", asset?.contract_address) : undefined}>
+                <div className="flex items-center gap-2">
+                    <div className="flex-shrink-0 h-7 w-7 relative">
                         {
                             asset &&
                             <Image
@@ -201,7 +177,16 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                             />
                         }
                     </div>
-                    <div className="mx-1 block">{asset?.asset}</div>
+                    <div className="flex flex-col">
+                        <span className="font-semibold leading-4">
+                            {asset?.name}
+                        </span>
+                        {asset?.contract_address && isValidAddress(asset.contract_address, selectedAssetNetwork?.network) &&
+                            <span className="text-xs text-secondary-text flex items-center leading-3">
+                                {shortenAddress(asset?.contract_address)}
+                            </span>
+                        }
+                    </div>
                 </div>
             </BackgroundField>
         </div>
@@ -217,7 +202,8 @@ const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = 
         source_network_asset } = swap || {}
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
-    const exchangeAssets = source_exchange?.assets?.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network?.status !== "inactive")
+    const exchangeAssets = source_exchange?.assets?.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network?.status !== "inactive" && a.network?.currencies.find(c => c.asset === a.asset)?.is_deposit_enabled)
+    console.log(source_exchange)
     const defaultSourceNetwork = exchangeAssets?.find(sn => sn.is_default) || exchangeAssets?.[0]
 
     const handleChangeSelectedNetwork = useCallback((n: string) => {
@@ -266,6 +252,5 @@ const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = 
         }
     </div>
 }
-
 
 export default ManualTransfer

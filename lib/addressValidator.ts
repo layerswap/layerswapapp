@@ -4,7 +4,7 @@ import { validateAndParseAddress } from "./starkNetAddressValidator";
 import { PublicKey } from '@solana/web3.js'
 import { Layer } from "../Models/Layer";
 
-export function isValidAddress(address?: string, network?: Layer | null): boolean {
+export function isValidAddress(address?: string, network?: { internal_name: string } | null): boolean {
     if (!address) {
         return false
     }
@@ -22,6 +22,10 @@ export function isValidAddress(address?: string, network?: Layer | null): boolea
     }
     else if (network?.internal_name.toLowerCase().startsWith("STARKNET".toLowerCase())) {
         return validateAndParseAddress(address);
+    }
+    else if (network?.internal_name.toLowerCase().startsWith("TON".toLowerCase())) {
+        if (address.length === 48) return true
+        else return false
     }
     else if (network?.internal_name === KnownInternalNames.Networks.OsmosisMainnet) {
         if (/^(osmo1)?[a-z0-9]{38}$/.test(address)) {

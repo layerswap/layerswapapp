@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import Head from "next/head"
 import { useRouter } from "next/router";
 import ThemeWrapper from "./themeWrapper";
@@ -8,21 +8,27 @@ import { AuthProvider } from "../context/authContext";
 import { SettingsProvider } from "../context/settings";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
-import { MenuProvider } from "../context/menu";
 import ErrorFallback from "./ErrorFallback";
 import { SendErrorMessage } from "../lib/telegram";
-import dynamic from 'next/dynamic'
 import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
 import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
+import { THEME_COLORS, ThemeData } from "../Models/Theme";
+import { TooltipProvider } from "./shadcn/tooltip";
+import ColorSchema from "./ColorSchema";
+import TonConnectProvider from "./TonConnectProvider";
+import * as Sentry from "@sentry/nextjs";
+import RainbowKit from "./RainbowKit";
+import Solana from "./SolanaProvider";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
   hideFooter?: boolean;
   settings?: LayerSwapSettings;
+  themeData?: ThemeData | null
 };
 
-export default function Layout({ children, settings }: Props) {
+export default function Layout({ children, settings, themeData }: Props) {
   const router = useRouter();
 
   useEffect(() => {
@@ -36,7 +42,18 @@ export default function Layout({ children, settings }: Props) {
       }
       return customUrl
     }
-    plausible('pageview', { u: prepareUrl(['destNetwork', 'sourceExchangeName', 'addressSource', 'asset', 'amount']) })
+    plausible('pageview', {
+      u: prepareUrl([
+        'destNetwork', //opsolate
+        'sourceExchangeName', //opsolate
+        'addressSource', //opsolate
+        'from',
+        'to',
+        'appName',
+        'asset',
+        'amount'
+      ])
+    })
   }, [])
 
   if (!settings)
@@ -74,16 +91,22 @@ export default function Layout({ children, settings }: Props) {
   };
 
   function logErrorToService(error, info) {
-    if (process.env.NEXT_PUBLIC_VERCEL_ENV) {
+    const transaction = Sentry.startTransaction({
+      name: "error_boundary_handler",
+    });
+    Sentry.configureScope((scope) => {
+      scope.setSpan(transaction);
+    });
+    if (process.env.NEXT_PUBLIC_VERCEL_ENV && !error.stack.includes("chrome-extension")) {
       SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
     }
+    Sentry.captureException(error, info);
+    transaction.finish();
   }
 
-  const basePath = router?.basePath ?? ""
+  themeData = themeData || THEME_COLORS.default
 
-  const DynamicRainbowKit = dynamic(() => import("./RainbowKit"), {
-    loading: () => <></>
-  })
+  const basePath = router?.basePath ?? ""
 
   return (<>
     <Head>
@@ -93,7 +116,7 @@ export default function Layout({ children, settings }: Props) {
       <link rel="icon" type="image/png" sizes="16x16" href={`${basePath}/favicon/favicon-16x16.png`} />
       <link rel="manifest" href={`${basePath}/favicon/site.webmanifest`} />
       <meta name="msapplication-TileColor" content="#ffffff" />
-      <meta name="theme-color" content="#111827" />
+      <meta name="theme-color" content={`rgb(${themeData.secondary?.[900]})`} />
       <meta name="description" content="Move crypto across exchanges, blockchains, and wallets." />
 
       {/* Facebook Meta Tags */}
@@ -111,21 +134,29 @@ export default function Layout({ children, settings }: Props) {
       <meta name="twitter:description" content="Move crypto across exchanges, blockchains, and wallets." />
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
     </Head>
+    {
+      themeData &&
+      <ColorSchema themeData={themeData} />
+    }
     <QueryProvider query={query}>
       <SettingsProvider data={appSettings}>
-        <MenuProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <TooltipProvider delayDuration={500}>
             <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
               <ThemeWrapper>
-                <DynamicRainbowKit>
-                  {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                    <MaintananceContent />
-                    : children}
-                </DynamicRainbowKit>
+                <TonConnectProvider basePath={basePath} themeData={themeData}>
+                  <RainbowKit>
+                    <Solana>
+                      {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                        <MaintananceContent />
+                        : children}
+                    </Solana>
+                  </RainbowKit>
+                </TonConnectProvider>
               </ThemeWrapper>
             </ErrorBoundary>
-          </AuthProvider>
-        </MenuProvider>
+          </TooltipProvider>
+        </AuthProvider>
       </SettingsProvider >
     </QueryProvider>
   </>)

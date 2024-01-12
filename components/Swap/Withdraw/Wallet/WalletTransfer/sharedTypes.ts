@@ -7,7 +7,7 @@ export type ActionData = {
 export type BaseTransferButtonProps = {
     swapId: string,
     sequenceNumber: string,
-    depositAddress: `0x${string}`,
+    depositAddress?: `0x${string}`,
     userDestinationAddress: `0x${string}`,
     amount: number,
     savedTransactionHash: `0x${string}`,

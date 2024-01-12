@@ -8,12 +8,14 @@ import {
     erc20ABI,
 } from "wagmi";
 import { PublishedSwapTransactionStatus } from "../../../../../lib/layerSwapApiClient";
-import { useSwapDataUpdate } from "../../../../../context/swap";
 import WalletIcon from "../../../../icons/WalletIcon";
 import { encodeFunctionData, http, parseUnits, createWalletClient, publicActions } from 'viem'
 import TransactionMessage from "./transactionMessage";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import { ButtonWrapper } from "./buttons";
+import { useSwapTransactionStore } from "../../../../../stores/swapTransactionStore";
+import useWalletTransferOptions from "../../../../../hooks/useWalletTransferOptions";
+import { SendTransactionData } from "../../../../../lib/telegram";
 
 type TransferERC20ButtonProps = BaseTransferButtonProps & {
     tokenContractAddress: `0x${string}`,
@@ -30,18 +32,19 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     userDestinationAddress,
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
-    const { setSwapPublishedTx } = useSwapDataUpdate()
     const { address } = useAccount();
     const [buttonClicked, setButtonClicked] = useState(false)
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
+    const { setSwapTransaction } = useSwapTransactionStore();
+    const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
 
     const contractWritePrepare = usePrepareContractWrite({
-        enabled: !!depositAddress,
+        enabled: !!depositAddress && isContractWallet?.ready,
         address: tokenContractAddress,
         abi: erc20ABI,
         functionName: 'transfer',
         gas: estimatedGas,
-        args: [depositAddress, parseUnits(amount.toString(), tokenDecimals)],
+        args: depositAddress ? [depositAddress, parseUnits(amount.toString(), tokenDecimals)] : undefined,
     });
 
     let encodedData = depositAddress && contractWritePrepare?.config?.request
@@ -49,7 +52,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             ...contractWritePrepare?.config?.request,
         });
 
-    if (encodedData && address !== userDestinationAddress) {
+    if (encodedData && canDoSweepless && address !== userDestinationAddress) {
         encodedData = encodedData ? `${encodedData}${sequenceNumber}` as `0x${string}` : encodedData;
     }
 
@@ -84,14 +87,16 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     useEffect(() => {
         try {
             if (contractWrite?.data?.hash) {
-                setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Pending, contractWrite?.data?.hash);
+                setSwapTransaction(swapId, PublishedSwapTransactionStatus.Pending, contractWrite?.data?.hash);
+                if (!!isContractWallet?.isContract)
+                    SendTransactionData(swapId, contractWrite?.data?.hash)
             }
         }
         catch (e) {
             //TODO log to logger
             console.error(e.message)
         }
-    }, [contractWrite?.data?.hash, swapId])
+    }, [contractWrite?.data?.hash, swapId, isContractWallet?.isContract])
 
     const clickHandler = useCallback(() => {
         setButtonClicked(true)
@@ -102,8 +107,12 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         hash: contractWrite?.data?.hash || savedTransactionHash,
         onSuccess: async (trxRcpt) => {
             setApplyingTransaction(true)
-            setSwapPublishedTx(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
+            setSwapTransaction(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
             setApplyingTransaction(false)
+        },
+        onError: async (err) => {
+            if (contractWrite?.data?.hash)
+                setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, contractWrite.data.hash, err.message);
         }
     })
 

@@ -9,6 +9,7 @@
   "rules": {
     "no-conditional-literals-in-jsx/no-conditional-literals-in-jsx": "error",
     "no-conditional-literals-in-jsx/no-unwrapped-jsx-text": "error",
-    "react-hooks/exhaustive-deps": "off"
+    "react-hooks/exhaustive-deps": "off",
+    "react/display-name": "off"
   }
 }
