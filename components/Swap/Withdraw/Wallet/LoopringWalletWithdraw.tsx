@@ -16,7 +16,7 @@ import { parseUnits } from 'viem';
 import WalletMessage from './WalletTransfer/message';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { disconnect as wagmiDisconnect } from '@wagmi/core'
-import { useSwapTransactionStore } from '../../../store/zustandStore';
+import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 
 type Props = {
     depositAddress?: string,
