@@ -38,13 +38,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const handleTransaction = async (swapId: string, publishedTransaction: TransactionResponse, txHash: string) => {
         if (publishedTransaction?.meta?.err) {
-            txHash && setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, txHash, String(publishedTransaction.meta.err));
-            toast(String(publishedTransaction.meta.err))
-            setLoading(false)
-        }
-        else {
-            txHash && setSwapTransaction(swapId, PublishedSwapTransactionStatus.Completed, txHash, '');
-            setTransferDone(true)
+
         }
     };
 
@@ -85,7 +79,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 sourceToken,
                 recipientAddress
             );
-            
+
             if (!(await connection.getAccountInfo(associatedTokenTo))) {
                 transactionInstructions.push(
                     createAssociatedTokenAccountInstruction(
@@ -117,21 +111,24 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             if (signature) {
                 if (!txReceipt?.meta?.err)
                     setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Pending, signature);
-                else
-                    handleTransaction(swap?.id, txReceipt, signature)
+                else {
+                    signature && setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, signature, String(txReceipt.meta.err));
+                    toast(String(txReceipt.meta.err))
+                    setLoading(false)
+                }
             }
 
         }
         catch (e) {
             if (e?.message) {
                 toast(e.message)
-                setLoading(false)
                 return
             }
         }
-        setLoading(false)
-
-    }, [swap, depositAddress, source_currency, walletPublicKey,  amount, signTransaction])
+        finally {
+            setLoading(false)
+        }
+    }, [swap, depositAddress, source_currency, walletPublicKey, amount, signTransaction])
 
     return (
         <>
