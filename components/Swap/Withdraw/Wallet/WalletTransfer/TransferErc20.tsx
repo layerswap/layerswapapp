@@ -98,8 +98,11 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         }
     }, [contractWrite?.data?.hash, swapId, isContractWallet?.isContract])
 
-    const clickHandler = useCallback(() => {
+    const clickHandler = useCallback(async () => {
         setButtonClicked(true)
+        if (contractWritePrepare?.status == "idle") {
+            await contractWritePrepare.refetch();
+        }
         contractWrite?.write && contractWrite?.write()
     }, [contractWrite])
 
@@ -141,7 +144,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
             !isLoading &&
             <ButtonWrapper
                 clcikHandler={clickHandler}
-                disabled={contractWritePrepare?.isLoading || contractWritePrepare.status === "idle"}
+                disabled={contractWritePrepare?.isLoading}
                 icon={<WalletIcon className="stroke-2 w-6 h-6" />}
             >
                 {(isError && buttonClicked) ? <span>Try again</span>
