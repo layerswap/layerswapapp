@@ -35,11 +35,11 @@ export default function useWalletTransferOptions() {
 
     }, [wallet?.address])
 
-    let walletTypeResolved = getContractWallet(wallet?.address, source_layer?.internal_name);
+    let walletTypeResolved = getContractWallet(wallet?.address, source_layer?.internal_name) ?? { isContract: false, ready: true, key: "" };
     const canDoSweepless = source_layer?.isExchange == false
         && ((source_layer.type == NetworkType.EVM
             && (walletTypeResolved?.ready && !walletTypeResolved?.isContract))
-             || source_layer.type == NetworkType.Starknet)
+            || source_layer.type == NetworkType.Starknet)
         || wallet?.address?.toLowerCase() === swap?.destination_address.toLowerCase()
 
     return { canDoSweepless, isContractWallet: walletTypeResolved }
