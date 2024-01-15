@@ -9,7 +9,7 @@ import { BalanceProvider } from "../Models/Balance"
 import useWallet from "./useWallet"
 import { useBalancesState, useBalancesUpdate } from "../context/balances"
 import { Currency } from "../Models/Currency"
-import useImxBalance from "../lib/balances/immutableX/useImmutableXBalances"
+import useImxBalance from "../lib/balances/immutableX/useIMXBalances"
 
 
 export default function useBalanceProvider() {
