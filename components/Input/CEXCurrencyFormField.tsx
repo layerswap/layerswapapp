@@ -15,7 +15,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
-    const { sourceRoutes, destinationRoutes,  } = useSettingsState();
+    const { sourceRoutes, destinationRoutes } = useSettingsState();
     const name = 'currencyGroup'
 
     const query = useQueryState()
