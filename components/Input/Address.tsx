@@ -193,9 +193,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                             <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
                                 {
                                     destinationIsStarknet && connectedWallet ?
-                                        <connectedWallet.icon className='rounded-md' alt={connectedWallet?.address} width={25} height={25} />
+                                        <connectedWallet.icon className='rounded-md h-6 w-6' alt={connectedWallet?.address} width={24} height={24} />
                                         :
-                                        <AddressIcon address={validInputAddress} size={25} />
+                                        <AddressIcon address={validInputAddress} size={24} />
                                 }
                             </div>
                             <div className="flex flex-col grow">

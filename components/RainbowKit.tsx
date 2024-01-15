@@ -32,8 +32,8 @@ function RainbowKitComponent({ children }: Props) {
     const { chains, publicClient } = configureChains(
         settingsChains?.length > 0 ? settingsChains : [mainnet],
         [publicProvider()]
-    )
-
+    );
+    let chainExceptZkSyncEra = chains.filter(x=> x.id != 324);
     const projectId = WALLETCONNECT_PROJECT_ID;
     const connectors = connectorsForWallets([
         {
@@ -47,7 +47,7 @@ function RainbowKitComponent({ children }: Props) {
             groupName: 'Wallets',
             wallets: [
                 coinbaseWallet({ chains, appName: 'Layerswap' }),
-                argentWallet({ projectId, chains }),
+                argentWallet({ projectId, chains: chainExceptZkSyncEra }),
                 bitgetWallet({ projectId, chains }),
                 rainbowWallet({ projectId, chains }),
                 phantomWallet({ chains })
