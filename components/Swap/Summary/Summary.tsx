@@ -16,7 +16,8 @@ import { NetworkCurrency } from "../../../Models/CryptoNetwork";
 import { Exchange } from "../../../Models/Exchange";
 
 type SwapInfoProps = {
-    currency: NetworkCurrency,
+    sourceCurrency: NetworkCurrency,
+    destinationCurrency: NetworkCurrency,
     source: Layer,
     destination: Layer;
     requestedAmount: number;
@@ -31,7 +32,7 @@ type SwapInfoProps = {
     sourceExchange?: Exchange;
 }
 
-const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name, destExchange, sourceExchange }) => {
+const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name, destExchange, sourceExchange }) => {
     const { resolveImgSrc, layers } = useSettingsState()
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -55,8 +56,8 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     const source = hideFrom ? partner : from
     const destination = hideTo ? partner : to
 
-    const requestedAmountInUsd = (currency?.usd_price * requestedAmount).toFixed(2)
-    const receiveAmountInUsd = receiveAmount ? (currency?.usd_price * receiveAmount).toFixed(2) : undefined
+    const requestedAmountInUsd = (sourceCurrency?.usd_price * requestedAmount).toFixed(2)
+    const receiveAmountInUsd = receiveAmount ? (destinationCurrency?.usd_price * receiveAmount).toFixed(2) : undefined
     const nativeCurrency = refuelAmount && from.assets.find(c => c.is_native)
 
     const truncatedRefuelAmount = nativeCurrency && (hasRefuel && refuelAmount) ?
@@ -81,8 +82,6 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
-    const sourceCurrencyName = currency?.asset
-    const destCurrencyName = layers?.find(n => n.internal_name === to?.internal_name)?.assets?.find(c => c?.asset === currency?.asset)?.asset || currency?.asset
 
     return (
         <div>
@@ -108,7 +107,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                         </div>
                     </div>
                     <div className="flex flex-col">
-                        <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, currency.precision)} {sourceCurrencyName}</p>
+                        <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.asset}</p>
                         <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
                     </div>
                 </div>
@@ -129,7 +128,7 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                     {
                         fee != undefined && receiveAmount != undefined && fee >= 0 ?
                             <div className="flex flex-col justify-end">
-                                <p className="text-primary-text text-sm">{truncateDecimals(receiveAmount, currency.precision)} {destCurrencyName}</p>
+                                <p className="text-primary-text text-sm">{truncateDecimals(receiveAmount, destinationCurrency.precision)} {destinationCurrency.asset}</p>
                                 <p className="text-secondary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
                             </div>
                             :
@@ -159,7 +158,5 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
         </div>
     )
 }
-
-
 
 export default Summary

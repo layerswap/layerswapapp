@@ -88,7 +88,8 @@ const SwapSummary: FC = () => {
         : undefined
 
     return <Summary
-        currency={sourceAsset}
+        sourceCurrency={sourceAsset}
+        destinationCurrency={destinationAsset}
         source={source_layer}
         sourceExchange={sourceExchange}
         destination={destination_layer}
