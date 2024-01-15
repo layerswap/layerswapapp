@@ -1,8 +1,6 @@
 import KnownInternalNames from "../../knownIds"
-import Erc20Abi from '../../abis/ERC20.json'
 import formatAmount from "../../formatAmount";
-import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../Models/Balance";
-import { formatEther } from "viem";
+import { BalanceProps, BalanceProvider, GasProps } from "../../../Models/Balance";
 
 export default function useImxBalance(): BalanceProvider {
     const name = 'starknet'
