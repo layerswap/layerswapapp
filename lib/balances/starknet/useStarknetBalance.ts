@@ -8,7 +8,8 @@ export default function useStarknetBalance(): BalanceProvider {
 
     const supportedNetworks = [
         KnownInternalNames.Networks.StarkNetMainnet,
-        KnownInternalNames.Networks.StarkNetGoerli
+        KnownInternalNames.Networks.StarkNetGoerli,
+        KnownInternalNames.Networks.StarkNetSepolia,
     ]
 
     const getBalance = async ({ layer, address }: BalanceProps) => {

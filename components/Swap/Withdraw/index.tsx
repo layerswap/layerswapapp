@@ -31,6 +31,7 @@ const Withdraw: FC = () => {
 
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
+        || swap?.source_network === KnownInternalNames.Networks.StarkNetSepolia?.toUpperCase()
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsZkSync = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()

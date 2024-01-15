@@ -13,6 +13,7 @@ import KnownInternalNames from "../../../lib/knownIds";
 import useWallet from "../../../hooks/useWallet";
 import { useQueryState } from "../../../context/query";
 import { NetworkCurrency } from "../../../Models/CryptoNetwork";
+import { Exchange } from "../../../Models/Exchange";
 
 type SwapInfoProps = {
     currency: NetworkCurrency,
@@ -26,9 +27,11 @@ type SwapInfoProps = {
     fee?: number,
     exchange_account_connected: boolean;
     exchange_account_name?: string;
+    destExchange?: Exchange;
+    sourceExchange?: Exchange;
 }
 
-const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name }) => {
+const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name, destExchange, sourceExchange }) => {
     const { resolveImgSrc, layers } = useSettingsState()
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -70,9 +73,9 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
     else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
         sourceAccountAddress = shortenEmail(exchange_account_name, 10);
     }
-    // else if (from?.isExchange) {
-    //     sourceAccountAddress = "Exchange"
-    // }
+    else if (sourceExchange) {
+        sourceAccountAddress = "Exchange"
+    }
     else {
         sourceAccountAddress = "Network"
     }
@@ -86,12 +89,21 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
             <div className="font-normal flex flex-col w-full relative z-10 space-y-4">
                 <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3">
-                        {source && <Image src={resolveImgSrc(source)} alt={source.display_name} width={32} height={32} className="rounded-full" />}
+                        {sourceExchange ?
+                            <Image src={resolveImgSrc(sourceExchange)} alt={sourceExchange.display_name} width={32} height={32} className="rounded-full" />
+                            : source ?
+                                <Image src={resolveImgSrc(source)} alt={source.display_name} width={32} height={32} className="rounded-full" />
+                                :
+                                null
+                        }
                         <div>
-                            <p className="text-primary-text text-sm leading-5">{source?.display_name}</p>
-                            {
-                                sourceAccountAddress &&
-                                <p className="text-sm text-secondary-text">{sourceAccountAddress}</p>
+                            <p className="text-primary-text text-sm leading-5">{sourceExchange ? sourceExchange?.display_name : source?.display_name}</p>
+                            {sourceExchange ?
+                                <p className="text-sm text-secondary-text">Exchange</p>
+                                : sourceAccountAddress ?
+                                    <p className="text-sm text-secondary-text">{sourceAccountAddress}</p>
+                                    :
+                                    null
                             }
                         </div>
                     </div>
@@ -102,10 +114,16 @@ const Summary: FC<SwapInfoProps> = ({ currency, source: from, destination: to, r
                 </div>
                 <div className="flex items-center justify-between  w-full ">
                     <div className="flex items-center gap-3">
-                        {destination && <Image src={resolveImgSrc(destination)} alt={destination.display_name} width={32} height={32} className="rounded-full" />}
+                        {destExchange ?
+                            <Image src={resolveImgSrc(destExchange)} alt={destExchange.display_name} width={32} height={32} className="rounded-full" />
+                            : destination ?
+                                <Image src={resolveImgSrc(destination)} alt={destination.display_name} width={32} height={32} className="rounded-full" />
+                                :
+                                null
+                        }
                         <div>
-                            <p className="text-primary-text text-sm leading-5">{destination?.display_name}</p>
-                            <p className="text-sm text-secondary-text">{shortenAddress(destAddress as string)}</p>
+                            <p className="text-primary-text text-sm leading-5">{destExchange ? destExchange?.display_name : destination?.display_name}</p>
+                            <p className="text-sm text-secondary-text">{shortenAddress(destAddress)}</p>
                         </div>
                     </div>
                     {

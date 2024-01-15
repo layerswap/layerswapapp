@@ -13,6 +13,7 @@ import shortenAddress from "../../utils/ShortenAddress";
 import { isValidAddress } from "../../../lib/addressValidator";
 import { useSwapDepositHintClicked } from "../../../stores/swapTransactionStore";
 import { useFee } from "../../../context/feeContext";
+import { Exchange } from "../../../Models/Exchange";
 
 const ManualTransfer: FC = () => {
     const { swap } = useSwapDataState()
@@ -57,7 +58,7 @@ const ManualTransfer: FC = () => {
                     OK
                 </SubmitButton>
             </div>
-            <div className={hintClicked ? "flex" : "invisible"}>
+            <div className={hintClicked ? "" : "invisible"}>
                 <TransferInvoice address={generatedDepositAddress} shouldGenerateAddress={shouldGenerateAddress} />
             </div>
         </div>
@@ -75,7 +76,8 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
         source_network: source_network_internal_name,
         destination_network: destination_network_internal_name,
         source_network_asset,
-        destination_network_asset
+        destination_network_asset,
+        source_exchange
     } = swap || {}
 
     const source = layers.find(n => n.internal_name === source_network_internal_name)
@@ -113,10 +115,10 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
     // }, [])
 
     return <div className='divide-y divide-secondary-500 text-primary-text h-full'>
-        {/* {source_exchange && <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
-            <ExchangeNetworkPicker onChange={handleChangeSelectedNetwork} />
+        {source_exchange && <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
+            <ExchangeNetworkPicker />
         </div>
-        } */}
+        }
         <div className="flex divide-x divide-secondary-500">
             <BackgroundField Copiable={true} QRable={true} header={"Deposit address"} toCopy={depositAddress} withoutBorder>
                 <div>
@@ -196,64 +198,66 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
     </div>
 }
 
-// const ExchangeNetworkPicker: FC<{ onChange: (network: NetworkCurrency) => void }> = ({ onChange }) => {
-//     const { layers, resolveImgSrc } = useSettingsState()
-//     const { swap } = useSwapDataState()
-//     const {
-//         source_exchange: source_exchange_internal_name,
-//         destination_network,
-//         source_network_asset } = swap || {}
-//     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
+const ExchangeNetworkPicker: FC<{ onChange?: (exchnage: Exchange) => void }> = ({ onChange }) => {
+    const { layers, resolveImgSrc } = useSettingsState()
+    const { swap } = useSwapDataState()
+    const {
+        source_exchange: source_exchange_internal_name,
+        destination_network,
+        source_network_asset,
+        source_network
+    } = swap || {}
+    const source_layer = layers.find(n => n.internal_name === source_network)
 
-//     const exchangeAssets = source_exchange?.assets?.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network?.status !== "inactive")
-//     const defaultSourceNetwork = exchangeAssets?.find(sn => sn.is_default) || exchangeAssets?.[0]
+    //const exchangeAssets = source_exchange?.assets?.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network?.status !== "inactive")
+    //const defaultSourceNetwork = exchangeAssets?.find(sn => sn.is_default) || exchangeAssets?.[0]
 
-//     const handleChangeSelectedNetwork = useCallback((n: string) => {
-//         const network = exchangeAssets?.find(network => network?.network_internal_name === n)
-//         if (network)
-//             onChange(network)
-//     }, [exchangeAssets])
+    // const handleChangeSelectedNetwork = useCallback((n: string) => {
+    //     const network = exchangeAssets?.find(network => network?.network_internal_name === n)
+    //     if (network)
+    //         onChange(network)
+    // }, [exchangeAssets])
 
-//     return <div className='flex items-center gap-1 text-sm my-2'>
-//         <span>Network:</span>
-//         {exchangeAssets?.length === 1 ?
-//             <div className='flex space-x-1 items-center w-fit font-semibold text-primary-text'>
-//                 <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={resolveImgSrc(exchangeAssets?.[0])}></Image>
-//                 <span>{defaultSourceNetwork?.network?.display_name}</span>
-//             </div>
-//             :
-//             <Select onValueChange={handleChangeSelectedNetwork} defaultValue={defaultSourceNetwork?.network_internal_name}>
-//                 <SelectTrigger className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
-//                     <SelectValue />
-//                 </SelectTrigger>
-//                 <SelectContent>
-//                     <SelectGroup>
-//                         <SelectLabel>Networks</SelectLabel>
-//                         {exchangeAssets?.map(sn => (
-//                             <SelectItem key={sn.network_internal_name} value={sn.network_internal_name}>
-//                                 <div className="flex items-center">
-//                                     <div className="flex-shrink-0 h-5 w-5 relative">
-//                                         {
-//                                             sn.network &&
-//                                             <Image
-//                                                 src={resolveImgSrc(sn.network)}
-//                                                 alt="From Logo"
-//                                                 height="60"
-//                                                 width="60"
-//                                                 className="rounded-md object-contain"
-//                                             />
-//                                         }
-//                                     </div>
-//                                     <div className="mx-1 block">{sn?.network?.display_name}</div>
-//                                 </div>
-//                             </SelectItem>
-//                         ))}
-//                     </SelectGroup>
-//                 </SelectContent>
-//             </Select>
-//         }
-//     </div>
-// }
+    return <div className='flex items-center gap-1 text-sm my-2'>
+        <span>Network:</span>
+        {/* {exchangeAssets?.length === 1 ? */}
+        <div className='flex space-x-1 items-center w-fit font-semibold text-primary-text'>
+            <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={resolveImgSrc(source_layer)}></Image>
+            <span>{source_layer?.display_name}</span>
+        </div>
+        {/* :
+            <Select onValueChange={handleChangeSelectedNetwork} defaultValue={defaultSourceNetwork?.network_internal_name}>
+                <SelectTrigger className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectGroup>
+                        <SelectLabel>Networks</SelectLabel>
+                        {exchangeAssets?.map(sn => (
+                            <SelectItem key={sn.network_internal_name} value={sn.network_internal_name}>
+                                <div className="flex items-center">
+                                    <div className="flex-shrink-0 h-5 w-5 relative">
+                                        {
+                                            sn.network &&
+                                            <Image
+                                                src={resolveImgSrc(sn.network)}
+                                                alt="From Logo"
+                                                height="60"
+                                                width="60"
+                                                className="rounded-md object-contain"
+                                            />
+                                        }
+                                    </div>
+                                    <div className="mx-1 block">{sn?.network?.display_name}</div>
+                                </div>
+                            </SelectItem>
+                        ))}
+                    </SelectGroup>
+                </SelectContent>
+            </Select>
+        } */}
+    </div>
+}
 
 
 const Sceleton = () => {

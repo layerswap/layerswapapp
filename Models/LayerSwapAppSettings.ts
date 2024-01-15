@@ -7,7 +7,7 @@ import { Partner } from "./Partner";
 export class LayerSwapAppSettings {
     constructor(settings: LayerSwapSettings | any) {
         this.layers = LayerSwapAppSettings.ResolveLayers(settings.networks, settings.sourceRoutes, settings.destinationRoutes);
-        this.exchanges = settings.exchanges
+        this.exchanges = LayerSwapAppSettings.ResolveExchanges(settings.exchanges);
         this.sourceRoutes = settings.sourceRoutes
         this.destinationRoutes = settings.destinationRoutes
     }
@@ -17,7 +17,7 @@ export class LayerSwapAppSettings {
     sourceRoutes: Route[]
     destinationRoutes: Route[]
 
-    resolveImgSrc = (item: Layer | NetworkCurrency | Pick<Layer, 'internal_name'> | { asset: string } | Partner | undefined) => {
+    resolveImgSrc = (item: Layer | Exchange | NetworkCurrency | Pick<Layer, 'internal_name'> | { asset: string } | Partner | undefined) => {
 
         if (!item) {
             return "/images/logo_placeholder.png";
@@ -58,7 +58,21 @@ export class LayerSwapAppSettings {
         return networkLayers
     }
 
-    static ResolveNetworkAssets(network: CryptoNetwork, sourceRoutes: Route[], destinationRoutes: Route[]): NetworkCurrency[] {
+    static ResolveExchanges(exchanges: Exchange[]): Exchange[] {
+        const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
+        if (!resource_storage_url)
+            throw new Error("NEXT_PUBLIC_RESOURCE_STORAGE_URL is not set up in env vars")
+
+        const basePath = new URL(resource_storage_url);
+        const resolvedExchanges: Exchange[] = exchanges?.map((n): Exchange =>
+        ({
+            img_url: `${basePath}layerswap/networks/${n?.internal_name?.toLowerCase()}.png`,
+            ...n,
+        }))
+        return resolvedExchanges
+    }
+
+    static ResolveNetworkL2Assets(network: CryptoNetwork, sourceRoutes: Route[], destinationRoutes: Route[]): NetworkCurrency[] {
         return network?.currencies?.map(c => {
             const availableInSource = sourceRoutes?.some(r => r.asset === c.asset && r.network === network.internal_name)
             const availableInDestination = destinationRoutes?.some(r => r.asset === c.asset && r.network === network.internal_name)

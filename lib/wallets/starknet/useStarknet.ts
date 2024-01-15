@@ -3,10 +3,14 @@ import { WalletProvider } from "../../../hooks/useWallet";
 import { useWalletStore } from "../../../stores/walletStore"
 import KnownInternalNames from "../../knownIds"
 import { useCallback } from "react";
-import { ResolveStarknetWalletIcon } from "./resoveStarknetIcon";
+import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 
 export default function useStarknet(): WalletProvider {
-    const withdrawalSupportedNetworks = [KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetGoerli]
+    const withdrawalSupportedNetworks = [
+        KnownInternalNames.Networks.StarkNetMainnet,
+        KnownInternalNames.Networks.StarkNetGoerli,
+        KnownInternalNames.Networks.StarkNetSepolia
+    ]
     const autofillSupportedNetworks = withdrawalSupportedNetworks
     const name = 'starknet'
     const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
@@ -38,7 +42,7 @@ export default function useStarknet(): WalletProvider {
                 addWallet({
                     address: res.account.address,
                     chainId: res.provider?.chainId || res.provider?.provider?.chainId,
-                    icon: ResolveStarknetWalletIcon({ connector: res.name }),
+                    icon: resolveWalletConnectorIcon({ connector: res.name, address: res.account.address }),
                     connector: res.name,
                     providerName: name,
                     metadata: {

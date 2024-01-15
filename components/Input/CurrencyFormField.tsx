@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
@@ -23,7 +23,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const { to, fromCurrency, toCurrency, from, currencyGroup } = values
-    const [allRoutes, setAllRoutes] = useState<string[]>([]);
     const { resolveImgSrc } = useSettingsState();
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
@@ -100,7 +99,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     useEffect(() => {
         if (direction === "to" && fromCurrency && toCurrency) {
-            if (destinationRoutes && !destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === toCurrency?.asset)) {
+            if (destinationRoutes?.data && !destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === toCurrency?.asset)) {
                 setFieldValue(name, null)
             } else if (destRoutesError) {
                 setFieldValue('toCurrency', null)

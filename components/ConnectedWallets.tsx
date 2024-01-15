@@ -68,14 +68,7 @@ export const WalletsMenu = () => {
                     {
                         wallets.length === 1 ?
                             <div className="flex gap-4 items-start">
-                                <div className="inline-flex items-center relative">
-                                    <AddressIcon address={wallet.address} size={20} />
-                                    {
-                                        wallet.connector && <span className="absolute -bottom-1 -right-2 ml-1 text-[10px] leading-4 font-semibold text-primary-text">
-                                            <wallet.icon className="w-4 h-4 border-2 border-secondary-600 rounded-full bg-primary-text" />
-                                        </span>
-                                    }
-                                </div>
+                                <wallet.icon className='h-5 w-5' />
                                 <p>{shortenAddress(wallet.address)}</p>
                             </div>
                             :

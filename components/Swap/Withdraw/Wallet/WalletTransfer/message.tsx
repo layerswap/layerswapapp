@@ -40,7 +40,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, showIn
                             <p className="text-md font-semibold self-center text-primary-text">
                                 {header}x
                             </p>
-                            <p className="text-sm text-secondary-text break-all whitespace-pre-wrap">
+                            <p className="text-sm text-secondary-text break-normal whitespace-pre-wrap">
                                 {details}
                             </p>
                         </div>

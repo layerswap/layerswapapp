@@ -86,6 +86,8 @@ export default class KnownInternalNames {
 
         public static readonly StarkNetMainnet: string = "STARKNET_MAINNET";
 
+        public static readonly StarkNetSepolia: string = "STARKNET_SEPOLIA";
+
         public static readonly ImmutableXMainnet: string = "IMMUTABLEX_MAINNET";
 
         public static readonly ImmutableXGoerli: string = "IMMUTABLEX_GOERLI";
