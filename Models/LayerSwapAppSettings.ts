@@ -1,3 +1,4 @@
+import NetworkSettings from "../lib/NetworkSettings";
 import { CryptoNetwork, NetworkCurrency } from "./CryptoNetwork";
 import { Exchange } from "./Exchange";
 import { Layer } from "./Layer";
@@ -53,6 +54,7 @@ export class LayerSwapAppSettings {
         ({
             assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n, sourceRoutes, destinationRoutes),
             img_url: `${basePath}layerswap/networks/${n?.internal_name?.toLowerCase()}.png`,
+            is_featured: NetworkSettings.KnownSettings[n.internal_name]?.isFeatured ?? false,
             ...n,
         }))
         return networkLayers
@@ -84,7 +86,7 @@ export class LayerSwapAppSettings {
                 precision: c.precision,
                 usd_price: c.usd_price,
                 is_native: c.is_native,
-                is_refuel_enabled: c.is_refuel_enabled,
+                refuel_amount_in_usd: c.refuel_amount_in_usd,
                 availableInSource,
                 availableInDestination,
             })

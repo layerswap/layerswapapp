@@ -23,7 +23,7 @@ import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
 import { useQueryState } from "../../../context/query";
-import FeeDetailsComponent from "../../DisclosureComponents/FeeDetails";
+import FeeDetailsComponent from "../../FeeDetails";
 import { useFee } from "../../../context/feeContext";
 import AmountField from "../../Input/Amount"
 import dynamic from "next/dynamic";
@@ -88,7 +88,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
 
     useEffect(() => {
-        if (!source || !toAsset || !GetDefaultAsset(source, toAsset)?.is_refuel_enabled) {
+        if (!source || !toAsset || !GetDefaultAsset(source, toAsset)?.refuel_amount_in_usd) {
             handleConfirmToggleChange(false)
         }
     }, [toAsset, destination, source])

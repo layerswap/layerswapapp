@@ -3,7 +3,7 @@ import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "r
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import NumericInput from "./NumericInput";
 import SecondaryButton from "../buttons/secondaryButton";
-import { useBalancesState, useBalancesUpdate } from "../../context/balances";
+import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useFee } from "../../context/feeContext";
 import useWallet from "../../hooks/useWallet";

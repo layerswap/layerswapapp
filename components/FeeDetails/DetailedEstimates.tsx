@@ -1,12 +1,12 @@
 import { FC } from "react";
-import { NetworkCurrency } from "../../../Models/CryptoNetwork";
-import { Layer } from "../../../Models/Layer";
-import { truncateDecimals } from "../../utils/RoundDecimals";
-import AverageCompletionTime from "../../Common/AverageCompletionTime";
-import { useBalancesState } from "../../../context/balances";
+import { NetworkCurrency } from "../../Models/CryptoNetwork";
+import { Layer } from "../../Models/Layer";
+import { truncateDecimals } from "../utils/RoundDecimals";
+import AverageCompletionTime from "../Common/AverageCompletionTime";
+import { useBalancesState } from "../../context/balances";
 import { useFormikContext } from "formik";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { Fee, useFee } from "../../../context/feeContext";
+import { SwapFormValues } from "../DTOs/SwapFormValues";
+import { Fee, useFee } from "../../context/feeContext";
 import { Clock9, Fuel } from "lucide-react";
 
 type EstimatesProps = {

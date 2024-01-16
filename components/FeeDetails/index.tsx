@@ -1,20 +1,19 @@
 
-import { SwapFormValues } from '../../DTOs/SwapFormValues';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../shadcn/accordion';
+import { SwapFormValues } from '../DTOs/SwapFormValues';
 import { ReceiveAmounts } from './ReceiveAmounts';
 import DetailedEstimates from './DetailedEstimates';
-import Campaign from './Campaign';
-import { useFee } from '../../../context/feeContext';
-import { useSettingsState } from '../../../context/settings';
+import { useFee } from '../../context/feeContext';
+import { useSettingsState } from '../../context/settings';
 import RefuelToggle from './Refuel';
-import CEXNetworkFormField from '../../Input/CEXNetworkFormField';
+import CEXNetworkFormField from '../Input/CEXNetworkFormField';
 import FeeDetails from './FeeDetailsComponent';
+import { useQueryState } from '../../context/query';
 
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
     const { toCurrency, from, to, refuel, fromExchange, toExchange } = values || {};
     const { fee } = useFee()
-    const currency = toCurrency
     const { layers } = useSettingsState()
+    const query = useQueryState();
 
     return (
         <>
@@ -27,7 +26,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                     </FeeDetails.Item>
                 }
 
-                {refuel &&
+                {toCurrency?.refuel_amount_in_usd && !query.hideRefuel &&
                     <FeeDetails.Item>
                         <RefuelToggle />
                     </FeeDetails.Item>
@@ -37,7 +36,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                     <FeeDetails.Item>
                         <DetailedEstimates
                             networks={layers}
-                            selected_currency={currency}
+                            selected_currency={toCurrency}
                             source={from}
                             destination={to}
                         />
@@ -46,7 +45,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
 
                 <FeeDetails.Item>
                     <ReceiveAmounts
-                        currency={currency}
+                        currency={toCurrency}
                         to={to}
                         receive_amount={fee.walletReceiveAmount}
                         refuel={!!refuel}

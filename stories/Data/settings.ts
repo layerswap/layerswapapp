@@ -189,7 +189,7 @@ export const Settings: LayerSwapSettings = {
             "display_name": "Gate.io",
             "internal_name": "GATEIO",
             "type": "cex",
-            "is_featured": false,"o_auth": {
+            "is_featured": false, "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
             },
@@ -202,7 +202,7 @@ export const Settings: LayerSwapSettings = {
             "display_name": "MEXC Global",
             "internal_name": "MEXC",
             "type": "cex",
-            "is_featured": false,"o_auth": {
+            "is_featured": false, "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
             },
@@ -215,7 +215,7 @@ export const Settings: LayerSwapSettings = {
             "display_name": "BitGet",
             "internal_name": "BITGET",
             "type": "cex",
-            "is_featured": false,"o_auth": {
+            "is_featured": false, "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
             },
@@ -228,7 +228,7 @@ export const Settings: LayerSwapSettings = {
             "display_name": "Swyftx",
             "internal_name": "SWYFTX",
             "type": "cex",
-            "is_featured": false,"o_auth": {
+            "is_featured": false, "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
             },
@@ -324,50 +324,92 @@ export const Settings: LayerSwapSettings = {
     ],
     "networks": [
         {
-            "display_name": "Ethereum Goerli",
-            "internal_name": "ETHEREUM_GOERLI",
-            "is_featured": false,
-            "chain_id": "5",
+            "display_name": "StarkNet Goerli",
+            "internal_name": "STARKNET_GOERLI",
+            "chain_id": "0x534e5f474f45524c49",
+            "is_testnet": true,
+            "type": NetworkType.Starknet,
+            "transaction_explorer_template": "https://testnet.starkscan.co/tx/{0}",
+            "account_explorer_template": "https://testnet.starkscan.co/contract/{0}",
+            "metadata": {
+                "WatchdogContractAddress": "0x021c2b56536381dc9bf5273d1173dd0cfb178b57763915038cf196b92f7c3ccc"
+            },
+            "created_date": "2023-12-27T16:46:50.617075+00:00",
+            "currencies": [
+                {
+                    "asset": "USDC",
+                    "contract_address": "0x05a8b3e116670381596e169c09de832f0055a4408464dc2cdadaca3d0aa3993a",
+                    "decimals": 6,
+                    "is_native": false,
+                    "precision": 6,
+                    "usd_price": 0.998876,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "USDC"
+                },
+                {
+                    "asset": "ETH",
+                    "contract_address": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+                    "decimals": 18,
+                    "is_native": false,
+                    "precision": 6,
+                    "usd_price": 2528.64,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "ETH"
+                }
+            ],
+            "managed_accounts": [
+                {
+                    "address": "0x2109F6e78970B282e6068d255EA4c815D14f68a31a9d3330c74d4eB56a0d724"
+                }
+            ],
+            "nodes": [
+                {
+                    "url": "https://starknet-goerli.infura.io/v3/9201404b0d164605888e8537e0416f45"
+                }
+            ]
+        },
+        {
+            "display_name": "Arbitrum One Sepolia",
+            "internal_name": "ARBITRUM_SEPOLIA",
+            "chain_id": "421614",
+            "is_testnet": true,
             "type": NetworkType.EVM,
-            "refuel_amount_in_usd": 0.1,
-            "transaction_explorer_template": "https://goerli.etherscan.io/tx/{0}",
-            "account_explorer_template": "https://goerli.etherscan.io/address/{0}",
+            "transaction_explorer_template": "https://sepolia.arbiscan.io/tx/{0}",
+            "account_explorer_template": "https://sepolia.arbiscan.io/address/{0}",
+            "metadata": null,
+            "created_date": "2023-12-27T16:46:50.617075+00:00",
             "currencies": [
                 {
                     "asset": "ETH",
                     "contract_address": null,
                     "decimals": 18,
-                    "is_refuel_enabled": false,
-                    "usd_price": 18,
-                    "availableInDestination": true,
-                    "availableInSource": true,
                     "is_native": true,
-                    "precision": 18
+                    "precision": 6,
+                    "usd_price": 2528.64,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "ETH"
+                },
+                {
+                    "asset": "USDC.ero",
+                    "contract_address": "0x0bbe6b2a1440bf6175468c66efcf9669d74b67ff",
+                    "decimals": 6,
+                    "is_native": false,
+                    "precision": 6,
+                    "usd_price": 0.998876,
+                    "refuel_amount_in_usd": null,
+                    "group_name": null
                 },
                 {
                     "asset": "USDC",
-                    "contract_address": "0x07865c6E87B9F70255377e024ace6630C1Eaa37F",
+                    "contract_address": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
                     "decimals": 6,
-                    "is_refuel_enabled": true,
-                    "usd_price": 18,
-                    "availableInDestination": true,
-                    "availableInSource": true,
-                    "is_native": true,
-                    "precision": 18
+                    "is_native": false,
+                    "precision": 6,
+                    "usd_price": 0.998876,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "USDC"
                 }
             ],
-            "metadata": {
-                "multicall3": {
-                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                    "blockCreated": 6507670
-                },
-                "ensRegistry": {
-                    "address": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e"
-                },
-                "ensUniversalResolver": {
-                    "address": "0x56522D00C410a43BFfDF00a9A569489297385790",
-                }
-            },
             "managed_accounts": [
                 {
                     "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
@@ -375,36 +417,77 @@ export const Settings: LayerSwapSettings = {
             ],
             "nodes": [
                 {
-                    "url": "https://eth-goerli.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef"
+                    "url": "https://arbitrum-sepolia.blastapi.io/b80cc803-ddc6-4582-9e56-481ec38ec039"
                 }
-            ],
-            "created_date": "2023-05-18T13:24:28.927361+00:00"
+            ]
         },
         {
-            "display_name": "ImmutableX Goerli",
-            "internal_name": "IMMUTABLEX_GOERLI",
-            "is_featured": false,
-            "chain_id": "5",
-            "refuel_amount_in_usd": 0.1,
-            "transaction_explorer_template": "https://immutascan.io/tx/{0}",
-            "account_explorer_template": "https://immutascan.io/address/{0}",
+            "display_name": "Ethereum Sepolia",
+            "internal_name": "ETHEREUM_SEPOLIA",
+            "chain_id": "11155111",
+            "is_testnet": true,
             "type": NetworkType.EVM,
+            "transaction_explorer_template": "https://sepolia.etherscan.io/tx/{0}",
+            "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
+            "metadata": null,
+            "created_date": "2023-12-27T16:46:50.617075+00:00",
             "currencies": [
                 {
                     "asset": "ETH",
                     "contract_address": null,
                     "decimals": 18,
-                    "is_refuel_enabled": false,
-                    "usd_price": 18,
-                    "availableInDestination": true,
-                    "availableInSource": true,
                     "is_native": true,
-                    "precision": 18
+                    "precision": 6,
+                    "usd_price": 2528.64,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "ETH"
+                },
+                {
+                    "asset": "USDC",
+                    "contract_address": "0xF6c4b249CbCBC46f4f29F39ea69aCf68f07CF473",
+                    "decimals": 6,
+                    "is_native": false,
+                    "precision": 6,
+                    "usd_price": 0.998876,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "USDC"
                 }
             ],
+            "managed_accounts": [
+                {
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                }
+            ],
+            "nodes": [
+                {
+                    "url": "https://eth-sepolia.blastapi.io/b80cc803-ddc6-4582-9e56-481ec38ec039"
+                }
+            ]
+        },
+        {
+            "display_name": "ImmutableX Sepolia",
+            "internal_name": "IMMUTABLEX_SEPOLIA",
+            "chain_id": "11155111",
+            "is_testnet": true,
+            "type": NetworkType.StarkEx,
+            "transaction_explorer_template": "https://immutascan.io/tx/{0}",
+            "account_explorer_template": "https://immutascan.io/address/{0}",
             "metadata": {
-                "L1Network": "ETHEREUM_GOERLI"
+                "L1Network": "ETHEREUM_SEPOLIA"
             },
+            "created_date": "2023-12-27T16:46:50.617075+00:00",
+            "currencies": [
+                {
+                    "asset": "ETH",
+                    "contract_address": null,
+                    "decimals": 18,
+                    "is_native": false,
+                    "precision": 6,
+                    "usd_price": 2528.64,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "ETH"
+                }
+            ],
             "managed_accounts": [
                 {
                     "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
@@ -414,352 +497,228 @@ export const Settings: LayerSwapSettings = {
                 {
                     "url": "https://api.sandbox.x.immutable.com"
                 }
-            ],
-            "created_date": "2023-05-18T13:24:29.001971+00:00"
-        },
-        {
-            "display_name": "Arbitrum One Goerli",
-            "internal_name": "ARBITRUM_GOERLI",
-            "type": NetworkType.EVM,
-            "is_featured": false,
-            "chain_id": "421613",
-            "refuel_amount_in_usd": 0.1,
-            "transaction_explorer_template": "https://goerli.arbiscan.io/tx/{0}",
-            "account_explorer_template": "https://goerli.arbiscan.io/address/{0}",
-            "currencies": [
-                {
-                    "asset": "USDC",
-                    "contract_address": "0x8FB1E3fC51F3b789dED7557E680551d93Ea9d892",
-                    "decimals": 6,
-                    "usd_price": 18,
-                    "is_refuel_enabled": false,
-                    "availableInDestination": true,
-                    "availableInSource": true,
-                    "is_native": true,
-                    "precision": 18
-                },
-                {
-                    "asset": "ETH",
-                    "contract_address": null,
-                    "decimals": 18,
-                    "is_refuel_enabled": false,
-                    "usd_price": 18,
-                    "availableInDestination": true,
-                    "availableInSource": true,
-                    "is_native": true,
-                    "precision": 18
-                }
-            ],
-            "metadata": {
-                "multicall3": {
-                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                    "blockCreated": 88114
-                }
-            },
-            "managed_accounts": [
-                {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
-                }
-            ],
-            "nodes": [
-                {
-                    "url": "https://goerli-rollup.arbitrum.io/rpc"
-                }
-            ],
-            "created_date": "2023-05-18T13:26:46.502048+00:00"
-        },
-        {
-            "display_name": "Starknet Goerli",
-            "internal_name": "STARKNET_GOERLI",
-            "is_featured": false,
-            "type": NetworkType.EVM,
-            "chain_id": "0x534e5f474f45524c49",
-            "refuel_amount_in_usd": 0.1,
-            "transaction_explorer_template": "https://testnet.starkscan.co/tx/{0}",
-            "account_explorer_template": "https://testnet.starkscan.co/contract/{0}",
-            "currencies": [
-                {
-                    "asset": "ETH",
-                    "contract_address": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-                    "decimals": 18,
-                    "is_refuel_enabled": false,
-                    "usd_price": 18,
-                    "availableInDestination": true,
-                    "availableInSource": true,
-                    "is_native": true,
-                    "precision": 18
-                },
-                {
-                    "asset": "USDC",
-                    "contract_address": "0x05a8b3e116670381596e169c09de832f0055a4408464dc2cdadaca3d0aa3993a",
-                    "decimals": 6,
-                    "is_refuel_enabled": false,
-                    "usd_price": 18,
-                    "availableInDestination": true,
-                    "availableInSource": true,
-                    "is_native": true,
-                    "precision": 18
-                }
-            ],
-            "metadata": {
-                "WatchdogContractAddress": "0x056b277d1044208632456902079f19370e0be63b1a4745f04f96c8c652237dbc"
-            },
-            "managed_accounts": [
-                {
-                    "address": "0x2109F6e78970B282e6068d255EA4c815D14f68a31a9d3330c74d4eB56a0d724"
-                }
-            ],
-            "nodes": [
-                {
-                    "url": "https://starknet-testnet.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef"
-                }
-            ],
-            "created_date": "2023-05-18T13:28:23.023141+00:00"
-        },
-        {
-            "display_name": "Solana Testnet",
-            "internal_name": "SOLANA_TESTNET",
-            "is_featured": false,
-            "chain_id": "9000",
-            "type": NetworkType.Solana,
-            "refuel_amount_in_usd": 1.0,
-            "transaction_explorer_template": "https://explorer.solana.com/tx/{0}?cluster=testnet\n",
-            "account_explorer_template": "https://explorer.solana.com/address/{0}?cluster=testnet",
-            "currencies": [
-                {
-                    "asset": "ETH",
-                    "contract_address": null,
-                    "is_refuel_enabled": false,
-                    "decimals": 18,
-                    "usd_price": 18,
-                    "availableInDestination": true,
-                    "availableInSource": true,
-                    "is_native": true,
-                    "precision": 18
-                }
-            ],
-            "metadata": null,
-            "managed_accounts": [
-
-            ],
-            "nodes": [
-
-            ],
-            "created_date": "2023-06-29T13:20:36.26041+00:00"
-        },
-        {
-            "display_name": "Solana Testnet",
-            "internal_name": "SOLANA_TESTNET",
-            "is_featured": false,
-            "chain_id": "9000",
-            "type": NetworkType.Solana,
-            "refuel_amount_in_usd": 1.0,
-            "transaction_explorer_template": "https://explorer.solana.com/tx/{0}?cluster=testnet\n",
-            "account_explorer_template": "https://explorer.solana.com/address/{0}?cluster=testnet",
-            "currencies": [
-                {
-                    "asset": "ETH",
-                    "contract_address": null,
-                    "decimals": 18,
-                    "is_refuel_enabled": false,
-                    "usd_price": 18,
-                    "availableInDestination": true,
-                    "availableInSource": true,
-                    "is_native": true,
-                    "precision": 18
-                }
-            ],
-            "metadata": null,
-            "managed_accounts": [
-
-            ],
-            "nodes": [
-
-            ],
-            "created_date": "2023-06-29T13:29:56.948135+00:00"
+            ]
         },
         {
             "display_name": "Linea Goerli",
             "internal_name": "LINEA_GOERLI",
-            "is_featured": false,
             "chain_id": "59140",
+            "is_testnet": true,
             "type": NetworkType.EVM,
-            "refuel_amount_in_usd": 1,
             "transaction_explorer_template": "https://goerli.lineascan.build/tx/{0}",
             "account_explorer_template": "https://goerli.lineascan.build/address/{0}",
+            "metadata": null,
+            "created_date": "2023-12-27T16:46:50.617075+00:00",
             "currencies": [
                 {
                     "asset": "ETH",
                     "contract_address": null,
                     "decimals": 18,
-                    "is_refuel_enabled": false,
-                    "usd_price": 18,
-                    "availableInDestination": true,
-                    "availableInSource": true,
                     "is_native": true,
-                    "precision": 18
+                    "precision": 6,
+                    "usd_price": 2528.64,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "ETH"
                 }
             ],
-            "metadata": null,
             "managed_accounts": [
                 {
                     "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
                 }
             ],
             "nodes": [
-
-            ],
-            "created_date": "2023-07-13T15:37:01.417347+00:00"
+                {
+                    "url": "https://rpc.goerli.linea.build"
+                }
+            ]
         },
         {
-            "display_name": "Base Goerli",
-            "internal_name": "BASE_GOERLI",
-            "is_featured": false,
-            "chain_id": "84531",
+            "display_name": "Optimism Sepolia",
+            "internal_name": "OPTIMISM_SEPOLIA",
+            "chain_id": "11155420",
+            "is_testnet": true,
             "type": NetworkType.EVM,
-            "refuel_amount_in_usd": 0,
-            "transaction_explorer_template": "https://goerli.basescan.org/tx/{0}",
-            "account_explorer_template": "https://goerli.basescan.org/address/{0}",
+            "transaction_explorer_template": "https://sepolia-optimism.etherscan.io/tx/{0}",
+            "account_explorer_template": "https://sepolia-optimism.etherscan.io/address/{0}",
+            "metadata": {
+                "GasPriceOracleContract": "0x420000000000000000000000000000000000000F"
+            },
+            "created_date": "2023-12-27T16:46:50.617075+00:00",
+            "currencies": [
+                {
+                    "asset": "USDC",
+                    "contract_address": "0x7E07E15D2a87A24492740D16f5bdF58c16db0c4E",
+                    "decimals": 6,
+                    "is_native": false,
+                    "precision": 6,
+                    "usd_price": 0.998876,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "USDC"
+                },
+                {
+                    "asset": "ETH",
+                    "contract_address": null,
+                    "decimals": 18,
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 2528.64,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "ETH"
+                }
+            ],
+            "managed_accounts": [
+                {
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                }
+            ],
+            "nodes": []
+        },
+        {
+            "display_name": "Base Sepolia",
+            "internal_name": "BASE_SEPOLIA",
+            "chain_id": "84532",
+            "is_testnet": true,
+            "type": NetworkType.EVM,
+            "transaction_explorer_template": "https://sepolia.basescan.org/tx/{0}",
+            "account_explorer_template": "https://sepolia.basescan.org/address/{0}",
+            "metadata": {
+                "GasPriceOracleContract": "0x420000000000000000000000000000000000000F"
+            },
+            "created_date": "2023-12-27T16:46:50.617075+00:00",
             "currencies": [
                 {
                     "asset": "ETH",
                     "contract_address": null,
                     "decimals": 18,
-                    "is_refuel_enabled": false,
-                    "usd_price": 18,
-                    "availableInDestination": true,
-                    "availableInSource": true,
                     "is_native": true,
-                    "precision": 18
+                    "precision": 6,
+                    "usd_price": 2528.64,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "ETH"
                 }
             ],
-            "metadata": {
-            },
-            "managed_accounts": [
-
-            ],
-            "nodes": [
-
-            ],
-            "created_date": "2023-08-02T10:55:14.611772+00:00"
+            "managed_accounts": [],
+            "nodes": []
         },
         {
             "display_name": "Evmos Testnet",
             "internal_name": "EVMOS_TESTNET",
-            "is_featured": false,
             "chain_id": "9000",
+            "is_testnet": true,
             "type": NetworkType.EVM,
-            "refuel_amount_in_usd": 0.05,
             "transaction_explorer_template": "https://testnet.escan.live/tx/{0}",
             "account_explorer_template": "https://testnet.escan.live/address/{0}",
+            "metadata": null,
+            "created_date": "2023-12-27T16:46:50.617075+00:00",
             "currencies": [
                 {
                     "asset": "EVMOS",
                     "contract_address": null,
                     "decimals": 18,
-                    "is_refuel_enabled": false,
-                    "usd_price": 18,
-                    "availableInDestination": true,
-                    "availableInSource": true,
                     "is_native": true,
-                    "precision": 18
-                },
-                {
-                    "asset": "USDC",
-                    "contract_address": null,
-                    "decimals": 6,
-                    "is_refuel_enabled": true,
-                    "usd_price": 18,
-                    "availableInDestination": true,
-                    "availableInSource": true,
-                    "is_native": true,
-                    "precision": 18
+                    "precision": 6,
+                    "usd_price": 0.098277,
+                    "refuel_amount_in_usd": null,
+                    "group_name": null
                 }
             ],
-            "metadata": null,
             "managed_accounts": [
                 {
                     "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
                 }
             ],
-            "nodes": [
-
+            "nodes": []
+        },
+        {
+            "display_name": "Solana Devnet",
+            "internal_name": "SOLANA_DEVNET",
+            "chain_id": "1399811149",
+            "is_testnet": true,
+            "type": NetworkType.Solana,
+            "transaction_explorer_template": "https://explorer.solana.com/tx/{0}?cluster=devnet",
+            "account_explorer_template": "https://explorer.solana.com/address/{0}?cluster=devnet",
+            "metadata": null,
+            "created_date": "2023-12-27T16:46:50.617075+00:00",
+            "currencies": [
+                {
+                    "asset": "SOL",
+                    "contract_address": null,
+                    "decimals": 9,
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 96.74,
+                    "refuel_amount_in_usd": null,
+                    "group_name": null
+                },
+                {
+                    "asset": "USDC",
+                    "contract_address": "Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr" as any,
+                    "decimals": 6,
+                    "is_native": false,
+                    "precision": 6,
+                    "usd_price": 0.998876,
+                    "refuel_amount_in_usd": null,
+                    "group_name": null
+                }
             ],
-            "created_date": "2023-08-07T15:02:46.100354+00:00"
+            "managed_accounts": [
+                {
+                    "address": "CRWWbf61eLEE1tjkvDP5DaDsX2Ttb3arZ4CcQpwe7g4N" as any
+                }
+            ],
+            "nodes": []
         },
         {
             "display_name": "Brine Testnet",
             "internal_name": "BRINE_TESTNET",
-            "is_featured": false,
-            "type": NetworkType.EVM,
-            "chain_id": "testnet",
-            "refuel_amount_in_usd": 1,
+            "chain_id": '',
+            "is_testnet": true,
+            "type": NetworkType.StarkEx,
             "transaction_explorer_template": "https://testnet.brine.finance/",
             "account_explorer_template": "https://testnet.brine.finance/",
+            "metadata": {},
+            "created_date": "2023-12-27T16:46:50.617075+00:00",
             "currencies": [
                 {
                     "asset": "USDC",
                     "contract_address": null,
                     "decimals": 6,
-                    "is_refuel_enabled": false,
-                    "usd_price": 18,
-                    "availableInDestination": true,
-                    "availableInSource": true,
-                    "is_native": true,
-                    "precision": 18
+                    "is_native": false,
+                    "precision": 6,
+                    "usd_price": 0.998876,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "USDC"
                 }
             ],
-            "metadata": {
-            },
             "managed_accounts": [
                 {
                     "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
                 }
             ],
-            "nodes": [
-
-            ],
-            "created_date": "2023-10-13T14:19:22.933635+00:00"
+            "nodes": []
         },
         {
-            "display_name": "Scroll Sepolia",
-            "internal_name": "SCROLL_SEPOLIA",
-            "is_featured": false,
-            "chain_id": "534351",
+            "display_name": "Immutable zkEVM Testnet",
+            "internal_name": "IMMUTABLEZK_TESTNET",
+            "chain_id": "13473",
+            "is_testnet": true,
             "type": NetworkType.EVM,
-            "refuel_amount_in_usd": 1,
-            "transaction_explorer_template": "https://sepolia.scrollscan.com/tx/{0}",
-            "account_explorer_template": "https://sepolia.scrollscan.com/address/{0}",
+            "transaction_explorer_template": "https://explorer.testnet.immutable.com/tx/{0}",
+            "account_explorer_template": "https://explorer.testnet.immutable.com/address/{0}",
+            "metadata": null,
+            "created_date": "2023-12-27T16:46:50.617075+00:00",
             "currencies": [
                 {
-                    "asset": "USDC",
-                    "contract_address": "0xF92fb426C8560145eF3e62e6eF35106d4D010fa7",
-                    "decimals": 6,
-                    "is_refuel_enabled": true,
-                    "usd_price": 18,
-                    "availableInDestination": true,
-                    "availableInSource": true,
-                    "is_native": true,
-                    "precision": 18
-                },
-                {
-                    "asset": "ETH",
+                    "asset": "tIMX",
                     "contract_address": null,
                     "decimals": 18,
-                    "is_refuel_enabled": false,
-                    "usd_price": 18,
-                    "availableInDestination": true,
-                    "availableInSource": true,
                     "is_native": true,
-                    "precision": 18
+                    "precision": 6,
+                    "usd_price": 2.05,
+                    "refuel_amount_in_usd": null,
+                    "group_name": null
                 }
             ],
-            "metadata": {
-                "multicall3": {
-                    "address": "0xca11bde05977b3631167028862be2a173976ca11",
-                    "blockCreated": 9473
-                }
-            },
             "managed_accounts": [
                 {
                     "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
@@ -767,10 +726,83 @@ export const Settings: LayerSwapSettings = {
             ],
             "nodes": [
                 {
-                    "url": "https://scroll-sepolia.blockpi.network/v1/rpc/public\t"
+                    "url": "https://rpc.testnet.immutable.com/"
+                }
+            ]
+        },
+        {
+            "display_name": "StarkNet Sepolia",
+            "internal_name": "STARKNET_SEPOLIA",
+            "chain_id": "0x534e5f5345504f4c4941",
+            "is_testnet": true,
+            "type": NetworkType.Starknet,
+            "transaction_explorer_template": "https://sepolia.starkscan.co/tx/{0}",
+            "account_explorer_template": "https://sepolia.starkscan.co/contract/{0}",
+            "metadata": {
+                "WatchdogContractAddress": "0x0423074c4bf903478daaa719bb3b1539d23af07db07101d263c78d75e5e6e0a3"
+            },
+            "created_date": "2024-01-10T10:17:29.071644+00:00",
+            "currencies": [
+                {
+                    "asset": "ETH",
+                    "contract_address": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+                    "decimals": 18,
+                    "is_native": false,
+                    "precision": 6,
+                    "usd_price": 2528.64,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "ETH"
+                },
+                {
+                    "asset": "ARUSDC",
+                    "contract_address": "0x04a762673b08014b8e7a969f94cc752a93b8ae209ace1aa01fea14a22f8a865c",
+                    "decimals": 6,
+                    "is_native": false,
+                    "precision": 6,
+                    "usd_price": 1,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "USDC"
                 }
             ],
-            "created_date": "2023-10-24T16:15:51.576769+00:00"
+            "managed_accounts": [
+                {
+                    "address": "0x65A93bf9a33C87346f534A3B6c825e5c9E86A8e612cbA683D0271aAe5062d21"
+                }
+            ],
+            "nodes": []
+        },
+        {
+            "display_name": "Metis Sepolia",
+            "internal_name": "METIS_SEPOLIA",
+            "chain_id": "59901",
+            "is_testnet": true,
+            "type": NetworkType.EVM,
+            "transaction_explorer_template": "https://sepolia.explorer.metisdevops.link/tx/{0}",
+            "account_explorer_template": "https://sepolia.explorer.metisdevops.link/address/{0}\r\n",
+            "metadata": null,
+            "created_date": "2024-01-12T15:15:58.168996+00:00",
+            "currencies": [
+                {
+                    "asset": "TMETIS",
+                    "contract_address": null,
+                    "decimals": 18,
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 2542.81,
+                    "refuel_amount_in_usd": null,
+                    "group_name": null
+                }
+            ],
+            "managed_accounts": [
+                {
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                }
+            ],
+            "nodes": [
+                {
+                    "url": "https://sepolia.rpc.metisdevops.link/"
+                }
+            ]
         }
     ],
 }

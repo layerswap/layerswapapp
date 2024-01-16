@@ -14,28 +14,28 @@ export class CryptoNetwork {
     transaction_explorer_template: string;
     account_explorer_template: string;
     currencies: NetworkCurrency[];
-    refuel_amount_in_usd: number;
     chain_id: string;
     type: NetworkType;
     created_date: string;
-    is_featured: boolean;
     nodes: NetworkNode[];
     managed_accounts: ManagedAccount[];
     metadata: Metadata | null | undefined;
+    is_testnet?: boolean;
     img_url?: string
 }
 
 export class NetworkCurrency {
     asset: string;
-    is_refuel_enabled: boolean;
-    is_native: boolean
     //TODO may be plain string
     contract_address: `0x${string}` | null | undefined;
     decimals: number;
+    is_native: boolean
     precision: number;
     usd_price: number;
-    availableInSource: boolean;
-    availableInDestination: boolean;
+    refuel_amount_in_usd: number | null;
+    group_name?: string | null;
+    availableInSource?: boolean;
+    availableInDestination?: boolean;
 }
 export class NetworkNode {
     url: string;
@@ -54,6 +54,7 @@ export class Metadata {
     ensUniversalResolver?: {
         address: `0x${string}`
     }
+    GasPriceOracleContract?: `0x${string}`
     WatchdogContractAddress?: `0x${string}`
     L1Network?: string
 }
