@@ -37,7 +37,7 @@ export class SelectMenuItemGroup {
 export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading }: CommandSelectProps) {
     const { isDesktop } = useWindowDimensions();
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
-console.log(isLoading,"isloa")
+
     return (
         <Modal height='full' show={show} setShow={setShow}>
             {show ?
