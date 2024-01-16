@@ -12,6 +12,7 @@ type CommandSelectWrapperProps = {
     searchHint: string;
     disabled: boolean;
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
+    isLoading: boolean;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -21,7 +22,8 @@ export default function CommandSelectWrapper<T>({
     placeholder,
     searchHint,
     values,
-    valueGrouper
+    valueGrouper,
+    isLoading
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -85,6 +87,7 @@ export default function CommandSelectWrapper<T>({
                 searchHint={searchHint}
                 valueGrouper={valueGrouper}
                 values={values}
+                isLoading={isLoading}
             />
         </>
     )
