@@ -15,12 +15,14 @@ import Modal from '../../modal/modal';
 import { Info } from 'lucide-react';
 import SpinIcon from '../../icons/spinIcon';
 import { LayerDisabledReason } from '../Popover/PopoverSelect';
+import { useSettingsState } from '../../../context/settings';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
     setShow: (value: boolean) => void;
     searchHint: string;
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
+    isLoading: boolean;
 }
 
 export class SelectMenuItemGroup {
@@ -32,9 +34,10 @@ export class SelectMenuItemGroup {
     items: ISelectMenuItem[];
 }
 
-export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper }: CommandSelectProps) {
+export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading }: CommandSelectProps) {
     const { isDesktop } = useWindowDimensions();
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
+
     return (
         <Modal height='full' show={show} setShow={setShow}>
             {show ?
@@ -46,7 +49,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                             <Info className='h-3 w-3 inline-block mb-0.5' /><span>&nbsp;You&apos;re accessing Layerswap from a partner&apos;s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.</span>
                         </div>
                     }
-                    {values ?
+                    {!isLoading ?
                         <CommandList>
                             <CommandEmpty>No results found.</CommandEmpty>
                             {groups.filter(g => g.items?.length > 0).map((group) => {

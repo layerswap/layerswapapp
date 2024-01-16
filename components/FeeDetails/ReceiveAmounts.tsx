@@ -1,9 +1,9 @@
 import { FC } from "react";
-import { Layer } from "../../../Models/Layer";
-import { GetDefaultAsset } from "../../../helpers/settingsHelper";
-import { CaluclateRefuelAmount } from "../../../lib/fees";
-import { truncateDecimals } from "../../utils/RoundDecimals";
-import { NetworkCurrency } from "../../../Models/CryptoNetwork";
+import { Layer } from "../../Models/Layer";
+import { GetDefaultAsset } from "../../helpers/settingsHelper";
+import { CaluclateRefuelAmount } from "../../lib/fees";
+import { truncateDecimals } from "../utils/RoundDecimals";
+import { NetworkCurrency } from "../../Models/CryptoNetwork";
 
 type WillReceiveProps = {
     receive_amount?: number;
@@ -13,7 +13,17 @@ type WillReceiveProps = {
 }
 export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency, to, refuel }) => {
     const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(currency?.precision) || "")
+    const refuelCalculations = CaluclateRefuelAmount({
+        refuelEnabled: refuel,
+        currency,
+        to
+    })
+    const { refuelAmountInSelectedCurrency } = refuelCalculations
     const destinationNetworkCurrency = (to && currency) ? GetDefaultAsset(to, currency.asset) : null
+
+    const calculatedReceiveAmount = refuel ?
+        parseFloat(receive_amount && (receive_amount - refuelAmountInSelectedCurrency)?.toFixed(currency?.precision) || "")
+        : parsedReceiveAmount
 
     return <>
         <span className="md:font-semibold text-sm md:text-base text-secondary-text leading-8 md:leading-8 flex-1">
@@ -22,10 +32,10 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency,
         <div className='flex items-center space-x-2'>
             <span className="text-sm md:text-base">
                 {
-                    parsedReceiveAmount > 0 ?
+                    calculatedReceiveAmount > 0 ?
                         <div className="font-semibold md:font-bold text-right leading-4">
                             <p>
-                                <>{parsedReceiveAmount}</>
+                                <>{calculatedReceiveAmount}</>
                                 &nbsp;
                                 <span>
                                     {destinationNetworkCurrency?.asset}

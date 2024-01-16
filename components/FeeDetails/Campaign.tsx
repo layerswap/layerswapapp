@@ -1,14 +1,14 @@
 import { FC } from "react"
-import { Layer } from "../../../Models/Layer"
-import LayerSwapApiClient, { Campaign } from "../../../lib/layerSwapApiClient"
+import { Layer } from "../../Models/Layer"
+import LayerSwapApiClient, { Campaign } from "../../lib/layerSwapApiClient"
 import useSWR from "swr"
-import { ApiResponse } from "../../../Models/ApiResponse"
-import { useSettingsState } from "../../../context/settings"
-import { truncateDecimals } from "../../utils/RoundDecimals"
+import { ApiResponse } from "../../Models/ApiResponse"
+import { useSettingsState } from "../../context/settings"
+import { truncateDecimals } from "../utils/RoundDecimals"
 import { motion } from "framer-motion"
-import ClickTooltip from "../../Tooltips/ClickTooltip"
+import ClickTooltip from "../Tooltips/ClickTooltip"
 import Image from 'next/image';
-import { NetworkCurrency } from "../../../Models/CryptoNetwork"
+import { NetworkCurrency } from "../../Models/CryptoNetwork"
 
 type CampaignProps = {
     destination: Layer,

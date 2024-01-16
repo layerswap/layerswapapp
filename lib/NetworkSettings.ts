@@ -69,6 +69,7 @@ export default class NetworkSettings {
     OrderInSource?: number;
     AccountExplorerTemplate?: string;
     GasCalculationType?: GasCalculation
+    isFeatured?: boolean
 
     public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean, crossChain: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
@@ -99,6 +100,7 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZksyncEraMainnet] = {
             ChainId: 324,
+            isFeatured: true,
             DefaultPriorityFee: 0,
             BaseFeeMultiplier: 1.7
         };
@@ -119,6 +121,7 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumMainnet] = {
             ChainId: 42161,
+            isFeatured: true,
             AccountExplorerTemplate: 'https://arbiscan.io/address/{0}',
             DefaultPriorityFee: 0,
             BaseFeeMultiplier: 1.7
@@ -146,19 +149,22 @@ export default class NetworkSettings {
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OptimismMainnet] = {
             ChainId: 10,
+            isFeatured: true,
             AccountExplorerTemplate: 'https://optimistic.etherscan.io/address/{0}',
             GasCalculationType: GasCalculation.OptimismType,
             BaseFeeMultiplier: 1.7,
             DefaultPriorityFee: 1
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OptimismGoerli] = {
-            GasCalculationType: GasCalculation.OptimismType
+            GasCalculationType: GasCalculation.OptimismType,
+            isFeatured: true
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.AstarMainnet] = {
             ChainId: 592,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumMainnet] = {
             ChainId: 1,
+            isFeatured: true,
             AccountExplorerTemplate: 'https://etherscan.io/address/{0}',
             DefaultPriorityFee: 0.3,
             BaseFeeMultiplier: 1.7
@@ -186,11 +192,15 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetMainnet] = {
             AccountExplorerTemplate: 'https://starkscan.co/contract/{0}',
             ChainId: "0x534e5f4d41494e",
+            isFeatured: true,
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetGoerli] = {
             AccountExplorerTemplate: 'https://goerli.voyager.online/contract/{0}',
             ChainId: "0x534e5f474f45524c49"
         };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.StarkNetSepolia] = {
+            isFeatured: true,
+        }
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.CronosMainnet] = {
             AccountExplorerTemplate: 'https://cronoscan.com/address/{0}'
         };

@@ -10,7 +10,6 @@ export type Layer = {
     metadata: Metadata | null | undefined;
     assets: NetworkCurrency[];
     chain_id: string | null | undefined;
-    refuel_amount_in_usd: number
     transaction_explorer_template: string
     account_explorer_template: string,
     type: NetworkType,

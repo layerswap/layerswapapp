@@ -139,6 +139,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     value={value}
                     values={menuItems}
                     searchHint={searchHint}
+                    isLoading={isLoading}
                 />
             </div>
             <div className="col-span-3 md:col-span-2 w-full ml-2">
