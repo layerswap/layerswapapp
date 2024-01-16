@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useMemo } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
@@ -14,8 +14,12 @@ import { NetworkCurrency } from "../../Models/CryptoNetwork";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import useSWR from "swr";
 import { ApiResponse } from "../../Models/ApiResponse";
-import useWallet from "../../hooks/useWallet";
 import { Balance } from "../../Models/Balance";
+import dynamic from "next/dynamic";
+
+const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
+    loading: () => <></>,
+});
 
 const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
@@ -26,20 +30,11 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const { resolveImgSrc } = useSettingsState();
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
-    const { balances, isBalanceLoading } = useBalancesState()
+    const { balances } = useBalancesState()
+    const [walletAddress, setWalletAddress] = useState<string>()
     const lockedCurrency = query?.lockAsset ? from?.assets?.find(c => c?.asset?.toUpperCase() === (query?.asset)?.toUpperCase()) : undefined
     const assets = direction === 'from' ? from?.assets : to?.assets;
-    const { getAutofillProvider: getProvider } = useWallet()
-    const provider = useMemo(() => {
-        return from && getProvider(from)
-    }, [from, getProvider])
 
-    const wallet = provider?.getConnectedWallet()
-    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
-    const destinationBalance = wallet && balances[wallet.address]?.find(b => b?.network === to?.internal_name && b?.token === toCurrency?.asset)
-
-    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
-    const destinationBalanceAmount = destinationBalance?.amount && truncateDecimals(destinationBalance?.amount, toCurrency?.precision)
     const apiClient = new LayerSwapApiClient()
     const version = LayerSwapApiClient.apiVersion
 
@@ -73,9 +68,8 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
         lockedCurrency,
         direction,
-        balances[wallet?.address || '']
+        balances[walletAddress || '']
     )
-
     const currencyAsset = direction === 'from' ? fromCurrency?.asset : toCurrency?.asset;
     useEffect(() => {
         let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset)
@@ -125,23 +119,9 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
-    const balanceAmount = direction === 'from' ? walletBalanceAmount : destinationBalanceAmount
-
     return (
         <div className="relative">
-            {(direction === 'from' ? (from && fromCurrency) : (to && toCurrency)) && balanceAmount != undefined && !isNaN(balanceAmount) &&
-                <div className="text-xs text-right absolute right-0 -top-7">
-                    <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
-                        <div>
-                            <span>Balance:&nbsp;</span>
-                            {isBalanceLoading ?
-                                <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                                :
-                                <span>{balanceAmount}</span>}
-                        </div>
-                    </div>
-                </div>
-            }
+            <BalanceComponent values={values} direction={direction} onLoad={(v) => setWalletAddress(v)} />
             <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />
         </div>
     )
@@ -165,7 +145,7 @@ export function GenerateCurrencyMenuItems(currencies: NetworkCurrency[], resolve
     return currencies?.map(c => {
         const currency = c
         const displayName = lockedCurrency?.asset ?? currency.asset;
-        const balance = balances?.find(b => b?.token === c?.asset && from?.internal_name === b.network)
+        const balance = balances?.find(b => b?.token === c?.asset && (direction === 'from' ? from : to)?.internal_name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
 
         const res: SelectMenuItem<NetworkCurrency> = {
