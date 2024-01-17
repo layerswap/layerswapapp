@@ -25,7 +25,6 @@ const ManualTransfer: FC = () => {
     const layerswapApiClient = new LayerSwapApiClient()
     const {
         data: generatedDeposit,
-        isLoading
     } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`,
         layerswapApiClient.fetcher,
         {
@@ -203,7 +202,6 @@ const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = 
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
 
     const exchangeAssets = source_exchange?.assets?.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network?.status !== "inactive" && a.network?.currencies.find(c => c.asset === a.asset)?.is_deposit_enabled)
-    console.log(source_exchange)
     const defaultSourceNetwork = exchangeAssets?.find(sn => sn.is_default) || exchangeAssets?.[0]
 
     const handleChangeSelectedNetwork = useCallback((n: string) => {

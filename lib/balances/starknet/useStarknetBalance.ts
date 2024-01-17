@@ -2,6 +2,9 @@ import KnownInternalNames from "../../knownIds"
 import Erc20Abi from '../../abis/ERC20.json'
 import formatAmount from "../../formatAmount";
 import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../Models/Balance";
+import InternalApiClient from "../../internalApiClient";
+import { EstimateFee } from "starknet";
+import { ApiResponse } from "../../../Models/ApiResponse";
 
 export default function useStarknetBalance(): BalanceProvider {
     const name = 'starknet'
@@ -60,49 +63,29 @@ export default function useStarknetBalance(): BalanceProvider {
 
     const getGas = async ({ layer, currency, wallet }: GasProps) => {
 
-        const { CallData,
-            cairo,
-            Account,
-            SequencerProvider
-        } = await import("starknet");
+        if (layer.isExchange) return
 
-        const { BigNumber } = await import("ethers");
-
-        if (layer.isExchange === true || !layer.assets) return
-
-        const amountToWithdraw = BigNumber.from(1);
-        const contract_address = layer.assets.find(a => a.asset === currency.asset)?.contract_address
+        const nodeUrl = layer.nodes[0].url
         const asset = layer.assets.find(a => a.asset === currency.asset)
-        const FEE_ESTIMATE_MULTIPLIER = BigInt(4);
+        const nativeAsset = layer.assets.find(a => a.asset === layer.native_currency)
+        const contract_address = asset?.contract_address
+        const recipient = layer.assets[0].network?.managed_accounts[0].address
 
-        if (!contract_address || !asset || !wallet) return
+        if (!asset || !nativeAsset) return
 
-        const provider = new SequencerProvider({
-            baseUrl: 'https://alpha-mainnet.starknet.io',
-        });
+        const client = new InternalApiClient()
 
-        const account = new Account(provider, wallet.address, wallet.metadata?.starknetAccount?.account.signer.pk);
+        const feeEstimateResponse: ApiResponse<EstimateFee> = await client.GetStarknetFee(`nodeUrl=${nodeUrl}&walletAddress=${wallet?.address}&contract_address=${contract_address}&recipient=${recipient}`)
 
-        let transferCall = {
-            contractAddress: contract_address.toLowerCase(),
-            entrypoint: "transfer",
-            calldata: CallData.compile(
-                {
-                    recipient: wallet.address,
-                    amount: cairo.uint256(amountToWithdraw.toHexString())
-                })
-        };
-
-        let feeEstimateResponse = await account.estimateFee(transferCall, { skipValidate: true });
-        if (!feeEstimateResponse?.suggestedMaxFee) {
+        if (!feeEstimateResponse?.data?.suggestedMaxFee) {
             throw new Error(`Couldn't get fee estimation for the transfer. Response: ${JSON.stringify(feeEstimateResponse)}`);
         };
 
-        const feeInWei = (feeEstimateResponse.suggestedMaxFee * FEE_ESTIMATE_MULTIPLIER).toString();
+        const feeInWei = feeEstimateResponse.data.suggestedMaxFee.toString();
 
         const gas = {
             token: currency.asset,
-            gas: formatAmount(feeInWei, asset.decimals),
+            gas: formatAmount(feeInWei, nativeAsset.decimals),
             request_time: new Date().toJSON()
         }
 
