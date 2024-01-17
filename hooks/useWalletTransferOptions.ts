@@ -2,14 +2,14 @@ import { useSettingsState } from "../context/settings"
 import { useSwapDataState } from "../context/swap"
 import { NetworkType } from "../Models/CryptoNetwork"
 import useWallet from "./useWallet"
-import { useEffect, useMemo, useState } from "react"
-import { ContractWallet, useContractWalletsStore } from "../stores/contractWalletsStore"
+import { useEffect, useMemo } from "react"
+import { useContractWalletsStore } from "../stores/contractWalletsStore"
+import resolveChain from "../lib/resolveChain"
+import { createPublicClient, http } from "viem"
 
 export default function useWalletTransferOptions() {
-
     const { swap } = useSwapDataState()
-    const { checkContractWallet, contractWallets } = useContractWalletsStore()
-    const [isContractWallet, setIsContractWallet] = useState<ContractWallet | null>()
+    const { addContractWallet, getContractWallet, updateContractWallet } = useContractWalletsStore()
     const { getWithdrawalProvider: getProvider } = useWallet()
     const { layers, networks } = useSettingsState()
     const source_layer = layers.find(n => n.internal_name === swap?.source_network)
@@ -19,14 +19,52 @@ export default function useWalletTransferOptions() {
     }, [source_layer, getProvider])
 
     const wallet = provider?.getConnectedWallet()
-
     useEffect(() => {
-        setIsContractWallet(contractWallets.find(w => w.address === wallet?.address && w.network === source_layer?.internal_name) ?? checkContractWallet(wallet?.address, source_network))
-    }, [])
+        if (wallet?.address == undefined || source_layer == undefined) return;
+        let contractWallet = getContractWallet(wallet.address, source_layer.internal_name);
 
+        if (!contractWallet) {
+            // add before checking to check only once
+            addContractWallet(wallet.address, source_layer.internal_name);
+            checkContractWallet(wallet.address, source_network).then(
+                result => {
+                    updateContractWallet(wallet.address, source_layer.internal_name, result)
+                }
+            )
+        }
+
+    }, [wallet?.address])
+
+    let walletTypeResolved = getContractWallet(wallet?.address, source_layer?.internal_name) ?? { isContract: false, ready: true, key: "" };
     const canDoSweepless = source_layer?.isExchange == false
-        && ((source_layer.type == NetworkType.EVM && !(isContractWallet?.network === source_layer.internal_name && isContractWallet?.isContract)) || source_layer.type == NetworkType.Starknet)
+        && ((source_layer.type == NetworkType.EVM
+            && (walletTypeResolved?.ready && !walletTypeResolved?.isContract))
+            || source_layer.type == NetworkType.Starknet)
         || wallet?.address?.toLowerCase() === swap?.destination_address.toLowerCase()
 
-    return { canDoSweepless, isContractWallet }
+    return { canDoSweepless, isContractWallet: walletTypeResolved }
+}
+
+let checkContractWallet = async (address, network) => {
+    if (!network || !address) throw new Error('Arguments are required')
+
+    if (network.type != NetworkType.EVM) {
+        return false;
+    }
+    else {
+        const chain = resolveChain(network)
+        const publicClient = createPublicClient({
+            chain,
+            transport: http()
+        })
+        try {
+            const bytecode = await publicClient.getBytecode({
+                address: address as `0x${string}`
+            });
+
+            return !!bytecode;
+        } catch (error) {
+            console.log(error)
+        }
+    }
 }
