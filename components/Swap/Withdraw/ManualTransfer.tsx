@@ -24,7 +24,6 @@ const ManualTransfer: FC = () => {
     const layerswapApiClient = new LayerSwapApiClient()
     const {
         data: generatedDeposit,
-        isLoading
     } = useSWR<ApiResponse<DepositAddress>>(`/networks/${source_network_internal_name}/deposit_addresses`,
         layerswapApiClient.fetcher,
         {
