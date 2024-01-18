@@ -33,14 +33,14 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
                     <>
                         {isDesktop &&
                             <ReactPortal wrapperId={"widget_root"}>
-                                <Leaflet position="absolute" height={height ?? 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
+                                <Leaflet position="absolute" height={height ?? 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className} key="backDrop" mobKey="mobBackDrop">
                                     {children}
                                 </Leaflet>
                             </ReactPortal>
                         }
                         {
                             isMobile &&
-                            <Leaflet position="fixed" height={height == 'full' ? '80%' : height == 'fit' ? 'fit' : 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
+                            <Leaflet position="fixed" height={height == 'full' ? '80%' : height == 'fit' ? 'fit' : 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className} key="backDrop" mobKey="mobBackDrop">
                                 {children}
                             </Leaflet>
                         }

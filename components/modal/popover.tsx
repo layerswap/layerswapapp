@@ -34,7 +34,7 @@ export default function Popover({
             <AnimatePresence>
                 <div>
                     {opener}
-                    {show && <Leaflet position="fixed" height="fit" title={header} setShow={setShow} show={show}>{children}</Leaflet>}
+                    {show && <Leaflet position="fixed" height="fit" title={header} setShow={setShow} show={show} key="backDropPop" mobKey="mobBackDropPop">{children}</Leaflet>}
                 </div>
             </AnimatePresence>
         </>
