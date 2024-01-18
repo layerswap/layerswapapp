@@ -33,15 +33,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 class StarknetFeeProps {
     nodeUrl?: string = "";
     walletAddress?: string = "";
-    contract_address?: string = "";
-    recipient?: string = ""
+    contractAddress?: string = "";
+    recipient?: string = "";
+    watchDogContract?: string = ""
 }
 
-const getStarknetFee = async ({ nodeUrl, contract_address, recipient }: StarknetFeeProps): Promise<EstimateFee | undefined> => {
+const getStarknetFee = async ({ nodeUrl, contractAddress, recipient, watchDogContract }: StarknetFeeProps): Promise<EstimateFee | undefined> => {
 
     const { BigNumber } = await import("ethers");
-
-    if (!nodeUrl || !contract_address || !recipient) return
+debugger
+    if (!nodeUrl || !contractAddress || !recipient || !watchDogContract) return
 
     const amountToWithdraw = BigNumber.from(1);
 
@@ -50,11 +51,11 @@ const getStarknetFee = async ({ nodeUrl, contract_address, recipient }: Starknet
     });
 
     const configs = JSON.parse(process.env.NEXT_PUBLIC_STARKNET_FEE_CONFIGS || '')
-    
+
     const account = new Account(provider, configs.address, configs.private_key);
 
-    let transferCall = {
-        contractAddress: contract_address.toLowerCase(),
+    const transferCall = {
+        contractAddress: contractAddress.toLowerCase(),
         entrypoint: "transfer",
         calldata: CallData.compile(
             {
@@ -63,7 +64,15 @@ const getStarknetFee = async ({ nodeUrl, contract_address, recipient }: Starknet
             })
     };
 
-    const feeEstimateResponse = await account.estimateFee(transferCall);
+    const watch = {
+        contractAddress: watchDogContract,
+        entrypoint: "watch",
+        calldata: [
+            "69420"
+        ]
+    }
+
+    const feeEstimateResponse = await account.estimateFee([transferCall, watch]);
 
     return feeEstimateResponse;
 }

@@ -75,7 +75,7 @@ export default function useStarknetBalance(): BalanceProvider {
 
         const client = new InternalApiClient()
 
-        const feeEstimateResponse: ApiResponse<EstimateFee> = await client.GetStarknetFee(`nodeUrl=${nodeUrl}&walletAddress=${wallet?.address}&contract_address=${contract_address}&recipient=${recipient}`)
+        const feeEstimateResponse: ApiResponse<EstimateFee> = await client.GetStarknetFee(`nodeUrl=${nodeUrl}&walletAddress=${wallet?.address}&contractAddress=${contract_address}&recipient=${recipient}&watchDogContract=${layer.metadata?.WatchdogContractAddress}`)
 
         if (!feeEstimateResponse?.data?.suggestedMaxFee) {
             throw new Error(`Couldn't get fee estimation for the transfer. Response: ${JSON.stringify(feeEstimateResponse)}`);
