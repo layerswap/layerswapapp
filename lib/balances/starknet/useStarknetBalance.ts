@@ -5,6 +5,7 @@ import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../Model
 import InternalApiClient from "../../internalApiClient";
 import { EstimateFee } from "starknet";
 import { ApiResponse } from "../../../Models/ApiResponse";
+import { useRouter } from "next/router";
 
 export default function useStarknetBalance(): BalanceProvider {
 
@@ -12,6 +13,7 @@ export default function useStarknetBalance(): BalanceProvider {
         KnownInternalNames.Networks.StarkNetMainnet,
         KnownInternalNames.Networks.StarkNetGoerli
     ]
+    const router = useRouter()
 
     const getBalance = async ({ layer, address }: BalanceProps) => {
         const {
@@ -73,8 +75,8 @@ export default function useStarknetBalance(): BalanceProvider {
         if (!asset || !nativeAsset) return
 
         const client = new InternalApiClient()
-
-        const feeEstimateResponse: ApiResponse<EstimateFee> = await client.GetStarknetFee(`nodeUrl=${nodeUrl}&walletAddress=${wallet?.address}&contractAddress=${contract_address}&recipient=${recipient}&watchDogContract=${layer.metadata?.WatchdogContractAddress}`)
+        const basePath = router.basePath ?? '/'
+        const feeEstimateResponse: ApiResponse<EstimateFee> = await client.GetStarknetFee(`nodeUrl=${nodeUrl}&walletAddress=${wallet?.address}&contractAddress=${contract_address}&recipient=${recipient}&watchDogContract=${layer.metadata?.WatchdogContractAddress}`, basePath)
 
         if (!feeEstimateResponse?.data?.suggestedMaxFee) {
             throw new Error(`Couldn't get fee estimation for the transfer. Response: ${JSON.stringify(feeEstimateResponse)}`);

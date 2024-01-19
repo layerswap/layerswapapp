@@ -27,6 +27,7 @@ import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import ResizablePanel from "../../ResizablePanel";
+import getSecondsToTomorrow from "../../utils/getSecondsToTomorrow";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -111,13 +112,18 @@ export default function Form() {
             }
             else if (data?.code === LSAPIKnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.to) {
                 setNetworkToConnect({
-                    DisplayName: values.to?.display_name,
+                    DisplayName: values.to.display_name,
                     AppURL: data.message
                 })
                 setShowConnectNetworkModal(true);
+            } else if (data.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
+                const remainingTimeInHours = getSecondsToTomorrow() / 3600
+                const remainingTimeInMinutes = getSecondsToTomorrow() / 60
+                const remainingTime = remainingTimeInHours >= 1 ? `${remainingTimeInHours.toFixed()} hours` : `${remainingTimeInMinutes.toFixed()} minutes`
+                toast.error(`Daily limit of ${values.currency?.asset} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.currency?.asset} or retry in ${remainingTime}.`)
             }
             else {
-                toast.error(error.message)
+                toast.error(data.message || error.message)
             }
         }
     }, [createSwap, query, partner, router, updateAuthData, setUserType, swap])
