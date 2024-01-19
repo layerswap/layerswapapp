@@ -11,6 +11,7 @@ export default function Popover({
     setShow,
     isNested,
     header,
+    popoverId,
 }: {
     children: ReactNode;
     opener: ReactNode | string;
@@ -19,6 +20,7 @@ export default function Popover({
     isNested?: boolean;
     setShow: Dispatch<SetStateAction<boolean>>;
     header?: ReactNode;
+    popoverId: string;
 }) {
     const { isMobile } = useWindowDimensions();
 
@@ -32,7 +34,7 @@ export default function Popover({
     return (
         <>
             <AnimatePresence>
-                <div>
+                <div key={popoverId}>
                     {opener}
                     {show && <Leaflet position="fixed" height="fit" title={header} setShow={setShow} show={show}>{children}</Leaflet>}
                 </div>

@@ -226,6 +226,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                     height="fit"
                                     show={showAddressModal} setShow={setShowAddressModal}
                                     className="min-h-[70%]"
+                                    modalId="address"
                                 >
                                     <Address
                                         close={() => setShowAddressModal(false)}

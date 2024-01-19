@@ -20,6 +20,7 @@ import TonConnectProvider from "./TonConnectProvider";
 import * as Sentry from "@sentry/nextjs";
 import RainbowKit from "./RainbowKit";
 import Solana from "./SolanaProvider";
+import { IsExtensionError } from "../helpers/errorHelper";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -97,7 +98,8 @@ export default function Layout({ children, settings, themeData }: Props) {
     Sentry.configureScope((scope) => {
       scope.setSpan(transaction);
     });
-    if (process.env.NEXT_PUBLIC_VERCEL_ENV && !error.stack.includes("chrome-extension")) {
+    const extension_error = IsExtensionError(error)
+    if (process.env.NEXT_PUBLIC_VERCEL_ENV && !extension_error) {
       SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
     }
     Sentry.captureException(error, info);

@@ -141,7 +141,7 @@ const Component: FC<Props> = ({ campaign }) => {
                 }
             </div >
         </div >
-        <Modal height="full" header='Leaderboard' show={openTopModal} setShow={setOpenTopModal} >
+        <Modal height="full" header='Leaderboard' show={openTopModal} setShow={setOpenTopModal} modalId="leaderBoard">
             <div className="bg-secondary-700 border border-secondary-700 mt-2 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg text-secondary-text">
                 <div className="p-3">
                     <div className="space-y-6">

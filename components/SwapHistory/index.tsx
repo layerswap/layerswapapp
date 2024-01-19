@@ -287,7 +287,7 @@ function TransactionsHistory() {
                       </button>
                     }
                   </div>
-                  <Modal height="fit" show={openSwapDetailsModal} setShow={setOpenSwapDetailsModal} header="Swap details">
+                  <Modal height="fit" show={openSwapDetailsModal} setShow={setOpenSwapDetailsModal} header="Swap details" modalId="swapHistory">
                     <div className="mt-2">
                       {
                         selectedSwap && <SwapDetails id={selectedSwap?.id} />

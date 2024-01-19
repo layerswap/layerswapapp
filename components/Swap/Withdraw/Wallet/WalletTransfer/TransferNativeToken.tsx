@@ -148,6 +148,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
             height="80%"
             show={openChangeAmount}
             setShow={setOpenChangeAmount}
+            modalId="transferNative"
         >
             <MessageComponent>
                 <div className="space-y-4">
