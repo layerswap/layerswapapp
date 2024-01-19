@@ -36,12 +36,6 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
     const solanaNode = source_network?.nodes[0].url;
 
-    const handleTransaction = async (swapId: string, publishedTransaction: TransactionResponse, txHash: string) => {
-        if (publishedTransaction?.meta?.err) {
-
-        }
-    };
-
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
@@ -137,7 +131,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     {
                         !wallet &&
                         <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Authorize to Send on Solana
+                            Connect
                         </SubmitButton>
                     }
                     {
