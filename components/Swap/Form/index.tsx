@@ -139,14 +139,14 @@ export default function Form() {
                 {
                     swap &&
                     !showSwapModal &&
-                    <PendingSwap onClick={() => setShowSwapModal(true)} />
+                    <PendingSwap key="pendingSwap" onClick={() => setShowSwapModal(true)} />
                 }
             </AnimatePresence>
         </div>
-        <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
+        <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`} modalId="showNetwork">
             {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
         </Modal>
-        <Modal height='fit' show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`}>
+        <Modal height='fit' show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`} modalId="showSwap">
             <ResizablePanel>
                 <SwapDetails type="contained" />
             </ResizablePanel>

@@ -17,11 +17,9 @@ export interface LeafletProps {
     className?: string;
     height?: LeafletHeight;
     position: LeafletPosition;
-    key: string;
-    mobKey: string;
 }
 // TODO handle overflow when height is set to 'fit'
-export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, description, position, key, mobKey }, topmostRef) {
+export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, description, position }, topmostRef) {
     const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 40 };
@@ -69,7 +67,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     return (
         <div ref={topmostRef}>
             <motion.div
-                key={key}
+                key="backdrop"
                 className={`${position} inset-0 z-20 bg-black/50 block`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -77,7 +75,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 onClick={handleCloseModal}
             />
             <motion.div
-                key={mobKey}
+                key="mobile-modal"
                 ref={mobileModalRef}
                 className={`${wrapperHeightClass} max-h-full overflow-y-auto group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'rounded-t-2xl border-t border-secondary-500' : ''}  bg-secondary-900 ${className} shadow-lg`}
                 initial={{ y: "20%" }}

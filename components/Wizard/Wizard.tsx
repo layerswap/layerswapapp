@@ -5,9 +5,10 @@ import HeaderWithMenu from '../HeaderWithMenu';
 
 type Props = {
    children: JSX.Element | JSX.Element[];
+   wizardId: string;
 }
 
-const Wizard: FC<Props> = ({ children }) => {
+const Wizard: FC<Props> = ({ children, wizardId }) => {
 
    const wrapper = useRef<HTMLDivElement>(null);
 
@@ -42,7 +43,7 @@ const Wizard: FC<Props> = ({ children }) => {
             <div className="flex items-start"
                ref={wrapper}>
                <AnimatePresence initial={false} custom={{ direction: moving === "forward" ? 1 : -1, width: wrapperWidth }}>
-                  <div className={`flex flex-nowrap`}>
+                  <div className={`flex flex-nowrap`} key={wizardId}>
                      {children}
                   </div>
                </AnimatePresence>

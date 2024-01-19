@@ -90,6 +90,7 @@ const TransferElements: FC = () => {
                 show={showCoinbaseConnectModal}
                 setShow={setShowCoinbaseConnectModal}
                 header={`Connect your Coinbase account`}
+                modalId='authorize'
             >
                 <Authorize
                     hideHeader
@@ -102,6 +103,7 @@ const TransferElements: FC = () => {
                 height='90%'
                 show={openCoinbase2FA}
                 setShow={setOpenCoinbase2FA}
+                modalId='coinbase2FA'
             >
                 <Coinbase2FA
                     onSuccess={handleSuccess}

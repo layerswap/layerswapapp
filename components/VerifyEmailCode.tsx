@@ -62,7 +62,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
     const timerCountdown = userLockedOut ? 600 : 60
 
     return (<>
-        <Modal height='full' show={showDocModal} setShow={setShowDocModal} >
+        <Modal height='full' show={showDocModal} setShow={setShowDocModal} modalId='verifyEmail'>
             {modalUrl ? <DocIframe onConfirm={() => close()} URl={modalUrl} /> : <></>}
         </Modal>
         <Formik

@@ -20,7 +20,7 @@ function GuestCard() {
 
     return (
         <div className='mt-10'>
-            <Wizard>
+            <Wizard wizardId='guestCard'>
                 <WizardItem StepName={AuthStep.Email} fitHeight>
                     <div className={noToolBar ? `p-6 border border-secondary-500 rounded-md` : "pt-6"}>
                         <EmailStep OnNext={GoToCodeStep} disclosureLogin />
