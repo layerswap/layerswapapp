@@ -29,20 +29,36 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
 
     return (
         <>
-            {show && isDesktop && (
+            {isDesktop && (
                 <AnimatePresence>
-                    <ReactPortal wrapperId={"widget_root"} key={modalId}>
-                        <Leaflet position="absolute" height={height ?? 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
-                            {children}
-                        </Leaflet>
-                    </ReactPortal>
+                    {show &&
+                        <ReactPortal
+                            wrapperId="widget_root"
+                            key={modalId}>
+                            <Leaflet position="absolute" height={height ?? 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
+                                {children}
+                            </Leaflet>
+                        </ReactPortal>
+                    }
+
                 </AnimatePresence>
             )}
-            {show && isMobile && (
+            {isMobile && (
                 <AnimatePresence>
-                    <Leaflet position="fixed" height={height == 'full' ? '80%' : height == 'fit' ? 'fit' : 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className} key={modalId}>
-                        {children}
-                    </Leaflet>
+                    {show &&
+                        <Leaflet
+                            position="fixed"
+                            height={height == 'full' ? '80%' : height == 'fit' ? 'fit' : 'full'}
+                            ref={mobileModalRef}
+                            show={show}
+                            setShow={setShow}
+                            title={header}
+                            description={subHeader}
+                            className={className}
+                            key={modalId}>
+                            {children}
+                        </Leaflet>
+                    }
                 </AnimatePresence>
             )}
         </>
