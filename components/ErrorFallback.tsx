@@ -5,10 +5,11 @@ import ContactSupport from "./ContactSupport"
 import MessageComponent from "./MessageComponent"
 import Navbar from "./navbar"
 import GoHomeButton from "./utils/GoHome"
+import { IsExtensionError } from "../helpers/errorHelper";
 
 export default function ErrorFallback({ error, resetErrorBoundary }) {
 
-    const extension_error = error.stack.includes("chrome-extension", "app://")
+    const extension_error = IsExtensionError(error)
 
     return (
         <div className="styled-scroll">
