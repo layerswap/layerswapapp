@@ -4,7 +4,6 @@ import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../
 import ZkSyncLiteRPCClient from "./zksyncLiteRpcClient";
 
 export default function useZkSyncBalance(): BalanceProvider {
-    const name = 'zksync_lite'
     const supportedNetworks = [
         KnownInternalNames.Networks.ZksyncMainnet
     ]
@@ -67,7 +66,6 @@ export default function useZkSyncBalance(): BalanceProvider {
     return {
         getBalance,
         getGas,
-        name,
         supportedNetworks
     }
 }

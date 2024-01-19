@@ -4,7 +4,6 @@ import axios from "axios";
 import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../Models/Balance";
 
 export default function useLoopringBalance(): BalanceProvider {
-    const name = 'loopring';
     const supportedNetworks = [
         KnownInternalNames.Networks.LoopringMainnet,
         KnownInternalNames.Networks.LoopringGoerli
@@ -77,7 +76,6 @@ export default function useLoopringBalance(): BalanceProvider {
     return {
         getBalance,
         getGas,
-        name,
         supportedNetworks
     }
 }

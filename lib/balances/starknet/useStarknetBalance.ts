@@ -7,7 +7,6 @@ import { EstimateFee } from "starknet";
 import { ApiResponse } from "../../../Models/ApiResponse";
 
 export default function useStarknetBalance(): BalanceProvider {
-    const name = 'starknet'
 
     const supportedNetworks = [
         KnownInternalNames.Networks.StarkNetMainnet,
@@ -96,7 +95,6 @@ export default function useStarknetBalance(): BalanceProvider {
     return {
         getBalance,
         getGas,
-        name,
         supportedNetworks
     }
 }

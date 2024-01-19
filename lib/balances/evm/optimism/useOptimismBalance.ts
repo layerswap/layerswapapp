@@ -4,8 +4,6 @@ import NetworkSettings, { GasCalculation } from "../../../NetworkSettings"
 import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../../Models/Balance"
 
 export default function useOptimismBalance(): BalanceProvider {
-    const name = 'optimism'
-
     const { layers } = useSettingsState()
     const supportedNetworks = layers.filter(l => l.isExchange === false && l.type === NetworkType.EVM && NetworkSettings.KnownSettings[l.internal_name]?.GasCalculationType === GasCalculation.OptimismType).map(l => l.internal_name)
 
@@ -113,7 +111,6 @@ export default function useOptimismBalance(): BalanceProvider {
     return {
         getBalance,
         getGas,
-        name,
         supportedNetworks
     }
 }
