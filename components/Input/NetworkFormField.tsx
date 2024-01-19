@@ -71,8 +71,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     let filteredLayers: Layer[];
     let menuItems: SelectMenuItem<Layer | Exchange>[];
 
-    let valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
-
     const filterWith = direction === "from" ? to : from
     const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
 
