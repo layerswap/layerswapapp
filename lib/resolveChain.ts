@@ -11,7 +11,7 @@ export default function resolveChain(network: Layer): (Chain & RainbowKitChain) 
 
     if (!nativeCurrency) {
         if (process.env.NEXT_PUBLIC_API_VERSION !== 'sandbox')
-            SendErrorMessage("UI Settings error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: could not find native currency for ${network.internal_name} %0A`)
+            SendErrorMessage("UI Settings error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: could not find native currency for ${network.internal_name} ${JSON.stringify(network)} %0A`)
         return
     }
 

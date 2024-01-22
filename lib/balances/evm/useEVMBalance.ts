@@ -4,8 +4,6 @@ import { NetworkType } from "../../../Models/CryptoNetwork"
 import NetworkSettings, { GasCalculation } from "../../NetworkSettings"
 
 export default function useEVMBalance(): BalanceProvider {
-    const name = 'eth'
-
     const { layers } = useSettingsState()
     const supportedNetworks = layers.filter(l => l.type === NetworkType.EVM && NetworkSettings.KnownSettings[l.internal_name]?.GasCalculationType !== GasCalculation.OptimismType).map(l => l.internal_name)
 
@@ -108,7 +106,6 @@ export default function useEVMBalance(): BalanceProvider {
     return {
         getBalance,
         getGas,
-        name,
         supportedNetworks
     }
 }

@@ -17,7 +17,7 @@ export default class InternalApiClient {
         return await this.authInterceptor(`/api/network_account${queryParams}`, { method: "GET", headers: { 'Access-Control-Allow-Origin': '*', "Authorization": `Bearer ${token}` } });
     }
 
-    async GetStarknetFee(queryParams: string): Promise<ApiResponse<EstimateFee>> {
-        return await axios.get(`/api/get_starknet_fee?${queryParams}`)
+    async GetStarknetFee(queryParams: string, basePath: string): Promise<ApiResponse<EstimateFee>> {
+        return await axios.get(`${basePath}/api/get_starknet_fee?${queryParams}`)
     }
 }

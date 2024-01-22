@@ -39,7 +39,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
 
     return (
-        <Modal height='full' show={show} setShow={setShow}>
+        <Modal height='full' show={show} setShow={setShow} modalId='comandSelect'>
             {show ?
                 <CommandWrapper>
                     <CommandInput autoFocus={isDesktop} placeholder={searchHint} />
