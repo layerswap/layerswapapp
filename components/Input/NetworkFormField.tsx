@@ -34,11 +34,11 @@ type LayerIsAvailable = {
 }
 const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
 const getGroupName = (value: Layer | Exchange, type: 'cex' | 'layer', layerIsAvailable?: LayerIsAvailable) => {
-    if (value.is_featured) {
-        return "Popular";
-    }
-    else if (layerIsAvailable?.disabledReason && !layerIsAvailable.value) {
+    if (layerIsAvailable?.disabledReason && !layerIsAvailable.value) {
         return "Unavailable";
+    }
+    else if (value.is_featured) {
+        return "Popular";
     }
     else if (new Date(value.created_date).getTime() >= (new Date().getTime() - 2629800000)) {
         return "New";
@@ -71,8 +71,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     let filteredLayers: Layer[];
     let menuItems: SelectMenuItem<Layer | Exchange>[];
 
-    let valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
-
     const filterWith = direction === "from" ? to : from
     const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
 
@@ -100,16 +98,15 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
-        filteredLayers = layers.filter(l => l.internal_name !== filterWith?.internal_name && sourceRoutes?.some(r => r.network === l.internal_name))
+        filteredLayers = layers.filter(l => sourceRoutes?.some(r => r.network === l.internal_name))
         menuItems = GenerateMenuItems(filteredLayers, toExchange ? [] : exchanges, resolveImgSrc, direction, !!(from && lockFrom), routesData, filterWith);
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        filteredLayers = layers.filter(l => l.internal_name !== filterWith?.internal_name && destinationRoutes?.some(r => r.network === l.internal_name))
+        filteredLayers = layers.filter(l => destinationRoutes?.some(r => r.network === l.internal_name))
         menuItems = GenerateMenuItems(filteredLayers, fromExchange ? [] : exchanges, resolveImgSrc, direction, !!(to && lockTo), routesData, filterWith);
     }
-    valueGrouper = groupByType
 
     const value = menuItems.find(x => x.type === 'layer' ?
         x.id == (direction === "from" ? from : to)?.internal_name :
@@ -133,7 +130,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             <div className="col-span-5 md:col-span-4">
                 <CommandSelectWrapper
                     disabled={false}
-                    valueGrouper={valueGrouper}
+                    valueGrouper={groupByType}
                     placeholder={placeholder}
                     setValue={handleSelect}
                     value={value}
@@ -182,7 +179,7 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
         if (lock) {
             return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
         }
-        else if (!routesData?.some(r => r.network === layer.internal_name) && layer.internal_name !== filterWith?.internal_name) {
+        else if (!routesData?.some(r => r.network === layer.internal_name)) {
             return { value: false, disabledReason: LayerDisabledReason.InvalidRoute }
         }
         else {

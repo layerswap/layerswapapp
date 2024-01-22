@@ -5,6 +5,7 @@ import useOptimismBalance from "../lib/balances/evm/optimism/useOptimismBalance"
 import useStarknetBalance from "../lib/balances/starknet/useStarknetBalance"
 import useZkSyncBalance from "../lib/balances/zksync/useZkSyncBalance"
 import useSolanaBalance from "../lib/balances/solana/useSolanaBalance"
+import useImxBalance from "../lib/balances/immutableX/useIMXBalances"
 import { BalanceProvider } from "../Models/Balance"
 import useWallet from "./useWallet"
 import { useBalancesState, useBalancesUpdate } from "../context/balances"
@@ -19,7 +20,8 @@ export default function useBalanceProvider() {
         useStarknetBalance(),
         useLoopringBalance(),
         useZkSyncBalance(),
-        useSolanaBalance()
+        useSolanaBalance(),
+        useImxBalance()
     ]
 
     const { balances, gases } = useBalancesState()

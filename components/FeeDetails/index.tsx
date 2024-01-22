@@ -20,7 +20,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
             <FeeDetails>
 
                 {
-                    ((fromExchange || toExchange) && (from || to)) &&
+                    (fromExchange || toExchange) &&
                     <FeeDetails.Item>
                         <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
                     </FeeDetails.Item>
