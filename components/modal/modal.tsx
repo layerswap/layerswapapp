@@ -19,7 +19,7 @@ export interface ModalProps {
 const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow, modalId }) => {
     const { isMobile, isDesktop } = useWindowDimensions()
     const mobileModalRef = useRef(null)
-
+    console.log("blaaaaah")
     useEffect(() => {
         if (isMobile && show) {
             window.document.body.style.overflow = 'hidden'
@@ -30,18 +30,18 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
     return (
         <>
             {isDesktop && (
-                <AnimatePresence>
-                    {show &&
-                        <ReactPortal
-                            wrapperId="widget_root"
-                            key={modalId}>
+                <ReactPortal
+                    wrapperId="widget_root"
+                    key={modalId}>
+                    <AnimatePresence>
+                        {show &&
                             <Leaflet position="absolute" height={height ?? 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
                                 {children}
                             </Leaflet>
-                        </ReactPortal>
-                    }
 
-                </AnimatePresence>
+                        }
+                    </AnimatePresence>
+                </ReactPortal>
             )}
             {isMobile && (
                 <AnimatePresence>
