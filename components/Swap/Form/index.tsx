@@ -122,7 +122,7 @@ export default function Form() {
                 const remainingTimeInHours = getSecondsToTomorrow() / 3600
                 const remainingTimeInMinutes = getSecondsToTomorrow() / 60
                 const remainingTime = remainingTimeInHours >= 1 ? `${remainingTimeInHours.toFixed()} hours` : `${remainingTimeInMinutes.toFixed()} minutes`
-                toast.error(`Daily limit of ${values.currency?.asset} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.currency?.asset} or retry in ${remainingTime}.`)
+                toast.error(`Daily limit of ${values.fromCurrency?.asset} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromCurrency?.asset} or retry in ${remainingTime}.`)
             }
             else {
                 toast.error(data.message || error.message)
