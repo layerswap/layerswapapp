@@ -39,9 +39,9 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
         : maxAmountFromApi
 
     const handleSetMaxAmount = useCallback(async () => {
-        from && await fetchBalance(from);
-        from && fromCurrency && fetchGas(from, fromCurrency, destination_address || "");
         setFieldValue('amount', maxAllowedAmount);
+        from && fetchBalance(from);
+        from && fromCurrency && fetchGas(from, fromCurrency, destination_address || "");
     }, [from, to, fromCurrency, destination_address, maxAllowedAmount])
 
     useEffect(() => {

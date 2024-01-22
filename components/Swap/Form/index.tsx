@@ -11,7 +11,7 @@ import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "..
 import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import Modal from "../../modal/modal";
 import SwapForm from "./Form";
-import { useRouter } from "next/router";
+import { NextRouter, useRouter } from "next/router";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
@@ -89,20 +89,9 @@ export default function Form() {
                 }
             }
             const swapId = await createSwap(values, query, partner);
-
-            if (swapId) {
-                setSwapId(swapId)
-                var swapURL = window.location.protocol + "//"
-                    + window.location.host + `/swap/${swapId}`;
-                const params = resolvePersistantQueryParams(router.query)
-                if (params && Object.keys(params).length) {
-                    const search = new URLSearchParams(params as any);
-                    if (search)
-                        swapURL += `?${search}`
-                }
-                window.history.replaceState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
-                setShowSwapModal(true)
-            }
+            setSwapId(swapId)
+            setSwapPath(swapId, router)
+            setShowSwapModal(true)
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error
@@ -138,8 +127,9 @@ export default function Form() {
 
     const initialValues: SwapFormValues = swap ? generateSwapInitialValuesFromSwap(swap, settings)
         : generateSwapInitialValues(settings, query)
+
     const initiallyValidation = MainStepValidation({ minAllowedAmount, maxAllowedAmount })(initialValues)
-    const initiallyIsValid = Object.values(initiallyValidation)?.filter(v => v).length > 0
+    const initiallyIsValid = !(Object.values(initiallyValidation)?.filter(v => v).length > 0)
 
     return <>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
@@ -165,12 +155,13 @@ export default function Form() {
             validateOnMount={true}
             validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
-            isInitialValid={!initiallyIsValid}
+            isInitialValid={initiallyIsValid}
         >
             <SwapForm isPartnerWallet={!!isPartnerWallet} partner={partner} />
         </Formik>
     </>
 }
+
 const textMotion = {
     rest: {
         color: "grey",
@@ -270,4 +261,16 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
             </motion.div>
         </motion.div>
     </motion.div>
+}
+
+const setSwapPath = (swapId: string, router: NextRouter) => {
+    var swapURL = window.location.protocol + "//"
+        + window.location.host + `/swap/${swapId}`;
+    const params = resolvePersistantQueryParams(router.query)
+    if (params && Object.keys(params).length) {
+        const search = new URLSearchParams(params as any);
+        if (search)
+            swapURL += `?${search}`
+    }
+    window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
 }

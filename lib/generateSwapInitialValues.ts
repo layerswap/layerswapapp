@@ -7,35 +7,60 @@ import { SwapItem } from "./layerSwapApiClient";
 import { groupBy } from "../components/utils/groupBy";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
-    const { destAddress, amount, asset, from, to, lockAsset } = queryParams
+    const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset } = queryParams
     const { layers } = settings || {}
 
-    const lockedCurrency = lockAsset ? layers.find(l => l.internal_name === to)?.assets?.find(c => c?.asset?.toUpperCase() === asset?.toUpperCase()) : undefined
+    const lockedSourceCurrency = lockFromAsset ?
+        layers.find(l => l.internal_name === to)
+            ?.assets?.find(c => c?.asset?.toUpperCase() === fromAsset?.toUpperCase())
+        : undefined
+    const lockedDestinationCurrency = lockToAsset ?
+        layers.find(l => l.internal_name === to)
+            ?.assets?.find(c => c?.asset?.toUpperCase() === toAsset?.toUpperCase())
+        : undefined
+
     const sourceLayer = layers.find(l => l.internal_name.toUpperCase() === from?.toUpperCase())
     const destinationLayer = layers.find(l => l.internal_name.toUpperCase() === to?.toUpperCase())
 
-    const sourceItems = FilterSourceLayers(layers, destinationLayer, lockedCurrency)
-    const destinationItems = FilterDestinationLayers(layers, sourceLayer, lockedCurrency)
+    const sourceItems = FilterSourceLayers(layers, destinationLayer, lockedSourceCurrency)
+    const destinationItems = FilterDestinationLayers(layers, sourceLayer, lockedDestinationCurrency)
 
-    const initialSource = sourceLayer ? sourceItems.find(i => i == sourceLayer) : undefined
-    const initialDestination = destinationLayer ? destinationItems.find(i => i === destinationLayer) : undefined
+    const initialSource = sourceLayer ?
+        sourceItems.find(i => i == sourceLayer)
+        : undefined
+    const initialDestination = destinationLayer
+        ? destinationItems.find(i => i === destinationLayer)
+        : undefined
 
-    const filteredCurrencies = lockedCurrency ? [lockedCurrency] : layers.find(l => l.internal_name === to)?.assets
+    const filteredSourceCurrencies = lockedSourceCurrency ?
+        [lockedSourceCurrency]
+        : layers.find(l => l.internal_name === from)?.assets
+
+    const filteredDestinationCurrencies = lockedDestinationCurrency ?
+        [lockedDestinationCurrency]
+        : layers.find(l => l.internal_name === to)?.assets
 
     let initialAddress =
         destAddress && initialDestination && isValidAddress(destAddress, destinationLayer) ? destAddress : "";
 
-    let initialCurrency =
-        filteredCurrencies?.find(c => c.asset?.toUpperCase() == asset?.toUpperCase()) || filteredCurrencies?.[0]
+    let initialSourceCurrency =
+        filteredSourceCurrencies?.find(c => c.asset?.toUpperCase() == fromAsset?.toUpperCase())
+        || filteredSourceCurrencies?.[0]
 
+    let initialDestinationCurrency =
+        filteredDestinationCurrencies?.find(c => c.asset?.toUpperCase() == toAsset?.toUpperCase())
+        || filteredDestinationCurrencies?.[0]
+
+    //TODO this looks wrong
     let initialAmount =
-        (lockedCurrency && amount) || (initialCurrency ? amount : '')
+        (lockedDestinationCurrency && amount) || (initialDestinationCurrency ? amount : '')
 
     const result: SwapFormValues = {
         from: initialSource,
         to: initialDestination,
         amount: initialAmount,
-        toCurrency: initialCurrency,
+        fromCurrency: initialSourceCurrency,
+        toCurrency: initialDestinationCurrency,
         destination_address: initialAddress ? initialAddress : '',
     }
 

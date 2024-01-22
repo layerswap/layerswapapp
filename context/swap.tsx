@@ -23,7 +23,7 @@ export const SwapDataStateContext = createContext<SwapData>({
 export const SwapDataUpdateContext = createContext<UpdateInterface | null>(null);
 
 export type UpdateInterface = {
-    createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<string | undefined>,
+    createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<string>,
     setCodeRequested: (codeSubmitted: boolean) => void;
     cancelSwap: (swapId: string) => Promise<void>;
     setAddressConfirmed: (value: boolean) => void;
@@ -109,6 +109,7 @@ export function SwapDataProvider({ children }) {
             source_exchange: fromExchange?.internal_name,
             destination_exchange: toExchange?.internal_name,
             destination_address: values.destination_address,
+            //TODO query?.appNamemay be undefined
             app_name: partner ? query?.appName : (apiVersion === 'sandbox' ? 'LayerswapSandbox' : 'Layerswap'),
             reference_id: query.externalId,
             refuel: !!refuel
@@ -120,6 +121,9 @@ export function SwapDataProvider({ children }) {
         }
 
         const swapId = swapResponse?.data?.swap_id;
+        if (!swapId)
+            throw new Error("Could not create swap")
+        
         return swapId;
     }, [])
 
