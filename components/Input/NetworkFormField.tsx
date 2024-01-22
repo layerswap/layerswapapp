@@ -113,7 +113,11 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         x.id == (direction === 'from' ? fromExchange : toExchange)?.internal_name);
 
     const handleSelect = useCallback((item: SelectMenuItem<Layer | Exchange>) => {
-        if (item.type === 'cex') {
+        if (!item.isAvailable.value && item.isAvailable.disabledReason == LayerDisabledReason.InvalidRoute) {
+            setFieldValue(name === "from" ? "to" : "from", null)
+            setFieldValue(name === "from" ? "toExchange" : "fromExchange", null)
+            setFieldValue(name, item.baseObject, true)
+        } else if (item.type === 'cex') {
             setFieldValue(`${name}Exchange`, item.baseObject, true)
             setFieldValue(name, null, true)
         } else {
