@@ -10,7 +10,6 @@ import {
 } from "../../../Models/Balance";
 
 export default function useSolanaBalance(): BalanceProvider {
-    const name = 'solana'
     const supportedNetworks = [
         KnownInternalNames.Networks.SolanaMainnet
     ]
@@ -114,7 +113,6 @@ export default function useSolanaBalance(): BalanceProvider {
     return {
         getBalance,
         getGas,
-        name,
         supportedNetworks
     }
 }

@@ -3,7 +3,6 @@ import formatAmount from "../../formatAmount";
 import { BalanceProps, BalanceProvider, GasProps } from "../../../Models/Balance";
 
 export default function useImxBalance(): BalanceProvider {
-    const name = 'starknet'
 
     const supportedNetworks = [
         KnownInternalNames.Networks.ImmutableXMainnet,
@@ -49,7 +48,6 @@ export default function useImxBalance(): BalanceProvider {
     return {
         getBalance,
         getGas,
-        name,
         supportedNetworks
     }
 }

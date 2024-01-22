@@ -28,6 +28,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
+import getSecondsToTomorrow from "../../utils/getSecondsToTomorrow";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -113,13 +114,18 @@ export default function Form() {
             }
             else if (data?.code === LSAPIKnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.to) {
                 setNetworkToConnect({
-                    DisplayName: values.to?.display_name,
+                    DisplayName: values.to.display_name,
                     AppURL: data.message
                 })
                 setShowConnectNetworkModal(true);
+            } else if (data.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
+                const remainingTimeInHours = getSecondsToTomorrow() / 3600
+                const remainingTimeInMinutes = getSecondsToTomorrow() / 60
+                const remainingTime = remainingTimeInHours >= 1 ? `${remainingTimeInHours.toFixed()} hours` : `${remainingTimeInMinutes.toFixed()} minutes`
+                toast.error(`Daily limit of ${values.fromCurrency?.asset} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromCurrency?.asset} or retry in ${remainingTime}.`)
             }
             else {
-                toast.error(error.message)
+                toast.error(data.message || error.message)
             }
         }
     }, [createSwap, query, partner, router, updateAuthData, setUserType, swap])
@@ -141,14 +147,14 @@ export default function Form() {
                 {
                     swap &&
                     !showSwapModal &&
-                    <PendingSwap onClick={() => setShowSwapModal(true)} />
+                    <PendingSwap key="pendingSwap" onClick={() => setShowSwapModal(true)} />
                 }
             </AnimatePresence>
         </div>
-        <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
+        <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`} modalId="showNetwork">
             {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
         </Modal>
-        <Modal height='fit' show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`}>
+        <Modal height='fit' show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`} modalId="showSwap">
             <ResizablePanel>
                 <SwapDetails type="contained" />
             </ResizablePanel>

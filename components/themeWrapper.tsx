@@ -2,8 +2,6 @@ import { X } from "lucide-react";
 import toast, { ToastBar, Toaster } from "react-hot-toast"
 import Navbar from "./navbar"
 import GlobalFooter from "./globalFooter";
-import { useLoadingState } from "../context/loadingContext";
-import { AnimatePresence, motion } from "framer-motion";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
