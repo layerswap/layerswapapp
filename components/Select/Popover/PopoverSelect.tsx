@@ -8,8 +8,9 @@ export default function PopoverSelect({ values, value, setValue }: SelectProps) 
     return (
         <CommandWrapper>
             <CommandList>
-                {values.map(item => {
-                    const shouldGroupped = !upperValue && item.isAvailable.value && item.isAvailable.disabledReason;
+                {values.map((item, index) => {
+
+                    const shouldGroupped = !upperValue && item.isAvailable.value && item.isAvailable.disabledReason && index !== 0;
 
                     if (shouldGroupped) {
                         upperValue = true;
