@@ -32,8 +32,14 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const query = useQueryState()
     const { balances } = useBalancesState()
     const [walletAddress, setWalletAddress] = useState<string>()
-    const lockedCurrency = query?.lockAsset ? from?.assets?.find(c => c?.asset?.toUpperCase() === (query?.asset)?.toUpperCase()) : undefined
+    const lockAsset = direction === 'from' ? query?.lockFromAsset
+        : query?.lockToAsset
+    const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
     const assets = direction === 'from' ? from?.assets : to?.assets;
+
+    const lockedCurrency = lockAsset
+        ? assets?.find(c => c?.asset?.toUpperCase() === (asset)?.toUpperCase())
+        : undefined
 
     const apiClient = new LayerSwapApiClient()
     const version = LayerSwapApiClient.apiVersion

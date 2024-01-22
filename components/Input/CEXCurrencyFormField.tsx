@@ -28,7 +28,11 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const routes = direction === 'from' ? settingsSourceRoutes : settingsDestinationRoutes
     const assets = routes && groupBy(routes, ({ asset }) => asset)
     const assetNames = assets && Object.keys(assets).map(a => ({ name: a, networks: assets[a] }))
-    const lockedCurrency = query?.lockAsset ? assetNames?.find(a => a.name.toUpperCase() === (query?.asset)?.toUpperCase()) : undefined
+    const lockAsset = direction === 'from' ? query?.lockFromAsset : query?.lockToAsset
+    const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
+    const lockedCurrency = lockAsset
+        ? assetNames?.find(a => a.name.toUpperCase() === (asset)?.toUpperCase())
+        : undefined
 
     const apiClient = new LayerSwapApiClient()
     const version = LayerSwapApiClient.apiVersion
