@@ -64,7 +64,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, currencyGroup } = values
     const { lockFrom, lockTo } = useQueryState()
 
-    const { resolveImgSrc, layers, exchanges } = useSettingsState();
+    const { resolveImgSrc, layers, exchanges, destinationRoutes, sourceRoutes } = useSettingsState();
 
     let placeholder = "";
     let searchHint = "";
@@ -100,13 +100,13 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
-        filteredLayers = layers.filter(l => l.internal_name !== filterWith?.internal_name)
+        filteredLayers = layers.filter(l => l.internal_name !== filterWith?.internal_name && sourceRoutes?.some(r => r.network === l.internal_name))
         menuItems = GenerateMenuItems(filteredLayers, toExchange ? [] : exchanges, resolveImgSrc, direction, !!(from && lockFrom), routesData, filterWith);
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        filteredLayers = layers.filter(l => l.internal_name !== filterWith?.internal_name)
+        filteredLayers = layers.filter(l => l.internal_name !== filterWith?.internal_name && destinationRoutes?.some(r => r.network === l.internal_name))
         menuItems = GenerateMenuItems(filteredLayers, fromExchange ? [] : exchanges, resolveImgSrc, direction, !!(to && lockTo), routesData, filterWith);
     }
     valueGrouper = groupByType
