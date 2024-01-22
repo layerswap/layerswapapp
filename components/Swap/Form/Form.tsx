@@ -122,7 +122,16 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     }, [values.refuel, destination])
 
     const valuesSwapper = useCallback(() => {
-        setValues({ ...values, from: values.to, to: values.from, fromCurrency: values.toCurrency, toCurrency: values.fromCurrency, toExchange: values.fromExchange, fromExchange: values.toExchange }, true)
+        const swappedValues = {
+            ...values,
+            ...(values.to ? { from: values.to } : {}),
+            ...(values.from ? { to: values.from } : {}),
+            ...(values.toCurrency ? { fromCurrency: values.toCurrency } : {}),
+            ...(values.fromCurrency ? { toCurrency: values.fromCurrency } : {}),
+            toExchange: values.fromExchange,
+            fromExchange: values.toExchange
+        }
+        setValues(swappedValues, true)
     }, [values])
 
     const [animate, cycle] = useCycle(

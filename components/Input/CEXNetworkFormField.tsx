@@ -8,6 +8,7 @@ import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import Image from "next/image";
+import { AssetGroup } from "./CEXCurrencyFormField";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -21,7 +22,15 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     } = useFormikContext<SwapFormValues>();
     const name = direction
 
-    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange } = values
+    const {
+        from,
+        to,
+        fromCurrency,
+        toCurrency,
+        fromExchange,
+        toExchange,
+        currencyGroup
+    } = values
     const { layers, resolveImgSrc } = useSettingsState();
 
     const filterWith = direction === "from" ? to : from
@@ -30,30 +39,45 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     const apiClient = new LayerSwapApiClient()
     const version = LayerSwapApiClient.apiVersion
 
-    const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}${(filterWith && filterWithAsset) ? `?${direction === 'to' ? 'source_network' : 'destination_network'}=${filterWith.internal_name}&${direction === 'to' ? 'source_asset' : 'destination_asset'}=${filterWithAsset}&` : "?"}version=${version}`
+    const destinationRouteParams = new URLSearchParams({
+        version,
+        ...(filterWith ? ({ [direction === 'to' ? 'source_network' : 'destination_network']: filterWith.internal_name }) : {}),
+        ...(filterWithAsset ? ({ [direction === 'to' ? 'source_asset' : 'destination_asset']: filterWithAsset }) : {})
+    });
+
+    const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}?${destinationRouteParams.toString()}`
 
     const { data: routes, isLoading } = useSWR<ApiResponse<{
         network: string,
         asset: string
     }[]>>(routesEndpoint, apiClient.fetcher)
+    const routesData = routes?.data
+    // const [routesData, setRoutesData] = useState<{
+    //     network: string,
+    //     asset: string
+    // }[]>()
 
-    const [routesData, setRoutesData] = useState<{
-        network: string,
-        asset: string
-    }[]>()
+    // useEffect(() => {
+    //     if (!isLoading && routes?.data) setRoutesData(routes.data)
+    // }, [routes])
 
-    useEffect(() => {
-        if (!isLoading && routes?.data) setRoutesData(routes.data)
-    }, [routes])
-
-    const historicalNetworksEndpoint = (fromExchange || toExchange) && (`/exchanges/${direction === 'from' ? `historical_sources?source_exchange=${fromExchange?.internal_name}` : `historical_destinations?destination_exchange=${toExchange?.internal_name}`}&version=${version}`)
+    const historicalNetworksEndpoint =
+        (fromExchange || toExchange)
+        && (`/exchanges/${direction === 'from'
+            ? `historical_sources?source_exchange=${fromExchange?.internal_name}`
+            :
+            `historical_destinations?destination_exchange=${toExchange?.internal_name}`}&version=${version}`)
 
     const { data: historicalNetworks } = useSWR<ApiResponse<{
         network: string,
         asset: string
     }[]>>(historicalNetworksEndpoint, apiClient.fetcher)
 
-    const menuItems = routesData && historicalNetworks && GenerateMenuItems(routesData, historicalNetworks?.data).filter(item => layers.find(l => l.internal_name === item.baseObject.network));
+    const menuItems = routesData
+        && historicalNetworks
+        && GenerateMenuItems(routesData, historicalNetworks?.data, currencyGroup)
+            .filter(item => layers.find(l =>
+                l.internal_name === item.baseObject.network));
 
     const handleSelect = useCallback((item: SelectMenuItem<{ network: string, asset: string }>) => {
         if (!item) return
@@ -63,15 +87,33 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         setFieldValue(`${name}Currency`, currency, true)
     }, [name])
 
-    const value = menuItems?.find(item => item.baseObject.asset === (direction === 'from' ? fromCurrency : toCurrency)?.asset && item.baseObject.network === (direction === 'from' ? from : to)?.internal_name)
+    //TODO set default currancy & reset currancy if not available
+    const value = menuItems?.find(item =>
+        item.baseObject.asset ===
+        (direction === 'from' ? fromCurrency : toCurrency)?.asset
+        && item.baseObject.network === (direction === 'from' ? from : to)
+            ?.internal_name)
 
     //Setting default value
+    useEffect(() => {
+        if (!menuItems) return
+        if (menuItems.length == 0) {
+            setFieldValue(name, null, true)
+            setFieldValue(`${name}Currency`, null, true)
+            setFieldValue('currencyGroup', null, true)
+            return
+        }
+        else if (value) return
+        const item = menuItems[0]
+        handleSelect(item)
+    }, [routesData, historicalNetworks])
+
     useEffect(() => {
         if (!menuItems) return
         else if (value) return
         const item = menuItems[0]
         handleSelect(item)
-    }, [routesData, historicalNetworks])
+    }, [currencyGroup])
 
     if (!menuItems) return
 
@@ -131,12 +173,14 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     </div >)
 });
 
-function GenerateMenuItems(items: { network: string, asset: string }[], historicalNetworks: { network: string, asset: string }[] | undefined): SelectMenuItem<{ network: string, asset: string }>[] {
+function GenerateMenuItems(
+    items: { network: string, asset: string }[],
+    historicalNetworks: { network: string, asset: string }[] | undefined,
+    currencyGroup: AssetGroup | undefined
+): SelectMenuItem<{ network: string, asset: string }>[] {
 
-    const menuItems = items.map((e, index) => {
-
+    const menuItems = items.filter(i => i.asset === currencyGroup?.name).map((e, index) => {
         const order = historicalNetworks?.indexOf(historicalNetworks.find(n => n.asset === e.asset && n.network === e.network) || { network: '', asset: '' }) || 100
-
         const item: SelectMenuItem<{ network: string, asset: string }> = {
             baseObject: e,
             id: index.toString(),

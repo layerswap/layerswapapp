@@ -8,12 +8,14 @@ import CurrencySettings from "../../lib/CurrencySettings";
 import { SortingByOrder } from "../../lib/sorting";
 import { useQueryState } from "../../context/query";
 import { groupBy } from "../utils/groupBy";
+import { Route } from "../../Models/LayerSwapSettings";
 
 const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
-        values: { to, fromCurrency, toCurrency, from, currencyGroup },
+        values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
+    const { to, fromCurrency, toCurrency, from, currencyGroup } = values
 
     const { sourceRoutes, destinationRoutes } = useSettingsState();
     const name = 'currencyGroup'
@@ -38,37 +40,18 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         setFieldValue(name, currencyMenuItems?.[0])
     }, [])
 
-    // useEffect(() => {
-    //     if (direction === "to" && fromCurrency && toCurrency) {
-    //         if (destinationRoutes && !destinationRoutes?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === toCurrency?.asset)) {
-    //             setFieldValue(name, null)
-    //         } else if (destRoutesError) {
-    //             setFieldValue('toCurrency', null)
-    //             setFieldValue('to', null)
-    //         }
-    //     }
-    // }, [fromCurrency, direction, to, destinationRoutes, destRoutesError])
-
-    // useEffect(() => {
-    //     if (direction === "from" && toCurrency && fromCurrency) {
-    //         if (sourceRoutes && !sourceRoutes?.filter(r => r.network === from?.internal_name)?.some(r => r.asset === fromCurrency?.asset)) {
-    //             setFieldValue(name, null)
-    //         } else if (sourceRoutesError) {
-    //             setFieldValue('fromCurrency', null)
-    //             setFieldValue('from', null)
-    //         }
-    //     }
-    // }, [toCurrency, direction, from, sourceRoutes, sourceRoutesError])
-
     const handleSelect = useCallback((item: SelectMenuItem<AssetGroup>) => {
         setFieldValue(name, item.baseObject, true)
+        setFieldValue(`${name}Currency`, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
-
     return <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />;
-};
+}
 
-export function GenerateCurrencyMenuItems(currencies: AssetGroup[], lockedCurrency?: AssetGroup | undefined): SelectMenuItem<AssetGroup>[] {
+export function GenerateCurrencyMenuItems(
+    currencies: AssetGroup[],
+    lockedCurrency?: AssetGroup | undefined
+): SelectMenuItem<AssetGroup>[] {
 
     let currencyIsAvailable = () => {
         if (lockedCurrency) {
