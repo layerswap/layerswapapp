@@ -2,7 +2,6 @@ import ClickTooltip from "../Tooltips/ClickTooltip"
 import ToggleButton from "../buttons/toggleButton"
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { useQueryState } from "../../context/query";
 
 const RefuelToggle = () => {
 

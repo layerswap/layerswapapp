@@ -18,6 +18,7 @@ import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import { NetworkCurrency } from "../../Models/CryptoNetwork";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
+import { QueryParams } from "../../Models/QueryParams";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -34,7 +35,7 @@ type LayerIsAvailable = {
 }
 const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
 const getGroupName = (value: Layer | Exchange, type: 'cex' | 'layer', layerIsAvailable?: LayerIsAvailable) => {
-    if (layerIsAvailable?.disabledReason && !layerIsAvailable.value) {
+    if (layerIsAvailable?.disabledReason === LayerDisabledReason.InvalidRoute) {
         return "Unavailable";
     }
     else if (value.is_featured) {
@@ -62,7 +63,8 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const name = direction
 
     const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, currencyGroup } = values
-    const { lockFrom, lockTo } = useQueryState()
+    const query = useQueryState()
+    const { lockFrom, lockTo } = query
 
     const { resolveImgSrc, layers, exchanges, destinationRoutes, sourceRoutes } = useSettingsState();
 
@@ -99,13 +101,13 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         placeholder = "Source";
         searchHint = "Swap from";
         filteredLayers = layers.filter(l => sourceRoutes?.some(r => r.network === l.internal_name))
-        menuItems = GenerateMenuItems(filteredLayers, toExchange ? [] : exchanges, resolveImgSrc, direction, !!(from && lockFrom), routesData, filterWith);
+        menuItems = GenerateMenuItems(filteredLayers, toExchange ? [] : exchanges, resolveImgSrc, direction, !!(from && lockFrom), routesData, query);
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
         filteredLayers = layers.filter(l => destinationRoutes?.some(r => r.network === l.internal_name))
-        menuItems = GenerateMenuItems(filteredLayers, fromExchange ? [] : exchanges, resolveImgSrc, direction, !!(to && lockTo), routesData, filterWith);
+        menuItems = GenerateMenuItems(filteredLayers, fromExchange ? [] : exchanges, resolveImgSrc, direction, !!(to && lockTo), routesData, query);
     }
 
     const value = menuItems.find(x => x.type === 'layer' ?
@@ -177,16 +179,29 @@ function groupByType(values: ISelectMenuItem[]) {
     return groups;
 }
 
-function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc: (item: Layer | Exchange | NetworkCurrency) => string, direction: SwapDirection, lock: boolean, routesData: Route[] | undefined, filterWith: Layer | undefined): SelectMenuItem<Layer | Exchange>[] {
+function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc: (item: Layer | Exchange | NetworkCurrency) => string, direction: SwapDirection, lock: boolean, routesData: Route[] | undefined, query: QueryParams): SelectMenuItem<Layer | Exchange>[] {
 
     let layerIsAvailable = (layer: Layer) => {
         if (lock) {
             return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
         }
         else if (!routesData?.some(r => r.network === layer.internal_name)) {
-            return { value: false, disabledReason: LayerDisabledReason.InvalidRoute }
+            if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange) {
+                return { value: false, disabledReason: LayerDisabledReason.InvalidRoute }
+            }
+            else {
+                return { value: true, disabledReason: LayerDisabledReason.InvalidRoute }
+            }
         }
         else {
+            return { value: true, disabledReason: null }
+        }
+    }
+
+    let exchangeIsAvailable = (exchange: Exchange) => {
+        if(lock) {
+            return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
+        } else {
             return { value: true, disabledReason: null }
         }
     }
@@ -216,7 +231,7 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
             name: e.display_name,
             order: order || 100,
             imgSrc: resolveImgSrc && resolveImgSrc(e),
-            isAvailable: { value: true, disabledReason: null },
+            isAvailable: exchangeIsAvailable(e),
             type: 'cex',
             group: getGroupName(e, 'cex')
         }

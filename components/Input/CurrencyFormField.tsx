@@ -16,6 +16,7 @@ import useSWR from "swr";
 import { ApiResponse } from "../../Models/ApiResponse";
 import { Balance } from "../../Models/Balance";
 import dynamic from "next/dynamic";
+import { QueryParams } from "../../Models/QueryParams";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -95,7 +96,8 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
         lockedCurrency,
         direction,
-        balances[walletAddress || '']
+        balances[walletAddress || ''],
+        query
     )
     const currencyAsset = direction === 'from' ? fromCurrency?.asset : toCurrency?.asset;
 
@@ -172,15 +174,17 @@ export function GenerateCurrencyMenuItems(
     routes?: { network: string, asset: string }[],
     lockedCurrency?: NetworkCurrency,
     direction?: string,
-    balances?: Balance[]): SelectMenuItem<NetworkCurrency>[] {
+    balances?: Balance[],
+    query?: QueryParams): SelectMenuItem<NetworkCurrency>[] {
     const { to, from } = values
 
     let currencyIsAvailable = (currency: NetworkCurrency) => {
-        if (lockedCurrency) {
-            return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
-        }
-        else if ((from || to) && !routes?.filter(r => r.network === (direction === 'from' ? from?.internal_name : to?.internal_name)).some(r => r.asset === currency.asset)) {
-            return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
+        if ((from || to) && !routes?.filter(r => r.network === (direction === 'from' ? from?.internal_name : to?.internal_name)).some(r => r.asset === currency.asset)) {
+            if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset) {
+                return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
+            } else {
+                return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
+            }
         }
         else {
             return { value: true, disabledReason: null }
