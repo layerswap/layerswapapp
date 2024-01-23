@@ -14,6 +14,7 @@ import useWallet from "../../../hooks/useWallet";
 import { useQueryState } from "../../../context/query";
 import { NetworkCurrency } from "../../../Models/CryptoNetwork";
 import { Exchange } from "../../../Models/Exchange";
+import { useFee } from "../../../context/feeContext";
 
 type SwapInfoProps = {
     sourceCurrency: NetworkCurrency,
@@ -32,9 +33,10 @@ type SwapInfoProps = {
     sourceExchange?: Exchange;
 }
 
-const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, source: from, destination: to, requestedAmount, receiveAmount, destinationAddress, hasRefuel, refuelAmount, fee, exchange_account_connected, exchange_account_name, destExchange, sourceExchange }) => {
-    const { resolveImgSrc, layers } = useSettingsState()
+const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, source: from, destination: to, requestedAmount, destinationAddress, hasRefuel, refuelAmount, exchange_account_connected, exchange_account_name, destExchange, sourceExchange }) => {
+    const { resolveImgSrc } = useSettingsState()
     const { getWithdrawalProvider: getProvider } = useWallet()
+    const { fee } = useFee()
     const provider = useMemo(() => {
         return from && getProvider(from)
     }, [from, getProvider])
@@ -49,6 +51,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, sourc
         hideAddress
     } = useQueryState()
 
+    const receiveAmount = fee.walletReceiveAmount
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = partnerData?.data
@@ -126,7 +129,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, sourc
                         </div>
                     </div>
                     {
-                        fee != undefined && receiveAmount != undefined && fee >= 0 ?
+                        fee != undefined && receiveAmount != undefined ?
                             <div className="flex flex-col justify-end">
                                 <p className="text-primary-text text-sm">{truncateDecimals(receiveAmount, destinationCurrency.precision)} {destinationCurrency.asset}</p>
                                 <p className="text-secondary-text text-sm flex justify-end">${receiveAmountInUsd}</p>

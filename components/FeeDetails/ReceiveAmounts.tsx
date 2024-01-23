@@ -4,6 +4,7 @@ import { GetDefaultAsset } from "../../helpers/settingsHelper";
 import { CaluclateRefuelAmount } from "../../lib/fees";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { NetworkCurrency } from "../../Models/CryptoNetwork";
+import { useSwapDataState } from "../../context/swap";
 
 type WillReceiveProps = {
     receive_amount?: number;
@@ -13,6 +14,9 @@ type WillReceiveProps = {
 }
 export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency, to, refuel }) => {
     const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(currency?.precision) || "")
+    const { swap } = useSwapDataState()
+    const { destination_network_asset } = swap || {}
+
     const refuelCalculations = CaluclateRefuelAmount({
         refuelEnabled: refuel,
         currency,
@@ -20,6 +24,9 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency,
     })
     const { refuelAmountInSelectedCurrency } = refuelCalculations
     const destinationNetworkCurrency = (to && currency) ? GetDefaultAsset(to, currency.asset) : null
+
+    const destinationAsset = to?.assets?.find(currency => currency?.asset === destination_network_asset)
+    const receiveAmountInUsd = receive_amount && destinationAsset ? (destinationAsset?.usd_price * receive_amount).toFixed(2) : undefined
 
     const calculatedReceiveAmount = refuel ?
         parseFloat(receive_amount && (receive_amount - refuelAmountInSelectedCurrency)?.toFixed(currency?.precision) || "")
@@ -34,13 +41,20 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency,
                 {
                     calculatedReceiveAmount > 0 ?
                         <div className="font-semibold md:font-bold text-right leading-4">
-                            <p>
-                                <>{calculatedReceiveAmount}</>
-                                &nbsp;
-                                <span>
-                                    {destinationNetworkCurrency?.asset}
-                                </span>
-                            </p>
+                            <div className="flex items-center">
+                                {receiveAmountInUsd !== undefined &&
+                                    <p className="text-secondary-text text-xs flex justify-end mr-0.5 font-medium">
+                                        (${receiveAmountInUsd})
+                                    </p>
+                                }
+                                <p>
+                                    <>{calculatedReceiveAmount}</>
+                                    &nbsp;
+                                    <span>
+                                        {destinationNetworkCurrency?.asset}
+                                    </span>
+                                </p>
+                            </div>
                             {refuel && <Refuel
                                 currency={currency}
                                 to={to}

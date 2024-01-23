@@ -74,18 +74,10 @@ const SwapSummary: FC = () => {
     const destinationNetworkNativeAsset = layers.find(n => n.internal_name === destination_layer?.internal_name)?.assets.find(a => a.is_native);
     const refuel_amount_in_usd = Number(destinationNetworkNativeAsset?.refuel_amount_in_usd)
     const native_usd_price = Number(destinationNetworkNativeAsset?.usd_price)
-    const currency_usd_price = Number(sourceAsset?.usd_price)
 
     const refuelAmountInNativeCurrency = swap?.has_refuel
         ? ((swapRefuelTransaction?.amount ??
             (refuel_amount_in_usd / native_usd_price))) : undefined;
-
-    const refuelAmountInSelectedCurrency = swap?.has_refuel &&
-        (refuel_amount_in_usd / currency_usd_price);
-
-    const receive_amount = fee != undefined ? (swapOutputTransaction?.amount
-        ?? (Number(requested_amount) - fee - Number(refuelAmountInSelectedCurrency)))
-        : undefined
 
     return <Summary
         sourceCurrency={sourceAsset}
@@ -95,11 +87,9 @@ const SwapSummary: FC = () => {
         destination={destination_layer}
         destExchange={destExchange}
         requestedAmount={requested_amount as number}
-        receiveAmount={receive_amount}
         destinationAddress={swap.destination_address}
         hasRefuel={swap?.has_refuel}
         refuelAmount={refuelAmountInNativeCurrency}
-        fee={fee}
         exchange_account_connected={swap?.exchange_account_connected}
         exchange_account_name={swap?.exchange_account_name}
     />
