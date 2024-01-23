@@ -46,22 +46,32 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const sourceRouteParams = new URLSearchParams({
         version,
-        ...(toExchange && currencyGroup ?
-            { destination_asset_group: currencyGroup?.name }
+        ...(toExchange && currencyGroup && currencyGroup?.networks?.length > 1 ?
+            {
+                destination_asset_group: currencyGroup?.name
+            }
             : {
                 ...(to && toCurrency &&
-                    { destination_network: to.internal_name, destination_asset: toCurrency?.asset }
-                )
+                {
+                    destination_network: to.internal_name,
+                    destination_asset: toCurrency?.asset
+                })
             })
     });
 
+
     const destinationRouteParams = new URLSearchParams({
         version,
-        ...(fromExchange && currencyGroup ?
-            { source_asset_group: currencyGroup?.name }
+        ...(fromExchange && currencyGroup && currencyGroup?.networks?.length > 1 ?
+            {
+                source_asset_group: currencyGroup?.name
+            }
             : {
                 ...(from && fromCurrency &&
-                    { source_network: from.internal_name, source_asset: fromCurrency?.asset }
+                {
+                    source_network: from.internal_name,
+                    source_asset: fromCurrency?.asset
+                }
                 )
             })
     });

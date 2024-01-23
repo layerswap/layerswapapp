@@ -82,9 +82,15 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     const exchangeParams = new URLSearchParams({
         version,
-        ... (currencyGroup ? {
-            [direction === 'to' ? 'source_asset_group' : 'destination_asset_group']: currencyGroup.name
-        } : {})
+        ...(currencyGroup?.networks?.length === 1 ?
+            {
+                [direction === 'to' ? 'source_network' : 'destination_network']: currencyGroup.networks[0].network,
+                [direction === 'to' ? 'source_asset' : 'destination_asset']: currencyGroup.name,
+            }
+            : (currencyGroup ? {
+                [direction === 'to' ? 'source_asset_group' : 'destination_asset_group']: currencyGroup.name
+            } : {})
+        )
     });
 
     const networkParams = new URLSearchParams({
@@ -147,7 +153,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             setFieldValue(name, item.baseObject, true)
         }
     }, [name])
-    console.log("routes", routes?.error)
+
     return (<div className={`p-3 bg-secondary-700 ${className}`}>
         <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
             {label}
