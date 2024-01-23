@@ -27,7 +27,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const routes = direction === 'from' ? settingsSourceRoutes : settingsDestinationRoutes
     const assets = routes && groupBy(routes, ({ asset }) => asset)
-    const assetNames = assets && Object.keys(assets).map(a => ({ name: a, networks: assets[a] }))
+    const assetNames = assets && Object.keys(assets).map(a => ({ name: a, values: assets[a] }))
     const lockAsset = direction === 'from' ? query?.lockFromAsset : query?.lockToAsset
     const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
     const lockedCurrency = lockAsset
@@ -158,7 +158,7 @@ export enum CurrencyDisabledReason {
 
 export type AssetGroup = {
     name: string;
-    networks: {
+    values: {
         network: string;
         asset: string;
     }[];

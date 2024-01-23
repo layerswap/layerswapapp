@@ -5,7 +5,6 @@ import { SendErrorMessage } from "./telegram";
 export default function resolveChain(network: Layer): (Chain & RainbowKitChain) | undefined {
 
     const nativeCurrency = network.assets.find(c => c.is_native);
-    const blockExplorersBaseURL = new URL(network.transaction_explorer_template).origin;
     const metadata = network.metadata
     const { ensRegistry, ensUniversalResolver, multicall3 } = metadata || {}
 
@@ -36,7 +35,7 @@ export default function resolveChain(network: Layer): (Chain & RainbowKitChain) 
         blockExplorers: {
             default: {
                 name: 'name',
-                url: blockExplorersBaseURL,
+                url: '',
             },
         },
         contracts: {

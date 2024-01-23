@@ -1,3 +1,5 @@
+import { AssetGroup } from "../components/Input/CEXCurrencyFormField";
+import { groupBy } from "../components/utils/groupBy";
 import NetworkSettings from "../lib/NetworkSettings";
 import { CryptoNetwork, NetworkCurrency } from "./CryptoNetwork";
 import { Exchange } from "./Exchange";
@@ -9,12 +11,14 @@ export class LayerSwapAppSettings {
     constructor(settings: LayerSwapSettings | any) {
         this.layers = LayerSwapAppSettings.ResolveLayers(settings.networks, settings.sourceRoutes, settings.destinationRoutes);
         this.exchanges = LayerSwapAppSettings.ResolveExchanges(settings.exchanges);
+        this.assetGroups = LayerSwapAppSettings.ResolveAssetGroups(settings.networks);
         this.sourceRoutes = settings.sourceRoutes
         this.destinationRoutes = settings.destinationRoutes
     }
 
     exchanges: Exchange[]
     layers: Layer[]
+    assetGroups: AssetGroup[]
     sourceRoutes: Route[]
     destinationRoutes: Route[]
 
@@ -85,4 +89,20 @@ export class LayerSwapAppSettings {
             })
         })
     }
+
+    static ResolveAssetGroups(networks: CryptoNetwork[]) {
+
+        interface Asset extends NetworkCurrency {
+            network: string
+        }
+
+        let assets: Asset[] = []
+        networks.forEach(n => assets?.push(...n.currencies.map(c => ({ network: n.internal_name, ...c }))))
+
+        const groups = groupBy(assets, ({ group_name }) => group_name || 'without_group')
+        const assetNames = groups && Object.keys(groups).map(a => ({ name: a, values: groups[a].map(g => ({ asset: g.asset, network: g.network })) }))
+
+        return assetNames
+    }
+
 }
