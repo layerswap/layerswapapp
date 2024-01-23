@@ -69,15 +69,25 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const sourceRoutesURL = `/routes/sources?${sourceRouteParams}`
     const destinationRoutesURL = `/routes/destinations?${destinationRouteParams}`
 
-    const { data: sourceRoutes, error: sourceRoutesError } = useSWR<ApiResponse<{
+    const { data: sourceRoutes,
+        error: sourceRoutesError,
+        isLoading: sourceRoutesLoading
+    } = useSWR<ApiResponse<{
         network: string;
         asset: string;
     }[]>>(sourceRoutesURL, apiClient.fetcher)
 
-    const { data: destinationRoutes, error: destRoutesError } = useSWR<ApiResponse<{
+    const {
+        data: destinationRoutes,
+        error: destRoutesError,
+        isLoading: destRoutesLoading
+    } = useSWR<ApiResponse<{
         network: string;
         asset: string;
     }[]>>(destinationRoutesURL, apiClient.fetcher)
+
+    const isLoading = sourceRoutesLoading || destRoutesLoading
+
     const currencies = lockedCurrency ? [lockedCurrency] : assets
 
     const filteredCurrencies = currencies?.filter(currency => {
@@ -160,7 +170,13 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     return (
         <div className="relative">
             <BalanceComponent values={values} direction={direction} onLoad={(v) => setWalletAddress(v)} />
-            <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />
+            <PopoverSelectWrapper
+                placeholder="Asset"
+                values={currencyMenuItems}
+                value={value}
+                setValue={handleSelect}
+                disabled={!value?.isAvailable?.value || isLoading}
+            />
         </div>
     )
 };

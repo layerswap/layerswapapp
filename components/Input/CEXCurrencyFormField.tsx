@@ -62,15 +62,25 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const sourceRoutesURL = `/routes/sources?${sourceRouteParams}`
     const destinationRoutesURL = `/routes/destinations?${destinationRouteParams}`
 
-    const { data: sourceRoutes } = useSWR<ApiResponse<{
+    const {
+        data: sourceRoutes,
+        isLoading: sourceRoutesLoading,
+        error: sourceRoutesError,
+    } = useSWR<ApiResponse<{
         network: string;
         asset: string;
     }[]>>(sourceRoutesURL, apiClient.fetcher)
 
-    const { data: destinationRoutes } = useSWR<ApiResponse<{
+    const {
+        data: destinationRoutes,
+        isLoading: destRoutesLoading,
+        error: destRoutesError,
+    } = useSWR<ApiResponse<{
         network: string;
         asset: string;
     }[]>>(destinationRoutesURL, apiClient.fetcher)
+
+    const isLoading = sourceRoutesLoading || destRoutesLoading
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : assetNames
 
@@ -93,7 +103,13 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         setFieldValue(`${name}Currency`, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
-    return <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />;
+    return <PopoverSelectWrapper
+        placeholder="Asset"
+        values={currencyMenuItems}
+        value={value}
+        setValue={handleSelect}
+        disabled={!value?.isAvailable?.value || isLoading}
+    />;
 }
 
 export function GenerateCurrencyMenuItems(
