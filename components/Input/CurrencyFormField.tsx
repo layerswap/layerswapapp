@@ -46,7 +46,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const sourceRouteParams = new URLSearchParams({
         version,
-        ...(toExchange && currencyGroup && currencyGroup?.networks?.length > 1 ?
+        ...(toExchange && currencyGroup && currencyGroup?.values?.length > 1 ?
             {
                 destination_asset_group: currencyGroup?.name
             }
@@ -62,7 +62,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const destinationRouteParams = new URLSearchParams({
         version,
-        ...(fromExchange && currencyGroup && currencyGroup?.networks?.length > 1 ?
+        ...(fromExchange && currencyGroup && currencyGroup?.values?.length > 1 ?
             {
                 source_asset_group: currencyGroup?.name
             }

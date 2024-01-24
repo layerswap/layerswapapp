@@ -5,13 +5,11 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import CurrencySettings from "../../lib/CurrencySettings";
-import { SortingByAvailability, SortingByOrder } from "../../lib/sorting";
+import { SortingByAvailability } from "../../lib/sorting";
 import { useQueryState } from "../../context/query";
-import { groupBy } from "../utils/groupBy";
 import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { NetworkCurrency } from "../../Models/CryptoNetwork";
 
 const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
@@ -20,18 +18,19 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     } = useFormikContext<SwapFormValues>();
     const { to, fromCurrency, toCurrency, from, currencyGroup, toExchange, fromExchange } = values
 
-    const { sourceRoutes: settingsSourceRoutes, destinationRoutes: settingsDestinationRoutes } = useSettingsState();
+    const { sourceRoutes: settingsSourceRoutes, destinationRoutes: settingsDestinationRoutes, assetGroups } = useSettingsState();
     const name = 'currencyGroup'
 
     const query = useQueryState()
 
     const routes = direction === 'from' ? settingsSourceRoutes : settingsDestinationRoutes
-    const assets = routes && groupBy(routes, ({ asset }) => asset)
-    const assetNames = assets && Object.keys(assets).map(a => ({ name: a, values: assets[a] }))
+
+    const availableAssetGroups = assetGroups.filter(g => g.values.some(v => routes.some(r => r.asset === v.asset && r.network === v.network)))
+
     const lockAsset = direction === 'from' ? query?.lockFromAsset : query?.lockToAsset
     const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
     const lockedCurrency = lockAsset
-        ? assetNames?.find(a => a.name.toUpperCase() === (asset)?.toUpperCase())
+        ? availableAssetGroups?.find(a => a.name.toUpperCase() === (asset)?.toUpperCase())
         : undefined
 
     const apiClient = new LayerSwapApiClient()
@@ -39,7 +38,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const sourceRouteParams = new URLSearchParams({
         version,
-        ...(toExchange && currencyGroup && currencyGroup?.networks?.length > 1 ?
+        ...(toExchange && currencyGroup && currencyGroup?.groupedInBackend ?
             {
                 destination_asset_group: currencyGroup?.name
             }
@@ -54,7 +53,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const destinationRouteParams = new URLSearchParams({
         version,
-        ...(fromExchange && currencyGroup && currencyGroup?.networks?.length > 1 ?
+        ...(fromExchange && currencyGroup && currencyGroup?.groupedInBackend ?
             {
                 source_asset_group: currencyGroup?.name
             }
@@ -73,7 +72,6 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
         data: sourceRoutes,
         isLoading: sourceRoutesLoading,
-        error: sourceRoutesError,
     } = useSWR<ApiResponse<{
         network: string;
         asset: string;
@@ -82,7 +80,6 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
         data: destinationRoutes,
         isLoading: destRoutesLoading,
-        error: destRoutesError,
     } = useSWR<ApiResponse<{
         network: string;
         asset: string;
@@ -90,7 +87,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const isLoading = sourceRoutesLoading || destRoutesLoading
 
-    const filteredCurrencies = lockedCurrency ? [lockedCurrency] : assetNames
+    const filteredCurrencies = lockedCurrency ? [lockedCurrency] : availableAssetGroups
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
@@ -170,6 +167,7 @@ export type AssetGroup = {
         network: string;
         asset: string;
     }[];
+    groupedInBackend: boolean
 }
 
 export default CurrencyGroupFormField
