@@ -9,6 +9,8 @@ import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import Image from "next/image";
 import { AssetGroup } from "./CEXCurrencyFormField";
+import { isValidAddress } from "../../lib/addressValidator";
+import shortenAddress from "../utils/ShortenAddress";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -41,8 +43,19 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     const destinationRouteParams = new URLSearchParams({
         version,
-        ...(filterWith ? ({ [direction === 'to' ? 'source_network' : 'destination_network']: filterWith.internal_name }) : {}),
-        ...(filterWithAsset ? ({ [direction === 'to' ? 'source_asset' : 'destination_asset']: filterWithAsset }) : {})
+        ...(filterWith && filterWithAsset
+            ? (
+                {
+                    [direction === 'to'
+                        ? 'source_network'
+                        : 'destination_network']
+                        : filterWith.internal_name,
+                    [direction === 'to'
+                        ? 'source_asset'
+                        : 'destination_asset']
+                        : filterWithAsset
+                }) : {}),
+        ...(filterWithAsset ? ({}) : {})
     });
 
     const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}?${destinationRouteParams.toString()}`
@@ -136,20 +149,22 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
                                 return (
                                     <SelectItem key={index} value={route.id}>
-                                        <div className="flex justify-between gap-1">
-                                            <div className="inline-flex items-center gap-1 w-full">
-                                                <div className="flex-shrink-0 h-5 w-5 relative">
-                                                    <Image
-                                                        src={resolveImgSrc(network)}
-                                                        alt="Network Logo"
-                                                        height="40"
-                                                        width="40"
-                                                        loading="eager"
-                                                        className="rounded-md object-contain" />
+                                        <div className="flex justify-between gap-1 grow w-full">
+                                            <div className="justify-between grow w-full">
+                                                <div className="inline-flex items-center gap-1 w-full">
+                                                    <div className="flex-shrink-0 h-5 w-5 relative">
+                                                        <Image
+                                                            src={resolveImgSrc(network)}
+                                                            alt="Network Logo"
+                                                            height="40"
+                                                            width="40"
+                                                            loading="eager"
+                                                            className="rounded-md object-contain" />
+                                                    </div>
+                                                    <p>{network?.display_name}</p>
                                                 </div>
-                                                <p>{network?.display_name}</p>
                                             </div>
-                                            <div className="inline-flex items-center gap-1">
+                                            <div className="inline-flex items-center justify-self-end gap-1">
                                                 <div className="flex-shrink-0 h-5 w-5 relative">
                                                     <Image
                                                         src={resolveImgSrc(currency)}
@@ -162,6 +177,17 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                                                 <p>{currency?.asset}</p>
                                             </div>
                                         </div>
+                                        {
+                                            currency?.is_native &&
+                                            <span className="text-xs text-secondary-text flex items-center leading-3">
+                                                Native currancy
+                                            </span>
+                                        }
+                                        {currency?.contract_address && isValidAddress(currency.contract_address, network) &&
+                                            <span className="text-xs text-secondary-text flex items-center leading-3">
+                                                {shortenAddress(currency?.contract_address)}
+                                            </span>
+                                        }
                                     </SelectItem>
                                 )
                             })
