@@ -17,7 +17,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromCurrency, from, to, amount, toCurrency } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
-    const [isAmountVisible, setIsAmountVisible] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const [walletAddress, setWalletAddress] = useState<string>()
 
@@ -65,15 +65,15 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     name={name}
                     ref={amountRef}
                     precision={fromCurrency?.precision}
-                    onFocus={() => setIsAmountVisible(false)}
-                    onBlur={() => setIsAmountVisible(true)}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
                     className="rounded-r-none text-primary-text pr-0 w-full"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value));
                     }}
                 >
-                    {requestedAmountInUsd && isAmountVisible ? (
+                    {requestedAmountInUsd && !isFocused ? (
                         <span className="absolute text-xs right-0 bottom-[16px]">
                             (${requestedAmountInUsd})
                         </span>
