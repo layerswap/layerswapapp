@@ -17,7 +17,8 @@ export function SortingByAvailability<T>(x: SelectMenuItem<T>, y: SelectMenuItem
         return 1;
     } else if (!reasonA && reasonB) {
         return -1;
+    } else {
+        const orderComparison = (Number(y.isAvailable?.value) || 0) - (Number(x.isAvailable?.value) || 0) + (x.order - y.order);
+        return orderComparison;
     }
-
-    return 0;
 }
