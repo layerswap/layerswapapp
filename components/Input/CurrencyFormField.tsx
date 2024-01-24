@@ -237,7 +237,7 @@ export function GenerateCurrencyMenuItems(
 export enum CurrencyDisabledReason {
     LockAssetIsTrue = '',
     InsufficientLiquidity = 'Temporarily disabled. Please check later.',
-    InvalidRoute = 'Invalid route'
+    InvalidRoute = 'InvalidRoute'
 }
 
 export default CurrencyFormField
