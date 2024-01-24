@@ -39,38 +39,56 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const sourceRouteParams = new URLSearchParams({
         version,
-        ...(toExchange && currencyGroup ?
-            { destination_asset_group: currencyGroup?.name }
+        ...(toExchange && currencyGroup && currencyGroup?.networks?.length > 1 ?
+            {
+                destination_asset_group: currencyGroup?.name
+            }
             : {
                 ...(to && toCurrency &&
-                    { destination_network: to.internal_name, destination_asset: toCurrency?.asset }
-                )
+                {
+                    destination_network: to.internal_name,
+                    destination_asset: toCurrency?.asset
+                })
             })
     });
 
     const destinationRouteParams = new URLSearchParams({
         version,
-        ...(fromExchange && currencyGroup ?
-            { source_asset_group: currencyGroup?.name }
+        ...(fromExchange && currencyGroup && currencyGroup?.networks?.length > 1 ?
+            {
+                source_asset_group: currencyGroup?.name
+            }
             : {
                 ...(from && fromCurrency &&
-                    { source_network: from.internal_name, source_asset: fromCurrency?.asset }
-                )
+                {
+                    source_network: from.internal_name,
+                    source_asset: fromCurrency?.asset
+                })
             })
     });
 
     const sourceRoutesURL = `/routes/sources?${sourceRouteParams}`
     const destinationRoutesURL = `/routes/destinations?${destinationRouteParams}`
 
-    const { data: sourceRoutes } = useSWR<ApiResponse<{
+    const {
+        data: sourceRoutes,
+        isLoading: sourceRoutesLoading,
+        error: sourceRoutesError,
+    } = useSWR<ApiResponse<{
         network: string;
         asset: string;
     }[]>>(sourceRoutesURL, apiClient.fetcher)
 
-    const { data: destinationRoutes } = useSWR<ApiResponse<{
+    const {
+        data: destinationRoutes,
+        isLoading: destRoutesLoading,
+        error: destRoutesError,
+    } = useSWR<ApiResponse<{
         network: string;
         asset: string;
     }[]>>(destinationRoutesURL, apiClient.fetcher)
+
+    const isLoading = sourceRoutesLoading || destRoutesLoading
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : assetNames
 
@@ -93,7 +111,13 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         setFieldValue(`${name}Currency`, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
-    return <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />;
+    return <PopoverSelectWrapper
+        placeholder="Asset"
+        values={currencyMenuItems}
+        value={value}
+        setValue={handleSelect}
+        disabled={!value?.isAvailable?.value || isLoading}
+    />;
 }
 
 export function GenerateCurrencyMenuItems(

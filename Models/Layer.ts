@@ -10,7 +10,7 @@ export type Layer = {
     metadata: Metadata | null | undefined;
     assets: NetworkCurrency[];
     chain_id: string | null | undefined;
-    transaction_explorer_template: string
+    transaction_explorer_template: string | null
     account_explorer_template: string,
     type: NetworkType,
     managed_accounts: ManagedAccount[];
