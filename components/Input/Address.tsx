@@ -58,7 +58,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const settings = useSettingsState()
 
     useEffect(() => {
-        if (destination && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address) {
+        if (destination && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address && !values.toExchange) {
             //TODO move to wallet implementation
             if (connectedWallet
                 && connectedWallet.providerName === 'starknet'
@@ -213,7 +213,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         && !inputValue
                         && destination
                         && provider
-                        && !connectedWallet &&
+                        && !connectedWallet 
+                        && !values.toExchange &&
                         <div onClick={() => { connectWallet(provider.name) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
                             <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
                                 <WalletIcon className="w-6 h-6 text-primary-text" />
@@ -259,7 +260,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     <span>Select</span>
                                     <span className="inline-block mx-1">
                                         <span className='flex gap-1 items-baseline text-sm '>
-                                            <Image src={settings.resolveImgSrc(values.toExchange)}
+                                            <Image src={settings.resolveImgSrc(values.to)}
                                                 alt="Project Logo"
                                                 height="15"
                                                 width="15"

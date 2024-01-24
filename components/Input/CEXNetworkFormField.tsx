@@ -100,7 +100,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         setFieldValue(`${name}Currency`, currency, true)
     }, [name])
 
-    //TODO set default currancy & reset currancy if not available
+    //TODO set default currency & reset currency if not available
     const value = menuItems?.find(item =>
         item.baseObject.asset ===
         (direction === 'from' ? fromCurrency : toCurrency)?.asset
@@ -180,7 +180,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                                         {
                                             currency?.is_native &&
                                             <span className="text-xs text-secondary-text flex items-center leading-3">
-                                                Native currancy
+                                                Native currency
                                             </span>
                                         }
                                         {currency?.contract_address && isValidAddress(currency.contract_address, network) &&
@@ -217,7 +217,7 @@ function GenerateMenuItems(
             type: 'cex',
         }
         return item;
-    })
+    }).slice(0, 4)
 
     return menuItems
 }
