@@ -122,16 +122,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     }, [values.refuel, destination])
 
     const valuesSwapper = useCallback(() => {
-        const swappedValues = {
-            ...values,
-            ...(values.to ? { from: values.to } : {}),
-            ...(values.from ? { to: values.from } : {}),
-            ...(values.toCurrency ? { fromCurrency: values.toCurrency } : {}),
-            ...(values.fromCurrency ? { toCurrency: values.fromCurrency } : {}),
-            toExchange: values.fromExchange,
-            fromExchange: values.toExchange
-        }
-        setValues(swappedValues, true)
+        setValues({ ...values, from: values.to, to: values.from, fromCurrency: values.toCurrency, toCurrency: values.fromCurrency, toExchange: values.fromExchange, fromExchange: values.toExchange }, true)
     }, [values])
 
     const [animate, cycle] = useCycle(
@@ -246,7 +237,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                     }
                     <div className="w-full">
                         <FeeDetailsComponent values={values} />
-
                         {
                             //TODO refactor 
                             destination && toAsset && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&

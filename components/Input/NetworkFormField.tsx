@@ -66,7 +66,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const { lockFrom, lockTo } = useQueryState()
 
     const { resolveImgSrc, layers, exchanges, destinationRoutes, sourceRoutes } = useSettingsState();
-
     let placeholder = "";
     let searchHint = "";
     let filteredLayers: Layer[];
@@ -95,14 +94,9 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     const networkParams = new URLSearchParams({
         version,
-        ...(filterWith ?
+        ...(filterWith && filterWithAsset ?
             {
                 [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.internal_name,
-            }
-            : {}
-        ),
-        ...(filterWithAsset ?
-            {
                 [direction === 'to' ? 'source_asset' : 'destination_asset']: filterWithAsset,
             }
             : {}
