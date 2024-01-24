@@ -152,8 +152,8 @@ const ResolveConnectorIcon = ({
             return (
                 <div className="-space-x-2 flex">
                     <RainbowIcon className={className} />
-                    <MetaMaskIcon className={className} />
                     <WalletConnectIcon className={className} />
+                    <MetaMaskIcon className={className} />
                 </div>
             );
         case KnownConnectors.Starknet:
@@ -175,11 +175,9 @@ const ResolveConnectorIcon = ({
         case KnownConnectors.Solana:
             return (
                 <div className="-space-x-2 flex">
-                    <Phantom className={className} />
-                    <Solflare className={className} />
-                    <WalletConnectIcon className={className} />
                     <CoinbaseIcon className={className} />
                     <GlowIcon className={className} />
+                    <Phantom className={className} />
                 </div>
             );
         default:

@@ -1,4 +1,3 @@
-import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
@@ -11,6 +10,7 @@ import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
+import WalletIcon from '../../../icons/WalletIcon';
 
 type Props = {
     depositAddress: string,
@@ -130,14 +130,14 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 <div className='space-y-4'>
                     {
                         !wallet &&
-                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Connect
+                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
+                            Connect a wallet
                         </SubmitButton>
                     }
                     {
                         wallet &&
-                        <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Transfer
+                        <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
+                            Send from wallet
                         </SubmitButton>
                     }
                 </div>
