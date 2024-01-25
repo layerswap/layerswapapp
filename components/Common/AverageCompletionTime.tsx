@@ -5,18 +5,15 @@ type AverageCompletionTimeProps = {
 }
 
 const AverageCompletionTime: FC<AverageCompletionTimeProps> = ({ avgCompletionTime }) => {
-    
+
     if (!avgCompletionTime) return
 
-    const a = avgCompletionTime?.split(':');
-    const seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
-    const minutes = seconds / 60
-    const hours = seconds / 3600
+    const time = avgCompletionTime?.split(':');
+    const hours = Number(time[0])
+    const minutes = Number(time[1])
+    const seconds = Number(time[2])
 
-    if (minutes && minutes > 1 && minutes < 60) return <span><span>~</span><span>{minutes.toFixed()}</span> <span>minutes</span></span>
-    else if (minutes && minutes >= 60) return <span><span>~</span><span>{hours}</span> <span>{hours && hours > 1 ? 'hours' : 'hour'}</span> <span>{minutes > 0 ? ` ${minutes?.toFixed()} minutes` : ''}</span></span>
-    else if (seconds && seconds <= 60) return <span><span>~</span><span>{seconds.toFixed()}</span> <span>seconds</span></span>
-    else return <span>~1-2 minutes</span>
+    return <p>{hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''} {minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''} {(seconds > 0 && minutes == 0 && hours == 0) ? `${seconds.toFixed()} seconds` : ''}</p>
 }
 
 export default AverageCompletionTime

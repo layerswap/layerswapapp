@@ -64,13 +64,13 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency,
                 }
             </span>
             {
-                receiveAmountInUsd !== undefined &&
-                <p className="text-secondary-text text-xs flex justify-end mr-0.5 font-medium">
+                receiveAmountInUsd !== undefined && Number(receiveAmountInUsd) > 0 &&
+                < p className="text-secondary-text text-xs flex justify-end mr-0.5 font-medium">
                     (${receiveAmountInUsd})
                 </p>
             }
         </div>
-    </div>
+    </div >
 }
 
 type EstimatedArrivalProps = {
