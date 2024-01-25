@@ -105,7 +105,6 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const handleSelect = useCallback((item: SelectMenuItem<AssetGroup>) => {
         setFieldValue(name, item.baseObject, true)
-        setFieldValue(`${name}Currency`, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
     return <PopoverSelectWrapper
@@ -113,7 +112,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         values={currencyMenuItems}
         value={value}
         setValue={handleSelect}
-        disabled={!value?.isAvailable?.value || isLoading}
+        disabled={!value?.isAvailable?.value}
     />;
 }
 

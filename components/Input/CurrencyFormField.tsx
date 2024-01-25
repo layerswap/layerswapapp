@@ -120,6 +120,8 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const currencyAsset = direction === 'from' ? fromCurrency?.asset : toCurrency?.asset;
 
     useEffect(() => {
+        if (direction !== "to") return
+
         let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset)
 
         if (currencyIsAvailable) return
@@ -129,19 +131,38 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
             || currencyMenuItems?.[0]
 
         const selected_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.asset?.toUpperCase() ===
-            ((direction === 'to' ? fromCurrency?.asset : toCurrency?.asset))?.toUpperCase())
+            c.baseObject?.asset?.toUpperCase() === fromCurrency?.asset?.toUpperCase())
 
         if (direction === "to" && selected_currency && destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === selected_currency.name)) {
-            setFieldValue(name, selected_currency.baseObject)
-        }
-        else if (direction === "from" && selected_currency && sourceRoutes?.data?.filter(r => r.network === from?.internal_name)?.some(r => r.asset === selected_currency.name)) {
             setFieldValue(name, selected_currency.baseObject)
         }
         else if (default_currency) {
             setFieldValue(name, default_currency.baseObject)
         }
-    }, [from, to, query])
+    }, [to, query])
+
+
+    useEffect(() => {
+        if (direction !== "from") return
+
+        let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset)
+
+        if (currencyIsAvailable) return
+
+        const default_currency = currencyMenuItems?.find(c =>
+            c.baseObject?.asset?.toUpperCase() === (query?.asset)?.toUpperCase())
+            || currencyMenuItems?.[0]
+
+        const selected_currency = currencyMenuItems?.find(c =>
+            c.baseObject?.asset?.toUpperCase() === toCurrency?.asset?.toUpperCase())
+
+        if (direction === "from" && selected_currency && sourceRoutes?.data?.filter(r => r.network === from?.internal_name)?.some(r => r.asset === selected_currency.name)) {
+            setFieldValue(name, selected_currency.baseObject)
+        }
+        else if (default_currency) {
+            setFieldValue(name, default_currency.baseObject)
+        }
+    }, [from, query])
 
     useEffect(() => {
         if (name === "toCurrency" && toCurrency) {
@@ -150,7 +171,8 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
                     ?.filter(r => r.network === to?.internal_name)
                     ?.some(r => r.asset === toCurrency?.asset)) {
                 setFieldValue(name, null)
-            } else if (destRoutesError) {
+            }
+            else if (destRoutesError) {
                 setFieldValue('toCurrency', null)
                 setFieldValue('to', null)
             }
@@ -164,7 +186,8 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
                     ?.filter(r => r.network === from?.internal_name)
                     ?.some(r => r.asset === fromCurrency?.asset)) {
                 setFieldValue(name, null)
-            } else if (sourceRoutesError) {
+            }
+            else if (sourceRoutesError) {
                 setFieldValue('fromCurrency', null)
                 setFieldValue('from', null)
             }
