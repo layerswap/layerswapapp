@@ -64,7 +64,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const query = useQueryState()
     const { lockFrom, lockTo } = query
 
-    const { resolveImgSrc, layers, exchanges, destinationRoutes, sourceRoutes } = useSettingsState();
+    const { resolveImgSrc, layers, exchanges, destinationRoutes, sourceRoutes, assetGroups } = useSettingsState();
     let placeholder = "";
     let searchHint = "";
     let filteredLayers: Layer[];
@@ -145,8 +145,13 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         } else {
             setFieldValue(`${name}Exchange`, null, true)
             setFieldValue(name, item.baseObject, true)
+            const currency = name == "from" ? fromCurrency : toCurrency
+            const groupSubstitute = (item.baseObject as Layer)?.assets?.find(a => a.group_name === currency?.group_name)
+            if (groupSubstitute) {
+                setFieldValue(`${name}Currency`, groupSubstitute, true)
+            }
         }
-    }, [name])
+    }, [name, assetGroups, toCurrency, fromCurrency])
 
     return (<div className={`p-3 bg-secondary-700 ${className}`}>
         <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">

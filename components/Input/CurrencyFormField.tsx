@@ -27,8 +27,9 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
+
     const { to, fromCurrency, toCurrency, from, currencyGroup, toExchange, fromExchange } = values
-    const { resolveImgSrc } = useSettingsState();
+    const { resolveImgSrc, assetGroups } = useSettingsState();
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { balances } = useBalancesState()
@@ -135,7 +136,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         const selected_currency = currencyMenuItems?.find(c =>
             c.baseObject?.asset?.toUpperCase() === fromCurrency?.asset?.toUpperCase())
 
-        if (direction === "to" && selected_currency && destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === selected_currency.name)) {
+        if (selected_currency && destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === selected_currency.name)) {
             setFieldValue(name, selected_currency.baseObject)
         }
         else if (default_currency) {
@@ -158,7 +159,10 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         const selected_currency = currencyMenuItems?.find(c =>
             c.baseObject?.asset?.toUpperCase() === toCurrency?.asset?.toUpperCase())
 
-        if (direction === "from" && selected_currency && sourceRoutes?.data?.filter(r => r.network === from?.internal_name)?.some(r => r.asset === selected_currency.name)) {
+        if (selected_currency
+            && sourceRoutes?.data
+                ?.filter(r => r.network === from?.internal_name)
+                ?.some(r => r.asset === selected_currency.name)) {
             setFieldValue(name, selected_currency.baseObject)
         }
         else if (default_currency) {
@@ -174,10 +178,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
                     ?.some(r => r.asset === toCurrency?.asset)) {
                 setFieldValue(name, null)
             }
-            else if (destRoutesError) {
-                setFieldValue('toCurrency', null)
-                setFieldValue('to', null)
-            }
         }
     }, [fromCurrency, currencyGroup, name, to, destinationRoutes, destRoutesError,])
 
@@ -188,10 +188,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
                     ?.filter(r => r.network === from?.internal_name)
                     ?.some(r => r.asset === fromCurrency?.asset)) {
                 setFieldValue(name, null)
-            }
-            else if (sourceRoutesError) {
-                setFieldValue('fromCurrency', null)
-                setFieldValue('from', null)
             }
         }
     }, [toCurrency, currencyGroup, name, from, sourceRoutes, sourceRoutesError])
