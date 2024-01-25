@@ -90,7 +90,7 @@ const WalletTransferContent: FC = () => {
         <div className='flex w-full items-center text-sm justify-between mb-1 '>
             <span className='ml-1'>{swap?.source_exchange ? "Connected account" : "Connected wallet"}</span>
             {
-                walletBalanceAmount &&
+                walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
                 <div className="text-right">
                     <div>
                         <span>Balance:&nbsp;</span>
@@ -100,6 +100,8 @@ const WalletTransferContent: FC = () => {
                             <span>{walletBalanceAmount}</span>}
                     </div>
                 </div>
+                :
+                <></>
             }
         </div>
         <div onClick={handleOpenAccount} className={`${canOpenAccount ? 'cursor-pointer' : 'cursor-auto'} text-left min-h-12  space-x-2 border border-secondary-600 bg-secondary-700/70 flex text-sm rounded-md items-center w-full pl-4 pr-2 py-1.5`}>
