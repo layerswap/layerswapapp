@@ -86,7 +86,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         return () => { (depositeAddressIsfromAccountRef.current = null); return }
     }, [depositeAddressIsfromAccount])
 
-
     useEffect(() => {
         if (!source || !toAsset || !GetDefaultAsset(source, toAsset)?.refuel_amount_in_usd) {
             handleConfirmToggleChange(false)
@@ -119,7 +118,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         if (values.refuel && minAllowedAmount && (Number(values.amount) < minAllowedAmount)) {
             setFieldValue('amount', minAllowedAmount)
         }
-    }, [values.refuel, destination])
+    }, [values.refuel, destination, minAllowedAmount])
 
     const valuesSwapper = useCallback(() => {
         setValues({ ...values, from: values.to, to: values.from, fromCurrency: values.toCurrency, toCurrency: values.fromCurrency, toExchange: values.fromExchange, fromExchange: values.toExchange }, true)
