@@ -1,5 +1,3 @@
-import { LayerStatus } from "./Layer";
-
 export enum NetworkType {
     EVM = "evm",
     Starknet = "starknet",
@@ -10,42 +8,34 @@ export enum NetworkType {
     TON = 'ton'
 }
 
-
 export class CryptoNetwork {
     display_name: string;
     internal_name: string;
-    native_currency: string | null | undefined;
-    average_completion_time: string;
     transaction_explorer_template: string;
-    account_explorer_template?: string;
-    status: LayerStatus;
+    account_explorer_template: string;
     currencies: NetworkCurrency[];
-    refuel_amount_in_usd: number;
     chain_id: string;
     type: NetworkType;
     created_date: string;
-    is_featured: boolean;
     nodes: NetworkNode[];
     managed_accounts: ManagedAccount[];
     metadata: Metadata | null | undefined;
+    is_testnet?: boolean;
     img_url?: string
 }
 
 export class NetworkCurrency {
-    name: string;
     asset: string;
-    status: LayerStatus;
-    is_deposit_enabled: boolean;
-    is_withdrawal_enabled: boolean;
-    is_refuel_enabled: boolean;
-    max_withdrawal_amount: number;
-    deposit_fee: number;
-    withdrawal_fee: number;
     //TODO may be plain string
     contract_address: `0x${string}` | null | undefined;
     decimals: number;
-    source_base_fee: number;
-    destination_base_fee: number;
+    is_native: boolean
+    precision: number;
+    usd_price: number;
+    refuel_amount_in_usd: number | null;
+    group_name?: string | null;
+    availableInSource?: boolean;
+    availableInDestination?: boolean;
 }
 export class NetworkNode {
     url: string;
@@ -64,6 +54,7 @@ export class Metadata {
     ensUniversalResolver?: {
         address: `0x${string}`
     }
+    GasPriceOracleContract?: `0x${string}`
     WatchdogContractAddress?: `0x${string}`
     L1Network?: string
 }

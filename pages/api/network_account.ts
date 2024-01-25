@@ -41,9 +41,7 @@ const getAccessToken = async (): Promise<AuthConnectResponse> => {
     params.append('client_id', 'layerswap_bridge_internal');
     params.append('grant_type', 'client_credentials');
     params.append('client_secret', process.env.INTERNAL_API_SECRET || "");
-    var apiClient = new LayerSwapApiClient();
-    const settings = await apiClient.GetSettingsAsync()
-    const identity_url = settings?.data?.discovery?.identity_url
+    const identity_url = process.env.NEXT_PUBLIC_IDENTITY_API
     const auth = axios.post<AuthConnectResponse>(`${identity_url}/connect/token`, params, { headers: { 'content-type': 'application/x-www-form-urlencoded' } })
 
     return (await auth).data;

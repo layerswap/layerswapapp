@@ -41,10 +41,10 @@ const Component: FC<Props> = ({ campaign }) => {
     }
 
     const rewards = rewardsData?.data
-    const { resolveImgSrc, networks, currencies } = settings
-    const network = networks.find(n => n.internal_name === campaign?.network)
+    const { resolveImgSrc, layers } = settings
+    const network = layers.find(n => n.internal_name === campaign?.network)
     const position = rewards?.user_reward.position || NaN
-    const campaignAsset = currencies.find(c => c?.asset === campaign?.asset)
+    const campaignAsset = network?.assets.find(c => c?.asset === campaign?.asset)
 
     const leaderboardRewards = [
         leaderboard.leaderboard_budget * 0.6,

@@ -13,9 +13,9 @@ export default function useImxBalance(): BalanceProvider {
 
         const axios = (await import("axios")).default
 
-        if (layer.isExchange === true || !layer.assets) return
+        if (!layer.assets) return
 
-        const res: BalancesResponse = await axios.get(`${layer?.assets?.[0].network?.nodes[0].url}/v2/balances/${address}`).then(r => r.data)
+        const res: BalancesResponse = await axios.get(`${layer?.nodes[0].url}/v2/balances/${address}`).then(r => r.data)
 
         const balances = layer?.assets?.map(asset => {
             const balance = res.result.find(r => r.symbol === asset.asset)
@@ -35,9 +35,7 @@ export default function useImxBalance(): BalanceProvider {
     }
 
     // Transfers in imx are free
-    const getGas = async ({ layer, currency }: GasProps) => {
-
-        if (layer.isExchange === true || !layer.assets) return
+    const getGas = async ({ currency }: GasProps) => {
 
         return [{
             token: currency.asset,
