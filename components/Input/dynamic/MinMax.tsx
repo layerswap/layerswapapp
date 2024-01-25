@@ -6,6 +6,8 @@ import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import useBalance from "../../../hooks/useBalance";
 import { useFee } from "../../../context/feeContext";
 import { useBalancesState } from "../../../context/balances";
+import { useQueryState } from "../../../context/query";
+import upperCaseKeys from "../../utils/upperCaseKeys";
 
 const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) => {
 
@@ -13,6 +15,7 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
     const { fromCurrency, from, to, destination_address } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
     const { balances, gases } = useBalancesState()
+    const query = useQueryState()
 
     const { getAutofillProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -32,14 +35,25 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
     const native_currency = from?.assets.find(a => a.is_native)
 
     let maxAllowedAmount: number | null = maxAmountFromApi || 0
-    if (walletBalance && (walletBalance.amount >= Number(minAllowedAmount) && walletBalance.amount <= Number(maxAmountFromApi))) {
+    if (query.balances && fromCurrency) {
+        try {
+            let balancesTyped = upperCaseKeys(JSON.parse(query.balances))
+            if (balancesTyped && balancesTyped[fromCurrency.asset] && balancesTyped[fromCurrency.asset] > Number(minAllowedAmount)) {
+                maxAllowedAmount = Math.min(maxAllowedAmount, balancesTyped[fromCurrency.asset]);
+            }
+        }
+        // in case the query parameter had bad formatting just ignoe
+        catch { }
+    } else if (walletBalance && (walletBalance.amount >= Number(minAllowedAmount) && walletBalance.amount <= Number(maxAmountFromApi))) {
         if (((native_currency?.asset === fromCurrency?.asset) || !native_currency) && ((walletBalance.amount - gasAmount) >= Number(minAllowedAmount) && (walletBalance.amount - gasAmount) <= Number(maxAmountFromApi))) {
             maxAllowedAmount = walletBalance.amount - gasAmount
         }
         else maxAllowedAmount = walletBalance.amount
-    } else {
-        maxAllowedAmount = Number(maxAmountFromApi)
     }
+    else {
+        maxAllowedAmount = Number(maxAmountFromApi) || 0
+    }
+
 
     const handleSetMaxAmount = useCallback(async () => {
         setFieldValue('amount', maxAllowedAmount);

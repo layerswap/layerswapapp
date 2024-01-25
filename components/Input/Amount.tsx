@@ -6,6 +6,8 @@ import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useFee } from "../../context/feeContext";
 import dynamic from "next/dynamic";
+import { useQueryState } from "../../context/query";
+import upperCaseKeys from "../utils/upperCaseKeys";
 
 const MinMax = dynamic(() => import("./dynamic/MinMax"), {
     loading: () => <></>,
@@ -21,18 +23,29 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const [walletAddress, setWalletAddress] = useState<string>()
     const native_currency = from?.assets.find(a => a.is_native)
+    const query = useQueryState()
 
     const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.asset)?.gas || 0
 
     const name = "amount"
     const walletBalance = walletAddress && balances[walletAddress]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
     let maxAllowedAmount: number | null = maxAmountFromApi || 0
-    if (walletBalance && (walletBalance.amount >= Number(minAllowedAmount) && walletBalance.amount <= Number(maxAmountFromApi))) {
+    if (query.balances && fromCurrency) {
+        try {
+            let balancesTyped = upperCaseKeys(JSON.parse(query.balances))
+            if (balancesTyped && balancesTyped[fromCurrency.asset] && balancesTyped[fromCurrency.asset] > Number(minAllowedAmount)) {
+                maxAllowedAmount = Math.min(maxAllowedAmount, balancesTyped[fromCurrency.asset]);
+            }
+        }
+        // in case the query parameter had bad formatting just ignoe
+        catch { }
+    } else if (walletBalance && (walletBalance.amount >= Number(minAllowedAmount) && walletBalance.amount <= Number(maxAmountFromApi))) {
         if (((native_currency?.asset === fromCurrency?.asset) || !native_currency) && ((walletBalance.amount - gasAmount) >= Number(minAllowedAmount) && (walletBalance.amount - gasAmount) <= Number(maxAmountFromApi))) {
             maxAllowedAmount = walletBalance.amount - gasAmount
         }
         else maxAllowedAmount = walletBalance.amount
-    } else {
+    }
+    else {
         maxAllowedAmount = Number(maxAmountFromApi) || 0
     }
 
