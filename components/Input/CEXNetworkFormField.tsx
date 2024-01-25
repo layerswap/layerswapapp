@@ -199,7 +199,7 @@ function GenerateMenuItems(
     historicalNetworks: { network: string, asset: string }[] | undefined,
     currencyGroup: AssetGroup | undefined
 ): SelectMenuItem<{ network: string, asset: string }>[] {
-    const menuItems = items.filter(i => i.asset === currencyGroup?.name).map((e, index) => {
+    const menuItems = items.filter(i => currencyGroup?.values?.some(v => v.asset == i.asset && v.network == i.network)).map((e, index) => {
         const order = historicalNetworks?.indexOf(historicalNetworks.find(n => n.asset === e.asset && n.network === e.network) || { network: '', asset: '' }) || 100
         const item: SelectMenuItem<{ network: string, asset: string }> = {
             baseObject: e,

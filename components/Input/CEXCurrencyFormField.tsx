@@ -85,8 +85,6 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         asset: string;
     }[]>>(destinationRoutesURL, apiClient.fetcher)
 
-    const isLoading = sourceRoutesLoading || destRoutesLoading
-
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : availableAssetGroups
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
@@ -100,7 +98,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     useEffect(() => {
         if (value) return
-        setFieldValue(name, currencyMenuItems?.[0])
+        setFieldValue(name, currencyMenuItems?.[0].baseObject)
     }, [])
 
     const handleSelect = useCallback((item: SelectMenuItem<AssetGroup>) => {
