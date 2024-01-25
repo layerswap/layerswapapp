@@ -15,20 +15,24 @@ export default class CurrencySettings {
         CurrencySettings._isInitialized = true;
         CurrencySettings.ForceDisable = JSON.parse(process.env.NEXT_PUBLIC_NETWORK_FORCE_SETTINGS || "{}")
 
-
-        CurrencySettings.KnownSettings[KnownInternalNames.Currencies.LRC] = {
-            Order: 3,
-        };
         CurrencySettings.KnownSettings[KnownInternalNames.Currencies.ETH] = {
             Order: 0,
         };
-        CurrencySettings.KnownSettings[KnownInternalNames.Currencies.USDC] = {
+        CurrencySettings.KnownSettings[KnownInternalNames.Currencies.USDCe] = {
             Order: 1,
         };
-        CurrencySettings.KnownSettings[KnownInternalNames.Currencies.USDT] = {
+        CurrencySettings.KnownSettings[KnownInternalNames.Currencies.USDCE] = {
+            Order: 1,
+        };
+        CurrencySettings.KnownSettings[KnownInternalNames.Currencies.USDC] = {
             Order: 2,
         };
-        
+        CurrencySettings.KnownSettings[KnownInternalNames.Currencies.USDT] = {
+            Order: 3,
+        };
+        CurrencySettings.KnownSettings[KnownInternalNames.Currencies.LRC] = {
+            Order: 4,
+        };
     }
 }
 

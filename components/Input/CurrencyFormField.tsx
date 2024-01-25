@@ -235,7 +235,7 @@ export function GenerateCurrencyMenuItems(
             return { value: true, disabledReason: null }
         }
     }
-
+    
     return currencies?.map(c => {
         const currency = c
         const displayName = lockedCurrency?.asset ?? currency.asset;
