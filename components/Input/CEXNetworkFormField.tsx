@@ -33,8 +33,8 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         toExchange,
         currencyGroup
     } = values
-    const { layers, resolveImgSrc } = useSettingsState();
 
+    const { layers, resolveImgSrc } = useSettingsState();
     const filterWith = direction === "from" ? to : from
     const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
 
@@ -55,7 +55,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                         : 'destination_asset']
                         : filterWithAsset
                 }) : {}),
-        ...(filterWithAsset ? ({}) : {})
     });
 
     const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}?${destinationRouteParams.toString()}`
@@ -65,14 +64,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         asset: string
     }[]>>(routesEndpoint, apiClient.fetcher)
     const routesData = routes?.data
-    // const [routesData, setRoutesData] = useState<{
-    //     network: string,
-    //     asset: string
-    // }[]>()
-
-    // useEffect(() => {
-    //     if (!isLoading && routes?.data) setRoutesData(routes.data)
-    // }, [routes])
 
     const historicalNetworksEndpoint =
         (fromExchange || toExchange)
@@ -85,7 +76,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         network: string,
         asset: string
     }[]>>(historicalNetworksEndpoint, apiClient.fetcher)
-
     const menuItems = routesData
         && historicalNetworks
         && GenerateMenuItems(routesData, historicalNetworks?.data, currencyGroup)
@@ -122,7 +112,12 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     }, [routesData, historicalNetworks])
 
     useEffect(() => {
+        if (!currencyGroup) return
         if (!menuItems) return
+        if (menuItems.length == 0) {
+            setFieldValue(`${direction === 'to' ? 'from' : 'to'}Currency`, null, true)
+            return
+        }
         else if (value) return
         const item = menuItems[0]
         handleSelect(item)
@@ -196,7 +191,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                 </SelectContent>
             </Select>
         </div>
-    </div >)
+    </div>)
 });
 
 function GenerateMenuItems(
@@ -204,7 +199,6 @@ function GenerateMenuItems(
     historicalNetworks: { network: string, asset: string }[] | undefined,
     currencyGroup: AssetGroup | undefined
 ): SelectMenuItem<{ network: string, asset: string }>[] {
-
     const menuItems = items.filter(i => i.asset === currencyGroup?.name).map((e, index) => {
         const order = historicalNetworks?.indexOf(historicalNetworks.find(n => n.asset === e.asset && n.network === e.network) || { network: '', asset: '' }) || 100
         const item: SelectMenuItem<{ network: string, asset: string }> = {
