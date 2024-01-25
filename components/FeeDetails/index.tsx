@@ -3,7 +3,6 @@ import { SwapFormValues } from '../DTOs/SwapFormValues';
 import { ReceiveAmounts } from './ReceiveAmounts';
 import DetailedEstimates from './DetailedEstimates';
 import { useFee } from '../../context/feeContext';
-import { useSettingsState } from '../../context/settings';
 import RefuelToggle from './Refuel';
 import CEXNetworkFormField from '../Input/CEXNetworkFormField';
 import FeeDetails from './FeeDetailsComponent';
@@ -13,7 +12,6 @@ import ResizablePanel from '../ResizablePanel';
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
     const { toCurrency, from, to, refuel, fromExchange, toExchange } = values || {};
     const { fee } = useFee()
-    const { layers } = useSettingsState()
     const query = useQueryState();
     const nativeAsset = to?.assets.find(a => a.is_native)
 
@@ -37,25 +35,24 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                     </FeeDetails.Item>
                 }
 
-                {from && to &&
+                {
+                    from && to &&
                     <FeeDetails.Item>
-                        <DetailedEstimates
-                            networks={layers}
-                            selected_currency={toCurrency}
-                            source={from}
-                            destination={to}
-                        />
+                        <DetailedEstimates />
                     </FeeDetails.Item>
                 }
 
-                <FeeDetails.Item>
-                    <ReceiveAmounts
-                        currency={toCurrency}
-                        to={to}
-                        receive_amount={fee.walletReceiveAmount}
-                        refuel={!!refuel}
-                    />
-                </FeeDetails.Item>
+                <ResizablePanel>
+                    <FeeDetails.Item>
+                        <ReceiveAmounts
+                            currency={toCurrency}
+                            to={to}
+                            receive_amount={fee.walletReceiveAmount}
+                            refuel={!!refuel}
+                            fee={fee}
+                        />
+                    </FeeDetails.Item>
+                </ResizablePanel>
 
             </FeeDetails>
 

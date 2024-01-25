@@ -29,14 +29,17 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
 
     const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.asset)?.gas || 0
     const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
+    const native_currency = from?.assets.find(a => a.is_native)
 
-    const maxAllowedAmount = (walletBalance &&
-        maxAmountFromApi &&
-        minAllowedAmount &&
-        ((walletBalance.amount - gasAmount) >= minAllowedAmount &&
-            (walletBalance.amount - gasAmount) <= maxAmountFromApi)) ?
-        walletBalance.amount - Number(gasAmount)
-        : maxAmountFromApi
+    let maxAllowedAmount: number | null = maxAmountFromApi || 0
+    if (walletBalance && (walletBalance.amount >= Number(minAllowedAmount) && walletBalance.amount <= Number(maxAmountFromApi))) {
+        if (((native_currency?.asset === fromCurrency?.asset) || !native_currency) && ((walletBalance.amount - gasAmount) >= Number(minAllowedAmount) && (walletBalance.amount - gasAmount) <= Number(maxAmountFromApi))) {
+            maxAllowedAmount = walletBalance.amount - gasAmount
+        }
+        else maxAllowedAmount = walletBalance.amount
+    } else {
+        maxAllowedAmount = Number(maxAmountFromApi)
+    }
 
     const handleSetMaxAmount = useCallback(async () => {
         setFieldValue('amount', maxAllowedAmount);
