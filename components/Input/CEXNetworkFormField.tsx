@@ -151,13 +151,13 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                 <SelectContent>
                     <SelectGroup>
                         <SelectLabel className="!text-primary-text">Networks</SelectLabel>
-                        <div className="rounded-md bg-secondary-600 p-4 max-w-xs m-3">
-                            <div className="flex">
+                        <div className="rounded-md bg-secondary-600 p-4 max-w-xs m-2">
+                            <div className="flex text-secondary-text">
                                 <div className="flex-shrink-0">
-                                    <Info className="h-5 w-5 text-primary-text" aria-hidden="true" />
+                                    <Info className="h-4 w-4 mt-0.5" aria-hidden="true" />
                                 </div>
                                 <div className="ml-3">
-                                    <div className="text-sm text-secondary-text">
+                                    <div className="text-sm">
                                         {
                                             direction === 'from' ?
                                                 <p>Please note that you should initiate the withdrawal from your exchange account via the selected network. In case of transferring via another network, your assets may be lost.</p>
