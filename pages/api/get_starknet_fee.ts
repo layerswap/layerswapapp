@@ -41,7 +41,7 @@ class StarknetFeeProps {
 const getStarknetFee = async ({ nodeUrl, contractAddress, recipient, watchDogContract }: StarknetFeeProps): Promise<EstimateFee | undefined> => {
 
     const { BigNumber } = await import("ethers");
-debugger
+
     if (!nodeUrl || !contractAddress || !recipient || !watchDogContract) return
 
     const amountToWithdraw = BigNumber.from(1);

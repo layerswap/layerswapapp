@@ -76,20 +76,11 @@ export default function Layout({ children, settings, themeData }: Props) {
     ...(router.query.lockFrom === 'true' ? { lockFrom: true } : {}),
     ...(router.query.lockTo === 'true' ? { lockTo: true } : {}),
     ...(router.query.lockAsset === 'true' ? { lockAsset: true } : {}),
+    ...(router.query.lockFromAsset === 'true' ? { lockFromAsset: true } : {}),
+    ...(router.query.lockToAsset === 'true' ? { lockToAsset: true } : {}),
 
-
-    ...(router.query.lockAddress === 'false' ? { lockAddress: false } : {}),
-    ...(router.query.lockNetwork === 'false' ? { lockNetwork: false } : {}),
-    ...(router.query.lockExchange === 'false' ? { lockExchange: false } : {}),
-    ...(router.query.hideRefuel === 'false' ? { hideRefuel: false } : {}),
-    ...(router.query.hideAddress === 'false' ? { hideAddress: false } : {}),
-    ...(router.query.hideFrom === 'false' ? { hideFrom: false } : {}),
-    ...(router.query.hideTo === 'false' ? { hideTo: false } : {}),
-    ...(router.query.lockFrom === 'false' ? { lockFrom: false } : {}),
-    ...(router.query.lockTo === 'false' ? { lockTo: false } : {}),
-    ...(router.query.lockAsset === 'false' ? { lockAsset: false } : {}),
   };
-
+  
   function logErrorToService(error, info) {
     const transaction = Sentry.startTransaction({
       name: "error_boundary_handler",

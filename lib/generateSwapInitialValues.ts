@@ -1,13 +1,14 @@
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./addressValidator";
-import { FilterDestinationLayers, FilterSourceLayers } from "../helpers/settingsHelper";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { SwapItem } from "./layerSwapApiClient";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
-    const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset } = queryParams
-    const { layers } = settings || {}
+    const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, addressSource } = queryParams
+    const { layers, sourceRoutes, destinationRoutes } = settings || {}
+
+    const shouldManipulateCurrency = addressSource === 'ea7df14a1597407f9f755f05e25bab42' && from === 'ARBITRUM_MAINNET' && fromAsset === 'USDC'
 
     const lockedSourceCurrency = lockFromAsset ?
         layers.find(l => l.internal_name === to)
@@ -21,8 +22,8 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
     const sourceLayer = layers.find(l => l.internal_name.toUpperCase() === from?.toUpperCase())
     const destinationLayer = layers.find(l => l.internal_name.toUpperCase() === to?.toUpperCase())
 
-    const sourceItems = FilterSourceLayers(layers, destinationLayer, lockedSourceCurrency)
-    const destinationItems = FilterDestinationLayers(layers, sourceLayer, lockedDestinationCurrency)
+    const sourceItems = layers.filter(l => sourceRoutes?.some(r => r.network === l.internal_name))
+    const destinationItems = layers.filter(l => destinationRoutes?.some(r => r.network === l.internal_name))
 
     const initialSource = sourceLayer ?
         sourceItems.find(i => i == sourceLayer)
@@ -42,9 +43,9 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
     let initialAddress =
         destAddress && initialDestination && isValidAddress(destAddress, destinationLayer) ? destAddress : "";
 
-    let initialSourceCurrency =
-        filteredSourceCurrencies?.find(c => c.asset?.toUpperCase() == fromAsset?.toUpperCase())
-        || filteredSourceCurrencies?.[0]
+    let initialSourceCurrency = shouldManipulateCurrency ? filteredSourceCurrencies?.find(c => c.asset === 'USDC.e') :
+        (filteredSourceCurrencies?.find(c => c.asset?.toUpperCase() == fromAsset?.toUpperCase())
+            || filteredSourceCurrencies?.[0])
 
     let initialDestinationCurrency =
         filteredDestinationCurrencies?.find(c => c.asset?.toUpperCase() == toAsset?.toUpperCase())
@@ -90,7 +91,7 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
 
     const direction = fromExchange ? 'from' : 'to';
     const routes = direction === 'from' ? sourceRoutes : destinationRoutes;
-    const availableAssetGroups = assetGroups.filter(g=>g.values.some(v=>routes.some(r=>r.asset === v.asset && r.network === v.network)))
+    const availableAssetGroups = assetGroups.filter(g => g.values.some(v => routes.some(r => r.asset === v.asset && r.network === v.network)))
     const currencyGroup = availableAssetGroups.find(a => a.name === (direction === 'from' ? source_network_asset : destination_network_asset))
 
     const fromCurrency = from?.assets.find(c => c.asset === source_network_asset);

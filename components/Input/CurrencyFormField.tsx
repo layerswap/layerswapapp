@@ -37,10 +37,10 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const lockAsset = direction === 'from' ? query?.lockFromAsset
         : query?.lockToAsset
     const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
-    const assets = direction === 'from' ? from?.assets : to?.assets;
+    const currencies = direction === 'from' ? from?.assets : to?.assets;
 
     const lockedCurrency = lockAsset
-        ? assets?.find(c => c?.asset?.toUpperCase() === (asset)?.toUpperCase())
+        ? currencies?.find(c => c?.asset?.toUpperCase() === (asset)?.toUpperCase())
         : undefined
 
     const apiClient = new LayerSwapApiClient()
@@ -100,7 +100,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const isLoading = sourceRoutesLoading || destRoutesLoading
 
-    const currencies = lockedCurrency ? [lockedCurrency] : assets
 
     const filteredCurrencies = currencies?.filter(currency => {
         if (direction === "from") {
@@ -224,21 +223,20 @@ export function GenerateCurrencyMenuItems(
     const { to, from } = values
 
     let currencyIsAvailable = (currency: NetworkCurrency) => {
-        if ((from || to) && !routes?.filter(r => r.network === (direction === 'from' ? from?.internal_name : to?.internal_name)).some(r => r.asset === currency.asset)) {
-            if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset) {
-                return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
-            } else {
-                return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
-            }
+        if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset) {
+            return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
+        }
+        else if ((from || to) && !routes?.filter(r => r.network === (direction === 'from' ? from?.internal_name : to?.internal_name)).some(r => r.asset === currency.asset)) {
+            return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
         }
         else {
             return { value: true, disabledReason: null }
         }
     }
-    
+
     return currencies?.map(c => {
         const currency = c
-        const displayName = lockedCurrency?.asset ?? currency.asset;
+        const displayName = currency.asset;
         const balance = balances?.find(b => b?.token === c?.asset && (direction === 'from' ? from : to)?.internal_name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
 

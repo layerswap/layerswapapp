@@ -19,8 +19,8 @@ function mapLegacyQueryParams(params: QueryParams): QueryParams {
     ...(params.lockExchange ? { lockFrom: params.lockExchange } : {}),
     ...(params.lockNetwork ? { lockTo: params.lockNetwork } : {}),
     ...(params.addressSource ? { appName: params.addressSource } : {}),
-    ...(params.asset ? { toAsset: params.asset, fromAsset: params.asset } : {}),
-    ...(params.lockAsset ? { lockToAsset: params.lockAsset, lockFromAsset: params.lockAsset } : {}),
+    ...(params.asset ? { [params.to ? "toAsset" : "fromAsset"]: params.asset } : {}),
+    ...(params.lockAsset ? { [params.to ? "lockToAsset" : "lockFromAsset"]: params.lockAsset } : {}),
   }
 }
 
