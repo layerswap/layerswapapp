@@ -146,7 +146,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                             {shortenAddress(currency?.contract_address)}
                         </Link>
                     </div>
-
                 }
                 {
                     currency?.is_native &&
@@ -179,17 +178,8 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                                                     <p>{network?.display_name}</p>
                                                 </div>
                                             </div>
-                                            <div className="inline-flex items-center justify-self-end gap-1">
-                                                <div className="flex-shrink-0 h-5 w-5 relative">
-                                                    <Image
-                                                        src={resolveImgSrc(currency)}
-                                                        alt="Token Logo"
-                                                        height="40"
-                                                        width="40"
-                                                        loading="eager"
-                                                        className="rounded-md object-contain" />
-                                                </div>
-                                                <p>{currency?.asset}</p>
+                                            <div className="inline-flex items-center justify-self-end gap-1 text-secondary-text">
+                                                ({currency?.asset})
                                             </div>
                                         </div>
                                     </SelectItem>

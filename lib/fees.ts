@@ -19,7 +19,7 @@ export function CaluclateRefuelAmount(args: CaluclateRefuelArgs): RefuelCalcResu
     const nativeAsset = args.to?.assets?.find(c => c.is_native)
     if (!nativeAsset || !args.currency)
         return res
-    const refuel_amount_in_usd = Number(nativeAsset.refuel_amount_in_usd)
+    const refuel_amount_in_usd = Number(args.currency.refuel_amount_in_usd)
     res.refuelAmountInSelectedCurrency = refuel_amount_in_usd / args?.currency.usd_price || 0;
     res.refuelAmountInNativeCurrency = (refuel_amount_in_usd / nativeAsset.usd_price) || 0
     return res;

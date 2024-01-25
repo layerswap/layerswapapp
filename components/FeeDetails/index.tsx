@@ -31,7 +31,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                 }
 
                 {
-                    toCurrency?.refuel_amount_in_usd && !query.hideRefuel && nativeAsset &&
+                    toCurrency?.refuel_amount_in_usd && !query.hideRefuel && nativeAsset && !toExchange &&
                     <FeeDetails.Item>
                         <RefuelToggle />
                     </FeeDetails.Item>
