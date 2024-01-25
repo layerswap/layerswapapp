@@ -96,14 +96,14 @@ export class LayerSwapAppSettings {
             network: string
         }
 
-        let assets: Asset[] = []
+        const assets: Asset[] = []
         networks.forEach(n => assets?.push(...n.currencies.map(c => ({ network: n.internal_name, ...c }))))
 
-        let groupsWithGroupName = groupBy(assets, ({ group_name }) => group_name || 'without_group')
-        const groupsWithoutGroupName = groupBy(groupsWithGroupName.without_group, ({ asset }) => asset)
-        delete groupsWithGroupName.without_group
+        const groupsWithGroupName = groupBy(assets, ({ group_name }) => group_name || 'without_group')
 
-        const groupsWithGroupNameArray = Object.keys(groupsWithGroupName).map(a => ({ name: a, values: groupsWithGroupName[a]?.map(g => ({ asset: g.asset, network: g.network })), groupedInBackend: true }))
+        const groupsWithoutGroupName = groupBy(groupsWithGroupName.without_group, ({ asset }) => asset)
+
+        const groupsWithGroupNameArray = Object.keys(groupsWithGroupName).filter(f => f !== "without_group").map(a => ({ name: a, values: groupsWithGroupName[a]?.map(g => ({ asset: g.asset, network: g.network })), groupedInBackend: true }))
         const groupsWithoutGroupNameArray = Object.keys(groupsWithoutGroupName).map(a => ({ name: a, values: groupsWithoutGroupName[a]?.map(g => ({ asset: g.asset, network: g.network })), groupedInBackend: false }))
         const groups = [...groupsWithGroupNameArray, ...groupsWithoutGroupNameArray]
 
