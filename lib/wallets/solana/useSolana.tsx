@@ -8,7 +8,7 @@ export default function useSolana(): WalletProvider {
     const withdrawalSupportedNetworks = [KnownInternalNames.Networks.SolanaMainnet]
     const autofillSupportedNetworks = [KnownInternalNames.Networks.SolanaMainnet]
     const name = 'solana'
-    const { publicKey, disconnect, wallet, wallets } = useWallet();
+    const { publicKey, disconnect, wallet } = useWallet();
     const { setVisible } = useWalletModal();
 
     const getWallet = () => {
