@@ -56,7 +56,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                 return (
                                     <CommandGroup key={group.name} heading={group.name}>
                                         {group.items.map(item =>
-                                            <CommandItem disabled={!item.isAvailable.value && item.isAvailable.disabledReason != LayerDisabledReason.InvalidRoute} value={item.name} key={item.id} onSelect={() => {
+                                            <CommandItem disabled={!item.isAvailable.value} value={item.name} key={item.id} onSelect={() => {
                                                 setValue(item)
                                                 setShow(false)
                                             }}>

@@ -14,6 +14,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
     const { fee } = useFee()
     const { layers } = useSettingsState()
     const query = useQueryState();
+    const nativeAsset = to?.assets.find(a => a.is_native)
 
     return (
         <>
@@ -26,7 +27,8 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                     </FeeDetails.Item>
                 }
 
-                {toCurrency?.refuel_amount_in_usd && !query.hideRefuel &&
+                {
+                    toCurrency?.refuel_amount_in_usd && !query.hideRefuel && nativeAsset &&
                     <FeeDetails.Item>
                         <RefuelToggle />
                     </FeeDetails.Item>
