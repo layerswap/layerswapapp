@@ -6,7 +6,7 @@ import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMe
 import { Layer } from "../../Models/Layer";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import ExchangeSettings from "../../lib/ExchangeSettings";
-import { SortingByOrder } from "../../lib/sorting"
+import { SortingByAvailability, SortingByOrder } from "../../lib/sorting"
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
@@ -35,10 +35,7 @@ type LayerIsAvailable = {
 }
 const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
 const getGroupName = (value: Layer | Exchange, type: 'cex' | 'layer', layerIsAvailable?: LayerIsAvailable) => {
-    if (layerIsAvailable?.disabledReason === LayerDisabledReason.InvalidRoute) {
-        return "Unavailable";
-    }
-    else if (value.is_featured) {
+    if (value.is_featured && layerIsAvailable?.disabledReason !== LayerDisabledReason.InvalidRoute) {
         return "Popular";
     }
     else if (new Date(value.created_date).getTime() >= (new Date().getTime() - 2629800000)) {
@@ -190,10 +187,6 @@ function groupByType(values: ISelectMenuItem[]) {
         }
     });
 
-    groups.forEach(group => {
-        group.items.sort((a, b) => a.name.localeCompare(b.name));
-    });
-
     groups.sort((a, b) => {
         // Sort put networks first then exchanges
         return (GROUP_ORDERS[a.name] || GROUP_ORDERS.Other) - (GROUP_ORDERS[b.name] || GROUP_ORDERS.Other);
@@ -222,7 +215,7 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
     }
 
     let exchangeIsAvailable = (exchange: Exchange) => {
-        if(lock) {
+        if (lock) {
             return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
         } else {
             return { value: true, disabledReason: null }
@@ -243,11 +236,12 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
             group: getGroupName(l, 'layer', layerIsAvailable(l))
         }
         return res;
-    }).sort(SortingByOrder);
+    }).sort(SortingByAvailability);
 
     const mappedExchanges = exchanges.map(e => {
         let orderProp: keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
         const order = ExchangeSettings.KnownSettings[e.internal_name]?.[orderProp]
+        console.log("order", order)
         const res: SelectMenuItem<Exchange> = {
             baseObject: e,
             id: e.internal_name,
@@ -259,7 +253,7 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
             group: getGroupName(e, 'cex')
         }
         return res;
-    }).sort(SortingByOrder);
+    }).sort(SortingByAvailability);
 
     const items = [...mappedExchanges, ...mappedLayers]
 
