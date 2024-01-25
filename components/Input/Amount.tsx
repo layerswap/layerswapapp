@@ -67,7 +67,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     precision={fromCurrency?.precision}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    className="rounded-r-none text-primary-text pr-0 w-full"
+                    className="text-primary-text pr-0 w-full"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value));

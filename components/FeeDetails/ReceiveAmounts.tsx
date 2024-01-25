@@ -31,7 +31,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency,
     const calculatedReceiveAmount = refuel ?
         parseFloat(receive_amount && (receive_amount - refuelAmountInSelectedCurrency)?.toFixed(currency?.precision) || "")
         : parsedReceiveAmount
-
+        
     return <>
         <span className="md:font-semibold text-sm md:text-base text-secondary-text leading-8 md:leading-8 flex-1">
             You will receive
