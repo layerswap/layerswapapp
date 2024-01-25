@@ -6,7 +6,7 @@ import { SwapItem } from "./layerSwapApiClient";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
     const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, addressSource } = queryParams
-    const { layers, sourceRoutes, destinationRoutes } = settings || {}
+    const { layers, exchanges, sourceRoutes, destinationRoutes } = settings || {}
 
     const shouldManipulateCurrency = addressSource === 'ea7df14a1597407f9f755f05e25bab42' && from === 'ARBITRUM_MAINNET' && fromAsset === 'USDC'
 
@@ -24,6 +24,9 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
 
     const sourceItems = layers.filter(l => sourceRoutes?.some(r => r.network === l.internal_name))
     const destinationItems = layers.filter(l => destinationRoutes?.some(r => r.network === l.internal_name))
+
+    const initialSourceExchange = exchanges.find(e => e.is_enabled && e.internal_name.toLowerCase() === from?.toLowerCase())
+    const initialDestinationExchange = exchanges.find(e => e.is_enabled && e.internal_name.toLowerCase() === to?.toLowerCase())
 
     const initialSource = sourceLayer ?
         sourceItems.find(i => i == sourceLayer)
@@ -56,6 +59,8 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         (lockedDestinationCurrency && amount) || (initialDestinationCurrency ? amount : '')
 
     const result: SwapFormValues = {
+        fromExchange: initialSourceExchange,
+        toExchange: initialDestinationExchange,
         from: initialSource,
         to: initialDestination,
         amount: initialAmount,
