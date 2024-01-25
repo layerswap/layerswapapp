@@ -109,7 +109,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, sourc
                             }
                         </div>
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col items-end">
                         <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.asset}</p>
                         <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
                     </div>

@@ -9,10 +9,10 @@ import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw"
 import useSWR from 'swr'
 import TransferFromWallet from "./WalletTransfer"
 import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw"
-import { Layer } from "../../../../Models/Layer"
 import useWalletTransferOptions from "../../../../hooks/useWalletTransferOptions"
 import { useFee } from "../../../../context/feeContext"
 import SolanaWalletWithdrawStep from "./SolanaWalletWithdraw"
+import NetworkGas from "./WalletTransfer/networkGas"
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 const WalletTransfer: FC = () => {
@@ -50,22 +50,29 @@ const WalletTransfer: FC = () => {
 
     if (sourceIsImmutableX)
         return <Wrapper>
+            {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}
             <ImtblxWalletWithdrawStep depositAddress={depositAddress} />
         </Wrapper>
     else if (sourceIsStarknet)
         return <Wrapper>
+            {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}
             <StarknetWalletWithdrawStep amount={requested_amount} depositAddress={depositAddress} />
         </Wrapper>
     else if (sourceIsZkSync)
         return <Wrapper>
+            {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}
+
             {requested_amount && depositAddress && <ZkSyncWalletWithdrawStep depositAddress={depositAddress} amount={requested_amount} />}
         </Wrapper>
     else if (sourceIsSolana)
         return <Wrapper>
+            {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}
+
             {requested_amount && depositAddress && <SolanaWalletWithdrawStep depositAddress={depositAddress} amount={requested_amount} />}
         </Wrapper>
     else
         return <Wrapper>
+            {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}
             {swap && source_layer && sourceAsset && requested_amount && sourceChainId && <TransferFromWallet
                 sequenceNumber={swap?.sequence_number}
                 swapId={swap.id}
