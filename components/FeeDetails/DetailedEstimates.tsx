@@ -1,9 +1,7 @@
 import { FC } from "react";
 import { NetworkCurrency } from "../../Models/CryptoNetwork";
 import { Layer } from "../../Models/Layer";
-import { truncateDecimals } from "../utils/RoundDecimals";
 import AverageCompletionTime from "../Common/AverageCompletionTime";
-import { useBalancesState } from "../../context/balances";
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { Fee, useFee } from "../../context/feeContext";
@@ -31,12 +29,6 @@ const DetailedEstimates: FC<EstimatesProps> = ({
 
     return <div className="flex justify-between w-full items-center">
         <EstimatedArrival currency={selected_currency} destination={destination} fee={fee} />
-        {
-            source
-            && selected_currency
-            && !isMobile &&
-            <NetworkGas network={source} selected_currency={selected_currency} />
-        }
         <div className="flex flex-row items-baseline justify-between gap-1 pr-1">
             <label className="inline-flex items-center text-left text-primary-text-placeholder">
                 Fee
@@ -47,32 +39,7 @@ const DetailedEstimates: FC<EstimatesProps> = ({
         </div>
     </div>
 }
-type NetworkGasProps = {
-    network: Layer,
-    selected_currency: NetworkCurrency,
-}
-const NetworkGas: FC<NetworkGasProps> = ({ selected_currency, network }) => {
 
-    const { gases, isGasLoading } = useBalancesState()
-    const networkGas = network.internal_name ?
-        gases?.[network.internal_name]?.find(g => g?.token === selected_currency.asset)?.gas : null
-
-    if (!networkGas)
-        return <></>
-
-    const source_native_currnecy = network.assets.find(a => a.is_native)
-
-    const estimatedGas = (networkGas && source_native_currnecy) ?
-        truncateDecimals(networkGas, source_native_currnecy?.precision)
-        : truncateDecimals(networkGas, selected_currency?.precision)
-
-    return <div className="flex flex-row items-center gap-2 w-fit px-1">
-        <Fuel className="h-4 w-4 text-secondary-text" />
-        <div className="text-right flex items-center gap-1">
-            {isGasLoading ? <div className='h-[10px] w-10 bg-gray-500 rounded-sm animate-pulse' /> : estimatedGas} <span>{network?.assets.find(a => a.is_native)?.asset ?? selected_currency.asset}</span>
-        </div>
-    </div>
-}
 type EstimatedArrivalProps = {
     destination?: Layer | null,
     currency?: NetworkCurrency | null,

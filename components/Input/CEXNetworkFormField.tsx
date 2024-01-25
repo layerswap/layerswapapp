@@ -13,6 +13,7 @@ import { isValidAddress } from "../../lib/addressValidator";
 import shortenAddress from "../utils/ShortenAddress";
 import Link from "next/link";
 import { SortingByOrder } from "../../lib/sorting";
+import { Info } from "lucide-react";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -147,15 +148,26 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                         </Link>
                     </div>
                 }
-                {
-                    currency?.is_native &&
-                    <span className="text-xs text-secondary-text flex items-center leading-3">
-                        Native currency
-                    </span>
-                }
                 <SelectContent>
                     <SelectGroup>
                         <SelectLabel className="!text-primary-text">Networks</SelectLabel>
+                        <div className="rounded-md bg-secondary-600 p-4 max-w-xs m-3">
+                            <div className="flex">
+                                <div className="flex-shrink-0">
+                                    <Info className="h-5 w-5 text-primary-text" aria-hidden="true" />
+                                </div>
+                                <div className="ml-3">
+                                    <div className="text-sm text-secondary-text">
+                                        {
+                                            direction === 'from' ?
+                                                <p>Please note that you should initiate the withdrawal from your exchange account via the selected network. In case of transferring via another network, your assets may be lost.</p>
+                                                :
+                                                <p>Please note that funds will be sent to your exchange account via the selected network. Before transferring, double check that the exchange supports the network/asset pair.</p>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         {
                             menuItems.sort((a, b) => a.order - b.order)?.map((route, index) => {
                                 const network = layers.find(l => l.internal_name === route.baseObject.network)
