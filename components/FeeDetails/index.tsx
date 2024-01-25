@@ -8,6 +8,7 @@ import RefuelToggle from './Refuel';
 import CEXNetworkFormField from '../Input/CEXNetworkFormField';
 import FeeDetails from './FeeDetailsComponent';
 import { useQueryState } from '../../context/query';
+import ResizablePanel from '../ResizablePanel';
 
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
     const { toCurrency, from, to, refuel, fromExchange, toExchange } = values || {};
@@ -22,9 +23,11 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
 
                 {
                     (fromExchange || toExchange) &&
-                    <FeeDetails.Item>
-                        <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
-                    </FeeDetails.Item>
+                    <ResizablePanel>
+                        <FeeDetails.Item>
+                            <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
+                        </FeeDetails.Item>
+                    </ResizablePanel>
                 }
 
                 {

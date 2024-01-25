@@ -28,6 +28,12 @@ const DetailedEstimates: FC<EstimatesProps> = ({
     const currencyName = fromCurrency?.asset || " "
 
     return <div className="flex justify-between w-full items-center">
+        {
+            source
+            && selected_currency &&
+            <NetworkGas network={source} selected_currency={selected_currency} />
+        }
+        <EstimatedArrival currency={selected_currency} destination={destination} fee={fee} />
         <div className="flex flex-row items-baseline justify-between gap-1 pr-1">
             <label className="inline-flex items-center text-left text-primary-text-placeholder">
                 Fee
@@ -36,12 +42,6 @@ const DetailedEstimates: FC<EstimatesProps> = ({
                 {isFeeLoading ? <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' /> : <span>{parsedFee || 0}</span>} <span>{currencyName}</span>
             </div>
         </div>
-        {
-            source
-            && selected_currency &&
-            <NetworkGas network={source} selected_currency={selected_currency} />
-        }
-        <EstimatedArrival currency={selected_currency} destination={destination} fee={fee} />
     </div>
 }
 type NetworkGasProps = {

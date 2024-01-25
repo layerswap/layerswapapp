@@ -11,6 +11,7 @@ import Image from "next/image";
 import { AssetGroup } from "./CEXCurrencyFormField";
 import { isValidAddress } from "../../lib/addressValidator";
 import shortenAddress from "../utils/ShortenAddress";
+import Link from "next/link";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -59,7 +60,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}?${destinationRouteParams.toString()}`
 
-    const { data: routes, isLoading } = useSWR<ApiResponse<{
+    const { data: routes } = useSWR<ApiResponse<{
         network: string,
         asset: string
     }[]>>(routesEndpoint, apiClient.fetcher)
@@ -125,6 +126,9 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     if (!menuItems) return
 
+    const network = (direction === 'from' ? from : to)
+    const currency = (direction === 'from' ? fromCurrency : toCurrency)
+
     return (<div className=" flex justify-between items-center w-full">
         <label htmlFor={name} className="block text-secondary-text">
             {direction === 'from' ? 'Transfer via' : 'Receive in'}
@@ -134,6 +138,21 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                 <SelectTrigger className="w-full border-none !text-primary-text !h-fit !p-0">
                     <SelectValue />
                 </SelectTrigger>
+                {
+                    currency?.contract_address && isValidAddress(currency.contract_address, network) && network &&
+                    <div className="flex items-center justify-end">
+                        <Link target="_blank" href={network.account_explorer_template?.replace("{0}", currency.contract_address)} className="text-xs text-secondary-text underline hover:no-underline leading-3 w-fit">
+                            {shortenAddress(currency?.contract_address)}
+                        </Link>
+                    </div>
+
+                }
+                {
+                    currency?.is_native &&
+                    <span className="text-xs text-secondary-text flex items-center leading-3">
+                        Native currency
+                    </span>
+                }
                 <SelectContent>
                     <SelectGroup>
                         <SelectLabel className="!text-primary-text">Networks</SelectLabel>
@@ -144,8 +163,8 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
                                 return (
                                     <SelectItem key={index} value={route.id}>
-                                        <div className="flex justify-between gap-1 grow w-full">
-                                            <div className="justify-between grow w-full">
+                                        <div className="flex justify-between items-center gap-1 grow w-full">
+                                            <div className="justify-between grow w-full mt-1">
                                                 <div className="inline-flex items-center gap-1 w-full">
                                                     <div className="flex-shrink-0 h-5 w-5 relative">
                                                         <Image
@@ -172,17 +191,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                                                 <p>{currency?.asset}</p>
                                             </div>
                                         </div>
-                                        {
-                                            currency?.is_native &&
-                                            <span className="text-xs text-secondary-text flex items-center leading-3">
-                                                Native currency
-                                            </span>
-                                        }
-                                        {currency?.contract_address && isValidAddress(currency.contract_address, network) &&
-                                            <span className="text-xs text-secondary-text flex items-center leading-3">
-                                                {shortenAddress(currency?.contract_address)}
-                                            </span>
-                                        }
                                     </SelectItem>
                                 )
                             })
