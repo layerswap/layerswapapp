@@ -241,7 +241,6 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
     const mappedExchanges = exchanges.map(e => {
         let orderProp: keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
         const order = ExchangeSettings.KnownSettings[e.internal_name]?.[orderProp]
-        console.log("order", order)
         const res: SelectMenuItem<Exchange> = {
             baseObject: e,
             id: e.internal_name,
@@ -256,7 +255,6 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
     }).sort(SortingByAvailability);
 
     const items = [...mappedExchanges, ...mappedLayers]
-
     return items
 }
 

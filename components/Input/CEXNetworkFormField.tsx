@@ -12,6 +12,7 @@ import { AssetGroup } from "./CEXCurrencyFormField";
 import { isValidAddress } from "../../lib/addressValidator";
 import shortenAddress from "../utils/ShortenAddress";
 import Link from "next/link";
+import { SortingByOrder } from "../../lib/sorting";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -200,28 +201,34 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             </Select>
         </div>
     </div>)
-});
+})
 
 function GenerateMenuItems(
     items: { network: string, asset: string }[],
     historicalNetworks: { network: string, asset: string }[] | undefined,
     currencyGroup: AssetGroup | undefined
 ): SelectMenuItem<{ network: string, asset: string }>[] {
-    const menuItems = items.filter(i => currencyGroup?.values?.some(v => v.asset == i.asset && v.network == i.network)).map((e, index) => {
-        const order = historicalNetworks?.indexOf(historicalNetworks.find(n => n.asset === e.asset && n.network === e.network) || { network: '', asset: '' }) || 100
-        const item: SelectMenuItem<{ network: string, asset: string }> = {
-            baseObject: e,
-            id: index.toString(),
-            name: e.network,
-            order: order > 0 ? order : 100,
-            imgSrc: '',
-            isAvailable: { value: true, disabledReason: null },
-            type: 'cex',
-        }
-        return item;
-    }).slice(0, 4)
+    const menuItems = items
+        .filter(i => currencyGroup?.values?.some(v => v.asset == i.asset && v.network == i.network))
+        .map((e, index) => {
+            const indexOf = Number(historicalNetworks
+                ?.indexOf(historicalNetworks
+                    .find(n => n.asset === e.asset && n.network === e.network)
+                    || { network: '', asset: '' }))
 
-    return menuItems
+            const item: SelectMenuItem<{ network: string, asset: string }> = {
+                baseObject: e,
+                id: index.toString(),
+                name: e.network,
+                order: indexOf > -1 ? indexOf : 100,
+                imgSrc: '',
+                isAvailable: { value: true, disabledReason: null },
+                type: 'cex',
+            }
+            return item;
+        }).sort(SortingByOrder)
+    const res = menuItems.slice(0, 4)
+    return res
 }
 
 export default CEXNetworkFormField
