@@ -37,10 +37,12 @@ const Withdraw: FC = () => {
     const sourceIsZkSync = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
     const sourceIsArbitrumOne = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
-    const sourceIsCoinbase = swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
+    const sourceIsCoinbase =
+        swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
     const sourceIsSolana = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
-
+    
     const source_layer = layers.find(n => n.internal_name === swap?.source_network)
+    const sourceLayerIsEthereum = source_layer?.internal_name?.toUpperCase() === KnownInternalNames.Networks.EthereumMainnet || source_layer?.internal_name?.toUpperCase() === KnownInternalNames.Networks.EthereumGoerli
     const sourceNetworkType = source_layer?.type
     const manualIsAvailable = !(sourceIsStarknet || sourceIsImmutableX)
     const walletIsAvailable = !swap?.source_exchange
@@ -86,7 +88,7 @@ const Withdraw: FC = () => {
             {
                 id: WithdrawType.Coinbase,
                 label: "Automatically",
-                enabled: sourceIsCoinbase,
+                enabled: sourceIsCoinbase && sourceLayerIsEthereum,
                 icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
                 content: <WalletTransferContent />,
                 footer: <Coinbase />
