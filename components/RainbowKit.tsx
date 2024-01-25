@@ -26,14 +26,15 @@ function RainbowKitComponent({ children }: Props) {
     const settingsChains = settings?.layers
         .sort((a, b) => Number(a.chain_id) - Number(b.chain_id))
         .filter(net => net.type === NetworkType.EVM
-            && net.nodes?.some(n => n.url?.length > 0))
+            && net.nodes?.some(n => n.url?.length > 0)
+            && net.assets.some(a=>a.is_native))
         .map(resolveChain).filter(isChain)
 
     const { chains, publicClient } = configureChains(
         settingsChains?.length > 0 ? settingsChains : [mainnet],
         [publicProvider()]
     );
-    let chainExceptZkSyncEra = chains.filter(x=> x.id != 324);
+    let chainExceptZkSyncEra = chains.filter(x => x.id != 324);
     const projectId = WALLETCONNECT_PROJECT_ID;
     const connectors = connectorsForWallets([
         {

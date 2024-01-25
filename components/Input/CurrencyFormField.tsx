@@ -47,22 +47,32 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const sourceRouteParams = new URLSearchParams({
         version,
-        ...(toExchange && currencyGroup ?
-            { destination_asset_group: currencyGroup?.name }
+        ...(toExchange && currencyGroup && currencyGroup.groupedInBackend ?
+            {
+                destination_asset_group: currencyGroup.name
+            }
             : {
                 ...(to && toCurrency &&
-                    { destination_network: to.internal_name, destination_asset: toCurrency?.asset }
-                )
+                {
+                    destination_network: to.internal_name,
+                    destination_asset: toCurrency?.asset
+                })
             })
     });
 
+
     const destinationRouteParams = new URLSearchParams({
         version,
-        ...(fromExchange && currencyGroup ?
-            { source_asset_group: currencyGroup?.name }
+        ...(fromExchange && currencyGroup && currencyGroup.groupedInBackend ?
+            {
+                source_asset_group: currencyGroup.name
+            }
             : {
                 ...(from && fromCurrency &&
-                    { source_network: from.internal_name, source_asset: fromCurrency?.asset }
+                {
+                    source_network: from.internal_name,
+                    source_asset: fromCurrency?.asset
+                }
                 )
             })
     });
@@ -70,15 +80,25 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const sourceRoutesURL = `/routes/sources?${sourceRouteParams}`
     const destinationRoutesURL = `/routes/destinations?${destinationRouteParams}`
 
-    const { data: sourceRoutes, error: sourceRoutesError } = useSWR<ApiResponse<{
+    const { data: sourceRoutes,
+        error: sourceRoutesError,
+        isLoading: sourceRoutesLoading
+    } = useSWR<ApiResponse<{
         network: string;
         asset: string;
     }[]>>(sourceRoutesURL, apiClient.fetcher)
 
-    const { data: destinationRoutes, error: destRoutesError } = useSWR<ApiResponse<{
+    const {
+        data: destinationRoutes,
+        error: destRoutesError,
+        isLoading: destRoutesLoading
+    } = useSWR<ApiResponse<{
         network: string;
         asset: string;
     }[]>>(destinationRoutesURL, apiClient.fetcher)
+
+    const isLoading = sourceRoutesLoading || destRoutesLoading
+
     const currencies = lockedCurrency ? [lockedCurrency] : assets
 
     const filteredCurrencies = currencies?.filter(currency => {
@@ -102,6 +122,8 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const currencyAsset = direction === 'from' ? fromCurrency?.asset : toCurrency?.asset;
 
     useEffect(() => {
+        if (direction !== "to") return
+
         let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset)
 
         if (currencyIsAvailable) return
@@ -111,19 +133,38 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
             || currencyMenuItems?.[0]
 
         const selected_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.asset?.toUpperCase() ===
-            ((direction === 'to' ? fromCurrency?.asset : toCurrency?.asset))?.toUpperCase())
+            c.baseObject?.asset?.toUpperCase() === fromCurrency?.asset?.toUpperCase())
 
         if (direction === "to" && selected_currency && destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === selected_currency.name)) {
-            setFieldValue(name, selected_currency.baseObject)
-        }
-        else if (direction === "from" && selected_currency && sourceRoutes?.data?.filter(r => r.network === from?.internal_name)?.some(r => r.asset === selected_currency.name)) {
             setFieldValue(name, selected_currency.baseObject)
         }
         else if (default_currency) {
             setFieldValue(name, default_currency.baseObject)
         }
-    }, [from, to, query])
+    }, [to, query])
+
+
+    useEffect(() => {
+        if (direction !== "from") return
+
+        let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset)
+
+        if (currencyIsAvailable) return
+
+        const default_currency = currencyMenuItems?.find(c =>
+            c.baseObject?.asset?.toUpperCase() === (query?.asset)?.toUpperCase())
+            || currencyMenuItems?.[0]
+
+        const selected_currency = currencyMenuItems?.find(c =>
+            c.baseObject?.asset?.toUpperCase() === toCurrency?.asset?.toUpperCase())
+
+        if (direction === "from" && selected_currency && sourceRoutes?.data?.filter(r => r.network === from?.internal_name)?.some(r => r.asset === selected_currency.name)) {
+            setFieldValue(name, selected_currency.baseObject)
+        }
+        else if (default_currency) {
+            setFieldValue(name, default_currency.baseObject)
+        }
+    }, [from, query])
 
     useEffect(() => {
         if (name === "toCurrency" && toCurrency) {
@@ -132,7 +173,8 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
                     ?.filter(r => r.network === to?.internal_name)
                     ?.some(r => r.asset === toCurrency?.asset)) {
                 setFieldValue(name, null)
-            } else if (destRoutesError) {
+            }
+            else if (destRoutesError) {
                 setFieldValue('toCurrency', null)
                 setFieldValue('to', null)
             }
@@ -146,7 +188,8 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
                     ?.filter(r => r.network === from?.internal_name)
                     ?.some(r => r.asset === fromCurrency?.asset)) {
                 setFieldValue(name, null)
-            } else if (sourceRoutesError) {
+            }
+            else if (sourceRoutesError) {
                 setFieldValue('fromCurrency', null)
                 setFieldValue('from', null)
             }
@@ -162,7 +205,13 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     return (
         <div className="relative">
             <BalanceComponent values={values} direction={direction} onLoad={(v) => setWalletAddress(v)} />
-            <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />
+            <PopoverSelectWrapper
+                placeholder="Asset"
+                values={currencyMenuItems}
+                value={value}
+                setValue={handleSelect}
+                disabled={!value?.isAvailable?.value || isLoading}
+            />
         </div>
     )
 };
@@ -215,7 +264,7 @@ export function GenerateCurrencyMenuItems(
 export enum CurrencyDisabledReason {
     LockAssetIsTrue = '',
     InsufficientLiquidity = 'Temporarily disabled. Please check later.',
-    InvalidRoute = 'Invalid route'
+    InvalidRoute = 'InvalidRoute'
 }
 
 export default CurrencyFormField

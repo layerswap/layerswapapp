@@ -5,12 +5,16 @@ import NetworkSettings, { GasCalculation } from "../../NetworkSettings"
 
 export default function useEVMBalance(): BalanceProvider {
     const { layers } = useSettingsState()
-    const supportedNetworks = layers.filter(l => l.type === NetworkType.EVM && NetworkSettings.KnownSettings[l.internal_name]?.GasCalculationType !== GasCalculation.OptimismType).map(l => l.internal_name)
+    const supportedNetworks = layers
+        .filter(l =>
+            l.type === NetworkType.EVM
+            && NetworkSettings.KnownSettings[l.internal_name]
+                ?.GasCalculationType !== GasCalculation.OptimismType
+            && l.assets.some(a => a.is_native))
+        .map(l => l.internal_name)
 
     const getBalance = async ({ layer, address }: BalanceProps) => {
-
         try {
-
             const resolveChain = (await import("../../resolveChain")).default
             const chain = resolveChain(layer)
             if (!chain) return

@@ -5,7 +5,11 @@ import { SendErrorMessage } from "./telegram";
 export default function resolveChain(network: Layer): (Chain & RainbowKitChain) | undefined {
 
     const nativeCurrency = network.assets.find(c => c.is_native);
-    const blockExplorersBaseURL = new URL(network.transaction_explorer_template).origin;
+    const blockExplorersBaseURL =
+        network.transaction_explorer_template ?
+            new URL(network.transaction_explorer_template).origin
+            : null
+
     const metadata = network.metadata
     const { ensRegistry, ensUniversalResolver, multicall3 } = metadata || {}
 
@@ -33,12 +37,14 @@ export default function resolveChain(network: Layer): (Chain & RainbowKitChain) 
                 http: network.nodes.map(n => n?.url),
             },
         },
-        blockExplorers: {
-            default: {
-                name: 'name',
-                url: blockExplorersBaseURL,
-            },
-        },
+        ...(blockExplorersBaseURL ? {
+            blockExplorers: {
+                default: {
+                    name: 'name',
+                    url: blockExplorersBaseURL,
+                },
+            }
+        } : {}),
         contracts: {
             ...(multicall3 ? {
                 multicall3:

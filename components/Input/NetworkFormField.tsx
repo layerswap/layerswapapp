@@ -59,6 +59,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const {
         values,
         setFieldValue,
+        setFieldError
     } = useFormikContext<SwapFormValues>();
     const name = direction
 
@@ -67,7 +68,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const { lockFrom, lockTo } = query
 
     const { resolveImgSrc, layers, exchanges, destinationRoutes, sourceRoutes } = useSettingsState();
-
     let placeholder = "";
     let searchHint = "";
     let filteredLayers: Layer[];
@@ -81,14 +81,37 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const apiClient = new LayerSwapApiClient()
     const version = LayerSwapApiClient.apiVersion
 
-    const exchangeUrl = currencyGroup?.networks?.length === 1 ? `?${direction === 'to' ? 'source_network' : 'destination_network'}=${currencyGroup.networks[0].network}&${direction === 'to' ? 'source_asset' : 'destination_asset'}=${currencyGroup.name}&` :
-        `?${direction === 'from' ? 'destination_asset_group' : 'source_asset_group'}=${currencyGroup?.name}&`;
-    const networkUrl = `?${direction === 'to' ? 'source_network' : 'destination_network'}=${filterWith?.internal_name}&${direction === 'to' ? 'source_asset' : 'destination_asset'}=${filterWithAsset}&`;
+    const exchangeParams = new URLSearchParams({
+        version,
+        ...(currencyGroup?.groupedInBackend ?
+            (currencyGroup ? {
+                [direction === 'to' ? 'source_asset_group' : 'destination_asset_group']: currencyGroup.name
+            } : {})
+            :
+            {
+                [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.internal_name,
+                [direction === 'to' ? 'source_asset' : 'destination_asset']: filterWithAsset,
+            }
+        )
+    });
 
-    const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}${(filterWithExchange && currencyGroup) ? exchangeUrl
-        : (filterWith && filterWithAsset) ? networkUrl : "?"}version=${version}`
+    const networkParams = new URLSearchParams({
+        version,
+        ...(filterWith && filterWithAsset ?
+            {
+                [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.internal_name,
+                [direction === 'to' ? 'source_asset' : 'destination_asset']: filterWithAsset,
+            }
+            : {}
+        )
+    });
 
-    const { data: routes, isLoading } = useSWR<ApiResponse<Route[]>>(routesEndpoint, apiClient.fetcher)
+    const params = (filterWithExchange && currencyGroup) ? exchangeParams : networkParams
+    const sourceRoutesURL = `/routes/sources?${params.toString()}`
+    const destinationRoutesURL = `/routes/destinations?${params.toString()}`
+    const routesEndpoint = direction === "from" ? sourceRoutesURL : destinationRoutesURL
+
+    const { data: routes, isLoading, error } = useSWR<ApiResponse<Route[]>>(routesEndpoint, apiClient.fetcher)
 
     const [routesData, setRoutesData] = useState<Route[]>()
 
@@ -135,7 +158,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         <div ref={ref} className="mt-1.5 grid grid-flow-row-dense grid-cols-8 md:grid-cols-6 items-center pr-2">
             <div className="col-span-5 md:col-span-4">
                 <CommandSelectWrapper
-                    disabled={false}
+                    disabled={isLoading || error}
                     valueGrouper={groupByType}
                     placeholder={placeholder}
                     setValue={handleSelect}

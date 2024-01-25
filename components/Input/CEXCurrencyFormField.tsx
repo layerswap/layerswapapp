@@ -5,13 +5,11 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import CurrencySettings from "../../lib/CurrencySettings";
-import { SortingByAvailability, SortingByOrder } from "../../lib/sorting";
+import { SortingByAvailability } from "../../lib/sorting";
 import { useQueryState } from "../../context/query";
-import { groupBy } from "../utils/groupBy";
 import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { NetworkCurrency } from "../../Models/CryptoNetwork";
 
 const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
@@ -20,18 +18,19 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     } = useFormikContext<SwapFormValues>();
     const { to, fromCurrency, toCurrency, from, currencyGroup, toExchange, fromExchange } = values
 
-    const { sourceRoutes: settingsSourceRoutes, destinationRoutes: settingsDestinationRoutes } = useSettingsState();
+    const { sourceRoutes: settingsSourceRoutes, destinationRoutes: settingsDestinationRoutes, assetGroups } = useSettingsState();
     const name = 'currencyGroup'
 
     const query = useQueryState()
 
     const routes = direction === 'from' ? settingsSourceRoutes : settingsDestinationRoutes
-    const assets = routes && groupBy(routes, ({ asset }) => asset)
-    const assetNames = assets && Object.keys(assets).map(a => ({ name: a, networks: assets[a] }))
+
+    const availableAssetGroups = assetGroups.filter(g => g.values.some(v => routes.some(r => r.asset === v.asset && r.network === v.network)))
+
     const lockAsset = direction === 'from' ? query?.lockFromAsset : query?.lockToAsset
     const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
     const lockedCurrency = lockAsset
-        ? assetNames?.find(a => a.name.toUpperCase() === (asset)?.toUpperCase())
+        ? availableAssetGroups?.find(a => a.name.toUpperCase() === (asset)?.toUpperCase())
         : undefined
 
     const apiClient = new LayerSwapApiClient()
@@ -39,40 +38,54 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const sourceRouteParams = new URLSearchParams({
         version,
-        ...(toExchange && currencyGroup ?
-            { destination_asset_group: currencyGroup?.name }
+        ...(toExchange && currencyGroup && currencyGroup?.groupedInBackend ?
+            {
+                destination_asset_group: currencyGroup?.name
+            }
             : {
                 ...(to && toCurrency &&
-                    { destination_network: to.internal_name, destination_asset: toCurrency?.asset }
-                )
+                {
+                    destination_network: to.internal_name,
+                    destination_asset: toCurrency?.asset
+                })
             })
     });
 
     const destinationRouteParams = new URLSearchParams({
         version,
-        ...(fromExchange && currencyGroup ?
-            { source_asset_group: currencyGroup?.name }
+        ...(fromExchange && currencyGroup && currencyGroup?.groupedInBackend ?
+            {
+                source_asset_group: currencyGroup?.name
+            }
             : {
                 ...(from && fromCurrency &&
-                    { source_network: from.internal_name, source_asset: fromCurrency?.asset }
-                )
+                {
+                    source_network: from.internal_name,
+                    source_asset: fromCurrency?.asset
+                })
             })
     });
 
     const sourceRoutesURL = `/routes/sources?${sourceRouteParams}`
     const destinationRoutesURL = `/routes/destinations?${destinationRouteParams}`
 
-    const { data: sourceRoutes } = useSWR<ApiResponse<{
+    const {
+        data: sourceRoutes,
+        isLoading: sourceRoutesLoading,
+    } = useSWR<ApiResponse<{
         network: string;
         asset: string;
     }[]>>(sourceRoutesURL, apiClient.fetcher)
 
-    const { data: destinationRoutes } = useSWR<ApiResponse<{
+    const {
+        data: destinationRoutes,
+        isLoading: destRoutesLoading,
+    } = useSWR<ApiResponse<{
         network: string;
         asset: string;
     }[]>>(destinationRoutesURL, apiClient.fetcher)
 
-    const filteredCurrencies = lockedCurrency ? [lockedCurrency] : assetNames
+    const filteredCurrencies = lockedCurrency ? [lockedCurrency] : availableAssetGroups
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
@@ -85,15 +98,20 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     useEffect(() => {
         if (value) return
-        setFieldValue(name, currencyMenuItems?.[0])
+        setFieldValue(name, currencyMenuItems?.[0].baseObject)
     }, [])
 
     const handleSelect = useCallback((item: SelectMenuItem<AssetGroup>) => {
         setFieldValue(name, item.baseObject, true)
-        setFieldValue(`${name}Currency`, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
-    return <PopoverSelectWrapper placeholder="Asset" values={currencyMenuItems} value={value} setValue={handleSelect} disabled={!value?.isAvailable?.value} />;
+    return <PopoverSelectWrapper
+        placeholder="Asset"
+        values={currencyMenuItems}
+        value={value}
+        setValue={handleSelect}
+        disabled={!value?.isAvailable?.value}
+    />;
 }
 
 export function GenerateCurrencyMenuItems(
@@ -137,15 +155,16 @@ export function GenerateCurrencyMenuItems(
 export enum CurrencyDisabledReason {
     LockAssetIsTrue = '',
     InsufficientLiquidity = 'Temporarily disabled. Please check later.',
-    InvalidRoute = 'Invalid route'
+    InvalidRoute = 'InvalidRoute'
 }
 
 export type AssetGroup = {
     name: string;
-    networks: {
+    values: {
         network: string;
         asset: string;
     }[];
+    groupedInBackend: boolean
 }
 
 export default CurrencyGroupFormField
