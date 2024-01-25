@@ -18,11 +18,7 @@ type ContextType = {
 export type Fee = {
     walletFee: number | undefined,
     manualFee: number | undefined,
-    avgCompletionTime: {
-        total_minutes: number,
-        total_seconds: number,
-        total_hours: number
-    } | undefined;
+    avgCompletionTime: string | undefined;
     walletReceiveAmount: number | undefined,
     manualReceiveAmount: number | undefined
 }
@@ -30,7 +26,18 @@ export type Fee = {
 export function FeeProvider({ children }) {
 
     const [values, setValues] = useState<SwapFormValues>()
-    const { fromCurrency, toCurrency, from, to, amount } = values || {}
+    const [cachedData, setCachedData] = useState<{
+        wallet_fee_in_usd: number,
+        wallet_fee: number,
+        wallet_receive_amount: number,
+        manual_fee_in_usd: number,
+        manual_fee: number,
+        manual_receive_amount: number,
+        avg_completion_time: string,
+        fee_usd_price: number
+    }>()
+
+    const { fromCurrency, toCurrency, from, to, amount, refuel } = values || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount);
 
     const valuesChanger = (values: SwapFormValues) => {
@@ -58,8 +65,8 @@ export function FeeProvider({ children }) {
         wallet_min_amount: number
         wallet_min_amount_in_usd: number
     }>>((from && fromCurrency && to && toCurrency) ?
-        `/routes/limits/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?version=${version}` : null, apiClient.fetcher, {
-        refreshInterval: 10000,
+        `/routes/limits/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?version=${version}&refuel=${!!refuel}` : null, apiClient.fetcher, {
+        refreshInterval: 10000
     })
 
     const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<{
@@ -69,14 +76,17 @@ export function FeeProvider({ children }) {
         manual_fee_in_usd: number,
         manual_fee: number,
         manual_receive_amount: number,
-        avg_completion_time: {
-            total_minutes: number,
-            total_seconds: number,
-            total_hours: number
-        },
+        avg_completion_time: string,
         fee_usd_price: number
     }>>((from && fromCurrency && to && toCurrency && debouncedAmount) ?
-        `/routes/rate/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?amount=${debouncedAmount}&version=${version}` : null, apiClient.fetcher, { refreshInterval: 10000 })
+        `/routes/rate/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?amount=${debouncedAmount}&version=${version}` : null, apiClient.fetcher, {
+        refreshInterval: 10000,
+        fallbackData: { data: cachedData }
+    })
+
+    useEffect(() => {
+        setCachedData(lsFee?.data)
+    }, [lsFee])
 
     const fee = {
         walletFee: lsFee?.data?.wallet_fee,

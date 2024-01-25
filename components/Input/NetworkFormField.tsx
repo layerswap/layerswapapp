@@ -121,13 +121,13 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         placeholder = "Source";
         searchHint = "Swap from";
         filteredLayers = layers.filter(l => sourceRoutes?.some(r => r.network === l.internal_name))
-        menuItems = GenerateMenuItems(filteredLayers, toExchange ? [] : exchanges, resolveImgSrc, direction, !!(from && lockFrom), routesData, query);
+        menuItems = GenerateMenuItems(filteredLayers, toExchange ? [] : exchanges.filter(e => e.is_enabled), resolveImgSrc, direction, !!(from && lockFrom), routesData, query);
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
         filteredLayers = layers.filter(l => destinationRoutes?.some(r => r.network === l.internal_name))
-        menuItems = GenerateMenuItems(filteredLayers, fromExchange ? [] : exchanges, resolveImgSrc, direction, !!(to && lockTo), routesData, query);
+        menuItems = GenerateMenuItems(filteredLayers, fromExchange ? [] : exchanges.filter(e => e.is_enabled), resolveImgSrc, direction, !!(to && lockTo), routesData, query);
     }
 
     const value = menuItems.find(x => x.type === 'layer' ?

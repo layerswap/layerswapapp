@@ -155,6 +155,8 @@ export default class KnownInternalNames {
         public static readonly USDT: string = "USDT";
         public static readonly ETH: string = "ETH";
         public static readonly USDC: string = "USDC";
+        public static readonly USDCe: string = "USDC.e";
+        public static readonly USDCE: string = "USDC.E";
         public static readonly LRC: string = "LRC";
         public static readonly IMX: string = "IMX";
         public static readonly SNX: string = "SNX";

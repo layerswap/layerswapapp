@@ -131,20 +131,37 @@ export default function Form() {
     const initiallyValidation = MainStepValidation({ minAllowedAmount, maxAllowedAmount })(initialValues)
     const initiallyIsValid = !(Object.values(initiallyValidation)?.filter(v => v).length > 0)
 
+    const handleShowSwapModal = useCallback((value: boolean) => {
+        setShowSwapModal(value)
+        value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
+    }, [router, swap])
+
     return <>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
                 {
                     swap &&
                     !showSwapModal &&
-                    <PendingSwap key="pendingSwap" onClick={() => setShowSwapModal(true)} />
+                    <PendingSwap key="pendingSwap" onClick={() => handleShowSwapModal(true)} />
                 }
             </AnimatePresence>
         </div>
-        <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`} modalId="showNetwork">
+        <Modal
+            height="fit"
+            show={showConnectNetworkModal}
+            setShow={setShowConnectNetworkModal}
+            header={`${networkToConnect?.DisplayName} connect`}
+            modalId="showNetwork"
+        >
             {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
         </Modal>
-        <Modal height='fit' show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`} modalId="showSwap">
+        <Modal
+            height='fit'
+            show={showSwapModal}
+            setShow={handleShowSwapModal}
+            header={`Complete the swap`}
+            modalId="showSwap"
+        >
             <ResizablePanel>
                 <SwapDetails type="contained" />
             </ResizablePanel>
@@ -273,4 +290,17 @@ const setSwapPath = (swapId: string, router: NextRouter) => {
             swapURL += `?${search}`
     }
     window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
+}
+
+const removeSwapPath = (router: NextRouter) => {
+    let homeURL = window.location.protocol + "//"
+        + window.location.host
+
+    const params = resolvePersistantQueryParams(router.query)
+    if (params && Object.keys(params).length) {
+        const search = new URLSearchParams(params as any);
+        if (search)
+            homeURL += `?${search}`
+    }
+    window.history.replaceState({ ...window.history.state, as: homeURL, url: homeURL }, '', homeURL);
 }

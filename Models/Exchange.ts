@@ -2,6 +2,7 @@ export class Exchange {
     display_name: string;
     internal_name: string;
     is_featured: boolean;
+    is_enabled: boolean;
     type: "cex" | "fiat";
     created_date: string;
     metadata: ExchangeMetadata | null | undefined;

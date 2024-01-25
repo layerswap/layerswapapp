@@ -192,7 +192,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                                 onClick={handleTransfer}
                                 icon={
                                     <WalletIcon
-                                        className="h-5 w-5 ml-2"
+                                        className="h-6 w-6 stroke-2"
                                         aria-hidden="true"
                                     />
                                 } >

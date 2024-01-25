@@ -109,7 +109,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, sourc
                             }
                         </div>
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col items-end">
                         <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.asset}</p>
                         <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
                     </div>
@@ -142,20 +142,22 @@ const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, sourc
                     }
                 </div>
                 {
-                    hasRefuel && refuelAmount !== undefined && nativeCurrency &&
-                    <div
-                        className="flex items-center justify-between w-full ">
-                        <div className='flex items-center gap-3 text-sm'>
-                            <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full p-2 bg-primary/20">
-                                <Fuel className="h-5 w-5 text-primary" aria-hidden="true" />
-                            </span>
-                            <p>Refuel</p>
+                    (hasRefuel && refuelAmount != undefined && nativeCurrency) ?
+                        <div
+                            className="flex items-center justify-between w-full ">
+                            <div className='flex items-center gap-3 text-sm'>
+                                <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full p-2 bg-primary/20">
+                                    <Fuel className="h-5 w-5 text-primary" aria-hidden="true" />
+                                </span>
+                                <p>Refuel</p>
+                            </div>
+                            <div className="flex flex-col">
+                                <p className="text-primary-text text-sm">{truncatedRefuelAmount} {nativeCurrency?.asset}</p>
+                                <p className="text-secondary-text text-sm flex justify-end">${refuelAmountInUsd}</p>
+                            </div>
                         </div>
-                        <div className="flex flex-col">
-                            <p className="text-primary-text text-sm">{truncatedRefuelAmount} {nativeCurrency?.asset}</p>
-                            <p className="text-secondary-text text-sm flex justify-end">${refuelAmountInUsd}</p>
-                        </div>
-                    </div>
+                        :
+                        <></>
                 }
             </div>
         </div>

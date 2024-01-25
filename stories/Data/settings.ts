@@ -8,6 +8,7 @@ export const Settings: LayerSwapSettings = {
             "internal_name": "KUCOIN",
             "type": "cex",
             "is_featured": false,
+            "is_enabled": true,
             "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
@@ -22,6 +23,7 @@ export const Settings: LayerSwapSettings = {
             "internal_name": "COINSPOT",
             "type": "cex",
             "is_featured": false,
+            "is_enabled": true,
             "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
@@ -34,6 +36,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "FTX.US",
             "internal_name": "FTXUS",
+            "is_enabled": true,
             "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
@@ -47,6 +50,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Kraken",
+            "is_enabled": true,
             "internal_name": "KRAKEN",
             "o_auth": {
                 "authorize_url": "test",
@@ -61,6 +65,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "FTX.COM",
+            "is_enabled": true,
             "internal_name": "FTXCOM",
             "type": "cex",
             "is_featured": false,
@@ -75,6 +80,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "OKX",
+            "is_enabled": true,
             "internal_name": "OKEX",
             "o_auth": {
                 "authorize_url": "test",
@@ -89,6 +95,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Binance",
+            "is_enabled": true,
             "internal_name": "BINANCE",
             "o_auth": {
                 "authorize_url": "test",
@@ -103,6 +110,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Bittrex Global",
+            "is_enabled": true,
             "internal_name": "BITTREX",
             "type": "cex",
             "is_featured": false,
@@ -117,6 +125,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Huobi Global",
+            "is_enabled": true,
             "internal_name": "HUOBI",
             "type": "cex",
             "is_featured": false,
@@ -131,6 +140,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Coinbase",
+            "is_enabled": true,
             "internal_name": "COINBASE",
             "type": "cex",
             "is_featured": false,
@@ -145,6 +155,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Bitfinex",
+            "is_enabled": true,
             "internal_name": "BITFINEX",
             "o_auth": {
                 "authorize_url": "test",
@@ -159,6 +170,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Crypto.com Exchange",
+            "is_enabled": true,
             "internal_name": "CRYPTOCOM",
             "o_auth": {
                 "authorize_url": "test",
@@ -173,6 +185,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Blocktane",
+            "is_enabled": true,
             "internal_name": "BLOCKTANE",
             "o_auth": {
                 "authorize_url": "test",
@@ -187,6 +200,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Gate.io",
+            "is_enabled": true,
             "internal_name": "GATEIO",
             "type": "cex",
             "is_featured": false, "o_auth": {
@@ -200,6 +214,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "MEXC Global",
+            "is_enabled": true,
             "internal_name": "MEXC",
             "type": "cex",
             "is_featured": false, "o_auth": {
@@ -213,6 +228,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "BitGet",
+            "is_enabled": true,
             "internal_name": "BITGET",
             "type": "cex",
             "is_featured": false, "o_auth": {
@@ -226,6 +242,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Swyftx",
+            "is_enabled": true,
             "internal_name": "SWYFTX",
             "type": "cex",
             "is_featured": false, "o_auth": {
@@ -239,6 +256,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Gemini",
+            "is_enabled": true,
             "internal_name": "GEMINI",
             "type": "cex",
             "is_featured": false,
@@ -253,6 +271,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Crypto.com APP",
+            "is_enabled": true,
             "internal_name": "CRYPTOCOMAPP",
             "o_auth": {
                 "authorize_url": "test",
@@ -267,6 +286,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Newton",
+            "is_enabled": true,
             "internal_name": "NEWTON",
             "o_auth": {
                 "authorize_url": "test",
@@ -281,6 +301,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Binance US",
+            "is_enabled": true,
             "internal_name": "BINANCEUS",
             "type": "cex",
             "is_featured": false,
@@ -295,6 +316,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Bybit",
+            "is_enabled": true,
             "internal_name": "BYBIT",
             "o_auth": {
                 "authorize_url": "test",
@@ -309,6 +331,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "US Bank or Card (via Stripe)",
+            "is_enabled": true,
             "internal_name": "STRIPE",
             "o_auth": {
                 "authorize_url": "test",

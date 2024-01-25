@@ -20,19 +20,21 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const [isFocused, setIsFocused] = useState(false);
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const [walletAddress, setWalletAddress] = useState<string>()
+    const native_currency = from?.assets.find(a => a.is_native)
 
     const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.asset)?.gas || 0
 
     const name = "amount"
     const walletBalance = walletAddress && balances[walletAddress]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
-
-    const maxAllowedAmount = (walletBalance &&
-        maxAmountFromApi &&
-        minAllowedAmount &&
-        ((walletBalance.amount - gasAmount) >= minAllowedAmount &&
-            (walletBalance.amount - gasAmount) <= maxAmountFromApi)) ?
-        walletBalance.amount - Number(gasAmount)
-        : maxAmountFromApi
+    let maxAllowedAmount: number | null = maxAmountFromApi || 0
+    if (walletBalance && (walletBalance.amount >= Number(minAllowedAmount) && walletBalance.amount <= Number(maxAmountFromApi))) {
+        if (((native_currency?.asset === fromCurrency?.asset) || !native_currency) && ((walletBalance.amount - gasAmount) >= Number(minAllowedAmount) && (walletBalance.amount - gasAmount) <= Number(maxAmountFromApi))) {
+            maxAllowedAmount = walletBalance.amount - gasAmount
+        }
+        else maxAllowedAmount = walletBalance.amount
+    } else {
+        maxAllowedAmount = Number(maxAmountFromApi) || 0
+    }
 
     const maxAllowedDisplayAmount = maxAllowedAmount && truncateDecimals(maxAllowedAmount, fromCurrency?.precision)
 
@@ -60,21 +62,21 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     disabled={!fromCurrency || !toCurrency}
                     placeholder={placeholder}
                     min={minAllowedAmount}
-                    max={maxAllowedAmount}
+                    max={maxAllowedAmount || 0}
                     step={isNaN(step) ? 0.01 : step}
                     name={name}
                     ref={amountRef}
                     precision={fromCurrency?.precision}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    className="rounded-r-none text-primary-text pr-0 w-full"
+                    className="text-primary-text pr-0 w-full"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value));
                     }}
                 >
-                    {requestedAmountInUsd && !isFocused ? (
-                        <span className="absolute text-xs right-0 bottom-[16px]">
+                    {requestedAmountInUsd && Number(requestedAmountInUsd) > 0 && !isFocused ? (
+                        <span className="absolute text-xs right-1 bottom-[16px]">
                             (${requestedAmountInUsd})
                         </span>
                     ) : null}
