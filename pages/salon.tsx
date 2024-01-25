@@ -2,15 +2,11 @@ import Layout from '../components/layout'
 import React, { useEffect } from 'react'
 import { useRouter } from 'next/router';
 import { clearTempData, getTempData } from '../lib/openLink';
-import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import { InferGetServerSidePropsType } from 'next';
-import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { getServerSideProps } from '../helpers/getSettings';
 
 export default function Salon({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const router = useRouter();
-    let appSettings = new LayerSwapAppSettings(settings)
-    LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
 
 
     useEffect(() => {
@@ -33,7 +29,7 @@ export default function Salon({ settings }: InferGetServerSidePropsType<typeof g
     }, [router])
 
     return (
-        <Layout hideFooter={true} settings={appSettings}>
+        <Layout hideFooter={true} settings={settings}>
             <div className="h-full min-h-screen flex flex-col justify-center text-secondary-text text-md font-lighter leading-6">
                 <div className='flex place-content-center mb-4'>
                     <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 116 116" fill="none">

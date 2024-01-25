@@ -8,6 +8,7 @@ import ColorSchema from '../components/ColorSchema';
 window.plausible = () => { }
 const Comp: FC<{ theme?: "default" | "light", header: string, status: 'pending' | 'error', details: string, showInModal?: boolean }> = ({ theme, status, details, header, showInModal }) => {
     const themeData = theme ? THEME_COLORS[theme] : THEME_COLORS["default"];
+
     return <Widget hideMenu={true} >
         <Widget.Content>
             <div style={{ width: '350px' }} className='h-[500px]'>

@@ -30,18 +30,15 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
     return (
         <>
             {isDesktop && (
-                <AnimatePresence>
-                    {show &&
-                        <ReactPortal
-                            wrapperId="widget_root"
-                            key={modalId}>
-                            <Leaflet position="absolute" height={height ?? 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
+                <ReactPortal wrapperId="widget_root">
+                    <AnimatePresence>
+                        {show &&
+                            <Leaflet key={modalId} position="absolute" height={height ?? 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
                                 {children}
                             </Leaflet>
-                        </ReactPortal>
-                    }
-
-                </AnimatePresence>
+                        }
+                    </AnimatePresence>
+                </ReactPortal>
             )}
             {isMobile && (
                 <AnimatePresence>

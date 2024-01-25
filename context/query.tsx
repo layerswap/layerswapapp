@@ -12,7 +12,6 @@ const QueryProvider: FC<{ query: QueryParams, children?: React.ReactNode }> = ({
 }
 
 function mapLegacyQueryParams(params: QueryParams): QueryParams {
-
   return {
     ...params,
     ...(params.sourceExchangeName ? { from: params.sourceExchangeName } : {}),
@@ -20,6 +19,8 @@ function mapLegacyQueryParams(params: QueryParams): QueryParams {
     ...(params.lockExchange ? { lockFrom: params.lockExchange } : {}),
     ...(params.lockNetwork ? { lockTo: params.lockNetwork } : {}),
     ...(params.addressSource ? { appName: params.addressSource } : {}),
+    ...(params.asset ? { toAsset: params.asset, fromAsset: params.asset } : {}),
+    ...(params.lockAsset ? { lockToAsset: params.lockAsset, lockFromAsset: params.lockAsset } : {}),
   }
 }
 

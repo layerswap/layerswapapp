@@ -36,13 +36,13 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const signer = useEthersSigner();
     const { isConnected } = useAccount();
 
-    const { networks, layers, currencies } = useSettingsState();
+    const { layers } = useSettingsState();
     const { source_network: source_network_internal_name } = swap || {};
-    const source_network = networks.find(n => n.internal_name === source_network_internal_name);
+    const source_network = layers.find(n => n.internal_name === source_network_internal_name);
     const source_layer = layers.find(l => l.internal_name === source_network_internal_name)
-    const source_currency = source_network?.currencies?.find(c => c.asset.toLocaleUpperCase() === swap?.source_network_asset.toLocaleUpperCase());
+    const source_currency = source_network?.assets?.find(c => c.asset.toLocaleUpperCase() === swap?.source_network_asset.toLocaleUpperCase());
     const defaultProvider = swap?.source_network?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "goerli";
-    const l1Network = networks.find(n => n.internal_name === source_network?.metadata?.L1Network);
+    const l1Network = layers.find(n => n.internal_name === source_network?.metadata?.L1Network);
 
     useEffect(() => {
         if (signer?._address !== syncWallet?.cachedAddress && source_layer) {
@@ -85,7 +85,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     ChangePubKey: 'ECDSA'
                 }, wallet.address(), Number(source_currency?.contract_address));
                 const formatedGas = formatAmount(activationFee.totalFee, Number(source_currency?.decimals))
-                let assetUsdPrice = currencies.find(x => x.asset == source_currency?.asset)?.usd_price;
+                let assetUsdPrice = source_layer?.assets.find(x => x.asset == source_currency?.asset)?.usd_price;
                 setActivationFee({ feeInAsset: formatedGas, feeInUsd: formatedGas * (assetUsdPrice ?? 0) })
             }
             setSyncWallet(wallet)

@@ -19,7 +19,7 @@ type Props = {
 
 const Rewards: FC<Props> = ({ campaign }) => {
     const settings = useSettingsState()
-    const { resolveImgSrc, networks, currencies } = settings
+    const { resolveImgSrc, layers } = settings
     const { address } = useAccount();
     const apiClient = new LayerSwapApiClient()
 
@@ -33,7 +33,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
     const payouts = payoutsData?.data || []
     const totalBudget = campaign.total_budget
 
-    const network = networks.find(n => n.internal_name === campaign.network)
+    const network = layers.find(n => n.internal_name === campaign.network)
     const rewards = rewardsData?.data
     const campaignEndDate = new Date(campaign.end_date)
     const now = new Date()
@@ -49,7 +49,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
     const campaignIsEnded = (campaignEndDate.getTime() - now.getTime()) < 0 || campaign.status !== 'active'
 
     const DistributedAmount = ((campaign.distributed_amount / campaign.total_budget) * 100)
-    const usdc_price = settings?.currencies?.find(c => c.asset === campaign.asset)?.usd_price
+    const usdc_price = network?.assets?.find(c => c.asset === campaign.asset)?.usd_price
     const total_amount = rewards?.user_reward.total_amount
     const total_in_usd = (total_amount && usdc_price) ? (usdc_price * total_amount).toFixed(2) : null
 

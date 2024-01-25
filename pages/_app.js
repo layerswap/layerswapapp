@@ -13,6 +13,7 @@ function App({ Component, pageProps }) {
     <SWRConfig
       value={{
         revalidateOnFocus: false,
+        dedupingInterval: 5000,
       }}
     >
       <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>

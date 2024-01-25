@@ -48,6 +48,8 @@ export default class KnownInternalNames {
 
         public static readonly ArbitrumGoerli: string = "ARBITRUM_GOERLI";
 
+        public static readonly ArbitrumSepolia: string = "ARBITRUM_SEPOLIA";
+
         public static readonly OptimismMainnet: string = "OPTIMISM_MAINNET";
 
         public static readonly OptimismGoerli: string = "OPTIMISM_GOERLI";
@@ -73,6 +75,8 @@ export default class KnownInternalNames {
         public static readonly EthereumMainnet: string = "ETHEREUM_MAINNET";
 
         public static readonly EthereumGoerli: string = "ETHEREUM_GOERLI";
+        
+        public static readonly EthereumSepolia: string = "ETHEREUM_SEPOLIA";
 
         public static readonly PolygonMainnet: string = "POLYGON_MAINNET";
 
@@ -85,6 +89,8 @@ export default class KnownInternalNames {
         public static readonly StarkNetGoerli: string = "STARKNET_GOERLI";
 
         public static readonly StarkNetMainnet: string = "STARKNET_MAINNET";
+
+        public static readonly StarkNetSepolia: string = "STARKNET_SEPOLIA";
 
         public static readonly ImmutableXMainnet: string = "IMMUTABLEX_MAINNET";
 

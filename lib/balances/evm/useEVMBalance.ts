@@ -5,18 +5,18 @@ import NetworkSettings, { GasCalculation } from "../../NetworkSettings"
 
 export default function useEVMBalance(): BalanceProvider {
     const { layers } = useSettingsState()
-    const supportedNetworks = layers.filter(l => l.isExchange === false && l.type === NetworkType.EVM && NetworkSettings.KnownSettings[l.internal_name]?.GasCalculationType !== GasCalculation.OptimismType).map(l => l.internal_name)
+    const supportedNetworks = layers
+        .filter(l =>
+            l.type === NetworkType.EVM
+            && NetworkSettings.KnownSettings[l.internal_name]
+                ?.GasCalculationType !== GasCalculation.OptimismType
+            && l.assets.some(a => a.is_native))
+        .map(l => l.internal_name)
 
     const getBalance = async ({ layer, address }: BalanceProps) => {
-
         try {
-
-            if (layer.isExchange) throw new Error('Provided layer is not network')
-
-            const source_assets = layer.assets
-            const source_network = source_assets?.[0].network
             const resolveChain = (await import("../../resolveChain")).default
-            const chain = resolveChain(source_network!)
+            const chain = resolveChain(layer)
             if (!chain) return
 
             const { createPublicClient, http } = await import("viem")
@@ -61,28 +61,25 @@ export default function useEVMBalance(): BalanceProvider {
 
     const getGas = async ({ layer, address, currency, userDestinationAddress }: GasProps) => {
 
-        if (!layer || !address || layer?.isExchange) {
+        if (!layer || !address) {
             return
         }
         const chainId = Number(layer?.chain_id)
         const nativeToken = layer?.assets
-            .find(a =>
-                a.asset ===
-                (layer as { native_currency: string }).native_currency)
-        const network = layer.assets?.[0].network
+            .find(a => a.is_native)
 
-        if (!nativeToken || !chainId || !network)
+        if (!nativeToken || !chainId || !layer)
             return
 
         const contract_address = layer?.assets?.find(a => a?.asset === currency?.asset)?.contract_address as `0x${string}`
-        const destination_address = layer?.assets?.find(c => c.asset.toLowerCase() === currency?.asset?.toLowerCase())?.network?.managed_accounts?.[0]?.address as `0x${string}`
+        const destination_address = layer?.managed_accounts?.[0]?.address as `0x${string}`
 
         try {
 
             const { createPublicClient, http } = await import("viem")
             const resolveChain = (await import("../../resolveChain")).default
             const publicClient = createPublicClient({
-                chain: resolveChain(network),
+                chain: resolveChain(layer),
                 transport: http(),
             })
 
