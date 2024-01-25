@@ -1,4 +1,3 @@
-import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import { useSwapDataState } from '../../../../context/swap';
@@ -14,6 +13,7 @@ import KnownInternalNames from '../../../../lib/knownIds';
 import { parseUnits } from 'viem'
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
+import WalletIcon from '../../../icons/WalletIcon';
 
 type Props = {
     depositAddress?: string;
@@ -171,12 +171,12 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                                 isSubmitting={loading}
                                 onClick={handleConnect}
                                 icon={
-                                    <Link
-                                        className="h-5 w-5 ml-2"
+                                    <WalletIcon
+                                        className="stroke-2 w-6 h-6"
                                         aria-hidden="true"
                                     />
                                 } >
-                                Connect wallet
+                                Connect a wallet
                             </SubmitButton>
                         </div>
                     }
@@ -191,7 +191,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                                 isSubmitting={!!(loading || transferDone)}
                                 onClick={handleTransfer}
                                 icon={
-                                    <ArrowLeftRight
+                                    <WalletIcon
                                         className="h-5 w-5 ml-2"
                                         aria-hidden="true"
                                     />

@@ -38,6 +38,7 @@ const Withdraw: FC = () => {
     const sourceIsArbitrumOne = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
     const sourceIsCoinbase = swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
+    const sourceIsSolana = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
 
     const source_layer = layers.find(n => n.internal_name === swap?.source_network)
     const sourceNetworkType = source_layer?.type
@@ -45,7 +46,7 @@ const Withdraw: FC = () => {
     const walletIsAvailable = !swap?.source_exchange
         && (sourceNetworkType === NetworkType.EVM
             || sourceNetworkType === NetworkType.Starknet
-            || sourceIsImmutableX || sourceIsZkSync)
+            || sourceIsImmutableX || sourceIsZkSync || sourceIsSolana)
 
     const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
     const sourceIsSynquote = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne

@@ -12,6 +12,7 @@ import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw"
 import { Layer } from "../../../../Models/Layer"
 import useWalletTransferOptions from "../../../../hooks/useWalletTransferOptions"
 import { useFee } from "../../../../context/feeContext"
+import SolanaWalletWithdrawStep from "./SolanaWalletWithdraw"
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 const WalletTransfer: FC = () => {
@@ -26,6 +27,7 @@ const WalletTransfer: FC = () => {
     const sourceIsImmutableX = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsZkSync = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
     const sourceIsStarknet = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.StarkNetSepolia?.toUpperCase()
+    const sourceIsSolana = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
 
     const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
     const shouldGetGeneratedAddress = isContractWallet?.ready && !canDoSweepless
@@ -57,6 +59,10 @@ const WalletTransfer: FC = () => {
     else if (sourceIsZkSync)
         return <Wrapper>
             {requested_amount && depositAddress && <ZkSyncWalletWithdrawStep depositAddress={depositAddress} amount={requested_amount} />}
+        </Wrapper>
+    else if (sourceIsSolana)
+        return <Wrapper>
+            {requested_amount && depositAddress && <SolanaWalletWithdrawStep depositAddress={depositAddress} amount={requested_amount} />}
         </Wrapper>
     else
         return <Wrapper>
