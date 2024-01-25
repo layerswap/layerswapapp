@@ -4,7 +4,6 @@ import { isValidAddress } from "./addressValidator";
 import { FilterDestinationLayers, FilterSourceLayers } from "../helpers/settingsHelper";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { SwapItem } from "./layerSwapApiClient";
-import { groupBy } from "../components/utils/groupBy";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
     const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset } = queryParams
@@ -81,7 +80,7 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
         has_refuel
     } = swap
 
-    const { layers, exchanges, destinationRoutes, sourceRoutes } = settings || {}
+    const { layers, exchanges, destinationRoutes, sourceRoutes, assetGroups } = settings || {}
 
     const from = layers.find(l => l.internal_name === source_network);
     const to = layers.find(l => l.internal_name === destination_network);
@@ -91,9 +90,8 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
 
     const direction = fromExchange ? 'from' : 'to';
     const routes = direction === 'from' ? sourceRoutes : destinationRoutes;
-    const assets = routes && groupBy(routes, ({ asset }) => asset)
-    const assetNames = assets && Object.keys(assets).map(a => ({ name: a, networks: assets[a] }))
-    const currencyGroup = assetNames.find(a => a.name === (direction === 'from' ? source_network_asset : destination_network_asset))
+    const availableAssetGroups = assetGroups.filter(g=>g.values.some(v=>routes.some(r=>r.asset === v.asset && r.network === v.network)))
+    const currencyGroup = availableAssetGroups.find(a => a.name === (direction === 'from' ? source_network_asset : destination_network_asset))
 
     const fromCurrency = from?.assets.find(c => c.asset === source_network_asset);
     const toCurrency = to?.assets.find(c => c.asset === destination_network_asset);

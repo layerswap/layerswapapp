@@ -1,6 +1,6 @@
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../shadcn/select"
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useEffect, useState } from "react";
+import { forwardRef, useCallback, useEffect } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
@@ -199,7 +199,7 @@ function GenerateMenuItems(
     historicalNetworks: { network: string, asset: string }[] | undefined,
     currencyGroup: AssetGroup | undefined
 ): SelectMenuItem<{ network: string, asset: string }>[] {
-    const menuItems = items.filter(i => i.asset === currencyGroup?.name).map((e, index) => {
+    const menuItems = items.filter(i => currencyGroup?.values?.some(v => v.asset == i.asset && v.network == i.network)).map((e, index) => {
         const order = historicalNetworks?.indexOf(historicalNetworks.find(n => n.asset === e.asset && n.network === e.network) || { network: '', asset: '' }) || 100
         const item: SelectMenuItem<{ network: string, asset: string }> = {
             baseObject: e,

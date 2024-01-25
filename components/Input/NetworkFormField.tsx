@@ -81,14 +81,15 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     const exchangeParams = new URLSearchParams({
         version,
-        ...(currencyGroup?.networks?.length === 1 ?
-            {
-                [direction === 'to' ? 'source_network' : 'destination_network']: currencyGroup.networks[0].network,
-                [direction === 'to' ? 'source_asset' : 'destination_asset']: currencyGroup.name,
-            }
-            : (currencyGroup ? {
+        ...(currencyGroup?.groupedInBackend ?
+            (currencyGroup ? {
                 [direction === 'to' ? 'source_asset_group' : 'destination_asset_group']: currencyGroup.name
             } : {})
+            :
+            {
+                [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.internal_name,
+                [direction === 'to' ? 'source_asset' : 'destination_asset']: filterWithAsset,
+            }
         )
     });
 

@@ -22,13 +22,6 @@ export default class LayerSwapApiClient {
 
     fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
 
-    async GetNetworksAsync(): Promise<ApiResponse<{
-        network: string,
-        asset: string
-    }>> {
-        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/routes/sources?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
-    }
-
     async GetSourceRoutesAsync(): Promise<ApiResponse<{
         network: string;
         asset: string;
