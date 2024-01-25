@@ -33,7 +33,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         }
         else maxAllowedAmount = walletBalance.amount
     } else {
-        maxAllowedAmount = Number(maxAmountFromApi)
+        maxAllowedAmount = Number(maxAmountFromApi) || 0
     }
 
     const maxAllowedDisplayAmount = maxAllowedAmount && truncateDecimals(maxAllowedAmount, fromCurrency?.precision)
@@ -62,7 +62,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     disabled={!fromCurrency || !toCurrency}
                     placeholder={placeholder}
                     min={minAllowedAmount}
-                    max={maxAllowedAmount}
+                    max={maxAllowedAmount || 0}
                     step={isNaN(step) ? 0.01 : step}
                     name={name}
                     ref={amountRef}
