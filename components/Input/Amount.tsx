@@ -1,46 +1,93 @@
 import { useFormikContext } from "formik";
-import { forwardRef } from "react";
+import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import NumericInput from "./NumericInput";
+import { useBalancesState } from "../../context/balances";
+import { truncateDecimals } from "../utils/RoundDecimals";
+import { useFee } from "../../context/feeContext";
 import dynamic from "next/dynamic";
 
-const EnhancedAmountField = dynamic(() => import("./EnhancedAmount"), {
-    loading: () => <NumericInput
-        label={<div className="flex items-center w-full justify-between">
-            <div className="flex items-center space-x-2">
-                <p>Amount</p>
-            </div>
-        </div>}
-        disabled={true}
-        placeholder='0.01234'
-        name="amount"
-        className="rounded-r-none text-primary-text"
-    >
-    </NumericInput>
+const MinMax = dynamic(() => import("./dynamic/MinMax"), {
+    loading: () => <></>,
 });
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
-    const { values } = useFormikContext<SwapFormValues>();
-    const { from, to } = values
+    const { values, handleChange } = useFormikContext<SwapFormValues>();
+    const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
+    const { fromCurrency, from, to, amount, toCurrency } = values || {};
+    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
+    const [isFocused, setIsFocused] = useState(false);
+    const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
+    const [walletAddress, setWalletAddress] = useState<string>()
+
+    const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.asset)?.gas || 0
+
     const name = "amount"
+    const walletBalance = walletAddress && balances[walletAddress]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
 
-    if (!from || !to)
-        return <NumericInput
-            label={<div className="flex items-center w-full justify-between">
-                <div className="flex items-center space-x-2">
-                    <p>Amount</p>
-                </div>
-            </div>}
-            disabled={true}
-            placeholder='0.01234'
-            name={name}
-            className="rounded-r-none text-primary-text"
-        >
-        </NumericInput>
+    const maxAllowedAmount = (walletBalance &&
+        maxAmountFromApi &&
+        minAllowedAmount &&
+        ((walletBalance.amount - gasAmount) >= minAllowedAmount &&
+            (walletBalance.amount - gasAmount) <= maxAmountFromApi)) ?
+        walletBalance.amount - Number(gasAmount)
+        : maxAmountFromApi
 
-    return <EnhancedAmountField />
+    const maxAllowedDisplayAmount = maxAllowedAmount && truncateDecimals(maxAllowedAmount, fromCurrency?.precision)
+
+    const placeholder = (fromCurrency && toCurrency && from && to && minAllowedAmount && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAllowedDisplayAmount}` : '0.0'
+    const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
+    const amountRef = useRef(ref)
+
+    const updateRequestedAmountInUsd = useCallback((requestedAmount: number) => {
+        if (fromCurrency?.usd_price && !isNaN(requestedAmount)) {
+            setRequestedAmountInUsd((fromCurrency?.usd_price * requestedAmount).toFixed(2));
+        } else {
+            setRequestedAmountInUsd(undefined);
+        }
+    }, [requestedAmountInUsd, fromCurrency]);
+
+    useEffect(() => {
+        amount && updateRequestedAmountInUsd(Number(amount))
+    }, [amount])
+
+    return (<>
+        <p className="block font-semibold text-secondary-text text-xs mb-1">Amount</p>
+        <div className="flex w-full justify-between bg-secondary-700 rounded-lg">
+            <div className="relative w-full">
+                <NumericInput
+                    disabled={!fromCurrency || !toCurrency}
+                    placeholder={placeholder}
+                    min={minAllowedAmount}
+                    max={maxAllowedAmount}
+                    step={isNaN(step) ? 0.01 : step}
+                    name={name}
+                    ref={amountRef}
+                    precision={fromCurrency?.precision}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    className="rounded-r-none text-primary-text pr-0 w-full"
+                    onChange={e => {
+                        /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
+                        updateRequestedAmountInUsd(parseFloat(e.target.value));
+                    }}
+                >
+                    {requestedAmountInUsd && !isFocused ? (
+                        <span className="absolute text-xs right-0 bottom-[16px]">
+                            (${requestedAmountInUsd})
+                        </span>
+                    ) : null}
+                </NumericInput>
+            </div>
+            {
+                from && to && fromCurrency ?
+                    <MinMax onAddressGet={(a) => setWalletAddress(a)} />
+                    :
+                    <></>
+            }
+        </div >
+    </>)
 });
-
 
 export default AmountField

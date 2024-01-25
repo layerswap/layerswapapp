@@ -14,7 +14,6 @@ import { WithdrawType } from '../../../lib/layerSwapApiClient';
 import WalletIcon from '../../icons/WalletIcon';
 import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
 import { useAccountModal } from '@rainbow-me/rainbowkit';
-import { GetDefaultNetwork } from '../../../helpers/settingsHelper';
 import Image from 'next/image';
 import SpinIcon from '../../icons/spinIcon';
 import { NetworkType } from '../../../Models/CryptoNetwork';
@@ -30,22 +29,23 @@ const Withdraw: FC = () => {
     const source_internal_name = swap?.source_exchange ?? swap?.source_network
     const source = layers.find(n => n.internal_name === source_internal_name)
 
-    let isFiat = source?.isExchange && source?.type === "fiat"
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
+        || swap?.source_network === KnownInternalNames.Networks.StarkNetSepolia?.toUpperCase()
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsZkSync = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
     const sourceIsArbitrumOne = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
-    const sourceIsCoinbase = swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
+    const sourceIsCoinbase =
+        swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
     const sourceIsSolana = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
-
+    
     const source_layer = layers.find(n => n.internal_name === swap?.source_network)
-    const sourceNetworkType = GetDefaultNetwork(source_layer, swap?.source_network_asset)?.type
-    const manualIsAvailable = !(sourceIsStarknet || sourceIsImmutableX || isFiat)
-    const walletIsAvailable = !isFiat
-        && !swap?.source_exchange
+    const sourceLayerIsEthereum = source_layer?.internal_name?.toUpperCase() === KnownInternalNames.Networks.EthereumMainnet || source_layer?.internal_name?.toUpperCase() === KnownInternalNames.Networks.EthereumGoerli
+    const sourceNetworkType = source_layer?.type
+    const manualIsAvailable = !(sourceIsStarknet || sourceIsImmutableX)
+    const walletIsAvailable = !swap?.source_exchange
         && (sourceNetworkType === NetworkType.EVM
             || sourceNetworkType === NetworkType.Starknet
             || sourceIsImmutableX || sourceIsZkSync || sourceIsSolana)
@@ -62,15 +62,6 @@ const Withdraw: FC = () => {
             enabled: true,
             icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
             content: <External />
-        }]
-    }
-    else if (isFiat) {
-        tabs = [{
-            id: WithdrawType.Stripe,
-            label: "Stripe",
-            enabled: true,
-            icon: <AlignLeft />,
-            content: <FiatTransfer />
         }]
     }
     else if (sourceIsStarknet || sourceIsImmutableX) {
@@ -97,7 +88,7 @@ const Withdraw: FC = () => {
             {
                 id: WithdrawType.Coinbase,
                 label: "Automatically",
-                enabled: sourceIsCoinbase,
+                enabled: sourceIsCoinbase && sourceLayerIsEthereum,
                 icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
                 content: <WalletTransferContent />,
                 footer: <Coinbase />
@@ -126,12 +117,9 @@ const Withdraw: FC = () => {
             <Widget.Content>
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
                     <div className='grid grid-cols-1 gap-4 '>
-                        {
-                            !isFiat &&
-                            <div className="bg-secondary-700 rounded-lg px-3 py-4 border border-secondary-500 w-full relative z-10 space-y-4">
-                                <SwapSummary />
-                            </div>
-                        }
+                        <div className="bg-secondary-700 rounded-lg px-3 py-4 border border-secondary-500 w-full relative z-10 space-y-4">
+                            <SwapSummary />
+                        </div>
                         <span>
 
                             {
@@ -177,14 +165,13 @@ const WalletTransferContent: FC = () => {
 
     const {
         source_network: source_network_internal_name,
-        source_exchange: source_exchange_internal_name,
-        source_network_asset } = swap || {}
+        source_exchange: source_exchange_internal_name } = swap || {}
 
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
     const source_layer = layers.find(n => n.internal_name === swap?.source_network)
 
-    const sourceNetworkType = GetDefaultNetwork(source_network, source_network_asset)?.type
+    const sourceNetworkType = source_network?.type
     const provider = useMemo(() => {
         return source_layer && getProvider(source_layer)
     }, [source_layer, getProvider])

@@ -11,9 +11,8 @@ export default function useWalletTransferOptions() {
     const { swap } = useSwapDataState()
     const { addContractWallet, getContractWallet, updateContractWallet } = useContractWalletsStore()
     const { getWithdrawalProvider: getProvider } = useWallet()
-    const { layers, networks } = useSettingsState()
+    const { layers } = useSettingsState()
     const source_layer = layers.find(n => n.internal_name === swap?.source_network)
-    const source_network = networks.find(n => n.internal_name === swap?.source_network)
     const provider = useMemo(() => {
         return source_layer && getProvider(source_layer)
     }, [source_layer, getProvider])
@@ -26,7 +25,7 @@ export default function useWalletTransferOptions() {
         if (!contractWallet) {
             // add before checking to check only once
             addContractWallet(wallet.address, source_layer.internal_name);
-            checkContractWallet(wallet.address, source_network).then(
+            checkContractWallet(wallet.address, source_layer).then(
                 result => {
                     updateContractWallet(wallet.address, source_layer.internal_name, result)
                 }
@@ -36,10 +35,9 @@ export default function useWalletTransferOptions() {
     }, [wallet?.address])
 
     let walletTypeResolved = getContractWallet(wallet?.address, source_layer?.internal_name) ?? { isContract: false, ready: true, key: "" };
-    const canDoSweepless = source_layer?.isExchange == false
-        && ((source_layer.type == NetworkType.EVM
-            && (walletTypeResolved?.ready && !walletTypeResolved?.isContract))
-            || source_layer.type == NetworkType.Starknet)
+    const canDoSweepless = source_layer && ((source_layer.type == NetworkType.EVM
+        && (walletTypeResolved?.ready && !walletTypeResolved?.isContract))
+        || source_layer.type == NetworkType.Starknet)
         || wallet?.address?.toLowerCase() === swap?.destination_address.toLowerCase()
 
     return { canDoSweepless, isContractWallet: walletTypeResolved }

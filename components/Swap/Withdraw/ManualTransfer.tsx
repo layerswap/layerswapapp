@@ -1,31 +1,30 @@
-import { FC, useCallback } from "react"
+import { FC, useCallback, useEffect } from "react"
 import useSWR from "swr"
 import { ArrowLeftRight } from "lucide-react"
 import Image from 'next/image';
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { useSettingsState } from "../../../context/settings";
-import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
+import { useSwapDataState } from "../../../context/swap";
 import KnownInternalNames from "../../../lib/knownIds";
 import BackgroundField from "../../backgroundField";
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource, DepositType, Fee } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../../lib/layerSwapApiClient";
 import SubmitButton from "../../buttons/submitButton";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../../shadcn/select";
-import { BaseL2Asset } from "../../../Models/Layer";
 import shortenAddress from "../../utils/ShortenAddress";
 import { isValidAddress } from "../../../lib/addressValidator";
 import { useSwapDepositHintClicked } from "../../../stores/swapTransactionStore";
+import { useFee } from "../../../context/feeContext";
+import { Exchange } from "../../../Models/Exchange";
 
 const ManualTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const hintsStore = useSwapDepositHintClicked()
     const hintClicked = hintsStore.swapTransactions[swap?.id || ""]
-    const {
-        source_network: source_network_internal_name } = swap || {}
+    const { source_network: source_network_internal_name } = swap || {}
 
     const layerswapApiClient = new LayerSwapApiClient()
     const {
         data: generatedDeposit,
-    } = useSWR<ApiResponse<DepositAddress>>(`/deposit_addresses/${source_network_internal_name}?source=${DepositAddressSource.UserGenerated}`,
+    } = useSWR<ApiResponse<DepositAddress>>(`/networks/${source_network_internal_name}/deposit_addresses`,
         layerswapApiClient.fetcher,
         {
             dedupingInterval: 60000,
@@ -58,7 +57,7 @@ const ManualTransfer: FC = () => {
                     OK
                 </SubmitButton>
             </div>
-            <div className={hintClicked ? "flex" : "invisible"}>
+            <div className={hintClicked ? "" : "invisible"}>
                 <TransferInvoice address={generatedDepositAddress} shouldGenerateAddress={shouldGenerateAddress} />
             </div>
         </div>
@@ -69,48 +68,54 @@ const ManualTransfer: FC = () => {
 const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> = ({ address: existingDepositAddress, shouldGenerateAddress }) => {
 
     const { layers, resolveImgSrc } = useSettingsState()
-    const { swap, selectedAssetNetwork } = useSwapDataState()
-    const { setSelectedAssetNetwork } = useSwapDataUpdate()
+    const { swap } = useSwapDataState()
+    const { valuesChanger, minAllowedAmount } = useFee()
+
     const {
         source_network: source_network_internal_name,
-        source_exchange: source_exchange_internal_name,
         destination_network: destination_network_internal_name,
+        source_network_asset,
         destination_network_asset,
-        source_network_asset
+        source_exchange
     } = swap || {}
 
-    const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
+    const source = layers.find(n => n.internal_name === source_network_internal_name)
+    const sourceAsset = source?.assets.find(c => c.asset == source_network_asset)
+    const destination = layers.find(n => n.internal_name === destination_network_internal_name)
+    const destinationAsset = destination?.assets.find(c => c.asset == destination_network_asset)
 
-    const asset = selectedAssetNetwork?.network?.currencies.find(c => c.asset == destination_network_asset)
+    useEffect(() => {
+        if (swap) {
+            valuesChanger({
+                amount: swap.requested_amount.toString(),
+                destination_address: swap.destination_address,
+                from: source,
+                fromCurrency: sourceAsset,
+                to: destination,
+                toCurrency: destinationAsset,
+                refuel: swap.has_refuel,
+            })
+        }
+    }, [swap])
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const generateDepositParams = shouldGenerateAddress ? [selectedAssetNetwork?.network_internal_name ?? null] : null
+    const generateDepositParams = shouldGenerateAddress ? [source?.internal_name ?? null] : null
 
     const {
         data: generatedDeposit
     } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
 
-    const feeParams = {
-        source: selectedAssetNetwork?.network?.internal_name,
-        destination: destination_network_internal_name,
-        source_asset: source_network_asset,
-        destination_asset: destination_network_asset,
-        refuel: swap?.has_refuel
-    }
-
-    const { data: feeData } = useSWR<ApiResponse<Fee[]>>([feeParams], ([params]) => layerswapApiClient.GetFee(params), { dedupingInterval: 60000 })
-    const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
-
-    const requested_amount = Number(manualTransferFee?.min_amount) > Number(swap?.requested_amount) ? manualTransferFee?.min_amount : swap?.requested_amount
+    //TODO pick manual transfer minAllowedAmount when its available
+    const requested_amount = Number(minAllowedAmount) > Number(swap?.requested_amount) ? minAllowedAmount : swap?.requested_amount
     const depositAddress = existingDepositAddress || generatedDeposit?.data?.address
 
-    const handleChangeSelectedNetwork = useCallback((n: BaseL2Asset) => {
-        setSelectedAssetNetwork(n)
-    }, [])
+    // const handleChangeSelectedNetwork = useCallback((n: NetworkCurrency) => {
+    //     setSelectedAssetNetwork(n)
+    // }, [])
 
     return <div className='divide-y divide-secondary-500 text-primary-text h-full'>
         {source_exchange && <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
-            <ExchangeNetworkPicker onChange={handleChangeSelectedNetwork} />
+            <ExchangeNetworkPicker />
         </div>
         }
         <div className="flex divide-x divide-secondary-500">
@@ -162,13 +167,13 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                     {requested_amount}
                 </p>
             </BackgroundField>
-            <BackgroundField header={'Asset'} withoutBorder Explorable={asset?.contract_address != null && isValidAddress(asset?.contract_address, selectedAssetNetwork?.network)} toExplore={asset?.contract_address != null ? selectedAssetNetwork?.network?.account_explorer_template?.replace("{0}", asset?.contract_address) : undefined}>
+            <BackgroundField header={'Asset'} withoutBorder Explorable={sourceAsset?.contract_address != null && isValidAddress(sourceAsset?.contract_address, source)} toExplore={sourceAsset?.contract_address != null ? source?.account_explorer_template?.replace("{0}", sourceAsset?.contract_address) : undefined}>
                 <div className="flex items-center gap-2">
                     <div className="flex-shrink-0 h-7 w-7 relative">
                         {
-                            asset &&
+                            sourceAsset &&
                             <Image
-                                src={resolveImgSrc({ asset: asset?.asset })}
+                                src={resolveImgSrc({ asset: sourceAsset?.asset })}
                                 alt="From Logo"
                                 height="60"
                                 width="60"
@@ -178,11 +183,11 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                     </div>
                     <div className="flex flex-col">
                         <span className="font-semibold leading-4">
-                            {asset?.name}
+                            {sourceAsset?.asset}
                         </span>
-                        {asset?.contract_address && isValidAddress(asset.contract_address, selectedAssetNetwork?.network) &&
+                        {sourceAsset?.contract_address && isValidAddress(sourceAsset.contract_address, source) &&
                             <span className="text-xs text-secondary-text flex items-center leading-3">
-                                {shortenAddress(asset?.contract_address)}
+                                {shortenAddress(sourceAsset?.contract_address)}
                             </span>
                         }
                     </div>
@@ -192,32 +197,34 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
     </div>
 }
 
-const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = ({ onChange }) => {
+const ExchangeNetworkPicker: FC<{ onChange?: (exchnage: Exchange) => void }> = ({ onChange }) => {
     const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
     const {
         source_exchange: source_exchange_internal_name,
         destination_network,
-        source_network_asset } = swap || {}
-    const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
+        source_network_asset,
+        source_network
+    } = swap || {}
+    const source_layer = layers.find(n => n.internal_name === source_network)
 
-    const exchangeAssets = source_exchange?.assets?.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network?.status !== "inactive" && a.network?.currencies.find(c => c.asset === a.asset)?.is_deposit_enabled)
-    const defaultSourceNetwork = exchangeAssets?.find(sn => sn.is_default) || exchangeAssets?.[0]
+    //const exchangeAssets = source_exchange?.assets?.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network?.status !== "inactive")
+    //const defaultSourceNetwork = exchangeAssets?.find(sn => sn.is_default) || exchangeAssets?.[0]
 
-    const handleChangeSelectedNetwork = useCallback((n: string) => {
-        const network = exchangeAssets?.find(network => network?.network_internal_name === n)
-        if (network)
-            onChange(network)
-    }, [exchangeAssets])
+    // const handleChangeSelectedNetwork = useCallback((n: string) => {
+    //     const network = exchangeAssets?.find(network => network?.network_internal_name === n)
+    //     if (network)
+    //         onChange(network)
+    // }, [exchangeAssets])
 
     return <div className='flex items-center gap-1 text-sm my-2'>
         <span>Network:</span>
-        {exchangeAssets?.length === 1 ?
-            <div className='flex space-x-1 items-center w-fit font-semibold text-primary-text'>
-                <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={resolveImgSrc(exchangeAssets?.[0])}></Image>
-                <span>{defaultSourceNetwork?.network?.display_name}</span>
-            </div>
-            :
+        {/* {exchangeAssets?.length === 1 ? */}
+        <div className='flex space-x-1 items-center w-fit font-semibold text-primary-text'>
+            <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={resolveImgSrc(source_layer)}></Image>
+            <span>{source_layer?.display_name}</span>
+        </div>
+        {/* :
             <Select onValueChange={handleChangeSelectedNetwork} defaultValue={defaultSourceNetwork?.network_internal_name}>
                 <SelectTrigger className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
                     <SelectValue />
@@ -247,7 +254,7 @@ const ExchangeNetworkPicker: FC<{ onChange: (network: BaseL2Asset) => void }> = 
                     </SelectGroup>
                 </SelectContent>
             </Select>
-        }
+        } */}
     </div>
 }
 

@@ -1,22 +1,23 @@
 import { FormikErrors } from "formik";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
-import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { isValidAddress } from "./addressValidator";
-import { CalculateMaxAllowedAmount, CalculateMinAllowedAmount } from "./fees";
-import { QueryParams } from "../Models/QueryParams";
 
-export default function MainStepValidation({ settings, query }: { settings: LayerSwapSettings, query: QueryParams }): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
+export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount }: { minAllowedAmount: number | undefined, maxAllowedAmount: number | undefined }): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
     return (values: SwapFormValues) => {
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = Number(values.amount);
-        let minAllowedAmount = CalculateMinAllowedAmount(values, settings.networks, settings.currencies);
-        let maxAllowedAmount = CalculateMaxAllowedAmount(values, query?.balances, minAllowedAmount);
 
         if (!values.from) {
             (errors.from as any) = 'Select source';
         }
         if (!values.to) {
             (errors.to as any) = 'Select destination';
+        }
+        if (!values.fromCurrency) {
+            (errors.fromCurrency as any) = 'Select source asset';
+        }
+        if (!values.toCurrency) {
+            (errors.toCurrency as any) = 'Select destination asset';
         }
         if (!amount) {
             errors.amount = 'Enter an amount';
@@ -46,9 +47,6 @@ export default function MainStepValidation({ settings, query }: { settings: Laye
 
         if (Object.keys(errors).length === 0) return errors
 
-        const errorsOrder: FormikErrors<SwapFormValues> = {
-            [values.from?.isExchange ? "exchange" : "network"]: null
-        }
-        return Object.assign(errorsOrder, errors);
+        return errors;
     };
 }

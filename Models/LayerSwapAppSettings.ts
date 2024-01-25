@@ -1,27 +1,38 @@
+import { AssetGroup } from "../components/Input/CEXCurrencyFormField";
+import { groupBy } from "../components/utils/groupBy";
+import NetworkSettings from "../lib/NetworkSettings";
 import { CryptoNetwork, NetworkCurrency } from "./CryptoNetwork";
-import { Currency } from "./Currency";
-import { Exchange, ExchangeCurrency } from "./Exchange";
-import { BaseL2Asset, ExchangeAsset, Layer, NetworkAsset } from "./Layer";
-import { LayerSwapSettings } from "./LayerSwapSettings";
+import { Exchange } from "./Exchange";
+import { Layer } from "./Layer";
+import { LayerSwapSettings, Route } from "./LayerSwapSettings";
 import { Partner } from "./Partner";
 
-export class LayerSwapAppSettings extends LayerSwapSettings {
+export class LayerSwapAppSettings {
     constructor(settings: LayerSwapSettings | any) {
-        super();
-        Object.assign(this, LayerSwapAppSettings.ResolveSettings(settings))
-
-        this.layers = LayerSwapAppSettings.ResolveLayers(this.exchanges, this.networks);
+        this.layers = LayerSwapAppSettings.ResolveLayers(settings.networks, settings.sourceRoutes, settings.destinationRoutes);
+        this.exchanges = LayerSwapAppSettings.ResolveExchanges(settings.exchanges);
+        this.assetGroups = LayerSwapAppSettings.ResolveAssetGroups(settings.networks);
+        this.sourceRoutes = settings.sourceRoutes
+        this.destinationRoutes = settings.destinationRoutes
     }
 
+    exchanges: Exchange[]
     layers: Layer[]
+    assetGroups: AssetGroup[]
+    sourceRoutes: Route[]
+    destinationRoutes: Route[]
 
-    resolveImgSrc = (item: Layer | Currency | Pick<Layer, 'internal_name'> | { asset: string } | Partner) => {
+    resolveImgSrc = (item: Layer | Exchange | NetworkCurrency | Pick<Layer, 'internal_name'> | { asset: string } | Partner | undefined) => {
 
         if (!item) {
             return "/images/logo_placeholder.png";
         }
 
-        const basePath = new URL(this.discovery.resource_storage_url);
+        const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
+        if (!resource_storage_url)
+            throw new Error("NEXT_PUBLIC_RESOURCE_STORAGE_URL is not set up in env vars")
+
+        const basePath = new URL(resource_storage_url);
 
         // Shitty way to check for partner
         if ((item as Partner).is_wallet != undefined) {
@@ -37,69 +48,66 @@ export class LayerSwapAppSettings extends LayerSwapSettings {
         return basePath.href;
     }
 
-    static ResolveSettings(settings: LayerSwapSettings) {
-        const basePath = new URL(settings.discovery.resource_storage_url);
+    static ResolveLayers(networks: CryptoNetwork[], sourceRoutes: Route[], destinationRoutes: Route[]): Layer[] {
+        const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
+        if (!resource_storage_url)
+            throw new Error("NEXT_PUBLIC_RESOURCE_STORAGE_URL is not set up in env vars")
 
-        settings.networks = settings.networks.map(n => ({
-            ...n,
-            img_url: `${basePath}layerswap/networks/${n?.internal_name?.toLowerCase()}.png`
-        }))
-        settings.exchanges = settings.exchanges.map(e => ({
-            ...e,
-            img_url: `${basePath}layerswap/networks/${e?.internal_name?.toLowerCase()}.png`
-        }))
-        settings.currencies = settings.currencies.map(c => ({
-            ...c,
-            img_url: `${basePath}layerswap/networks/${c?.asset?.toLowerCase()}.png`
-        }))
-
-        return settings
-    }
-
-    static ResolveLayers(exchanges: Exchange[], networks: CryptoNetwork[]): Layer[] {
-        const exchangeLayers: Layer[] = exchanges.map((e): Layer => ({
-            isExchange: true,
-            assets: LayerSwapAppSettings.ResolveExchangeL2Assets(e.currencies, networks),
-            ...e
-        }))
-        const networkLayers: Layer[] = networks.map((n): Layer =>
+        const basePath = new URL(resource_storage_url);
+        const networkLayers: Layer[] = networks?.map((n): Layer =>
         ({
-            isExchange: false,
-            assets: LayerSwapAppSettings.ResolveNetworkL2Assets(n),
-            ...n
+            assets: LayerSwapAppSettings.ResolveNetworkAssets(n, sourceRoutes, destinationRoutes),
+            img_url: `${basePath}layerswap/networks/${n?.internal_name?.toLowerCase()}.png`,
+            is_featured: NetworkSettings.KnownSettings[n.internal_name]?.isFeatured ?? false,
+            ...n,
         }))
-        const result = exchangeLayers.concat(networkLayers)
-        return result
+        return networkLayers
     }
 
-    static ResolveExchangeL2Assets(
-        currencies: ExchangeCurrency[],
-        networks: CryptoNetwork[]): ExchangeAsset[] {
-        return currencies.map(exchangecurrency => {
-            const network = networks.find(n => n.internal_name === exchangecurrency.network) as CryptoNetwork
-            const networkCurrencies = network?.currencies.find(nc => nc.asset === exchangecurrency.asset) as NetworkCurrency
-            const res: ExchangeAsset = {
-                asset: exchangecurrency.asset,
-                status: exchangecurrency.status,
-                is_default: exchangecurrency.is_default,
-                network_internal_name: exchangecurrency.network,
-                network: { ...network, currencies: [networkCurrencies] },
-                min_deposit_amount: exchangecurrency.min_deposit_amount,
-                withdrawal_fee: exchangecurrency.withdrawal_fee,
-            }
-            return res
+    static ResolveExchanges(exchanges: Exchange[]): Exchange[] {
+        const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
+        if (!resource_storage_url)
+            throw new Error("NEXT_PUBLIC_RESOURCE_STORAGE_URL is not set up in env vars")
+
+        const basePath = new URL(resource_storage_url);
+        const resolvedExchanges: Exchange[] = exchanges?.map((n): Exchange =>
+        ({
+            img_url: `${basePath}layerswap/networks/${n?.internal_name?.toLowerCase()}.png`,
+            ...n,
+        }))
+        return resolvedExchanges
+    }
+
+    static ResolveNetworkAssets(network: CryptoNetwork, sourceRoutes: Route[], destinationRoutes: Route[]): NetworkCurrency[] {
+        return network?.currencies?.map(c => {
+            const availableInSource = sourceRoutes?.some(r => r.asset === c.asset && r.network === network.internal_name)
+            const availableInDestination = destinationRoutes?.some(r => r.asset === c.asset && r.network === network.internal_name)
+            return ({
+                ...c,
+                availableInSource,
+                availableInDestination,
+            })
         })
     }
 
-    static ResolveNetworkL2Assets(network: CryptoNetwork): NetworkAsset[] {
-        return network?.currencies.map(c => ({
-            asset: c.asset,
-            status: c.status,
-            is_default: true,
-            network_internal_name: network?.internal_name,
-            network: { ...network },
-            contract_address: c.contract_address,
-            decimals: c.decimals
-        }))
+    static ResolveAssetGroups(networks: CryptoNetwork[]) {
+
+        interface Asset extends NetworkCurrency {
+            network: string
+        }
+
+        const assets: Asset[] = []
+        networks.forEach(n => assets?.push(...n.currencies.map(c => ({ network: n.internal_name, ...c }))))
+
+        const groupsWithGroupName = groupBy(assets, ({ group_name }) => group_name || 'without_group')
+
+        const groupsWithoutGroupName = groupBy(groupsWithGroupName.without_group, ({ asset }) => asset)
+
+        const groupsWithGroupNameArray = Object.keys(groupsWithGroupName).filter(f => f !== "without_group").map(a => ({ name: a, values: groupsWithGroupName[a]?.map(g => ({ asset: g.asset, network: g.network })), groupedInBackend: true }))
+        const groupsWithoutGroupNameArray = Object.keys(groupsWithoutGroupName).map(a => ({ name: a, values: groupsWithoutGroupName[a]?.map(g => ({ asset: g.asset, network: g.network })), groupedInBackend: false }))
+        const groups = [...groupsWithGroupNameArray, ...groupsWithoutGroupNameArray]
+
+        return groups
     }
+
 }

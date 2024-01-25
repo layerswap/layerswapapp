@@ -1,23 +1,18 @@
 import { FC } from "react";
 
 type AverageCompletionTimeProps = {
-    time: string | undefined
+    minutes: number | undefined,
+    hours: number | undefined
 }
 
-const AverageCompletionTime: FC<AverageCompletionTimeProps> = ({ time }) => {
+const AverageCompletionTime: FC<AverageCompletionTimeProps> = ({ minutes, hours }) => {
 
-    if (!time) {
+    if (!minutes) {
         return <span>~1-2 minutes</span>
     }
 
-    const parts = time?.split(":");
-    const averageTimeInMinutes = parts && parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10) + parseInt(parts[2]) / 60
-
-    const hours = Math.floor(averageTimeInMinutes / 60);
-    const minutes = averageTimeInMinutes % 60;
-
-    if (averageTimeInMinutes > 1 && averageTimeInMinutes < 60) return <span><span>~</span><span>{averageTimeInMinutes.toFixed()}</span> <span>minutes</span></span>
-    else if (averageTimeInMinutes >= 60) return <span><span>~</span><span>{hours}</span> <span>{hours > 1 ? 'hours' : 'hour'}</span> <span>{minutes > 0 ? ` ${minutes?.toFixed()} minutes` : ''}</span></span>
+    if (minutes > 1 && minutes < 60) return <span><span>~</span><span>{minutes.toFixed()}</span> <span>minutes</span></span>
+    else if (minutes >= 60) return <span><span>~</span><span>{hours}</span> <span>{hours && hours > 1 ? 'hours' : 'hour'}</span> <span>{minutes > 0 ? ` ${minutes?.toFixed()} minutes` : ''}</span></span>
     else return <span>~1-2 minutes</span>
 }
 

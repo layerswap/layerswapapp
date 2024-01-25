@@ -1,5 +1,5 @@
 import { Wallet } from "../stores/walletStore"
-import { Currency } from "./Currency"
+import { NetworkCurrency } from "./CryptoNetwork"
 import { Layer } from "./Layer"
 
 export type BalanceProps = {
@@ -9,7 +9,7 @@ export type BalanceProps = {
 
 export type GasProps = {
     layer: Layer,
-    currency: Currency,
+    currency: NetworkCurrency,
     address?: `0x${string}`,
     userDestinationAddress?: string,
     wallet?: Wallet

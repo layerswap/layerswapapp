@@ -1,8 +1,9 @@
 import { PublicClient } from "viem"
-import { Layer, NetworkAsset } from "../../../Models/Layer"
+import { Layer } from "../../../Models/Layer"
 import formatAmount from "../../formatAmount"
 import { erc20ABI } from "wagmi"
 import { multicall, fetchBalance, FetchBalanceResult } from '@wagmi/core'
+import { NetworkCurrency } from "../../../Models/CryptoNetwork"
 import { Balance } from "../../../Models/Balance"
 
 export type ERC20ContractRes = ({
@@ -17,9 +18,9 @@ export type ERC20ContractRes = ({
 
 export const resolveERC20Balances = async (
     multicallRes: ERC20ContractRes[],
-    from: Layer & { isExchange: false },
+    from: Layer,
 ) => {
-    const assets = from?.assets?.filter(a => a.contract_address && a.status !== 'inactive')
+    const assets = from?.assets?.filter(a => a.contract_address)
     if (!assets)
         return null
     const contractBalances = multicallRes?.map((d, index) => {
@@ -38,7 +39,7 @@ export const resolveERC20Balances = async (
 type GetBalanceArgs = {
     address: string,
     chainId: number,
-    assets: NetworkAsset[],
+    assets: NetworkCurrency[],
     publicClient: PublicClient,
     hasMulticall: boolean
 }
@@ -50,7 +51,7 @@ export const getErc20Balances = async ({
     hasMulticall = false
 }: GetBalanceArgs): Promise<ERC20ContractRes[] | null> => {
 
-    const contracts = assets?.filter(a => a.contract_address && a.status !== 'inactive').map(a => ({
+    const contracts = assets?.filter(a => a.contract_address).map(a => ({
         address: a?.contract_address as `0x${string}`,
         abi: erc20ABI,
         functionName: 'balanceOf',
@@ -118,10 +119,10 @@ export const getNativeBalance = async (address: `0x${string}`, chainId: number):
 }
 
 export const resolveNativeBalance = async (
-    from: Layer & { isExchange: false },
+    from: Layer,
     nativeTokenRes: FetchBalanceResult
 ) => {
-    const native_currency = from.assets.find(a => a.asset === from.native_currency)
+    const native_currency = from.assets.find(a => a.is_native)
     if (!native_currency) {
         return null
     }

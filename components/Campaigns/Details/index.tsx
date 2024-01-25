@@ -14,15 +14,15 @@ import Link from "next/link";
 import LinkWrapper from "../../LinkWraapper";
 import { Widget } from "../../Widget/Index";
 import Leaderboard from "./Leaderboard"
-import { CryptoNetwork } from "../../../Models/CryptoNetwork";
 import Rewards from "./Rewards";
 import SpinIcon from "../../icons/spinIcon"
+import { Layer } from "../../../Models/Layer"
 
 function CampaignDetails() {
 
     const settings = useSettingsState()
     const router = useRouter();
-    const { resolveImgSrc, networks } = settings
+    const { resolveImgSrc, layers } = settings
     const camapaignName = router.query.campaign?.toString()
 
     const { isConnected } = useAccount();
@@ -31,7 +31,7 @@ function CampaignDetails() {
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
     const campaign = campaignsData?.data?.find(c => c.name === camapaignName)
 
-    const network = networks.find(n => n.internal_name === campaign?.network)
+    const network = layers.find(n => n.internal_name === campaign?.network)
 
     if (isLoading) {
         return <Loading />
@@ -91,7 +91,7 @@ function CampaignDetails() {
 
 type BriefInformationProps = {
     campaign: Campaign,
-    network?: CryptoNetwork
+    network?: Layer
 }
 const BriefInformation: FC<BriefInformationProps> = ({ campaign, network }) =>
     <p className="text-secondary-text text-base">

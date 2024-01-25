@@ -12,12 +12,12 @@ import ErrorFallback from "./ErrorFallback";
 import { SendErrorMessage } from "../lib/telegram";
 import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
-import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
 import * as Sentry from "@sentry/nextjs";
+import { FeeProvider } from "../context/feeContext";
 import RainbowKit from "./RainbowKit";
 import Solana from "./SolanaProvider";
 import { IsExtensionError } from "../helpers/errorHelper";
@@ -63,7 +63,6 @@ export default function Layout({ children, settings, themeData }: Props) {
     </ThemeWrapper>
 
   let appSettings = new LayerSwapAppSettings(settings)
-  LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
 
   const query: QueryParams = {
     ...router.query,
@@ -103,7 +102,7 @@ export default function Layout({ children, settings, themeData }: Props) {
       SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
     }
     Sentry.captureException(error, info);
-    transaction.finish();
+    transaction?.finish();
   }
 
   themeData = themeData || THEME_COLORS.default
@@ -149,9 +148,11 @@ export default function Layout({ children, settings, themeData }: Props) {
                 <TonConnectProvider basePath={basePath} themeData={themeData}>
                   <RainbowKit>
                     <Solana>
-                      {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                        <MaintananceContent />
-                        : children}
+                      <FeeProvider>
+                        {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                          <MaintananceContent />
+                          : children}
+                      </FeeProvider>
                     </Solana>
                   </RainbowKit>
                 </TonConnectProvider>
@@ -160,6 +161,6 @@ export default function Layout({ children, settings, themeData }: Props) {
           </TooltipProvider>
         </AuthProvider>
       </SettingsProvider >
-    </QueryProvider>
+    </QueryProvider >
   </>)
 }

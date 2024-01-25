@@ -11,7 +11,8 @@ export default function useStarknetBalance(): BalanceProvider {
 
     const supportedNetworks = [
         KnownInternalNames.Networks.StarkNetMainnet,
-        KnownInternalNames.Networks.StarkNetGoerli
+        KnownInternalNames.Networks.StarkNetGoerli,
+        KnownInternalNames.Networks.StarkNetSepolia,
     ]
     const router = useRouter()
 
@@ -25,7 +26,7 @@ export default function useStarknetBalance(): BalanceProvider {
 
         let balances: Balance[] = []
 
-        if (layer.isExchange === true || !layer.assets) return
+        if (!layer.assets) return
 
         const provider = new RpcProvider({
             nodeUrl: layer.nodes[0].url,
@@ -64,13 +65,11 @@ export default function useStarknetBalance(): BalanceProvider {
 
     const getGas = async ({ layer, currency, wallet }: GasProps) => {
 
-        if (layer.isExchange) return
-
         const nodeUrl = layer.nodes[0].url
         const asset = layer.assets.find(a => a.asset === currency.asset)
-        const nativeAsset = layer.assets.find(a => a.asset === layer.native_currency)
+        const nativeAsset = layer.assets.find(a => a.is_native)
         const contract_address = asset?.contract_address
-        const recipient = layer.assets[0].network?.managed_accounts[0].address
+        const recipient = layer.managed_accounts[0].address
 
         if (!asset || !nativeAsset) return
 
