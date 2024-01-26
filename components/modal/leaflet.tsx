@@ -30,7 +30,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
         onClose && onClose()
     }, [setShow, onClose])
 
-    async function handleDragEnd(_, info) {
+    const handleDragEnd = useCallback(async (_, info) => {
         const offset = info.offset.y;
         const velocity = info.velocity.y;
         const height = mobileModalRef.current?.getBoundingClientRect().height || 0;
@@ -40,7 +40,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
         } else {
             controls.start({ y: 0, transition: transitionProps });
         }
-    }
+    }, [controls, setShow, transitionProps])
 
     useEffect(() => {
         if (show) {

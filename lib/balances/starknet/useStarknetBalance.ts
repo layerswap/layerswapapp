@@ -2,14 +2,19 @@ import KnownInternalNames from "../../knownIds"
 import Erc20Abi from '../../abis/ERC20.json'
 import formatAmount from "../../formatAmount";
 import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../Models/Balance";
+import InternalApiClient from "../../internalApiClient";
+import { EstimateFee } from "starknet";
+import { ApiResponse } from "../../../Models/ApiResponse";
+import { useRouter } from "next/router";
 
 export default function useStarknetBalance(): BalanceProvider {
-    const name = 'starknet'
 
     const supportedNetworks = [
         KnownInternalNames.Networks.StarkNetMainnet,
-        KnownInternalNames.Networks.StarkNetGoerli
+        KnownInternalNames.Networks.StarkNetGoerli,
+        KnownInternalNames.Networks.StarkNetSepolia,
     ]
+    const router = useRouter()
 
     const getBalance = async ({ layer, address }: BalanceProps) => {
         const {
@@ -21,7 +26,7 @@ export default function useStarknetBalance(): BalanceProvider {
 
         let balances: Balance[] = []
 
-        if (layer.isExchange === true || !layer.assets) return
+        if (!layer.assets) return
 
         const provider = new RpcProvider({
             nodeUrl: layer.nodes[0].url,
@@ -60,49 +65,27 @@ export default function useStarknetBalance(): BalanceProvider {
 
     const getGas = async ({ layer, currency, wallet }: GasProps) => {
 
-        const { CallData,
-            cairo,
-            Account,
-            SequencerProvider
-        } = await import("starknet");
-
-        const { BigNumber } = await import("ethers");
-
-        if (layer.isExchange === true || !layer.assets) return
-
-        const amountToWithdraw = BigNumber.from(1);
-        const contract_address = layer.assets.find(a => a.asset === currency.asset)?.contract_address
+        const nodeUrl = layer.nodes[0].url
         const asset = layer.assets.find(a => a.asset === currency.asset)
-        const FEE_ESTIMATE_MULTIPLIER = BigInt(4);
+        const nativeAsset = layer.assets.find(a => a.is_native)
+        const contract_address = asset?.contract_address
+        const recipient = layer.managed_accounts[0].address
 
-        if (!contract_address || !asset || !wallet) return
+        if (!asset || !nativeAsset) return
 
-        const provider = new SequencerProvider({
-            baseUrl: 'https://alpha-mainnet.starknet.io',
-        });
+        const client = new InternalApiClient()
+        const basePath = router.basePath ?? '/'
+        const feeEstimateResponse: ApiResponse<EstimateFee> = await client.GetStarknetFee(`nodeUrl=${nodeUrl}&walletAddress=${wallet?.address}&contractAddress=${contract_address}&recipient=${recipient}&watchDogContract=${layer.metadata?.WatchdogContractAddress}`, basePath)
 
-        const account = new Account(provider, wallet.address, wallet.metadata?.starknetAccount?.account.signer.pk);
-
-        let transferCall = {
-            contractAddress: contract_address.toLowerCase(),
-            entrypoint: "transfer",
-            calldata: CallData.compile(
-                {
-                    recipient: wallet.address,
-                    amount: cairo.uint256(amountToWithdraw.toHexString())
-                })
-        };
-
-        let feeEstimateResponse = await account.estimateFee(transferCall, { skipValidate: true });
-        if (!feeEstimateResponse?.suggestedMaxFee) {
+        if (!feeEstimateResponse?.data?.suggestedMaxFee) {
             throw new Error(`Couldn't get fee estimation for the transfer. Response: ${JSON.stringify(feeEstimateResponse)}`);
         };
 
-        const feeInWei = (feeEstimateResponse.suggestedMaxFee * FEE_ESTIMATE_MULTIPLIER).toString();
+        const feeInWei = feeEstimateResponse.data.suggestedMaxFee.toString();
 
         const gas = {
             token: currency.asset,
-            gas: formatAmount(feeInWei, asset.decimals),
+            gas: formatAmount(feeInWei, nativeAsset.decimals),
             request_time: new Date().toJSON()
         }
 
@@ -113,7 +96,6 @@ export default function useStarknetBalance(): BalanceProvider {
     return {
         getBalance,
         getGas,
-        name,
         supportedNetworks
     }
 }

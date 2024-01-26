@@ -89,7 +89,7 @@ export const WalletsMenu = () => {
 
     return (
         <ConnectButton>
-            <SubmitButton text_align="center" icon={<WalletIcon className='h-5 w-5' strokeWidth={2} />} className="bg-primary/20 border-none !text-primary !px-4" type="button" isDisabled={false} isSubmitting={false}>
+            <SubmitButton text_align="center" icon={<WalletIcon className='stroke-2 w-6 h-6' strokeWidth={2} />} className="bg-primary/20 border-none !text-primary !px-4" type="button" isDisabled={false} isSubmitting={false}>
                 Connect a wallet
             </SubmitButton>
         </ConnectButton>

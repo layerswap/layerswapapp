@@ -94,7 +94,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
         }
     }, [swap])
     return <>
-        <Modal show={showInsufficientFundsModal} setShow={setShowInsufficientFundsModal} >
+        <Modal show={showInsufficientFundsModal} setShow={setShowInsufficientFundsModal} modalId='insufficientFunds'>
             <MessageComponent>
                 <MessageComponent.Content center icon='red'>
                     <MessageComponent.Header>
@@ -113,7 +113,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
                 </MessageComponent.Buttons>
             </MessageComponent>
         </Modal>
-        <Modal show={showFundsOnHoldModal} setShow={setShowFundsOnHoldModal} >
+        <Modal show={showFundsOnHoldModal} setShow={setShowFundsOnHoldModal} modalId='funds'>
             <MessageComponent>
                 <MessageComponent.Content center icon='red'>
                     <MessageComponent.Header>

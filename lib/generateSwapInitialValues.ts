@@ -1,41 +1,72 @@
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./addressValidator";
-import { FilterCurrencies, FilterDestinationLayers, FilterSourceLayers } from "../helpers/settingsHelper";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { SwapItem } from "./layerSwapApiClient";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
-    const { destAddress, amount, asset, from, to, lockAsset } = queryParams
-    const { currencies, layers } = settings || {}
+    const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, addressSource } = queryParams
+    const { layers, exchanges, sourceRoutes, destinationRoutes } = settings || {}
 
-    const lockedCurrency = lockAsset ? currencies?.find(c => c?.asset?.toUpperCase() === asset?.toUpperCase()) : undefined
+    const shouldManipulateCurrency = addressSource === 'ea7df14a1597407f9f755f05e25bab42' && from === 'ARBITRUM_MAINNET' && fromAsset === 'USDC'
+
+    const lockedSourceCurrency = lockFromAsset ?
+        layers.find(l => l.internal_name === to)
+            ?.assets?.find(c => c?.asset?.toUpperCase() === fromAsset?.toUpperCase())
+        : undefined
+    const lockedDestinationCurrency = lockToAsset ?
+        layers.find(l => l.internal_name === to)
+            ?.assets?.find(c => c?.asset?.toUpperCase() === toAsset?.toUpperCase())
+        : undefined
+
     const sourceLayer = layers.find(l => l.internal_name.toUpperCase() === from?.toUpperCase())
     const destinationLayer = layers.find(l => l.internal_name.toUpperCase() === to?.toUpperCase())
 
-    const sourceItems = FilterSourceLayers(layers, destinationLayer, lockedCurrency)
-    const destinationItems = FilterDestinationLayers(layers, sourceLayer, lockedCurrency)
+    const sourceItems = layers.filter(l => sourceRoutes?.some(r => r.network === l.internal_name))
+    const destinationItems = layers.filter(l => destinationRoutes?.some(r => r.network === l.internal_name))
 
-    const initialSource = sourceLayer ? sourceItems.find(i => i == sourceLayer) : undefined
-    const initialDestination = destinationLayer ? destinationItems.find(i => i === destinationLayer) : undefined
+    const initialSourceExchange = exchanges.find(e => e.is_enabled && e.internal_name.toLowerCase() === from?.toLowerCase())
+    const initialDestinationExchange = exchanges.find(e => e.is_enabled && e.internal_name.toLowerCase() === to?.toLowerCase())
 
-    const filteredCurrencies = lockedCurrency ? [lockedCurrency] : FilterCurrencies(currencies, sourceLayer, destinationLayer);
+    const initialSource = sourceLayer ?
+        sourceItems.find(i => i == sourceLayer)
+        : undefined
+    const initialDestination = destinationLayer
+        ? destinationItems.find(i => i === destinationLayer)
+        : undefined
+
+    const filteredSourceCurrencies = lockedSourceCurrency ?
+        [lockedSourceCurrency]
+        : layers.find(l => l.internal_name === from)?.assets
+
+    const filteredDestinationCurrencies = lockedDestinationCurrency ?
+        [lockedDestinationCurrency]
+        : layers.find(l => l.internal_name === to)?.assets
 
     let initialAddress =
         destAddress && initialDestination && isValidAddress(destAddress, destinationLayer) ? destAddress : "";
 
-    let initialCurrency =
-        filteredCurrencies.find(c => c.asset?.toUpperCase() == asset?.toUpperCase()) || filteredCurrencies?.[0]
+    let initialSourceCurrency = shouldManipulateCurrency ? filteredSourceCurrencies?.find(c => c.asset === 'USDC.e') :
+        (filteredSourceCurrencies?.find(c => c.asset?.toUpperCase() == fromAsset?.toUpperCase())
+            || filteredSourceCurrencies?.[0])
 
+    let initialDestinationCurrency =
+        filteredDestinationCurrencies?.find(c => c.asset?.toUpperCase() == toAsset?.toUpperCase())
+        || filteredDestinationCurrencies?.[0]
+
+    //TODO this looks wrong
     let initialAmount =
-        (lockedCurrency && amount) || (initialCurrency ? amount : '')
+        (lockedDestinationCurrency && amount) || (initialDestinationCurrency ? amount : '')
 
     const result: SwapFormValues = {
+        fromExchange: initialSourceExchange,
+        toExchange: initialDestinationExchange,
         from: initialSource,
         to: initialDestination,
         amount: initialAmount,
-        currency: initialCurrency,
-        destination_address: (!destinationLayer?.isExchange && initialAddress) ? initialAddress : '',
+        fromCurrency: initialSourceCurrency,
+        toCurrency: initialDestinationCurrency,
+        destination_address: initialAddress ? initialAddress : '',
     }
 
     return result
@@ -47,6 +78,7 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
         destination_address,
         requested_amount,
         source_network_asset,
+        destination_network_asset,
         source_network,
         destination_network,
         source_exchange,
@@ -54,25 +86,33 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
         has_refuel
     } = swap
 
-    const { currencies, layers } = settings || {}
+    const { layers, exchanges, destinationRoutes, sourceRoutes, assetGroups } = settings || {}
 
-    const from = source_exchange ?
-        layers.find(l => l.internal_name === source_exchange)
-        : layers.find(l => l.internal_name === source_network)
+    const from = layers.find(l => l.internal_name === source_network);
+    const to = layers.find(l => l.internal_name === destination_network);
 
-    const to = destination_exchange ?
-        layers.find(l => l.internal_name === destination_exchange)
-        : layers.find(l => l.internal_name === destination_network)
+    const fromExchange = exchanges.find(e => e.internal_name === source_exchange);
+    const toExchange = exchanges.find(e => e.internal_name === destination_exchange);
 
-    const currency = currencies.find(c => c.asset === source_network_asset)
+    const direction = fromExchange ? 'from' : 'to';
+    const routes = direction === 'from' ? sourceRoutes : destinationRoutes;
+    const availableAssetGroups = assetGroups.filter(g => g.values.some(v => routes.some(r => r.asset === v.asset && r.network === v.network)))
+    const currencyGroup = availableAssetGroups.find(a => a.name === (direction === 'from' ? source_network_asset : destination_network_asset))
+
+    const fromCurrency = from?.assets.find(c => c.asset === source_network_asset);
+    const toCurrency = to?.assets.find(c => c.asset === destination_network_asset);
 
     const result: SwapFormValues = {
         from,
         to,
         amount: requested_amount?.toString(),
-        currency,
+        fromCurrency,
+        toCurrency,
         destination_address,
-        refuel: has_refuel
+        refuel: has_refuel,
+        fromExchange,
+        toExchange,
+        currencyGroup
     }
 
     return result

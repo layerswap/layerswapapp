@@ -4,7 +4,7 @@ import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
-import { GetNetworkCurrency } from '../../../../helpers/settingsHelper';
+import { GetDefaultAsset } from '../../../../helpers/settingsHelper';
 import AverageCompletionTime from '../../../Common/AverageCompletionTime';
 import { SwapItem, TransactionStatus, TransactionType } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
@@ -14,6 +14,7 @@ import { SwapFailReasons } from '../../../../Models/RangeError';
 import { Gauge } from '../../../gauge';
 import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
+import { useFee } from '../../../../context/feeContext';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 
 type Props = {
@@ -24,16 +25,16 @@ type Props = {
 const Processing: FC<Props> = ({ settings, swap }) => {
 
     const swapStatus = swap.status;
-    const storedWalletTransactions = useSwapTransactionStore()
+    const storedWalletTransactions = useSwapTransactionStore();
+    const { fee } = useFee()
 
-    const source_network = settings.networks?.find(e => e.internal_name === swap.source_network)
-    const destination_network = settings.networks?.find(e => e.internal_name === swap.destination_network)
+    const source_network = settings.layers?.find(e => e.internal_name === swap.source_network)
     const destination_layer = settings.layers?.find(e => e.internal_name === swap.destination_network)
 
     const input_tx_explorer = source_network?.transaction_explorer_template
-    const output_tx_explorer = destination_network?.transaction_explorer_template
+    const output_tx_explorer = destination_layer?.transaction_explorer_template
 
-    const destinationNetworkCurrency = destination_layer ? GetNetworkCurrency(destination_layer, swap?.destination_network_asset) : null
+    const destinationNetworkCurrency = destination_layer ? GetDefaultAsset(destination_layer, swap?.destination_network_asset) : null
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id]
@@ -44,7 +45,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
-    const nativeCurrency = destination_layer?.isExchange === false ? settings?.currencies?.find(c => c.asset === destination_layer?.native_currency) : null
+    const nativeCurrency = destination_layer?.assets?.find(c => c.asset === destination_layer?.assets.find(a => a.is_native)?.asset)
     const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
 
     const progressStatuses = getProgressStatuses(swap, swapStatus)
@@ -53,12 +54,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const outputPendingDetails = <div className='flex items-center space-x-1'>
         <span>Estimated arrival after confirmation:</span>
         <div className='text-primary-text'>
-            {
-                destinationNetworkCurrency?.status == 'insufficient_liquidity' ?
-                    <span>Up to 2 hours (delayed)</span>
-                    :
-                    <AverageCompletionTime time={destination_network?.average_completion_time} />
-            }
+            <AverageCompletionTime avgCompletionTime={fee.avgCompletionTime} />
         </div>
     </div>
 
@@ -117,11 +113,11 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         },
         "output_transfer": {
             upcoming: {
-                name: `Sending ${destinationNetworkCurrency?.name} to your address`,
+                name: `Sending ${destinationNetworkCurrency?.asset} to your address`,
                 description: null
             },
             current: {
-                name: `Sending ${destinationNetworkCurrency?.name} to your address`,
+                name: `Sending ${destinationNetworkCurrency?.asset} to your address`,
                 description: null
             },
             complete: {

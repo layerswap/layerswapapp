@@ -3,19 +3,14 @@ import Layout from '../../components/layout';
 import { InferGetServerSidePropsType } from 'next';
 import React from 'react';
 import { SwapDataProvider } from '../../context/swap';
-import LayerSwapAuthApiClient from '../../lib/userAuthApiClient';
 import { TimerProvider } from '../../context/timerContext';
-import { LayerSwapAppSettings } from '../../Models/LayerSwapAppSettings';
 import { getThemeData } from '../../helpers/settingsHelper';
 import SwapWithdrawal from '../../components/SwapWithdrawal'
 
 const SwapDetails = ({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
 
-  let appSettings = new LayerSwapAppSettings(settings)
-  LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
-
   return (<>
-    <Layout settings={appSettings} themeData={themeData}>
+    <Layout settings={settings} themeData={themeData}>
       <SwapDataProvider >
         <TimerProvider>
           <SwapWithdrawal />
@@ -37,10 +32,19 @@ export const getServerSideProps = async (ctx) => {
     }
   }
 
-  var apiClient = new LayerSwapApiClient();
-  const { data } = await apiClient.GetSettingsAsync()
-  const settings = data
-  let themeData = await getThemeData(ctx.query)
+  const apiClient = new LayerSwapApiClient()
+  const { data: networkData } = await apiClient.GetLSNetworksAsync()
+  const { data: exchangeData } = await apiClient.GetExchangesAsync()
+
+  if (!networkData || !exchangeData) return
+
+  const settings = {
+    networks: networkData,
+    exchanges: exchangeData,
+  }
+
+  const themeData = await getThemeData(ctx.query)
+
   return {
     props: {
       settings,

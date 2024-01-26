@@ -13,7 +13,6 @@ import Image from 'next/image';
 import { Partner } from "../../Models/Partner";
 import shortenAddress from "../utils/ShortenAddress";
 import AddressIcon from "../AddressIcon";
-import { GetDefaultNetwork } from "../../helpers/settingsHelper";
 import WalletIcon from "../icons/WalletIcon";
 import useWallet from "../../hooks/useWallet";
 
@@ -41,9 +40,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const [wrongNetwork, setWrongNetwork] = useState(false)
     const inputReference = useRef<HTMLInputElement>(null);
     const destination = values.to
-    const asset = values.currency?.asset
-    const destinationNetwork = GetDefaultNetwork(destination, asset)
-    const valid_addresses = address_book?.filter(a => (destination?.isExchange ? a.exchanges?.some(e => destination?.internal_name === e) : a.networks?.some(n => destination?.internal_name === n)) && isValidAddress(a.address, destination)) || []
+    const valid_addresses = address_book?.filter(a => a.networks?.some(n => destination?.internal_name === n) && isValidAddress(a.address, destination)) || []
 
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const placeholder = "Enter your address here"
@@ -61,7 +58,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const settings = useSettingsState()
 
     useEffect(() => {
-        if (destination && !destination?.isExchange && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address) {
+        if (destination && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address && !values.toExchange) {
             //TODO move to wallet implementation
             if (connectedWallet
                 && connectedWallet.providerName === 'starknet'
@@ -77,7 +74,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
             setAddressConfirmed(true)
             setFieldValue("destination_address", connectedWallet?.address)
         }
-    }, [connectedWallet?.address, destination?.isExchange, destination])
+    }, [connectedWallet?.address, destination])
 
     useEffect(() => {
         if (canFocus) {
@@ -124,8 +121,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
         close()
     }, [validInputAddress])
 
-    const destinationAsset = destination?.assets?.find(a => a.asset === asset)
-    const destinationChainId = destinationAsset?.network?.chain_id
+    const destinationAsset = values.toCurrency
+    const destinationChainId = values?.to?.chain_id
 
     return (<>
         <div className='w-full flex flex-col justify-between h-full text-primary-text'>
@@ -196,9 +193,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                             <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
                                 {
                                     destinationIsStarknet && connectedWallet ?
-                                        <connectedWallet.icon className='rounded-md' alt={connectedWallet?.address} width={25} height={25} />
+                                        <connectedWallet.icon className='rounded-md h-6 w-6' alt={connectedWallet?.address} width={24} height={24} />
                                         :
-                                        <AddressIcon address={validInputAddress} size={25} />
+                                        <AddressIcon address={validInputAddress} size={24} />
                                 }
                             </div>
                             <div className="flex flex-col grow">
@@ -215,10 +212,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         !disabled
                         && !inputValue
                         && destination
-                        && !destination?.isExchange
-                        && destinationNetwork
                         && provider
-                        && !connectedWallet &&
+                        && !connectedWallet 
+                        && !values.toExchange &&
                         <div onClick={() => { connectWallet(provider.name) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
                             <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
                                 <WalletIcon className="w-6 h-6 text-primary-text" />
@@ -234,15 +230,14 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         </div>
                     }
                     {
-                        destination?.isExchange
-                        && !inputAddressIsValid
-                        && values.currency
-                        && destinationNetwork
+                        !inputAddressIsValid
+                        && destinationAsset
+                        && values.toExchange
                         &&
                         <div className='text-left p-4 bg-secondary-800 text-primary-text rounded-lg border border-secondary-500'>
                             <div className="flex items-center">
                                 <Info className='h-5 w-5 text-primary-600 mr-3' />
-                                <label className="block text-sm md:text-base font-medium leading-6">How to find your {destination?.display_name} deposit address</label>
+                                <label className="block text-sm md:text-base font-medium leading-6">How to find your {values.toExchange.display_name} deposit address</label>
                             </div>
                             <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-primary-text">
                                 <li>Go to the Deposits page</li>
@@ -250,13 +245,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     <span>Select</span>
                                     <span className="inline-block mx-1">
                                         <span className='flex gap-1 items-baseline text-sm '>
-                                            <Image src={settings.resolveImgSrc(values.currency)}
+                                            <Image src={settings.resolveImgSrc(destinationAsset)}
                                                 alt="Project Logo"
                                                 height="15"
                                                 width="15"
                                                 className='rounded-sm'
                                             />
-                                            <span className="text-primary-text">{values.currency.asset}</span>
+                                            <span className="text-primary-text">{destinationAsset.asset}</span>
                                         </span>
                                     </span>
                                     <span>as asset</span>
@@ -265,13 +260,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     <span>Select</span>
                                     <span className="inline-block mx-1">
                                         <span className='flex gap-1 items-baseline text-sm '>
-                                            <Image src={settings.resolveImgSrc(destinationNetwork)}
+                                            <Image src={settings.resolveImgSrc(values.to)}
                                                 alt="Project Logo"
                                                 height="15"
                                                 width="15"
                                                 className='rounded-sm'
                                             />
-                                            <span className="text-primary-text">{destinationNetwork?.display_name}</span>
+                                            <span className="text-primary-text">{destination?.display_name}</span>
                                         </span>
                                     </span>
                                     <span>as network</span>

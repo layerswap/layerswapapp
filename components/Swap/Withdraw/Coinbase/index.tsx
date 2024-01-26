@@ -22,7 +22,7 @@ const Coinbase: FC = () => {
 const TransferElements: FC = () => {
     const { swap, codeRequested } = useSwapDataState()
     const { setCodeRequested, mutateSwap } = useSwapDataUpdate()
-    const { networks } = useSettingsState()
+    const { layers } = useSettingsState()
     const {
         destination_network: destination_network_internal_name,
     } = swap || {}
@@ -34,7 +34,7 @@ const TransferElements: FC = () => {
 
     const [loading, setLoading] = useState(false)
 
-    const destination_network = networks.find(n => n.internal_name === destination_network_internal_name)
+    const destination_network = layers.find(n => n.internal_name === destination_network_internal_name)
 
     const handleTransfer = useCallback(async () => {
         if (!swap || !swap.source_exchange)
@@ -90,6 +90,7 @@ const TransferElements: FC = () => {
                 show={showCoinbaseConnectModal}
                 setShow={setShowCoinbaseConnectModal}
                 header={`Connect your Coinbase account`}
+                modalId='authorize'
             >
                 <Authorize
                     hideHeader
@@ -102,6 +103,7 @@ const TransferElements: FC = () => {
                 height='90%'
                 show={openCoinbase2FA}
                 setShow={setOpenCoinbase2FA}
+                modalId='coinbase2FA'
             >
                 <Coinbase2FA
                     onSuccess={handleSuccess}

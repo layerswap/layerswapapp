@@ -14,9 +14,10 @@ export interface ModalProps {
     show: boolean;
     setShow: Dispatch<SetStateAction<boolean>>;
     onClose?: () => void
+    modalId: string;
 }
 
-const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow, onClose }) => {
+const Modal: FC<ModalProps> = (({ header, modalId, height, className, children, subHeader, show, setShow, onClose }) => {
     const { isMobile, isDesktop } = useWindowDimensions()
     const mobileModalRef = useRef(null)
 
@@ -29,43 +30,45 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
 
     return (
         <>
-            <AnimatePresence>
-                {show && (
-                    <>
-                        {isDesktop &&
-                            <ReactPortal wrapperId={"widget_root"}>
-                                <Leaflet
-                                    position="absolute"
-                                    onClose={onClose}
-                                    height={height ?? 'full'}
-                                    ref={mobileModalRef}
-                                    show={show}
-                                    setShow={setShow}
-                                    title={header}
-                                    description={subHeader}
-                                    className={className}>
-                                    {children}
-                                </Leaflet>
-                            </ReactPortal>
-                        }
-                        {
-                            isMobile &&
+            {isDesktop && (
+                <ReactPortal wrapperId="widget_root">
+                    <AnimatePresence>
+                        {show &&
                             <Leaflet
-                                position="fixed"
                                 onClose={onClose}
-                                height={height == 'full' ? '80%' : height == 'fit' ? 'fit' : 'full'}
-                                ref={mobileModalRef}
-                                show={show}
+                                key={modalId}
+                                position="absolute"
+                                height={height ?? 'full'}
+                                ref={mobileModalRef} show={show}
                                 setShow={setShow}
                                 title={header}
                                 description={subHeader}
-                                className={className}>
+                                className={className}
+                            >
                                 {children}
                             </Leaflet>
                         }
-                    </>
-                )}
-            </AnimatePresence>
+                    </AnimatePresence>
+                </ReactPortal>
+            )}
+            {isMobile && (
+                <AnimatePresence>
+                    {show &&
+                        <Leaflet
+                            position="fixed"
+                            height={height == 'full' ? '80%' : height == 'fit' ? 'fit' : 'full'}
+                            ref={mobileModalRef}
+                            show={show}
+                            setShow={setShow}
+                            title={header}
+                            description={subHeader}
+                            className={className}
+                            key={modalId}>
+                            {children}
+                        </Leaflet>
+                    }
+                </AnimatePresence>
+            )}
         </>
     )
 })

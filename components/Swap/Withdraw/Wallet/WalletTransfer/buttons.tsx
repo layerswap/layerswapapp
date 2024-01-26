@@ -30,7 +30,7 @@ export const ConnectWalletButton: FC = () => {
         clcikHandler={clickHandler}
         icon={<WalletIcon className="stroke-2 w-6 h-6" />}
     >
-        Connect wallet
+        Connect a wallet
     </ButtonWrapper>
 }
 

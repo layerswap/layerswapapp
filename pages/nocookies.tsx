@@ -1,9 +1,5 @@
-import Layout from '../components/layout'
 import React from 'react'
-import { useRouter } from 'next/router';
-import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import { InferGetServerSidePropsType } from 'next';
-import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { getServerSideProps } from '../helpers/getSettings';
 import NoCookies from '../components/NoCookies';
 

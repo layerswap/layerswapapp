@@ -1,40 +1,50 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback } from "react";
+import { forwardRef, useCallback, useEffect, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import { Layer } from "../../Models/Layer";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
-import { FilterDestinationLayers, FilterSourceLayers } from "../../helpers/settingsHelper";
-import { Currency } from "../../Models/Currency";
 import ExchangeSettings from "../../lib/ExchangeSettings";
-import { SortingByOrder } from "../../lib/sorting"
+import { SortingByAvailability, SortingByOrder } from "../../lib/sorting"
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import { useQueryState } from "../../context/query";
+import CurrencyFormField from "./CurrencyFormField";
+import useSWR from 'swr'
+import { ApiResponse } from "../../Models/ApiResponse";
+import LayerSwapApiClient from "../../lib/layerSwapApiClient";
+import { NetworkCurrency } from "../../Models/CryptoNetwork";
+import { Exchange } from "../../Models/Exchange";
+import CurrencyGroupFormField from "./CEXCurrencyFormField";
+import { QueryParams } from "../../Models/QueryParams";
 
 type SwapDirection = "from" | "to";
 type Props = {
     direction: SwapDirection,
     label: string,
+    className?: string,
 }
-const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10 };
-const getGroupName = (layer: Layer) => {
-
-    if (layer.is_featured) {
+type LayerIsAvailable = {
+    value: boolean;
+    disabledReason: LayerDisabledReason;
+} | {
+    value: boolean;
+    disabledReason: null;
+}
+const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
+const getGroupName = (value: Layer | Exchange, type: 'cex' | 'layer', layerIsAvailable?: LayerIsAvailable) => {
+    if (value.is_featured && layerIsAvailable?.disabledReason !== LayerDisabledReason.InvalidRoute) {
         return "Popular";
     }
-    else if (new Date(layer.created_date).getTime() >= (new Date().getTime() - 2629800000)) {
+    else if (new Date(value.created_date).getTime() >= (new Date().getTime() - 2629800000)) {
         return "New";
     }
-    else if (!layer.isExchange) {
+    else if (type === 'layer') {
         return "Networks";
     }
-    else if (layer.type === 'fiat') {
-        return "Fiat";
-    }
-    else if (layer.type === 'cex') {
+    else if (type === 'cex') {
         return "Exchanges";
     }
     else {
@@ -42,59 +52,132 @@ const getGroupName = (layer: Layer) => {
     }
 }
 
-const NetworkFormField = forwardRef(function NetworkFormField({ direction, label }: Props, ref: any) {
+const NetworkFormField = forwardRef(function NetworkFormField({ direction, label, className }: Props, ref: any) {
     const {
         values,
         setFieldValue,
+        setFieldError
     } = useFormikContext<SwapFormValues>();
     const name = direction
-    const { from, to } = values
-    const { lockFrom, lockTo, asset, lockAsset } = useQueryState()
-    const { resolveImgSrc, layers, currencies } = useSettingsState();
 
+    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, currencyGroup } = values
+    const query = useQueryState()
+    const { lockFrom, lockTo } = query
+
+    const { resolveImgSrc, layers, exchanges, destinationRoutes, sourceRoutes, assetGroups } = useSettingsState();
     let placeholder = "";
     let searchHint = "";
     let filteredLayers: Layer[];
-    let menuItems: SelectMenuItem<Layer>[];
-    const lockedCurrency = lockAsset ?
-        currencies?.find(c => c?.asset?.toUpperCase() === (asset as string)?.toUpperCase())
-        : null
+    let menuItems: SelectMenuItem<Layer | Exchange>[];
 
-    let valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
+    const filterWith = direction === "from" ? to : from
+    const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
+
+    const filterWithExchange = direction === 'from' ? toExchange : fromExchange
+
+    const apiClient = new LayerSwapApiClient()
+    const version = LayerSwapApiClient.apiVersion
+
+    const exchangeParams = new URLSearchParams({
+        version,
+        ...(currencyGroup?.groupedInBackend ?
+            (currencyGroup ? {
+                [direction === 'to' ? 'source_asset_group' : 'destination_asset_group']: currencyGroup.name
+            } : {})
+            :
+            {
+                [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.internal_name,
+                [direction === 'to' ? 'source_asset' : 'destination_asset']: filterWithAsset,
+            }
+        )
+    });
+
+    const networkParams = new URLSearchParams({
+        version,
+        ...(filterWith && filterWithAsset ?
+            {
+                [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.internal_name,
+                [direction === 'to' ? 'source_asset' : 'destination_asset']: filterWithAsset,
+            }
+            : {}
+        )
+    });
+
+    const params = (filterWithExchange && currencyGroup) ? exchangeParams : networkParams
+    const sourceRoutesURL = `/routes/sources?${params.toString()}`
+    const destinationRoutesURL = `/routes/destinations?${params.toString()}`
+    const routesEndpoint = direction === "from" ? sourceRoutesURL : destinationRoutesURL
+
+    const { data: routes, isLoading, error } = useSWR<ApiResponse<Route[]>>(routesEndpoint, apiClient.fetcher)
+
+    const [routesData, setRoutesData] = useState<Route[]>()
+
+    useEffect(() => {
+        if (!isLoading && routes?.data) setRoutesData(routes.data)
+        else if (!isLoading && !routes?.data) setRoutesData(undefined)
+    }, [routes])
 
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
-        filteredLayers = FilterSourceLayers(layers, to, lockedCurrency);
-        menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, !!(from && lockFrom));
+        filteredLayers = layers.filter(l => sourceRoutes?.some(r => r.network === l.internal_name))
+        menuItems = GenerateMenuItems(filteredLayers, toExchange ? [] : exchanges.filter(e => e.is_enabled), resolveImgSrc, direction, !!(from && lockFrom), routesData, query);
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        filteredLayers = FilterDestinationLayers(layers, from, lockedCurrency);
-        menuItems = GenerateMenuItems(filteredLayers, resolveImgSrc, direction, !!(to && lockTo));
+        filteredLayers = layers.filter(l => destinationRoutes?.some(r => r.network === l.internal_name))
+        menuItems = GenerateMenuItems(filteredLayers, fromExchange ? [] : exchanges.filter(e => e.is_enabled), resolveImgSrc, direction, !!(to && lockTo), routesData, query);
     }
-    valueGrouper = groupByType
 
-    const value = menuItems.find(x => x.id == (direction === "from" ? from : to)?.internal_name);
-    const handleSelect = useCallback((item: SelectMenuItem<Layer>) => {
-        setFieldValue(name, item.baseObject, true)
-    }, [name])
+    const value = menuItems.find(x => x.type === 'layer' ?
+        x.id == (direction === "from" ? from : to)?.internal_name :
+        x.id == (direction === 'from' ? fromExchange : toExchange)?.internal_name);
 
-    return (<div className="rounded-xl p-3 bg-secondary-700">
-        <label htmlFor={name} className="block font-semibold text-secondary-text text-sm">
+    const handleSelect = useCallback((item: SelectMenuItem<Layer | Exchange>) => {
+        if (!item.isAvailable.value && item.isAvailable.disabledReason == LayerDisabledReason.InvalidRoute) {
+            setFieldValue(name === "from" ? "to" : "from", null)
+            setFieldValue(name === "from" ? "toExchange" : "fromExchange", null)
+            setFieldValue(name, item.baseObject, true)
+        } else if (item.type === 'cex') {
+            setFieldValue(`${name}Exchange`, item.baseObject, true)
+            setFieldValue(name, null, true)
+        } else {
+            setFieldValue(`${name}Exchange`, null, true)
+            setFieldValue(name, item.baseObject, true)
+            const currency = name == "from" ? fromCurrency : toCurrency
+            const groupSubstitute = (item.baseObject as Layer)?.assets?.find(a => a.group_name === currency?.group_name)
+            if (groupSubstitute) {
+                setFieldValue(`${name}Currency`, groupSubstitute, true)
+            }
+        }
+    }, [name, assetGroups, toCurrency, fromCurrency])
+
+    return (<div className={`p-3 bg-secondary-700 ${className}`}>
+        <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
             {label}
         </label>
-        <div ref={ref} className={`mt-1.5 `}>
-            <CommandSelectWrapper
-                disabled={false}
-                valueGrouper={valueGrouper}
-                placeholder={placeholder}
-                setValue={handleSelect}
-                value={value}
-                values={menuItems}
-                searchHint={searchHint}
-            />
+        <div ref={ref} className="mt-1.5 grid grid-flow-row-dense grid-cols-8 md:grid-cols-6 items-center pr-2">
+            <div className="col-span-5 md:col-span-4">
+                <CommandSelectWrapper
+                    disabled={isLoading || error}
+                    valueGrouper={groupByType}
+                    placeholder={placeholder}
+                    setValue={handleSelect}
+                    value={value}
+                    values={menuItems}
+                    searchHint={searchHint}
+                    isLoading={isLoading}
+                />
+            </div>
+            <div className="col-span-3 md:col-span-2 w-full ml-2">
+                {
+                    value?.type === 'cex' ?
+                        <CurrencyGroupFormField direction={name} />
+                        :
+                        <CurrencyFormField direction={name} />
+                }
+            </div>
         </div>
     </div>)
 });
@@ -109,10 +192,6 @@ function groupByType(values: ISelectMenuItem[]) {
         }
     });
 
-    groups.forEach(group => {
-        group.items.sort((a, b) => a.name.localeCompare(b.name));
-    });
-
     groups.sort((a, b) => {
         // Sort put networks first then exchanges
         return (GROUP_ORDERS[a.name] || GROUP_ORDERS.Other) - (GROUP_ORDERS[b.name] || GROUP_ORDERS.Other);
@@ -121,22 +200,36 @@ function groupByType(values: ISelectMenuItem[]) {
     return groups;
 }
 
-function GenerateMenuItems(layers: Layer[], resolveImgSrc: (item: Layer | Currency) => string, direction: SwapDirection, lock: boolean): SelectMenuItem<Layer>[] {
+function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc: (item: Layer | Exchange | NetworkCurrency) => string, direction: SwapDirection, lock: boolean, routesData: Route[] | undefined, query: QueryParams): SelectMenuItem<Layer | Exchange>[] {
 
     let layerIsAvailable = (layer: Layer) => {
         if (lock) {
             return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
+        }
+        else if (!routesData?.some(r => r.network === layer.internal_name)) {
+            if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange) {
+                return { value: false, disabledReason: LayerDisabledReason.InvalidRoute }
+            }
+            else {
+                return { value: true, disabledReason: LayerDisabledReason.InvalidRoute }
+            }
         }
         else {
             return { value: true, disabledReason: null }
         }
     }
 
-    return layers.map(l => {
+    let exchangeIsAvailable = (exchange: Exchange) => {
+        if (lock) {
+            return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
+        } else {
+            return { value: true, disabledReason: null }
+        }
+    }
+
+    const mappedLayers = layers.map(l => {
         let orderProp: keyof NetworkSettings | keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
-        const order = (l.isExchange ?
-            ExchangeSettings.KnownSettings[l.internal_name]?.[orderProp]
-            : NetworkSettings.KnownSettings[l.internal_name]?.[orderProp])
+        const order = NetworkSettings.KnownSettings[l.internal_name]?.[orderProp]
         const res: SelectMenuItem<Layer> = {
             baseObject: l,
             id: l.internal_name,
@@ -144,10 +237,35 @@ function GenerateMenuItems(layers: Layer[], resolveImgSrc: (item: Layer | Curren
             order: order || 100,
             imgSrc: resolveImgSrc && resolveImgSrc(l),
             isAvailable: layerIsAvailable(l),
-            group: getGroupName(l)
+            type: 'layer',
+            group: getGroupName(l, 'layer', layerIsAvailable(l))
         }
         return res;
-    }).sort(SortingByOrder);
+    }).sort(SortingByAvailability);
+
+    const mappedExchanges = exchanges.map(e => {
+        let orderProp: keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
+        const order = ExchangeSettings.KnownSettings[e.internal_name]?.[orderProp]
+        const res: SelectMenuItem<Exchange> = {
+            baseObject: e,
+            id: e.internal_name,
+            name: e.display_name,
+            order: order || 100,
+            imgSrc: resolveImgSrc && resolveImgSrc(e),
+            isAvailable: exchangeIsAvailable(e),
+            type: 'cex',
+            group: getGroupName(e, 'cex')
+        }
+        return res;
+    }).sort(SortingByAvailability);
+
+    const items = [...mappedExchanges, ...mappedLayers]
+    return items
+}
+
+type Route = {
+    network: string,
+    asset: string
 }
 
 export default NetworkFormField

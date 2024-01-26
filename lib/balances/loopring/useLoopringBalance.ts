@@ -4,7 +4,6 @@ import axios from "axios";
 import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../Models/Balance";
 
 export default function useLoopringBalance(): BalanceProvider {
-    const name = 'loopring';
     const supportedNetworks = [
         KnownInternalNames.Networks.LoopringMainnet,
         KnownInternalNames.Networks.LoopringGoerli
@@ -15,7 +14,7 @@ export default function useLoopringBalance(): BalanceProvider {
 
         const uri = 'https://api3.loopring.io/api/v3'
 
-        if (layer.isExchange === true || !layer.assets) return
+        if (!layer.assets) return
         try {
 
             const account: { data: AccountInfo } = await axios.get(`${uri}/account?owner=${address}`)
@@ -23,7 +22,7 @@ export default function useLoopringBalance(): BalanceProvider {
             const tokens = layer?.assets?.map(obj => obj.contract_address).join(',');
             const result: { data: LpBalance[] } = await axios.get(`${uri}/user/balances?accountId=${accInfo.accountId}&tokens=${tokens}`)
 
-            const loopringBalances = layer?.assets.filter(a => a.status !== 'inactive').map(asset => {
+            const loopringBalances = layer?.assets?.map(asset => {
                 const amount = result.data.find(d => d.tokenId == Number(asset.contract_address))?.total;
                 return ({
                     network: layer.internal_name,
@@ -48,7 +47,7 @@ export default function useLoopringBalance(): BalanceProvider {
 
     const getGas = async ({ layer, currency, address }: GasProps) => {
         let gas: Gas[] = [];
-        if (layer.isExchange === true || !layer.assets) return
+        if (!layer.assets) return
 
         const uri = 'https://api3.loopring.io/api/v3'
 
@@ -77,7 +76,6 @@ export default function useLoopringBalance(): BalanceProvider {
     return {
         getBalance,
         getGas,
-        name,
         supportedNetworks
     }
 }
