@@ -114,7 +114,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         resolveImgSrc,
         values,
         direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
-        lockedCurrency,
         direction,
         balances[walletAddress || ''],
         query
@@ -216,17 +215,21 @@ export function GenerateCurrencyMenuItems(
     resolveImgSrc: (item: Layer | NetworkCurrency) => string,
     values: SwapFormValues,
     routes?: { network: string, asset: string }[],
-    lockedCurrency?: NetworkCurrency,
     direction?: string,
     balances?: Balance[],
     query?: QueryParams): SelectMenuItem<NetworkCurrency>[] {
     const { to, from } = values
+    const lockAsset = direction === 'from' ? query?.lockFromAsset
+        : query?.lockToAsset
 
     let currencyIsAvailable = (currency: NetworkCurrency) => {
-        if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset) {
-            return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
+        if (lockAsset) {
+            return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
         else if ((from || to) && !routes?.filter(r => r.network === (direction === 'from' ? from?.internal_name : to?.internal_name)).some(r => r.asset === currency.asset)) {
+            if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset) {
+                return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
+            }
             return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
         }
         else {
