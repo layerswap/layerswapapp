@@ -170,8 +170,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     }, [values.amount])
 
     return <>
-        <Widget className="sm:min-h-[504px]">
-            <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
+        <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
+
+            <Widget className="sm:min-h-[504px]">
                 <Widget.Content>
                     <div className='flex-col relative flex justify-between w-full space-y-0.5 mb-3.5 leading-4'>
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
@@ -256,11 +257,11 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                         type='submit'
                         isDisabled={!isValid}
                         isSubmitting={isSubmitting}>
-                        {ActionText(errors, actionDisplayName as string)}
+                        {ActionText(errors, actionDisplayName)}
                     </SwapButton>
                 </Widget.Footer>
-            </Form >
-        </Widget>
+            </Widget>
+        </Form>
         {
             process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
             && values.from
