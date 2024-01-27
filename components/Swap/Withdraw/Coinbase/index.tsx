@@ -86,7 +86,7 @@ const TransferElements: FC = () => {
     return (
         <>
             <Modal
-                height='90%'
+                height='fit'
                 show={showCoinbaseConnectModal}
                 setShow={setShowCoinbaseConnectModal}
                 header={`Connect your Coinbase account`}
