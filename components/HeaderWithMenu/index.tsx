@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react'
 import ChatIcon from "../icons/ChatIcon"
 import dynamic from "next/dynamic"
 import LayerswapMenu from "../LayerswapMenu"
+import { useQueryState } from "../../context/query"
 
 const WalletsHeader = dynamic(() => import("../ConnectedWallets").then((comp) => comp.WalletsHeader), {
    loading: () => <></>
@@ -15,6 +16,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
    const { email, userId } = useAuthState()
    const { boot, show, update } = useIntercom()
    const updateWithProps = () => update({ email: email, userId: userId })
+   const query = useQueryState()
 
    return (
       <div className="w-full grid grid-cols-5 px-6 mt-3" >
