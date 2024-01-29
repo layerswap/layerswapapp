@@ -254,7 +254,7 @@ function TransactionsHistory() {
                                       <span>
                                         {truncateDecimals(swap.requested_amount, source_currency?.precision)}
                                       </span>
-                                      <span className="ml-1">{swap.destination_network_asset}</span>
+                                      <span className="ml-1">{swap.source_network_asset}</span>
                                     </div>
                                     {
                                       output_transaction ?
