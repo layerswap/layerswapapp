@@ -23,7 +23,7 @@ import { truncateDecimals } from "../utils/RoundDecimals";
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
   const settings = useSettingsState()
-  const { layers, resolveImgSrc } = settings
+  const { layers, resolveImgSrc, exchanges } = settings
   const [isLastPage, setIsLastPage] = useState(false)
   const [swaps, setSwaps] = useState<SwapItem[]>()
   const [loading, setLoading] = useState(false)
@@ -189,10 +189,15 @@ function TransactionsHistory() {
                               source_network_asset
                             } = swap
 
-                            const source = layers.find(e => e.internal_name === source_network_internal_name)
-                            const source_currency = source?.assets?.find(c => c.asset === source_network_asset)
-                            const destination = layers.find(n => n.internal_name === destination_network_internal_name)
+                            const sourceNetwork = layers.find(e => e.internal_name === source_network_internal_name)
+                            const source_currency = sourceNetwork?.assets?.find(c => c.asset === source_network_asset)
+                            const destinationNetwork = layers.find(n => n.internal_name === destination_network_internal_name)
                             const output_transaction = swap.transactions.find(t => t.type === TransactionType.Output)
+
+                            const sourceExchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
+                            const destExchange = exchanges.find(e => e.internal_name === destination_exchange_internal_name)
+
+
                             return <tr onClick={() => handleopenSwapDetails(swap)} key={swap.id}>
 
                               <td
@@ -203,10 +208,10 @@ function TransactionsHistory() {
                               >
                                 <div className="text-primary-text flex items-center">
                                   <div className="flex-shrink-0 h-5 w-5 relative">
-                                    {source &&
+                                    {sourceNetwork &&
                                       <Image
-                                        src={resolveImgSrc(source)}
-                                        alt="From Logo"
+                                        src={resolveImgSrc(sourceExchange || sourceNetwork)}
+                                        alt="Source Logo"
                                         height="60"
                                         width="60"
                                         className="rounded-md object-contain"
@@ -215,10 +220,10 @@ function TransactionsHistory() {
                                   </div>
                                   <ArrowRight className="h-4 w-4 mx-2" />
                                   <div className="flex-shrink-0 h-5 w-5 relative block">
-                                    {destination &&
+                                    {destinationNetwork &&
                                       <Image
-                                        src={resolveImgSrc(destination)}
-                                        alt="To Logo"
+                                        src={resolveImgSrc(destExchange || destinationNetwork)}
+                                        alt="Destination Logo"
                                         height="60"
                                         width="60"
                                         className="rounded-md object-contain"
