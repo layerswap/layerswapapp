@@ -249,18 +249,23 @@ function TransactionsHistory() {
                                 )}
                               >
                                 <div className="flex justify-between items-center cursor-pointer" onClick={(e) => { handleopenSwapDetails(swap); e.preventDefault() }}>
-                                  <div className="">
+                                  <div>
+                                    <div className="text text-secondary-text text-left">
+                                      <span>
+                                        {truncateDecimals(swap.requested_amount, source_currency?.precision)}
+                                      </span>
+                                      <span className="ml-1">{swap.destination_network_asset}</span>
+                                    </div>
                                     {
-                                      swap?.status == 'completed' ?
-                                        <span className="ml-1 md:ml-0">
-                                          {output_transaction ? truncateDecimals(output_transaction?.amount, source_currency?.precision) : '-'}
-                                        </span>
-                                        :
-                                        <span>
-                                          {truncateDecimals(swap.requested_amount, source_currency?.precision)}
-                                        </span>
+                                      output_transaction ?
+                                        <div className="text-secprimary-text text-left text-base">
+                                          <span className="ml-1 md:ml-0">
+                                            {truncateDecimals(output_transaction?.amount, source_currency?.precision)}
+                                          </span>
+                                          <span className="ml-1">{swap.destination_network_asset}</span>
+                                        </div>
+                                        : <div className="text-left text-base">-</div>
                                     }
-                                    <span className="ml-1">{swap.destination_network_asset}</span>
                                   </div>
                                   <ChevronRight className="h-5 w-5" />
                                 </div>
