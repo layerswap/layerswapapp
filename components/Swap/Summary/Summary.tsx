@@ -61,7 +61,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, sourc
 
     const requestedAmountInUsd = (sourceCurrency?.usd_price * requestedAmount).toFixed(2)
     const receiveAmountInUsd = receiveAmount ? (destinationCurrency?.usd_price * receiveAmount).toFixed(2) : undefined
-    const nativeCurrency = refuelAmount && from.assets.find(c => c.is_native)
+    const nativeCurrency = refuelAmount && to.assets.find(c => c.is_native)
 
     const truncatedRefuelAmount = nativeCurrency && (hasRefuel && refuelAmount) ?
         truncateDecimals(refuelAmount, nativeCurrency?.precision) : null
