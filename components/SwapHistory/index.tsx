@@ -2,16 +2,15 @@ import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
 import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers, TransactionType } from "../../lib/layerSwapApiClient"
 import SpinIcon from "../icons/spinIcon"
-import { ArrowRight, ChevronRight, ExternalLink, Eye, RefreshCcw, Scroll, X } from 'lucide-react';
+import { ArrowRight, ChevronRight, Eye, RefreshCcw, Scroll } from 'lucide-react';
 import SwapDetails from "./SwapDetailsComponent"
 import { useSettingsState } from "../../context/settings"
 import Image from 'next/image'
 import { classNames } from "../utils/classNames"
-import SubmitButton, { DoubleLineText } from "../buttons/submitButton"
+import SubmitButton from "../buttons/submitButton"
 import { SwapHistoryComponentSceleton } from "../Sceletons"
 import StatusIcon, { } from "./StatusIcons"
 import toast from "react-hot-toast"
-import { SwapStatus } from "../../Models/SwapStatus"
 import ToggleButton from "../buttons/toggleButton";
 import Modal from "../modal/modal";
 import HeaderWithMenu from "../HeaderWithMenu";
@@ -186,12 +185,14 @@ function TransactionsHistory() {
                               destination_network: destination_network_internal_name,
                               source_network: source_network_internal_name,
                               destination_exchange: destination_exchange_internal_name,
-                              source_network_asset
+                              source_network_asset,
+                              destination_network_asset
                             } = swap
 
                             const sourceNetwork = layers.find(e => e.internal_name === source_network_internal_name)
-                            const source_currency = sourceNetwork?.assets?.find(c => c.asset === source_network_asset)
+                            const sourceCurrency = sourceNetwork?.assets?.find(c => c.asset === source_network_asset)
                             const destinationNetwork = layers.find(n => n.internal_name === destination_network_internal_name)
+                            const destinationCurrency = destinationNetwork?.assets.find(a => a.asset === destination_network_asset)
                             const output_transaction = swap.transactions.find(t => t.type === TransactionType.Output)
 
                             const sourceExchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
@@ -252,17 +253,17 @@ function TransactionsHistory() {
                                   <div>
                                     <div className="text text-secondary-text text-left">
                                       <span>
-                                        {truncateDecimals(swap.requested_amount, source_currency?.precision)}
+                                        {truncateDecimals(swap.requested_amount, sourceCurrency?.precision)}
                                       </span>
-                                      <span className="ml-1">{swap.source_network_asset}</span>
+                                      <span className="ml-1">{sourceCurrency?.display_asset ?? sourceCurrency?.asset}</span>
                                     </div>
                                     {
                                       output_transaction ?
                                         <div className="text-secprimary-text text-left text-base">
                                           <span className="ml-1 md:ml-0">
-                                            {truncateDecimals(output_transaction?.amount, source_currency?.precision)}
+                                            {truncateDecimals(output_transaction?.amount, sourceCurrency?.precision)}
                                           </span>
-                                          <span className="ml-1">{swap.destination_network_asset}</span>
+                                          <span className="ml-1">{destinationCurrency?.display_asset ?? destinationCurrency?.asset}</span>
                                         </div>
                                         : <div className="text-left text-base">-</div>
                                     }
