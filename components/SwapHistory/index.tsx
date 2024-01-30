@@ -260,7 +260,7 @@ function TransactionsHistory() {
                                     {
                                       output_transaction ?
                                         <div className="text-secprimary-text text-left text-base">
-                                          <span className="ml-1 md:ml-0">
+                                          <span>
                                             {truncateDecimals(output_transaction?.amount, sourceCurrency?.precision)}
                                           </span>
                                           <span className="ml-1">{destinationCurrency?.display_asset ?? destinationCurrency?.asset}</span>
