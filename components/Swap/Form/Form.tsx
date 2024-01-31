@@ -177,7 +177,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
                             <NetworkFormField direction="from" label="From" className="rounded-t-lg pb-5" />
                         </div>}
-                        {!query?.hideFrom && !query?.hideTo &&
+                        {/* {!query?.hideFrom && !query?.hideTo &&
                             <button
                                 type="button"
                                 aria-label="Reverse the source and destination"
@@ -195,7 +195,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                         <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />
                                     }
                                 </motion.div>
-                            </button>}
+                            </button>} */}
                         {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
                             <NetworkFormField direction="to" label="To" className="rounded-b-lg" />
                         </div>}

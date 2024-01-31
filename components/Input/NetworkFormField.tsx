@@ -19,6 +19,9 @@ import { NetworkCurrency } from "../../Models/CryptoNetwork";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
+import ResizablePanel from "../ResizablePanel";
+import FeeDetails from "../FeeDetails";
+import CEXNetworkFormField from "./CEXNetworkFormField";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -179,6 +182,15 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 }
             </div>
         </div>
+        {
+            ((fromExchange && direction === "from")
+                || (toExchange && direction === "to")) &&
+            <ResizablePanel>
+                <div className={`gap-2 flex relative items-center outline-none w-full text-primary-text px-4 py-3`}>
+                    <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
+                </div>
+            </ResizablePanel>
+        }
     </div>)
 });
 
