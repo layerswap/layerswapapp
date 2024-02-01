@@ -39,7 +39,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const handleConnect = useCallback(async () => {
         setLoading(true)
         try {
-            await provider?.connectWallet()
+            provider?.connectWallet && await provider.connectWallet()
         }
         catch (e) {
             toast(e.message)
