@@ -15488,10 +15488,10 @@ starknet@^5.19.5:
     pako "^2.0.4"
     url-join "^4.0.1"
 
-starknetkit@^1.0.10:
-  version "1.0.29"
-  resolved "https://registry.yarnpkg.com/starknetkit/-/starknetkit-1.0.29.tgz#a339f380fa78fa2da287893dc90da8f2a3b1e598"
-  integrity sha512-wuxF4nahZsHVUUuhIuUJlK/E2NOTbwQTLSAQPsfVloUSJkZY6LrUCQEHEFyyJ56ecEQ3VqWYAUdb6RktBnHEqQ==
+starknetkit@^1.1.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/starknetkit/-/starknetkit-1.1.3.tgz#9afb441afd609fd33551c0d765924ab9c621a58e"
+  integrity sha512-yUYk2bfB2tmqujwDqh8quaX6+vFUn+kV4/pgi4PD/WsYEvTmfIcoxhmDdxiYZMbcdUn32D9IVHbJm7JuyzXQNA==
   dependencies:
     "@trpc/client" "^10.38.1"
     "@trpc/server" "^10.38.1"
