@@ -15,6 +15,7 @@ import { useQueryState } from "../../../context/query";
 import { NetworkCurrency } from "../../../Models/CryptoNetwork";
 import { Exchange } from "../../../Models/Exchange";
 import { useFee } from "../../../context/feeContext";
+import { CaluclateRefuelAmount } from "../../../lib/fees";
 
 type SwapInfoProps = {
     sourceCurrency: NetworkCurrency,
@@ -51,7 +52,17 @@ const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, sourc
         hideAddress
     } = useQueryState()
 
-    const receiveAmount = fee.walletReceiveAmount
+    const refuelCalculations = CaluclateRefuelAmount({
+        refuelEnabled: hasRefuel,
+        currency: destinationCurrency,
+        to
+    })
+    const { refuelAmountInSelectedCurrency } = refuelCalculations
+
+    const receiveAmount = hasRefuel ?
+        parseFloat(fee.walletReceiveAmount && (fee.walletReceiveAmount - refuelAmountInSelectedCurrency)?.toFixed(destinationCurrency?.precision) || "")
+        : fee.walletReceiveAmount
+
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = partnerData?.data
