@@ -91,7 +91,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 <div className={`py-3 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
                     <div className='px-6 flex justify-between items-center'>
                         <div className="text-lg text-primary-text font-semibold">
-                            <div>{title}</div>
+                            <div className='font-normal leading-none tracking-tight'>{title}</div>
                         </div>
                         <IconButton onClick={handleCloseModal} icon={
                             <X strokeWidth={3} />

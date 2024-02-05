@@ -14,7 +14,6 @@ import { NetworkCurrency } from '../Models/CryptoNetwork';
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
     swap: undefined,
-    addressConfirmed: false,
     depositeAddressIsfromAccount: false,
     withdrawType: undefined,
     swapTransaction: undefined,
@@ -26,7 +25,6 @@ export type UpdateInterface = {
     createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<string>,
     setCodeRequested: (codeSubmitted: boolean) => void;
     cancelSwap: (swapId: string) => Promise<void>;
-    setAddressConfirmed: (value: boolean) => void;
     setInterval: (value: number) => void,
     mutateSwap: KeyedMutator<ApiResponse<SwapItem>>
     setDepositeAddressIsfromAccount: (value: boolean) => void,
@@ -39,7 +37,6 @@ export type SwapData = {
     codeRequested: boolean,
     swap?: SwapItem,
     swapApiError?: ApiError,
-    addressConfirmed: boolean,
     depositeAddressIsfromAccount: boolean,
     withdrawType: WithdrawType | undefined,
     swapTransaction: SwapTransaction | undefined,
@@ -47,7 +44,6 @@ export type SwapData = {
 }
 
 export function SwapDataProvider({ children }) {
-    const [addressConfirmed, setAddressConfirmed] = useState<boolean>(false)
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [depositeAddressIsfromAccount, setDepositeAddressIsfromAccount] = useState<boolean>()
@@ -135,7 +131,6 @@ export function SwapDataProvider({ children }) {
         createSwap: createSwap,
         setCodeRequested: setCodeRequested,
         cancelSwap: cancelSwap,
-        setAddressConfirmed: setAddressConfirmed,
         setInterval: setInterval,
         mutateSwap: mutate,
         setDepositeAddressIsfromAccount,
@@ -147,7 +142,6 @@ export function SwapDataProvider({ children }) {
         <SwapDataStateContext.Provider value={{
             withdrawType,
             codeRequested,
-            addressConfirmed,
             swapTransaction,
             selectedAssetNetwork,
             depositeAddressIsfromAccount: !!depositeAddressIsfromAccount,

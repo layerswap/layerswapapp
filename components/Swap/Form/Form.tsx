@@ -28,6 +28,7 @@ import { useFee } from "../../../context/feeContext";
 import AmountField from "../../Input/Amount"
 import dynamic from "next/dynamic";
 import { Balance, Gas } from "../../../Models/Balance";
+import ResizablePanel from "../../ResizablePanel";
 
 type Props = {
     isPartnerWallet?: boolean,
@@ -60,7 +61,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
     const partnerImage = partner?.logo_url
-    const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
+    const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()
     const query = useQueryState();
     let valuesSwapperDisabled = false;
@@ -91,10 +92,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
             handleConfirmToggleChange(false)
         }
     }, [toAsset, destination, source])
-
-    useEffect(() => {
-        setAddressConfirmed(false)
-    }, [source])
 
     useEffect(() => {
         (async () => {
@@ -219,18 +216,19 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                     header={`To ${values?.to?.display_name || ''} address`}
                                     height="fit"
                                     show={showAddressModal} setShow={setShowAddressModal}
-                                    className="min-h-[70%]"
                                     modalId="address"
                                 >
-                                    <Address
-                                        close={() => setShowAddressModal(false)}
-                                        disabled={lockAddress || (!values.to || !values.from)}
-                                        name={"destination_address"}
-                                        partnerImage={partnerImage}
-                                        isPartnerWallet={!!isPartnerWallet}
-                                        partner={partner}
-                                        address_book={address_book?.data}
-                                    />
+                                    <ResizablePanel>
+                                        <Address
+                                            close={() => setShowAddressModal(false)}
+                                            disabled={lockAddress || (!values.to || !values.from)}
+                                            name={"destination_address"}
+                                            partnerImage={partnerImage}
+                                            isPartnerWallet={!!isPartnerWallet}
+                                            partner={partner}
+                                            address_book={address_book?.data}
+                                        />
+                                    </ResizablePanel>
                                 </Modal>
                             </div>
                             : <></>
