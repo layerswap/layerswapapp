@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
@@ -17,6 +17,8 @@ import { ApiResponse } from "../../Models/ApiResponse";
 import { Balance } from "../../Models/Balance";
 import dynamic from "next/dynamic";
 import { QueryParams } from "../../Models/QueryParams";
+import useWallet from "../../hooks/useWallet";
+import { Wallet } from "../../stores/walletStore";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -38,6 +40,19 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         : query?.lockToAsset
     const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
     const currencies = direction === 'from' ? from?.assets : to?.assets;
+
+    const { getAutofillProvider: getProvider } = useWallet()
+
+    const sourceWalletProvider = useMemo(() => {
+        return from && getProvider(from)
+    }, [from, getProvider])
+
+    const destinationWalletProvider = useMemo(() => {
+        return to && getProvider(to)
+    }, [to, getProvider])
+
+    const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet()
+    const destinationNetworkWallet = destinationWalletProvider?.getConnectedWallet()
 
     const lockedCurrency = lockAsset
         ? currencies?.find(c => c?.asset?.toUpperCase() === (asset)?.toUpperCase())
@@ -116,7 +131,9 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
         direction,
         balances[walletAddress || ''],
-        query
+        query,
+        sourceNetworkWallet,
+        destinationNetworkWallet
     )
     const currencyAsset = direction === 'from' ? fromCurrency?.asset : toCurrency?.asset;
 
@@ -217,7 +234,9 @@ export function GenerateCurrencyMenuItems(
     routes?: { network: string, asset: string }[],
     direction?: string,
     balances?: Balance[],
-    query?: QueryParams): SelectMenuItem<NetworkCurrency>[] {
+    query?: QueryParams,
+    sourceNetworkWallet?: Wallet | undefined,
+    destinationNetworkWallet?: Wallet | undefined): SelectMenuItem<NetworkCurrency>[] {
     const { to, from } = values
     const lockAsset = direction === 'from' ? query?.lockFromAsset
         : query?.lockToAsset
@@ -250,7 +269,7 @@ export function GenerateCurrencyMenuItems(
             order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
             imgSrc: resolveImgSrc && resolveImgSrc(c),
             isAvailable: currencyIsAvailable(c),
-            details: `${formatted_balance_amount}`,
+            details: (direction === "from" ? sourceNetworkWallet : destinationNetworkWallet) && `${formatted_balance_amount}`,
             type: "currency"
         };
 
