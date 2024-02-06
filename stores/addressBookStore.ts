@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { NetworkType } from '../Models/CryptoNetwork';
 
 interface AddressBookState {
     addresses: Address[];
@@ -8,6 +9,7 @@ interface AddressBookState {
 export type Address = {
     address: string,
     type: string,
+    networkType?: NetworkType
     date?: string
 }
 

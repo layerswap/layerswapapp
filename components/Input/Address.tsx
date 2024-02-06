@@ -16,6 +16,7 @@ import AddressIcon from "../AddressIcon";
 import WalletIcon from "../icons/WalletIcon";
 import useWallet from "../../hooks/useWallet";
 import { useAddressBookStore } from "../../stores/addressBookStore";
+import { NetworkType } from "../../Models/CryptoNetwork";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -43,17 +44,14 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const destination = values.to
     const destinationExchange = values.toExchange
 
-    const addresses = useAddressBookStore((state) => state.addresses)
+    const addresses = useAddressBookStore((state) => state.addresses).filter(a => a.networkType === values.to?.type)
     const addAddress = useAddressBookStore((state) => state.addAddress)
 
     const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
     const placeholder = "Enter your address here"
     const [currentAddress, setCurrentAddress] = useState<string | undefined>(values?.destination_address || "")
-    const [validInputAddress, setValidInputAddress] = useState<string | undefined>('')
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<string | undefined>()
-    const destinationIsStarknet = destination?.internal_name === KnownInternalNames.Networks.StarkNetGoerli
-        || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
 
     const { connectWallet, disconnectWallet, getAutofillProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -67,17 +65,18 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     useEffect(() => {
         const recentlyUsedAddresses = address_book?.filter(a => destinationExchange ? a.exchanges.some(e => destinationExchange.internal_name === e) : a.networks?.some(n => destination?.internal_name === n) && isValidAddress(a.address, destination)) || []
 
-        let addresses: { address: string, type: string, date?: string }[] = []
+        let addresses: { address: string, type: string, networkType: NetworkType | undefined, date?: string }[] = []
 
-        // if (currentAddress) addresses = [...addresses.filter(a => currentAddress !== a.address), { address: currentAddress, type: 'current' }]
-        if (recentlyUsedAddresses) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, type: 'recentlyUsed' }))]
-        if (connectedWalletAddress) addresses = [...addresses.filter(a => connectedWalletAddress !== a.address), { address: connectedWalletAddress, type: 'wallet' }]
-        if (newAddress) addresses = [...addresses.filter(a => newAddress !== a.address), { address: newAddress, type: 'manual' }]
+        if (currentAddress && values.to) addresses = [...addresses.filter(a => currentAddress !== a.address), { address: currentAddress, type: 'current', networkType: values.to.type }]
+        if (recentlyUsedAddresses && values.to) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, type: 'recentlyUsed', networkType: values.to?.type }))]
+        if (connectedWalletAddress && values.to) addresses = [...addresses.filter(a => connectedWalletAddress !== a.address), { address: connectedWalletAddress, type: 'wallet', networkType: values.to.type }]
+        if (newAddress && values.to) addresses = [...addresses.filter(a => newAddress !== a.address), { address: newAddress, type: 'manual', networkType: values.to.type }]
 
-        addresses.forEach(a => {
+
+        addresses.filter(a => a.networkType === values.to?.type).forEach(a => {
             addAddress(a)
         })
-    }, [address_book, currentAddress, connectedWalletAddress, newAddress])
+    }, [address_book, currentAddress, connectedWalletAddress, newAddress, values.to])
 
     useEffect(() => {
         if (destination && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address && !values.toExchange) {
@@ -123,19 +122,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     }
 
     const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        setCurrentAddress(e.target.value)
+        setManualAddress(e.target.value)
     }, [])
-
-    useEffect(() => {
-        if (inputAddressIsValid) {
-            setValidInputAddress(currentAddress)
-        }
-    }, [currentAddress, inputAddressIsValid])
-
-    const handleSetNewAddress = useCallback(() => {
-        setFieldValue("destination_address", validInputAddress)
-        close()
-    }, [validInputAddress])
 
     const destinationAsset = values.toCurrency
     const destinationChainId = values?.to?.chain_id
@@ -210,7 +198,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                             {({ checked }) => {
                                                 const difference_in_days = a.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(a.date).getTime()) / (1000 * 3600 * 24))) : undefined
                                                 return (
-                                                    <RadioGroup.Description as="span" className={`flex items-center justify-between w-full transform transition duration-200 px-2 py-1.5 rounded-md border border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
+                                                    <RadioGroup.Description onClick={close} as="span" className={`flex items-center justify-between w-full transform transition duration-200 px-2 py-1.5 rounded-md border border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
                                                         <div className={`space-x-2 flex text-sm items-center`}>
                                                             <div className='flex bg-secondary-400 text-primary-text flex-row items-left rounded-md p-2'>
                                                                 {
@@ -252,6 +240,11 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                                                         a.type === 'manual' &&
                                                                         <>New added</>
                                                                     }
+                                                                    {
+                                                                        a.type === 'current' &&
+                                                                        <>Current</>
+                                                                    }
+
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -307,7 +300,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     </div>
                                 }
                                 <input
-                                    onChange={(v) => setManualAddress(v.target.value)}
+                                    onChange={handleInputChange}
                                     value={manualAddress}
                                     placeholder={placeholder}
                                     autoCorrect="off"
