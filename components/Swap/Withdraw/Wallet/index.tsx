@@ -48,31 +48,31 @@ const WalletTransfer: FC = () => {
     const sourceChainId = source_layer ? Number(source_layer?.chain_id) : null
     const requested_amount = Number(minAllowedAmount) > Number(swap?.requested_amount) ? minAllowedAmount : swap?.requested_amount
 
+    const Wrapper: FC<{ children?: React.ReactNode }> = ({ children }) => {
+        return <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
+            {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}
+            {children}
+        </div>
+    }
+
     if (sourceIsImmutableX)
         return <Wrapper>
-            {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}
             <ImtblxWalletWithdrawStep depositAddress={depositAddress} />
         </Wrapper>
     else if (sourceIsStarknet)
         return <Wrapper>
-            {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}
             <StarknetWalletWithdrawStep amount={requested_amount} depositAddress={depositAddress} />
         </Wrapper>
     else if (sourceIsZkSync)
         return <Wrapper>
-            {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}
-
             {requested_amount && depositAddress && <ZkSyncWalletWithdrawStep depositAddress={depositAddress} amount={requested_amount} />}
         </Wrapper>
     else if (sourceIsSolana)
         return <Wrapper>
-            {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}
-
             {requested_amount && depositAddress && <SolanaWalletWithdrawStep depositAddress={depositAddress} amount={requested_amount} />}
         </Wrapper>
     else
         return <Wrapper>
-            {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}
             {swap && source_layer && sourceAsset && requested_amount && sourceChainId && <TransferFromWallet
                 sequenceNumber={swap?.sequence_number}
                 swapId={swap.id}
@@ -85,13 +85,7 @@ const WalletTransfer: FC = () => {
                 amount={requested_amount}
             />}
         </Wrapper>
-
 }
 
-const Wrapper: FC<{ children?: React.ReactNode }> = ({ children }) => {
-    return <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
-        {children}
-    </div>
-}
 
 export default WalletTransfer

@@ -1,5 +1,5 @@
 import { ArrowLeftRight } from 'lucide-react';
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import * as zksync from 'zksync';
@@ -15,6 +15,7 @@ import { Transaction } from 'zksync';
 import ClickTooltip from '../../../Tooltips/ClickTooltip';
 import SignatureIcon from '../../../icons/SignatureIcon';
 import formatAmount from '../../../../lib/formatAmount';
+import useWallet from '../../../../hooks/useWallet';
 
 type Props = {
     depositAddress: string,
@@ -34,7 +35,6 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const { swap } = useSwapDataState();
     const { chain } = useNetwork();
     const signer = useEthersSigner();
-    const { isConnected } = useAccount();
 
     const { layers } = useSettingsState();
     const { source_network: source_network_internal_name } = swap || {};
@@ -43,6 +43,13 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const source_currency = source_network?.assets?.find(c => c.asset.toLocaleUpperCase() === swap?.source_network_asset.toLocaleUpperCase());
     const defaultProvider = swap?.source_network?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "goerli";
     const l1Network = layers.find(n => n.internal_name === source_network?.metadata?.L1Network);
+
+    const { getWithdrawalProvider: getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return source_layer && getProvider(source_layer)
+    }, [source_layer, getProvider])
+
+    const wallet = provider?.getConnectedWallet()
 
     useEffect(() => {
         if (signer?._address !== syncWallet?.cachedAddress && source_layer) {
@@ -155,7 +162,9 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         }
     }, [syncWallet, swap, depositAddress, source_currency, amount])
 
-    if (!signer || !isConnected) {
+    if (wallet && wallet?.connector?.toLowerCase() !== 'metamask') return <>bim bim bom bom</>
+
+    if (!signer || !wallet) {
         return <ConnectWalletButton />
     }
 
