@@ -47,7 +47,7 @@ const WalletTransferContent: FC = () => {
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_asset?.precision)
 
     useEffect(() => {
-        source_layer && fetchBalance(source_layer);
+        source_layer && fetchBalance({ network: source_layer });
     }, [source_layer, sourceNetworkWallet?.address])
 
     useEffect(() => {
@@ -91,17 +91,17 @@ const WalletTransferContent: FC = () => {
             <span className='ml-1'>{swap?.source_exchange ? "Connected account" : "Connected wallet"}</span>
             {
                 walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
-                <div className="text-right">
-                    <div>
-                        <span>Balance:&nbsp;</span>
-                        {isBalanceLoading ?
-                            <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                            :
-                            <span>{walletBalanceAmount}</span>}
+                    <div className="text-right">
+                        <div>
+                            <span>Balance:&nbsp;</span>
+                            {isBalanceLoading ?
+                                <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                :
+                                <span>{walletBalanceAmount}</span>}
+                        </div>
                     </div>
-                </div>
-                :
-                <></>
+                    :
+                    <></>
             }
         </div>
         <div onClick={handleOpenAccount} className={`${canOpenAccount ? 'cursor-pointer' : 'cursor-auto'} text-left min-h-12  space-x-2 border border-secondary-600 bg-secondary-700/70 flex text-sm rounded-md items-center w-full pl-4 pr-2 py-1.5`}>
