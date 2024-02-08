@@ -21,7 +21,6 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
     const mobileModalRef = useRef(null)
 
     useEffect(() => {
-        debugger
         if (isMobile && show) {
             window.document.body.style.overflow = 'hidden'
         }

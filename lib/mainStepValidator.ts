@@ -4,8 +4,6 @@ import { isValidAddress } from "./addressValidator";
 
 export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount }: { minAllowedAmount: number | undefined, maxAllowedAmount: number | undefined }): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
     return (values: SwapFormValues) => {
-        console.log("values", values)
-
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = Number(values.amount);
 
