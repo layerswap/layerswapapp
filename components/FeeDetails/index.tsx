@@ -4,7 +4,6 @@ import { ReceiveAmounts } from './ReceiveAmounts';
 import DetailedEstimates from './DetailedEstimates';
 import { useFee } from '../../context/feeContext';
 import RefuelToggle from './Refuel';
-import CEXNetworkFormField from '../Input/CEXNetworkFormField';
 import FeeDetails from './FeeDetailsComponent';
 import { useQueryState } from '../../context/query';
 import ResizablePanel from '../ResizablePanel';
@@ -18,15 +17,6 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
     return (
         <>
             <FeeDetails>
-
-                {
-                    (fromExchange || toExchange) &&
-                    <ResizablePanel>
-                        <FeeDetails.Item>
-                            <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
-                        </FeeDetails.Item>
-                    </ResizablePanel>
-                }
 
                 {
                     toCurrency?.refuel_amount_in_usd && !query.hideRefuel && nativeAsset && !toExchange &&

@@ -4,13 +4,15 @@ import { isValidAddress } from "./addressValidator";
 
 export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount }: { minAllowedAmount: number | undefined, maxAllowedAmount: number | undefined }): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
     return (values: SwapFormValues) => {
+        console.log("values", values)
+
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = Number(values.amount);
 
-        if (!values.from) {
+        if (!values.from && !values.fromExchange) {
             (errors.from as any) = 'Select source';
         }
-        if (!values.to) {
+        if (!values.to && !values.toExchange) {
             (errors.to as any) = 'Select destination';
         }
         if (!values.fromCurrency) {
@@ -18,6 +20,14 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount 
         }
         if (!values.toCurrency) {
             (errors.toCurrency as any) = 'Select destination asset';
+        }
+        if (values.currencyGroup &&
+            (values.fromExchange && !values.from)) {
+            (errors.from as any) = 'Select source network';
+        }
+        if (values.currencyGroup &&
+            values.toExchange && !values.to) {
+            (errors.to as any) = 'Select destination network';
         }
         if (!amount) {
             errors.amount = 'Enter an amount';

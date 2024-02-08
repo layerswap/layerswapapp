@@ -157,7 +157,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         }
     }, [name, assetGroups, toCurrency, fromCurrency, value])
 
-    return (<div className={`p-3 bg-secondary-700 ${className}`}>
+    return (<div className={`p-3 bg-secondary-700 border border-secondary-500 ${className}`}>
         <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
             {label}
         </label>
@@ -183,15 +183,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 }
             </div>
         </div>
-        {
-            ((fromExchange && direction === "from")
-                || (toExchange && direction === "to")) &&
-            <ResizablePanel>
-                <div className={`gap-2 flex relative items-center outline-none w-full text-primary-text px-4 py-3`}>
-                    <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
-                </div>
-            </ResizablePanel>
-        }
     </div>)
 });
 

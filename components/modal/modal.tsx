@@ -21,6 +21,7 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
     const mobileModalRef = useRef(null)
 
     useEffect(() => {
+        debugger
         if (isMobile && show) {
             window.document.body.style.overflow = 'hidden'
         }
@@ -33,7 +34,16 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
                 <ReactPortal wrapperId="widget_root">
                     <AnimatePresence>
                         {show &&
-                            <Leaflet key={modalId} position="absolute" height={height ?? 'full'} ref={mobileModalRef} show={show} setShow={setShow} title={header} description={subHeader} className={className}>
+                            <Leaflet
+                                key={modalId}
+                                position="absolute"
+                                height={height ?? 'full'}
+                                show={show}
+                                setShow={setShow}
+                                title={header}
+                                description={subHeader}
+                                className={className}
+                            >
                                 {children}
                             </Leaflet>
                         }

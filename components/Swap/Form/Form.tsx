@@ -28,6 +28,9 @@ import { useFee } from "../../../context/feeContext";
 import AmountField from "../../Input/Amount"
 import dynamic from "next/dynamic";
 import { Balance, Gas } from "../../../Models/Balance";
+import ResizablePanel from "../../ResizablePanel";
+import FeeDetails from "../../FeeDetails/FeeDetailsComponent";
+import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 
 type Props = {
     isPartnerWallet?: boolean,
@@ -49,8 +52,16 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         setValues,
         errors, isValid, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
+    const {
+        to: destination,
+        fromCurrency,
+        toCurrency, from:
+        source,
+        fromExchange,
+        toExchange,
+        currencyGroup
+    } = values
 
-    const { to: destination, fromCurrency, toCurrency, from: source, fromExchange, toExchange } = values
     const { minAllowedAmount, valuesChanger, fee } = useFee()
     const toAsset = values.toCurrency?.asset
     const { authData } = useAuthState()
@@ -177,7 +188,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
                             <NetworkFormField direction="from" label="From" className="rounded-t-lg pb-5" />
                         </div>}
-                        {/* {!query?.hideFrom && !query?.hideTo &&
+                        {!query?.hideFrom && !query?.hideTo &&
                             <button
                                 type="button"
                                 aria-label="Reverse the source and destination"
@@ -195,14 +206,30 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                                         <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />
                                     }
                                 </motion.div>
-                            </button>} */}
+                            </button>}
                         {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
                             <NetworkFormField direction="to" label="To" className="rounded-b-lg" />
                         </div>}
                     </div>
+
+                    {
+                        ((fromExchange || toExchange) && currencyGroup) ?
+                            <div className="mb-6 leading-4">
+                                {
+                                    (errors.from || errors.to )&&
+                                    <span>plim plim</span>
+                                }
+                                <ResizablePanel>
+                                    <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
+                                </ResizablePanel>
+                            </div>
+                            : <></>
+                    }
+
                     <div className="mb-6 leading-4">
                         <AmountField />
                     </div>
+
                     {
                         !hideAddress ?
                             <div className="w-full mb-3.5 leading-4">

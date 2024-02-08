@@ -12,7 +12,7 @@ import { isValidAddress } from "../../lib/addressValidator";
 import shortenAddress from "../utils/ShortenAddress";
 import Link from "next/link";
 import { SortingByOrder } from "../../lib/sorting";
-import { Check, ChevronRight, Info } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Info } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 
 type SwapDirection = "from" | "to";
@@ -91,29 +91,27 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         const layer = layers.find(l => l.internal_name === item.baseObject.network)
         const currency = layer?.assets.find(a => a.asset === item.baseObject.asset)
         setFieldValue(name, layer, true)
-        setFieldValue(`${name}Currency`, currency, true)
+        setFieldValue(`${name}Currency`, currency, false)
         setShowModal(false)
     }, [name])
+
+    const formValue = (direction === 'from' ? from : to)
 
     //TODO set default currency & reset currency if not available
     const value = menuItems?.find(item =>
         item.baseObject.asset ===
         (direction === 'from' ? fromCurrency : toCurrency)?.asset
-        && item.baseObject.network === (direction === 'from' ? from : to)
-            ?.internal_name)
+        && item.baseObject.network === formValue?.internal_name)
 
     //Setting default value
     useEffect(() => {
         if (!menuItems) return
         if (menuItems.length == 0) {
-            setFieldValue(name, null, true)
             setFieldValue(`${name}Currency`, null, true)
             setFieldValue('currencyGroup', null, true)
             return
         }
-        else if (value) return
-        const item = menuItems[0]
-        handleSelect(item)
+        else if (value || !formValue) return
     }, [routesData, historicalNetworks])
 
     useEffect(() => {
@@ -124,55 +122,108 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             return
         }
         else if (value) return
-        const item = menuItems[0]
-        handleSelect(item)
     }, [currencyGroup])
-
-    if (!menuItems) return
 
     const network = (direction === 'from' ? from : to)
     const currency = (direction === 'from' ? fromCurrency : toCurrency)
 
-    return (<div className=" flex justify-between items-center w-full">
-        <label htmlFor={name} className="block text-secondary-text">
+    return (<div className={`p-2 rounded-lg bg-secondary-700 border border-secondary-500`}>
+        <label htmlFor={name} className="block text-secondary-text text-xs">
             {direction === 'from' ? 'Transfer via' : 'Receive in'}
         </label>
         <Popover open={showModal} onOpenChange={() => setShowModal(!showModal)}>
-            <div>
-                <PopoverTrigger className="w-fit border-none !text-primary-text !h-fit !p-0">
-                    <div className="flex items-center gap-1">
-                        <div className="mt-1">
-                            <div className="inline-flex items-center gap-1 w-full">
-                                <div className="flex-shrink-0 h-5 w-5 relative">
-                                    <Image
-                                        src={resolveImgSrc(network)}
-                                        alt="Network Logo"
-                                        height="40"
-                                        width="40"
-                                        loading="eager"
-                                        className="rounded-md object-contain" />
+            <div className="mt-1.5 items-center">
+                <PopoverTrigger className="w-full md:col-span-4 border-none !text-primary-text !h-fit !p-0">
+                    <div className="rounded-lg focus-peer:ring-primary gap-0 focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-5 bg-secondary-600 border border-secondary-500">
+                        <span className='flex grow text-left items-center text-xs md:text-base'>
+                            {
+                                value && <div className="flex items-center">
+                                    <div className="flex-shrink-0 h-6 w-6 relative">
+                                        {
+                                            <Image
+                                                src={resolveImgSrc(network)}
+                                                alt="Network Logo"
+                                                height="40"
+                                                width="40"
+                                                loading="eager"
+                                                className="rounded-md object-contain" />
+                                        }
+                                    </div>
                                 </div>
-                                <p>{network?.display_name}</p>
-                            </div>
-                        </div>
-                        <div className="inline-flex items-center justify-self-end gap-1 text-secondary-text">
-                            ({currency?.asset})
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-primary-text" />
+                            }
+                            {value
+                                ?
+                                <span className="ml-3 flex text-secondary-text flex-auto space-x-1 items-center">
+                                    <div className="flex">{network?.display_name}</div>
+                                    <div className="inline-flex items-center justify-self-end gap-1 text-secondary-text">
+                                        ({currency?.asset})
+                                    </div>
+                                </span>
+                                :
+                                <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                                    Network
+                                </span>}
+                        </span>
+                        <span className="ml-1 flex items-center pointer-events-none text-primary-text">
+                            <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                        </span>
                     </div>
                 </PopoverTrigger>
                 {
                     currency?.contract_address && isValidAddress(currency.contract_address, network) && network &&
-                    <div className="flex items-center justify-end">
-                        <Link target="_blank" href={network.account_explorer_template?.replace("{0}", currency.contract_address)} className="text-xs text-secondary-text underline hover:no-underline leading-3 w-fit">
-                            {shortenAddress(currency?.contract_address)}
-                        </Link>
+                    <div className="flex flex-col rounded-r-md py-1 pr-2 w-full">
+                        {/* <div className="flex items-center basis-full justify-start text-secondary-text">
+                        {currency?.asset}
+                    </div> */}
+
+                        <div className="flex basis-full justify-start space-x-1 text-xs text-secondary-text leading-3">
+                            <span>Contract Address:</span>
+                            <Link target="_blank" href={network.account_explorer_template?.replace("{0}", currency.contract_address)} className="underline hover:no-underline w-fit">
+                                {shortenAddress(currency?.contract_address)}
+                            </Link>
+                        </div>
                     </div>
                 }
             </div>
             <PopoverContent className="w-fit">
                 <div className="max-w-xs m-2">
                     <div className="!text-primary-text font-medium pb-2">Networks</div>
+                </div>
+
+                <div className="overflow-y-auto max-h-[200px] styled-scroll">
+                    {
+                        menuItems?.sort((a, b) => a.order - b.order)?.map((route, index) => {
+                            const network = layers.find(l => l.internal_name === route.baseObject.network)
+                            const currency = network?.assets.find(a => a.asset === route.baseObject.asset)
+                            return (
+                                <div key={index} onClick={() => handleSelect(route)} className={`flex items-center w-full p-2 hover:bg-secondary-700 cursor-pointer`}>
+                                    {
+                                        value === route &&
+                                        <Check className="h-4 w-4 mr-2" />
+                                    }
+                                    <div className="flex-shrink-0 h-6 w-6 relative">
+                                        {<Image
+                                            src={resolveImgSrc(network)}
+                                            alt="Project Logo"
+                                            height="40"
+                                            width="40"
+                                            loading="eager"
+                                            className="rounded-md object-contain" />}
+                                    </div>
+                                    <div className="ml-2 flex items-center gap-3 justify-between w-full">
+                                        <p className='font-medium'>
+                                            {network?.display_name}
+                                        </p>
+                                        <p className="text-primary-text-muted">
+                                            ({currency?.asset})
+                                        </p>
+                                    </div>
+                                </div>
+                            )
+                        })
+                    }
+                </div>
+                <div className="max-w-xs m-2">
                     <div className="rounded-md bg-secondary-600 p-4 ">
                         <div className="flex text-secondary-text">
                             <div className="flex-shrink-0">
@@ -190,41 +241,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div className="overflow-y-auto max-h-[200px] styled-scroll">
-                    {
-                        menuItems.sort((a, b) => a.order - b.order)?.map((route, index) => {
-                            const network = layers.find(l => l.internal_name === route.baseObject.network)
-                            const currency = network?.assets.find(a => a.asset === route.baseObject.asset)
-
-                            return (
-                                <div key={index} onClick={() => handleSelect(route)} className={`flex items-center w-full p-2 hover:bg-secondary-700 cursor-pointer`}>
-                                    {
-                                        value === route &&
-                                        <Check className="h-4 w-4 mr-2" />
-                                    }
-                                    <div className="flex-shrink-0 h-6 w-6 relative">
-                                        {<Image
-                                            src={resolveImgSrc(network)}
-                                            alt="Project Logo"
-                                            height="40"
-                                            width="40"
-                                            loading="eager"
-                                            className="rounded-md object-contain" />}
-                                    </div>
-                                    <div className="ml-2 flex items-center gap-3 justify-between w-full">
-                                        <p className='text-md font-medium'>
-                                            {network?.display_name}
-                                        </p>
-                                        <p className="text-primary-text-muted">
-                                            ({currency?.asset})
-                                        </p>
-                                    </div>
-                                </div>
-                            )
-                        })
-                    }
                 </div>
             </PopoverContent>
         </Popover>
