@@ -49,6 +49,12 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency,
                                     <span>
                                         {destinationNetworkCurrency?.asset}
                                     </span>
+                                    {
+                                        receiveAmountInUsd !== undefined && Number(receiveAmountInUsd) > 0 &&
+                                        <span className="text-secondary-text text-xs font-medium ml-1 block md:inline-block">
+                                            (${receiveAmountInUsd})
+                                        </span>
+                                    }
                                 </p>
                             </div>
                             {refuel && <Refuel
@@ -60,12 +66,6 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency,
                         : '-'
                 }
             </span>
-            {
-                receiveAmountInUsd !== undefined && Number(receiveAmountInUsd) > 0 &&
-                < p className="text-secondary-text text-xs flex justify-end mr-0.5 font-medium">
-                    ${receiveAmountInUsd}
-                </p>
-            }
         </div>
     </div >
 }

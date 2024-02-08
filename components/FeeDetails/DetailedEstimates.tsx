@@ -14,6 +14,8 @@ const DetailedEstimates: FC = () => {
     const currencyName = fromCurrency?.display_asset || fromCurrency?.asset || " "
     const a = fee.avgCompletionTime?.split(':');
     const seconds = a && (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
+    const feeAmountInUsd = parsedFee && fromCurrency ? (fromCurrency?.usd_price * parsedFee).toFixed(2) : undefined
+
 
     return <div className="flex flex-col w-full gap-2">
         <div className="flex justify-between w-full items-center">
@@ -23,23 +25,29 @@ const DetailedEstimates: FC = () => {
                 </label>
                 <div className="text-right">
                     {isFeeLoading ? <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' /> : <span>{parsedFee || '-'}</span>} <span>{parsedFee ? currencyName : ''}</span>
+                    {
+                        feeAmountInUsd !== undefined && Number(feeAmountInUsd) > 0 &&
+                        <span className="text-secondary-text text-xs ml-1 font-medium">
+                            (${feeAmountInUsd})
+                        </span>
+                    }
                 </div>
             </div>
         </div>
         {
             seconds && seconds > 0 ?
-            <div className="flex justify-between w-full items-center">
-                <div className="flex items-baseline w-full justify-between gap-1">
-                    <label className="inline-flex items-center text-left text-primary-text-placeholder">
-                        Estimated time
-                    </label>
-                    <div className="text-right">
-                        <AverageCompletionTime avgCompletionTime={fee.avgCompletionTime} />
+                <div className="flex justify-between w-full items-center">
+                    <div className="flex items-baseline w-full justify-between gap-1">
+                        <label className="inline-flex items-center text-left text-primary-text-placeholder">
+                            Estimated time
+                        </label>
+                        <div className="text-right">
+                            <AverageCompletionTime avgCompletionTime={fee.avgCompletionTime} />
+                        </div>
                     </div>
                 </div>
-            </div>
-            :
-            <></>
+                :
+                <></>
         }
     </div>
 
