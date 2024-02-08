@@ -14,16 +14,14 @@ import useWallet from "../../../hooks/useWallet";
 import { useQueryState } from "../../../context/query";
 import { NetworkCurrency } from "../../../Models/CryptoNetwork";
 import { Exchange } from "../../../Models/Exchange";
-import { useFee } from "../../../context/feeContext";
-import { CaluclateRefuelAmount } from "../../../lib/fees";
 
 type SwapInfoProps = {
     sourceCurrency: NetworkCurrency,
     destinationCurrency: NetworkCurrency,
     source: Layer,
     destination: Layer;
-    requestedAmount: number;
-    receiveAmount?: number;
+    requestedAmount: number | undefined;
+    receiveAmount: number | undefined;
     destinationAddress: string;
     hasRefuel?: boolean;
     refuelAmount?: number;
@@ -34,10 +32,9 @@ type SwapInfoProps = {
     sourceExchange?: Exchange;
 }
 
-const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, source: from, destination: to, requestedAmount, destinationAddress, hasRefuel, refuelAmount, exchange_account_connected, exchange_account_name, destExchange, sourceExchange }) => {
+const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, source: from, destination: to, requestedAmount, destinationAddress, hasRefuel, refuelAmount, exchange_account_connected, exchange_account_name, destExchange, sourceExchange, receiveAmount }) => {
     const { resolveImgSrc } = useSettingsState()
     const { getWithdrawalProvider: getProvider } = useWallet()
-    const { fee } = useFee()
     const provider = useMemo(() => {
         return from && getProvider(from)
     }, [from, getProvider])
@@ -52,17 +49,6 @@ const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, sourc
         hideAddress
     } = useQueryState()
 
-    const refuelCalculations = CaluclateRefuelAmount({
-        refuelEnabled: hasRefuel,
-        currency: destinationCurrency,
-        to
-    })
-    const { refuelAmountInSelectedCurrency } = refuelCalculations
-
-    const receiveAmount = hasRefuel ?
-        parseFloat(fee.walletReceiveAmount && (fee.walletReceiveAmount - refuelAmountInSelectedCurrency)?.toFixed(destinationCurrency?.precision) || "")
-        : fee.walletReceiveAmount
-
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = partnerData?.data
@@ -70,7 +56,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, sourc
     const source = hideFrom ? partner : from
     const destination = hideTo ? partner : to
 
-    const requestedAmountInUsd = (sourceCurrency?.usd_price * requestedAmount).toFixed(2)
+    const requestedAmountInUsd = requestedAmount && (sourceCurrency?.usd_price * requestedAmount).toFixed(2)
     const receiveAmountInUsd = receiveAmount ? (destinationCurrency?.usd_price * receiveAmount).toFixed(2) : undefined
     const nativeCurrency = refuelAmount && to.assets.find(c => c.is_native)
 
@@ -121,7 +107,10 @@ const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, sourc
                         </div>
                     </div>
                     <div className="flex flex-col items-end">
-                        <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.display_asset ?? sourceCurrency.asset}</p>
+                        {
+                            requestedAmount &&
+                            <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.display_asset ?? sourceCurrency.asset}</p>
+                        }
                         <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
                     </div>
                 </div>
@@ -140,7 +129,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, sourc
                         </div>
                     </div>
                     {
-                        fee != undefined && receiveAmount != undefined ?
+                        receiveAmount != undefined ?
                             <div className="flex flex-col justify-end">
                                 <p className="text-primary-text text-sm">{truncateDecimals(receiveAmount, destinationCurrency.precision)} {destinationCurrency.display_asset ?? destinationCurrency.asset}</p>
                                 <p className="text-secondary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
