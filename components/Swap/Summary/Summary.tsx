@@ -30,16 +30,11 @@ type SwapInfoProps = {
     exchange_account_name?: string;
     destExchange?: Exchange;
     sourceExchange?: Exchange;
+    sourceAccountAddress: string
 }
 
-const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, source: from, destination: to, requestedAmount, destinationAddress, hasRefuel, refuelAmount, exchange_account_connected, exchange_account_name, destExchange, sourceExchange, receiveAmount }) => {
+const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, destinationCurrency, source: from, destination: to, requestedAmount, destinationAddress, hasRefuel, refuelAmount, exchange_account_connected, exchange_account_name, destExchange, sourceExchange, receiveAmount }) => {
     const { resolveImgSrc } = useSettingsState()
-    const { getWithdrawalProvider: getProvider } = useWallet()
-    const provider = useMemo(() => {
-        return from && getProvider(from)
-    }, [from, getProvider])
-
-    const wallet = provider?.getConnectedWallet()
 
     const {
         hideFrom,
@@ -63,23 +58,6 @@ const Summary: FC<SwapInfoProps> = ({ sourceCurrency, destinationCurrency, sourc
     const truncatedRefuelAmount = nativeCurrency && (hasRefuel && refuelAmount) ?
         truncateDecimals(refuelAmount, nativeCurrency?.precision) : null
     const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.usd_price || 1) * (truncatedRefuelAmount || 0)).toFixed(2)
-
-    let sourceAccountAddress = ""
-    if (hideFrom && account) {
-        sourceAccountAddress = shortenAddress(account);
-    }
-    else if (wallet) {
-        sourceAccountAddress = shortenAddress(wallet.address);
-    }
-    else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
-        sourceAccountAddress = shortenEmail(exchange_account_name, 10);
-    }
-    else if (sourceExchange) {
-        sourceAccountAddress = "Exchange"
-    }
-    else {
-        sourceAccountAddress = "Network"
-    }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
 
