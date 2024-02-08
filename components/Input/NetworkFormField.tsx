@@ -26,7 +26,7 @@ type Props = {
     label: string,
     className?: string,
 }
-type LayerIsAvailable = {
+export type LayerIsAvailable = {
     value: boolean;
     disabledReason: LayerDisabledReason;
 } | {

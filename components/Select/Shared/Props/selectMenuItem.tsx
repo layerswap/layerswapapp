@@ -12,9 +12,12 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     };
     type: ItemType
     group?: string;
-    details?: string;
+    details?: {
+        balanceAmount: string | undefined,
+        balanceAmountInUsd: string | undefined
+    };
     baseObject: T;
-    constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, type: ItemType, group?: string, details?: string) {
+    constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, type: ItemType, group?: string, details?: { balanceAmount: string | undefined, balanceAmountInUsd: string | undefined }) {
         this.baseObject = baseObject;
         this.id = id;
         this.name = name;
@@ -40,7 +43,10 @@ export interface ISelectMenuItem {
         disabledReason: LayerDisabledReason | CurrencyDisabledReason | null
     };
     type: ItemType
-    details?: string;
+    details?: {
+        balanceAmount: string | undefined,
+        balanceAmountInUsd: string | undefined
+    };
     order?: number;
 }
 type ItemType = 'layer' | 'cex' | 'currency'

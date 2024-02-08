@@ -2,8 +2,7 @@ import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
-import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
+import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import CurrencySettings from "../../lib/CurrencySettings";
 import { SortingByAvailability } from "../../lib/sorting";
 import { Layer } from "../../Models/Layer";
@@ -17,10 +16,23 @@ import { ApiResponse } from "../../Models/ApiResponse";
 import { Balance } from "../../Models/Balance";
 import dynamic from "next/dynamic";
 import { QueryParams } from "../../Models/QueryParams";
+import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
+import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
+import { LayerIsAvailable } from "./NetworkFormField";
+import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
 });
+
+const getGroupName = (value: NetworkCurrency, displayName: string | undefined, layerIsAvailable?: LayerIsAvailable) => {
+    if (layerIsAvailable?.disabledReason !== LayerDisabledReason.InvalidRoute) {
+        return displayName;
+    }
+    else {
+        return "All networks";
+    }
+}
 
 const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
@@ -99,7 +111,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     }[]>>(destinationRoutesURL, apiClient.fetcher)
 
     const isLoading = sourceRoutesLoading || destRoutesLoading
-
 
     const filteredCurrencies = currencies?.filter(currency => {
         if (direction === "from") {
@@ -199,16 +210,32 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     return (
         <div className="relative">
             <BalanceComponent values={values} direction={direction} onLoad={(v) => setWalletAddress(v)} />
-            <PopoverSelectWrapper
-                placeholder="Asset"
-                values={currencyMenuItems}
-                value={value}
-                setValue={handleSelect}
+            <CommandSelectWrapper
                 disabled={!value?.isAvailable?.value || isLoading}
+                valueGrouper={groupByType}
+                placeholder="Asset"
+                setValue={handleSelect}
+                value={value}
+                values={currencyMenuItems}
+                searchHint='Search'
+                isLoading={isLoading}
             />
         </div>
     )
 };
+
+function groupByType(values: ISelectMenuItem[]) {
+    let groups: SelectMenuItemGroup[] = [];
+    values?.forEach((v) => {
+        let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });
+        group.items.push(v);
+        if (!groups.find(x => x.name == v.group)) {
+            groups.push(group);
+        }
+    });
+
+    return groups;
+}
 
 export function GenerateCurrencyMenuItems(
     currencies: NetworkCurrency[],
@@ -242,6 +269,7 @@ export function GenerateCurrencyMenuItems(
         const displayName = currency.display_asset ?? currency.asset;
         const balance = balances?.find(b => b?.token === c?.asset && (direction === 'from' ? from : to)?.internal_name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
+        const balanceAmountInUsd = formatted_balance_amount ? (currency?.usd_price * formatted_balance_amount).toFixed(2) : undefined
 
         const res: SelectMenuItem<NetworkCurrency> = {
             baseObject: c,
@@ -250,8 +278,12 @@ export function GenerateCurrencyMenuItems(
             order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
             imgSrc: resolveImgSrc && resolveImgSrc(c),
             isAvailable: currencyIsAvailable(c),
-            details: `${formatted_balance_amount}`,
-            type: "currency"
+            details: {
+                balanceAmount: `${formatted_balance_amount}`,
+                balanceAmountInUsd: balanceAmountInUsd
+            },
+            type: "currency",
+            group: getGroupName(c, direction === 'from' ? from?.display_name : to?.display_name)
         };
 
         return res

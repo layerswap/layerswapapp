@@ -20,7 +20,7 @@ import { useSettingsState } from '../../../context/settings';
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
     setShow: (value: boolean) => void;
-    searchHint: string;
+    searchHint?: string;
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
     isLoading: boolean;
 }

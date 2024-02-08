@@ -11,7 +11,7 @@ type PopoverSelectWrapper = {
     values: ISelectMenuItem[];
     value?: ISelectMenuItem;
     placeholder?: string;
-    searchHint?: string;
+    searchHint: string;
     disabled?: boolean;
 }
 

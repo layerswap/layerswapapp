@@ -16,11 +16,26 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
         <div className="ml-4 flex items-center gap-3 justify-between w-full">
             <p className='text-md font-medium'>
                 {item.name}
+                {
+                    item.type == "currency" &&
+                    <p className="text-primary-text-muted text-xs">
+                        {item.group}
+                    </p>
+                }
             </p>
             {
                 item.details &&
-                <p className="text-primary-text-muted">
-                    {item.details}
+                <p className="text-primary-text-muted flex flex-col items-end">
+                    {Number(item.details.balanceAmount) ?
+                        <span className="text-primary-text text-sm">{item.details.balanceAmount}</span>
+                        :
+                        <span className="text-primary-text text-sm">0.00</span>
+                    }
+                    {item.details.balanceAmountInUsd ?
+                        <span className="text-sm">${item.details.balanceAmountInUsd}</span>
+                        :
+                        <span className="text-sm">$0.00</span>
+                    }
                 </p>
             }
         </div>
