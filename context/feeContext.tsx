@@ -20,22 +20,14 @@ export type Fee = {
     manualFee: number | undefined,
     avgCompletionTime: string | undefined;
     walletReceiveAmount: number | undefined,
-    manualReceiveAmount: number | undefined
+    manualReceiveAmount: number | undefined,
+    refuelAmount: number | undefined
 }
 
 export function FeeProvider({ children }) {
 
     const [values, setValues] = useState<SwapFormValues>()
-    const [cachedData, setCachedData] = useState<{
-        wallet_fee_in_usd: number,
-        wallet_fee: number,
-        wallet_receive_amount: number,
-        manual_fee_in_usd: number,
-        manual_fee: number,
-        manual_receive_amount: number,
-        avg_completion_time: string,
-        fee_usd_price: number
-    }>()
+    const [cachedRateData, setCachedRateData] = useState<RateResponse>()
 
     const { fromCurrency, toCurrency, from, to, amount, refuel } = values || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount);
@@ -69,23 +61,14 @@ export function FeeProvider({ children }) {
         refreshInterval: 10000
     })
 
-    const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<{
-        wallet_fee_in_usd: number,
-        wallet_fee: number,
-        wallet_receive_amount: number,
-        manual_fee_in_usd: number,
-        manual_fee: number,
-        manual_receive_amount: number,
-        avg_completion_time: string,
-        fee_usd_price: number
-    }>>((from && fromCurrency && to && toCurrency && debouncedAmount) ?
-        `/routes/rate/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?amount=${debouncedAmount}&version=${version}` : null, apiClient.fetcher, {
+    const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<RateResponse>>((from && fromCurrency && to && toCurrency && debouncedAmount) ?
+        `/routes/rate/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?amount=${debouncedAmount}&refuel=${!!refuel}&version=${version}` : null, apiClient.fetcher, {
         refreshInterval: 10000,
-        fallbackData: { data: cachedData }
+        fallbackData: { data: cachedRateData }
     })
 
     useEffect(() => {
-        setCachedData(lsFee?.data)
+        setCachedRateData(lsFee?.data)
     }, [lsFee])
 
     const fee = {
@@ -93,6 +76,7 @@ export function FeeProvider({ children }) {
         manualFee: lsFee?.data?.manual_fee,
         walletReceiveAmount: lsFee?.data?.wallet_receive_amount,
         manualReceiveAmount: lsFee?.data?.manual_receive_amount,
+        refuelAmount: lsFee?.data?.refuel_amount,
         avgCompletionTime: lsFee?.data?.avg_completion_time
     }
 
@@ -101,6 +85,21 @@ export function FeeProvider({ children }) {
             {children}
         </FeeStateContext.Provider>
     )
+}
+
+type RateResponse = {
+    avg_completion_time: string,
+    manual_fee: number,
+    manual_fee_in_usd: number,
+    manual_receive_amount: number,
+    receive_asset: string,
+    receive_network: string,
+    refuel_amount: number,
+    refuel_amount_in_usd: number,
+    refuel_asset: string,
+    wallet_fee: number,
+    wallet_fee_in_usd: number,
+    wallet_receive_amount: number,
 }
 
 export function useFee() {

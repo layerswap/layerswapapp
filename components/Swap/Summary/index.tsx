@@ -5,7 +5,6 @@ import Summary from "./Summary"
 import { TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
 import useWalletTransferOptions from "../../../hooks/useWalletTransferOptions"
 import { useFee } from "../../../context/feeContext"
-import { CaluclateRefuelAmount } from "../../../lib/fees"
 import shortenAddress, { shortenEmail } from "../../utils/ShortenAddress"
 import KnownInternalNames from "../../../lib/knownIds"
 import useWallet from "../../../hooks/useWallet"
@@ -78,26 +77,12 @@ const SwapSummary: FC = () => {
     const requested_amount = (swapInputTransaction?.amount ??
         (Number(min_amount) > Number(swap.requested_amount) ? min_amount : swap.requested_amount)) || undefined
 
-    const refuelCalculations = CaluclateRefuelAmount({
-        refuelEnabled: swap.has_refuel,
-        currency: destinationAsset,
-        to: destination_layer
-    })
-    const { refuelAmountInSelectedCurrency } = refuelCalculations
-
     const receiveAmount = withdrawType === WithdrawType.Wallet ? feeData.walletReceiveAmount : feeData.manualReceiveAmount
-
-    const calculatedReceiveAmount = swapOutputTransaction?.amount ?? (swap.has_refuel ?
-        parseFloat(receiveAmount && (receiveAmount - refuelAmountInSelectedCurrency)?.toFixed(destinationAsset?.precision) || "")
-        : receiveAmount)
-
-    const destinationNetworkNativeAsset = layers.find(n => n.internal_name === destination_layer?.internal_name)?.assets.find(a => a.is_native);
-    const refuel_amount_in_usd = Number(destinationAsset?.refuel_amount_in_usd)
-    const native_usd_price = Number(destinationNetworkNativeAsset?.usd_price)
+    const calculatedReceiveAmount = swapOutputTransaction?.amount ?? receiveAmount
 
     const refuelAmountInNativeCurrency = swap?.has_refuel
         ? ((swapRefuelTransaction?.amount ??
-            (refuel_amount_in_usd / native_usd_price))) : undefined;
+            (feeData.refuelAmount))) : undefined;
 
     let sourceAccountAddress = ""
     if (hideFrom && account) {
