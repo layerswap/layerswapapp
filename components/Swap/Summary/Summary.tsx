@@ -5,7 +5,7 @@ import { Layer } from "../../../Models/Layer";
 import { useSettingsState } from "../../../context/settings";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import shortenAddress, { shortenEmail } from "../../utils/ShortenAddress";
-import LayerSwapApiClient, { WithdrawType } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import useSWR from 'swr'
@@ -14,10 +14,6 @@ import useWallet from "../../../hooks/useWallet";
 import { useQueryState } from "../../../context/query";
 import { NetworkCurrency } from "../../../Models/CryptoNetwork";
 import { Exchange } from "../../../Models/Exchange";
-import { useFee } from "../../../context/feeContext";
-import { CaluclateRefuelAmount } from "../../../lib/fees";
-import useWalletTransferOptions from "../../../hooks/useWalletTransferOptions";
-import { useSwapDataState } from "../../../context/swap";
 
 type SwapInfoProps = {
     sourceCurrency: NetworkCurrency,
