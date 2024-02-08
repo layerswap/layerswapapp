@@ -5,6 +5,7 @@ import Summary from "./Summary"
 import { TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
 import useWalletTransferOptions from "../../../hooks/useWalletTransferOptions"
 import { useFee } from "../../../context/feeContext"
+import { CaluclateRefuelAmount } from "../../../lib/fees"
 
 const SwapSummary: FC = () => {
     const { layers, exchanges } = useSettingsState()
@@ -48,28 +49,31 @@ const SwapSummary: FC = () => {
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
-    let fee: number | undefined
     let min_amount: number | undefined
-
-    const walletTransferFee = feeData?.walletFee;
-    const manualTransferFee = feeData?.manualFee;
 
     if (isContractWallet?.ready) {
         if (withdrawType === WithdrawType.Wallet && canDoSweepless) {
-            fee = walletTransferFee;
             min_amount = minAllowedAmount;
         } else {
-            fee = manualTransferFee;
             min_amount = minAllowedAmount;
         }
     }
 
-    if (swap?.fee && swapOutputTransaction) {
-        fee = swap?.fee
-    }
-
     const requested_amount = (swapInputTransaction?.amount ??
         (Number(min_amount) > Number(swap.requested_amount) ? min_amount : swap.requested_amount)) || undefined
+
+    const refuelCalculations = CaluclateRefuelAmount({
+        refuelEnabled: swap.has_refuel,
+        currency: destinationAsset,
+        to: destination_layer
+    })
+    const { refuelAmountInSelectedCurrency } = refuelCalculations
+
+    const receiveAmount = withdrawType === WithdrawType.Wallet ? feeData.walletReceiveAmount : feeData.manualReceiveAmount
+
+    const calculatedReceiveAmount = swapOutputTransaction?.amount ?? (swap.has_refuel ?
+        parseFloat(receiveAmount && (receiveAmount - refuelAmountInSelectedCurrency)?.toFixed(destinationAsset?.precision) || "")
+        : receiveAmount)
 
     const destinationNetworkNativeAsset = layers.find(n => n.internal_name === destination_layer?.internal_name)?.assets.find(a => a.is_native);
     const refuel_amount_in_usd = Number(destinationAsset?.refuel_amount_in_usd)
@@ -86,7 +90,8 @@ const SwapSummary: FC = () => {
         sourceExchange={sourceExchange}
         destination={destination_layer}
         destExchange={destExchange}
-        requestedAmount={requested_amount as number}
+        requestedAmount={requested_amount}
+        receiveAmount={calculatedReceiveAmount}
         destinationAddress={swap.destination_address}
         hasRefuel={swap?.has_refuel}
         refuelAmount={refuelAmountInNativeCurrency}
