@@ -211,21 +211,15 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                             <NetworkFormField direction="to" label="To" className="rounded-b-lg" />
                         </div>}
                     </div>
-
                     {
                         ((fromExchange || toExchange) && currencyGroup) ?
                             <div className="mb-6 leading-4">
-                                {
-                                    (errors.from || errors.to )&&
-                                    <span>plim plim</span>
-                                }
                                 <ResizablePanel>
                                     <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
                                 </ResizablePanel>
                             </div>
                             : <></>
                     }
-
                     <div className="mb-6 leading-4">
                         <AmountField />
                     </div>
