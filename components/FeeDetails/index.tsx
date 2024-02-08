@@ -37,9 +37,11 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
 
                 {
                     from && to &&
-                    <FeeDetails.Item>
-                        <DetailedEstimates />
-                    </FeeDetails.Item>
+                    <ResizablePanel>
+                        <FeeDetails.Item>
+                            <DetailedEstimates />
+                        </FeeDetails.Item>
+                    </ResizablePanel>
                 }
 
                 <ResizablePanel>

@@ -5,8 +5,6 @@ import { CaluclateRefuelAmount } from "../../lib/fees";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { NetworkCurrency } from "../../Models/CryptoNetwork";
 import { Fee } from "../../context/feeContext";
-import { Clock9 } from "lucide-react";
-import AverageCompletionTime from "../Common/AverageCompletionTime";
 
 type WillReceiveProps = {
     receive_amount?: number;
@@ -38,7 +36,6 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency,
             <span>
                 You will receive
             </span>
-            <EstimatedArrival fee={fee} />
         </span>
         <div className='flex items-end flex-col'>
             <span className="text-sm md:text-base">
@@ -72,29 +69,6 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ receive_amount, currency,
         </div>
     </div >
 }
-
-type EstimatedArrivalProps = {
-    destination?: Layer | null,
-    currency?: NetworkCurrency | null,
-    fee: Fee
-}
-const EstimatedArrival: FC<EstimatedArrivalProps> = ({ fee }) => {
-
-    const a = fee.avgCompletionTime?.split(':');
-    const seconds = a && (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
-
-    return (seconds && seconds > 0 ?
-        <div className="flex flex-row items-center gap-1 w-full text-xs">
-            <Clock9 className="h-3 w-3 text-secondary-text" />
-            <span className="text-right text-secondary-text">
-                <AverageCompletionTime avgCompletionTime={fee.avgCompletionTime} />
-            </span>
-        </div>
-        :
-        <></>
-    )
-}
-
 
 type RefuelProps = {
     currency?: NetworkCurrency | null;
