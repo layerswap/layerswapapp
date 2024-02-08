@@ -1,4 +1,4 @@
-import { ArrowLeftRight } from 'lucide-react';
+import { AlertTriangle, ArrowLeftRight, Info } from 'lucide-react';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
@@ -16,6 +16,7 @@ import ClickTooltip from '../../../Tooltips/ClickTooltip';
 import SignatureIcon from '../../../icons/SignatureIcon';
 import formatAmount from '../../../../lib/formatAmount';
 import useWallet from '../../../../hooks/useWallet';
+import Link from 'next/link';
 
 type Props = {
     depositAddress: string,
@@ -162,7 +163,25 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         }
     }, [syncWallet, swap, depositAddress, source_currency, amount])
 
-    if (wallet && wallet?.connector?.toLowerCase() !== 'metamask') return <>bim bim bom bom</>
+    if (wallet && wallet?.connector?.toLowerCase() !== 'metamask') return (
+        // <div className='flex items-start w-full'>
+        //     <Info className='h-5 w-5' />
+        //     <div>Automatic transfers from Argent zkSync Lite wallet are not supported now. Choose the manual transfer option and follow the <Link target="_blank" className="underline hover:no-underline cursor-pointer hover:text-secondary-text text-primary-text font-light" href='https://www.youtube.com/watch?v=u_KzSr5v8M8&ab_channel=Layerswap'>tutorial</Link> for a smooth swap.</div>
+        // </div>
+        <div className="rounded-md bg-secondary-800 p-4">
+            <div className="flex">
+                <div className="flex-shrink-0">
+                    <Info className="h-5 w-5 text-primary-400" aria-hidden="true" />
+                </div>
+                <div className="ml-3">
+                    <h3 className="text-sm font-medium text-primary-text">Please switch to manually</h3>
+                    <div className="mt-2 text-sm text-secondary-text">
+                        <p>Automatic transfers from Argent zkSync Lite wallet are not supported now. Choose the manual transfer option and follow the <Link target="_blank" className="underline hover:no-underline cursor-pointer hover:text-secondary-text text-primary-text font-light" href='https://www.youtube.com/watch?v=u_KzSr5v8M8&ab_channel=Layerswap'>tutorial</Link> for a smooth swap.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
 
     if (!signer || !wallet) {
         return <ConnectWalletButton />
