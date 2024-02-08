@@ -67,11 +67,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
 
         let addresses: { address: string, type: string, networkType: NetworkType | undefined, date?: string }[] = []
 
-        if (currentAddress && values.to) addresses = [...addresses.filter(a => currentAddress !== a.address), { address: currentAddress, type: 'current', networkType: values.to.type }]
+        // if (currentAddress && values.to) addresses = [...addresses.filter(a => currentAddress !== a.address), { address: currentAddress, type: 'current', networkType: values.to.type }]
         if (recentlyUsedAddresses && values.to) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, type: 'recentlyUsed', networkType: values.to?.type }))]
         if (connectedWalletAddress && values.to) addresses = [...addresses.filter(a => connectedWalletAddress !== a.address), { address: connectedWalletAddress, type: 'wallet', networkType: values.to.type }]
         if (newAddress && values.to) addresses = [...addresses.filter(a => newAddress !== a.address), { address: newAddress, type: 'manual', networkType: values.to.type }]
-
 
         addresses.filter(a => a.networkType === values.to?.type).forEach(a => {
             addAddress(a)
@@ -213,10 +212,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                                                     a.type === 'manual' &&
                                                                     <FilePlus2 className="h-5 w-5" />
                                                                 }
-                                                                {
+                                                                {/* {
                                                                     a.type === 'current' &&
                                                                     <AddressIcon address={a.address} size={20} />
-                                                                }
+                                                                } */}
                                                             </div>
                                                             <div className="flex flex-col">
                                                                 <div className="block text-sm font-medium">
@@ -240,11 +239,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                                                         a.type === 'manual' &&
                                                                         <>New added</>
                                                                     }
-                                                                    {
+                                                                    {/* {
                                                                         a.type === 'current' &&
                                                                         <>Current</>
-                                                                    }
-
+                                                                    } */}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -287,7 +285,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         <hr className="border-secondary-500" />
                     }
                     <div className="text-left">
-                        <label className="text-secondary-text" htmlFor={'manualAddress'}>New address</label>
+                        <label className="text-secondary-text" htmlFor={name}>New address</label>
                         {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
                         <div className="flex flex-wrap flex-col md:flex-row items-center mt-1.5">
                             <div className="relative flex grow rounded-lg shadow-sm  bg-secondary-700 border-secondary-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary">
@@ -306,8 +304,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     autoCorrect="off"
                                     type={"text"}
                                     // disabled={disabled || !!(connectedWallet && values.destination_address)}
-                                    name={'manualAddress'}
-                                    id={'manualAddress'}
+                                    name={name}
+                                    id={name}
                                     ref={inputReference}
                                     tabIndex={0}
                                     className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4  block font-semibold w-full bg-secondary-700 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
