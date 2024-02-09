@@ -45,7 +45,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const destinationExchange = values.toExchange
 
     const addresses = useAddressBookStore((state) => state.addresses).filter(a => a.networkType === values.to?.type)
-    const addAddress = useAddressBookStore((state) => state.addAddress)
+    const setAddresses = useAddressBookStore((state) => state.setAddresses)
 
     const { setDepositeAddressIsfromAccount } = useSwapDataUpdate()
     const placeholder = "Enter your address here"
@@ -72,9 +72,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
         if (connectedWalletAddress && values.to) addresses = [...addresses.filter(a => connectedWalletAddress !== a.address), { address: connectedWalletAddress, type: 'wallet', networkType: values.to.type }]
         if (newAddress && values.to) addresses = [...addresses.filter(a => newAddress !== a.address), { address: newAddress, type: 'manual', networkType: values.to.type }]
 
-        addresses.filter(a => a.networkType === values.to?.type).forEach(a => {
-            addAddress(a)
-        })
+        setAddresses(addresses.filter(a => a.networkType === values.to?.type))
+
     }, [address_book, currentAddress, connectedWalletAddress, newAddress, values.to])
 
     useEffect(() => {
@@ -181,7 +180,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         <div className="text-left">
                             <label className="text-secondary-text">Address book</label>
                             <RadioGroup disabled={disabled} value={values.destination_address} onChange={handleSelectAddress}>
-                                <div className="rounded-md overflow-y-auto styled-scroll max-h-[300px]">
+                                <div className="rounded-md overflow-y-auto space-y-3 mt-2 styled-scroll max-h-[300px]">
                                     {addresses?.map(a => (
                                         <RadioGroup.Option
                                             key={a.address}
@@ -190,7 +189,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                             className={({ disabled }) =>
                                                 classNames(
                                                     disabled ? ' cursor-not-allowed ' : ' cursor-pointer ',
-                                                    'relative flex focus:outline-none mt-2 mb-3  '
+                                                    'relative flex focus:outline-none  '
                                                 )
                                             }
                                         >
@@ -255,31 +254,40 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                             }}
                                         </RadioGroup.Option>
                                     ))}
-                                    {
-                                        !disabled
-                                        && destination
-                                        && provider
-                                        && !connectedWallet
-                                        && !values.toExchange &&
-                                        <div onClick={() => { connectWallet(provider.name) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
-                                            <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
-                                                <WalletIcon className="w-5 h-5 text-primary-text" />
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <div className="block text-sm font-medium">
-                                                    Autofill from wallet
-                                                </div>
-                                                <div className="text-gray-500">
-                                                    Connect your wallet to fetch the address
-                                                </div>
-                                            </div>
-                                        </div>
-                                    }
                                 </div>
                             </RadioGroup>
                         </div>
                     }
-
+                    {
+                        !disabled
+                        && destination
+                        && provider
+                        && !connectedWallet
+                        && !values.toExchange &&
+                        <div onClick={() => { connectWallet(provider.name) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
+                            <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
+                                <WalletIcon className="w-5 h-5 text-primary-text" />
+                            </div>
+                            <div className="flex flex-col">
+                                <div className="block text-sm font-medium">
+                                    Autofill from wallet
+                                </div>
+                                <div className="text-gray-500">
+                                    Connect your wallet to fetch the address
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    {
+                        wrongNetwork && !currentAddress &&
+                        <div className="basis-full text-xs text-primary">
+                            {
+                                destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
+                                    ? <span>Please switch to Starknet Mainnet with your wallet and click Autofill again</span>
+                                    : <span>Please switch to Starknet Sepolia with your wallet and click Autofill again</span>
+                            }
+                        </div>
+                    }
                     {
                         addresses && addresses.length > 0 &&
                         <hr className="border-secondary-500" />
@@ -347,16 +355,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                 errorMessage &&
                                 <div className="basis-full text-xs text-primary">
                                     {errorMessage}
-                                </div>
-                            }
-                            {
-                                wrongNetwork && !currentAddress &&
-                                <div className="basis-full text-xs text-primary">
-                                    {
-                                        destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
-                                            ? <span>Please switch to Starknet Mainnet with your wallet and click Autofill again</span>
-                                            : <span>Please switch to Starknet Goerli with your wallet and click Autofill again</span>
-                                    }
                                 </div>
                             }
                         </div>

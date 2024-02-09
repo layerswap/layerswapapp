@@ -3,7 +3,7 @@ import { NetworkType } from '../Models/CryptoNetwork';
 
 interface AddressBookState {
     addresses: Address[];
-    addAddress: (address: Address) => void;
+    setAddresses: (addresses: Address[]) => void;
 }
 
 export type Address = {
@@ -15,12 +15,9 @@ export type Address = {
 
 export const useAddressBookStore = create<AddressBookState>()((set) => ({
     addresses: [],
-    addAddress: (address: Address) => set((state) => {
+    setAddresses: (addresses: Address[]) => set(() => {
         return ({
-            addresses: [
-                ...state.addresses.filter(a => a.address !== address.address),
-                address
-            ]
+            addresses: addresses
         })
     }),
 }))
