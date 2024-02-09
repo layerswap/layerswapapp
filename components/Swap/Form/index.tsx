@@ -285,8 +285,9 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
 }
 
 const setSwapPath = (swapId: string, router: NextRouter) => {
+    const basePath = router?.basePath || ""
     var swapURL = window.location.protocol + "//"
-        + window.location.host + `/swap/${swapId}`;
+        + window.location.host + `${basePath}/swap/${swapId}`;
     const params = resolvePersistantQueryParams(router.query)
     if (params && Object.keys(params).length) {
         const search = new URLSearchParams(params as any);
@@ -297,8 +298,9 @@ const setSwapPath = (swapId: string, router: NextRouter) => {
 }
 
 const removeSwapPath = (router: NextRouter) => {
+    const basePath = router?.basePath || ""
     let homeURL = window.location.protocol + "//"
-        + window.location.host
+        + window.location.host + basePath
 
     const params = resolvePersistantQueryParams(router.query)
     if (params && Object.keys(params).length) {
