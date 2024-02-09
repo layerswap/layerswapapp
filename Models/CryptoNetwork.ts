@@ -38,12 +38,14 @@ export class NetworkCurrency {
     availableInSource?: boolean;
     availableInDestination?: boolean;
     balanceAmountInUsd?: number;
+    internalName?: string | undefined;
 }
 export class NetworkNode {
     url: string;
 }
 export class ManagedAccount {
     address: `0x${string}`;
+    type?: string;
 }
 export class Metadata {
     multicall3?: {

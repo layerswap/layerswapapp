@@ -384,7 +384,8 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x2109F6e78970B282e6068d255EA4c815D14f68a31a9d3330c74d4eB56a0d724"
+                    "address": "0x2109F6e78970B282e6068d255EA4c815D14f68a31a9d3330c74d4eB56a0d724",
+                    "type": "HotWallet"
                 }
             ],
             "nodes": [
@@ -440,7 +441,8 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
             "nodes": [
@@ -485,7 +487,8 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
             "nodes": [
@@ -521,7 +524,8 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
             "nodes": [
@@ -555,7 +559,8 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
             "nodes": [
@@ -602,10 +607,15 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
-            "nodes": []
+            "nodes": [
+                {
+                    "url": "https://rpc.goerli.linea.build"
+                }
+            ]
         },
         {
             "display_name": "Base Sepolia",
@@ -632,8 +642,17 @@ export const Settings: LayerSwapSettings = {
                     "group_name": "ETH"
                 }
             ],
-            "managed_accounts": [],
-            "nodes": []
+            "managed_accounts": [
+                {
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
+                }
+            ],
+            "nodes": [
+                {
+                    "url": "https://rpc.goerli.linea.build"
+                }
+            ]
         },
         {
             "display_name": "Evmos Testnet",
@@ -660,10 +679,15 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
-            "nodes": []
+            "nodes": [
+                {
+                    "url": "https://rpc.goerli.linea.build"
+                }
+            ]
         },
         {
             "display_name": "Solana Devnet",
@@ -701,10 +725,15 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "CRWWbf61eLEE1tjkvDP5DaDsX2Ttb3arZ4CcQpwe7g4N" as any
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
-            "nodes": []
+            "nodes": [
+                {
+                    "url": "https://rpc.goerli.linea.build"
+                }
+            ]
         },
         {
             "display_name": "Brine Testnet",
@@ -731,10 +760,15 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
-            "nodes": []
+            "nodes": [
+                {
+                    "url": "https://rpc.goerli.linea.build"
+                }
+            ]
         },
         {
             "display_name": "Immutable zkEVM Testnet",
@@ -761,12 +795,13 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
             "nodes": [
                 {
-                    "url": "https://rpc.testnet.immutable.com/"
+                    "url": "https://rpc.goerli.linea.build"
                 }
             ]
         },
@@ -808,10 +843,15 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x65A93bf9a33C87346f534A3B6c825e5c9E86A8e612cbA683D0271aAe5062d21"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
-            "nodes": []
+            "nodes": [
+                {
+                    "url": "https://rpc.goerli.linea.build"
+                }
+            ]
         },
         {
             "display_name": "Metis Sepolia",
@@ -838,12 +878,13 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
             "nodes": [
                 {
-                    "url": "https://sepolia.rpc.metisdevops.link/"
+                    "url": "https://rpc.goerli.linea.build"
                 }
             ]
         }

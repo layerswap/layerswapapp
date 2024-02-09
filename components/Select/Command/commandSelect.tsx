@@ -59,7 +59,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                 return (
                                     <CommandGroup key={group.name} heading={group.name}>
                                         {group.items.map(item =>
-                                            <CommandItem disabled={!item.isAvailable.value} value={item.name} key={item.id} onSelect={() => handleSelectValue(item)}>
+                                            <CommandItem disabled={!item.isAvailable.value} value={item.network} key={item.network} onSelect={() => handleSelectValue(item)}>
                                                 <SelectItem item={item} />
                                             </CommandItem>)
                                         }

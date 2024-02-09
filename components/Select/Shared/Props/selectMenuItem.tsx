@@ -16,6 +16,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
         balanceAmount: string | undefined,
         balanceAmountInUsd: string | undefined
     };
+    network?: string | undefined;
     baseObject: T;
     constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, type: ItemType, group?: string, details?: { balanceAmount: string | undefined, balanceAmountInUsd: string | undefined }) {
         this.baseObject = baseObject;
@@ -47,6 +48,7 @@ export interface ISelectMenuItem {
         balanceAmount: string | undefined,
         balanceAmountInUsd: string | undefined
     };
+    network?: string | undefined;
     order?: number;
 }
 type ItemType = 'layer' | 'cex' | 'currency'

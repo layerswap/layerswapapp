@@ -41,7 +41,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     } = useFormikContext<SwapFormValues>();
 
     const { to, fromCurrency, toCurrency, from, currencyGroup, toExchange, fromExchange } = values
-    const { resolveImgSrc, assetGroups } = useSettingsState();
+    const { resolveImgSrc, layers } = useSettingsState();
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { balances } = useBalancesState()
@@ -50,6 +50,21 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         : query?.lockToAsset
     const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
     const currencies = direction === 'from' ? from?.assets : to?.assets;
+
+    const sourceCurrencies = layers
+        .map(layer =>
+            layer.assets
+                .filter(asset => asset.availableInSource)
+                .map(asset => ({ ...asset, internalName: layer.internal_name }))
+        )
+        .flat();
+    const destinationCurrencies = layers
+        .map(layer =>
+            layer.assets
+                .filter(asset => asset.availableInDestination)
+                .map(asset => ({ ...asset, internalName: layer.internal_name }))
+        )
+        .flat();
 
     const lockedCurrency = lockAsset
         ? currencies?.find(c => c?.asset?.toUpperCase() === (asset)?.toUpperCase())
@@ -121,7 +136,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     });
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
-        filteredCurrencies!,
+        direction === "from" ? sourceCurrencies : destinationCurrencies,
         resolveImgSrc,
         values,
         direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
@@ -283,7 +298,8 @@ export function GenerateCurrencyMenuItems(
                 balanceAmountInUsd: balanceAmountInUsd
             },
             type: "currency",
-            group: getGroupName(c, direction === 'from' ? from?.display_name : to?.display_name)
+            group: getGroupName(c, c.internalName),
+            network: `${c?.asset?.toLowerCase()}_${c?.internalName?.toLowerCase()}`
         };
 
         return res
