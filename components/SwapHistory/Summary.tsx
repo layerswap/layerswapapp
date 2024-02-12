@@ -22,7 +22,7 @@ type SwapInfoProps = {
     destinationCurrency: NetworkCurrency,
     source: Layer,
     destination: Layer;
-    requestedAmount: number;
+    requestedAmount: number | undefined;
     receiveAmount?: number;
     destinationAddress: string;
     hasRefuel?: boolean;
@@ -123,9 +123,18 @@ const Summary: FC<SwapInfoProps> = ({
             <div className="px-3 py-2">
                 <span className="grow w-full grid grid-cols-11 items-center text-sm font-normal">
                     <span className="col-span-5 text-secondary-text/60">
-                        <div>{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.asset}</div>
+                        <div>{requestedAmount} {sourceCurrency.asset}</div>
                     </span>
-                    <span className="col-start-7 col-span-5 opacity-60 text-secondary-text">{<StatusIcon swap={swap} />}</span>
+                    {
+                        receiveAmount ?
+                            <span className="col-start-7 col-span-5 text-secondary-text/60">
+                                <div>{receiveAmount} {destinationCurrency.asset}</div>
+                            </span>
+                            :
+                            <span className="col-start-7 col-span-5 opacity-60 text-secondary-text">
+                                {<StatusIcon swap={swap} />}
+                            </span>
+                    }
                 </span>
             </div>
         </div>

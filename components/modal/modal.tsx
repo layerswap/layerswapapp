@@ -13,11 +13,10 @@ export interface ModalProps {
     height?: LeafletHeight;
     show: boolean;
     setShow: Dispatch<SetStateAction<boolean>>;
-    onClose?: () => void
     modalId: string;
 }
 
-const Modal: FC<ModalProps> = (({ header, modalId, height, className, children, subHeader, show, setShow, onClose }) => {
+const Modal: FC<ModalProps> = (({ header, modalId, height, className, children, subHeader, show, setShow }) => {
     const { isMobile, isDesktop } = useWindowDimensions()
     const mobileModalRef = useRef(null)
 
@@ -35,7 +34,6 @@ const Modal: FC<ModalProps> = (({ header, modalId, height, className, children, 
                     <AnimatePresence>
                         {show &&
                             <Leaflet
-                                onClose={onClose}
                                 key={modalId}
                                 position="absolute"
                                 height={height ?? 'full'}

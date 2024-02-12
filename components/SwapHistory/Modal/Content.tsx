@@ -187,6 +187,8 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
                         }
 
                         const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
+                        const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
+                        const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
 
                         const requested_amount = swap.requested_amount
 
@@ -197,7 +199,7 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
                         const refuelAmountInNativeCurrency = swap?.has_refuel
                             ? ((swapRefuelTransaction?.amount ??
                                 (refuel_amount_in_usd / native_usd_price))) : undefined;
-                        const receive_amount = requested_amount - swap.fee
+                        const receive_amount = swapOutputTransaction?.amount
 
                         return <motion.div
                             onClick={() => handleopenSwapDetails(swap)}
@@ -210,7 +212,7 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
                                     destinationCurrency={destinationAsset}
                                     source={source_layer}
                                     destination={destination_layer}
-                                    requestedAmount={requested_amount}
+                                    requestedAmount={swap.requested_amount || swapInputTransaction?.amount}
                                     receiveAmount={receive_amount}
                                     destinationAddress={swap.destination_address}
                                     hasRefuel={swap?.has_refuel}
