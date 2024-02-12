@@ -1,18 +1,15 @@
-import { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useSettingsState } from '../../../../context/settings';
 import { useSwapDataState } from '../../../../context/swap';
 import { useInterval } from '../../../../hooks/useInterval';
 import { CalculateMinimalAuthorizeAmount } from '../../../../lib/fees';
 import { parseJwt } from '../../../../lib/jwtParser';
-import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import { OpenLink } from '../../../../lib/openLink';
 import TokenService from '../../../../lib/TokenService';
 import SubmitButton from '../../../buttons/submitButton';
 import Carousel, { CarouselItem, CarouselRef } from '../../../Carousel';
 import { FirstScreen, FourthScreen, LastScreen, SecondScreen, ThirdScreen } from './ConnectGuideScreens';
-import KnownInternalNames from '../../../../lib/knownIds';
-import { Layer } from '../../../../Models/Layer';
 import { ArrowLeft } from 'lucide-react';
 import IconButton from '../../../buttons/iconButton';
 import { motion } from 'framer-motion';
@@ -27,9 +24,9 @@ type Props = {
     hideHeader?: boolean,
 }
 
-const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hideHeader }) => {
+const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
     const { swap } = useSwapDataState()
-    const { layers } = useSettingsState()
+    const { layers, exchanges } = useSettingsState()
     const router = useRouter()
     let alreadyFamiliar = useCoinbaseStore((state) => state.alreadyFamiliar);
     let toggleAlreadyFamiliar = useCoinbaseStore((state) => state.toggleAlreadyFamiliar);
@@ -42,12 +39,12 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
     const exchange_internal_name = swap?.source_exchange
     const asset_name = swap?.source_network_asset
 
-    const exchange = layers.find(e => e.internal_name?.toLowerCase() === exchange_internal_name?.toLowerCase()) as Layer
-    const currency = exchange?.assets.find(c => asset_name?.toLocaleUpperCase() === c.asset?.toLocaleUpperCase())
+    const exchange = exchanges?.find(e => e.internal_name?.toLowerCase() === exchange_internal_name?.toLowerCase())
+    const network = layers?.find(l => l.internal_name?.toLowerCase() === swap?.source_network?.toLowerCase())
+    const currency = network?.assets.find(c => asset_name?.toLocaleUpperCase() === c.asset?.toLocaleUpperCase())
 
-    const oauthProviders = {} as any //TODO config oauth_providers
-    const coinbaseOauthProvider = oauthProviders?.find(p => p.provider === KnownInternalNames.Exchanges.Coinbase)
-    const { oauth_authorize_url } = coinbaseOauthProvider || {}
+    const coinbaseOauthProvider = exchange?.o_auth
+    const { authorize_url } = coinbaseOauthProvider || {}
 
     const minimalAuthorizeAmount = currency?.usd_price ?
         CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount)) : null
@@ -85,14 +82,14 @@ const Authorize: FC<Props> = ({ onAuthorized, stickyFooter, onDoNotConnect, hide
                 return
             }
             const { sub } = parseJwt(access_token) || {}
-            const encoded = btoa(JSON.stringify({ SwapId: swap?.id, UserId: sub, RedirectUrl: `${window.location.origin}/salon` }))
-            const authWindow = OpenLink({ link: oauth_authorize_url + encoded, query: router.query, swapId: swap.id })
+            const encoded = btoa(JSON.stringify({ SwapId: swap?.id, UserId: Number(sub), RedirectUrl: `${window.location.origin}/salon` }))
+            const authWindow = OpenLink({ link: authorize_url + encoded, query: router.query, swapId: swap.id })
             setAuthWindow(authWindow)
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [carouselFinished, alreadyFamiliar, swap?.id, oauth_authorize_url, router.query])
+    }, [carouselFinished, alreadyFamiliar, swap?.id, authorize_url, router.query])
 
     const handlePrev = useCallback(() => {
         carouselRef?.current?.prev()

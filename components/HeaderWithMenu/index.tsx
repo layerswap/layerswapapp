@@ -15,6 +15,7 @@ import { ApiResponse } from "../../Models/ApiResponse"
 import { useRouter } from "next/router"
 import { SwapDataProvider } from "../../context/swap"
 import SwapsListModal from "../SwapHistory/Modal"
+import { useQueryState } from "../../context/query"
 
 const WalletsHeader = dynamic(() => import("../ConnectedWallets").then((comp) => comp.WalletsHeader), {
    loading: () => <></>
@@ -25,6 +26,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
    const { boot, show, update } = useIntercom()
    const updateWithProps = () => update({ email: email, userId: userId })
    const router = useRouter()
+   const query = useQueryState()
 
    return (
       <div className="w-full grid grid-cols-5 px-6 mt-3" >
@@ -37,19 +39,18 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
                }>
             </IconButton>
          }
-
          {
             router.pathname == "/" &&
             <AnimatePresence >
                <PendingSwapsModal />
             </AnimatePresence>
          }
-
-         <div className='justify-self-center self-center col-start-2 col-span-3 mx-auto overflow-hidden md:hidden'>
-            <GoHomeButton />
-         </div>
-
-         <div className="space-x-0 col-start-5 justify-self-end self-center flex items-center gap-x-2">
+         {
+            !query.hideLogo && <div className='justify-self-center self-center col-start-2 col-span-3 mx-auto overflow-hidden md:hidden'>
+               <GoHomeButton />
+            </div>
+         }
+         <div className="col-start-5 justify-self-end self-center flex items-center gap-4">
             <WalletsHeader />
             <IconButton className="relative hidden md:inline" onClick={() => {
                boot();
@@ -80,7 +81,7 @@ const PendingSwapsModal = () => {
    return <span className="text-secondary-text cursor-pointer relative">
       {
          <>
-         
+
             {pendingSwapsCount > 0 && <motion.div
                className="relative top-"
                initial={{ y: 20, opacity: 0 }}

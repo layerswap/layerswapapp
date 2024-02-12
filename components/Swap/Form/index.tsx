@@ -107,7 +107,11 @@ export default function Form() {
                 const remainingTimeInHours = getSecondsToTomorrow() / 3600
                 const remainingTimeInMinutes = getSecondsToTomorrow() / 60
                 const remainingTime = remainingTimeInHours >= 1 ? `${remainingTimeInHours.toFixed()} hours` : `${remainingTimeInMinutes.toFixed()} minutes`
-                toast.error(`Daily limit of ${values.fromCurrency?.asset} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromCurrency?.asset} or retry in ${remainingTime}.`)
+                if (minAllowedAmount && data.metadata.AvailableTransactionAmount > minAllowedAmount) {
+                    toast.error(`Daily limit of ${values.fromCurrency?.asset} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromCurrency?.asset} or retry in ${remainingTime}.`)
+                } else {
+                    toast.error(`Daily limit of ${values.fromCurrency?.asset} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
+                }
             }
             else {
                 toast.error(data.message || error.message)
@@ -184,8 +188,9 @@ export default function Form() {
 }
 
 const setSwapPath = (swapId: string, router: NextRouter) => {
+    const basePath = router?.basePath || ""
     var swapURL = window.location.protocol + "//"
-        + window.location.host + `/swap/${swapId}`;
+        + window.location.host + `${basePath}/swap/${swapId}`;
     const params = resolvePersistantQueryParams(router.query)
     if (params && Object.keys(params).length) {
         const search = new URLSearchParams(params as any);
@@ -196,8 +201,9 @@ const setSwapPath = (swapId: string, router: NextRouter) => {
 }
 
 const removeSwapPath = (router: NextRouter) => {
+    const basePath = router?.basePath || ""
     let homeURL = window.location.protocol + "//"
-        + window.location.host
+        + window.location.host + basePath
 
     const params = resolvePersistantQueryParams(router.query)
     if (params && Object.keys(params).length) {

@@ -128,7 +128,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         if (currencyIsAvailable) return
 
         const default_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.asset?.toUpperCase() === (query?.asset)?.toUpperCase())
+            c.baseObject?.asset?.toUpperCase() === (query?.toAsset)?.toUpperCase())
             || currencyMenuItems?.[0]
 
         const selected_currency = currencyMenuItems?.find(c =>
@@ -151,7 +151,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         if (currencyIsAvailable) return
 
         const default_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.asset?.toUpperCase() === (query?.asset)?.toUpperCase())
+            c.baseObject?.asset?.toUpperCase() === (query?.fromAsset)?.toUpperCase())
             || currencyMenuItems?.[0]
 
         const selected_currency = currencyMenuItems?.find(c =>
@@ -239,7 +239,7 @@ export function GenerateCurrencyMenuItems(
 
     return currencies?.map(c => {
         const currency = c
-        const displayName = currency.asset;
+        const displayName = currency.display_asset ?? currency.asset;
         const balance = balances?.find(b => b?.token === c?.asset && (direction === 'from' ? from : to)?.internal_name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
 
