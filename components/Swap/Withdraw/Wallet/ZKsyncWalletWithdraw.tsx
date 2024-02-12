@@ -163,7 +163,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         }
     }, [syncWallet, swap, depositAddress, source_currency, amount])
 
-    if (wallet && wallet?.connector?.toLowerCase() !== 'metamask') return (
+    if (wallet && wallet?.connector?.toLowerCase() === 'argent') return (
         <div className="rounded-md bg-secondary-800 p-4">
             <div className="flex">
                 <div className="flex-shrink-0">
