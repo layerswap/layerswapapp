@@ -1,14 +1,24 @@
-import { FC, useEffect } from "react"
+import { FC, useEffect, useMemo } from "react"
 import { useSettingsState } from "../../../context/settings"
 import { useSwapDataState } from "../../../context/swap"
 import Summary from "./Summary"
 import { TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
 import useWalletTransferOptions from "../../../hooks/useWalletTransferOptions"
 import { useFee } from "../../../context/feeContext"
+import shortenAddress, { shortenEmail } from "../../utils/ShortenAddress"
+import KnownInternalNames from "../../../lib/knownIds"
+import useWallet from "../../../hooks/useWallet"
+import { useQueryState } from "../../../context/query"
 
 const SwapSummary: FC = () => {
     const { layers, exchanges } = useSettingsState()
     const { swap, withdrawType } = useSwapDataState()
+    const { getWithdrawalProvider: getProvider } = useWallet()
+    const {
+        hideFrom,
+        account,
+    } = useQueryState()
+
     const {
         source_network: source_network_internal_name,
         source_exchange: source_exchange_internal_name,
@@ -27,6 +37,12 @@ const SwapSummary: FC = () => {
     const destinationAsset = destination_layer?.assets?.find(currency => currency?.asset === destination_network_asset)
     const sourceExchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
     const destExchange = exchanges.find(e => e.internal_name === destination_exchange_internal_name)
+
+    const provider = useMemo(() => {
+        return source_layer && getProvider(source_layer)
+    }, [source_layer, getProvider])
+
+    const wallet = provider?.getConnectedWallet()
 
     useEffect(() => {
         valuesChanger({
@@ -48,36 +64,45 @@ const SwapSummary: FC = () => {
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
-    let fee: number | undefined
     let min_amount: number | undefined
-
-    const walletTransferFee = feeData?.walletFee;
-    const manualTransferFee = feeData?.manualFee;
 
     if (isContractWallet?.ready) {
         if (withdrawType === WithdrawType.Wallet && canDoSweepless) {
-            fee = walletTransferFee;
             min_amount = minAllowedAmount;
         } else {
-            fee = manualTransferFee;
             min_amount = minAllowedAmount;
         }
-    }
-
-    if (swap?.fee && swapOutputTransaction) {
-        fee = swap?.fee
     }
 
     const requested_amount = (swapInputTransaction?.amount ??
         (Number(min_amount) > Number(swap.requested_amount) ? min_amount : swap.requested_amount)) || undefined
 
-    const destinationNetworkNativeAsset = layers.find(n => n.internal_name === destination_layer?.internal_name)?.assets.find(a => a.is_native);
-    const refuel_amount_in_usd = Number(destinationAsset?.refuel_amount_in_usd)
-    const native_usd_price = Number(destinationNetworkNativeAsset?.usd_price)
+    const receiveAmount = withdrawType === WithdrawType.Wallet ? feeData.walletReceiveAmount : feeData.manualReceiveAmount
+    const calculatedReceiveAmount = swapOutputTransaction?.amount ?? receiveAmount
 
     const refuelAmountInNativeCurrency = swap?.has_refuel
         ? ((swapRefuelTransaction?.amount ??
-            (refuel_amount_in_usd / native_usd_price))) : undefined;
+            (feeData.refuelAmount))) : undefined;
+
+    let sourceAccountAddress = ""
+    if (hideFrom && account) {
+        sourceAccountAddress = shortenAddress(account);
+    }
+    else if (swapInputTransaction?.from) {
+        sourceAccountAddress = shortenAddress(swapInputTransaction?.from);
+    }
+    else if (wallet) {
+        sourceAccountAddress = shortenAddress(wallet.address);
+    }
+    else if (source_layer?.internal_name === KnownInternalNames.Exchanges.Coinbase && swap?.exchange_account_connected) {
+        sourceAccountAddress = shortenEmail(swap?.exchange_account_name, 10);
+    }
+    else if (sourceExchange) {
+        sourceAccountAddress = "Exchange"
+    }
+    else {
+        sourceAccountAddress = "Network"
+    }
 
     return <Summary
         sourceCurrency={sourceAsset}
@@ -86,12 +111,14 @@ const SwapSummary: FC = () => {
         sourceExchange={sourceExchange}
         destination={destination_layer}
         destExchange={destExchange}
-        requestedAmount={requested_amount as number}
+        requestedAmount={requested_amount}
+        receiveAmount={calculatedReceiveAmount}
         destinationAddress={swap.destination_address}
         hasRefuel={swap?.has_refuel}
         refuelAmount={refuelAmountInNativeCurrency}
         exchange_account_connected={swap?.exchange_account_connected}
         exchange_account_name={swap?.exchange_account_name}
+        sourceAccountAddress={sourceAccountAddress}
     />
 }
 export default SwapSummary
