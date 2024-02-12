@@ -3,7 +3,9 @@ import { LayerDisabledReason } from "../../Popover/PopoverSelect";
 
 export class SelectMenuItem<T> implements ISelectMenuItem {
     id: string;
-    name: string;
+    name: React.ReactNode;
+    menuItemLabel?: React.ReactNode;
+    menuItemDetails?: React.ReactNode;
     order: number;
     imgSrc: string;
     isAvailable: {
@@ -16,6 +18,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
         balanceAmount: string | undefined,
         balanceAmountInUsd: string | undefined
     };
+    network_display_name?: string | undefined;
     network?: string | undefined;
     baseObject: T;
     constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, type: ItemType, group?: string, details?: { balanceAmount: string | undefined, balanceAmountInUsd: string | undefined }) {
@@ -36,7 +39,9 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
 
 export interface ISelectMenuItem {
     id: string;
-    name: string;
+    name: React.ReactNode;
+    menuItemLabel?: React.ReactNode;
+    menuItemDetails?: React.ReactNode;
     imgSrc: string;
     group?: string;
     isAvailable: {
@@ -48,6 +53,7 @@ export interface ISelectMenuItem {
         balanceAmount: string | undefined,
         balanceAmountInUsd: string | undefined
     };
+    network_display_name?: string | undefined;
     network?: string | undefined;
     order?: number;
 }

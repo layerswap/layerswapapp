@@ -38,7 +38,8 @@ export class NetworkCurrency {
     availableInSource?: boolean;
     availableInDestination?: boolean;
     balanceAmountInUsd?: number;
-    internalName?: string | undefined;
+    network_display_name?: string | undefined;
+    network?: string | undefined;
 }
 export class NetworkNode {
     url: string;

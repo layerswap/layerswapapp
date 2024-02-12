@@ -15,7 +15,6 @@ import Modal from '../../modal/modal';
 import { Info } from 'lucide-react';
 import SpinIcon from '../../icons/spinIcon';
 import { LayerDisabledReason } from '../Popover/PopoverSelect';
-import { useSettingsState } from '../../../context/settings';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
@@ -59,7 +58,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                 return (
                                     <CommandGroup key={group.name} heading={group.name}>
                                         {group.items.map(item =>
-                                            <CommandItem disabled={!item.isAvailable.value} value={item.network} key={item.network} onSelect={() => handleSelectValue(item)}>
+                                            <CommandItem disabled={!item.isAvailable.value} value={item.id} key={item.id} onSelect={() => handleSelectValue(item)}>
                                                 <SelectItem item={item} />
                                             </CommandItem>)
                                         }

@@ -3,13 +3,14 @@ import { FC, useCallback, useEffect } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
-import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import CurrencySettings from "../../lib/CurrencySettings";
 import { SortingByAvailability } from "../../lib/sorting";
 import { useQueryState } from "../../context/query";
 import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
+import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
+import { groupByType } from "./CurrencyFormField";
 
 const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
@@ -86,6 +87,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     }[]>>(destinationRoutesURL, apiClient.fetcher)
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : availableAssetGroups
+    const isLoading = sourceRoutesLoading || destRoutesLoading
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
@@ -105,12 +107,15 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
-    return <PopoverSelectWrapper
+    return <CommandSelectWrapper
+        disabled={!value?.isAvailable?.value || isLoading}
+        valueGrouper={groupByType}
         placeholder="Asset"
-        values={currencyMenuItems}
-        value={value}
         setValue={handleSelect}
-        disabled={!value?.isAvailable?.value}
+        value={value}
+        values={currencyMenuItems}
+        searchHint='Search'
+        isLoading={isLoading}
     />;
 }
 

@@ -18,20 +18,13 @@ import dynamic from "next/dynamic";
 import { QueryParams } from "../../Models/QueryParams";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
-import { LayerIsAvailable } from "./NetworkFormField";
-import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
 });
 
-const getGroupName = (value: NetworkCurrency, displayName: string | undefined, layerIsAvailable?: LayerIsAvailable) => {
-    if (layerIsAvailable?.disabledReason !== LayerDisabledReason.InvalidRoute) {
-        return displayName;
-    }
-    else {
-        return "All networks";
-    }
+const getGroupName = (displayName: string | undefined) => {
+    return displayName;
 }
 
 const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
@@ -41,6 +34,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     } = useFormikContext<SwapFormValues>();
 
     const { to, fromCurrency, toCurrency, from, currencyGroup, toExchange, fromExchange } = values
+
     const { resolveImgSrc, layers } = useSettingsState();
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
@@ -55,14 +49,15 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         .map(layer =>
             layer.assets
                 .filter(asset => asset.availableInSource)
-                .map(asset => ({ ...asset, internalName: layer.internal_name }))
+                .map(asset => ({ ...asset, network_display_name: layer.display_name, network: layer.internal_name }))
         )
         .flat();
+
     const destinationCurrencies = layers
         .map(layer =>
             layer.assets
                 .filter(asset => asset.availableInDestination)
-                .map(asset => ({ ...asset, internalName: layer.internal_name }))
+                .map(asset => ({ ...asset, network_display_name: layer.display_name, network: layer.internal_name }))
         )
         .flat();
 
@@ -145,6 +140,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         query
     )
     const currencyAsset = direction === 'from' ? fromCurrency?.asset : toCurrency?.asset;
+    const currencyNetwork = direction === 'from' ? fromCurrency?.network : toCurrency?.network;
 
     useEffect(() => {
         if (direction !== "to") return
@@ -167,7 +163,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
             setFieldValue(name, default_currency.baseObject)
         }
     }, [to, query])
-
 
     useEffect(() => {
         if (direction !== "from") return
@@ -216,8 +211,12 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         }
     }, [toCurrency, currencyGroup, name, from, sourceRoutes, sourceRoutesError])
 
-    const value = currencyMenuItems?.find(x => x.id == currencyAsset);
+    const value = currencyMenuItems?.find(x => x.baseObject.asset === currencyAsset && x.baseObject.network === currencyNetwork);
 
+    console.log(currencyAsset, "currencyAsset")
+    console.log(currencyNetwork, direction, "currencyNetwork")
+    console.log(from, "from")
+    console.log(to, "to")
     const handleSelect = useCallback((item: SelectMenuItem<NetworkCurrency>) => {
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
@@ -239,7 +238,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     )
 };
 
-function groupByType(values: ISelectMenuItem[]) {
+export function groupByType(values: ISelectMenuItem[]) {
     let groups: SelectMenuItemGroup[] = [];
     values?.forEach((v) => {
         let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });
@@ -249,6 +248,7 @@ function groupByType(values: ISelectMenuItem[]) {
         }
     });
 
+    groups.sort((a, b) => (a.name === "All networks" ? 1 : b.name === "All networks" ? -1 : a.name.localeCompare(b.name)));
     return groups;
 }
 
@@ -282,24 +282,40 @@ export function GenerateCurrencyMenuItems(
     return currencies?.map(c => {
         const currency = c
         const displayName = currency.display_asset ?? currency.asset;
-        const balance = balances?.find(b => b?.token === c?.asset && (direction === 'from' ? from : to)?.internal_name === b.network)
+        const balance = balances?.find(b => b?.token === c?.asset && b?.network === c.network && (direction === 'from' ? from : to)?.internal_name === b.network)
+
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
         const balanceAmountInUsd = formatted_balance_amount ? (currency?.usd_price * formatted_balance_amount).toFixed(2) : undefined
-
+        const DisplayNameComponent = <div>
+            {displayName}
+            <span className="text-primary-text-muted text-xs block">
+                {c.network_display_name}
+            </span>
+        </div>
+        const details = <p className="text-primary-text-muted flex flex-col items-end">
+            {Number(formatted_balance_amount) ?
+                <span className="text-primary-text text-sm">{formatted_balance_amount}</span>
+                :
+                <span className="text-primary-text text-sm">0.00</span>
+            }
+            {balanceAmountInUsd ?
+                <span className="text-sm">${balanceAmountInUsd}</span>
+                :
+                <span className="text-sm">$0.00</span>
+            }
+        </p>
         const res: SelectMenuItem<NetworkCurrency> = {
             baseObject: c,
-            id: c.asset,
-            name: displayName || "-",
+            id: `${c?.asset?.toLowerCase()}_${c?.network_display_name?.toLowerCase()}`,
+            name: displayName,
+            menuItemLabel: DisplayNameComponent,
+            menuItemDetails: details,
+            network_display_name: c.network_display_name,
             order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
             imgSrc: resolveImgSrc && resolveImgSrc(c),
             isAvailable: currencyIsAvailable(c),
-            details: {
-                balanceAmount: `${formatted_balance_amount}`,
-                balanceAmountInUsd: balanceAmountInUsd
-            },
             type: "currency",
-            group: getGroupName(c, c.internalName),
-            network: `${c?.asset?.toLowerCase()}_${c?.internalName?.toLowerCase()}`
+            group: getGroupName(c.network_display_name === (direction === "from" ? from?.display_name : to?.display_name) ? c.network_display_name : "All networks"),
         };
 
         return res
