@@ -59,7 +59,7 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
         publicClient,
     })
     const appSettings = new LayerSwapAppSettings(Settings)
-    const swapContextInitialValues: SwapData = { codeRequested: false, swap, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
+    const swapContextInitialValues: SwapData = { codeRequested: false, swap, depositAddressIsFromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
     if (!appSettings) {
         return <div>Loading...</div>
     }
