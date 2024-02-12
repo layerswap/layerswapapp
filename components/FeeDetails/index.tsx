@@ -13,7 +13,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
     const { toCurrency, from, to, refuel, fromExchange, toExchange } = values || {};
     const { fee } = useFee()
     const query = useQueryState();
-    const nativeAsset = to?.assets?.find(a => a?.is_native)
+    const nativeAsset = to?.assets.find(a => a.is_native)
 
     return (
         <>

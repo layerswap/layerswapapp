@@ -18,7 +18,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee
     const destinationNetworkCurrency = (to && currency) ? GetDefaultAsset(to, currency.asset) : null
 
     const destinationAsset = to?.assets?.find(c => c?.asset === currency?.asset)
-    const destinationNativeAsset = to?.assets?.find(a => a?.is_native)
+    const destinationNativeAsset = to?.assets.find(a => a.is_native)
     const receiveAmountInUsd = receive_amount && destinationAsset ? (destinationAsset?.usd_price * receive_amount).toFixed(2) : undefined
 
     return <div className="flex items-center justify-between w-full">

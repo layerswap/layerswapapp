@@ -34,10 +34,8 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     } = useFormikContext<SwapFormValues>();
 
     const { to, fromCurrency, toCurrency, from, currencyGroup, toExchange, fromExchange } = values
-
     const { resolveImgSrc, layers } = useSettingsState();
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
-
     const query = useQueryState()
     const { balances } = useBalancesState()
     const [walletAddress, setWalletAddress] = useState<string>()
@@ -122,6 +120,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     }[]>>(destinationRoutesURL, apiClient.fetcher)
 
     const isLoading = sourceRoutesLoading || destRoutesLoading
+
 
     const filteredCurrencies = currencies?.filter(currency => {
         if (direction === "from") {
@@ -285,7 +284,6 @@ export function GenerateCurrencyMenuItems(
         const currency = c
         const displayName = currency.display_asset ?? currency.asset;
         const balance = balances?.find(b => b?.token === c?.asset && b?.network === c.network && (direction === 'from' ? from : to)?.internal_name === b.network)
-
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
         const balanceAmountInUsd = formatted_balance_amount ? (currency?.usd_price * formatted_balance_amount).toFixed(2) : undefined
         const DisplayNameComponent = <div>
