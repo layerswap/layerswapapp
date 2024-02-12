@@ -14,9 +14,9 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                 className="rounded-md object-contain" />}
         </div>
         <div className="ml-4 flex items-center gap-3 justify-between w-full">
-            <p className='text-md font-medium'>
+            <div className='text-md font-medium'>
                 {item.menuItemLabel || item.name}
-            </p>
+            </div>
             <>
                 {item.menuItemDetails}
             </>

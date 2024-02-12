@@ -42,7 +42,7 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
         direction === 'to' && values.to && fetchBalance(values.to);
     }, [values.to, values.destination_address, sourceNetworkWallet?.address])
 
-    const contract_address = values?.from?.assets.find(a => a.asset === values?.fromCurrency?.asset)?.contract_address
+    const contract_address = values?.from?.assets?.find(a => a?.asset === values?.fromCurrency?.asset)?.contract_address
 
     useEffect(() => {
         direction === 'from' && sourceNetworkWallet?.address && values.from && values.fromCurrency && fetchGas(values.from, values.fromCurrency, values.destination_address || sourceNetworkWallet.address)

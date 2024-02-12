@@ -37,6 +37,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const { resolveImgSrc, layers } = useSettingsState();
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
+
     const query = useQueryState()
     const { balances } = useBalancesState()
     const [walletAddress, setWalletAddress] = useState<string>()
@@ -143,20 +144,23 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const currencyNetwork = direction === 'from' ? fromCurrency?.network : toCurrency?.network;
 
     useEffect(() => {
-        if (direction !== "to") return
+        if (direction !== "to" || !to) return
 
         let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset)
 
         if (currencyIsAvailable) return
 
-        const default_currency = currencyMenuItems?.find(c =>
+        const default_currency = to && (currencyMenuItems?.find(c =>
             c.baseObject?.asset?.toUpperCase() === (query?.toAsset)?.toUpperCase())
-            || currencyMenuItems?.[0]
+            || currencyMenuItems?.filter(c => c.baseObject.network === to?.internal_name)?.[0])
 
         const selected_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.asset?.toUpperCase() === fromCurrency?.asset?.toUpperCase())
+            c.baseObject?.asset?.toUpperCase() === fromCurrency?.asset?.toUpperCase() && c.baseObject.network === fromCurrency.network)
 
-        if (selected_currency && destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === selected_currency.name)) {
+        if (selected_currency
+            && destinationRoutes?.data
+                ?.filter(r => r.network === to?.internal_name)
+                ?.some(r => r.asset === selected_currency.name)) {
             setFieldValue(name, selected_currency.baseObject)
         }
         else if (default_currency) {
@@ -165,23 +169,23 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     }, [to, query])
 
     useEffect(() => {
-        if (direction !== "from") return
+        if (direction !== "from" || !from) return
 
-        let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset)
+        let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset && c?.baseObject?.network === currencyNetwork)
 
         if (currencyIsAvailable) return
 
-        const default_currency = currencyMenuItems?.find(c =>
+        const default_currency = from && (currencyMenuItems?.find(c =>
             c.baseObject?.asset?.toUpperCase() === (query?.fromAsset)?.toUpperCase())
-            || currencyMenuItems?.[0]
+            || currencyMenuItems?.filter(c => c.baseObject.network === from?.internal_name)?.[0])
 
         const selected_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.asset?.toUpperCase() === toCurrency?.asset?.toUpperCase())
+            c.baseObject?.asset?.toUpperCase() === toCurrency?.asset?.toUpperCase() && c.baseObject.network === toCurrency.network)
 
         if (selected_currency
             && sourceRoutes?.data
                 ?.filter(r => r.network === from?.internal_name)
-                ?.some(r => r.asset === selected_currency.name)) {
+                ?.some(r => r.asset === selected_currency.name && r.network === selected_currency?.network)) {
             setFieldValue(name, selected_currency.baseObject)
         }
         else if (default_currency) {
@@ -198,7 +202,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
                 setFieldValue(name, null)
             }
         }
-    }, [fromCurrency, currencyGroup, name, to, destinationRoutes, destRoutesError,])
+    }, [fromCurrency, currencyGroup, name, to, destinationRoutes, destRoutesError])
 
     useEffect(() => {
         if (name === "fromCurrency" && fromCurrency) {
@@ -213,19 +217,17 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const value = currencyMenuItems?.find(x => x.baseObject.asset === currencyAsset && x.baseObject.network === currencyNetwork);
 
-    console.log(currencyAsset, "currencyAsset")
-    console.log(currencyNetwork, direction, "currencyNetwork")
-    console.log(from, "from")
-    console.log(to, "to")
     const handleSelect = useCallback((item: SelectMenuItem<NetworkCurrency>) => {
+        const network = layers.find(l => l.internal_name === item?.baseObject.network)
         setFieldValue(name, item.baseObject, true)
+        setFieldValue(direction === 'from' ? 'from' : 'to', network)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
     return (
         <div className="relative">
             <BalanceComponent values={values} direction={direction} onLoad={(v) => setWalletAddress(v)} />
             <CommandSelectWrapper
-                disabled={!value?.isAvailable?.value || isLoading}
+                disabled={(value && !value?.isAvailable?.value) || isLoading}
                 valueGrouper={groupByType}
                 placeholder="Asset"
                 setValue={handleSelect}
