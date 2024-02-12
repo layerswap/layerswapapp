@@ -28,6 +28,7 @@ import { useFee } from "../../../context/feeContext";
 import AmountField from "../../Input/Amount"
 import dynamic from "next/dynamic";
 import { Balance, Gas } from "../../../Models/Balance";
+import { calculateSeconds } from "../../utils/timeCalculations";
 
 type Props = {
     isPartnerWallet?: boolean,
@@ -154,8 +155,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     if (!(sourceCanBeSwapped || destinationCanBeSwapped)) {
         valuesSwapperDisabled = true;
     }
-    const a = fee.avgCompletionTime?.split(':');
-    const seconds = a && (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
+    const seconds = fee.avgCompletionTime && calculateSeconds(fee.avgCompletionTime)
     const averageTimeInMinutes = seconds && (seconds / 60) || 0
 
     const hideAddress = query?.hideAddress

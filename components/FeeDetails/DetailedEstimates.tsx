@@ -3,6 +3,7 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { useFee } from "../../context/feeContext";
 import AverageCompletionTime from "../Common/AverageCompletionTime";
+import { calculateSeconds } from "../utils/timeCalculations";
 
 const DetailedEstimates: FC = () => {
 
@@ -12,15 +13,29 @@ const DetailedEstimates: FC = () => {
 
     const parsedFee = fee && parseFloat(Number(fee.walletFee).toFixed(fromCurrency?.precision))
     const currencyName = fromCurrency?.display_asset || fromCurrency?.asset || " "
-    const a = fee.avgCompletionTime?.split(':');
-    const seconds = a && (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
+    const seconds = fee.avgCompletionTime && calculateSeconds(fee.avgCompletionTime)
     const feeAmountInUsd = parsedFee && fromCurrency ? (fromCurrency?.usd_price * parsedFee).toFixed(2) : undefined
 
 
     return <div className="flex flex-col w-full gap-2">
+        {
+            seconds && seconds > 0 ?
+                <div className="flex justify-between w-full items-center">
+                    <div className="flex items-baseline w-full justify-between gap-1">
+                        <label className="inline-flex items-center text-left text-secondary-text">
+                            Estimated time
+                        </label>
+                        <div className="text-right text-secondary-text">
+                            <AverageCompletionTime avgCompletionTime={fee.avgCompletionTime} />
+                        </div>
+                    </div>
+                </div>
+                :
+                <></>
+        }
         <div className="flex justify-between w-full items-center">
             <div className="flex items-baseline w-full justify-between gap-1">
-                <label className="inline-flex items-center text-left text-primary-text-placeholder">
+                <label className="inline-flex items-center text-left text-secondary-text">
                     Fee
                 </label>
                 <div className="text-right">
@@ -34,23 +49,7 @@ const DetailedEstimates: FC = () => {
                 </div>
             </div>
         </div>
-        {
-            seconds && seconds > 0 ?
-                <div className="flex justify-between w-full items-center">
-                    <div className="flex items-baseline w-full justify-between gap-1">
-                        <label className="inline-flex items-center text-left text-primary-text-placeholder">
-                            Estimated time
-                        </label>
-                        <div className="text-right">
-                            <AverageCompletionTime avgCompletionTime={fee.avgCompletionTime} />
-                        </div>
-                    </div>
-                </div>
-                :
-                <></>
-        }
     </div>
-
 }
 
 export default DetailedEstimates
