@@ -128,8 +128,32 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     const currency = (direction === 'from' ? fromCurrency : toCurrency)
 
     return (<div className={`p-2 rounded-lg bg-secondary-700 border border-secondary-500`}>
-        <label htmlFor={name} className="block text-secondary-text text-xs">
-            {direction === 'from' ? 'Transfer via' : 'Receive in'}
+        <label htmlFor={name} className="font-semibold flex justify-between text-secondary-text text-xs">
+            <div className="flex space-x-1">
+                <span>{direction === 'from' ? 'Transfer via' : 'Receive in'}</span>
+                <div className="flex-shrink-0">
+                    <Popover>
+                        <PopoverTrigger>
+                            <Info className="h-4 w-4" aria-hidden="true" />
+                        </PopoverTrigger>
+                        <PopoverContent className="" side="top">
+                            <p className="text-secondary-text text-sm">
+                                The transaction will be executed through the network you select here. The displayed options are ordered by relevance based on historic user data. Please note that in case of picking one network here but doing the actual transfer via another network, your assets may be lost.
+                            </p>
+                        </PopoverContent>
+                    </Popover>
+                </div>
+            </div>
+
+            {
+                currency?.contract_address && isValidAddress(currency.contract_address, network) && network &&
+                <div className="justify-self-end space-x-1">
+                    <span>Contract:</span>
+                    <Link target="_blank" href={network.account_explorer_template?.replace("{0}", currency.contract_address)} className="underline hover:no-underline w-fit">
+                        {shortenAddress(currency?.contract_address)}
+                    </Link>
+                </div>
+            }
         </label>
         <Popover open={showModal} onOpenChange={() => setShowModal(!showModal)}>
             <div className="mt-1.5 items-center">
@@ -153,7 +177,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                             }
                             {value
                                 ?
-                                <span className="ml-3 flex text-secondary-text flex-auto space-x-1 items-center">
+                                <span className="ml-3 flex font-medium text-secondary-text flex-auto space-x-1 items-center">
                                     <div className="flex">{network?.display_name}</div>
                                     <div className="inline-flex items-center justify-self-end gap-1 text-secondary-text">
                                         ({currency?.asset})
@@ -169,28 +193,16 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                         </span>
                     </div>
                 </PopoverTrigger>
-                {
-                    currency?.contract_address && isValidAddress(currency.contract_address, network) && network &&
-                    <div className="flex flex-col rounded-r-md py-1 pr-2 w-full">
-                        {/* <div className="flex items-center basis-full justify-start text-secondary-text">
-                        {currency?.asset}
-                    </div> */}
-
-                        <div className="flex basis-full justify-start space-x-1 text-xs text-secondary-text leading-3">
-                            <span>Contract Address:</span>
-                            <Link target="_blank" href={network.account_explorer_template?.replace("{0}", currency.contract_address)} className="underline hover:no-underline w-fit">
-                                {shortenAddress(currency?.contract_address)}
-                            </Link>
-                        </div>
-                    </div>
-                }
             </div>
-            <PopoverContent className="w-fit">
-                <div className="max-w-xs m-2">
-                    <div className="!text-primary-text font-medium pb-2">Networks</div>
+            <PopoverContent className="w-fit border border-secondary-50">
+                <div className="mb-1 rounded-md py-2 px-1 srelative max-w-xs bg-secondary-700 border border-secondary-500">
+                    <div className="relative z-20 text-secondary-text text-sm">
+                        <p>
+                            Before transferring make sure the exchange supports the selected network.
+                        </p>
+                    </div>
                 </div>
-
-                <div className="overflow-y-auto max-h-[200px] styled-scroll">
+                <div className="overflow-y-auto max-h-[200px] styled-scroll text-xs md:text-base">
                     {
                         menuItems?.sort((a, b) => a.order - b.order)?.map((route, index) => {
                             const network = layers.find(l => l.internal_name === route.baseObject.network)
@@ -222,25 +234,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                             )
                         })
                     }
-                </div>
-                <div className="max-w-xs m-2">
-                    <div className="rounded-md bg-secondary-600 p-4 ">
-                        <div className="flex text-secondary-text">
-                            <div className="flex-shrink-0">
-                                <Info className="h-4 w-4 mt-0.5" aria-hidden="true" />
-                            </div>
-                            <div className="ml-3">
-                                <div className="text-sm">
-                                    {
-                                        direction === 'from' ?
-                                            <p>Please note that you should initiate the withdrawal from your exchange account via the selected network. In case of transferring via another network, your assets may be lost.</p>
-                                            :
-                                            <p>Please note that funds will be sent to your exchange account via the selected network. Before transferring, double check that the exchange supports the network/asset pair.</p>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </PopoverContent>
         </Popover>
