@@ -1,12 +1,12 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useEffect, useState } from "react";
+import { forwardRef, useCallback, useEffect, useMemo, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import { Layer } from "../../Models/Layer";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import ExchangeSettings from "../../lib/ExchangeSettings";
-import { SortingByAvailability, SortingByOrder } from "../../lib/sorting"
+import { SortingByAvailability } from "../../lib/sorting"
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
@@ -19,6 +19,8 @@ import { NetworkCurrency } from "../../Models/CryptoNetwork";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
+import { useBalancesState } from "../../context/balances";
+import useWallet from "../../hooks/useWallet";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -62,6 +64,16 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, currencyGroup } = values
     const query = useQueryState()
     const { lockFrom, lockTo } = query
+
+    const { getAutofillProvider: getProvider } = useWallet()
+
+    const { balances } = useBalancesState()
+    const sourceWalletProvider = useMemo(() => {
+        return from && getProvider(from)
+    }, [from, getProvider])
+
+    const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet()
+    const allBalances = sourceNetworkWallet && balances[sourceNetworkWallet.address]
 
     const { resolveImgSrc, layers, exchanges, destinationRoutes, sourceRoutes, assetGroups } = useSettingsState();
     let placeholder = "";
@@ -164,6 +176,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     values={menuItems}
                     searchHint={searchHint}
                     isLoading={isLoading}
+                    balances={allBalances}
                 />
             </div>
             <div className="col-span-3 md:col-span-2 w-full ml-2">
@@ -178,7 +191,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     </div>)
 });
 
-function groupByType(values: ISelectMenuItem[]) {
+function groupByType(values: SelectMenuItem<Layer>[]) {
     let groups: SelectMenuItemGroup[] = [];
     values.forEach((v) => {
         let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });

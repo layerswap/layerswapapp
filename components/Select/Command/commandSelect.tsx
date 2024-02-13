@@ -1,4 +1,4 @@
-import { ISelectMenuItem } from '../Shared/Props/selectMenuItem'
+import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
 import {
     CommandEmpty,
     CommandGroup,
@@ -15,6 +15,8 @@ import Modal from '../../modal/modal';
 import { Info } from 'lucide-react';
 import SpinIcon from '../../icons/spinIcon';
 import { LayerDisabledReason } from '../Popover/PopoverSelect';
+import { Balance } from '../../../Models/Balance';
+import { Layer } from '../../../Models/Layer';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
@@ -22,6 +24,7 @@ export interface CommandSelectProps extends SelectProps {
     searchHint?: string;
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
     isLoading: boolean;
+    balances?: Balance[]
 }
 
 export class SelectMenuItemGroup {
@@ -30,16 +33,18 @@ export class SelectMenuItemGroup {
     }
 
     name: string;
-    items: ISelectMenuItem[];
+    items: SelectMenuItem<Layer>[];
 }
 
-export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading }: CommandSelectProps) {
+export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading, balances }: CommandSelectProps) {
     const { isDesktop } = useWindowDimensions();
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
+
     const handleSelectValue = useCallback((item: ISelectMenuItem) => {
         setValue(item)
         setShow(false)
     }, [setValue])
+
     return (
         <Modal height='full' show={show} setShow={setShow} modalId='comandSelect'>
             {show ?

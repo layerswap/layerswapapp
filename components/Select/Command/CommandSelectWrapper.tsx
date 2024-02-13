@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { ChevronDown } from 'lucide-react'
 import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
 import CommandSelect, { SelectMenuItemGroup } from './commandSelect'
+import { Balance } from '../../../Models/Balance'
 
 type CommandSelectWrapperProps = {
     setValue: (value: ISelectMenuItem) => void;
@@ -13,6 +14,7 @@ type CommandSelectWrapperProps = {
     disabled: boolean;
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
     isLoading: boolean;
+    balances?: Balance[] | any;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -23,7 +25,8 @@ export default function CommandSelectWrapper<T>({
     searchHint,
     values,
     valueGrouper,
-    isLoading
+    isLoading,
+    balances
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -88,6 +91,7 @@ export default function CommandSelectWrapper<T>({
                 valueGrouper={valueGrouper}
                 values={values}
                 isLoading={isLoading}
+                balances={balances}
             />
         </>
     )
