@@ -3,6 +3,7 @@ import WalletMessage from "./message"
 import resolveError from "./resolveError"
 import { ActionData } from "./sharedTypes"
 import { BaseError } from 'viem'
+import * as Sentry from "@sentry/nextjs";
 
 type TransactionMessageProps = {
     prepare: ActionData,
@@ -33,6 +34,11 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     else if (transaction?.isError && transactionResolvedError) {
         return <TransactionRejectedMessage />
     } else if (hasError) {
+        const error = prepare?.error
+        || transaction?.error?.['data'] || transaction?.error
+        || wait?.error
+
+        Sentry.captureException(error);
         const unexpectedError = prepare?.error
             || transaction?.error?.['data']?.message || transaction?.error
             || wait?.error
