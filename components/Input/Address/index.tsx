@@ -15,6 +15,8 @@ import { isValidAddress } from "../../../lib/addressValidator"
 import { useQueryState } from "../../../context/query"
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap"
 import useWallet from "../../../hooks/useWallet"
+import { Address, useAddressBookStore } from "../../../stores/addressBookStore"
+import { ChevronRight } from "lucide-react"
 
 type AddressProps = {
     isPartnerWallet: boolean
@@ -31,7 +33,9 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
     const query = useQueryState();
     const { setDepositAddressIsFromAccount: setDepositeAddressIsfromAccount } = useSwapDataUpdate()
     const { depositAddressIsFromAccount: depositeAddressIsfromAccount } = useSwapDataState()
-    const { to: destination } = values
+    const { to: destination, destination_address } = values
+    const addresses = useAddressBookStore((state) => state.addresses).filter(a => a.networkType === values.to?.type)
+    const address = addresses.find(a => a.address === destination_address)
 
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/swaps/recent_addresses` : null
@@ -63,13 +67,13 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
         previouslySelectedDestination.current = destination
     }, [destination])
 
-    const { connectWallet, disconnectWallet, getAutofillProvider: getProvider } = useWallet()
+    const { disconnectWallet, getAutofillProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
         return values?.to && getProvider(values?.to)
     }, [values?.to, getProvider])
 
     const connectedWallet = provider?.getConnectedWallet()
-    const connectedWalletAddress = connectedWallet?.address
+    const [wrongNetwork, setWrongNetwork] = useState(false)
 
     //If wallet connected set address from wallet
     useEffect(() => {
@@ -80,7 +84,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
                 && (connectedWallet.chainId != destination.chain_id)
                 && destination) {
                 (async () => {
-                    // setWrongNetwork(true)
+                    setWrongNetwork(true)
                     await disconnectWallet(connectedWallet.providerName)
                 })()
                 return
@@ -97,6 +101,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
             <AddressButton
                 disabled={!values.to || !values.from}
                 isPartnerWallet={isPartnerWallet}
+                address={address}
                 openAddressModal={() => setShowAddressModal(true)}
                 partnerImage={partnerImage}
                 values={values} />
@@ -115,6 +120,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
                         isPartnerWallet={!!isPartnerWallet}
                         partner={partner}
                         address_book={address_book?.data}
+                        wrongNetwork={wrongNetwork}
                     />
                 </ResizablePanel>
             </Modal>
@@ -131,32 +137,41 @@ type AddressButtonProps = {
     openAddressModal: () => void;
     isPartnerWallet: boolean;
     values: SwapFormValues;
+    address?: Address;
     partnerImage?: string;
     disabled: boolean;
 }
-const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, partnerImage, disabled }) => {
-    const destination = values?.to
-    return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text-placeholder bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-medium w-full px-3.5 py-3">
-        {isPartnerWallet &&
-            <div className="shrink-0 flex items-center pointer-events-none">
-                {
-                    partnerImage &&
-                    <Image
-                        alt="Partner logo"
-                        className='rounded-md object-contain'
-                        src={partnerImage}
-                        width="24"
-                        height="24"></Image>
+
+const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, address, partnerImage, disabled }) => {
+    return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg justify-between space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text-placeholder bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-medium w-full px-3.5 py-3">
+        <div>
+            {isPartnerWallet &&
+                <div className="shrink-0 flex items-center pointer-events-none">
+                    {
+                        partnerImage &&
+                        <Image
+                            alt="Partner logo"
+                            className='rounded-md object-contain'
+                            src={partnerImage}
+                            width="24"
+                            height="24"></Image>
+                    }
+                </div>
+            }
+            <div className="truncate">
+                {values.destination_address && address ?
+                    <div className="flex items-center gap-2">
+                        <div className='flex bg-secondary-400 text-primary-text flex-row items-left rounded-md p-1'>
+                            <address.icon className="h-5 w-5" strokeWidth={2} />
+                        </div>
+                        <TruncatedAdrress address={values.destination_address} />
+                    </div>
+                    :
+                    <span>Address</span>
                 }
             </div>
-        }
-        <div className="truncate">
-            {values.destination_address ?
-                <TruncatedAdrress address={values.destination_address} />
-                :
-                <span>Address</span>
-            }
         </div>
+        <ChevronRight className="h-4 w-4 text-primary-text" />
     </button>
 }
 

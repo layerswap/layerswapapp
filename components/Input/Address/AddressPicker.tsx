@@ -13,9 +13,7 @@ import { Partner } from "../../../Models/Partner";
 import shortenAddress from "../../utils/ShortenAddress";
 import WalletIcon from "../../icons/WalletIcon";
 import useWallet from "../../../hooks/useWallet";
-import { useAddressBookStore } from "../../../stores/addressBookStore";
-import { NetworkType } from "../../../Models/CryptoNetwork";
-import AddressIcon from "../../AddressIcon";
+import { Address, useAddressBookStore } from "../../../stores/addressBookStore";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -28,17 +26,17 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     partnerImage?: string,
     partner?: Partner,
     canFocus?: boolean,
-    address_book?: AddressBookItem[]
+    address_book?: AddressBookItem[],
+    wrongNetwork?: boolean
 }
 
 const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
-    ({ name, canFocus, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) {
+    ({ name, canFocus, close, address_book, disabled, isPartnerWallet, partnerImage, partner, wrongNetwork }, ref) {
     const {
         values,
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    const [wrongNetwork, setWrongNetwork] = useState(false)
     const inputReference = useRef<HTMLInputElement>(null);
     const { destination_address, to: destination, toExchange: destinationExchange } = values
 
@@ -61,33 +59,16 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     useEffect(() => {
         const recentlyUsedAddresses = address_book?.filter(a => destinationExchange ? a.exchanges.some(e => destinationExchange.internal_name === e) : a.networks?.some(n => destination?.internal_name === n) && isValidAddress(a.address, destination)) || []
 
-        let addresses: { address: string, type: string, networkType: NetworkType | undefined, date?: string }[] = []
+        let addresses: Address[] = []
 
-        if (destination_address && values.to) addresses = [...addresses.filter(a => destination_address !== a.address), { address: destination_address, type: 'current', networkType: values.to.type }]
-        if (recentlyUsedAddresses && values.to) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, type: 'recentlyUsed', networkType: values.to?.type }))]
-        if (connectedWalletAddress && values.to) addresses = [...addresses.filter(a => connectedWalletAddress !== a.address), { address: connectedWalletAddress, type: 'wallet', networkType: values.to.type }]
-        if (newAddress && values.to) addresses = [...addresses.filter(a => newAddress !== a.address), { address: newAddress, type: 'manual', networkType: values.to.type }]
+        // if (destination_address && values.to) addresses = [...addresses.filter(a => destination_address !== a.address), { address: destination_address, type: 'current', networkType: values.to.type, icon: AddressIcon }]
+        if (recentlyUsedAddresses && values.to) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, type: 'recentlyUsed', networkType: values.to?.type, icon: History }))]
+        if (connectedWalletAddress && values.to) addresses = [...addresses.filter(a => connectedWalletAddress !== a.address), { address: connectedWalletAddress, type: 'wallet', networkType: values.to.type, icon: connectedWallet ? connectedWallet.icon : WalletIcon }]
+        if (newAddress && values.to) addresses = [...addresses.filter(a => newAddress !== a.address), { address: newAddress, type: 'manual', networkType: values.to.type, icon: FilePlus2 }]
 
         setAddresses(addresses.filter(a => a.networkType === values.to?.type))
 
     }, [address_book, destination_address, connectedWalletAddress, newAddress, values.to])
-
-    // useEffect(() => {
-    //     if (destination && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address && !values.toExchange) {
-    //         //TODO move to wallet implementation
-    //         if (connectedWallet
-    //             && connectedWallet.providerName === 'starknet'
-    //             && (connectedWallet.chainId != destinationChainId)
-    //             && destination) {
-    //             (async () => {
-    //                 setWrongNetwork(true)
-    //                 await disconnectWallet(connectedWallet.providerName)
-    //             })()
-    //             return
-    //         }
-    //         setFieldValue("destination_address", connectedWallet?.address)
-    //     }
-    // }, [connectedWallet?.address, destination])
 
     useEffect(() => {
         if (canFocus) {
@@ -190,22 +171,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                                     <RadioGroup.Description onClick={close} as="span" className={`flex items-center justify-between w-full transform transition duration-200 rounded-md hover:opacity-70`}>
                                                         <div className={`space-x-2 flex text-sm items-center`}>
                                                             <div className='flex bg-secondary-400 text-primary-text flex-row items-left rounded-md p-2'>
-                                                                {
-                                                                    a.type === 'recentlyUsed' &&
-                                                                    <History className="h-5 w-5" />
-                                                                }
-                                                                {
-                                                                    a.type === 'wallet' && connectedWallet &&
-                                                                    <connectedWallet.icon className='h-5 w-5' />
-                                                                }
-                                                                {
-                                                                    a.type === 'manual' &&
-                                                                    <FilePlus2 className="h-5 w-5" />
-                                                                }
-                                                                {
-                                                                    a.type === 'current' &&
-                                                                    <AddressIcon address={a.address} size={20} />
-                                                                }
+                                                                <a.icon className="h-5 w-5" strokeWidth={2} />
                                                             </div>
                                                             <div className="flex flex-col">
                                                                 <div className="block text-sm font-medium">
@@ -356,6 +322,5 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     </>
     )
 });
-
 
 export default AddressPicker

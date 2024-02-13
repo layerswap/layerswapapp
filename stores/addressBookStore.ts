@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { NetworkType } from '../Models/CryptoNetwork';
+import { ReactNode } from 'react';
 
 interface AddressBookState {
     addresses: Address[];
@@ -9,6 +10,7 @@ interface AddressBookState {
 export type Address = {
     address: string,
     type: string,
+    icon: (props: any) => ReactNode,
     networkType?: NetworkType
     date?: string
 }
