@@ -2,18 +2,18 @@ import { useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AddressBookItem } from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { classNames } from '../../utils/classNames'
 import { Check, FilePlus2, History, Info } from "lucide-react";
 import KnownInternalNames from "../../../lib/knownIds";
 import { useSettingsState } from "../../../context/settings";
 import { isValidAddress } from "../../../lib/addressValidator";
-import { RadioGroup } from "@headlessui/react";
 import Image from 'next/image';
 import { Partner } from "../../../Models/Partner";
 import shortenAddress from "../../utils/ShortenAddress";
 import WalletIcon from "../../icons/WalletIcon";
 import useWallet from "../../../hooks/useWallet";
 import { Address, useAddressBookStore } from "../../../stores/addressBookStore";
+import { groupBy } from "../../utils/groupBy";
+import { CommandGroup, CommandItem, CommandList, CommandWrapper } from "../../shadcn/command";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -41,13 +41,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const { destination_address, to: destination, toExchange: destinationExchange } = values
 
     const addresses = useAddressBookStore((state) => state.addresses).filter(a => a.networkType === values.to?.type)
-    const setAddresses = useAddressBookStore((state) => state.setAddresses)
+    const addAddresses = useAddressBookStore((state) => state.addAddresses)
 
     const placeholder = "Enter your address here"
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<string | undefined>()
 
-    const { connectWallet, disconnectWallet, getAutofillProvider: getProvider } = useWallet()
+    const { connectWallet, getAutofillProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
         return values?.to && getProvider(values?.to)
     }, [values?.to, getProvider])
@@ -61,12 +61,11 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
         let addresses: Address[] = []
 
-        // if (destination_address && values.to) addresses = [...addresses.filter(a => destination_address !== a.address), { address: destination_address, type: 'current', networkType: values.to.type, icon: AddressIcon }]
-        if (recentlyUsedAddresses && values.to) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, type: 'recentlyUsed', networkType: values.to?.type, icon: History }))]
-        if (connectedWalletAddress && values.to) addresses = [...addresses.filter(a => connectedWalletAddress !== a.address), { address: connectedWalletAddress, type: 'wallet', networkType: values.to.type, icon: connectedWallet ? connectedWallet.icon : WalletIcon }]
-        if (newAddress && values.to) addresses = [...addresses.filter(a => newAddress !== a.address), { address: newAddress, type: 'manual', networkType: values.to.type, icon: FilePlus2 }]
+        if (recentlyUsedAddresses && values.to) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: 'Recently used', networkType: values.to?.type, icon: History }))]
+        if (connectedWalletAddress && values.to) addresses = [...addresses.filter(a => connectedWalletAddress !== a.address), { address: connectedWalletAddress, group: 'Connected wallet', networkType: values.to.type, icon: connectedWallet ? connectedWallet.icon : WalletIcon }]
+        if (newAddress && values.to) addresses = [...addresses.filter(a => newAddress !== a.address), { address: newAddress, group: 'Manual added', networkType: values.to.type, icon: FilePlus2 }]
 
-        setAddresses(addresses.filter(a => a.networkType === values.to?.type))
+        addAddresses(addresses.filter(a => a.networkType === values.to?.type))
 
     }, [address_book, destination_address, connectedWalletAddress, newAddress, values.to])
 
@@ -81,30 +80,42 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [setManualAddress])
 
     const handleSelectAddress = useCallback((value: string) => {
-        setFieldValue("destination_address", value)
+        const address = addresses.find(a => a.address.toLowerCase() === value)?.address
+        setFieldValue("destination_address", address)
         close()
     }, [close, setFieldValue])
 
-    const inputAddressIsValid = isValidAddress(destination_address, destination)
     let errorMessage = '';
     if (manualAddress && !isValidAddress(manualAddress, destination)) {
         errorMessage = `Enter a valid ${values.to?.display_name} address`
+    } else if (addresses.some(a => a.address.toLowerCase() === manualAddress.toLowerCase())) {
+        errorMessage = "Entered address already exist in this list"
     }
 
     const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         setManualAddress(e.target.value)
     }, [])
 
+    const handleSaveNewAddress = () => {
+        if (isValidAddress(manualAddress, values.to)) {
+            if (!addresses.some(a => a.address.toLowerCase() === manualAddress.toLowerCase())) {
+                setNewAddress(manualAddress)
+            }
+            setFieldValue(name, manualAddress)
+            setManualAddress("")
+        }
+    }
+
     const destinationAsset = values.toCurrency
-    const destinationChainId = values?.to?.chain_id
+    const groupedAddresses = groupBy(addresses, ({ group }) => group)
+    const groupedAddressesArray = Object.keys(groupedAddresses).map(g => ({ name: g, items: groupedAddresses[g] }))
 
     return (<>
-        <div className='w-full flex flex-col justify-between h-full text-primary-text pt-5'>
+        <div className='w-full flex flex-col justify-between h-full text-primary-text pt-2'>
             <div className='flex flex-col self-center grow w-full'>
                 <div className='flex flex-col self-center grow w-full space-y-3'>
                     {
-                        !inputAddressIsValid
-                        && destinationAsset
+                        destinationAsset
                         && values.toExchange
                         &&
                         <div className='text-left p-4 bg-secondary-800 text-primary-text rounded-lg border border-secondary-500'>
@@ -150,69 +161,53 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                     {
                         !disabled && addresses?.length > 0 &&
                         <div className="text-left">
-                            <label className="text-secondary-text">Address book</label>
-                            <RadioGroup disabled={disabled} value={values.destination_address} onChange={handleSelectAddress}>
-                                <div className="rounded-md overflow-y-auto space-y-3 mt-2 styled-scroll max-h-[300px]">
-                                    {addresses?.map(a => (
-                                        <RadioGroup.Option
-                                            key={a.address}
-                                            value={a.address}
-                                            disabled={disabled}
-                                            className={({ disabled }) =>
-                                                classNames(
-                                                    disabled ? ' cursor-not-allowed ' : ' cursor-pointer ',
-                                                    'relative flex focus:outline-none  '
-                                                )
-                                            }
-                                        >
-                                            {({ checked }) => {
-                                                const difference_in_days = a.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(a.date).getTime()) / (1000 * 3600 * 24))) : undefined
-                                                return (
-                                                    <RadioGroup.Description onClick={close} as="span" className={`flex items-center justify-between w-full transform transition duration-200 rounded-md hover:opacity-70`}>
-                                                        <div className={`space-x-2 flex text-sm items-center`}>
-                                                            <div className='flex bg-secondary-400 text-primary-text flex-row items-left rounded-md p-2'>
-                                                                <a.icon className="h-5 w-5" strokeWidth={2} />
-                                                            </div>
-                                                            <div className="flex flex-col">
-                                                                <div className="block text-sm font-medium">
-                                                                    {shortenAddress(a.address)}
+                            <CommandWrapper>
+                                <CommandList>
+                                    {groupedAddressesArray.map((group) => {
+                                        return (
+                                            <CommandGroup key={group.name} heading={group.name} className="[&_[cmdk-group-heading]]:!px-0 [&_[cmdk-group-heading]]:!p-0 [&_[cmdk-group-heading]]:!pb-0 [&_[cmdk-group-heading]]:!pt-2 !py-0 !px-0">
+                                                {group.items.map(item => {
+                                                    const difference_in_days = item.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(item.date).getTime()) / (1000 * 3600 * 24))) : undefined
+
+                                                    return (
+                                                        <CommandItem value={item.address} key={item.address} onSelect={handleSelectAddress} className="!px-0 !pt-1.5 !bg-transparent !pb-1">
+                                                            <div className={`flex items-center justify-between w-full transform transition duration-200 rounded-md hover:opacity-70`}>
+                                                                <div className={`space-x-2 flex text-sm items-center`}>
+                                                                    <div className='flex bg-secondary-400 text-primary-text flex-row items-left rounded-md p-2'>
+                                                                        <item.icon className="h-5 w-5" strokeWidth={2} />
+                                                                    </div>
+                                                                    <div className="flex flex-col">
+                                                                        <div className="block text-sm font-medium">
+                                                                            {shortenAddress(item.address)}
+                                                                        </div>
+                                                                        <div className="text-gray-500">
+                                                                            {
+                                                                                item.group === 'Recently used' &&
+                                                                                (difference_in_days === 0 ?
+                                                                                    <>Used today</>
+                                                                                    :
+                                                                                    (difference_in_days && difference_in_days > 1 ?
+                                                                                        <>Used {difference_in_days} days ago</>
+                                                                                        : <>Used yesterday</>))
+                                                                            }
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
-                                                                <div className="text-gray-500">
-                                                                    {
-                                                                        a.type === 'recentlyUsed' &&
-                                                                        (difference_in_days === 0 ?
-                                                                            <>Used today</>
-                                                                            :
-                                                                            (difference_in_days && difference_in_days > 1 ?
-                                                                                <>Used {difference_in_days} days ago</>
-                                                                                : <>Used yesterday</>))
-                                                                    }
-                                                                    {
-                                                                        a.type === 'wallet' &&
-                                                                        <>Connected wallet</>
-                                                                    }
-                                                                    {
-                                                                        a.type === 'manual' &&
-                                                                        <>New added</>
-                                                                    }
-                                                                    {
-                                                                        a.type === 'current' &&
-                                                                        <>Current</>
-                                                                    }
-                                                                </div>
+                                                                {
+                                                                    destination_address === item.address &&
+                                                                    <Check className="h-5 w-5" />
+                                                                }
                                                             </div>
-                                                        </div>
-                                                        {
-                                                            checked &&
-                                                            <Check className="h-5 w-5" />
-                                                        }
-                                                    </RadioGroup.Description>
+                                                        </CommandItem>
+                                                    )
+                                                }
+
                                                 )
-                                            }}
-                                        </RadioGroup.Option>
-                                    ))}
-                                </div>
-                            </RadioGroup>
+                                                }
+                                            </CommandGroup>)
+                                    })}
+                                </CommandList>
+                            </CommandWrapper>
                         </div>
                     }
                     {
@@ -221,7 +216,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         && provider
                         && !connectedWallet
                         && !values.toExchange &&
-                        <div onClick={() => { connectWallet(provider.name) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
+                        <div onClick={() => { connectWallet(provider.name) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70 flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
                             <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
                                 <WalletIcon className="w-5 h-5 text-primary-text" />
                             </div>
@@ -299,7 +294,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                         <button
                                             type="button"
                                             className="p-0.5 duration-200 transition hover:bg-secondary-400 rounded-md border border-secondary-500 hover:border-secondary-200"
-                                            onClick={() => isValidAddress(manualAddress, values.to) && setNewAddress(manualAddress)}
+                                            onClick={handleSaveNewAddress}
                                         >
                                             <div className="flex items-center px-2 text-sm py-1 font-semibold">
                                                 Save

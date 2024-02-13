@@ -4,12 +4,12 @@ import { ReactNode } from 'react';
 
 interface AddressBookState {
     addresses: Address[];
-    setAddresses: (addresses: Address[]) => void;
+    addAddresses: (newAddresses: Address[]) => void;
 }
 
 export type Address = {
     address: string,
-    type: string,
+    group: string,
     icon: (props: any) => ReactNode,
     networkType?: NetworkType
     date?: string
@@ -17,9 +17,12 @@ export type Address = {
 
 export const useAddressBookStore = create<AddressBookState>()((set) => ({
     addresses: [],
-    setAddresses: (addresses: Address[]) => set(() => {
+    addAddresses: (newAddresses: Address[]) => set((state) => {
         return ({
-            addresses: addresses
+            addresses: [
+                ...state.addresses.filter(a => !newAddresses.find(na => na.address === a.address)),
+                ...newAddresses
+            ]
         })
     }),
 }))

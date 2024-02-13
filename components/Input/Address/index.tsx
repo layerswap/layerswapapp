@@ -33,7 +33,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
     const query = useQueryState();
     const { setDepositAddressIsFromAccount: setDepositeAddressIsfromAccount } = useSwapDataUpdate()
     const { depositAddressIsFromAccount: depositeAddressIsfromAccount } = useSwapDataState()
-    const { to: destination, destination_address } = values
+    const { to: destination, destination_address, toExchange } = values
     const addresses = useAddressBookStore((state) => state.addresses).filter(a => a.networkType === values.to?.type)
     const address = addresses.find(a => a.address === destination_address)
 
@@ -59,13 +59,13 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
     //If destination changed to exchange, remove destination_address
     useEffect(() => {
         if ((previouslySelectedDestination.current &&
-            (destination?.internal_name != previouslySelectedDestination.current?.internal_name)
+            (destination?.type != previouslySelectedDestination.current?.type)
             || destination && !isValidAddress(values.destination_address, destination)) && !lockAddress) {
             setFieldValue("destination_address", '')
             setDepositeAddressIsfromAccount(false)
         }
         previouslySelectedDestination.current = destination
-    }, [destination])
+    }, [destination, toExchange])
 
     const { disconnectWallet, getAutofillProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -159,11 +159,14 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWall
                 </div>
             }
             <div className="truncate">
-                {values.destination_address && address ?
+                {values.destination_address ?
                     <div className="flex items-center gap-2">
-                        <div className='flex bg-secondary-400 text-primary-text flex-row items-left rounded-md p-1'>
-                            <address.icon className="h-5 w-5" strokeWidth={2} />
-                        </div>
+                        {
+                            address &&
+                            <div className='flex bg-secondary-400 text-primary-text flex-row items-left rounded-md p-1.5'>
+                                <address.icon className="h-5 w-5" strokeWidth={2} />
+                            </div>
+                        }
                         <TruncatedAdrress address={values.destination_address} />
                     </div>
                     :
