@@ -3,7 +3,6 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { useFee } from "../../context/feeContext";
 import AverageCompletionTime from "../Common/AverageCompletionTime";
-import { calculateSeconds } from "../utils/timeCalculations";
 
 const DetailedEstimates: FC = () => {
 
@@ -13,13 +12,11 @@ const DetailedEstimates: FC = () => {
 
     const parsedFee = fee && parseFloat(Number(fee.walletFee).toFixed(fromCurrency?.precision))
     const currencyName = fromCurrency?.display_asset || fromCurrency?.asset || " "
-    const seconds = fee.avgCompletionTime && calculateSeconds(fee.avgCompletionTime)
     const feeAmountInUsd = parsedFee && fromCurrency ? (fromCurrency?.usd_price * parsedFee).toFixed(2) : undefined
-
 
     return <div className="flex flex-col w-full gap-2">
         {
-            seconds && seconds > 0 ?
+            fee.avgCompletionTime !== '00:00:00' ?
                 <div className="flex justify-between w-full items-center">
                     <div className="flex items-baseline w-full justify-between gap-1">
                         <label className="inline-flex items-center text-left text-secondary-text">
