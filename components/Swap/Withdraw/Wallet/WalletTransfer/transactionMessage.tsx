@@ -38,10 +38,10 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
             || transaction?.error?.['data']?.message || transaction?.error
             || wait?.error
 
-        const renderingError = new Error(unexpectedError.message);
-        renderingError.name = `SwapWithdrawalError`;
-        renderingError.cause = unexpectedError;
-        datadogRum.addError(renderingError);
+        // const renderingError = new Error(unexpectedError.message);
+        // renderingError.name = `SwapWithdrawalError`;
+        // renderingError.cause = unexpectedError;
+        // datadogRum.addError(renderingError);
 
         return <UexpectedErrorMessage message={unexpectedError?.message} />
     }
