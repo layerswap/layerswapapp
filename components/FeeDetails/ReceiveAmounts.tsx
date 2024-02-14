@@ -8,11 +8,11 @@ type WillReceiveProps = {
     currency?: NetworkCurrency | null;
     to: Layer | undefined | null;
     refuel: boolean;
-    fee: Fee
+    fee: Fee | undefined
 }
 export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee }) => {
-    const receive_amount = fee.walletReceiveAmount
-    const parsedReceiveAmount = parseFloat(fee.walletReceiveAmount?.toFixed(currency?.precision) || "")
+    const receive_amount = fee?.walletReceiveAmount
+    const parsedReceiveAmount = parseFloat(fee?.walletReceiveAmount?.toFixed(currency?.precision) || "")
     const destinationNetworkCurrency = (to && currency) ? GetDefaultAsset(to, currency.asset) : null
 
     const destinationAsset = to?.assets?.find(c => c?.asset === currency?.asset)
@@ -48,7 +48,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee
                             {
                                 refuel ?
                                     <p className='text-[12px] text-secondary-text/50 leading-8'>
-                                        <>+</> <span>{fee.refuelAmount} {destinationNativeAsset?.asset}</span>
+                                        <>+</> <span>{fee?.refuelAmount} {destinationNativeAsset?.asset}</span>
                                     </p>
                                     :
                                     <></>

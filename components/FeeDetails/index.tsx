@@ -17,34 +17,31 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
 
     return (
         <>
-            <FeeDetails>
+            <ResizablePanel>
+                <FeeDetails>
+                    {
+                        (fromExchange || toExchange) &&
+                        <ResizablePanel>
+                            <FeeDetails.Item>
+                                <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
+                            </FeeDetails.Item>
+                        </ResizablePanel>
+                    }
 
-                {
-                    (fromExchange || toExchange) &&
-                    <ResizablePanel>
+                    {
+                        toCurrency?.refuel_amount_in_usd && !query.hideRefuel && nativeAsset && !toExchange &&
                         <FeeDetails.Item>
-                            <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
+                            <RefuelToggle />
                         </FeeDetails.Item>
-                    </ResizablePanel>
-                }
+                    }
 
-                {
-                    toCurrency?.refuel_amount_in_usd && !query.hideRefuel && nativeAsset && !toExchange &&
-                    <FeeDetails.Item>
-                        <RefuelToggle />
-                    </FeeDetails.Item>
-                }
-
-                {
-                    from && to &&
-                    <ResizablePanel>
+                    {
+                        fee &&
                         <FeeDetails.Item>
                             <DetailedEstimates />
                         </FeeDetails.Item>
-                    </ResizablePanel>
-                }
+                    }
 
-                <ResizablePanel>
                     <FeeDetails.Item>
                         <ReceiveAmounts
                             currency={toCurrency}
@@ -53,9 +50,8 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                             fee={fee}
                         />
                     </FeeDetails.Item>
-                </ResizablePanel>
-
-            </FeeDetails>
+                </FeeDetails>
+            </ResizablePanel>
 
             {/* {
                 values.to &&

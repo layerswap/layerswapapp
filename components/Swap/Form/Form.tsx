@@ -155,7 +155,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     if (!(sourceCanBeSwapped || destinationCanBeSwapped)) {
         valuesSwapperDisabled = true;
     }
-    const seconds = fee.avgCompletionTime && calculateSeconds(fee.avgCompletionTime)
+    const seconds = fee?.avgCompletionTime && calculateSeconds(fee.avgCompletionTime)
     const averageTimeInMinutes = seconds && (seconds / 60) || 0
 
     const hideAddress = query?.hideAddress
