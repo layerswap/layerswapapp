@@ -20,7 +20,7 @@ import { FeeProvider } from "../context/feeContext";
 import RainbowKit from "./RainbowKit";
 import Solana from "./SolanaProvider";
 import { IsExtensionError } from "../helpers/errorHelper";
-import { datadogRum } from '@datadog/browser-rum';
+// import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
   children: JSX.Element | JSX.Element[];
