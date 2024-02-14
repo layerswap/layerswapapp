@@ -16,7 +16,6 @@ import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
-import * as Sentry from "@sentry/nextjs";
 import { FeeProvider } from "../context/feeContext";
 import RainbowKit from "./RainbowKit";
 import Solana from "./SolanaProvider";
@@ -87,7 +86,7 @@ export default function Layout({ children, settings, themeData }: Props) {
     if (process.env.NEXT_PUBLIC_VERCEL_ENV && !extension_error) {
       SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
     }
-    Sentry.captureException(error, info);
+    // Sentry.captureException(error, info);
   }
 
   themeData = themeData || THEME_COLORS.default
