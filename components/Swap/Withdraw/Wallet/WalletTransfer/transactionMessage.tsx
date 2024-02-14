@@ -3,7 +3,7 @@ import WalletMessage from "./message"
 import resolveError from "./resolveError"
 import { ActionData } from "./sharedTypes"
 import { BaseError } from 'viem'
-import * as Sentry from "@sentry/nextjs";
+import { datadogRum } from '@datadog/browser-rum';
 
 type TransactionMessageProps = {
     prepare: ActionData,
@@ -34,14 +34,15 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     else if (transaction?.isError && transactionResolvedError) {
         return <TransactionRejectedMessage />
     } else if (hasError) {
-        const error = prepare?.error
-        || transaction?.error?.['data'] || transaction?.error
-        || wait?.error
-
-        Sentry.captureException(error);
         const unexpectedError = prepare?.error
             || transaction?.error?.['data']?.message || transaction?.error
             || wait?.error
+
+        const renderingError = new Error(unexpectedError.message);
+        renderingError.name = `SwapWithdrawalError`;
+        renderingError.cause = unexpectedError;
+        datadogRum.addError(renderingError);
+
         return <UexpectedErrorMessage message={unexpectedError?.message} />
     }
     else return <></>
