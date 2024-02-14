@@ -37,7 +37,6 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                         <ReceiveAmounts
                             currency={toCurrency}
                             to={to}
-                            receive_amount={fee.walletReceiveAmount}
                             refuel={!!refuel}
                             fee={fee}
                         />
