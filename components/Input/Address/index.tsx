@@ -17,6 +17,7 @@ import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap"
 import useWallet from "../../../hooks/useWallet"
 import { Address, useAddressBookStore } from "../../../stores/addressBookStore"
 import { ChevronRight } from "lucide-react"
+import WalletIcon from "../../icons/WalletIcon"
 
 type AddressProps = {
     isPartnerWallet: boolean
@@ -74,10 +75,11 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
 
     const connectedWallet = provider?.getConnectedWallet()
     const [wrongNetwork, setWrongNetwork] = useState(false)
+    const addAddresses = useAddressBookStore((state) => state.addAddresses)
 
     //If wallet connected set address from wallet
     useEffect(() => {
-        if (destination && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address && !values.toExchange) {
+        if (destination && connectedWallet?.address && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address && !values.toExchange) {
             //TODO move to wallet implementation
             if (connectedWallet
                 && connectedWallet.providerName === 'starknet'
@@ -89,6 +91,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
                 })()
                 return
             }
+            addAddresses([{ address: connectedWallet?.address, group: 'Connected wallet', networkType: values?.to?.type, icon: connectedWallet ? connectedWallet.icon : WalletIcon }])
             setFieldValue("destination_address", connectedWallet?.address)
         }
     }, [connectedWallet?.address, destination])
@@ -96,7 +99,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
     return (
         <div className="w-full mb-3.5 leading-4">
             <label htmlFor="destination_address" className="block font-semibold text-secondary-text text-xs">
-                {`To ${values?.to?.display_name || ''} address`}
+                {`To ${(values.toExchange?.display_name ?? values?.to?.display_name) || ''} address`}
             </label>
             <AddressButton
                 disabled={!values.to || !values.from}
@@ -106,7 +109,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
                 partnerImage={partnerImage}
                 values={values} />
             <Modal
-                header={`To ${values?.to?.display_name || ''} address`}
+                header={`To ${(values.toExchange?.display_name ?? values?.to?.display_name) || ''} address`}
                 height="fit"
                 show={showAddressModal} setShow={setShowAddressModal}
                 modalId="address"

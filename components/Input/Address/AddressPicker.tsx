@@ -2,7 +2,7 @@ import { useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AddressBookItem } from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { Check, FilePlus2, History, Info } from "lucide-react";
+import { Check, FilePlus2, History, Info, X } from "lucide-react";
 import KnownInternalNames from "../../../lib/knownIds";
 import { useSettingsState } from "../../../context/settings";
 import { isValidAddress } from "../../../lib/addressValidator";
@@ -40,7 +40,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const inputReference = useRef<HTMLInputElement>(null);
     const { destination_address, to: destination, toExchange: destinationExchange } = values
 
-    const addresses = useAddressBookStore((state) => state.addresses).filter(a => a.networkType === values.to?.type)
+    const addresses = useAddressBookStore((state) => state.addresses).filter(a => a.networkType === values.to?.type && !(values.toExchange && a.group.includes('wallet')))
     const addAddresses = useAddressBookStore((state) => state.addAddresses)
 
     const placeholder = "Enter your address here"
@@ -114,50 +114,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         <div className='w-full flex flex-col justify-between h-full text-primary-text pt-2'>
             <div className='flex flex-col self-center grow w-full'>
                 <div className='flex flex-col self-center grow w-full space-y-3'>
-                    {
-                        destinationAsset
-                        && values.toExchange
-                        &&
-                        <div className='text-left p-4 bg-secondary-800 text-primary-text rounded-lg border border-secondary-500'>
-                            <div className="flex items-center">
-                                <Info className='h-5 w-5 text-primary-600 mr-3' />
-                                <label className="block text-sm md:text-base font-medium leading-6">How to find your {values.toExchange.display_name} deposit address</label>
-                            </div>
-                            <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-primary-text">
-                                <li>Go to the Deposits page</li>
-                                <li>
-                                    <span>Select</span>
-                                    <span className="inline-block mx-1">
-                                        <span className='flex gap-1 items-baseline text-sm '>
-                                            <Image src={settings.resolveImgSrc(destinationAsset)}
-                                                alt="Project Logo"
-                                                height="15"
-                                                width="15"
-                                                className='rounded-sm'
-                                            />
-                                            <span className="text-primary-text">{destinationAsset.asset}</span>
-                                        </span>
-                                    </span>
-                                    <span>as asset</span>
-                                </li>
-                                <li>
-                                    <span>Select</span>
-                                    <span className="inline-block mx-1">
-                                        <span className='flex gap-1 items-baseline text-sm '>
-                                            <Image src={settings.resolveImgSrc(values.to)}
-                                                alt="Project Logo"
-                                                height="15"
-                                                width="15"
-                                                className='rounded-sm'
-                                            />
-                                            <span className="text-primary-text">{destination?.display_name}</span>
-                                        </span>
-                                    </span>
-                                    <span>as network</span>
-                                </li>
-                            </ul>
-                        </div>
-                    }
                     {
                         !disabled && addresses?.length > 0 &&
                         <div className="text-left">
@@ -273,17 +229,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                 {
                                     manualAddress &&
                                     <span className="inline-flex items-center mr-2">
-                                        <div className="text-xs flex items-center space-x-2 md:ml-5 bg-secondary-500 rounded-md border border-secondary-500">
-                                            <button
-                                                type="button"
-                                                className="p-0.5 duration-200 transition  hover:bg-secondary-400  rounded-md border border-secondary-500 hover:border-secondary-200"
-                                                onClick={handleRemoveNewDepositeAddress}
-                                            >
-                                                <div className="flex items-center px-2 text-sm py-1 font-semibold">
-                                                    Clear
-                                                </div>
-                                            </button>
-                                        </div>
+                                        <button
+                                            type="button"
+                                            className="p-0.5 duration-200 transition  hover:bg-secondary-400  rounded-md border border-secondary-500 hover:border-secondary-200"
+                                            onClick={handleRemoveNewDepositeAddress}
+                                        >
+                                            <X className="h-5 w-5" />
+                                        </button>
                                     </span>
                                 }
                             </div>
@@ -307,6 +259,50 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                 errorMessage &&
                                 <div className="basis-full text-xs text-primary">
                                     {errorMessage}
+                                </div>
+                            }
+                            {
+                                destinationAsset
+                                && values.toExchange
+                                &&
+                                <div className='text-left p-4 bg-secondary-800 text-primary-text rounded-lg border border-secondary-500 basis-full mt-3'>
+                                    <div className="flex items-center">
+                                        <Info className='h-5 w-5 text-primary-600 mr-3' />
+                                        <label className="block text-sm md:text-base font-medium leading-6">How to find your {values.toExchange.display_name} deposit address</label>
+                                    </div>
+                                    <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-primary-text">
+                                        <li>Go to the Deposits page</li>
+                                        <li>
+                                            <span>Select</span>
+                                            <span className="inline-block mx-1">
+                                                <span className='flex gap-1 items-baseline text-sm '>
+                                                    <Image src={settings.resolveImgSrc(destinationAsset)}
+                                                        alt="Project Logo"
+                                                        height="15"
+                                                        width="15"
+                                                        className='rounded-sm'
+                                                    />
+                                                    <span className="text-primary-text">{destinationAsset.asset}</span>
+                                                </span>
+                                            </span>
+                                            <span>as asset</span>
+                                        </li>
+                                        <li>
+                                            <span>Select</span>
+                                            <span className="inline-block mx-1">
+                                                <span className='flex gap-1 items-baseline text-sm '>
+                                                    <Image src={settings.resolveImgSrc(values.to)}
+                                                        alt="Project Logo"
+                                                        height="15"
+                                                        width="15"
+                                                        className='rounded-sm'
+                                                    />
+                                                    <span className="text-primary-text">{destination?.display_name}</span>
+                                                </span>
+                                            </span>
+                                            <span>as network</span>
+                                        </li>
+                                    </ul>
                                 </div>
                             }
                         </div>
