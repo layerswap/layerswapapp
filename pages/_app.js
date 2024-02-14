@@ -3,7 +3,7 @@ import '../styles/dialog-transition.css'
 import { useRouter } from "next/router";
 import { IntercomProvider } from 'react-use-intercom';
 import { SWRConfig } from 'swr'
-import DatadogInit from "@/components/datadog-init";
+import DatadogInit from "../components/datadog-init";
 
 const INTERCOM_APP_ID = 'h5zisg78'
 import "@rainbow-me/rainbowkit/styles.css";
