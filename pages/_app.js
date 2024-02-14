@@ -17,7 +17,7 @@ function App({ Component, pageProps }) {
         dedupingInterval: 5000,
       }}
     >
-      <DatadogInit />
+      {/* <DatadogInit /> */}
       <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
         <Component key={router.asPath} {...pageProps} />
       </IntercomProvider>
