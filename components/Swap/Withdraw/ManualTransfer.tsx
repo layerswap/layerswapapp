@@ -14,6 +14,7 @@ import { isValidAddress } from "../../../lib/addressValidator";
 import { useSwapDepositHintClicked } from "../../../stores/swapTransactionStore";
 import { useFee } from "../../../context/feeContext";
 import { Exchange } from "../../../Models/Exchange";
+import Link from "next/link";
 
 const ManualTransfer: FC = () => {
     const { swap } = useSwapDataState()
@@ -49,7 +50,7 @@ const ManualTransfer: FC = () => {
                             About manual transfers
                         </p>
                         <p className="text-xs text-secondary-text">
-                            Transfer assets to Layerswap’s deposit address to complete the swap.
+                            <span>Transfer assets to Layerswap’s deposit address to complete the swap.</span> <Link target="_blank" className="text-primary underline hover:no-underline decoration-primary cursor-pointer" href='https://intercom.help/layerswap/en/articles/8448449-transferring-manually'>Learn more</Link>
                         </p>
                     </div>
                 </div>
