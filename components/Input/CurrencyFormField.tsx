@@ -1,8 +1,8 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
+import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import CurrencySettings from "../../lib/CurrencySettings";
 import { SortingByAvailability } from "../../lib/sorting";
 import { Layer } from "../../Models/Layer";
@@ -20,6 +20,7 @@ import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import useWallet from "../../hooks/useWallet";
 import { Wallet } from "../../stores/walletStore";
+import Image from 'next/image'
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -86,7 +87,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
             })
     });
 
-
     const destinationRouteParams = new URLSearchParams({
         version,
         ...(fromExchange && currencyGroup && currencyGroup.groupedInBackend ?
@@ -125,7 +125,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const isLoading = sourceRoutesLoading || destRoutesLoading
 
-
     const filteredCurrencies = currencies?.filter(currency => {
         if (direction === "from") {
             return currency.availableInSource;
@@ -135,6 +134,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     });
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
+        layers,
         direction === "from" ? sourceCurrencies : destinationCurrencies,
         resolveImgSrc,
         values,
@@ -144,6 +144,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         query,
         wallets
     )
+
     const currencyAsset = direction === 'from' ? fromCurrency?.asset : toCurrency?.asset;
     const currencyNetwork = direction === 'from' ? fromCurrency?.network : toCurrency?.network;
 
@@ -259,6 +260,7 @@ export function groupByType(values: SelectMenuItem<Layer>[]) {
 }
 
 export function GenerateCurrencyMenuItems(
+    layers: Layer[],
     currencies: NetworkCurrency[],
     resolveImgSrc: (item: Layer | NetworkCurrency) => string,
     values: SwapFormValues,
@@ -291,9 +293,14 @@ export function GenerateCurrencyMenuItems(
         const displayName = currency.display_asset ?? currency.asset;
         const balancesArray = balances && Object.values(balances).flat();
         const balance = balancesArray?.find(b => b?.token === c?.asset && b?.network === c.network)
-
+        console.log(balancesArray, "balancesArray")
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
         const balanceAmountInUsd = formatted_balance_amount ? (currency?.usd_price * formatted_balance_amount).toFixed(2) : undefined
+
+        const layer = layers?.find(l => l.internal_name === c.network)
+        const layerImgSrc = layer && resolveImgSrc(layer)
+        const currencyImgSrc = currency && resolveImgSrc(c)
+
         const DisplayNameComponent = <div>
             {displayName}
             <span className="text-primary-text-muted text-xs block">
@@ -312,6 +319,27 @@ export function GenerateCurrencyMenuItems(
                 <span className="text-sm">$0.00</span>
             }
         </p>
+        const NetworkImage = <div>
+            {currencyImgSrc && <Image
+                src={currencyImgSrc}
+                alt="Project Logo"
+                height="40"
+                width="40"
+                loading="eager"
+                className="rounded-md object-contain" />
+            }
+            {layerImgSrc && <div className="absolute w-2.5 -right-1 -bottom-1">
+                <Image
+                    src={layerImgSrc}
+                    alt="Project Logo"
+                    height="40"
+                    width="40"
+                    loading="eager"
+                    className="rounded-md object-contain" />
+            </div>
+            }
+        </div>
+
         const res: SelectMenuItem<NetworkCurrency> = {
             baseObject: c,
             id: `${c?.asset?.toLowerCase()}_${c?.network_display_name?.toLowerCase()}`,
@@ -320,7 +348,7 @@ export function GenerateCurrencyMenuItems(
             menuItemDetails: details,
             network_display_name: c.network_display_name,
             order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
-            imgSrc: resolveImgSrc && resolveImgSrc(c),
+            img: NetworkImage,
             isAvailable: currencyIsAvailable(c),
             type: "currency",
             group: getGroupName(c.network_display_name === (direction === "from" ? from?.display_name : to?.display_name) ? c.network_display_name : "All networks"),

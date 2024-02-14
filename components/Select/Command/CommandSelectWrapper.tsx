@@ -14,7 +14,6 @@ type CommandSelectWrapperProps = {
     disabled: boolean;
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
     isLoading: boolean;
-    balances?: Balance[] | any;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -25,8 +24,7 @@ export default function CommandSelectWrapper<T>({
     searchHint,
     values,
     valueGrouper,
-    isLoading,
-    balances
+    isLoading
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -52,18 +50,7 @@ export default function CommandSelectWrapper<T>({
                         {
                             value && <div className="flex items-center">
                                 <div className="flex-shrink-0 h-6 w-6 relative">
-                                    {
-                                        value.imgSrc && <Image
-                                            src={value.imgSrc}
-                                            alt="Project Logo"
-                                            height="40"
-                                            width="40"
-                                            loading="eager"
-                                            priority
-                                            className="rounded-md object-contain"
-                                        />
-                                    }
-
+                                    {value.img && value.img}
                                 </div>
                             </div>
                         }
@@ -91,7 +78,6 @@ export default function CommandSelectWrapper<T>({
                 valueGrouper={valueGrouper}
                 values={values}
                 isLoading={isLoading}
-                balances={balances}
             />
         </>
     )

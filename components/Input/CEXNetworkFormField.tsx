@@ -249,7 +249,7 @@ function GenerateMenuItems(
                 id: index.toString(),
                 name: e.network,
                 order: indexOf > -1 ? indexOf : 100,
-                imgSrc: '',
+                img: '',
                 isAvailable: { value: true, disabledReason: null },
                 type: 'cex',
             }

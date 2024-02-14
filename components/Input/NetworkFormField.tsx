@@ -21,6 +21,7 @@ import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
 import { useBalancesState } from "../../context/balances";
 import useWallet from "../../hooks/useWallet";
+import Image from 'next/image'
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -176,7 +177,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     values={menuItems}
                     searchHint={searchHint}
                     isLoading={isLoading}
-                    balances={allBalances}
                 />
             </div>
             <div className="col-span-3 md:col-span-2 w-full ml-2">
@@ -238,13 +238,20 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
 
     const mappedLayers = layers.map(l => {
         let orderProp: keyof NetworkSettings | keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
+        const NetworkImg = <Image
+            src={resolveImgSrc(l)}
+            alt="Project Logo"
+            height="40"
+            width="40"
+            loading="eager"
+            className="rounded-md object-contain" />
         const order = NetworkSettings.KnownSettings[l.internal_name]?.[orderProp]
         const res: SelectMenuItem<Layer> = {
             baseObject: l,
             id: l.internal_name,
             name: l.display_name,
             order: order || 100,
-            imgSrc: resolveImgSrc && resolveImgSrc(l),
+            img: NetworkImg,
             isAvailable: layerIsAvailable(l),
             type: 'layer',
             group: getGroupName(l, 'layer', layerIsAvailable(l))
@@ -254,13 +261,20 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
 
     const mappedExchanges = exchanges.map(e => {
         let orderProp: keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
+        const NetworkImg = <Image
+            src={resolveImgSrc(e)}
+            alt="Project Logo"
+            height="40"
+            width="40"
+            loading="eager"
+            className="rounded-md object-contain" />
         const order = ExchangeSettings.KnownSettings[e.internal_name]?.[orderProp]
         const res: SelectMenuItem<Exchange> = {
             baseObject: e,
             id: e.internal_name,
             name: e.display_name,
             order: order || 100,
-            imgSrc: resolveImgSrc && resolveImgSrc(e),
+            img: NetworkImg,
             isAvailable: exchangeIsAvailable(e),
             type: 'cex',
             group: getGroupName(e, 'cex')

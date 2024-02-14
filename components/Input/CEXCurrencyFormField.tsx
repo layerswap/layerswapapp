@@ -149,7 +149,7 @@ export function GenerateCurrencyMenuItems(
             id: c.name,
             name: displayName || "-",
             order: CurrencySettings.KnownSettings[c.name]?.Order ?? 5,
-            imgSrc: `${storageUrl}layerswap/currencies/${c.name.toLowerCase()}.png`,
+            img: `${storageUrl}layerswap/currencies/${c.name.toLowerCase()}.png`,
             isAvailable: currencyIsAvailable(c),
             type: 'currency',
         };
