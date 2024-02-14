@@ -20,6 +20,7 @@ import { FeeProvider } from "../context/feeContext";
 import RainbowKit from "./RainbowKit";
 import Solana from "./SolanaProvider";
 import { IsExtensionError } from "../helpers/errorHelper";
+import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -86,7 +87,11 @@ export default function Layout({ children, settings, themeData }: Props) {
     if (process.env.NEXT_PUBLIC_VERCEL_ENV && !extension_error) {
       SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
     }
-    // Sentry.captureException(error, info);
+    const renderingError = new Error(error.message);
+    renderingError.name = `ReactRenderingError`;
+    renderingError.stack = info.componentStack;
+    renderingError.cause = error;
+    datadogRum.addError(renderingError);
   }
 
   themeData = themeData || THEME_COLORS.default
