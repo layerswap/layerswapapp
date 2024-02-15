@@ -7,9 +7,10 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     name: React.ReactNode;
     menuItemLabel?: React.ReactNode;
     menuItemDetails?: React.ReactNode;
+    menuItemImage?: React.ReactNode;
     balanceAmount?: number | undefined;
     order: number;
-    img: React.ReactNode;
+    imgSrc: string;
     isAvailable: {
         value: boolean;
         disabledReason: LayerDisabledReason | CurrencyDisabledReason | null
@@ -25,7 +26,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
         this.id = id;
         this.name = name;
         this.order = order;
-        this.img = imgSrc;
+        this.imgSrc = imgSrc;
         this.group = group;
         this.details = details
         this.isAvailable = {
@@ -41,8 +42,9 @@ export interface ISelectMenuItem {
     name: React.ReactNode;
     menuItemLabel?: React.ReactNode;
     menuItemDetails?: React.ReactNode;
+    menuItemImage?: React.ReactNode;
     balanceAmount?: number | undefined;
-    img: React.ReactNode;
+    imgSrc: string;
     group?: string;
     isAvailable: {
         value: boolean;

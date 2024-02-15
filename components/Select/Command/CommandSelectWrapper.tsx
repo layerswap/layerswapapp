@@ -50,7 +50,17 @@ export default function CommandSelectWrapper<T>({
                         {
                             value && <div className="flex items-center">
                                 <div className="flex-shrink-0 h-6 w-6 relative">
-                                    {value.img && value.img}
+                                    {
+                                        value.imgSrc && <Image
+                                            src={value.imgSrc}
+                                            alt="Project Logo"
+                                            height="40"
+                                            width="40"
+                                            loading="eager"
+                                            priority
+                                            className="rounded-md object-contain"
+                                        />
+                                    }
                                 </div>
                             </div>
                         }

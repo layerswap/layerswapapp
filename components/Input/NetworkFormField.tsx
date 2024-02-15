@@ -251,7 +251,7 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
             id: l.internal_name,
             name: l.display_name,
             order: order || 100,
-            img: NetworkImg,
+            imgSrc: resolveImgSrc && resolveImgSrc(l),
             isAvailable: layerIsAvailable(l),
             type: 'layer',
             group: getGroupName(l, 'layer', layerIsAvailable(l))
@@ -274,7 +274,7 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
             id: e.internal_name,
             name: e.display_name,
             order: order || 100,
-            img: NetworkImg,
+            imgSrc: resolveImgSrc && resolveImgSrc(e),
             isAvailable: exchangeIsAvailable(e),
             type: 'cex',
             group: getGroupName(e, 'cex')

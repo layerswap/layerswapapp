@@ -299,7 +299,6 @@ export function GenerateCurrencyMenuItems(
 
         const layer = layers?.find(l => l.internal_name === c.network)
         const layerImgSrc = layer && resolveImgSrc(layer)
-        const currencyImgSrc = currency && resolveImgSrc(c)
 
         const DisplayNameComponent = <div>
             {displayName}
@@ -320,14 +319,6 @@ export function GenerateCurrencyMenuItems(
             }
         </p>
         const NetworkImage = <div>
-            {currencyImgSrc && <Image
-                src={currencyImgSrc}
-                alt="Project Logo"
-                height="40"
-                width="40"
-                loading="eager"
-                className="rounded-md object-contain" />
-            }
             {layerImgSrc && <div className="absolute w-2.5 -right-1 -bottom-1">
                 <Image
                     src={layerImgSrc}
@@ -346,10 +337,11 @@ export function GenerateCurrencyMenuItems(
             name: displayName,
             menuItemLabel: DisplayNameComponent,
             menuItemDetails: details,
+            menuItemImage: NetworkImage,
             balanceAmount: Number(formatted_balance_amount),
             network_display_name: c.network_display_name,
             order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
-            img: NetworkImage,
+            imgSrc: resolveImgSrc && resolveImgSrc(c),
             isAvailable: currencyIsAvailable(c),
             type: "currency",
             group: getGroupName(c.network_display_name === (direction === "from" ? from?.display_name : to?.display_name) ? c.network_display_name : "All networks"),

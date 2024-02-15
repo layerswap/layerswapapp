@@ -148,25 +148,13 @@ export function GenerateCurrencyMenuItems(
     return currencies?.map(c => {
         const currency = c
         const displayName = lockedCurrency?.name ?? currency.name;
-        const currencyImgSrc = `${storageUrl}layerswap/currencies/${c.name.toLowerCase()}.png`
-
-        const NetworkImage = <div>
-            {currencyImgSrc && <Image
-                src={currencyImgSrc}
-                alt="Project Logo"
-                height="40"
-                width="40"
-                loading="eager"
-                className="rounded-md object-contain" />
-            }
-        </div>
 
         const res: SelectMenuItem<AssetGroup> = {
             baseObject: c,
             id: c.name,
             name: displayName || "-",
             order: CurrencySettings.KnownSettings[c.name]?.Order ?? 5,
-            img: NetworkImage,
+            imgSrc: `${storageUrl}layerswap/currencies/${c.name.toLowerCase()}.png`,
             isAvailable: currencyIsAvailable(c),
             type: 'currency',
         };
