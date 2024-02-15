@@ -11,7 +11,7 @@ import { Partner } from "../../../Models/Partner";
 import shortenAddress from "../../utils/ShortenAddress";
 import WalletIcon from "../../icons/WalletIcon";
 import useWallet from "../../../hooks/useWallet";
-import { Address, useAddressBookStore } from "../../../stores/addressBookStore";
+import { Address, AddressGroup, useAddressBookStore } from "../../../stores/addressBookStore";
 import { groupBy } from "../../utils/groupBy";
 import { CommandGroup, CommandItem, CommandList, CommandWrapper } from "../../shadcn/command";
 
@@ -40,7 +40,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const inputReference = useRef<HTMLInputElement>(null);
     const { destination_address, to: destination, toExchange: destinationExchange } = values
 
-    const addresses = useAddressBookStore((state) => state.addresses).filter(a => a.networkType === values.to?.type && !(values.toExchange && a.group.includes('wallet')))
+    const addresses = useAddressBookStore((state) => state.addresses).filter(a => a.networkType === values.to?.type && !(values.toExchange && a.group === AddressGroup.ConnectedWallet))
     const addAddresses = useAddressBookStore((state) => state.addAddresses)
 
     const placeholder = "Enter your address here"
@@ -61,9 +61,9 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
         let addresses: Address[] = []
 
-        if (recentlyUsedAddresses && values.to) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: 'Recently used', networkType: values.to?.type, icon: History }))]
-        if (connectedWalletAddress && values.to) addresses = [...addresses.filter(a => connectedWalletAddress !== a.address), { address: connectedWalletAddress, group: 'Connected wallet', networkType: values.to.type, icon: connectedWallet ? connectedWallet.icon : WalletIcon }]
-        if (newAddress && values.to) addresses = [...addresses.filter(a => newAddress !== a.address), { address: newAddress, group: 'Manual added', networkType: values.to.type, icon: FilePlus2 }]
+        if (recentlyUsedAddresses && values.to) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: values.to?.type, icon: History }))]
+        if (connectedWalletAddress && values.to) addresses = [...addresses.filter(a => connectedWalletAddress !== a.address), { address: connectedWalletAddress, group: AddressGroup.ConnectedWallet, networkType: values.to.type, icon: connectedWallet ? connectedWallet.icon : WalletIcon }]
+        if (newAddress && values.to) addresses = [...addresses.filter(a => newAddress !== a.address), { address: newAddress, group: AddressGroup.ManualAdded, networkType: values.to.type, icon: FilePlus2 }]
 
         addAddresses(addresses.filter(a => a.networkType === values.to?.type))
 

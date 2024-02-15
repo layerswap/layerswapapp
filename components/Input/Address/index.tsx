@@ -15,7 +15,7 @@ import { isValidAddress } from "../../../lib/addressValidator"
 import { useQueryState } from "../../../context/query"
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap"
 import useWallet from "../../../hooks/useWallet"
-import { Address, useAddressBookStore } from "../../../stores/addressBookStore"
+import { Address, AddressGroup, useAddressBookStore } from "../../../stores/addressBookStore"
 import { ChevronRight } from "lucide-react"
 import WalletIcon from "../../icons/WalletIcon"
 
@@ -79,7 +79,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
 
     //If wallet connected set address from wallet
     useEffect(() => {
-        if (destination && connectedWallet?.address && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address && !values.toExchange) {
+        if (destination && connectedWallet?.address && isValidAddress(connectedWallet?.address, destination) && (addresses.find(a => a.address === values.destination_address)?.group.toLowerCase() === 'connected wallet' || !values?.destination_address) && !values.toExchange) {
             //TODO move to wallet implementation
             if (connectedWallet
                 && connectedWallet.providerName === 'starknet'
@@ -91,7 +91,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
                 })()
                 return
             }
-            addAddresses([{ address: connectedWallet?.address, group: 'Connected wallet', networkType: values?.to?.type, icon: connectedWallet ? connectedWallet.icon : WalletIcon }])
+            addAddresses([{ address: connectedWallet?.address, group: AddressGroup.ConnectedWallet, networkType: values?.to?.type, icon: connectedWallet ? connectedWallet.icon : WalletIcon }])
             setFieldValue("destination_address", connectedWallet?.address)
         }
     }, [connectedWallet?.address, destination])

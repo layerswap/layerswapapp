@@ -7,9 +7,15 @@ interface AddressBookState {
     addAddresses: (newAddresses: Address[]) => void;
 }
 
+export enum AddressGroup {
+    ConnectedWallet = "Connected wallet",
+    ManualAdded = "Manual added",
+    RecentlyUsed = "Recently used"
+}
+
 export type Address = {
     address: string,
-    group: string,
+    group: AddressGroup,
     icon: (props: any) => ReactNode,
     networkType?: NetworkType
     date?: string
@@ -20,7 +26,7 @@ export const useAddressBookStore = create<AddressBookState>()((set) => ({
     addAddresses: (newAddresses: Address[]) => set((state) => {
         return ({
             addresses: [
-                ...state.addresses.filter(a => !newAddresses.find(na => na.address === a.address)),
+                ...state.addresses.filter(a => !newAddresses.find(na => na.address === a.address) && !(a.group === AddressGroup.ConnectedWallet && a.address !== newAddresses.find(na => na.group === AddressGroup.ConnectedWallet)?.address)),
                 ...newAddresses
             ]
         })
