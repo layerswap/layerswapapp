@@ -346,6 +346,7 @@ export function GenerateCurrencyMenuItems(
             name: displayName,
             menuItemLabel: DisplayNameComponent,
             menuItemDetails: details,
+            balanceAmount: Number(formatted_balance_amount),
             network_display_name: c.network_display_name,
             order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
             img: NetworkImage,
