@@ -16,6 +16,7 @@ import { Check, Info } from 'lucide-react';
 import SpinIcon from '../../icons/spinIcon';
 import { LayerDisabledReason } from '../Popover/PopoverSelect';
 import { Layer } from '../../../Models/Layer';
+import ResizablePanel from '../../ResizablePanel';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
@@ -63,36 +64,43 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                         </div>
                     }
                     {isExchange &&
+
                         <div className="mb-1 rounded-md py-2 px-2 srelative m-1 bg-secondary-700 border border-secondary-500">
+
                             <div className="relative z-20 text-secondary-text text-sm transition-all">
-                                {!showMore ? (
-                                    <>
-                                        <p>
-                                            Before transferring make sure the exchange supports the selected network.
-                                        </p>
-                                    </>
-                                ) : (
-                                    <p className="text-secondary-text text-sm">
-                                        The transaction will be executed through the network you select here. The displayed options are ordered by relevance based on historic user data. Please note that in case of picking one network here but doing the actual transfer via another network, your assets may be lost.
-                                    </p>
-                                )}
-                                {!showMore ?
-                                    <button
-                                        className="text-primary cursor-pointer float-end"
-                                        onClick={handleShowMoreClick}
-                                    >
-                                        Show more
-                                    </button>
-                                    :
-                                    <button
-                                        className="text-primary cursor-pointer float-end"
-                                        onClick={handleShowLessClick}
-                                    >
-                                        Show less
-                                    </button>
-                                }
+                                <ResizablePanel>
+                                    <div className="flex flex-col items-end w-full">
+                                        {!showMore ? (
+                                            <>
+                                                <p>
+                                                    Before transferring make sure the exchange supports the selected network.
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <p className="text-secondary-text text-sm">
+                                                The transaction will be executed through the network you select here. The displayed options are ordered by relevance based on historic user data. Please note that in case of picking one network here but doing the actual transfer via another network, your assets may be lost.
+                                            </p>
+                                        )}
+                                        {!showMore ?
+                                            <button
+                                                className="text-primary cursor-pointer float-end"
+                                                onClick={handleShowMoreClick}
+                                            >
+                                                Show more
+                                            </button>
+                                            :
+                                            <button
+                                                className="text-primary cursor-pointer float-end"
+                                                onClick={handleShowLessClick}
+                                            >
+                                                Show less
+                                            </button>
+                                        }
+                                    </div>
+                                </ResizablePanel>
                             </div>
                         </div>
+
                     }
                     {!isLoading ?
                         <CommandList>
@@ -103,10 +111,6 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                         {group.items.map(item => {
                                             return (
                                                 <CommandItem disabled={!item.isAvailable.value} value={item.name} key={item.id} onSelect={() => handleSelectValue(item)}>
-                                                    {
-                                                        value === item && isExchange &&
-                                                        <Check className="h-4 w-4 mr-2" />
-                                                    }
                                                     <SelectItem item={item} />
                                                 </CommandItem>
                                             )

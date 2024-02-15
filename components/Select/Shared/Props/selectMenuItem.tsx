@@ -7,6 +7,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     order: number;
     imgSrc: string;
     asset?: string | undefined;
+    displayName?: string | undefined;
     isAvailable: {
         value: boolean;
         disabledReason: LayerDisabledReason | CurrencyDisabledReason | null
@@ -36,6 +37,7 @@ export interface ISelectMenuItem {
     name: string;
     imgSrc: string;
     asset?: string | undefined;
+    displayName?: string | undefined;
     group?: string;
     isAvailable: {
         value: boolean;

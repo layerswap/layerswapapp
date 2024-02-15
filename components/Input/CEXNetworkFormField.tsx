@@ -91,7 +91,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     const menuItems = routesData
         && historicalNetworks
-        && GenerateMenuItems(routesData, historicalNetworks?.data, currencyGroup, networkImgSrc)
+        && GenerateMenuItems(routesData, historicalNetworks?.data, currencyGroup, networkImgSrc, layers)
             .filter(item => layers.find(l =>
                 l.internal_name === item.baseObject.network));
 
@@ -183,6 +183,7 @@ function GenerateMenuItems(
     historicalNetworks: { network: string, asset: string }[] | undefined,
     currencyGroup: AssetGroup | undefined,
     networkImgSrc: string,
+    layers: Layer[],
 ): SelectMenuItem<{ network: string, asset: string }>[] {
     const menuItems = items
         .filter(i => currencyGroup?.values?.some(v => v.asset == i.asset && v.network == i.network))
@@ -192,13 +193,16 @@ function GenerateMenuItems(
                     .find(n => n.asset === e.asset && n.network === e.network)
                     || { network: '', asset: '' }))
 
+            const network = layers?.find(l => l.internal_name == e.network);
+
             const item: SelectMenuItem<{ network: string, asset: string }> = {
                 baseObject: e,
                 id: index.toString(),
                 name: e.network,
                 asset: e.asset,
+                displayName: network?.display_name,
                 order: indexOf > -1 ? indexOf : 100,
-                imgSrc: networkImgSrc,
+                imgSrc: network?.img_url || '',
                 isAvailable: { value: true, disabledReason: null },
                 type: 'cex',
             }
