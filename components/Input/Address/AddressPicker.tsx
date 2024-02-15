@@ -108,7 +108,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const destinationAsset = values.toCurrency
     const groupedAddresses = groupBy(addresses, ({ group }) => group)
-    const groupedAddressesArray = Object.keys(groupedAddresses).map(g => ({ name: g, items: groupedAddresses[g] }))
+    const groupedAddressesArray = Object.keys(groupedAddresses).map(g => { const items: Address[] = groupedAddresses[g]; return ({ name: g, items: items, order: (g === AddressGroup.ManualAdded && 3 || g === AddressGroup.RecentlyUsed && 1 || g === AddressGroup.ConnectedWallet && 2) || 10 }) })
 
     return (<>
         <div className='w-full flex flex-col justify-between h-full text-primary-text pt-2'>
@@ -119,7 +119,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         <div className="text-left">
                             <CommandWrapper>
                                 <CommandList>
-                                    {groupedAddressesArray.map((group) => {
+                                    {groupedAddressesArray.sort((a, b) => a.order - b.order).map((group) => {
                                         return (
                                             <CommandGroup key={group.name} heading={group.name} className="[&_[cmdk-group-heading]]:!px-0 [&_[cmdk-group-heading]]:!p-0 [&_[cmdk-group-heading]]:!pb-0 [&_[cmdk-group-heading]]:!pt-2 !py-0 !px-0">
                                                 {group.items.map(item => {
@@ -149,17 +149,20 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                {
-                                                                    destination_address === item.address &&
-                                                                    <Check className="h-5 w-5" />
-                                                                }
+                                                                <div className="flex h-6 items-center px-1">
+                                                                    <input
+                                                                        id={`address-${item.address}`}
+                                                                        name="address"
+                                                                        onChange={() => {}}
+                                                                        checked={item.address === destination_address}
+                                                                        type="radio"
+                                                                        className="h-4 w-4 border-secondary-300 bg-secondary-600 text-primary-500 focus:ring-primary-500 cursor-pointer"
+                                                                    />
+                                                                </div>
                                                             </div>
                                                         </CommandItem>
                                                     )
-                                                }
-
-                                                )
-                                                }
+                                                })}
                                             </CommandGroup>)
                                     })}
                                 </CommandList>
