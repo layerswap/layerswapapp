@@ -293,7 +293,7 @@ export function GenerateCurrencyMenuItems(
         const displayName = currency.display_asset ?? currency.asset;
         const balancesArray = balances && Object.values(balances).flat();
         const balance = balancesArray?.find(b => b?.token === c?.asset && b?.network === c.network)
-        console.log(balancesArray, "balancesArray")
+
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
         const balanceAmountInUsd = formatted_balance_amount ? (currency?.usd_price * formatted_balance_amount).toFixed(2) : undefined
 

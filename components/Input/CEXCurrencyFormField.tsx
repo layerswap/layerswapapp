@@ -11,6 +11,9 @@ import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import { groupByType } from "./CurrencyFormField";
+import { Layer } from "../../Models/Layer";
+import { NetworkCurrency } from "../../Models/CryptoNetwork";
+import Image from 'next/image'
 
 const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
@@ -19,7 +22,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     } = useFormikContext<SwapFormValues>();
     const { to, fromCurrency, toCurrency, from, currencyGroup, toExchange, fromExchange } = values
 
-    const { sourceRoutes: settingsSourceRoutes, destinationRoutes: settingsDestinationRoutes, assetGroups } = useSettingsState();
+    const { sourceRoutes: settingsSourceRoutes, destinationRoutes: settingsDestinationRoutes, assetGroups, resolveImgSrc } = useSettingsState();
     const name = 'currencyGroup'
 
     const query = useQueryState()
@@ -92,6 +95,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
         values,
+        resolveImgSrc,
         direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
         lockedCurrency,
     )
@@ -122,6 +126,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 export function GenerateCurrencyMenuItems(
     currencies: AssetGroup[],
     values: SwapFormValues,
+    resolveImgSrc: (item: Layer | NetworkCurrency) => string,
     routes?: { network: string, asset: string }[],
     lockedCurrency?: AssetGroup | undefined
 ): SelectMenuItem<AssetGroup>[] {
@@ -143,13 +148,25 @@ export function GenerateCurrencyMenuItems(
     return currencies?.map(c => {
         const currency = c
         const displayName = lockedCurrency?.name ?? currency.name;
+        const currencyImgSrc = `${storageUrl}layerswap/currencies/${c.name.toLowerCase()}.png`
+
+        const NetworkImage = <div>
+            {currencyImgSrc && <Image
+                src={currencyImgSrc}
+                alt="Project Logo"
+                height="40"
+                width="40"
+                loading="eager"
+                className="rounded-md object-contain" />
+            }
+        </div>
 
         const res: SelectMenuItem<AssetGroup> = {
             baseObject: c,
             id: c.name,
             name: displayName || "-",
             order: CurrencySettings.KnownSettings[c.name]?.Order ?? 5,
-            img: `${storageUrl}layerswap/currencies/${c.name.toLowerCase()}.png`,
+            img: NetworkImage,
             isAvailable: currencyIsAvailable(c),
             type: 'currency',
         };
