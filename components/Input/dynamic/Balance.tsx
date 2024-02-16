@@ -6,7 +6,7 @@ import { truncateDecimals } from "../../utils/RoundDecimals";
 import useBalance from "../../../hooks/useBalance";
 import { useSettingsState } from "../../../context/settings";
 
-const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direction: string, onLoad: (address: string) => void }) => {
+const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
     const { to, fromCurrency, toCurrency, from } = values
     const { balances, isBalanceLoading } = useBalancesState()
@@ -37,10 +37,6 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
     const destinationBalanceAmount = destinationBalance?.amount && truncateDecimals(destinationBalance?.amount, toCurrency?.precision)
     const balanceAmount = direction === 'from' ? walletBalanceAmount : destinationBalanceAmount
-
-    useEffect(() => {
-        sourceNetworkWallet?.address && onLoad(sourceNetworkWallet?.address)
-    }, [sourceNetworkWallet])
 
     useEffect(() => {
         direction === 'from' && values.from && fetchBalance({ network: values.from });

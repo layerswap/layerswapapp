@@ -230,7 +230,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     return (
         <div className="relative">
-            <BalanceComponent values={values} direction={direction} onLoad={(v) => setWalletAddress(v)} />
+            <BalanceComponent values={values} direction={direction} />
             <CommandSelectWrapper
                 disabled={(value && !value?.isAvailable?.value) || isLoading}
                 valueGrouper={groupByType}
@@ -291,6 +291,13 @@ export function GenerateCurrencyMenuItems(
     return currencies?.map(c => {
         const currency = c
         const displayName = currency.display_asset ?? currency.asset;
+
+        for (const key in balances) {
+            if (!wallets?.some(wallet => wallet?.address === key)) {
+                delete balances[key];
+            }
+        }
+
         const balancesArray = balances && Object.values(balances).flat();
         const balance = balancesArray?.find(b => b?.token === c?.asset && b?.network === c.network)
 
@@ -306,7 +313,7 @@ export function GenerateCurrencyMenuItems(
                 {c.network_display_name}
             </span>
         </div>
-        const details = wallets && wallets.length > 0 && <p className="text-primary-text-placeholder flex flex-col items-end">
+        const details = balance && <p className="text-primary-text-placeholder flex flex-col items-end">
             {Number(formatted_balance_amount) ?
                 <span className="text-primary-text text-sm">{formatted_balance_amount}</span>
                 :
