@@ -27,6 +27,7 @@ const SwapsListModal: FC<Props> = ({ children, statuses, title, loadExplorerSwap
                     {children}
                 </span>
                 <Modal height="full"
+                    modalId="swaphistory"
                     show={openTopModal}
                     setShow={setOpenTopModal}
                     header={<Header

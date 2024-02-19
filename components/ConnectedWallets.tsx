@@ -16,7 +16,7 @@ export const WalletsHeader = () => {
     if (wallets.length > 0) {
         return (
             <>
-                <button type="button" aria-label="Connected wallets" onClick={() => setOpenDialog(true)} className="-mx-2 p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
+                <button type="button" aria-label="Connected wallets" onClick={() => setOpenDialog(true)} className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
                     <WalletsIcons wallets={wallets} />
                 </button>
                 <ConnectedWalletsDialog openDialog={openDialog} setOpenDialog={setOpenDialog} />
