@@ -97,6 +97,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/swaps/quote?version=${LayerSwapApiClient.apiVersion}`, params);
     }
 
+    async GetTransactionStatus(network: string, tx_id: string): Promise<ApiResponse<any>> {
+        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/networks/${network}/transaction_status?version=${LayerSwapApiClient.apiVersion}`, { transaction_id: tx_id });
+    }
+
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
@@ -210,6 +214,7 @@ export enum TransactionType {
 
 export enum TransactionStatus {
     Completed = 'completed',
+    Failed = 'failed',
     Initiated = 'initiated',
     Pending = 'pending'
 }
