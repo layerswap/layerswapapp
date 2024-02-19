@@ -19,9 +19,6 @@ import { NetworkCurrency } from "../../Models/CryptoNetwork";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
-import ResizablePanel from "../ResizablePanel";
-import FeeDetails from "../FeeDetails";
-import CEXNetworkFormField from "./CEXNetworkFormField";
 
 type SwapDirection = "from" | "to";
 type Props = {

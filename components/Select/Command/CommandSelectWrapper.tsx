@@ -1,8 +1,10 @@
 import { useCallback, useState } from 'react'
 import Image from 'next/image'
-import {ChevronDown } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
 import CommandSelect, { SelectMenuItemGroup } from './commandSelect'
+import { Layer } from '../../../Models/Layer'
+import { NetworkCurrency } from '../../../Models/CryptoNetwork'
 
 type CommandSelectWrapperProps = {
     setValue: (value: ISelectMenuItem) => void;
@@ -13,6 +15,10 @@ type CommandSelectWrapperProps = {
     disabled: boolean;
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
     isLoading: boolean;
+    isExchange?: boolean;
+    network?: Layer | undefined;
+    currency?: NetworkCurrency | undefined;
+    networkImgSrc?: string;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -23,7 +29,10 @@ export default function CommandSelectWrapper<T>({
     searchHint,
     values,
     valueGrouper,
-    isLoading
+    isLoading,
+    isExchange,
+    network,
+    currency,
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -60,19 +69,25 @@ export default function CommandSelectWrapper<T>({
                                             className="rounded-md object-contain"
                                         />
                                     }
-
                                 </div>
                             </div>
                         }
-                        {value
+                        {value && !isExchange
                             ?
                             <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
                                 {value?.name}
                             </span>
-                            :
-                            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
-                                {placeholder}
-                            </span>}
+                            : value && isExchange ?
+                                <span className="ml-3 flex font-medium text-secondary-text flex-auto space-x-1 items-center">
+                                    <div className="flex">{network?.display_name}</div>
+                                    <div className="inline-flex items-center justify-self-end gap-1 text-secondary-text">
+                                        ({currency?.asset})
+                                    </div>
+                                </span>
+                                :
+                                <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                                    {placeholder}
+                                </span>}
                     </span>
                     <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-primary-text">
                         <ChevronDown className="h-4 w-4" aria-hidden="true" />
@@ -88,6 +103,8 @@ export default function CommandSelectWrapper<T>({
                 valueGrouper={valueGrouper}
                 values={values}
                 isLoading={isLoading}
+                isExchange={isExchange}
+                network={network}
             />
         </>
     )
