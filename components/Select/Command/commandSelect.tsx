@@ -66,18 +66,14 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                     {isExchange &&
 
                         <div className="mb-1 rounded-md py-2 px-2 srelative m-1 bg-secondary-700 border border-secondary-500">
-
                             <div className="relative z-20 text-secondary-text text-sm transition-all">
                                 <ResizablePanel>
-                                    <div className="flex flex-col items-end w-full">
-                                        {!showMore ? (
-                                            <>
-                                                <p>
-                                                    Before transferring make sure the exchange supports the selected network.
-                                                </p>
-                                            </>
-                                        ) : (
-                                            <p className="text-secondary-text text-sm">
+                                    <div className="flex flex-col items-end w-full p-2">
+                                        <p className='text-base text-primary-text'>
+                                            Before transferring make sure the exchange supports the selected network.
+                                        </p>
+                                        {showMore && (
+                                            <p className="text-secondary-text text-sm mt-2">
                                                 The transaction will be executed through the network you select here. The displayed options are ordered by relevance based on historic user data. Please note that in case of picking one network here but doing the actual transfer via another network, your assets may be lost.
                                             </p>
                                         )}
