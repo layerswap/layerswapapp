@@ -3,7 +3,7 @@ import WalletMessage from "./message"
 import resolveError from "./resolveError"
 import { ActionData } from "./sharedTypes"
 import { BaseError } from 'viem'
-// import { datadogRum } from '@datadog/browser-rum';
+import { datadogRum } from '@datadog/browser-rum';
 
 type TransactionMessageProps = {
     prepare: ActionData,
@@ -38,10 +38,10 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
             || transaction?.error?.['data']?.message || transaction?.error
             || wait?.error
 
-        // const renderingError = new Error(unexpectedError.message);
-        // renderingError.name = `SwapWithdrawalError`;
-        // renderingError.cause = unexpectedError;
-        // datadogRum.addError(renderingError);
+        const renderingError = new Error(unexpectedError.message);
+        renderingError.name = `SwapWithdrawalError`;
+        renderingError.cause = unexpectedError;
+        datadogRum.addError(renderingError);
 
         return <UexpectedErrorMessage message={unexpectedError?.message} />
     }
