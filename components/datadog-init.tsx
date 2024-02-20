@@ -11,7 +11,7 @@ datadogRum.init({
     version: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
     sessionSampleRate: 100,
     trackUserInteractions: false,
-    trackResources: true,
+    trackResources: false,
     trackLongTasks: true,
     defaultPrivacyLevel: 'mask-user-input',
     beforeSend: (event, context) => {
