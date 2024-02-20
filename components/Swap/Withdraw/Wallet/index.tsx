@@ -15,7 +15,7 @@ import SolanaWalletWithdrawStep from "./SolanaWalletWithdraw"
 import NetworkGas from "./WalletTransfer/networkGas"
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
-const WalletTransfer: FC = () => {
+const WalletTransferContent: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
     const { minAllowedAmount } = useFee()
@@ -48,31 +48,20 @@ const WalletTransfer: FC = () => {
     const sourceChainId = source_layer ? Number(source_layer?.chain_id) : null
     const requested_amount = Number(minAllowedAmount) > Number(swap?.requested_amount) ? minAllowedAmount : swap?.requested_amount
 
-    const Wrapper: FC<{ children?: React.ReactNode }> = ({ children }) => {
-        return <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
-            {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}
-            {children}
-        </div>
-    }
-
     if (sourceIsImmutableX)
-        return <Wrapper>
-            <ImtblxWalletWithdrawStep depositAddress={depositAddress} />
-        </Wrapper>
+        return <ImtblxWalletWithdrawStep depositAddress={depositAddress} />
     else if (sourceIsStarknet)
-        return <Wrapper>
-            <StarknetWalletWithdrawStep amount={requested_amount} depositAddress={depositAddress} />
-        </Wrapper>
+        return <StarknetWalletWithdrawStep amount={requested_amount} depositAddress={depositAddress} />
     else if (sourceIsZkSync)
-        return <Wrapper>
+        return <>
             {requested_amount && depositAddress && <ZkSyncWalletWithdrawStep depositAddress={depositAddress} amount={requested_amount} />}
-        </Wrapper>
+        </>
     else if (sourceIsSolana)
-        return <Wrapper>
+        return <>
             {requested_amount && depositAddress && <SolanaWalletWithdrawStep depositAddress={depositAddress} amount={requested_amount} />}
-        </Wrapper>
+        </>
     else
-        return <Wrapper>
+        return <>
             {swap && source_layer && sourceAsset && requested_amount && sourceChainId && <TransferFromWallet
                 sequenceNumber={swap?.sequence_number}
                 swapId={swap.id}
@@ -84,8 +73,22 @@ const WalletTransfer: FC = () => {
                 userDestinationAddress={swap.destination_address}
                 amount={requested_amount}
             />}
-        </Wrapper>
+        </>
 }
 
 
-export default WalletTransfer
+const WalletTransferWrapper = () => {
+    const { swap } = useSwapDataState()
+    const { layers } = useSettingsState()
+
+    const { source_network: source_network_internal_name } = swap || {}
+    const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
+    const sourceAsset = source_layer?.assets?.find(c => c.asset.toLowerCase() === swap?.source_network_asset.toLowerCase())
+
+    return <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
+        {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}
+        <WalletTransferContent />
+    </div>
+}
+
+export default WalletTransferWrapper
