@@ -30,7 +30,7 @@ export default function useEVM(): WalletProvider {
         if (account && account.address && account.connector) {
             return {
                 address: account.address,
-                connector: (account.connector as any)?._wallets[0]?.id || account.connector.id,
+                connector: (account.connector as any)?._wallets?.[0]?.id || account.connector.id,
                 providerName: name,
                 icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account.connector), address: account.address })
             }

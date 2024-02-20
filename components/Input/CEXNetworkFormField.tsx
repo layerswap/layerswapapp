@@ -156,7 +156,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                             </div>
                         </div>
                         <div className="inline-flex items-center justify-self-end gap-1 text-secondary-text">
-                            ({currency?.asset})
+                            <span>(</span><span>{currency?.asset}</span><span>)</span>
                         </div>
                         <ChevronRight className="h-4 w-4 text-primary-text" />
                     </div>
