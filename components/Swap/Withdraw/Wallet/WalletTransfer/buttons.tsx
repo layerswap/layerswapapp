@@ -52,7 +52,6 @@ export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = (
 }
 
 export const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ chainId, network }) => {
-
     const networkChange = useSwitchNetwork({
         chainId: chainId,
     });
