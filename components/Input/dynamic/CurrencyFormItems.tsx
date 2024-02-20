@@ -1,11 +1,9 @@
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { NetworkCurrency } from "../../../Models/CryptoNetwork";
-import { Balance } from "../../../Models/Balance";
 import { useBalancesState } from "../../../context/balances";
 import useWallet from "../../../hooks/useWallet";
 import { useMemo } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import useBalance from "../../../hooks/useBalance";
 
 const FormItems = ({ values, network, currency }: { values: SwapFormValues, network: string | undefined, currency: NetworkCurrency }) => {
 
