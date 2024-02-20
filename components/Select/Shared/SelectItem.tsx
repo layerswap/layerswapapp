@@ -12,6 +12,7 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                 width="40"
                 loading="eager"
                 className="rounded-md object-contain" />}
+            {item.menuItemImage && item.menuItemImage}
         </div>
         <div className="ml-4 flex items-center gap-3 justify-between w-full">
             <div className='text-md font-medium'>

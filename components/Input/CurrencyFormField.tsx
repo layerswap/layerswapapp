@@ -1,8 +1,8 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
+import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import CurrencySettings from "../../lib/CurrencySettings";
 import { SortingByAvailability } from "../../lib/sorting";
 import { Layer } from "../../Models/Layer";
@@ -20,6 +20,7 @@ import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import useWallet from "../../hooks/useWallet";
 import { Wallet } from "../../stores/walletStore";
+import Image from 'next/image'
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -40,20 +41,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { balances } = useBalancesState()
-    const { getAutofillProvider: getProvider } = useWallet()
-
-    const sourceWalletProvider = useMemo(() => {
-        return from && getProvider(from)
-    }, [from, getProvider])
-
-    const destinationWalletProvider = useMemo(() => {
-        return to && getProvider(to)
-    }, [to, getProvider])
-
-    const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet()
-    const destinationNetworkWallet = destinationWalletProvider?.getConnectedWallet()
-
-    const connectedWallet = direction === "from" ? sourceNetworkWallet : destinationNetworkWallet;
+    const { wallets } = useWallet()
 
     const [walletAddress, setWalletAddress] = useState<string>()
     const lockAsset = direction === 'from' ? query?.lockFromAsset
@@ -99,7 +87,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
             })
     });
 
-
     const destinationRouteParams = new URLSearchParams({
         version,
         ...(fromExchange && currencyGroup && currencyGroup.groupedInBackend ?
@@ -138,7 +125,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const isLoading = sourceRoutesLoading || destRoutesLoading
 
-
     const filteredCurrencies = currencies?.filter(currency => {
         if (direction === "from") {
             return currency.availableInSource;
@@ -148,15 +134,17 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     });
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
+        layers,
         direction === "from" ? sourceCurrencies : destinationCurrencies,
         resolveImgSrc,
         values,
         direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
         direction,
-        balances[walletAddress || ''],
+        balances,
         query,
-        connectedWallet
+        wallets
     )
+
     const currencyAsset = direction === 'from' ? fromCurrency?.asset : toCurrency?.asset;
     const currencyNetwork = direction === 'from' ? fromCurrency?.network : toCurrency?.network;
 
@@ -242,7 +230,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     return (
         <div className="relative">
-            <BalanceComponent values={values} direction={direction} onLoad={(v) => setWalletAddress(v)} />
+            <BalanceComponent values={values} direction={direction} />
             <CommandSelectWrapper
                 disabled={(value && !value?.isAvailable?.value) || isLoading}
                 valueGrouper={groupByType}
@@ -257,7 +245,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     )
 };
 
-export function groupByType(values: ISelectMenuItem[]) {
+export function groupByType(values: SelectMenuItem<Layer>[]) {
     let groups: SelectMenuItemGroup[] = [];
     values?.forEach((v) => {
         let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });
@@ -272,14 +260,15 @@ export function groupByType(values: ISelectMenuItem[]) {
 }
 
 export function GenerateCurrencyMenuItems(
+    layers: Layer[],
     currencies: NetworkCurrency[],
     resolveImgSrc: (item: Layer | NetworkCurrency) => string,
     values: SwapFormValues,
     routes?: { network: string, asset: string }[],
     direction?: string,
-    balances?: Balance[],
+    balances?: { [address: string]: Balance[]; },
     query?: QueryParams,
-    connectedWallet?: Wallet | undefined): SelectMenuItem<NetworkCurrency>[] {
+    wallets?: Wallet[] | undefined): SelectMenuItem<NetworkCurrency>[] {
     const { to, from } = values
     const lockAsset = direction === 'from' ? query?.lockFromAsset
         : query?.lockToAsset
@@ -302,16 +291,29 @@ export function GenerateCurrencyMenuItems(
     return currencies?.map(c => {
         const currency = c
         const displayName = currency.display_asset ?? currency.asset;
-        const balance = balances?.find(b => b?.token === c?.asset && b?.network === c.network)
+
+        for (const key in balances) {
+            if (!wallets?.some(wallet => wallet?.address === key)) {
+                delete balances[key];
+            }
+        }
+
+        const balancesArray = balances && Object.values(balances).flat();
+        const balance = balancesArray?.find(b => b?.token === c?.asset && b?.network === c.network)
+
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
         const balanceAmountInUsd = formatted_balance_amount ? (currency?.usd_price * formatted_balance_amount).toFixed(2) : undefined
+
+        const layer = layers?.find(l => l.internal_name === c.network)
+        const layerImgSrc = layer && resolveImgSrc(layer)
+
         const DisplayNameComponent = <div>
             {displayName}
             <span className="text-primary-text-muted text-xs block">
                 {c.network_display_name}
             </span>
         </div>
-        const details = connectedWallet && <p className="text-primary-text-placeholder flex flex-col items-end">
+        const details = balance && <p className="text-primary-text-placeholder flex flex-col items-end">
             {Number(formatted_balance_amount) ?
                 <span className="text-primary-text text-sm">{formatted_balance_amount}</span>
                 :
@@ -323,12 +325,27 @@ export function GenerateCurrencyMenuItems(
                 <span className="text-sm">$0.00</span>
             }
         </p>
+        const NetworkImage = <div>
+            {layerImgSrc && <div className="absolute w-2.5 -right-1 -bottom-1">
+                <Image
+                    src={layerImgSrc}
+                    alt="Project Logo"
+                    height="40"
+                    width="40"
+                    loading="eager"
+                    className="rounded-md object-contain" />
+            </div>
+            }
+        </div>
+
         const res: SelectMenuItem<NetworkCurrency> = {
             baseObject: c,
             id: `${c?.asset?.toLowerCase()}_${c?.network_display_name?.toLowerCase()}`,
             name: displayName,
             menuItemLabel: DisplayNameComponent,
             menuItemDetails: details,
+            menuItemImage: NetworkImage,
+            balanceAmount: Number(formatted_balance_amount),
             network_display_name: c.network_display_name,
             order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
             imgSrc: resolveImgSrc && resolveImgSrc(c),

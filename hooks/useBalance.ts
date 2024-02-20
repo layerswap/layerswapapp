@@ -39,21 +39,17 @@ export default function useBalanceProvider() {
 
     const { getAutofillProvider } = useWallet()
 
-    const fetchBalance = async (network: Layer) => {
+    const fetchBalance = async ({ network, outDatedTime = 20000 }: { network: Layer, outDatedTime?: number }) => {
         const provider = getAutofillProvider(network)
         const wallet = provider?.getConnectedWallet()
         const address = query.account || wallet?.address
-
         const balance = balances[address || '']?.find(b => b?.network === network?.internal_name)
-        const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
+        const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > outDatedTime
 
         if (network
             && isBalanceOutDated
             && address) {
             setIsBalanceLoading(true)
-
-            const walletBalances = balances[address]
-            const filteredBalances = walletBalances?.some(b => b?.network === network?.internal_name) ? walletBalances?.filter(b => b?.network !== network.internal_name) : walletBalances || []
 
             const provider = getBalanceProvider(network)
             const ercAndNativeBalances = await provider?.getBalance({
@@ -61,8 +57,20 @@ export default function useBalanceProvider() {
                 address: address
             }) || []
 
-            setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(ercAndNativeBalances) }))
+            setAllBalances((data) => {
+                const walletBalances = data[address]
+                const filteredBalances = walletBalances?.some(b => b?.network === network?.internal_name) ? walletBalances?.filter(b => b?.network !== network.internal_name) : walletBalances || []
+
+                return ({ ...data, [address]: filteredBalances?.concat(ercAndNativeBalances) })
+            })
+
             setIsBalanceLoading(false)
+        }
+    }
+
+    const fetchAllBalances = async (networks: Layer[]) => {
+        for (const network of networks) {
+            await fetchBalance({ network });
         }
     }
 
@@ -71,7 +79,6 @@ export default function useBalanceProvider() {
         if (!network) {
             return
         }
-
 
         const destination_address = network?.managed_accounts?.[0]?.address as `0x${string}`
         const gas = gases[network.internal_name]?.find(g => g?.token === currency?.asset)
@@ -112,6 +119,7 @@ export default function useBalanceProvider() {
 
     return {
         fetchGas,
-        fetchBalance
+        fetchBalance,
+        fetchAllBalances
     }
 }

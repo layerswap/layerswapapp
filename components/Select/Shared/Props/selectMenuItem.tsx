@@ -1,3 +1,4 @@
+import { Balance } from "../../../../Models/Balance";
 import { CurrencyDisabledReason } from "../../../Input/CurrencyFormField";
 import { LayerDisabledReason } from "../../Popover/PopoverSelect";
 
@@ -6,6 +7,8 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     name: React.ReactNode;
     menuItemLabel?: React.ReactNode;
     menuItemDetails?: React.ReactNode;
+    menuItemImage?: React.ReactNode;
+    balanceAmount?: number | undefined;
     order: number;
     imgSrc: string;
     isAvailable: {
@@ -39,6 +42,8 @@ export interface ISelectMenuItem {
     name: React.ReactNode;
     menuItemLabel?: React.ReactNode;
     menuItemDetails?: React.ReactNode;
+    menuItemImage?: React.ReactNode;
+    balanceAmount?: number | undefined;
     imgSrc: string;
     group?: string;
     isAvailable: {

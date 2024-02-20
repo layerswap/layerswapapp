@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { ChevronDown } from 'lucide-react'
 import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
 import CommandSelect, { SelectMenuItemGroup } from './commandSelect'
+import { Balance } from '../../../Models/Balance'
 
 type CommandSelectWrapperProps = {
     setValue: (value: ISelectMenuItem) => void;
@@ -60,7 +61,6 @@ export default function CommandSelectWrapper<T>({
                                             className="rounded-md object-contain"
                                         />
                                     }
-
                                 </div>
                             </div>
                         }

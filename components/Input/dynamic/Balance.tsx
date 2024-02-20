@@ -4,12 +4,14 @@ import useWallet from "../../../hooks/useWallet";
 import { useEffect, useMemo } from "react";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import useBalance from "../../../hooks/useBalance";
+import { useSettingsState } from "../../../context/settings";
 
-const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direction: string, onLoad: (address: string) => void }) => {
+const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
     const { to, fromCurrency, toCurrency, from } = values
     const { balances, isBalanceLoading } = useBalancesState()
     const { getAutofillProvider: getProvider } = useWallet()
+    const { layers, sourceRoutes } = useSettingsState()
 
     const sourceWalletProvider = useMemo(() => {
         return from && getProvider(from)
@@ -18,7 +20,13 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
     const destinationWalletProvider = useMemo(() => {
         return to && getProvider(to)
     }, [to, getProvider])
-    const { fetchBalance, fetchGas } = useBalance()
+    const { fetchBalance, fetchGas, fetchAllBalances } = useBalance()
+
+    const filteredNetworks = layers.filter(l => sourceRoutes.some(sr => sr.network.includes(l.internal_name) && l.assets))
+    const activeNetworks = filteredNetworks.map(chain => {
+        chain.assets = chain.assets.filter(asset => asset.availableInSource);
+        return chain;
+    });
 
     const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet()
     const destinationNetworkWallet = destinationWalletProvider?.getConnectedWallet()
@@ -31,15 +39,12 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
     const balanceAmount = direction === 'from' ? walletBalanceAmount : destinationBalanceAmount
 
     useEffect(() => {
-        sourceNetworkWallet?.address && onLoad(sourceNetworkWallet?.address)
-    }, [sourceNetworkWallet])
-
-    useEffect(() => {
-        direction === 'from' && values.from && fetchBalance(values.from);
+        direction === 'from' && values.from && fetchBalance({ network: values.from });
+        direction === 'from' && values.from && fetchAllBalances(activeNetworks);
     }, [values.from, values.destination_address, sourceNetworkWallet?.address])
 
     useEffect(() => {
-        direction === 'to' && values.to && fetchBalance(values.to);
+        direction === 'to' && values.to && fetchBalance({ network: values.to });
     }, [values.to, values.destination_address, sourceNetworkWallet?.address])
 
     const contract_address = values?.from?.assets.find(a => a.asset === values?.fromCurrency?.asset)?.contract_address
