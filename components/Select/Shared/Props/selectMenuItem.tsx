@@ -1,9 +1,11 @@
+import { SwapFormValues } from "../../../DTOs/SwapFormValues";
 import { CurrencyDisabledReason } from "../../../Input/CurrencyFormField";
 import { LayerDisabledReason } from "../../Popover/PopoverSelect";
 
 export class SelectMenuItem<T> implements ISelectMenuItem {
     id: string;
     name: string;
+    menuItemDetails?: React.ReactNode;
     order: number;
     imgSrc: string;
     isAvailable: {
@@ -33,6 +35,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
 export interface ISelectMenuItem {
     id: string;
     name: string;
+    menuItemDetails?: React.ReactNode;
     imgSrc: string;
     group?: string;
     isAvailable: {
