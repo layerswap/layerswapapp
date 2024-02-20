@@ -1,29 +1,35 @@
-import ClickTooltip from "../Tooltips/ClickTooltip"
 import ToggleButton from "../buttons/toggleButton"
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
+import { FC } from "react";
+import { Info } from "lucide-react";
 
-const RefuelToggle = () => {
+type RefuelProps = {
+    onButtonClick: () => void
+}
+
+const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
 
     const {
         values,
         setFieldValue
     } = useFormikContext<SwapFormValues>();
-    const { to: destination } = values
-    const destination_native_currency = destination?.assets.find(c => c.is_native)?.asset
 
     const handleConfirmToggleChange = (value: boolean) => {
         setFieldValue('refuel', value)
     }
 
-    return (
+    return (<>
         <div className="flex items-center justify-between w-full">
-            <div className="font- flex items-center text-primary-text-placeholder text-sm">
+            <div className="font- flex items-center text-secondary-text text-sm">
                 <span>Refuel</span>
-                <ClickTooltip text={`You will get a small amount of ${destination_native_currency} that you can use to pay for gas fees.`} />
+                <button type="button" onClick={() => onButtonClick()}>
+                    <Info className="h-4 hover:text-primary-text" aria-hidden="true" strokeWidth={2.5} />
+                </button>
             </div>
             <ToggleButton name="refuel" value={!!values?.refuel} onChange={handleConfirmToggleChange} />
         </div>
+    </>
     )
 }
 

@@ -3,14 +3,16 @@ import { Layer } from "../../Models/Layer";
 import { GetDefaultAsset } from "../../helpers/settingsHelper";
 import { NetworkCurrency } from "../../Models/CryptoNetwork";
 import { Fee } from "../../context/feeContext";
+import { Fuel } from "lucide-react";
 
 type WillReceiveProps = {
     currency?: NetworkCurrency | null;
     to: Layer | undefined | null;
     refuel: boolean;
     fee: Fee | undefined
+    onButtonClick: () => void
 }
-export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee }) => {
+export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee, onButtonClick }) => {
     const receive_amount = fee?.walletReceiveAmount
     const parsedReceiveAmount = parseFloat(fee?.walletReceiveAmount?.toFixed(currency?.precision) || "")
     const destinationNetworkCurrency = (to && currency) ? GetDefaultAsset(to, currency.asset) : null
@@ -19,7 +21,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee
     const destinationNativeAsset = to?.assets.find(a => a.is_native)
     const receiveAmountInUsd = receive_amount && destinationAsset ? (destinationAsset?.usd_price * receive_amount).toFixed(2) : undefined
 
-    return <div className="flex items-center justify-between w-full">
+    return <div className="flex items-start justify-between w-full">
         <span className="md:font-semibold text-sm md:text-base text-secondary-text leading-8 md:leading-8 flex-1">
             <span>
                 You will receive
@@ -47,9 +49,9 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee
                             </div>
                             {
                                 refuel ?
-                                    <p className='text-[12px] text-secondary-text/50 leading-8'>
-                                        <>+</> <span>{fee?.refuelAmount} {destinationNativeAsset?.asset}</span>
-                                    </p>
+                                        <p onClick={() => onButtonClick()} className='flex cursor-pointer justify-end rounded-md gap-1 items-center text-xs text-secondary-text leading-8 md:leading-none font-semibold'>
+                                            <span>+</span> <span>{fee?.refuelAmount} {destinationNativeAsset?.asset}</span> <span className="bg-primary/20 p-1 rounded-md"><Fuel className="h-3 w-3 text-primary" /></span>
+                                        </p>
                                     :
                                     <></>
                             }

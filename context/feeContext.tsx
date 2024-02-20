@@ -21,7 +21,8 @@ export type Fee = {
     avgCompletionTime: string | undefined;
     walletReceiveAmount: number | undefined,
     manualReceiveAmount: number | undefined,
-    refuelAmount: number | undefined
+    refuelAmount: number | undefined,
+    refuelAmountInUsd: number | undefined
 }
 
 export function FeeProvider({ children }) {
@@ -77,6 +78,7 @@ export function FeeProvider({ children }) {
         walletReceiveAmount: lsFee?.data?.wallet_receive_amount,
         manualReceiveAmount: lsFee?.data?.manual_receive_amount,
         refuelAmount: lsFee?.data?.refuel_amount,
+        refuelAmountInUsd: lsFee?.data.refuel_amount_in_usd,
         avgCompletionTime: lsFee?.data?.avg_completion_time
     } : undefined
 

@@ -51,10 +51,10 @@ export default function PopoverSelectWrapper<T>({
                                             />
                                         }
                                     </div>
-                                    <span className="text-primary-text ml-3 block">{value.name}</span>
+                                    <span className="text-primary-buttonTextColor ml-3 block">{value.name}</span>
                                 </span>
 
-                                <span className="ml-1 flex items-center pointer-events-none text-primary-text">
+                                <span className="ml-1 flex items-center pointer-events-none text-primary-buttonTextColor">
                                     <ChevronDown className="h-4 w-4" aria-hidden="true" />
                                 </span>
                             </button>
