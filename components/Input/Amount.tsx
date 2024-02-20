@@ -7,7 +7,6 @@ import { truncateDecimals } from "../utils/RoundDecimals";
 import { useFee } from "../../context/feeContext";
 import dynamic from "next/dynamic";
 import { useQueryState } from "../../context/query";
-import upperCaseKeys from "../utils/upperCaseKeys";
 
 const MinMax = dynamic(() => import("./dynamic/MinMax"), {
     loading: () => <></>,
