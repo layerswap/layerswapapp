@@ -162,7 +162,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             }
         </label>
         <CommandSelectWrapper
-            key={value?.id}
             disabled={(value && !value?.isAvailable?.value) || isLoading}
             valueGrouper={groupByType}
             placeholder="Network"
@@ -205,6 +204,7 @@ function GenerateMenuItems(
                 imgSrc: network?.img_url || '',
                 isAvailable: { value: true, disabledReason: null },
                 type: 'cex',
+                group: 'Networks'
             }
             return item;
         }).sort(SortingByOrder)

@@ -95,7 +95,6 @@ export default function CommandSelectWrapper<T>({
                 </button>
             </div>
             <CommandSelect
-                key={value?.id}
                 setShow={setShowModal}
                 setValue={handleSelect}
                 show={showModal}

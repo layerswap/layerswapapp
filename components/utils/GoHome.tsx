@@ -33,7 +33,7 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
                             </ContextMenuPrimitive.ContextMenuItem >
                             <hr className="horizontal-gradient" />
                             <ContextMenuPrimitive.ContextMenuItem className="dialog-content">
-                                <a href="https://layerswap.notion.site/layerswap/Layerswap-brand-guide-4b579a04a4c3477cad1c28f466749cf1" target='_blank' className='flex space-x-1 items-center px-4 py-2 rounded-b text-sm text-left w-full hover:bg-secondary-400 whitespace-nowrap'>
+                                <a href="https://layerswap.notion.site/layerswap/Layerswap-brand-guide-0822bc4f1a2d4af7bc2f1acbb05119e2" target='_blank' className='flex space-x-1 items-center px-4 py-2 rounded-b text-sm text-left w-full hover:bg-secondary-400 whitespace-nowrap'>
                                     <Paperclip width={16} />
                                     <p>Brand Guidelines</p>
                                 </a>
