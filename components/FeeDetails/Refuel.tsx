@@ -21,12 +21,13 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
 
     return (<>
         <div className="flex items-center justify-between w-full">
-            <div className="font- flex items-center text-secondary-text text-sm">
-                <span>Refuel</span>
-                <button type="button" onClick={() => onButtonClick()}>
-                    <Info className="h-4 hover:text-primary-text" aria-hidden="true" strokeWidth={2.5} />
-                </button>
-            </div>
+
+            <button type="button" onClick={() => onButtonClick()}>
+                <div className="font- flex items-center text-sm">
+                    <span className="text-primary-buttonTextColor">Refuel</span>
+                    <Info className="h-3.5 text-secondary-text hover:text-primary-buttonTextColor" aria-hidden="true" strokeWidth={2.5} />
+                </div>
+            </button>
             <ToggleButton name="refuel" value={!!values?.refuel} onChange={handleConfirmToggleChange} />
         </div>
     </>

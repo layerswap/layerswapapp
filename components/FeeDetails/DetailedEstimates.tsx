@@ -19,7 +19,7 @@ const DetailedEstimates: FC = () => {
             fee && fee.avgCompletionTime !== '00:00:00' ?
                 <div className="flex justify-between w-full items-center">
                     <div className="flex items-baseline w-full justify-between gap-1">
-                        <label className="inline-flex items-center text-left text-secondary-text">
+                        <label className="inline-flex items-center text-left text-primary-buttonTextColor">
                             Estimated time
                         </label>
                         <div className="text-right text-secondary-text">
@@ -32,7 +32,7 @@ const DetailedEstimates: FC = () => {
         }
         <div className="flex justify-between w-full items-center">
             <div className="flex items-baseline w-full justify-between gap-1">
-                <label className="inline-flex items-center text-left text-secondary-text">
+                <label className="inline-flex items-center text-left text-primary-buttonTextColor">
                     Fee
                 </label>
                 <div className="text-right text-secondary-text ">

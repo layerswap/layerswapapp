@@ -22,7 +22,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee
     const receiveAmountInUsd = receive_amount && destinationAsset ? (destinationAsset?.usd_price * receive_amount).toFixed(2) : undefined
 
     return <div className="flex items-start justify-between w-full">
-        <span className="md:font-semibold text-sm md:text-base text-secondary-text leading-8 md:leading-8 flex-1">
+        <span className="md:font-semibold text-sm md:text-base text-primary-buttonTextColor leading-8 md:leading-8 flex-1">
             <span>
                 You will receive
             </span>

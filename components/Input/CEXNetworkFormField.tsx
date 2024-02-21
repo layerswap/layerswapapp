@@ -134,7 +134,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     const currency = (direction === 'from' ? fromCurrency : toCurrency)
 
     return (<div className=" flex justify-between items-center w-full">
-        <label htmlFor={name} className="block text-secondary-text">
+        <label htmlFor={name} className="block text-primary-buttonTextColor">
             {direction === 'from' ? 'Transfer via' : 'Receive in'}
         </label>
         <Popover open={showModal} onOpenChange={() => setShowModal(!showModal)}>
