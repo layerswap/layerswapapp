@@ -53,7 +53,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
         setShow(false)
     }, [setValue])
     return (
-        <Modal height='full' show={show} setShow={setShow} modalId='comandSelect' >
+        <Modal height='80%' show={show} setShow={setShow} modalId='comandSelect' >
             {show ?
                 <CommandWrapper>
                     {searchHint && <CommandInput autoFocus={isDesktop} placeholder={searchHint} />}
@@ -69,12 +69,12 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                             <div className="relative z-20 text-secondary-text text-sm transition-all">
                                 <ResizablePanel>
                                     <div className="flex flex-col items-end w-full p-2">
-                                        <p className='text-sm text-secondary-text flex space-x-0.5'>
+                                        <p className='text-sm text-secondary-text flex space-x-1'>
                                             <Info className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
                                             <span>Before transferring make sure the exchange supports the selected network.</span>
                                         </p>
                                         {showMore && (
-                                            <p className="text-secondary-text text-xs mt-2 flex space-x-0.5">
+                                            <p className="text-secondary-text text-xs mt-2 flex space-x-1">
                                                 <span className="h-4 w-4 text-secondary-text flex-shrink-0 mt-1"></span>
                                                 <span>The transaction will be executed through the network you select here. The displayed options are ordered by relevance based on historic user data. Please note that in case of picking one network here but doing the actual transfer via another network, your assets may be lost.</span>
                                             </p>
