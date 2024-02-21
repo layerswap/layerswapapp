@@ -139,7 +139,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         </label>
         <Popover open={showModal} onOpenChange={() => setShowModal(!showModal)}>
             <div>
-                <PopoverTrigger className="w-fit border-none !text-primary-text !h-fit !p-0">
+                <PopoverTrigger className="w-fit border-none !text-primary-buttonTextColor !h-fit !p-0">
                     <div className="flex items-center gap-1">
                         <div className="mt-1">
                             <div className="inline-flex items-center gap-1 w-full">

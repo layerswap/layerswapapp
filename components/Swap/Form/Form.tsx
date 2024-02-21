@@ -311,7 +311,7 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWall
             {values.destination_address ?
                 <TruncatedAdrress address={values.destination_address} />
                 :
-                <span>Enter your address here</span>
+                <span className="text-primary-text-placeholder">Enter your address here</span>
             }
         </div>
     </button>
