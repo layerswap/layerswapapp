@@ -75,7 +75,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                         </p>
                                         {showMore && (
                                             <p className="text-secondary-text text-sm mt-2 flex space-x-1">
-                                                <div className="h-4 w-4 text-secondary-text flex-shrink-0 mt-1"></div>
+                                                <span className="h-4 w-4 text-secondary-text flex-shrink-0 mt-1"></span>
                                                 <span>The transaction will be executed through the network you select here. The displayed options are ordered by relevance based on historic user data. Please note that in case of picking one network here but doing the actual transfer via another network, your assets may be lost.</span>
                                             </p>
                                         )}
