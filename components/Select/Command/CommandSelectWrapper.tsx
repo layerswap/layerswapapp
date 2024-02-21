@@ -19,6 +19,7 @@ type CommandSelectWrapperProps = {
     network?: Layer | undefined;
     currency?: NetworkCurrency | undefined;
     networkImgSrc?: string;
+    hideHeading?: boolean
 }
 
 export default function CommandSelectWrapper<T>({
@@ -33,6 +34,7 @@ export default function CommandSelectWrapper<T>({
     isExchange,
     network,
     currency,
+    hideHeading
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -104,7 +106,7 @@ export default function CommandSelectWrapper<T>({
                 values={values}
                 isLoading={isLoading}
                 isExchange={isExchange}
-                network={network}
+                hideHeading={hideHeading}
             />
         </>
     )

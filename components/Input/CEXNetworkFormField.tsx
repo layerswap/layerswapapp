@@ -12,7 +12,7 @@ import { isValidAddress } from "../../lib/addressValidator";
 import shortenAddress from "../utils/ShortenAddress";
 import Link from "next/link";
 import { SortingByOrder } from "../../lib/sorting";
-import { Check, ChevronDown, ChevronRight, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import { Layer } from "../../Models/Layer";
@@ -174,6 +174,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             network={network}
             currency={currency}
             networkImgSrc={networkImgSrc}
+            hideHeading={true}
         />
     </div>)
 })
