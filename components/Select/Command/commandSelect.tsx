@@ -7,16 +7,15 @@ import {
     CommandList,
     CommandWrapper
 } from '../../shadcn/command'
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import useWindowDimensions from '../../../hooks/useWindowDimensions';
 import SelectItem from '../Shared/SelectItem';
 import { SelectProps } from '../Shared/Props/SelectProps'
 import Modal from '../../modal/modal';
-import { Check, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import SpinIcon from '../../icons/spinIcon';
 import { LayerDisabledReason } from '../Popover/PopoverSelect';
-import { Layer } from '../../../Models/Layer';
-import ResizablePanel from '../../ResizablePanel';
+import { LeafletHeight } from '../../modal/leaflet';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
@@ -25,6 +24,7 @@ export interface CommandSelectProps extends SelectProps {
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
     isLoading: boolean;
     isExchange?: boolean;
+    modalHeight?: LeafletHeight
 }
 
 export class SelectMenuItemGroup {
@@ -36,7 +36,7 @@ export class SelectMenuItemGroup {
     items: ISelectMenuItem[];
 }
 
-export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading, isExchange }: CommandSelectProps) {
+export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading, isExchange, modalHeight = 'full' }: CommandSelectProps) {
     const { isDesktop } = useWindowDimensions();
 
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
@@ -45,7 +45,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
         setShow(false)
     }, [setValue])
     return (
-        <Modal height='80%' show={show} setShow={setShow} modalId='comandSelect' >
+        <Modal height={modalHeight} show={show} setShow={setShow} modalId='comandSelect' >
             {show ?
                 <CommandWrapper>
                     {searchHint && <CommandInput autoFocus={isDesktop} placeholder={searchHint} />}

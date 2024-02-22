@@ -5,6 +5,7 @@ import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
 import CommandSelect, { SelectMenuItemGroup } from './commandSelect'
 import { Layer } from '../../../Models/Layer'
 import { NetworkCurrency } from '../../../Models/CryptoNetwork'
+import { LeafletHeight } from '../../modal/leaflet'
 
 type CommandSelectWrapperProps = {
     setValue: (value: ISelectMenuItem) => void;
@@ -19,6 +20,7 @@ type CommandSelectWrapperProps = {
     network?: Layer | undefined;
     currency?: NetworkCurrency | undefined;
     networkImgSrc?: string;
+    modalHeight?: LeafletHeight
 }
 
 export default function CommandSelectWrapper<T>({
@@ -33,6 +35,7 @@ export default function CommandSelectWrapper<T>({
     isExchange,
     network,
     currency,
+    modalHeight
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -104,6 +107,7 @@ export default function CommandSelectWrapper<T>({
                 values={values}
                 isLoading={isLoading}
                 isExchange={isExchange}
+                modalHeight={modalHeight}
             />
         </>
     )

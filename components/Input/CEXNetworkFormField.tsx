@@ -12,8 +12,6 @@ import { isValidAddress } from "../../lib/addressValidator";
 import shortenAddress from "../utils/ShortenAddress";
 import Link from "next/link";
 import { SortingByOrder } from "../../lib/sorting";
-import { Info } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import { Layer } from "../../Models/Layer";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
@@ -161,6 +159,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             network={network}
             currency={currency}
             networkImgSrc={networkImgSrc}
+            modalHeight="80%"
         />
     </div>)
 })
