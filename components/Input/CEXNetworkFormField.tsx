@@ -134,7 +134,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     }, [currencyGroup])
 
     return (<div className={`p-2 rounded-lg bg-secondary-700 border border-secondary-500`}>
-        <label htmlFor={name} className="font-semibold flex justify-between text-secondary-text text-xs">
+        <label htmlFor={name} className="font-semibold flex justify-between text-secondary-text text-xs mb-1.5">
             <div className="flex space-x-1">
                 <span>{direction === 'from' ? 'Transfer via' : 'Receive in'}</span>
                 <div className="flex-shrink-0">
@@ -143,14 +143,13 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                             <Info className="h-4 w-4" aria-hidden="true" />
                         </PopoverTrigger>
                         <PopoverContent className="" side="top">
-                            <p className="text-secondary-text text-sm">
+                            <p className="text-secondary-text text-sm font-normal">
                                 The transaction will be executed through the network you select here. The displayed options are ordered by relevance based on historic user data. Please note that in case of picking one network here but doing the actual transfer via another network, your assets may be lost.
                             </p>
                         </PopoverContent>
                     </Popover>
                 </div>
             </div>
-
             {
                 currency?.contract_address && isValidAddress(currency.contract_address, network) && network &&
                 <div className="justify-self-end space-x-1">
@@ -198,7 +197,7 @@ function GenerateMenuItems(
             const item: SelectMenuItem<{ network: string, asset: string }> = {
                 baseObject: e,
                 id: index.toString(),
-                name: e.network,
+                name: `${e.network}_${e.asset}`,
                 asset: e.asset,
                 displayName: network?.display_name,
                 order: indexOf > -1 ? indexOf : 100,

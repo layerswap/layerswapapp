@@ -76,7 +76,7 @@ export default function CommandSelectWrapper<T>({
                         }
                         {value && !isExchange
                             ?
-                            <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
+                            <span className="ml-3 block font-medium text-primary-buttonTextColor flex-auto items-center">
                                 {value?.name}
                             </span>
                             : value && isExchange ?
