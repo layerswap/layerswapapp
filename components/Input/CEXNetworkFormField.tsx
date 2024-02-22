@@ -136,19 +136,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     return (<div className={`p-2 rounded-lg bg-secondary-700 border border-secondary-500`}>
         <label htmlFor={name} className="font-semibold flex justify-between text-secondary-text text-xs">
             <div className="flex space-x-1">
-                <span>{direction === 'from' ? 'Transfer via' : 'Receive in'}</span>
-                <div className="flex-shrink-0">
-                    <Popover>
-                        <PopoverTrigger>
-                            <Info className="h-4 w-4" aria-hidden="true" />
-                        </PopoverTrigger>
-                        <PopoverContent className="" side="top">
-                            <p className="text-secondary-text text-sm">
-                                The transaction will be executed through the network you select here. The displayed options are ordered by relevance based on historic user data. Please note that in case of picking one network here but doing the actual transfer via another network, your assets may be lost.
-                            </p>
-                        </PopoverContent>
-                    </Popover>
-                </div>
+                <span>{direction === 'from' ? 'Withdrawal network' : 'Deposit network'}</span>
             </div>
 
             {
@@ -174,7 +162,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             network={network}
             currency={currency}
             networkImgSrc={networkImgSrc}
-            hideHeading={true}
         />
     </div>)
 })

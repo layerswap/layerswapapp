@@ -25,7 +25,6 @@ export interface CommandSelectProps extends SelectProps {
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
     isLoading: boolean;
     isExchange?: boolean;
-    hideHeading?: boolean;
 }
 
 export class SelectMenuItemGroup {
@@ -37,15 +36,8 @@ export class SelectMenuItemGroup {
     items: ISelectMenuItem[];
 }
 
-export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading, isExchange, hideHeading }: CommandSelectProps) {
+export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading, isExchange }: CommandSelectProps) {
     const { isDesktop } = useWindowDimensions();
-    const [showMore, setShowMore] = useState(false);
-    const handleShowMoreClick = () => {
-        setShowMore(!showMore);
-    };
-    const handleShowLessClick = () => {
-        setShowMore(false);
-    };
 
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
     const handleSelectValue = useCallback((item: ISelectMenuItem) => {
@@ -65,38 +57,10 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                     }
                     {isExchange &&
 
-                        <div className="mb-1 rounded-md py-2 px-2 srelative m-1 bg-secondary-700 border border-secondary-500">
-                            <div className="relative z-20 text-secondary-text text-sm transition-all">
-                                <ResizablePanel>
-                                    <div className="flex flex-col items-end w-full p-2">
-                                        <p className='text-sm text-secondary-text flex space-x-1'>
-                                            <Info className="h-4 w-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
-                                            <span>Before transferring make sure the exchange supports the selected network.</span>
-                                        </p>
-                                        {showMore && (
-                                            <p className="text-secondary-text text-xs mt-2 flex space-x-1">
-                                                <span className="h-4 w-4 text-secondary-text flex-shrink-0 mt-1"></span>
-                                                <span>The transaction will be executed through the network you select here. The displayed options are ordered by relevance based on historic user data. Please note that in case of picking one network here but doing the actual transfer via another network, your assets may be lost.</span>
-                                            </p>
-                                        )}
-                                        {!showMore ?
-                                            <button
-                                                className="text-secondary-text cursor-pointer float-end border-b hover:text-primary-buttonTextColor"
-                                                onClick={handleShowMoreClick}
-                                            >
-                                                Show more
-                                            </button>
-                                            :
-                                            <button
-                                                className="text-secondary-text cursor-pointer float-end border-b hover:text-primary-buttonTextColor"
-                                                onClick={handleShowLessClick}
-                                            >
-                                                Show less
-                                            </button>
-                                        }
-                                    </div>
-                                </ResizablePanel>
-                            </div>
+                        <div className="relative z-20 mb-2 ml-3 text-secondary-text text-sm">
+                            <p className="text-sm mt-2 flex space-x-1">
+                                <span>Please make sure that the exchange supports the token and network you select here.</span>
+                            </p>
                         </div>
 
                     }
@@ -105,7 +69,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                             <CommandEmpty>No results found.</CommandEmpty>
                             {groups.filter(g => g.items?.length > 0).map((group) => {
                                 return (
-                                    <CommandGroup key={group.name} heading={hideHeading ? '' : group.name}>
+                                    <CommandGroup key={group.name} heading={group.name}>
                                         {group.items.map(item => {
                                             return (
                                                 <CommandItem disabled={!item.isAvailable.value} value={item.name} key={item.id} onSelect={() => handleSelectValue(item)}>

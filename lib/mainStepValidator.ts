@@ -21,11 +21,11 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount 
         }
         if (values.currencyGroup &&
             (values.fromExchange && !values.from)) {
-            (errors.from as any) = 'Select source network';
+            (errors.from as any) = 'Select Withdrawal network';
         }
         if (values.currencyGroup &&
             values.toExchange && !values.to) {
-            (errors.to as any) = 'Select destination network';
+            (errors.to as any) = 'Select Deposit network';
         }
         if (!amount) {
             errors.amount = 'Enter an amount';
