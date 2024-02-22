@@ -80,7 +80,7 @@ export default function CommandSelectWrapper<T>({
                             : value && isExchange ?
                                 <span className="ml-3 flex font-medium text-primary-buttonTextColor flex-auto space-x-1 items-center">
                                     <div className="flex">{network?.display_name}</div>
-                                    <div className="inline-flex items-center justify-self-end gap-1 text-secondary-text">
+                                    <div className="inline-flex items-center justify-self-end gap-1">
                                         ({currency?.asset})
                                     </div>
                                 </span>

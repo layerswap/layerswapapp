@@ -29,8 +29,8 @@ import AmountField from "../../Input/Amount"
 import dynamic from "next/dynamic";
 import { Balance, Gas } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
-import FeeDetails from "../../FeeDetails/FeeDetailsComponent";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
+import { calculateSeconds } from "../../utils/timeCalculations";
 
 type Props = {
     isPartnerWallet?: boolean,
@@ -165,8 +165,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     if (!(sourceCanBeSwapped || destinationCanBeSwapped)) {
         valuesSwapperDisabled = true;
     }
-    const a = fee.avgCompletionTime?.split(':');
-    const seconds = a && (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
+    const seconds = fee?.avgCompletionTime && calculateSeconds(fee.avgCompletionTime)
     const averageTimeInMinutes = seconds && (seconds / 60) || 0
 
     const hideAddress = query?.hideAddress
@@ -301,7 +300,7 @@ function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: str
 
 const TruncatedAdrress = ({ address }: { address: string }) => {
     const shortAddress = shortenAddress(address)
-    return <div className="tracking-wider text-primary-text">{shortAddress}</div>
+    return <div className="tracking-wider text-primary-buttonTextColor">{shortAddress}</div>
 }
 
 type AddressButtonProps = {
@@ -313,7 +312,7 @@ type AddressButtonProps = {
 }
 const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, partnerImage, disabled }) => {
     const destination = values?.to
-    return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text-placeholder bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full px-3.5 py-3">
+    return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-buttonTextColor bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full px-3.5 py-3">
         {isPartnerWallet &&
             <div className="shrink-0 flex items-center pointer-events-none">
                 {
@@ -323,7 +322,8 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWall
                         className='rounded-md object-contain'
                         src={partnerImage}
                         width="24"
-                        height="24"></Image>
+                        height="24"
+                    />
                 }
             </div>
         }
@@ -331,7 +331,7 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWall
             {values.destination_address ?
                 <TruncatedAdrress address={values.destination_address} />
                 :
-                <span>Enter your address here</span>
+                <span className="text-primary-text-placeholder">Enter your address here</span>
             }
         </div>
     </button>
