@@ -49,7 +49,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee
                             </div>
                             {
                                 refuel ?
-                                        <p onClick={() => onButtonClick()} className='flex cursor-pointer justify-end rounded-md gap-1 items-center text-xs text-secondary-text leading-8 md:leading-none font-semibold'>
+                                        <p onClick={() => onButtonClick()} className='flex cursor-pointer justify-end rounded-md gap-1 items-center text-xs text-primary-buttonTextColor leading-8 md:leading-none font-semibold'>
                                             <span>+</span> <span>{fee?.refuelAmount} {destinationNativeAsset?.asset}</span> <span className="bg-primary/20 p-1 rounded-md"><Fuel className="h-3 w-3 text-primary" /></span>
                                         </p>
                                     :
