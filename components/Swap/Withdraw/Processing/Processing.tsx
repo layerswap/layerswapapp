@@ -6,7 +6,7 @@ import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
 import { GetDefaultAsset } from '../../../../helpers/settingsHelper';
 import AverageCompletionTime from '../../../Common/AverageCompletionTime';
-import LayerSwapApiClient, { SwapItem, TransactionStatus, TransactionType } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItem, Transaction, TransactionStatus, TransactionType } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
@@ -50,8 +50,8 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const { data: outputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((swapOutputTransaction?.transaction_id && swapOutputTransaction?.status !== TransactionStatus.Completed) ? [destination_layer?.internal_name, swapOutputTransaction.transaction_id] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
 
     const transactionsStatuses = {
-        inputTx: swapInputTransaction?.status !== TransactionStatus.Completed ? inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus : swapInputTransaction.status,
-        outputTx: swapOutputTransaction?.status !== TransactionStatus.Completed ? outputTxStatusData?.data?.status.toLowerCase() as TransactionStatus : swapOutputTransaction.status,
+        inputTx: swapInputTransaction?.status === TransactionStatus.Completed ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus,
+        outputTx: outputTxStatusResolver(swapOutputTransaction, outputTxStatusData?.data),
         refuelTx: swapRefuelTransaction?.status
     }
 
@@ -341,6 +341,10 @@ const transactionStatusToProgressStatus = (transactionStatus: TransactionStatus 
         default:
             return ProgressStatus.Upcoming;
     }
+}
+
+const outputTxStatusResolver = (transactionFromSwap?: Transaction, transactionStatusFromApi?: { status: TransactionStatus }) => {
+    return transactionFromSwap?.status === TransactionStatus.Completed ? transactionFromSwap.status : transactionStatusFromApi?.status.toLowerCase() as TransactionStatus || (transactionFromSwap && TransactionStatus.Pending)
 }
 
 export default Processing;

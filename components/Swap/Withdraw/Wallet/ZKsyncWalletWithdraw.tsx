@@ -11,7 +11,6 @@ import { useSwapDataState } from '../../../../context/swap';
 import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
 import { useAccount, useNetwork } from 'wagmi';
-import { Transaction } from 'zksync';
 import ClickTooltip from '../../../Tooltips/ClickTooltip';
 import SignatureIcon from '../../../icons/SignatureIcon';
 import formatAmount from '../../../../lib/formatAmount';
@@ -23,9 +22,7 @@ type Props = {
 
 const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
-    const [transferDone, setTransferDone] = useState<boolean>();
     const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>();
-    const [syncTransfer, setSyncTransfer] = useState<Transaction>();
     const [accountIsActivated, setAccountIsActivated] = useState(false);
     const [activationFee, setActivationFee] = useState<({ feeInAsset: number, feeInUsd: number } | undefined)>(undefined);
 
@@ -117,7 +114,6 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             });
 
             if (tf?.txHash) {
-                setSyncTransfer(tf);
                 setSwapTransaction(swap?.id, TransactionStatus.Pending, tf?.txHash?.replace('sync-tx:', ''));
             }
         }
@@ -188,7 +184,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     }
                     {
                         syncWallet && accountIsActivated &&
-                        <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        <SubmitButton isDisabled={!!(loading)} isSubmitting={!!loading} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>
                     }
