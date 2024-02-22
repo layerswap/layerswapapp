@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { FC, useCallback } from 'react'
 import { Widget } from '../Widget/Index';
 import { useSwapDataState } from '../../context/swap';
 import Withdraw from './Withdraw';
@@ -12,12 +12,22 @@ type Props = {
     type: "widget" | "contained",
 }
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
+import { useRouter } from 'next/router';
+import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 
 const SwapDetails: FC<Props> = ({ type }) => {
     const { swap } = useSwapDataState()
     const settings = useSettingsState()
     const swapStatus = swap?.status;
     const storedWalletTransactions = useSwapTransactionStore()
+    const router = useRouter();
+
+    const cancelSwap = useCallback(() => {
+        router.push({
+            pathname: "/",
+            query: resolvePersistantQueryParams(router.query)
+        })
+    }, [router])
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id || '']
@@ -43,7 +53,14 @@ const SwapDetails: FC<Props> = ({ type }) => {
                 {
                     ((swapStatus === SwapStatus.UserTransferPending
                         && !(swapInputTransaction || (storedWalletTransaction && storedWalletTransaction.status !== PublishedSwapTransactionStatus.Error)))) ?
-                        <Withdraw /> : <Processing />
+                        <Withdraw />
+                        :
+                        <>
+                            <Processing />
+                            {storedWalletTransaction?.status == 1 &&
+                                <button onClick={cancelSwap} className='flex'>Try again</button>
+                            }
+                        </>
                 }
             </Container>
             {

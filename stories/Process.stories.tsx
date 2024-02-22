@@ -58,6 +58,7 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
         connectors,
         publicClient,
     })
+
     const appSettings = new LayerSwapAppSettings(Settings)
     const swapContextInitialValues: SwapData = { codeRequested: false, swap, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
     if (!appSettings) {
@@ -257,6 +258,22 @@ export const Failed: Story = {
             ]
         }
     }
+};
+
+export const FailedInput: Story = {
+    args: {
+        swap: {
+            ...swap,
+            status: SwapStatus.Failed,
+            transactions: [
+            ]
+        },
+    },
+    loaders: [
+        async () => ({
+            A: window.localStorage.setItem("swapTransactions", `{"${swap.id}": {"hash": "0xe1d8539c6dbe522560c41d645f10ffc3f50b8f689a4ce4774573576cb845d5fc", "status":1}}`),
+        }),
+    ]
 };
 
 export const FailedOutOfRangeAmount: Story = {

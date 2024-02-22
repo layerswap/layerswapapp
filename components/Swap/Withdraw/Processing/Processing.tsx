@@ -272,7 +272,7 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus, transaction
         // Magic case, shows estimated time
         subtitle = null
     }
-    let input_transfer = inputIsCompleted ? ProgressStatus.Complete : ProgressStatus.Current;
+    let input_transfer = transactionStatusToProgressStatus(transactionsStatuses.inputTx) || ''
 
     let output_transfer =
         (!swapOutputTransaction && inputIsCompleted) || transactionsStatuses.outputTx == TransactionStatus.Pending ? ProgressStatus.Current
@@ -324,6 +324,19 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus, transaction
         }
     };
 
+}
+
+const transactionStatusToProgressStatus = (transactionStatus: TransactionStatus | undefined): ProgressStatus => {
+    switch (transactionStatus) {
+        case TransactionStatus.Completed:
+            return ProgressStatus.Complete;
+        case TransactionStatus.Failed:
+            return ProgressStatus.Failed;
+        case TransactionStatus.Initiated:
+            return ProgressStatus.Current;
+        default:
+            return ProgressStatus.Upcoming;
+    }
 }
 
 export default Processing;
