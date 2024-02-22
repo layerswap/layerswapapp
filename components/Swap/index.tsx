@@ -53,7 +53,9 @@ const SwapDetails: FC<Props> = ({ type }) => {
                 {
                     ((swapStatus === SwapStatus.UserTransferPending
                         && !(swapInputTransaction || storedWalletTransaction))) ?
-                        <Withdraw /> : <Processing />
+                        <Withdraw />
+                        :
+                        <Processing />
                 }
             </Container>
             {

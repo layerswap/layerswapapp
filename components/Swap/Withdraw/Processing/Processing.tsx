@@ -56,7 +56,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     }
 
     useEffect(() => {
-        if (storedWalletTransaction.status !== transactionsStatuses.inputTx) setSwapTransaction(swap.id, transactionsStatuses.inputTx, storedWalletTransaction.hash)
+        if (storedWalletTransaction?.status !== transactionsStatuses?.inputTx) setSwapTransaction(swap?.id, transactionsStatuses?.inputTx, storedWalletTransaction?.hash)
     }, [transactionsStatuses])
 
     const nativeCurrency = destination_layer?.assets?.find(c => c.asset === destination_layer?.assets.find(a => a.is_native)?.asset)
