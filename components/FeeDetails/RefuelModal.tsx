@@ -28,7 +28,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ values, openModal, setOpenModal, fe
 
     const nativeAsset = to?.assets.find(a => a.is_native)
     const connectedWallet = provider?.getConnectedWallet()
-    const destNativeTokenBalance = balances[connectedWallet?.address || '']?.find(b => b.token === nativeAsset?.asset)
+    const destNativeTokenBalance = balances[connectedWallet?.address || '']?.find(b => b.token === nativeAsset?.asset && b.network === to?.internal_name)
     const amountInUsd = (destNativeTokenBalance && nativeAsset) ? (destNativeTokenBalance.amount * nativeAsset.usd_price).toFixed(2) : undefined
 
     return (
