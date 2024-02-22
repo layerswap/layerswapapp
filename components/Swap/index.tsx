@@ -3,7 +3,7 @@ import { Widget } from '../Widget/Index';
 import { useSwapDataState } from '../../context/swap';
 import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
-import { PublishedSwapTransactionStatus, TransactionType } from '../../lib/layerSwapApiClient';
+import { TransactionStatus, TransactionType } from '../../lib/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
 import GasDetails from '../gasDetails';
 import { useSettingsState } from '../../context/settings';
@@ -42,7 +42,7 @@ const SwapDetails: FC<Props> = ({ type }) => {
             <Container type={type}>
                 {
                     ((swapStatus === SwapStatus.UserTransferPending
-                        && !(swapInputTransaction || (storedWalletTransaction && storedWalletTransaction.status !== PublishedSwapTransactionStatus.Error)))) ?
+                        && !(swapInputTransaction || storedWalletTransaction))) ?
                         <Withdraw /> : <Processing />
                 }
             </Container>
