@@ -57,7 +57,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                     }
                     {isExchange &&
 
-                        <div className="relative z-20 mb-2 ml-3 text-secondary-text text-sm">
+                        <div className="relative z-20 mb-3 ml-3 text-primary-buttonTextColor text-sm">
                             <p className="text-sm mt-2 flex space-x-1">
                                 <span>Please make sure that the exchange supports the token and network you select here.</span>
                             </p>

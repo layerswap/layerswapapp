@@ -191,7 +191,7 @@ function GenerateMenuItems(
                 imgSrc: network?.img_url || '',
                 isAvailable: { value: true, disabledReason: null },
                 type: 'cex',
-                group: 'Networks'
+                group: ''
             }
             return item;
         }).sort(SortingByOrder)

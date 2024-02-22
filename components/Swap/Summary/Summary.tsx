@@ -67,9 +67,9 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                 <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3">
                         {sourceExchange ?
-                            <Image src={resolveImgSrc(sourceExchange)} alt={sourceExchange.display_name} width={32} height={32} className="rounded-full" />
+                            <Image src={resolveImgSrc(sourceExchange)} alt={sourceExchange.display_name} width={32} height={32} className="rounded-lg" />
                             : source ?
-                                <Image src={resolveImgSrc(source)} alt={source.display_name} width={32} height={32} className="rounded-full" />
+                                <Image src={resolveImgSrc(source)} alt={source.display_name} width={32} height={32} className="rounded-lg" />
                                 :
                                 null
                         }
@@ -95,9 +95,9 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                 <div className="flex items-center justify-between  w-full ">
                     <div className="flex items-center gap-3">
                         {destExchange ?
-                            <Image src={resolveImgSrc(destExchange)} alt={destExchange.display_name} width={32} height={32} className="rounded-full" />
+                            <Image src={resolveImgSrc(destExchange)} alt={destExchange.display_name} width={32} height={32} className="rounded-lg" />
                             : destination ?
-                                <Image src={resolveImgSrc(destination)} alt={destination.display_name} width={32} height={32} className="rounded-full" />
+                                <Image src={resolveImgSrc(destination)} alt={destination.display_name} width={32} height={32} className="rounded-lg" />
                                 :
                                 null
                         }
@@ -123,7 +123,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                     (hasRefuel && refuelAmount != undefined && nativeCurrency) ?
                         <div className="flex items-center justify-between w-full ">
                             <div className='flex items-center gap-3 text-sm'>
-                                <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full p-2 bg-primary/20">
+                                <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-lg p-2 bg-primary/20">
                                     <Fuel className="h-5 w-5 text-primary" aria-hidden="true" />
                                 </span>
                                 <p>Refuel</p>
