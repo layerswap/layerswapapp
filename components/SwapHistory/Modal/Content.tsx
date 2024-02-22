@@ -3,7 +3,7 @@ import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
 import { useSettingsState } from "../../../context/settings"
 import { SwapDataProvider } from "../../../context/swap"
 import WithdrawalPage from "../../Swap"
-import { ArrowDownIcon, Scroll } from 'lucide-react'
+import { ArrowDownIcon, ChevronRightIcon, Scroll } from 'lucide-react'
 import Modal from "../../modal/modal"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
@@ -15,9 +15,18 @@ import Link from "next/link"
 import AppSettings from "../../../lib/AppSettings"
 import axios from "axios"
 import SwapDetails from "../SwapDetailsComponent"
+import Snippet from "./Snippet"
 
 const PAGE_SIZE = 20
 const container = {
+    initial: {
+        transition: {
+            type: "spring",
+            staggerChildren: 0.03,
+            staggerDirection: 1,
+            duration: 3
+        }
+    },
     highlight: {
         transition: {
             type: "spring",
@@ -29,6 +38,11 @@ const container = {
 }
 
 const item = {
+    initial: {
+        transition: {
+            duration: 3
+        }
+    },
     highlight: {
         filter: [
             null,
@@ -131,9 +145,8 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
         setSize(size + 1)
         setCachedSize(size + 1)
     }
-
-    //TODO filter explorer swaps by status
-    explorerSwaps?.forEach(es => {
+    // TODO filter explorer swaps by status
+    !userSwapsLoading && explorerSwaps?.forEach(es => {
         if (!es || userSwaps?.find(us => us?.created_date === es.created_date))
             return
         const userLoadedOldestSwap = userSwaps?.[userSwaps?.length - 1]
@@ -155,111 +168,103 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
 
     return <>
         <AnimatePresence >
-            {<motion.div
-                variants={container}
-                initial="initial"
-                animate={refreshing ? "loading" : "highlight"}
-                exit={"initial"}
-                className="text-sm py-3 space-y-4 font-medium focus:outline-none h-full"
-            >
-                {
-                    userSwaps?.map((swap) => {
-                        const {
-                            source_network: source_network_internal_name,
-                            source_exchange: source_exchange_internal_name,
-                            destination_exchange: destination_exchange_internal_name,
-                            destination_network: destination_network_internal_name,
-                            source_network_asset,
-                            destination_network_asset
-                        } = swap || {}
-
-
-                        const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
-                        const sourceAsset = source_layer?.assets?.find(currency => currency?.asset === source_network_asset)
-                        const destination_layer = layers?.find(l => l.internal_name === destination_network_internal_name)
-                        const destinationAsset = destination_layer?.assets?.find(currency => currency?.asset === destination_network_asset)
-                        const sourceExchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
-                        const destExchange = exchanges.find(e => e.internal_name === destination_exchange_internal_name)
-
-
-                        if (!swap || !source_layer || !sourceAsset || !destinationAsset || !destination_layer) {
-                            return <></>
-                        }
-
-                        const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
-                        const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
-                        const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
-
-                        const requested_amount = swap.requested_amount
-
-                        const destinationNetworkNativeAsset = layers.find(n => n.internal_name === destination_layer?.internal_name)?.assets.find(a => a.is_native);
-                        const refuel_amount_in_usd = Number(destinationAsset?.refuel_amount_in_usd)
-                        const native_usd_price = Number(destinationNetworkNativeAsset?.usd_price)
-
-                        const refuelAmountInNativeCurrency = swap?.has_refuel
-                            ? ((swapRefuelTransaction?.amount ??
-                                (refuel_amount_in_usd / native_usd_price))) : undefined;
-                        const receive_amount = swapOutputTransaction?.amount
-
-                        return <motion.div
-                            onClick={() => handleopenSwapDetails(swap)}
-                            key={swap.id}
-                            variants={item as any}
-                        >
-                            {
-                                <Summary
-                                    sourceCurrency={sourceAsset}
-                                    destinationCurrency={destinationAsset}
-                                    source={source_layer}
-                                    destination={destination_layer}
-                                    requestedAmount={swap.requested_amount || swapInputTransaction?.amount}
-                                    receiveAmount={receive_amount}
-                                    destinationAddress={swap.destination_address}
-                                    hasRefuel={swap?.has_refuel}
-                                    refuelAmount={refuelAmountInNativeCurrency}
-                                    fee={swap.fee}
-                                    swap={swap}
-                                    exchange_account_connected={swap?.exchange_account_connected}
-                                    exchange_account_name={swap?.exchange_account_name}
-                                    destExchange={destExchange}
-                                    sourceExchange={sourceExchange}
-                                />
-                            }
-                        </motion.div>
-                    })
-                }
-                {
-                    allEmpty &&
-                    <div className="absolute top-1/4 right-0 text-center w-full">
-                        <Scroll className='h-40 w-40 text-secondary-700 mx-auto' />
-                        <p className="my-2 text-xl">It&apos;s empty here</p>
-                        <p className="px-14 text-primary-text">You can find all your transactions by searching with address in</p>
-                        <Link target="_blank" href={AppSettings.ExplorerURl} className="underline hover:no-underline cursor-pointer hover:text-secondary-text text-primary-text font-light">
-                            <span>Layerswap Explorer</span>
-                        </Link>
-                    </div>
-                }
-                <div className="text-primary-text text-sm flex justify-center">
+            {(userSwapsLoading || explorerSwapsLoading) && !(Number(userSwaps?.length) > 0) ?
+                <Snippet />
+                :
+                <motion.div
+                    variants={container}
+                    initial="initial"
+                    animate={refreshing ? "loading" : "highlight"}
+                    exit={"initial"}
+                    className="text-sm py-3 space-y-4 font-medium focus:outline-none h-full"
+                >
                     {
-                        !isReachingEnd &&
-                        <button
-                            disabled={isReachingEnd || userSwapsLoading}
-                            type="button"
-                            onClick={handleLoadMore}
-                            className="group disabled:text-primary-800 mb-2 text-primary relative flex justify-center py-3 px-4 border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-200 ease-in-out"
-                        >
-                            <span className="flex items-center mr-2">
-                                {(!isReachingEnd && !userSwapsLoading) &&
-                                    <ArrowDownIcon className="h-5 w-5" />}
-                                {userSwapsLoading ?
-                                    <SpinIcon className="animate-spin h-5 w-5" />
-                                    : null}
-                            </span>
-                            <span>Load more</span>
-                        </button>
+                        userSwaps?.map((swap) => {
+                            const {
+                                source_network: source_network_internal_name,
+                                source_exchange: source_exchange_internal_name,
+                                destination_exchange: destination_exchange_internal_name,
+                                destination_network: destination_network_internal_name,
+                                source_network_asset,
+                                destination_network_asset
+                            } = swap || {}
+
+
+                            const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
+                            const sourceAsset = source_layer?.assets?.find(currency => currency?.asset === source_network_asset)
+                            const destination_layer = layers?.find(l => l.internal_name === destination_network_internal_name)
+                            const destinationAsset = destination_layer?.assets?.find(currency => currency?.asset === destination_network_asset)
+                            const sourceExchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
+                            const destExchange = exchanges.find(e => e.internal_name === destination_exchange_internal_name)
+
+
+                            if (!swap || !source_layer || !sourceAsset || !destinationAsset || !destination_layer) {
+                                return <></>
+                            }
+
+                            const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
+                            const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
+                            const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
+
+                            const requested_amount = swap.requested_amount
+
+                            const destinationNetworkNativeAsset = layers.find(n => n.internal_name === destination_layer?.internal_name)?.assets.find(a => a.is_native);
+                            const refuel_amount_in_usd = Number(destinationAsset?.refuel_amount_in_usd)
+                            const native_usd_price = Number(destinationNetworkNativeAsset?.usd_price)
+
+                            const refuelAmountInNativeCurrency = swap?.has_refuel
+                                ? ((swapRefuelTransaction?.amount ??
+                                    (refuel_amount_in_usd / native_usd_price))) : undefined;
+                            const receive_amount = swapOutputTransaction?.amount
+
+                            return <motion.div
+                                onClick={() => handleopenSwapDetails(swap)}
+                                key={swap.id}
+                                variants={item as any}
+                            >
+                                {
+                                    <Summary
+                                        sourceCurrency={sourceAsset}
+                                        destinationCurrency={destinationAsset}
+                                        source={source_layer}
+                                        destination={destination_layer}
+                                        requestedAmount={swap.requested_amount || swapInputTransaction?.amount}
+                                        receiveAmount={receive_amount}
+                                        destinationAddress={swap.destination_address}
+                                        hasRefuel={swap?.has_refuel}
+                                        refuelAmount={refuelAmountInNativeCurrency}
+                                        fee={swap.fee}
+                                        swap={swap}
+                                        exchange_account_connected={swap?.exchange_account_connected}
+                                        exchange_account_name={swap?.exchange_account_name}
+                                        destExchange={destExchange}
+                                        sourceExchange={sourceExchange}
+                                    />
+                                }
+                            </motion.div>
+                        })
                     }
-                </div>
-            </motion.div >}
+                    {
+                        allEmpty &&
+                        <div className="absolute top-1/4 right-0 text-center w-full">
+                            <Scroll className='h-40 w-40 text-secondary-700 mx-auto' />
+                            <p className="my-2 text-xl">It&apos;s empty here</p>
+                            <p className="px-14 text-primary-text">You can find all your transactions by searching with address in</p>
+                            <Link target="_blank" href={AppSettings.ExplorerURl} className="underline hover:no-underline cursor-pointer hover:text-secondary-text text-primary-text font-light">
+                                <span>Layerswap Explorer</span>
+                            </Link>
+                        </div>
+                    }
+                    <button
+                        disabled={isReachingEnd || userSwapsLoading}
+                        type="button"
+                        onClick={handleLoadMore}
+                        className=" hidden"
+                    >
+
+                        <span>Load more</span>
+                    </button>
+                </motion.div >}
         </AnimatePresence>
         <Modal
             height='90%'

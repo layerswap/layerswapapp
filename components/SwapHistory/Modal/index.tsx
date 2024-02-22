@@ -1,12 +1,14 @@
 import Modal from "../../modal/modal"
 import { FC, useState } from "react"
 import dynamic from "next/dynamic"
+import Snippet from "./Snippet"
+import { AnimatePresence, motion } from "framer-motion"
 
 const Header = dynamic(() => import("./Header"), {
     loading: () => <></>
 })
 const Content = dynamic(() => import("./Content"), {
-    loading: () => <></>
+    loading: () => <Snippet />
 })
 
 type Props = {
@@ -36,11 +38,13 @@ const SwapsListModal: FC<Props> = ({ children, statuses, title, loadExplorerSwap
                         statuses={statuses}
                         title={title}
                     />}>
-                    <Content
-                        loadExplorerSwaps={loadExplorerSwaps}
-                        statuses={statuses}
-                        refreshing={refreshing}
-                    />
+                    <AnimatePresence>
+                        <Content
+                            loadExplorerSwaps={loadExplorerSwaps}
+                            statuses={statuses}
+                            refreshing={refreshing}
+                        />
+                    </AnimatePresence>
                 </Modal>
             </>
         }
