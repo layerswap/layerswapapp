@@ -1,5 +1,5 @@
 import { ExternalLink } from 'lucide-react';
-import { FC } from 'react'
+import { FC, useEffect } from 'react'
 import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
@@ -27,7 +27,7 @@ type Props = {
 const Processing: FC<Props> = ({ settings, swap }) => {
 
     const swapStatus = swap.status;
-    const storedWalletTransactions = useSwapTransactionStore();
+    const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
     const { fee } = useFee()
 
     const source_layer = settings.layers?.find(e => e.internal_name === swap.source_network)
@@ -39,7 +39,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const destinationNetworkCurrency = destination_layer ? GetDefaultAsset(destination_layer, swap?.destination_network_asset) : null
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
-    const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id]
+    const storedWalletTransaction = swapTransactions?.[swap?.id]
 
     const transactionHash = swapInputTransaction?.transaction_id || storedWalletTransaction?.hash
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
@@ -54,6 +54,10 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         outputTx: swapOutputTransaction?.status !== TransactionStatus.Completed ? outputTxStatusData?.data?.status.toLowerCase() as TransactionStatus : swapOutputTransaction.status,
         refuelTx: swapRefuelTransaction?.status
     }
+
+    useEffect(() => {
+        if (storedWalletTransaction.status !== transactionsStatuses.inputTx) setSwapTransaction(swap.id, transactionsStatuses.inputTx, storedWalletTransaction.hash)
+    }, [transactionsStatuses])
 
     const nativeCurrency = destination_layer?.assets?.find(c => c.asset === destination_layer?.assets.find(a => a.is_native)?.asset)
     const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null

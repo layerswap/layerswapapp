@@ -238,12 +238,6 @@ type GetFeeParams = {
     refuel?: boolean
 }
 
-export enum PublishedSwapTransactionStatus {
-    Pending,
-    Error,
-    Completed
-}
-
 export type PublishedSwapTransactions = {
     [key: string]: SwapTransaction
 }
@@ -251,7 +245,7 @@ export type PublishedSwapTransactions = {
 
 export type SwapTransaction = {
     hash: string,
-    status: PublishedSwapTransactionStatus
+    status: TransactionStatus
 }
 
 export enum SwapType {
