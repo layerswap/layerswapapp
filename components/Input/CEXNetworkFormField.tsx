@@ -142,7 +142,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                 currency?.contract_address && isValidAddress(currency.contract_address, network) && network &&
                 <div className="justify-self-end space-x-1">
                     <span>Contract:</span>
-                    <Link target="_blank" href={network.account_explorer_template?.replace("{0}", currency.contract_address)} className="underline hover:no-underline w-fit">
+                    <Link target="_blank" href={network.account_explorer_template?.replace("{0}", currency.contract_address)} className="underline text-primary-buttonTextColor hover:no-underline w-fit">
                         {shortenAddress(currency?.contract_address)}
                     </Link>
                 </div>
