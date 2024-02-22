@@ -65,7 +65,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                     }
                     {isExchange &&
 
-                        <div className="mb-1 rounded-md py-2 px-2 srelative m-1 bg-secondary-700 border border-secondary-500">
+                        <div className="rounded-md py-2 px-2 mb-3 srelative m-1 bg-secondary-700 border border-secondary-500">
                             <div className="relative z-20 text-secondary-text text-sm transition-all">
                                 <ResizablePanel>
                                     <div className="flex flex-col items-end w-full p-2">
