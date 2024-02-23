@@ -264,14 +264,13 @@ export const FailedInput: Story = {
     args: {
         swap: {
             ...swap,
-            status: SwapStatus.Failed,
             transactions: [
             ]
         },
     },
     loaders: [
         async () => ({
-            A: window.localStorage.setItem("swapTransactions", `{"${swap.id}": {"hash": "0xe1d8539c6dbe522560c41d645f10ffc3f50b8f689a4ce4774573576cb845d5fc", "status":1}}`),
+            A: window.localStorage.setItem("swapTransactions", `{"${swap.id}": {"hash": "0x529ab89f4ed2ece53ca51f52d11e5123f5e5c43c09a9d054d243de0e0829d15f", "status":1}}`),
         }),
     ]
 };

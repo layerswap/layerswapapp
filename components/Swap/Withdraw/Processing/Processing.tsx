@@ -18,6 +18,7 @@ import { useFee } from '../../../../context/feeContext';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import useSWR from 'swr';
 import { ApiResponse } from '../../../../Models/ApiResponse';
+import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
     settings: LayerSwapAppSettings;
@@ -57,6 +58,12 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     useEffect(() => {
         if (storedWalletTransaction?.status !== transactionsStatuses?.inputTx) setSwapTransaction(swap?.id, transactionsStatuses?.inputTx, storedWalletTransaction?.hash)
+        if (transactionsStatuses?.inputTx === TransactionStatus.Failed) {
+            const renderingError = new Error("Transaction failed test");
+            renderingError.name = `TransactionFailed`;
+            renderingError.cause = transactionsStatuses?.inputTx === TransactionStatus.Failed;
+            datadogRum.addError(renderingError);
+        }
     }, [transactionsStatuses])
 
     const nativeCurrency = destination_layer?.assets?.find(c => c.asset === destination_layer?.assets.find(a => a.is_native)?.asset)
