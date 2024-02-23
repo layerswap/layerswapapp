@@ -58,13 +58,17 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     useEffect(() => {
         if (storedWalletTransaction?.status !== transactionsStatuses?.inputTx) setSwapTransaction(swap?.id, transactionsStatuses?.inputTx, storedWalletTransaction?.hash)
+    }, [transactionsStatuses])
+
+    useEffect(() => {
         if (transactionsStatuses?.inputTx === TransactionStatus.Failed) {
+            const err = new Error("Transaction failed")
             const renderingError = new Error("Transaction failed test");
             renderingError.name = `TransactionFailed`;
-            renderingError.cause = transactionsStatuses?.inputTx === TransactionStatus.Failed;
+            renderingError.cause = err;
             datadogRum.addError(renderingError);
         }
-    }, [transactionsStatuses])
+    }, [transactionsStatuses?.inputTx])
 
     const nativeCurrency = destination_layer?.assets?.find(c => c.asset === destination_layer?.assets.find(a => a.is_native)?.asset)
     const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
