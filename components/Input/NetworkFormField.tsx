@@ -154,7 +154,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         }
     }, [name, assetGroups, value])
 
-    return (<div className={`p-3 bg-secondary-700 ${className}`}>
+    return (<div className={`p-3 bg-secondary-700 border border-secondary-500 ${className}`}>
         <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
             {label}
         </label>

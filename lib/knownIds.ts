@@ -50,6 +50,8 @@ export default class KnownInternalNames {
 
         public static readonly ArbitrumSepolia: string = "ARBITRUM_SEPOLIA";
 
+        public static readonly ModMainnet: string = "MODE_MAINNET";
+
         public static readonly OptimismMainnet: string = "OPTIMISM_MAINNET";
 
         public static readonly OptimismGoerli: string = "OPTIMISM_GOERLI";
