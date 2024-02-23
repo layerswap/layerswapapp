@@ -14,6 +14,7 @@ type Props = {
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
+import SubmitButton from '../buttons/submitButton';
 
 const SwapDetails: FC<Props> = ({ type }) => {
     const { swap } = useSwapDataState()
@@ -22,18 +23,19 @@ const SwapDetails: FC<Props> = ({ type }) => {
     const storedWalletTransactions = useSwapTransactionStore()
     const router = useRouter();
 
-    const cancelSwap = useCallback(() => {
-        router.push({
-            pathname: "/",
-            query: resolvePersistantQueryParams(router.query)
-        })
-    }, [router])
-
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id || '']
 
     const sourceNetwork = settings.layers.find(l => l.internal_name === swap?.source_network)
     const currency = sourceNetwork?.assets.find(c => c.asset === swap?.source_network_asset)
+
+    const cancelSwap = useCallback(() => {
+        router.push({
+            pathname: "/",
+            query: resolvePersistantQueryParams(router.query)
+        })
+        useSwapTransactionStore.getState().removeSwapTransaction(swap?.id || '');
+    }, [router])
 
     if (!swap) return <>
         <div className="w-full h-[430px]">
@@ -51,11 +53,15 @@ const SwapDetails: FC<Props> = ({ type }) => {
         <>
             <Container type={type}>
                 {
-                    ((swapStatus === SwapStatus.UserTransferPending
-                        && !(swapInputTransaction || storedWalletTransaction))) ?
-                        <Withdraw />
-                        :
+
+                    <>
                         <Processing />
+                        {storedWalletTransaction?.status == TransactionStatus.Failed &&
+                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={cancelSwap}>
+                                Try again
+                            </SubmitButton>
+                        }
+                    </>
                 }
             </Container>
             {

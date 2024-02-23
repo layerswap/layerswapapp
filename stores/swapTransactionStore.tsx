@@ -11,6 +11,7 @@ type SwapTransaction = {
 type SwapTransactionStore = {
     swapTransactions: Record<string, SwapTransaction>;
     setSwapTransaction: (Id: string, status: TransactionStatus, txHash: string, failReason?: string) => void;
+    removeSwapTransaction: (Id: string) => void;
 };
 
 type SwapDepositHintClickedStore = {
@@ -34,6 +35,12 @@ export const useSwapTransactionStore = create(
                         }
                     };
                     return { swapTransactions: txForSwap };
+                });
+            },
+            removeSwapTransaction: (id) => {
+                set((state) => {
+                    const { [id]: deletedTransaction, ...remainingTransactions } = state.swapTransactions;
+                    return { swapTransactions: remainingTransactions };
                 });
             },
         }),

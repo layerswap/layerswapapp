@@ -109,13 +109,22 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 description: <div className='flex space-x-1'>
                     <span>Error: </span>
                     <div className='space-x-1 text-primary-text'>
-                        {swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
-                            "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
+                        {transactionsStatuses.inputTx === TransactionStatus.Failed ?
+                            <div className="flex flex-col">
+                                <p>Check the transfer in the explorer</p>
+                                <div className='underline hover:no-underline flex items-center space-x-1'>
+                                    <a target={"_blank"} href={input_tx_explorer?.replace("{0}", transactionHash)}>{shortenAddress(transactionHash)}</a>
+                                    <ExternalLink className='h-4' />
+                                </div>
+                            </div>
                             :
-                            swap?.fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
-                                "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
+                            swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
+                                "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
                                 :
-                                "Something went wrong while processing the transfer. Please contact support"
+                                swap?.fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
+                                    "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
+                                    :
+                                    "Something went wrong while processing the transfer. Please contact support"
                         }
                     </div>
                 </div>
@@ -292,6 +301,12 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus, transaction
     if (swapStatus === SwapStatus.Failed) {
         output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed;
         refuel_transfer = refuel_transfer !== ProgressStatus.Complete ? ProgressStatus.Removed : refuel_transfer;
+        generalTitle = swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? "Transfer on hold" : "Transfer failed";
+        subtitle = "View instructions below"
+    }
+
+    if (transactionsStatuses.inputTx == TransactionStatus.Failed) {
+        input_transfer = ProgressStatus.Failed;
         generalTitle = swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? "Transfer on hold" : "Transfer failed";
         subtitle = "View instructions below"
     }
