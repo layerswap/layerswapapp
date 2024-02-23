@@ -43,6 +43,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         to: isContractWallet?.ready ? depositAddress : undefined,
         value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,
+        enabled: isContractWallet?.ready
     })
     const encodedData: `0x${string}` = (canDoSweepless && address !== userDestinationAddress) ? `0x${sequenceNumber}` : "0x"
 
@@ -121,6 +122,8 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         waitForTransaction
     ].find(d => d.isLoading)
 
+    console.log("isContractWallet?.ready", isContractWallet)
+
     return <>
         {
             buttonClicked &&
@@ -131,12 +134,13 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
                 applyingTransaction={applyingTransaction}
             />
         }
+        <span>Ready <>{isContractWallet?.ready ? "yes" : "no"}</></span>
         {
             !isLoading &&
             <>
                 <ButtonWrapper
                     clcikHandler={clickHandler}
-                    disabled={sendTransactionPrepare?.isLoading}
+                    disabled={sendTransactionPrepare?.isLoading || !isContractWallet?.ready}
                     icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 >
                     {(isError && buttonClicked) ? <span>Try again</span>

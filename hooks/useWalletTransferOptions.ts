@@ -9,7 +9,7 @@ import { createPublicClient, http } from "viem"
 
 export default function useWalletTransferOptions() {
     const { swap } = useSwapDataState()
-    const { addContractWallet, getContractWallet, updateContractWallet } = useContractWalletsStore()
+    const { addContractWallet, getContractWallet, updateContractWallet, contractWallets } = useContractWalletsStore()
     const { getWithdrawalProvider: getProvider } = useWallet()
     const { layers } = useSettingsState()
     const source_layer = layers.find(n => n.internal_name === swap?.source_network)
@@ -25,8 +25,10 @@ export default function useWalletTransferOptions() {
         if (!contractWallet) {
             // add before checking to check only once
             addContractWallet(wallet.address, source_layer.internal_name);
+            debugger
             checkContractWallet(wallet.address, source_layer).then(
                 result => {
+                    debugger
                     updateContractWallet(wallet.address, source_layer.internal_name, result)
                 }
             )
@@ -34,16 +36,18 @@ export default function useWalletTransferOptions() {
 
     }, [wallet?.address])
 
-    let walletTypeResolved = getContractWallet(wallet?.address, source_layer?.internal_name) ?? { isContract: false, ready: true, key: "" };
+    const walletAddressType = getContractWallet(wallet?.address, source_layer?.internal_name)
+
     const canDoSweepless = source_layer && ((source_layer.type == NetworkType.EVM
-        && (walletTypeResolved?.ready && !walletTypeResolved?.isContract))
+        && (walletAddressType?.ready && !walletAddressType?.isContract))
         || source_layer.type == NetworkType.Starknet)
         || wallet?.address?.toLowerCase() === swap?.destination_address.toLowerCase()
 
-    return { canDoSweepless, isContractWallet: walletTypeResolved }
+    return { canDoSweepless, isContractWallet: walletAddressType }
 }
 
 let checkContractWallet = async (address, network) => {
+    console.log("blaaahj")
     if (!network || !address) throw new Error('Arguments are required')
 
     if (network.type != NetworkType.EVM) {
