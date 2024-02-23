@@ -1,4 +1,4 @@
-export default function getSecondsToTomorrow() {
+export function getSecondsToTomorrow() {
     let now = new Date();
     let hour = now.getHours();
     let minutes = now.getMinutes();
@@ -7,4 +7,11 @@ export default function getSecondsToTomorrow() {
     let totalSecondsInADay = 86400;
 
     return totalSecondsInADay - totalSecondsToday;
+}
+
+export function calculateSeconds(time: string) {
+    const a = time?.split(':');
+    const seconds = a && (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
+
+    return seconds
 }

@@ -9,7 +9,7 @@ const FeeStateContext = createContext<ContextType | null>(null);
 type ContextType = {
     minAllowedAmount: number | undefined,
     maxAllowedAmount: number | undefined,
-    fee: Fee,
+    fee: Fee | undefined,
     mutateFee: () => void,
     valuesChanger: (values: SwapFormValues) => void,
     isFeeLoading: boolean
@@ -21,7 +21,8 @@ export type Fee = {
     avgCompletionTime: string | undefined;
     walletReceiveAmount: number | undefined,
     manualReceiveAmount: number | undefined,
-    refuelAmount: number | undefined
+    refuelAmount: number | undefined,
+    refuelAmountInUsd: number | undefined
 }
 
 export function FeeProvider({ children }) {
@@ -71,14 +72,15 @@ export function FeeProvider({ children }) {
         setCachedRateData(lsFee?.data)
     }, [lsFee])
 
-    const fee = {
+    const fee = lsFee?.data ? {
         walletFee: lsFee?.data?.wallet_fee,
         manualFee: lsFee?.data?.manual_fee,
         walletReceiveAmount: lsFee?.data?.wallet_receive_amount,
         manualReceiveAmount: lsFee?.data?.manual_receive_amount,
         refuelAmount: lsFee?.data?.refuel_amount,
+        refuelAmountInUsd: lsFee?.data.refuel_amount_in_usd,
         avgCompletionTime: lsFee?.data?.avg_completion_time
-    }
+    } : undefined
 
     return (
         <FeeStateContext.Provider value={{ minAllowedAmount: amountRange?.data?.manual_min_amount, maxAllowedAmount: amountRange?.data?.max_amount, fee, mutateFee, valuesChanger, isFeeLoading }}>

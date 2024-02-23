@@ -4,56 +4,54 @@ import { ReceiveAmounts } from './ReceiveAmounts';
 import DetailedEstimates from './DetailedEstimates';
 import { useFee } from '../../context/feeContext';
 import RefuelToggle from './Refuel';
-import CEXNetworkFormField from '../Input/CEXNetworkFormField';
 import FeeDetails from './FeeDetailsComponent';
 import { useQueryState } from '../../context/query';
 import ResizablePanel from '../ResizablePanel';
+import { useState } from 'react';
+import dynamic from 'next/dynamic';
+
+const RefuelModal = dynamic(() => import("./RefuelModal"), {
+    loading: () => <></>,
+});
 
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
-    const { toCurrency, from, to, refuel, fromExchange, toExchange } = values || {};
+    const { toCurrency, to, refuel, fromExchange, toExchange } = values || {};
     const { fee } = useFee()
     const query = useQueryState();
+    const [openModal, setOpenModal] = useState<boolean>(false)
     const nativeAsset = to?.assets.find(a => a.is_native)
 
     return (
         <>
-            <FeeDetails>
+            <ResizablePanel>
+                <FeeDetails>
 
-                {
-                    (fromExchange || toExchange) &&
-                    <ResizablePanel>
+                    {
+                        toCurrency?.refuel_amount_in_usd && !query.hideRefuel && nativeAsset && !toExchange &&
                         <FeeDetails.Item>
-                            <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
+                            <RefuelToggle onButtonClick={() => setOpenModal(true)} />
                         </FeeDetails.Item>
-                    </ResizablePanel>
-                }
+                    }
 
-                {
-                    toCurrency?.refuel_amount_in_usd && !query.hideRefuel && nativeAsset && !toExchange &&
-                    <FeeDetails.Item>
-                        <RefuelToggle />
-                    </FeeDetails.Item>
-                }
+                    {
+                        fee &&
+                        <FeeDetails.Item>
+                            <DetailedEstimates />
+                        </FeeDetails.Item>
+                    }
 
-                {
-                    from && to &&
-                    <FeeDetails.Item>
-                        <DetailedEstimates />
-                    </FeeDetails.Item>
-                }
-
-                <ResizablePanel>
                     <FeeDetails.Item>
                         <ReceiveAmounts
                             currency={toCurrency}
                             to={to}
                             refuel={!!refuel}
                             fee={fee}
+                            onButtonClick={() => setOpenModal(true)}
                         />
                     </FeeDetails.Item>
-                </ResizablePanel>
 
-            </FeeDetails>
+                </FeeDetails>
+            </ResizablePanel>
 
             {/* {
                 values.to &&
@@ -64,6 +62,9 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                     fee={fee.walletFee}
                 />
             } */}
+
+            <RefuelModal values={values} openModal={openModal} setOpenModal={setOpenModal} fee={fee} />
+
         </>
     )
 }

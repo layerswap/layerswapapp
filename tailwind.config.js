@@ -35,7 +35,8 @@ module.exports = {
           'text': 'rgb(var(--ls-colors-primary-text, 255, 255, 255), <alpha-value>)',
           'text-muted': 'rgb(var(--ls-colors-primary-text-muted, 86, 97, 123), <alpha-value>)',
           'text-placeholder': 'rgb(var(--ls-colors-text-placeholder, 140, 152, 192), <alpha-value>)',
-          'buttonTextColor': 'rgb(var(--ls-colors-actionButtonText, 255, 255, 255), <alpha-value>)',
+          'actionButtonText': 'rgb(var(--ls-colors-actionButtonText, 255, 255, 255), <alpha-value>)',
+          'buttonTextColor': 'rgb(var(--ls-colors-buttonTextColor, 228, 229, 240), <alpha-value>)',
           'logoColor': 'rgb(var(--ls-colors-logo, 255, 0, 147), <alpha-value>)',
         },
         secondary: {
