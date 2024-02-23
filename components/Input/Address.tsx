@@ -131,7 +131,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                 <div className={`flex flex-col self-center grow w-full space-y-3`}>
                     <div className="text-left">
                         <label htmlFor={name}>Address</label>
-                        {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
+                        {isPartnerWallet && partner && <span className='truncate text-sm text-secondary-text'> ({partner?.display_name})</span>}
                         <div className="flex flex-wrap flex-col md:flex-row">
                             <div className="relative flex grow rounded-lg shadow-sm mt-1.5 bg-secondary-700 border-secondary-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary">
                                 {isPartnerWallet &&
