@@ -69,7 +69,9 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
 
     //If destination exchange changed, remove destination_address
     useEffect(() => {
-        setFieldValue("destination_address", '')
+        if (toExchange) {
+            setFieldValue("destination_address", '')
+        }
     }, [toExchange])
 
     const { disconnectWallet, getAutofillProvider: getProvider } = useWallet()
