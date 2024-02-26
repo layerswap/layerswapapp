@@ -133,7 +133,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
 
 const TruncatedAdrress = ({ address }: { address: string }) => {
     const shortAddress = shortenAddress(address)
-    return <div className="tracking-wider text-primary-text">{shortAddress}</div>
+    return <div className="tracking-wider text-primary-buttonTextColor">{shortAddress}</div>
 }
 
 type AddressButtonProps = {
@@ -166,7 +166,7 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWall
                     <div className="flex items-center gap-2">
                         {
                             address &&
-                            <div className='flex bg-secondary-400 text-primary-text flex-row items-left rounded-md p-1.5'>
+                            <div className='flex bg-secondary-400 text-primary-buttonTextColor flex-row items-left rounded-md p-1.5'>
                                 <address.icon className="h-5 w-5" strokeWidth={2} />
                             </div>
                         }
@@ -177,7 +177,7 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWall
                 }
             </div>
         </div>
-        <ChevronRight className="h-4 w-4 text-primary-text" />
+        <ChevronRight className="h-4 w-4 text-primary-buttonTextColor" />
     </button>
 }
 

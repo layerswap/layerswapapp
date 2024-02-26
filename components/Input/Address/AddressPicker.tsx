@@ -153,7 +153,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                                                     <input
                                                                         id={`address-${item.address}`}
                                                                         name="address"
-                                                                        onChange={() => {}}
+                                                                        onChange={() => { }}
                                                                         checked={item.address === destination_address}
                                                                         type="radio"
                                                                         className="h-4 w-4 border-secondary-300 bg-secondary-600 text-primary-500 focus:ring-primary-500 cursor-pointer"
@@ -205,7 +205,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                     }
                     <div className="text-left">
                         <label className="text-secondary-text" htmlFor={name}>New address</label>
-                        {isPartnerWallet && partner && <span className='truncate text-sm text-indigo-200'> ({partner?.display_name})</span>}
+                        {isPartnerWallet && partner && <span className='truncate text-sm text-secondary-text'> ({partner?.display_name})</span>}
                         <div className="flex flex-wrap flex-col md:flex-row items-center mt-1.5">
                             <div className="relative flex grow rounded-lg shadow-sm  bg-secondary-700 border-secondary-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary">
                                 {isPartnerWallet &&
@@ -265,9 +265,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                 </div>
                             }
                             {
-                                destinationAsset
-                                && values.toExchange
-                                &&
+                                destinationAsset && values.toExchange &&
                                 <div className='text-left p-4 bg-secondary-800 text-primary-text rounded-lg border border-secondary-500 basis-full mt-3'>
                                     <div className="flex items-center">
                                         <Info className='h-5 w-5 text-primary-600 mr-3' />
