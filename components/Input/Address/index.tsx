@@ -57,7 +57,6 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
         return () => { (depositAddressIsFromAccountRef.current = null); return }
     }, [depositeAddressIsfromAccount])
 
-    //If destination changed to exchange, remove destination_address
     useEffect(() => {
         if ((previouslySelectedDestination.current &&
             (destination?.type != previouslySelectedDestination.current?.type)
@@ -66,7 +65,12 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
             setDepositeAddressIsfromAccount(false)
         }
         previouslySelectedDestination.current = destination
-    }, [destination, toExchange])
+    }, [destination])
+
+    //If destination exchange changed, remove destination_address
+    useEffect(() => {
+        setFieldValue("destination_address", '')
+    }, [toExchange])
 
     const { disconnectWallet, getAutofillProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -79,7 +83,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
 
     //If wallet connected set address from wallet
     useEffect(() => {
-        if (destination && connectedWallet?.address && isValidAddress(connectedWallet?.address, destination) && (addresses.find(a => a.address === values.destination_address)?.group.toLowerCase() === 'connected wallet' || !values?.destination_address) && !values.toExchange) {
+        if (destination && connectedWallet?.address && isValidAddress(connectedWallet?.address, destination) && (addresses.find(a => a.address === values.destination_address)?.group.toLowerCase() === AddressGroup.ConnectedWallet || !values?.destination_address) && !toExchange) {
             //TODO move to wallet implementation
             if (connectedWallet
                 && connectedWallet.providerName === 'starknet'

@@ -207,7 +207,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         <label className="text-secondary-text" htmlFor={name}>New address</label>
                         {isPartnerWallet && partner && <span className='truncate text-sm text-secondary-text'> ({partner?.display_name})</span>}
                         <div className="flex flex-wrap flex-col md:flex-row items-center mt-1.5">
-                            <div className="relative flex grow rounded-lg shadow-sm  bg-secondary-700 border-secondary-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary">
+                            <div className="relative flex grow rounded-lg shadow-sm bg-secondary-700 border-secondary-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary w-full sm:w-fit">
                                 {isPartnerWallet &&
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         {
@@ -266,7 +266,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                             }
                             {
                                 destinationAsset && values.toExchange &&
-                                <div className='text-left p-4 bg-secondary-800 text-primary-text rounded-lg border border-secondary-500 basis-full mt-3'>
+                                <div className='text-left p-4 bg-secondary-800 text-primary-text rounded-lg border border-secondary-500 basis-full mt-3 w-full'>
                                     <div className="flex items-center">
                                         <Info className='h-5 w-5 text-primary-600 mr-3' />
                                         <label className="block text-sm md:text-base font-medium leading-6">How to find your {values.toExchange.display_name} deposit address</label>
