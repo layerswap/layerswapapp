@@ -15,9 +15,9 @@ export const swap: SwapItem = {
     "status": SwapStatus.Created,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
     "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_GOERLI",
+    "source_network": "ETHEREUM_SEPOLIA",
     "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_GOERLI",
+    "destination_network": "ARBITRUM_SEPOLIA",
     "has_refuel": true,
     "fail_reason": "",
     "transactions": [
@@ -77,9 +77,9 @@ export const failedSwap: SwapItem = {
     "status": SwapStatus.Failed,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
     "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_GOERLI",
+    "source_network": "ETHEREUM_SEPOLIA",
     "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_GOERLI",
+    "destination_network": "ARBITRUM_SEPOLIA",
     "has_refuel": false,
     "fail_reason": "",
     "transactions": [
@@ -99,6 +99,42 @@ export const failedSwap: SwapItem = {
     ]
 }
 
+export const failedInputSwap: SwapItem = {
+    "id": "d8a32946-1250-46d3-999f-cd195304c55e",
+    "sequence_number": 4355,
+    "requested_amount": 0.0018,
+    "fee": 0.00057,
+    "message": undefined,
+    "reference_id": undefined,
+    "exchange_account_connected": false,
+    "app_name": "Layerswap",
+    "has_pending_deposit": false,
+    "created_date": "2024-02-23T12:41:48.389955+00:00",
+    "status": SwapStatus.Failed,
+    "destination_address": "0xf51c208e2c37a99b13dcf01a3434cc71be8b2bdd",
+    "source_network_asset": "ETH",
+    "source_network": "ETHEREUM_SEPOLIA",
+    "destination_network_asset": "ETH",
+    "destination_network": "ARBITRUM_SEPOLIA",
+    "has_refuel": false,
+    "fail_reason": "",
+    "transactions": [
+        {
+            "from": "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
+            "to": "0xf51c208e2c37a99b13dcf01a3434cc71be8b2bdd",
+            "created_date": "2023-08-30T09:07:34.213877+00:00",
+            "transaction_id": "0x529ab89f4ed2ece53ca51f52d11e5123f5e5c43c09a9d054d243de0e0829d15f",
+            "confirmations": 3,
+            "max_confirmations": 3,
+            "amount": 0.0018,
+            "usd_price": 1718.42,
+            "type": TransactionType.Input,
+            "status": TransactionStatus.Failed,
+            "usd_value": 3.093156
+        },
+    ]
+}
+
 export const failedSwapOutOfRange: SwapItem = {
     "id": "343a77b7-6a38-4918-9e10-866784b77d9f",
     "sequence_number": 2570,
@@ -113,9 +149,9 @@ export const failedSwapOutOfRange: SwapItem = {
     "status": SwapStatus.Failed,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
     "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_GOERLI",
+    "source_network": "ETHEREUM_SEPOLIA",
     "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_GOERLI",
+    "destination_network": "ARBITRUM_SEPOLIA",
     "has_refuel": true,
     "fail_reason": "received_more_than_valid_range",
     "transactions": [
@@ -162,13 +198,13 @@ export const cancelled: SwapItem = {
     "status": SwapStatus.Cancelled,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
     "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_GOERLI",
+    "source_network": "ETHEREUM_SEPOLIA",
     "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_GOERLI",
+    "destination_network": "ARBITRUM_SEPOLIA",
     "has_refuel": true,
     "fail_reason": "",
     "transactions": [
-        
+
     ]
 }
 
@@ -186,12 +222,12 @@ export const expired: SwapItem = {
     "status": SwapStatus.Expired,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
     "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_GOERLI",
+    "source_network": "ETHEREUM_SEPOLIA",
     "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_GOERLI",
+    "destination_network": "ARBITRUM_SEPOLIA",
     "has_refuel": true,
     "fail_reason": "",
     "transactions": [
-        
+
     ]
 }

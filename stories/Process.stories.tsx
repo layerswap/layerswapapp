@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { SwapItem, TransactionStatus, TransactionType } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItem, TransactionStatus, TransactionType } from '../lib/layerSwapApiClient';
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapData, SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
@@ -8,9 +8,9 @@ import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { BalancesStateContext, BalancesStateUpdateContext } from '../context/balances';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, bitgetWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
-import { swap, failedSwap, failedSwapOutOfRange, cancelled, expired } from './Data/swaps'
+import { swap, failedSwap, failedSwapOutOfRange, failedInputSwap, cancelled, expired } from './Data/swaps'
 import { SettingChains, Settings } from './Data/settings';
 import { AuthDataUpdateContext, AuthStateContext, UserType } from '../context/authContext';
 import { IntercomProvider } from 'react-use-intercom';
@@ -22,6 +22,8 @@ import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
 import WalletMockFunctions from './Mocks/context/BalancesMockFunctions';
 import BalancesStateMock from './Mocks/context/BalancesState';
+import useSWR from 'swr';
+import { ApiResponse } from '../Models/ApiResponse';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 const settingsChains = SettingChains;
@@ -52,7 +54,7 @@ const connectors = connectorsForWallets([
     },
 ]);
 window.plausible = () => { }
-const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, theme?: "default" | "light" }> = ({ settings, swap, failedSwap, failedSwapOutOfRange, theme }) => {
+const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, failedInputSwap?: SwapItem, theme?: "default" | "light" }> = ({ settings, swap, failedSwap, failedSwapOutOfRange, failedInputSwap, theme }) => {
     const wagmiConfig = createConfig({
         autoConnect: true,
         connectors,
@@ -61,6 +63,7 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
 
     const appSettings = new LayerSwapAppSettings(Settings)
     const swapContextInitialValues: SwapData = { codeRequested: false, swap, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
+
     if (!appSettings) {
         return <div>Loading...</div>
     }
@@ -263,14 +266,13 @@ export const Failed: Story = {
 export const FailedInput: Story = {
     args: {
         swap: {
-            ...swap,
-            transactions: [
-            ]
+            ...failedInputSwap,
+            status: SwapStatus.UserTransferPending,
         },
     },
     loaders: [
         async () => ({
-            A: window.localStorage.setItem("swapTransactions", `{"${swap.id}": {"hash": "0x529ab89f4ed2ece53ca51f52d11e5123f5e5c43c09a9d054d243de0e0829d15f", "status":1}}`),
+            A: window.localStorage.setItem("swapTransactions", `{"${failedInputSwap.id}": {"hash": "0x529ab89f4ed2ece53ca51f52d11e5123f5e5c43c09a9d054d243de0e0829d15f", "status":"failed"}}`),
         }),
     ]
 };
