@@ -98,23 +98,31 @@ const Summary: FC<SwapInfoProps> = ({
                                 <Image
                                     src={resolveImgSrc(source)}
                                     alt={source.display_name}
-                                    width={32}
-                                    height={32}
+                                    width={24}
+                                    height={24}
                                     className="rounded-full" />
                             }
                             <div>
-                                <p className="text-primary-text text-sm leading-5">
-                                    {source?.display_name}
+                                <p className="text-secondary-text text-sm">{source?.display_name}</p>
+                                <p className="text-primary-text text-base leading-5">
+                                    {requestedAmount} {sourceCurrency.asset}
                                 </p>
-                                <p className="text-secondary-text text-sm">{sourceAccountAddress}</p>
                             </div>
                         </div>
                         <div><ChevronRightIcon className="text-secondary-text/30" /></div>
                         <div className="flex col-span-5 items-center gap-3 grow">
-                            {destination && <Image src={resolveImgSrc(destination)} alt={destination.display_name} width={32} height={32} className="rounded-full" />}
+                            {
+                                destination &&
+                                <Image
+                                    src={resolveImgSrc(destination)}
+                                    alt={destination.display_name}
+                                    width={24}
+                                    height={24}
+                                    className="rounded-full" />
+                            }
                             <div>
-                                <p className="text-primary-text text-sm leading-5">{destination?.display_name}</p>
-                                <p className="text-sm text-secondary-text">{shortenAddress(destAddress as string)}</p>
+                                <p className="text-sm text-secondary-text">{destination?.display_name}</p>
+                                <p className="text-primary-text text-base leading-5">{receiveAmount} {destinationCurrency.asset}</p>
                             </div>
                         </div>
                     </div>

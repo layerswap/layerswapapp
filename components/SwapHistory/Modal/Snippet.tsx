@@ -2,7 +2,7 @@ import { ChevronRightIcon } from "lucide-react"
 
 const Snippet = () => {
     return <div className="animate-pulse text-sm py-3 space-y-4 font-medium focus:outline-none">
-        <div className="w-full rounded-lg cursor-pointer border border-secondary-500">
+        <div className="w-full rounded-lg cursor-pointer border border-secondary-500 bg-secondary-800">
             <div className="rounded-lg px-3 py-4 border border-secondary-500 w-full relative z-10 space-y-4">
                 <div className="font-normal flex flex-col w-full relative z-10 space-y-4">
                     <div className="grid grid-cols-11 items-center w-full">
@@ -13,7 +13,7 @@ const Snippet = () => {
                                 <p className="text-primary-text text-sm leading-5 w-14 h-3 mb-1 mt-2 border border-secondary-500"></p>
                             </div>
                         </div>
-                        <div><ChevronRightIcon className="text-secondary-text/30" /></div>
+                        <div><ChevronRightIcon className="text-secondary-500" /></div>
                         <div className="flex col-span-5 items-center gap-3 grow">
                             <div className="w-8 h-8 rounded-full border border-secondary-500"></div>
                             <div>
@@ -32,7 +32,7 @@ const Snippet = () => {
                 </span>
             </div>
         </div>
-        <div className="w-full rounded-lg cursor-pointer border border-secondary-500">
+        <div className="w-full rounded-lg cursor-pointer border border-secondary-500 bg-secondary-800">
             <div className="rounded-lg px-3 py-4 border border-secondary-500 w-full relative z-10 space-y-4">
                 <div className="font-normal flex flex-col w-full relative z-10 space-y-4">
                     <div className="grid grid-cols-11 items-center w-full">
@@ -43,7 +43,7 @@ const Snippet = () => {
                                 <p className="text-primary-text text-sm leading-5 w-14 h-3 mb-1 mt-2 border border-secondary-500"></p>
                             </div>
                         </div>
-                        <div><ChevronRightIcon className="text-secondary-text/30" /></div>
+                        <div><ChevronRightIcon className="text-secondary-500" /></div>
                         <div className="flex col-span-5 items-center gap-3 grow">
                             <div className="w-8 h-8 rounded-full border border-secondary-500"></div>
                             <div>
@@ -62,7 +62,7 @@ const Snippet = () => {
                 </span>
             </div>
         </div>
-        <div className="w-full rounded-lg cursor-pointer border border-secondary-500">
+        <div className="w-full rounded-lg cursor-pointer border border-secondary-500 bg-secondary-800">
             <div className="rounded-lg px-3 py-4 border border-secondary-500 w-full relative z-10 space-y-4">
                 <div className="font-normal flex flex-col w-full relative z-10 space-y-4">
                     <div className="grid grid-cols-11 items-center w-full">
@@ -73,7 +73,7 @@ const Snippet = () => {
                                 <p className="text-primary-text text-sm leading-5 w-14 h-3 mb-1 mt-2 border border-secondary-500"></p>
                             </div>
                         </div>
-                        <div><ChevronRightIcon className="text-secondary-text/30" /></div>
+                        <div><ChevronRightIcon className="text-secondary-500" /></div>
                         <div className="flex col-span-5 items-center gap-3 grow">
                             <div className="w-8 h-8 rounded-full border border-secondary-500"></div>
                             <div className="space-y-2">
