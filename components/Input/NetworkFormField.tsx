@@ -146,10 +146,15 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         } else {
             setFieldValue(`${name}Exchange`, null, true)
             setFieldValue(name, item.baseObject, true)
+            const currency = name == "from" ? fromCurrency : toCurrency
+            const assetSubstitute = (item.baseObject as Layer)?.assets?.find(a => a.asset === currency?.asset)
+            if (assetSubstitute) {
+                setFieldValue(`${name}Currency`, assetSubstitute, true)
+            }
         }
     }, [name, assetGroups, value])
 
-    return (<div className={`p-3 bg-secondary-700 ${className}`}>
+    return (<div className={`p-3 bg-secondary-700 border border-secondary-500 ${className}`}>
         <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
             {label}
         </label>
