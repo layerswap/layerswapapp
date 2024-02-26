@@ -44,7 +44,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,
     })
-    const encodedData: `0x${string}` = (canDoSweepless && address !== userDestinationAddress) ? `0x${sequenceNumber}` : "0x"
+    const encodedData: `0x${string}` = (canDoSweepless && address?.toLowerCase() !== userDestinationAddress?.toLowerCase()) ? `0x${sequenceNumber}` : "0x"
 
     const tx = {
         to: depositAddress,
