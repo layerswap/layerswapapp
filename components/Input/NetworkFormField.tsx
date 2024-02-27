@@ -192,7 +192,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     searchHint={searchHint}
                     isLoading={isLoading}
                     valueDetails={networkValueDetails}
-                    pickNetworkDetails={pickNetworkDetails}
+                    lockDetails={pickNetworkDetails}
                 />
             </div>
             <div className="col-span-3 md:col-span-2 w-full ml-2">

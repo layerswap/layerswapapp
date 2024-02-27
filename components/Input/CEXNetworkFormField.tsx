@@ -131,7 +131,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         else if (value) return
     }, [currencyGroup])
 
-    const exchangeValueDetails = <div>
+    const valueDetails = <div>
         {value ?
             <span className="ml-3 flex font-medium flex-auto space-x-1 items-center">
                 <div className="text-primary-buttonTextColor flex">{network?.display_name}</div>
@@ -145,19 +145,18 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             </span>}
     </div>
 
-    const exchangeDetails = <div className="relative z-20 mb-3 ml-3 text-primary-buttonTextColor text-sm">
-        <p className="text-sm mt-2 flex space-x-1">
-            <span>Please make sure that the exchange supports the token and network you select here.</span>
-        </p>
-    </div>
-
-    const pickNetworkDetails = <div>
+    const networkDetails = <div>
         {
             value?.isAvailable.disabledReason === LayerDisabledReason.LockNetworkIsTrue &&
             <div className='text-xs text-left text-secondary-text mb-2'>
                 <Info className='h-3 w-3 inline-block mb-0.5' /><span>&nbsp;You&apos;re accessing Layerswap from a partner&apos;s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.</span>
             </div>
         }
+        <div className="relative z-20 mb-3 ml-3 text-primary-buttonTextColor text-sm">
+            <p className="text-sm mt-2 flex space-x-1">
+                <span>Please make sure that the exchange supports the token and network you select here.</span>
+            </p>
+        </div>
     </div>
 
     return (<div className={`p-2 rounded-lg bg-secondary-700 border border-secondary-500`}>
@@ -185,9 +184,8 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             searchHint=''
             isLoading={isLoading}
             modalHeight="80%"
-            valueDetails={exchangeValueDetails}
-            exchangeDetails={exchangeDetails}
-            pickNetworkDetails={pickNetworkDetails}
+            valueDetails={valueDetails}
+            lockDetails={networkDetails}
         />
     </div>)
 })

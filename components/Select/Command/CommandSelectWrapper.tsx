@@ -17,7 +17,7 @@ type CommandSelectWrapperProps = {
     modalHeight?: LeafletHeight;
     valueDetails?: React.ReactNode;
     exchangeDetails?: React.ReactNode;
-    pickNetworkDetails?: React.ReactNode;
+    lockDetails?: React.ReactNode;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -31,8 +31,7 @@ export default function CommandSelectWrapper<T>({
     isLoading,
     modalHeight,
     valueDetails,
-    exchangeDetails,
-    pickNetworkDetails
+    lockDetails
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -89,8 +88,7 @@ export default function CommandSelectWrapper<T>({
                 values={values}
                 isLoading={isLoading}
                 modalHeight={modalHeight}
-                exchangeDetails={exchangeDetails}
-                pickNetworkDetails={pickNetworkDetails}
+                lockDetails={lockDetails}
             />
         </>
     )
