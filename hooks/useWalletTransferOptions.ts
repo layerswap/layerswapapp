@@ -21,19 +21,15 @@ export default function useWalletTransferOptions() {
     useEffect(() => {
         if (wallet?.address == undefined || source_layer == undefined) return;
         let contractWallet = getContractWallet(wallet.address, source_layer.internal_name);
-
         if (!contractWallet) {
             // add before checking to check only once
             addContractWallet(wallet.address, source_layer.internal_name);
-            debugger
             checkContractWallet(wallet.address, source_layer).then(
                 result => {
-                    debugger
                     updateContractWallet(wallet.address, source_layer.internal_name, result)
                 }
             )
         }
-
     }, [wallet?.address])
 
     const walletAddressType = getContractWallet(wallet?.address, source_layer?.internal_name)
