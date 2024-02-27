@@ -85,8 +85,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     const network = (direction === 'from' ? from : to)
     const currency = (direction === 'from' ? fromCurrency : toCurrency)
 
-    const networkImgSrc = resolveImgSrc(network);
-
     const menuItems = routesData
         && historicalNetworks
         && GenerateMenuItems(routesData, historicalNetworks?.data, currencyGroup, layers)
@@ -131,6 +129,26 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         else if (value) return
     }, [currencyGroup])
 
+    const exchangeValueDetails = <div>
+        {value ?
+            <span className="ml-3 flex font-medium flex-auto space-x-1 items-center">
+                <div className="text-primary-buttonTextColor flex">{network?.display_name}</div>
+                <div className="text-primary-text-placeholder inline-flex items-center justify-self-end gap-1">
+                    ({currency?.asset})
+                </div>
+            </span>
+            :
+            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                Network
+            </span>}
+    </div>
+
+    const exchangeDetails = <div className="relative z-20 mb-3 ml-3 text-primary-buttonTextColor text-sm">
+        <p className="text-sm mt-2 flex space-x-1">
+            <span>Please make sure that the exchange supports the token and network you select here.</span>
+        </p>
+    </div>
+
     return (<div className={`p-2 rounded-lg bg-secondary-700 border border-secondary-500`}>
         <label htmlFor={name} className="font-semibold flex justify-between text-secondary-text text-xs mb-1.5">
             <div className="flex space-x-1">
@@ -155,11 +173,9 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             values={menuItems!}
             searchHint=''
             isLoading={isLoading}
-            isExchange={true}
-            network={network}
-            currency={currency}
-            networkImgSrc={networkImgSrc}
             modalHeight="80%"
+            valueDetails={exchangeValueDetails}
+            exchangeDetails={exchangeDetails}
         />
     </div>)
 })

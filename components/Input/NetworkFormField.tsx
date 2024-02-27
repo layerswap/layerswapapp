@@ -154,6 +154,18 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         }
     }, [name, assetGroups, value])
 
+    const networkValueDetails = <div>
+        {value
+            ?
+            <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
+                {value?.name}
+            </span>
+            :
+            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                {placeholder}
+            </span>}
+    </div>
+
     return (<div className={`p-3 bg-secondary-700 border border-secondary-500 ${className}`}>
         <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
             {label}
@@ -169,6 +181,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     values={menuItems}
                     searchHint={searchHint}
                     isLoading={isLoading}
+                    valueDetails={networkValueDetails}
                 />
             </div>
             <div className="col-span-3 md:col-span-2 w-full ml-2">

@@ -26,8 +26,9 @@ const Comp: FC<{ theme?: "default" | "light", header: string, status: 'pending' 
 }
 
 const meta = {
-    title: 'Example/Message',
+    title: 'LayerSwap/Message',
     component: Comp,
+    tags: ['autodocs'],
     parameters: {
         layout: 'centered',
     },
@@ -55,8 +56,9 @@ export const PreparingTransactionMessage: Story = {
         status: "pending",
         header: 'Preparing the transaction',
         details: 'Will be ready to sign in a couple of seconds'
-    } as WalletMessageProps
+    } as WalletMessageProps,
 };
+
 export const ConfirmTransactionMessage: Story = {
     args: {
         header: 'Confirm in wallet',
