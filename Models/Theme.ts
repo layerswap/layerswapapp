@@ -2,6 +2,7 @@
 export type ThemeData = {
     backdrop?: string,
     actionButtonText: string,
+    buttonTextColor: string,
     logo: string,
     placeholderText: string,
     primary: ThemeColor,
@@ -29,6 +30,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     "imxMarketplace": {
         backdrop: "0, 121, 133",
         actionButtonText: '0, 0, 0',
+        buttonTextColor: '255, 255, 255',
         placeholderText: '140, 152, 192',
         logo: '255, 255, 255',
         primary: {
@@ -66,6 +68,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         backdrop: "0, 121, 133",
         placeholderText: '198, 242, 246',
         actionButtonText: '0, 0, 0',
+        buttonTextColor: '255, 255, 255',
         logo: '255, 255, 255',
         primary: {
             DEFAULT: '128, 226, 235',
@@ -102,6 +105,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     "light": {
         placeholderText: '134, 134, 134',
         actionButtonText: '255, 255, 255',
+        buttonTextColor: '17, 17, 17',
         logo: '255, 0, 147',
         primary: {
             DEFAULT: '228, 37, 117',
@@ -137,7 +141,8 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     "default": {
         backdrop: "62, 18, 64",
         placeholderText: '140, 152, 192',
-        actionButtonText: '255, 255, 255',
+        actionButtonText: '254, 255, 254',
+        buttonTextColor: '228, 229, 240',
         logo: '255, 0, 147',
         primary: {
             DEFAULT: '228, 37, 117',
@@ -151,7 +156,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '700': '136, 17, 67',
             '800': '147, 8, 99',
             '900': '110, 0, 64',
-            'text': '255, 255, 255',
+            'text': '254, 255, 254',
             'textMuted': '86, 97, 123',
         },
         secondary: {
@@ -172,7 +177,8 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     },
     "evmos": {
         placeholderText: '128, 110, 107',
-        actionButtonText: '255, 255, 255',
+        actionButtonText: '254, 255, 254',
+        buttonTextColor: '74, 61, 59',
         logo: '226, 49, 115',
         primary: {
             DEFAULT: '237, 78, 51',
@@ -208,6 +214,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     "ton": {
         placeholderText: '134, 134, 134',
         actionButtonText: '255, 255, 255',
+        buttonTextColor: '15, 15, 15',
         logo: '15, 15, 15',
         primary: {
             DEFAULT: '51, 144, 236',

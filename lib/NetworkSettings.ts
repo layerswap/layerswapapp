@@ -159,6 +159,9 @@ export default class NetworkSettings {
             GasCalculationType: GasCalculation.OptimismType,
             isFeatured: true
         };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ModMainnet] = {
+            GasCalculationType: GasCalculation.OptimismType,
+        };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.AstarMainnet] = {
             ChainId: 592,
         };
