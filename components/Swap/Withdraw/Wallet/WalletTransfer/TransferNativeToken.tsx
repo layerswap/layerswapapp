@@ -122,8 +122,6 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         waitForTransaction
     ].find(d => d.isLoading)
 
-    console.log("isContractWallet?.ready", isContractWallet)
-
     return <>
         {
             buttonClicked &&

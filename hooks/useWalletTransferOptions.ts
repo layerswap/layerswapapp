@@ -43,7 +43,6 @@ export default function useWalletTransferOptions() {
 }
 
 let checkContractWallet = async (address, network) => {
-    console.log("blaaahj")
     if (!network || !address) throw new Error('Arguments are required')
 
     if (network.type != NetworkType.EVM) {
