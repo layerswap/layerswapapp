@@ -8,24 +8,30 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount 
         let amount = Number(values.amount);
 
         if (!values.from && !values.fromExchange) {
-            (errors.from as any) = 'Select source';
+            errors.from = 'Select source';
         }
         if (!values.to && !values.toExchange) {
-            (errors.to as any) = 'Select destination';
+            errors.to = 'Select destination';
         }
         if (!values.fromCurrency) {
-            (errors.fromCurrency as any) = 'Select source asset';
+            errors.fromCurrency = 'Select source asset';
         }
         if (!values.toCurrency) {
-            (errors.toCurrency as any) = 'Select destination asset';
+            errors.toCurrency = 'Select destination asset';
         }
         if (values.currencyGroup &&
             (values.fromExchange && !values.from)) {
-            (errors.from as any) = 'Select Withdrawal network';
+            errors.from = 'Select withdrawal network';
         }
         if (values.currencyGroup &&
             values.toExchange && !values.to) {
-            (errors.to as any) = 'Select Deposit network';
+            errors.to = 'Select deposit network';
+        }
+        if (values.fromExchange && !values.currencyGroup) {
+            errors.currencyGroup = 'Select source asset'
+        }
+        if (values.toExchange && !values.currencyGroup) {
+            errors.currencyGroup = 'Select destination asset'
         }
         if (!amount) {
             errors.amount = 'Enter an amount';
