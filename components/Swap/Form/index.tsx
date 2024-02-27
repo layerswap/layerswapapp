@@ -24,7 +24,7 @@ import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
 import dynamic from "next/dynamic";
 import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
-import getSecondsToTomorrow from "../../utils/getSecondsToTomorrow";
+import { getSecondsToTomorrow } from "../../utils/timeCalculations";
 
 type NetworkToConnect = {
     DisplayName: string;

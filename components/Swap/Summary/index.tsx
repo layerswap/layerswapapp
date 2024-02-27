@@ -77,12 +77,12 @@ const SwapSummary: FC = () => {
     const requested_amount = (swapInputTransaction?.amount ??
         (Number(min_amount) > Number(swap.requested_amount) ? min_amount : swap.requested_amount)) || undefined
 
-    const receiveAmount = withdrawType === WithdrawType.Wallet ? feeData.walletReceiveAmount : feeData.manualReceiveAmount
+    const receiveAmount = withdrawType === WithdrawType.Wallet ? feeData?.walletReceiveAmount : feeData?.manualReceiveAmount
     const calculatedReceiveAmount = swapOutputTransaction?.amount ?? receiveAmount
 
     const refuelAmountInNativeCurrency = swap?.has_refuel
         ? ((swapRefuelTransaction?.amount ??
-            (feeData.refuelAmount))) : undefined;
+            (feeData?.refuelAmount))) : undefined;
 
     let sourceAccountAddress = ""
     if (hideFrom && account) {
