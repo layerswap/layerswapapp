@@ -131,7 +131,10 @@ export default function LayerswapMenu() {
                                     <>
                                         {
                                             router.pathname != '/transactions' &&
-                                            <SwapsListModal loadExplorerSwaps={true} title="Transfers" statuses={SwapStatusInNumbers.SwapsWithoutCancelledAndExpired} >
+                                            <SwapsListModal
+                                                loadExplorerSwaps={true}
+                                                title="Transfers"
+                                                statuses={SwapStatusInNumbers.SwapsWithoutCancelledAndExpired}>
                                                 <div className="gap-4 flex relative cursor-pointer hover:bg-secondary-600 select-none w-full items-center px-4 py-3 outline-none text-primary-text">
                                                     <div>
                                                         <ScrollText className="h-5 w-5" />

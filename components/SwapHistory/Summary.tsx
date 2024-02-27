@@ -11,7 +11,7 @@ import { Layer } from "../../Models/Layer"
 import { Partner } from "../../Models/Partner"
 import shortenAddress, { shortenEmail } from "../utils/ShortenAddress"
 import KnownInternalNames from "../../lib/knownIds"
-import { ChevronRightIcon } from 'lucide-react'
+import { ChevronDownIcon, ChevronRightIcon, ExternalLink } from 'lucide-react'
 import StatusIcon from "../SwapHistory/StatusIcons"
 import { FC } from "react"
 import { Exchange } from "../../Models/Exchange";
@@ -69,7 +69,8 @@ const Summary: FC<SwapInfoProps> = ({
     const source = hideFrom ? partner : (sourceExchange || from)
     const destination = hideTo ? partner : (destExchange || to)
 
-    const sourceAddressFromInput = swap.transactions.find(t => t.type === TransactionType.Input)?.from;
+    const sourceTransaction = swap.transactions.find(t => t.type === TransactionType.Input)
+    const sourceAddressFromInput = sourceTransaction?.from;
 
     let sourceAccountAddress = ""
     if (sourceAddressFromInput) {
@@ -84,15 +85,15 @@ const Summary: FC<SwapInfoProps> = ({
     else {
         sourceAccountAddress = "Network"
     }
-
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
 
     return (<>
         <div className="bg-secondary-800 rounded-lg cursor-pointer border border-secondary-500">
-            <div className="bg-secondary-700 rounded-lg px-3 py-4 border border-secondary-500 w-full relative z-10 space-y-4">
+            <div className="bg-secondary-700 rounded-lg px-3  border border-secondary-500 w-full relative z-10 space-y-4">
                 <div className="font-normal flex flex-col w-full relative z-10 space-y-4">
                     <div className="grid grid-cols-11 items-center w-full">
-                        <div className="flex col-span-5 items-center gap-3 grow">
+
+                        <div className="flex col-span-5 py-4 items-center gap-3 grow">
                             {
                                 source &&
                                 <Image
@@ -103,14 +104,17 @@ const Summary: FC<SwapInfoProps> = ({
                                     className="rounded-full" />
                             }
                             <div>
-                                <p className="text-secondary-text text-sm">{source?.display_name}</p>
-                                <p className="text-primary-text text-base leading-5">
+                                <p className="font-semibold text-primary-text text-base leading-5">
                                     {requestedAmount} {sourceCurrency.asset}
                                 </p>
+                                <p className="text-secondary-text text-sm">{source?.display_name}</p>
                             </div>
                         </div>
-                        <div><ChevronRightIcon className="text-secondary-text/30" /></div>
-                        <div className="flex col-span-5 items-center gap-3 grow">
+                        {/* <div className="relative left-[50%] w-px bg-secondary-500 h-full">
+                        </div> */}
+                        <ChevronRightIcon className="mx-auto text-secondary-text/30" />
+
+                        <div className="col-start-7 flex col-span-5 items-center gap-3 grow">
                             {
                                 destination &&
                                 <Image
@@ -121,29 +125,25 @@ const Summary: FC<SwapInfoProps> = ({
                                     className="rounded-full" />
                             }
                             <div>
+                                <p className="font-semibold text-primary-text text-base leading-5">{receiveAmount} {destinationCurrency.asset}</p>
                                 <p className="text-sm text-secondary-text">{destination?.display_name}</p>
-                                <p className="text-primary-text text-base leading-5">{receiveAmount} {destinationCurrency.asset}</p>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
             <div className="px-3 py-2">
                 <span className="grow w-full grid grid-cols-11 items-center text-sm font-normal">
-                    <span className="col-span-5 text-secondary-text/60">
-                        <div>{requestedAmount} {sourceCurrency.asset}</div>
+                    <span className="col-span-5 opacity-60 text-primary-text">
+                        {<StatusIcon swap={swap} />}
                     </span>
-                    {
-                        receiveAmount ?
-                            <span className="col-start-7 col-span-5 text-secondary-text/60">
-                                <div>{receiveAmount} {destinationCurrency.asset}</div>
-                            </span>
-                            :
-                            <span className="col-start-7 col-span-5 opacity-60 text-secondary-text">
-                                {<StatusIcon swap={swap} />}
-                            </span>
-                    }
+                    {/* <div><ChevronDownIcon className="mx-auto col-start-6 text-secondary-text/20 pt-1" /></div> */}
+                    <span className="col-start-7 col-span-5">
+                        <p className="text-sm text-primary-text font-medium">{shortenAddress(destAddress as string)}</p>
+                    </span>
                 </span>
+
             </div>
         </div>
     </>)

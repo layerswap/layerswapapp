@@ -3,13 +3,12 @@ import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
 import { useSettingsState } from "../../../context/settings"
 import { SwapDataProvider } from "../../../context/swap"
 import WithdrawalPage from "../../Swap"
-import { ArrowDownIcon, ChevronRightIcon, Scroll } from 'lucide-react'
+import { Scroll } from 'lucide-react'
 import Modal from "../../modal/modal"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import Summary from "../Summary";
 import useSWRInfinite from 'swr/infinite'
-import SpinIcon from "../../icons/spinIcon";
 import useWallet from "../../../hooks/useWallet"
 import Link from "next/link"
 import AppSettings from "../../../lib/AppSettings"

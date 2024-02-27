@@ -34,7 +34,7 @@ const SwapDetails: FC<Props> = ({ swap }) => {
     const sourceCurrencyName = sourceCurrency?.display_asset ?? sourceCurrency?.asset
     const destinationCurrencyName = destinationCurrency?.display_asset ?? destinationCurrency?.asset
 
-    const input_tx_id = source?.transaction_explorer_template
+    const source_transaction_explorer = source?.transaction_explorer_template
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
 
@@ -136,7 +136,7 @@ const SwapDetails: FC<Props> = ({ swap }) => {
                                     <span className="text-primary-text">
                                         <div className='inline-flex items-center'>
                                             <div className='underline hover:no-underline flex items-center space-x-1'>
-                                                <a target={"_blank"} href={input_tx_id?.replace("{0}", swapInputTransaction.transaction_id)}>{shortenAddress(swapInputTransaction.transaction_id)}</a>
+                                                <a target={"_blank"} href={source_transaction_explorer?.replace("{0}", swapInputTransaction.transaction_id)}>{shortenAddress(swapInputTransaction.transaction_id)}</a>
                                                 <ExternalLink className='h-4' />
                                             </div>
                                         </div>
