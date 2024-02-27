@@ -15,6 +15,8 @@ import { SortingByOrder } from "../../lib/sorting";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import { Layer } from "../../Models/Layer";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
+import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
+import { Info } from "lucide-react";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -149,6 +151,15 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         </p>
     </div>
 
+    const pickNetworkDetails = <div>
+        {
+            value?.isAvailable.disabledReason === LayerDisabledReason.LockNetworkIsTrue &&
+            <div className='text-xs text-left text-secondary-text mb-2'>
+                <Info className='h-3 w-3 inline-block mb-0.5' /><span>&nbsp;You&apos;re accessing Layerswap from a partner&apos;s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.</span>
+            </div>
+        }
+    </div>
+
     return (<div className={`p-2 rounded-lg bg-secondary-700 border border-secondary-500`}>
         <label htmlFor={name} className="font-semibold flex justify-between text-secondary-text text-xs mb-1.5">
             <div className="flex space-x-1">
@@ -176,6 +187,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             modalHeight="80%"
             valueDetails={exchangeValueDetails}
             exchangeDetails={exchangeDetails}
+            pickNetworkDetails={pickNetworkDetails}
         />
     </div>)
 })
