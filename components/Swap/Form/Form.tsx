@@ -64,6 +64,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
     const { minAllowedAmount, valuesChanger, fee } = useFee()
     const toAsset = values.toCurrency?.asset
+    const fromAsset = values.fromCurrency?.asset
+
     const { authData } = useAuthState()
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -83,9 +85,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
     const actionDisplayName = query?.actionButtonText || "Swap now"
 
-    const handleConfirmToggleChange = (value: boolean) => {
-        setFieldValue('refuel', value)
-    }
     const depositeAddressIsfromAccountRef = useRef<boolean | null>(depositeAddressIsfromAccount);
 
     useEffect(() => {
@@ -99,9 +98,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
     useEffect(() => {
         if (!source || !toAsset || !GetDefaultAsset(source, toAsset)?.refuel_amount_in_usd) {
-            handleConfirmToggleChange(false)
+            setFieldValue('refuel', false, true)
         }
-    }, [toAsset, destination, source])
+    }, [toAsset, destination, source, fromAsset, currencyGroup])
 
     useEffect(() => {
         setAddressConfirmed(false)
