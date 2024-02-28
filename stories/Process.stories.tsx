@@ -106,7 +106,6 @@ const DUMMY_TRANSACTION = {
 const meta = {
     title: 'LayerSwap/Process',
     component: Comp,
-    tags: ['autodocs'],
     parameters: {
         layout: 'centered',
     },

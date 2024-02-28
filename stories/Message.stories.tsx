@@ -28,7 +28,6 @@ const Comp: FC<{ theme?: "default" | "light", header: string, status: 'pending' 
 const meta = {
     title: 'LayerSwap/Message',
     component: Comp,
-    tags: ['autodocs'],
     parameters: {
         layout: 'centered',
     },
