@@ -3,8 +3,6 @@ import Image from 'next/image'
 import { ChevronDown } from 'lucide-react'
 import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
 import CommandSelect, { SelectMenuItemGroup } from './commandSelect'
-import { Layer } from '../../../Models/Layer'
-import { NetworkCurrency } from '../../../Models/CryptoNetwork'
 import { LeafletHeight } from '../../modal/leaflet'
 
 type CommandSelectWrapperProps = {
@@ -16,11 +14,10 @@ type CommandSelectWrapperProps = {
     disabled: boolean;
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
     isLoading: boolean;
-    isExchange?: boolean;
-    network?: Layer | undefined;
-    currency?: NetworkCurrency | undefined;
-    networkImgSrc?: string;
-    modalHeight?: LeafletHeight
+    modalHeight?: LeafletHeight;
+    valueDetails?: React.ReactNode;
+    exchangeDetails?: React.ReactNode;
+    lockDetails?: React.ReactNode;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -32,10 +29,9 @@ export default function CommandSelectWrapper<T>({
     values,
     valueGrouper,
     isLoading,
-    isExchange,
-    network,
-    currency,
-    modalHeight
+    modalHeight,
+    valueDetails,
+    lockDetails
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -75,22 +71,7 @@ export default function CommandSelectWrapper<T>({
                                 </div>
                             </div>
                         }
-                        {value && !isExchange
-                            ?
-                            <span className="ml-3 block font-medium text-primary-buttonTextColor flex-auto items-center">
-                                {value?.name}
-                            </span>
-                            : value && isExchange ?
-                                <span className="ml-3 flex font-medium flex-auto space-x-1 items-center">
-                                    <div className="text-primary-buttonTextColor flex">{network?.display_name}</div>
-                                    <div className="text-primary-text-placeholder inline-flex items-center justify-self-end gap-1">
-                                        ({currency?.asset})
-                                    </div>
-                                </span>
-                                :
-                                <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
-                                    {placeholder}
-                                </span>}
+                        {valueDetails && valueDetails}
                     </span>
                     <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-primary-text">
                         <ChevronDown className="h-4 w-4" aria-hidden="true" />
@@ -106,8 +87,8 @@ export default function CommandSelectWrapper<T>({
                 valueGrouper={valueGrouper}
                 values={values}
                 isLoading={isLoading}
-                isExchange={isExchange}
                 modalHeight={modalHeight}
+                lockDetails={lockDetails}
             />
         </>
     )
