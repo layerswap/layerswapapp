@@ -47,7 +47,7 @@
     "@ton/crypto": "^3.2.0",
     "@tonconnect/ui-react": "^2.0.0-beta.4",
     "@uidotdev/usehooks": "^2.4.1",
-    "axios": "^0.21.4",
+    "axios": "^0.28.0",
     "bn.js": "^5.2.0",
     "cmdk": "^0.2.0",
     "crypto-js": "^4.1.1",
