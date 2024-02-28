@@ -11,11 +11,13 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     balanceAmount?: number | undefined;
     order: number;
     imgSrc: string;
+    asset?: string | undefined;
+    displayName?: string | undefined;
     isAvailable: {
         value: boolean;
         disabledReason: LayerDisabledReason | CurrencyDisabledReason | null
     };
-    type: ItemType
+    type: ItemType;
     group?: string;
     details?: string;
     network_display_name?: string | undefined;
@@ -45,6 +47,8 @@ export interface ISelectMenuItem {
     menuItemImage?: React.ReactNode;
     balanceAmount?: number | undefined;
     imgSrc: string;
+    asset?: string | undefined;
+    displayName?: string | undefined;
     group?: string;
     isAvailable: {
         value: boolean;

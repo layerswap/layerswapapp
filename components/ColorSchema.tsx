@@ -26,6 +26,7 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                     --ls-colors-primary-900: ${themeData.primary?.[900]};
 
                     --ls-colors-actionButtonText: ${themeData.actionButtonText};
+                    --ls-colors-buttonTextColor: ${themeData.buttonTextColor};
                     --ls-colors-text-placeholder: ${themeData.placeholderText};
                     --ls-colors-primary-text: ${themeData.primary?.text};
                     --ls-colors-primary-text-muted: ${themeData.primary?.textMuted};
