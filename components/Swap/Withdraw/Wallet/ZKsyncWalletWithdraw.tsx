@@ -6,7 +6,7 @@ import * as zksync from 'zksync';
 import { utils } from 'ethers';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import { TransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSwapDataState } from '../../../../context/swap';
 import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
@@ -122,7 +122,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             });
 
             if (tf?.txHash) {
-                setSwapTransaction(swap?.id, TransactionStatus.Pending, tf?.txHash?.replace('sync-tx:', ''));
+                setSwapTransaction(swap?.id, BackendTransactionStatus.Pending, tf?.txHash?.replace('sync-tx:', ''));
             }
         }
         catch (e) {

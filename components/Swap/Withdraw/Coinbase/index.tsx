@@ -5,7 +5,7 @@ import Authorize from './Authorize';
 import Coinbase2FA from './Coinbase2FA';
 import { ArrowLeftRight, Link } from 'lucide-react';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
-import LayerSwapApiClient, { TransactionStatus } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { LSAPIKnownErrorCode } from '../../../../Models/ApiError';
 import toast from 'react-hot-toast';
 import { useSettingsState } from '../../../../context/settings';
@@ -73,7 +73,7 @@ const TransferElements: FC = () => {
 
     const handleSuccess = useCallback(async (swapId: string) => {
         setOpenCoinbase2FA(false)
-        setSwapTransaction(swapId, TransactionStatus.Completed, "_")
+        setSwapTransaction(swapId, BackendTransactionStatus.Completed, "_")
     }, [])
 
     const handleAuthorized = async () => {

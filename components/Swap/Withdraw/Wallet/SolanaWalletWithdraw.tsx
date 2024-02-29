@@ -1,7 +1,7 @@
 import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
-import { TransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSwapDataState } from '../../../../context/swap';
 import { useSettingsState } from '../../../../context/settings';
 import { Transaction, Connection, PublicKey, TransactionInstruction } from '@solana/web3.js';
@@ -101,7 +101,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             );
 
             if (signature) {
-                setSwapTransaction(swap?.id, TransactionStatus.Pending, signature);
+                setSwapTransaction(swap?.id, BackendTransactionStatus.Pending, signature);
             }
 
         }

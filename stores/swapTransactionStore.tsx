@@ -1,16 +1,16 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { TransactionStatus } from '../lib/layerSwapApiClient';
+import { BackendTransactionStatus, TransactionStatus } from '../lib/layerSwapApiClient';
 
 type SwapTransaction = {
     hash: string;
-    status: TransactionStatus;
+    status: BackendTransactionStatus | TransactionStatus;
     failReason?: string;
 };
 
 type SwapTransactionStore = {
     swapTransactions: Record<string, SwapTransaction>;
-    setSwapTransaction: (Id: string, status: TransactionStatus, txHash: string, failReason?: string) => void;
+    setSwapTransaction: (Id: string, status: BackendTransactionStatus | TransactionStatus, txHash: string, failReason?: string) => void;
     removeSwapTransaction: (Id: string) => void;
 };
 

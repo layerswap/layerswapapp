@@ -203,7 +203,7 @@ export type Transaction = {
     max_confirmations: number,
     usd_value: number,
     usd_price: number,
-    status: TransactionStatus,
+    status: BackendTransactionStatus,
 }
 
 export enum TransactionType {
@@ -212,10 +212,16 @@ export enum TransactionType {
     Refuel = 'refuel'
 }
 
-export enum TransactionStatus {
+export enum BackendTransactionStatus {
     Completed = 'completed',
     Failed = 'failed',
     Initiated = 'initiated',
+    Pending = 'pending'
+}
+
+export enum TransactionStatus {
+    Completed = 'completed',
+    Failed = 'failed',
     Pending = 'pending'
 }
 
@@ -245,7 +251,7 @@ export type PublishedSwapTransactions = {
 
 export type SwapTransaction = {
     hash: string,
-    status: TransactionStatus
+    status: BackendTransactionStatus
 }
 
 export enum SwapType {
