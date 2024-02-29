@@ -65,14 +65,6 @@ export default function Form() {
     const { swap } = useSwapDataState()
     const { minAllowedAmount, maxAllowedAmount } = useFee()
 
-    useEffect(() => {
-        if (swap) {
-            const initialValues = generateSwapInitialValuesFromSwap(swap, settings)
-            formikRef?.current?.resetForm({ values: initialValues })
-            formikRef?.current?.validateForm(initialValues)
-        }
-    }, [swap])
-
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
             const accessToken = TokenService.getAuthData()?.access_token
@@ -132,9 +124,6 @@ export default function Form() {
     const initialValues: SwapFormValues = swap ? generateSwapInitialValuesFromSwap(swap, settings)
         : generateSwapInitialValues(settings, query)
 
-    const initiallyValidation = MainStepValidation({ minAllowedAmount, maxAllowedAmount })(initialValues)
-    const initiallyIsValid = !(Object.values(initiallyValidation)?.filter(v => v).length > 0)
-
     const handleShowSwapModal = useCallback((value: boolean) => {
         setShowSwapModal(value)
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
@@ -176,7 +165,6 @@ export default function Form() {
             validateOnMount={true}
             validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
-            isInitialValid={initiallyIsValid}
         >
             <SwapForm isPartnerWallet={!!isPartnerWallet} partner={partner} />
         </Formik>
