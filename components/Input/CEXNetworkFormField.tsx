@@ -208,7 +208,7 @@ function GenerateMenuItems(
 
             const item: SelectMenuItem<{ network: string, asset: string }> = {
                 baseObject: e,
-                id: index.toString(),
+                id: `${e?.asset?.toLowerCase()}_${e?.network?.toLowerCase()}`,
                 name: `${e.network}_${e.asset}`,
                 asset: e.asset,
                 displayName: network?.display_name,
@@ -216,7 +216,8 @@ function GenerateMenuItems(
                 imgSrc: network?.img_url || '',
                 isAvailable: { value: true, disabledReason: null },
                 type: 'cex',
-                group: ''
+                group: '',
+                menuItemLabel: network?.display_name
             }
             return item;
         }).sort(SortingByOrder)

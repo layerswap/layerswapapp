@@ -146,7 +146,10 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     )
 
     const currencyAsset = direction === 'from' ? fromCurrency?.asset : toCurrency?.asset;
-    const currencyNetwork = direction === 'from' ? fromCurrency?.network : toCurrency?.network;
+    const currencyNetwork = direction === 'from' ?
+        sourceCurrencies?.find(c => c.asset === fromCurrency?.asset && c.network === from?.internal_name)?.network
+        :
+        destinationCurrencies?.find(c => c.asset === toCurrency?.asset && c.network === to?.internal_name)?.network;
 
     useEffect(() => {
         if (direction !== "to" || !to) return
@@ -228,6 +231,18 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         setFieldValue(direction === 'from' ? 'from' : 'to', network)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
+    const valueDetails = <div>
+        {value
+            ?
+            <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
+                {value?.name}
+            </span>
+            :
+            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                Asset
+            </span>}
+    </div>
+
     return (
         <div className="relative">
             <BalanceComponent values={values} direction={direction} />
@@ -240,6 +255,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
                 values={currencyMenuItems}
                 searchHint='Search'
                 isLoading={isLoading}
+                valueDetails={valueDetails}
             />
         </div>
     )

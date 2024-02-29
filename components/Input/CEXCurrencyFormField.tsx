@@ -11,9 +11,6 @@ import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import { groupByType } from "./CurrencyFormField";
-import { Layer } from "../../Models/Layer";
-import { NetworkCurrency } from "../../Models/CryptoNetwork";
-import Image from 'next/image'
 
 const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
@@ -95,12 +92,11 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
         values,
-        resolveImgSrc,
         direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
         lockedCurrency,
     )
 
-    const value = currencyMenuItems?.find(x => x.id == currencyGroup?.name);
+    const value = currencyMenuItems?.find(x => x.name == currencyGroup?.name);
 
     useEffect(() => {
         if (value) return
@@ -111,6 +107,19 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
+    const valueDetails = <div>
+        {value
+            ?
+            <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
+                {value?.name}
+            </span>
+            :
+            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                Asset
+            </span>}
+    </div>
+
+
     return <CommandSelectWrapper
         disabled={!value?.isAvailable?.value || isLoading}
         valueGrouper={groupByType}
@@ -120,13 +129,13 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         values={currencyMenuItems}
         searchHint='Search'
         isLoading={isLoading}
+        valueDetails={valueDetails}
     />;
 }
 
 export function GenerateCurrencyMenuItems(
     currencies: AssetGroup[],
     values: SwapFormValues,
-    resolveImgSrc: (item: Layer | NetworkCurrency) => string,
     routes?: { network: string, asset: string }[],
     lockedCurrency?: AssetGroup | undefined
 ): SelectMenuItem<AssetGroup>[] {
@@ -144,6 +153,7 @@ export function GenerateCurrencyMenuItems(
     }
 
     const storageUrl = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
+    const group = values?.fromExchange?.display_name
 
     return currencies?.map(c => {
         const currency = c
@@ -151,12 +161,13 @@ export function GenerateCurrencyMenuItems(
 
         const res: SelectMenuItem<AssetGroup> = {
             baseObject: c,
-            id: c.name,
+            id: `${c?.name?.toLowerCase()}`,
             name: displayName || "-",
             order: CurrencySettings.KnownSettings[c.name]?.Order ?? 5,
             imgSrc: `${storageUrl}layerswap/currencies/${c.name.toLowerCase()}.png`,
             isAvailable: currencyIsAvailable(c),
             type: 'currency',
+            group,
         };
         return res
     }).sort(SortingByAvailability);
