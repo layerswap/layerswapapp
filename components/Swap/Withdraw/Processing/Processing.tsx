@@ -286,7 +286,7 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus, inputTxStat
 
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
-    debugger
+
     let inputIsCompleted = swapInputTransaction && inputTxStatus == TransactionStatus.Completed && swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations;
     if (!inputIsCompleted) {
         // Magic case, shows estimated time
