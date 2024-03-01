@@ -19,6 +19,7 @@ import { NetworkCurrency } from "../../Models/CryptoNetwork";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
+import { Info } from "lucide-react";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -154,6 +155,27 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         }
     }, [name, assetGroups, value])
 
+    const networkValueDetails = <div>
+        {value
+            ?
+            <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
+                {value?.name}
+            </span>
+            :
+            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                {placeholder}
+            </span>}
+    </div>
+
+    const pickNetworkDetails = <div>
+        {
+            value?.isAvailable.disabledReason === LayerDisabledReason.LockNetworkIsTrue &&
+            <div className='text-xs text-left text-secondary-text mb-2'>
+                <Info className='h-3 w-3 inline-block mb-0.5' /><span>&nbsp;You&apos;re accessing Layerswap from a partner&apos;s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.</span>
+            </div>
+        }
+    </div>
+
     return (<div className={`p-3 bg-secondary-700 border border-secondary-500 ${className}`}>
         <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
             {label}
@@ -169,6 +191,8 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     values={menuItems}
                     searchHint={searchHint}
                     isLoading={isLoading}
+                    valueDetails={networkValueDetails}
+                    lockDetails={pickNetworkDetails}
                 />
             </div>
             <div className="col-span-3 md:col-span-2 w-full ml-2">

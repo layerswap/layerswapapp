@@ -1,0 +1,54 @@
+import { Meta, Primary, Controls, Story, Canvas } from "@storybook/blocks";
+import * as MessageStories from "../../Message.stories";
+
+<Meta of={MessageStories} />
+
+# Preparing the transaction
+
+Layerswap involves gathering user input, validating details, checking market data, calculating fees, and ensuring sufficient funds. This phase sets the groundwork for a smooth and secure exchange on the blockchain.
+
+<Canvas of={MessageStories.PreparingTransactionMessage} />
+
+## Props
+
+<Controls />
+
+# Confirm the transaction
+
+Layerswap involves users verifying and finalizing the transaction details before it is executed on the blockchain. This step ensures user consent and provides an additional layer of security, preventing accidental or unauthorized transactions.
+
+<Canvas of={MessageStories.ConfirmTransactionMessage} />
+
+## Props
+
+<Controls of={MessageStories.ConfirmTransactionMessage} />
+
+# Transaction in progress
+
+Indicates that the exchange swap is actively being executed on the blockchain. Users may see this status as the system processes their transaction, updating them on the current stage of the exchange. It reflects the real-time execution of the swap until its completion.
+
+<Canvas of={MessageStories.TransactionInProgressMessage} />
+
+## Props
+
+<Controls of={MessageStories.TransactionInProgressMessage} />
+
+# Insufficient funds
+
+Signifies that the user lacks the required amount to complete the transaction. This status prompts users to deposit additional funds into their account before proceeding, ensuring they have the necessary balance for the desired exchange.
+
+<Canvas of={MessageStories.InsufficientFundsMessage} />
+
+## Props
+
+<Controls of={MessageStories.InsufficientFundsMessage} />
+
+# Transaction rejected
+
+Indicates that the system has declined the transaction. This rejection may result from various reasons such as insufficient funds, invalid details, or security measures. Users will receive notification of the rejection and may need to address the underlying issue before attempting the transaction again.
+
+<Canvas of={MessageStories.TransactionRejectedMessage} />
+
+## Props
+
+<Controls of={MessageStories.TransactionRejectedMessage} />
