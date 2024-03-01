@@ -9,9 +9,8 @@ import { useSettingsState } from "../../../context/settings";
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
     const { to, fromCurrency, toCurrency, from } = values
-    const { balances, isBalanceLoading } = useBalancesState()
+    const { balances } = useBalancesState()
     const { getAutofillProvider: getProvider } = useWallet()
-    const { layers, sourceRoutes } = useSettingsState()
 
     const sourceWalletProvider = useMemo(() => {
         return from && getProvider(from)
@@ -20,13 +19,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     const destinationWalletProvider = useMemo(() => {
         return to && getProvider(to)
     }, [to, getProvider])
-    const { fetchBalance, fetchGas, fetchAllBalances } = useBalance()
-
-    const filteredNetworks = layers.filter(l => sourceRoutes.some(sr => sr.network.includes(l.internal_name) && l.assets))
-    const activeNetworks = filteredNetworks.map(chain => {
-        chain.assets = chain.assets.filter(asset => asset.availableInSource);
-        return chain;
-    });
+    const { fetchBalance, fetchGas } = useBalance()
 
     const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet()
     const destinationNetworkWallet = destinationWalletProvider?.getConnectedWallet()
@@ -40,7 +33,6 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
 
     useEffect(() => {
         direction === 'from' && values.from && fetchBalance({ network: values.from });
-        direction === 'from' && values.from && fetchAllBalances(activeNetworks);
     }, [values.from, values.destination_address, sourceNetworkWallet?.address])
 
     useEffect(() => {
@@ -59,9 +51,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
             <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
                 <div>
                     <span>Balance:&nbsp;</span>
-                    {isBalanceLoading ?
-                        <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                        :
+                    {!isNaN(balanceAmount) &&
                         <span>{balanceAmount}</span>}
                 </div>
             </div>

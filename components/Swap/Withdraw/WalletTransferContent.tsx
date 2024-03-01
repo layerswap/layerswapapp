@@ -39,7 +39,7 @@ const WalletTransferContent: FC = () => {
 
     const wallet = provider?.getConnectedWallet()
 
-    const { balances, isBalanceLoading } = useBalancesState()
+    const { balances } = useBalancesState()
     const { fetchBalance, fetchGas } = useBalance()
 
     const sourceNetworkWallet = provider?.getConnectedWallet()
@@ -93,11 +93,11 @@ const WalletTransferContent: FC = () => {
                 walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
                     <div className="text-right">
                         <div>
-                            <span>Balance:&nbsp;</span>
+                            {/* <span>Balance:&nbsp;</span>
                             {isBalanceLoading ?
                                 <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
                                 :
-                                <span>{walletBalanceAmount}</span>}
+                                <span>{walletBalanceAmount}</span>} */}
                         </div>
                     </div>
                     :

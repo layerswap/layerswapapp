@@ -29,6 +29,7 @@ import dynamic from "next/dynamic";
 import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import { getSecondsToTomorrow } from "../../utils/timeCalculations";
+import BalancesFetcher from "./BalancesFetcher";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -65,13 +66,13 @@ export default function Form() {
     const { swap } = useSwapDataState()
     const { minAllowedAmount, maxAllowedAmount } = useFee()
 
-    useEffect(() => {
-        if (swap) {
-            const initialValues = generateSwapInitialValuesFromSwap(swap, settings)
-            formikRef?.current?.resetForm({ values: initialValues })
-            formikRef?.current?.validateForm(initialValues)
-        }
-    }, [swap])
+    // useEffect(() => {
+    //     if (swap) {
+    //         const initialValues = generateSwapInitialValuesFromSwap(swap, settings)
+    //         formikRef?.current?.resetForm({ values: initialValues })
+    //         formikRef?.current?.validateForm(initialValues)
+    //     }
+    // }, [swap])
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
@@ -132,15 +133,13 @@ export default function Form() {
     const initialValues: SwapFormValues = swap ? generateSwapInitialValuesFromSwap(swap, settings)
         : generateSwapInitialValues(settings, query)
 
-    const initiallyValidation = MainStepValidation({ minAllowedAmount, maxAllowedAmount })(initialValues)
-    const initiallyIsValid = !(Object.values(initiallyValidation)?.filter(v => v).length > 0)
-
     const handleShowSwapModal = useCallback((value: boolean) => {
         setShowSwapModal(value)
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
     }, [router, swap])
 
     return <>
+        <BalancesFetcher/>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
                 {
@@ -176,7 +175,6 @@ export default function Form() {
             validateOnMount={true}
             validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
-            isInitialValid={initiallyIsValid}
         >
             <SwapForm isPartnerWallet={!!isPartnerWallet} partner={partner} />
         </Formik>

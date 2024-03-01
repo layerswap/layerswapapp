@@ -7,12 +7,10 @@ export const BalancesStateUpdateContext = React.createContext<BalancesStateUpdat
 export type BalancesState = {
     balances: { [address: string]: Balance[] },
     gases: { [network: string]: Gas[] },
-    isBalanceLoading: boolean,
     isGasLoading: boolean,
 }
 
 export type BalancesStateUpdate = {
-    setIsBalanceLoading: (value: boolean) => void,
     setAllBalances: React.Dispatch<React.SetStateAction<{
         [address: string]: Balance[];
     }>>;
@@ -29,7 +27,6 @@ type Props = {
 export const BalancesDataProvider: FC<Props> = ({ children }) => {
     const [allBalances, setAllBalances] = useState<{ [address: string]: Balance[] }>({})
     const [allGases, setAllGases] = useState<{ [network: string]: Gas[] }>({})
-    const [isBalanceLoading, setIsBalanceLoading] = useState<boolean>(false)
     const [isGasLoading, setIsGasLoading] = useState<boolean>(false)
 
     const balances = allBalances
@@ -39,12 +36,10 @@ export const BalancesDataProvider: FC<Props> = ({ children }) => {
         <BalancesStateContext.Provider value={{
             balances,
             gases,
-            isBalanceLoading,
             isGasLoading,
         }}>
             <BalancesStateUpdateContext.Provider value={{
                 setAllBalances,
-                setIsBalanceLoading,
                 setAllGases,
                 setIsGasLoading
             }}>

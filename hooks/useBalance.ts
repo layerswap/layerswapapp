@@ -31,7 +31,6 @@ export default function useBalanceProvider() {
     const query = useQueryState()
 
     const {
-        setIsBalanceLoading,
         setAllBalances,
         setIsGasLoading,
         setAllGases
@@ -48,8 +47,8 @@ export default function useBalanceProvider() {
 
         if (network
             && isBalanceOutDated
-            && address) {
-            setIsBalanceLoading(true)
+            && address
+        ) {
 
             const provider = getBalanceProvider(network)
             const ercAndNativeBalances = await provider?.getBalance({
@@ -64,7 +63,27 @@ export default function useBalanceProvider() {
                 return ({ ...data, [address]: filteredBalances?.concat(ercAndNativeBalances) })
             })
 
-            setIsBalanceLoading(false)
+        }
+    }
+    const fetchAddressBalance = async ({ network, address }: { network: Layer, address?: string }) => {
+
+        if (network
+            && address
+        ) {
+
+            const provider = getBalanceProvider(network)
+            const ercAndNativeBalances = await provider?.getBalance({
+                layer: network,
+                address: address
+            }) || []
+
+            setAllBalances((data) => {
+                const walletBalances = data[address]
+                const filteredBalances = walletBalances?.some(b => b?.network === network?.internal_name) ? walletBalances?.filter(b => b?.network !== network.internal_name) : walletBalances || []
+
+                return ({ ...data, [address]: filteredBalances?.concat(ercAndNativeBalances) })
+            })
+
         }
     }
 
@@ -120,6 +139,9 @@ export default function useBalanceProvider() {
     return {
         fetchGas,
         fetchBalance,
+        fetchAddressBalance,
         fetchAllBalances
     }
 }
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
