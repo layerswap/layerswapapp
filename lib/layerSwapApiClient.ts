@@ -8,6 +8,8 @@ import { NextRouter } from "next/router";
 import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
+import { CryptoNetwork } from "../Models/CryptoNetwork";
+import { Exchange } from "../Models/Exchange";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
@@ -20,8 +22,30 @@ export default class LayerSwapApiClient {
 
     fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
 
+    async GetSourceRoutesAsync(): Promise<ApiResponse<{
+        network: string;
+        asset: string;
+    }[]>> {
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/routes/sources?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
+    }
+
+    async GetDestinationRoutesAsync(): Promise<ApiResponse<{
+        network: string;
+        asset: string;
+    }[]>> {
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/routes/destinations?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
+    }
+
+    async GetExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/exchanges?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
+    }
+
     async GetSettingsAsync(): Promise<ApiResponse<LayerSwapSettings>> {
         return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
+    }
+
+    async GetLSNetworksAsync(): Promise<ApiResponse<CryptoNetwork[]>> {
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/networks?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
     }
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<CreateSwapData>> {
@@ -54,7 +78,7 @@ export default class LayerSwapApiClient {
     }
 
     async GenerateDepositAddress(network: string): Promise<ApiResponse<DepositAddress>> {
-        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/deposit_addresses/${network}`);
+        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/networks/${network}/deposit_addresses`);
     }
 
     async WithdrawFromExchange(swapId: string, exchange: string, twoFactorCode?: string): Promise<ApiResponse<void>> {
@@ -120,6 +144,8 @@ export type CreateSwapParams = {
     destination: string,
     source_asset: string,
     destination_asset: string
+    source_exchange?: string
+    destination_exchange?: string
     destination_address: string,
     app_name?: string,
     reference_id?: string,
@@ -171,8 +197,6 @@ export type Transaction = {
     transaction_id: string,
     confirmations: number,
     max_confirmations: number,
-    explorer_url: string,
-    account_explorer_url: string,
     usd_value: number,
     usd_price: number,
     status: TransactionStatus,

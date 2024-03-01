@@ -1,8 +1,11 @@
 import { useCallback, useState } from 'react'
 import Image from 'next/image'
-import {ChevronDown } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
 import CommandSelect, { SelectMenuItemGroup } from './commandSelect'
+import { Layer } from '../../../Models/Layer'
+import { NetworkCurrency } from '../../../Models/CryptoNetwork'
+import { LeafletHeight } from '../../modal/leaflet'
 
 type CommandSelectWrapperProps = {
     setValue: (value: ISelectMenuItem) => void;
@@ -12,6 +15,12 @@ type CommandSelectWrapperProps = {
     searchHint: string;
     disabled: boolean;
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
+    isLoading: boolean;
+    isExchange?: boolean;
+    network?: Layer | undefined;
+    currency?: NetworkCurrency | undefined;
+    networkImgSrc?: string;
+    modalHeight?: LeafletHeight
 }
 
 export default function CommandSelectWrapper<T>({
@@ -21,7 +30,12 @@ export default function CommandSelectWrapper<T>({
     placeholder,
     searchHint,
     values,
-    valueGrouper
+    valueGrouper,
+    isLoading,
+    isExchange,
+    network,
+    currency,
+    modalHeight
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -32,7 +46,7 @@ export default function CommandSelectWrapper<T>({
     const handleSelect = useCallback((item: SelectMenuItem<T>) => {
         setValue(item)
         setShowModal(false)
-    }, [])
+    }, [setValue])
 
     return (
         <>
@@ -43,7 +57,7 @@ export default function CommandSelectWrapper<T>({
                     disabled={disabled}
                     className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-secondary-600 border border-secondary-500 font-semibold"
                 >
-                    <span className='flex grow text-left items-center'>
+                    <span className='flex grow text-left items-center text-xs md:text-base'>
                         {
                             value && <div className="flex items-center">
                                 <div className="flex-shrink-0 h-6 w-6 relative">
@@ -58,19 +72,25 @@ export default function CommandSelectWrapper<T>({
                                             className="rounded-md object-contain"
                                         />
                                     }
-
                                 </div>
                             </div>
                         }
-                        {value
+                        {value && !isExchange
                             ?
-                            <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
+                            <span className="ml-3 block font-medium text-primary-buttonTextColor flex-auto items-center">
                                 {value?.name}
                             </span>
-                            :
-                            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
-                                {placeholder}
-                            </span>}
+                            : value && isExchange ?
+                                <span className="ml-3 flex font-medium flex-auto space-x-1 items-center">
+                                    <div className="text-primary-buttonTextColor flex">{network?.display_name}</div>
+                                    <div className="text-primary-text-placeholder inline-flex items-center justify-self-end gap-1">
+                                        ({currency?.asset})
+                                    </div>
+                                </span>
+                                :
+                                <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                                    {placeholder}
+                                </span>}
                     </span>
                     <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-primary-text">
                         <ChevronDown className="h-4 w-4" aria-hidden="true" />
@@ -85,6 +105,9 @@ export default function CommandSelectWrapper<T>({
                 searchHint={searchHint}
                 valueGrouper={valueGrouper}
                 values={values}
+                isLoading={isLoading}
+                isExchange={isExchange}
+                modalHeight={modalHeight}
             />
         </>
     )

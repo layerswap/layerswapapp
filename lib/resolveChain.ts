@@ -1,18 +1,21 @@
-import { CryptoNetwork } from "../Models/CryptoNetwork";
+import { Layer } from "../Models/Layer";
 import NetworkSettings from "./NetworkSettings";
 import { SendErrorMessage } from "./telegram";
 
+export default function resolveChain(network: Layer): (Chain & RainbowKitChain) | undefined {
 
+    const nativeCurrency = network.assets.find(c => c.is_native);
+    const blockExplorersBaseURL =
+        network.transaction_explorer_template ?
+            new URL(network.transaction_explorer_template).origin
+            : null
 
-export default function resolveChain(network: CryptoNetwork): (Chain & RainbowKitChain) | undefined {
-
-    const nativeCurrency = network.currencies.find(c => c.asset === network.native_currency);
-    const blockExplorersBaseURL = new URL(network.transaction_explorer_template).origin;
     const metadata = network.metadata
     const { ensRegistry, ensUniversalResolver, multicall3 } = metadata || {}
 
     if (!nativeCurrency) {
-        SendErrorMessage("UI Settings error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: could not find native currency for ${network.internal_name} %0A`)
+        if (process.env.NEXT_PUBLIC_API_VERSION !== 'sandbox')
+            SendErrorMessage("UI Settings error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: could not find native currency for ${network.internal_name} ${JSON.stringify(network)} %0A`)
         return
     }
 
@@ -21,7 +24,7 @@ export default function resolveChain(network: CryptoNetwork): (Chain & RainbowKi
         name: network.display_name,
         network: network.internal_name,
         nativeCurrency: {
-            name: nativeCurrency.name,
+            name: nativeCurrency.asset,
             symbol: nativeCurrency.asset,
             decimals: nativeCurrency.decimals
         },
@@ -34,12 +37,14 @@ export default function resolveChain(network: CryptoNetwork): (Chain & RainbowKi
                 http: network.nodes.map(n => n?.url),
             },
         },
-        blockExplorers: {
-            default: {
-                name: 'name',
-                url: blockExplorersBaseURL,
-            },
-        },
+        ...(blockExplorersBaseURL ? {
+            blockExplorers: {
+                default: {
+                    name: 'name',
+                    url: blockExplorersBaseURL,
+                },
+            }
+        } : {}),
         contracts: {
             ...(multicall3 ? {
                 multicall3:

@@ -11,7 +11,7 @@ import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "..
 import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import Modal from "../../modal/modal";
 import SwapForm from "./Form";
-import { useRouter } from "next/router";
+import { NextRouter, useRouter } from "next/router";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
@@ -26,7 +26,9 @@ import Image from 'next/image';
 import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
+import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
+import { getSecondsToTomorrow } from "../../utils/timeCalculations";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -58,17 +60,10 @@ export default function Form() {
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.appName && `/apps?name=${query?.appName}`, layerswapApiClient.fetcher)
-    const partner = query?.appName && partnerData?.data?.name?.toLowerCase() === (query?.appName as string)?.toLowerCase() ? partnerData?.data : undefined
+    const partner = query?.appName && partnerData?.data?.client_id?.toLowerCase() === (query?.appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
     const { swap } = useSwapDataState()
-
-    useEffect(() => {
-        if (swap) {
-            const initialValues = generateSwapInitialValuesFromSwap(swap, settings)
-            formikRef?.current?.resetForm({ values: initialValues })
-            formikRef?.current?.validateForm(initialValues)
-        }
-    }, [swap])
+    const { minAllowedAmount, maxAllowedAmount } = useFee()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
@@ -86,20 +81,9 @@ export default function Form() {
                 }
             }
             const swapId = await createSwap(values, query, partner);
-
-            if (swapId) {
-                setSwapId(swapId)
-                var swapURL = window.location.protocol + "//"
-                    + window.location.host + `/swap/${swapId}`;
-                const params = resolvePersistantQueryParams(router.query)
-                if (params && Object.keys(params).length) {
-                    const search = new URLSearchParams(params as any);
-                    if (search)
-                        swapURL += `?${search}`
-                }
-                window.history.replaceState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
-                setShowSwapModal(true)
-            }
+            setSwapId(swapId)
+            setSwapPath(swapId, router)
+            setShowSwapModal(true)
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error
@@ -111,13 +95,24 @@ export default function Form() {
             }
             else if (data?.code === LSAPIKnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.to) {
                 setNetworkToConnect({
-                    DisplayName: values.to?.display_name,
+                    DisplayName: values.to.display_name,
                     AppURL: data.message
                 })
                 setShowConnectNetworkModal(true);
+            } else if (data.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
+                const time = data.metadata.RemainingLimitPeriod?.split(':');
+                const hours = Number(time[0])
+                const minutes = Number(time[1])
+                const remainingTime = `${hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''} ${minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}`
+
+                if (minAllowedAmount && data.metadata.AvailableTransactionAmount > minAllowedAmount) {
+                    toast.error(`Daily limit of ${values.fromCurrency?.asset} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromCurrency?.asset} or retry in ${remainingTime}.`)
+                } else {
+                    toast.error(`Daily limit of ${values.fromCurrency?.asset} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
+                }
             }
             else {
-                toast.error(error.message)
+                toast.error(data.message || error.message)
             }
         }
     }, [createSwap, query, partner, router, updateAuthData, setUserType, swap])
@@ -130,8 +125,11 @@ export default function Form() {
 
     const initialValues: SwapFormValues = swap ? generateSwapInitialValuesFromSwap(swap, settings)
         : generateSwapInitialValues(settings, query)
-    const initiallyValidation = MainStepValidation({ settings, query })(initialValues)
-    const initiallyInValid = Object.values(initiallyValidation)?.filter(v => v).length > 0
+
+    const handleShowSwapModal = useCallback((value: boolean) => {
+        setShowSwapModal(value)
+        value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
+    }, [router, swap])
 
     return <>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
@@ -139,14 +137,26 @@ export default function Form() {
                 {
                     swap &&
                     !showSwapModal &&
-                    <PendingSwap onClick={() => setShowSwapModal(true)} />
+                    <PendingSwap key="pendingSwap" onClick={() => handleShowSwapModal(true)} />
                 }
             </AnimatePresence>
         </div>
-        <Modal height="fit" show={showConnectNetworkModal} setShow={setShowConnectNetworkModal} header={`${networkToConnect?.DisplayName} connect`}>
+        <Modal
+            height="fit"
+            show={showConnectNetworkModal}
+            setShow={setShowConnectNetworkModal}
+            header={`${networkToConnect?.DisplayName} connect`}
+            modalId="showNetwork"
+        >
             {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
         </Modal>
-        <Modal height='fit' show={showSwapModal} setShow={setShowSwapModal} header={`Complete the swap`}>
+        <Modal
+            height='fit'
+            show={showSwapModal}
+            setShow={handleShowSwapModal}
+            header={`Complete the swap`}
+            modalId="showSwap"
+        >
             <ResizablePanel>
                 <SwapDetails type="contained" />
             </ResizablePanel>
@@ -155,14 +165,14 @@ export default function Form() {
             innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
-            validate={MainStepValidation({ settings, query })}
+            validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
-            isInitialValid={!initiallyInValid}
         >
             <SwapForm isPartnerWallet={!!isPartnerWallet} partner={partner} />
         </Formik>
     </>
 }
+
 const textMotion = {
     rest: {
         color: "grey",
@@ -186,10 +196,11 @@ const textMotion = {
 
 const PendingSwap = ({ onClick }: { onClick: () => void }) => {
     const { swap } = useSwapDataState()
-    const { source_exchange: source_exchange_internal_name,
+    const {
         destination_network: destination_network_internal_name,
         source_network: source_network_internal_name,
-        destination_exchange: destination_exchange_internal_name,
+        destination_exchange,
+        source_exchange
     } = swap || {}
 
     const settings = useSettingsState()
@@ -197,10 +208,12 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
     if (!swap)
         return <></>
 
-    const { exchanges, networks, resolveImgSrc } = settings
-    const source = source_exchange_internal_name ? exchanges.find(e => e.internal_name === source_exchange_internal_name) : networks.find(e => e.internal_name === source_network_internal_name)
-    const destination_exchange = destination_exchange_internal_name && exchanges.find(e => e.internal_name === destination_exchange_internal_name)
-    const destination = destination_exchange_internal_name ? destination_exchange : networks.find(n => n.internal_name === destination_network_internal_name)
+    const { resolveImgSrc, layers, exchanges } = settings
+    const source = layers.find(e => e.internal_name === source_network_internal_name)
+    const destination = layers.find(n => n.internal_name === destination_network_internal_name)
+
+    const sourceExchange = exchanges.find(e => e.internal_name === source_exchange)
+    const destExchange = exchanges.find(e => e.internal_name === destination_exchange)
 
     return <motion.div
         initial={{ y: 10, opacity: 0 }}
@@ -220,26 +233,38 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                         {swap && <StatusIcon swap={swap} short={true} />}
                     </span>
                     <div className="flex-shrink-0 h-5 w-5 relative">
-                        {source &&
+                        {sourceExchange ? <Image
+                            src={resolveImgSrc(sourceExchange)}
+                            alt="From Logo"
+                            height="60"
+                            width="60"
+                            className="rounded-md object-contain"
+                        /> : source ?
                             <Image
                                 src={resolveImgSrc(source)}
                                 alt="From Logo"
                                 height="60"
                                 width="60"
                                 className="rounded-md object-contain"
-                            />
+                            /> : null
                         }
                     </div>
                     <ChevronRight className="block h-4 w-4 mx-1" />
                     <div className="flex-shrink-0 h-5 w-5 relative block">
-                        {destination &&
+                        {destExchange ? <Image
+                            src={resolveImgSrc(destination)}
+                            alt="To Logo"
+                            height="60"
+                            width="60"
+                            className="rounded-md object-contain"
+                        /> : destination ?
                             <Image
                                 src={resolveImgSrc(destination)}
                                 alt="To Logo"
                                 height="60"
                                 width="60"
                                 className="rounded-md object-contain"
-                            />
+                            /> : null
                         }
                     </div>
                 </div>
@@ -247,4 +272,31 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
             </motion.div>
         </motion.div>
     </motion.div>
+}
+
+const setSwapPath = (swapId: string, router: NextRouter) => {
+    const basePath = router?.basePath || ""
+    var swapURL = window.location.protocol + "//"
+        + window.location.host + `${basePath}/swap/${swapId}`;
+    const params = resolvePersistantQueryParams(router.query)
+    if (params && Object.keys(params).length) {
+        const search = new URLSearchParams(params as any);
+        if (search)
+            swapURL += `?${search}`
+    }
+    window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
+}
+
+const removeSwapPath = (router: NextRouter) => {
+    const basePath = router?.basePath || ""
+    let homeURL = window.location.protocol + "//"
+        + window.location.host + basePath
+
+    const params = resolvePersistantQueryParams(router.query)
+    if (params && Object.keys(params).length) {
+        const search = new URLSearchParams(params as any);
+        if (search)
+            homeURL += `?${search}`
+    }
+    window.history.replaceState({ ...window.history.state, as: homeURL, url: homeURL }, '', homeURL);
 }

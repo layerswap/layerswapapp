@@ -1,5 +1,5 @@
-import { ArrowLeftRight } from 'lucide-react';
-import { FC, useCallback, useEffect, useState } from 'react'
+import { AlertTriangle, ArrowLeftRight, Info } from 'lucide-react';
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import * as zksync from 'zksync';
@@ -15,6 +15,8 @@ import { Transaction } from 'zksync';
 import ClickTooltip from '../../../Tooltips/ClickTooltip';
 import SignatureIcon from '../../../icons/SignatureIcon';
 import formatAmount from '../../../../lib/formatAmount';
+import useWallet from '../../../../hooks/useWallet';
+import Link from 'next/link';
 
 type Props = {
     depositAddress: string,
@@ -34,15 +36,21 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const { swap } = useSwapDataState();
     const { chain } = useNetwork();
     const signer = useEthersSigner();
-    const { isConnected } = useAccount();
 
-    const { networks, layers, currencies } = useSettingsState();
+    const { layers } = useSettingsState();
     const { source_network: source_network_internal_name } = swap || {};
-    const source_network = networks.find(n => n.internal_name === source_network_internal_name);
+    const source_network = layers.find(n => n.internal_name === source_network_internal_name);
     const source_layer = layers.find(l => l.internal_name === source_network_internal_name)
-    const source_currency = source_network?.currencies?.find(c => c.asset.toLocaleUpperCase() === swap?.source_network_asset.toLocaleUpperCase());
+    const source_currency = source_network?.assets?.find(c => c.asset.toLocaleUpperCase() === swap?.source_network_asset.toLocaleUpperCase());
     const defaultProvider = swap?.source_network?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "goerli";
-    const l1Network = networks.find(n => n.internal_name === source_network?.metadata?.L1Network);
+    const l1Network = layers.find(n => n.internal_name === source_network?.metadata?.L1Network);
+
+    const { getWithdrawalProvider: getProvider } = useWallet()
+    const provider = useMemo(() => {
+        return source_layer && getProvider(source_layer)
+    }, [source_layer, getProvider])
+
+    const wallet = provider?.getConnectedWallet()
 
     useEffect(() => {
         if (signer?._address !== syncWallet?.cachedAddress && source_layer) {
@@ -85,7 +93,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     ChangePubKey: 'ECDSA'
                 }, wallet.address(), Number(source_currency?.contract_address));
                 const formatedGas = formatAmount(activationFee.totalFee, Number(source_currency?.decimals))
-                let assetUsdPrice = currencies.find(x => x.asset == source_currency?.asset)?.usd_price;
+                let assetUsdPrice = source_layer?.assets.find(x => x.asset == source_currency?.asset)?.usd_price;
                 setActivationFee({ feeInAsset: formatedGas, feeInUsd: formatedGas * (assetUsdPrice ?? 0) })
             }
             setSyncWallet(wallet)
@@ -155,7 +163,23 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         }
     }, [syncWallet, swap, depositAddress, source_currency, amount])
 
-    if (!signer || !isConnected) {
+    if (wallet && wallet?.connector?.toLowerCase() === 'argent') return (
+        <div className="rounded-md bg-secondary-800 p-4">
+            <div className="flex">
+                <div className="flex-shrink-0">
+                    <Info className="h-5 w-5 text-primary-400" aria-hidden="true" />
+                </div>
+                <div className="ml-3">
+                    <h3 className="text-sm font-medium text-primary-text">Please switch to manually</h3>
+                    <div className="mt-2 text-sm text-secondary-text">
+                        <p><span>Automatic transfers from Argent zkSync Lite wallet are not supported now. Choose the manual transfer option and follow the</span> <Link target="_blank" className="underline hover:no-underline cursor-pointer hover:text-secondary-text text-primary-text font-light" href='https://www.youtube.com/watch?v=u_KzSr5v8M8&ab_channel=Layerswap'>tutorial</Link> <span>for a smooth swap.</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+
+    if (!signer || !wallet) {
         return <ConnectWalletButton />
     }
 

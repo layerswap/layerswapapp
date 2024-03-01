@@ -42,7 +42,7 @@ export default function Document() {
         <script
           dangerouslySetInnerHTML={{
             __html:
-              'if(typeof window !== "undefined" && !window.location.pathname.includes("nocookies")){try { localStorage.getItem("ls-ls-test"); }catch (e) { window.location.href = "/nocookies"; }}',
+              'if(typeof window !== "undefined" && !window.location.pathname.includes("nocookies")){try { localStorage.getItem("ls-ls-test"); }catch (e) { window.location.href = "/app/nocookies"; }}',
           }}
         />
       </Head>

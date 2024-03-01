@@ -41,10 +41,10 @@ const Component: FC<Props> = ({ campaign }) => {
     }
 
     const rewards = rewardsData?.data
-    const { resolveImgSrc, networks, currencies } = settings
-    const network = networks.find(n => n.internal_name === campaign?.network)
+    const { resolveImgSrc, layers } = settings
+    const network = layers.find(n => n.internal_name === campaign?.network)
     const position = rewards?.user_reward.position || NaN
-    const campaignAsset = currencies.find(c => c?.asset === campaign?.asset)
+    const campaignAsset = network?.assets.find(c => c?.asset === campaign?.asset)
 
     const leaderboardRewards = [
         leaderboard.leaderboard_budget * 0.6,
@@ -141,7 +141,7 @@ const Component: FC<Props> = ({ campaign }) => {
                 }
             </div >
         </div >
-        <Modal height="full" header='Leaderboard' show={openTopModal} setShow={setOpenTopModal} >
+        <Modal height="full" header='Leaderboard' show={openTopModal} setShow={setOpenTopModal} modalId="leaderBoard">
             <div className="bg-secondary-700 border border-secondary-700 mt-2 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg text-secondary-text">
                 <div className="p-3">
                     <div className="space-y-6">

@@ -48,6 +48,10 @@ export default class KnownInternalNames {
 
         public static readonly ArbitrumGoerli: string = "ARBITRUM_GOERLI";
 
+        public static readonly ArbitrumSepolia: string = "ARBITRUM_SEPOLIA";
+
+        public static readonly ModMainnet: string = "MODE_MAINNET";
+
         public static readonly OptimismMainnet: string = "OPTIMISM_MAINNET";
 
         public static readonly OptimismGoerli: string = "OPTIMISM_GOERLI";
@@ -74,6 +78,8 @@ export default class KnownInternalNames {
 
         public static readonly EthereumGoerli: string = "ETHEREUM_GOERLI";
 
+        public static readonly EthereumSepolia: string = "ETHEREUM_SEPOLIA";
+
         public static readonly PolygonMainnet: string = "POLYGON_MAINNET";
 
         public static readonly LoopringMainnet: string = "LOOPRING_MAINNET";
@@ -85,6 +91,8 @@ export default class KnownInternalNames {
         public static readonly StarkNetGoerli: string = "STARKNET_GOERLI";
 
         public static readonly StarkNetMainnet: string = "STARKNET_MAINNET";
+
+        public static readonly StarkNetSepolia: string = "STARKNET_SEPOLIA";
 
         public static readonly ImmutableXMainnet: string = "IMMUTABLEX_MAINNET";
 
@@ -143,12 +151,19 @@ export default class KnownInternalNames {
         public static readonly TONMainnet: string = "TON_MAINNET";
 
         public static readonly BrineMainnet: string = "BRINE_MAINNET";
+
+        public static readonly BlastSepolia: string = "BLAST_SEPOLIA";
+
+        public static readonly BlastMainnet: string = "BLAST_MAINNET";
+
     }
 
     static Currencies = class {
         public static readonly USDT: string = "USDT";
         public static readonly ETH: string = "ETH";
         public static readonly USDC: string = "USDC";
+        public static readonly USDCe: string = "USDC.e";
+        public static readonly USDCE: string = "USDC.E";
         public static readonly LRC: string = "LRC";
         public static readonly IMX: string = "IMX";
         public static readonly SNX: string = "SNX";

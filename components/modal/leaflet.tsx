@@ -24,7 +24,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 40 };
 
-    async function handleDragEnd(_, info) {
+    const handleDragEnd = useCallback(async (_, info) => {
         const offset = info.offset.y;
         const velocity = info.velocity.y;
         const height = mobileModalRef.current?.getBoundingClientRect().height || 0;
@@ -34,7 +34,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
         } else {
             controls.start({ y: 0, transition: transitionProps });
         }
-    }
+    }, [controls, setShow, transitionProps])
 
     useEffect(() => {
         if (show) {
@@ -45,9 +45,10 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
         }
     }, [controls, show, transitionProps]);
 
-    const handleCloseModal = () => {
+    const handleCloseModal = useCallback(async (e: React.MouseEvent<HTMLElement>) => {
+        await controls.start({ y: "100%", transition: transitionProps, });
         setShow(false);
-    }
+    }, [setShow, controls, transitionProps])
 
     let wrapperHeightClass = ''
     switch (height) {

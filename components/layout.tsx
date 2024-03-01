@@ -12,14 +12,15 @@ import ErrorFallback from "./ErrorFallback";
 import { SendErrorMessage } from "../lib/telegram";
 import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
-import LayerSwapAuthApiClient from "../lib/userAuthApiClient";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
-import * as Sentry from "@sentry/nextjs";
+import { FeeProvider } from "../context/feeContext";
 import RainbowKit from "./RainbowKit";
 import Solana from "./SolanaProvider";
+import { IsExtensionError } from "../helpers/errorHelper";
+// import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -62,7 +63,6 @@ export default function Layout({ children, settings, themeData }: Props) {
     </ThemeWrapper>
 
   let appSettings = new LayerSwapAppSettings(settings)
-  LayerSwapAuthApiClient.identityBaseEndpoint = appSettings.discovery.identity_url
 
   const query: QueryParams = {
     ...router.query,
@@ -76,32 +76,22 @@ export default function Layout({ children, settings, themeData }: Props) {
     ...(router.query.lockFrom === 'true' ? { lockFrom: true } : {}),
     ...(router.query.lockTo === 'true' ? { lockTo: true } : {}),
     ...(router.query.lockAsset === 'true' ? { lockAsset: true } : {}),
+    ...(router.query.lockFromAsset === 'true' ? { lockFromAsset: true } : {}),
+    ...(router.query.lockToAsset === 'true' ? { lockToAsset: true } : {}),
+    ...(router.query.hideLogo === 'true' ? { hideLogo: true } : {}),
 
-
-    ...(router.query.lockAddress === 'false' ? { lockAddress: false } : {}),
-    ...(router.query.lockNetwork === 'false' ? { lockNetwork: false } : {}),
-    ...(router.query.lockExchange === 'false' ? { lockExchange: false } : {}),
-    ...(router.query.hideRefuel === 'false' ? { hideRefuel: false } : {}),
-    ...(router.query.hideAddress === 'false' ? { hideAddress: false } : {}),
-    ...(router.query.hideFrom === 'false' ? { hideFrom: false } : {}),
-    ...(router.query.hideTo === 'false' ? { hideTo: false } : {}),
-    ...(router.query.lockFrom === 'false' ? { lockFrom: false } : {}),
-    ...(router.query.lockTo === 'false' ? { lockTo: false } : {}),
-    ...(router.query.lockAsset === 'false' ? { lockAsset: false } : {}),
   };
 
   function logErrorToService(error, info) {
-    const transaction = Sentry.startTransaction({
-      name: "error_boundary_handler",
-    });
-    Sentry.configureScope((scope) => {
-      scope.setSpan(transaction);
-    });
-    if (process.env.NEXT_PUBLIC_VERCEL_ENV && !error.stack.includes("chrome-extension")) {
+    const extension_error = IsExtensionError(error)
+    if (process.env.NEXT_PUBLIC_VERCEL_ENV && !extension_error) {
       SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
     }
-    Sentry.captureException(error, info);
-    transaction.finish();
+    // const renderingError = new Error(error.message);
+    // renderingError.name = `ReactRenderingError`;
+    // renderingError.stack = info.componentStack;
+    // renderingError.cause = error;
+    // datadogRum.addError(renderingError);
   }
 
   themeData = themeData || THEME_COLORS.default
@@ -147,9 +137,11 @@ export default function Layout({ children, settings, themeData }: Props) {
                 <TonConnectProvider basePath={basePath} themeData={themeData}>
                   <RainbowKit>
                     <Solana>
-                      {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                        <MaintananceContent />
-                        : children}
+                      <FeeProvider>
+                        {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                          <MaintananceContent />
+                          : children}
+                      </FeeProvider>
                     </Solana>
                   </RainbowKit>
                 </TonConnectProvider>
@@ -158,6 +150,6 @@ export default function Layout({ children, settings, themeData }: Props) {
           </TooltipProvider>
         </AuthProvider>
       </SettingsProvider >
-    </QueryProvider>
+    </QueryProvider >
   </>)
 }

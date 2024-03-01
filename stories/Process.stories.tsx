@@ -3,7 +3,7 @@ import { SwapItem, TransactionStatus, TransactionType } from '../lib/layerSwapAp
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapData, SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
-import { Chain, WagmiConfig, configureChains, createConfig } from 'wagmi';
+import { WagmiConfig, configureChains, createConfig } from 'wagmi';
 import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { BalancesStateContext, BalancesStateUpdateContext } from '../context/balances';
@@ -11,29 +11,20 @@ import { walletConnectWallet, rainbowWallet, metaMaskWallet, bitgetWallet, argen
 import { FC } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange, cancelled, expired } from './Data/swaps'
-import { Settings } from './Data/settings';
-import { NetworkType } from '../Models/CryptoNetwork';
+import { SettingChains, Settings } from './Data/settings';
 import { AuthDataUpdateContext, AuthStateContext, UserType } from '../context/authContext';
 import { IntercomProvider } from 'react-use-intercom';
 import { THEME_COLORS } from '../Models/Theme';
 import Layout from '../components/layout';
 import RainbowKitComponent from '../components/RainbowKit';
 import SwapDetails from '../components/Swap';
-import resolveChain from '../lib/resolveChain';
 import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
 import WalletMockFunctions from './Mocks/context/BalancesMockFunctions';
-
 import BalancesStateMock from './Mocks/context/BalancesState';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
-let settings = new LayerSwapAppSettings(Settings)
-
-const isChain = (c: Chain | undefined): c is Chain => c != undefined
-const settingsChains = settings
-    .networks
-    .filter(net => net.type === NetworkType.EVM && net.nodes?.some(n => n.url?.length > 0))
-    .map(resolveChain).filter(isChain)
+const settingsChains = SettingChains;
 
 const { chains, publicClient } = configureChains(
     settingsChains,
@@ -76,7 +67,7 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
     return <WagmiConfig config={wagmiConfig}>
         <IntercomProvider appId='123'>
             <SettingsStateContext.Provider value={appSettings}>
-                <Layout settings={appSettings} themeData={themeData}>
+                <Layout settings={Settings} themeData={themeData}>
                     <RainbowKitComponent>
                         <SwapDataStateContext.Provider value={swapContextInitialValues}>
                             <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
@@ -99,12 +90,10 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
 }
 
 const DUMMY_TRANSACTION = {
-    account_explorer_url: "",
     from: "0x5da5c2a98e26fd28914b91212b1232d58eb9bbab",
     to: "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
     created_date: "2023-08-16T16:33:23.4937+00:00",
     transaction_id: "0xae9231b805139bee7e92ddae631b13bb2d13a09e106826b4f08e8efa965d1c27",
-    explorer_url: "https://goerli.arbiscan.io/tx/0xae9231b805139bee7e92ddae631b13bb2d13a09e106826b4f08e8efa965d1c27",
     confirmations: 28,
     max_confirmations: 12,
     amount: 0.00093,

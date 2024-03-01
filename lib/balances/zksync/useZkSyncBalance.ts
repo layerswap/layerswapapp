@@ -4,16 +4,14 @@ import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../
 import ZkSyncLiteRPCClient from "./zksyncLiteRpcClient";
 
 export default function useZkSyncBalance(): BalanceProvider {
-    const name = 'zksync_lite'
     const supportedNetworks = [
         KnownInternalNames.Networks.ZksyncMainnet
     ]
     const client = new ZkSyncLiteRPCClient();
     const getBalance = async ({ layer, address }: BalanceProps) => {
-
         let balances: Balance[] = []
 
-        if (layer.isExchange === true || !layer.assets) return
+        if (!layer.assets) return
 
         try {
             const result = await client.getAccountInfo(layer.nodes[0].url, address);
@@ -45,7 +43,7 @@ export default function useZkSyncBalance(): BalanceProvider {
     const getGas = async ({ layer, currency, address }: GasProps) => {
 
         let gas: Gas[] = [];
-        if (layer.isExchange === true || !layer.assets || !address) return
+        if (!layer.assets || !address) return
 
         try {
             const result = await client.getTransferFee(layer.nodes[0].url, address, currency.asset);
@@ -68,7 +66,6 @@ export default function useZkSyncBalance(): BalanceProvider {
     return {
         getBalance,
         getGas,
-        name,
         supportedNetworks
     }
 }

@@ -23,7 +23,7 @@ const SwapDetails: FC<Props> = ({ type }) => {
     const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id || '']
 
     const sourceNetwork = settings.layers.find(l => l.internal_name === swap?.source_network)
-    const currency = settings.currencies.find(c => c.asset === swap?.source_network_asset)
+    const currency = sourceNetwork?.assets.find(c => c.asset === swap?.source_network_asset)
 
     if (!swap) return <>
         <div className="w-full h-[430px]">

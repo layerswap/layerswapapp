@@ -6,7 +6,11 @@ import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 
 export default function useStarknet(): WalletProvider {
-    const withdrawalSupportedNetworks = [KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetGoerli]
+    const withdrawalSupportedNetworks = [
+        KnownInternalNames.Networks.StarkNetMainnet,
+        KnownInternalNames.Networks.StarkNetGoerli,
+        KnownInternalNames.Networks.StarkNetSepolia
+    ]
     const autofillSupportedNetworks = withdrawalSupportedNetworks
     const name = 'starknet'
     const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
@@ -24,7 +28,7 @@ export default function useStarknet(): WalletProvider {
         const chainId = (chain && fromHex(chain as `0x${string}`, 'string')) || constants.NetworkName.SN_MAIN
         const connect = (await import('starknetkit')).connect
         try {
-            const res = await connect({
+            const { wallet } = await connect({
                 argentMobileOptions: {
                     dappName: 'Layerswap',
                     projectId: WALLETCONNECT_PROJECT_ID,
@@ -33,19 +37,20 @@ export default function useStarknet(): WalletProvider {
                     chainId: chainId as any
                 },
                 dappName: 'Layerswap',
+                modalMode: 'alwaysAsk'
             })
-            if (res && res.account && res.isConnected) {
+            if (wallet && wallet.account && wallet.isConnected) {
                 addWallet({
-                    address: res.account.address,
-                    chainId: res.provider?.chainId || res.provider?.provider?.chainId,
-                    icon: resolveWalletConnectorIcon({ connector: res.name, address: res.account.address }),
-                    connector: res.name,
+                    address: wallet.account.address,
+                    chainId: wallet.provider?.chainId || wallet.provider?.provider?.chainId,
+                    icon: resolveWalletConnectorIcon({ connector: wallet.name, address: wallet.account.address }),
+                    connector: wallet.name,
                     providerName: name,
                     metadata: {
-                        starknetAccount: res
+                        starknetAccount: wallet
                     }
                 })
-            } else if (res?.isConnected === false) {
+            } else if (wallet?.isConnected === false) {
                 await disconnectWallet()
                 connectWallet(chain)
             }

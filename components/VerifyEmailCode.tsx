@@ -62,7 +62,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
     const timerCountdown = userLockedOut ? 600 : 60
 
     return (<>
-        <Modal height='full' show={showDocModal} setShow={setShowDocModal} >
+        <Modal height='full' show={showDocModal} setShow={setShowDocModal} modalId='verifyEmail'>
             {modalUrl ? <DocIframe onConfirm={() => close()} URl={modalUrl} /> : <></>}
         </Modal>
         <Formik
@@ -166,9 +166,9 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                 </div>
                             </div>
                             :
-                            <>
+                            <div className='h-full flex flex-col justify-between'>
                                 <Widget.Content center={true}>
-                                    <MailOpen className='w-16 h-16 mt-auto text-primary self-center' />
+                                    <MailOpen className='w-16 h-16 text-primary self-center mt-5  sm:mt-auto' />
                                     <div className='text-center mt-5'>
                                         <p className='text-lg'><span>Please enter the 6 digit code sent to&nbsp;</span><span className='font-medium text-primary-text'>{tempEmail}</span></p>
                                     </div>
@@ -221,7 +221,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                         </SubmitButton>
                                     </TimerWithContext>
                                 </Widget.Footer>
-                            </>
+                            </div>
                     }
                 </Form >
             )}

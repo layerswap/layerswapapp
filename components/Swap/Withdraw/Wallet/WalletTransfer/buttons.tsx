@@ -30,7 +30,7 @@ export const ConnectWalletButton: FC = () => {
         clcikHandler={clickHandler}
         icon={<WalletIcon className="stroke-2 w-6 h-6" />}
     >
-        Connect wallet
+        Connect a wallet
     </ButtonWrapper>
 }
 
@@ -52,7 +52,6 @@ export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = (
 }
 
 export const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ chainId, network }) => {
-
     const networkChange = useSwitchNetwork({
         chainId: chainId,
     });

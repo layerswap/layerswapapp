@@ -22,6 +22,7 @@ import OpenMask from "../icons/Wallets/OpenMask";
 import Phantom from "../icons/Wallets/Phantom";
 import Solflare from "../icons/Wallets/Solflare";
 import CoinbaseIcon from "../icons/Wallets/Coinbase";
+import GlowIcon from "../icons/Wallets/Glow";
 
 const ConnectButton = ({
     children,
@@ -151,8 +152,8 @@ const ResolveConnectorIcon = ({
             return (
                 <div className="-space-x-2 flex">
                     <RainbowIcon className={className} />
-                    <MetaMaskIcon className={className} />
                     <WalletConnectIcon className={className} />
+                    <MetaMaskIcon className={className} />
                 </div>
             );
         case KnownConnectors.Starknet:
@@ -174,10 +175,9 @@ const ResolveConnectorIcon = ({
         case KnownConnectors.Solana:
             return (
                 <div className="-space-x-2 flex">
-                    <Phantom className={className} />
-                    <Solflare className={className} />
-                    <WalletConnectIcon className={className} />
                     <CoinbaseIcon className={className} />
+                    <GlowIcon className={className} />
+                    <Phantom className={className} />
                 </div>
             );
         default:
@@ -190,4 +190,5 @@ const KnownConnectors = {
     EVM: "evm",
     TON: "ton",
     Solana: "solana",
+    Glow: "glow"
 };

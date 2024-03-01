@@ -1,44 +1,62 @@
-import { FC } from "react"
-import useSWR from 'swr'
+import { FC, useEffect, useMemo } from "react"
 import { useSettingsState } from "../../../context/settings"
 import { useSwapDataState } from "../../../context/swap"
 import Summary from "./Summary"
-import { ApiResponse } from "../../../Models/ApiResponse"
-import LayerSwapApiClient, { DepositType, Fee, TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
-import { GetDefaultNetwork } from "../../../helpers/settingsHelper"
+import { TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
 import useWalletTransferOptions from "../../../hooks/useWalletTransferOptions"
+import { useFee } from "../../../context/feeContext"
+import shortenAddress, { shortenEmail } from "../../utils/ShortenAddress"
+import KnownInternalNames from "../../../lib/knownIds"
+import useWallet from "../../../hooks/useWallet"
+import { useQueryState } from "../../../context/query"
 
 const SwapSummary: FC = () => {
-    const { layers, currencies, networks } = useSettingsState()
-    const { swap, withdrawType, selectedAssetNetwork } = useSwapDataState()
+    const { layers, exchanges } = useSettingsState()
+    const { swap, withdrawType } = useSwapDataState()
+    const { getWithdrawalProvider: getProvider } = useWallet()
+    const {
+        hideFrom,
+        account,
+    } = useQueryState()
+
     const {
         source_network: source_network_internal_name,
         source_exchange: source_exchange_internal_name,
         destination_exchange: destination_exchange_internal_name,
         destination_network: destination_network_internal_name,
         source_network_asset,
-        destination_network_asset,
+        destination_network_asset
     } = swap || {}
 
     const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
+    const { fee: feeData, valuesChanger, minAllowedAmount } = useFee()
 
-    const params = {
-        source: selectedAssetNetwork?.network?.internal_name,
-        destination: destination_exchange_internal_name ?? destination_network_internal_name,
-        source_asset: source_network_asset,
-        destination_asset: destination_network_asset,
-        refuel: swap?.has_refuel
-    }
+    const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
+    const sourceAsset = source_layer?.assets?.find(currency => currency?.asset === source_network_asset)
+    const destination_layer = layers?.find(l => l.internal_name === destination_network_internal_name)
+    const destinationAsset = destination_layer?.assets?.find(currency => currency?.asset === destination_network_asset)
+    const sourceExchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
+    const destExchange = exchanges.find(e => e.internal_name === destination_exchange_internal_name)
 
-    const apiClient = new LayerSwapApiClient()
-    const { data: feeData } = useSWR<ApiResponse<Fee[]>>([params], selectedAssetNetwork ? ([params]) => apiClient.GetFee(params) : null, { dedupingInterval: 60000 })
+    const provider = useMemo(() => {
+        return source_layer && getProvider(source_layer)
+    }, [source_layer, getProvider])
 
-    const source_layer = layers.find(n => n.internal_name === (source_exchange_internal_name ?? source_network_internal_name))
-    const asset = source_layer?.assets?.find(currency => currency?.asset === destination_network_asset)
-    const currency = currencies?.find(c => c.asset === asset?.asset)
-    const destination_layer = layers?.find(l => l.internal_name === (destination_exchange_internal_name ?? destination_network_internal_name))
+    const wallet = provider?.getConnectedWallet()
 
-    if (!swap || !source_layer || !currency || !destination_layer) {
+    useEffect(() => {
+        valuesChanger({
+            amount: swap?.requested_amount.toString(),
+            destination_address: swap?.destination_address,
+            from: source_layer,
+            to: destination_layer,
+            fromCurrency: sourceAsset,
+            toCurrency: destinationAsset,
+            refuel: swap?.has_refuel,
+        })
+    }, [swap])
+
+    if (!swap || !source_layer || !sourceAsset || !destinationAsset || !destination_layer) {
         return <></>
     }
 
@@ -46,58 +64,61 @@ const SwapSummary: FC = () => {
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
-    let fee: number | undefined
     let min_amount: number | undefined
-
-    const walletTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Wallet)
-    const manualTransferFee = feeData?.data?.find(f => f?.deposit_type === DepositType.Manual)
 
     if (isContractWallet?.ready) {
         if (withdrawType === WithdrawType.Wallet && canDoSweepless) {
-            fee = walletTransferFee?.fee_amount;
-            min_amount = walletTransferFee?.min_amount;
+            min_amount = minAllowedAmount;
         } else {
-            fee = manualTransferFee?.fee_amount;
-            min_amount = manualTransferFee?.min_amount;
+            min_amount = minAllowedAmount;
         }
-    }
-
-    if (swap?.fee && swapOutputTransaction) {
-        fee = swap?.fee
     }
 
     const requested_amount = (swapInputTransaction?.amount ??
         (Number(min_amount) > Number(swap.requested_amount) ? min_amount : swap.requested_amount)) || undefined
 
-    const destinationNetworkNativeAsset = currencies?.find(c => c.asset == networks.find(n => n.internal_name === destination_layer?.internal_name)?.native_currency);
-    const destinationNetwork = GetDefaultNetwork(destination_layer, currency?.asset)
-    const refuel_amount_in_usd = Number(destinationNetwork?.refuel_amount_in_usd)
-    const native_usd_price = Number(destinationNetworkNativeAsset?.usd_price)
-    const currency_usd_price = Number(currency?.usd_price)
+    const receiveAmount = withdrawType === WithdrawType.Wallet ? feeData?.walletReceiveAmount : feeData?.manualReceiveAmount
+    const calculatedReceiveAmount = swapOutputTransaction?.amount ?? receiveAmount
 
     const refuelAmountInNativeCurrency = swap?.has_refuel
         ? ((swapRefuelTransaction?.amount ??
-            (refuel_amount_in_usd / native_usd_price))) : undefined;
+            (feeData?.refuelAmount))) : undefined;
 
-    const refuelAmountInSelectedCurrency = swap?.has_refuel &&
-        (refuel_amount_in_usd / currency_usd_price);
-
-    const receive_amount = fee != undefined ? (swapOutputTransaction?.amount
-        ?? (Number(requested_amount) - fee - Number(refuelAmountInSelectedCurrency)))
-        : undefined
+    let sourceAccountAddress = ""
+    if (hideFrom && account) {
+        sourceAccountAddress = shortenAddress(account);
+    }
+    else if (swapInputTransaction?.from) {
+        sourceAccountAddress = shortenAddress(swapInputTransaction?.from);
+    }
+    else if (wallet) {
+        sourceAccountAddress = shortenAddress(wallet.address);
+    }
+    else if (source_layer?.internal_name === KnownInternalNames.Exchanges.Coinbase && swap?.exchange_account_connected) {
+        sourceAccountAddress = shortenEmail(swap?.exchange_account_name, 10);
+    }
+    else if (sourceExchange) {
+        sourceAccountAddress = "Exchange"
+    }
+    else {
+        sourceAccountAddress = "Network"
+    }
 
     return <Summary
-        currency={currency}
+        sourceCurrency={sourceAsset}
+        destinationCurrency={destinationAsset}
         source={source_layer}
+        sourceExchange={sourceExchange}
         destination={destination_layer}
-        requestedAmount={requested_amount as number}
-        receiveAmount={receive_amount}
+        destExchange={destExchange}
+        requestedAmount={requested_amount}
+        receiveAmount={calculatedReceiveAmount}
         destinationAddress={swap.destination_address}
         hasRefuel={swap?.has_refuel}
         refuelAmount={refuelAmountInNativeCurrency}
-        fee={fee}
         exchange_account_connected={swap?.exchange_account_connected}
         exchange_account_name={swap?.exchange_account_name}
+        sourceAccountAddress={sourceAccountAddress}
     />
 }
 export default SwapSummary

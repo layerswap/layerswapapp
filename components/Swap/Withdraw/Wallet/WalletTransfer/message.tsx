@@ -32,13 +32,13 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, showIn
                         <p className="text-md font-semibold self-center text-primary-text">
                             {header}
                         </p>
-                       {showErrorModal? <ChevronDown className="text-primary-text" />: <ChevronUp className="text-primary-text" />}
+                        {showErrorModal ? <ChevronDown className="text-primary-text" /> : <ChevronUp className="text-primary-text" />}
                     </button>
                     {/* TODO handle overflow */}
-                    <Modal height="fit" show={showErrorModal} setShow={setShowErrorModal}>
+                    <Modal height="fit" show={showErrorModal} setShow={setShowErrorModal} modalId="walletMessage">
                         <div className="text-left space-y-1">
                             <p className="text-md font-semibold self-center text-primary-text">
-                                {header}x
+                                {header}
                             </p>
                             <p className="text-sm text-secondary-text break-normal whitespace-pre-wrap">
                                 {details}
