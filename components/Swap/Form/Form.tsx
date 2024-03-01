@@ -257,13 +257,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                     <div className="w-full">
                         <FeeDetailsComponent values={values} />
                         {
-                            //TODO refactor 
-                            destination && toAsset && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal"><span>{destination?.display_name}</span> <span>network congestion. Transactions can take up to 1 hour.</span></span>
-                            </WarningMessage>
-                        }
-                        {
                             values.amount &&
                             <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
                         }
