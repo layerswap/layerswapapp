@@ -151,6 +151,8 @@ export default class KnownInternalNames {
         public static readonly TONMainnet: string = "TON_MAINNET";
 
         public static readonly BrineMainnet: string = "BRINE_MAINNET";
+
+        public static readonly BlastSepolia: string = "BLAST_MAINNET";
     }
 
     static Currencies = class {

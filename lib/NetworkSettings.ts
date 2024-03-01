@@ -282,7 +282,8 @@ export default class NetworkSettings {
             BaseFeeMultiplier: 1.7,
             DefaultPriorityFee: 1
         };
-        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ScrollMainnet] = {
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.BlastSepolia] = {
+            GasCalculationType: GasCalculation.OptimismType,
         };
 
         NetworkSettings.ImmutableXSettings = {
