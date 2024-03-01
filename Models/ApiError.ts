@@ -3,6 +3,7 @@ export type ApiError = {
     message: string;
     metadata: {
         AvailableTransactionAmount: number
+        RemainingLimitPeriod: string
     }
 }
 

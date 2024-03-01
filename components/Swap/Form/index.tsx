@@ -100,9 +100,11 @@ export default function Form() {
                 })
                 setShowConnectNetworkModal(true);
             } else if (data.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
-                const remainingTimeInHours = getSecondsToTomorrow() / 3600
-                const remainingTimeInMinutes = getSecondsToTomorrow() / 60
-                const remainingTime = remainingTimeInHours >= 1 ? `${remainingTimeInHours.toFixed()} hours` : `${remainingTimeInMinutes.toFixed()} minutes`
+                const time = data.metadata.RemainingLimitPeriod?.split(':');
+                const hours = Number(time[0])
+                const minutes = Number(time[1])
+                const remainingTime = `${hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''} ${minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}`
+
                 if (minAllowedAmount && data.metadata.AvailableTransactionAmount > minAllowedAmount) {
                     toast.error(`Daily limit of ${values.fromCurrency?.asset} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromCurrency?.asset} or retry in ${remainingTime}.`)
                 } else {
