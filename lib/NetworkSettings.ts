@@ -285,7 +285,9 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BlastSepolia] = {
             GasCalculationType: GasCalculation.OptimismType,
         };
-
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.BlastMainnet] = {
+            GasCalculationType: GasCalculation.OptimismType,
+        };
         NetworkSettings.ImmutableXSettings = {
             [KnownInternalNames.Networks.ImmutableXMainnet]: {
                 apiUri: "https://api.x.immutable.com/v1",

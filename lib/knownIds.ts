@@ -77,7 +77,7 @@ export default class KnownInternalNames {
         public static readonly EthereumMainnet: string = "ETHEREUM_MAINNET";
 
         public static readonly EthereumGoerli: string = "ETHEREUM_GOERLI";
-        
+
         public static readonly EthereumSepolia: string = "ETHEREUM_SEPOLIA";
 
         public static readonly PolygonMainnet: string = "POLYGON_MAINNET";
@@ -152,7 +152,10 @@ export default class KnownInternalNames {
 
         public static readonly BrineMainnet: string = "BRINE_MAINNET";
 
-        public static readonly BlastSepolia: string = "BLAST_MAINNET";
+        public static readonly BlastSepolia: string = "BLAST_SEPOLIA";
+
+        public static readonly BlastMainnet: string = "BLAST_MAINNET";
+
     }
 
     static Currencies = class {
