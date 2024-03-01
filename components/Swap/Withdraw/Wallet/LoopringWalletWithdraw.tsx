@@ -30,15 +30,14 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const [lprAccount, setLprAccount] = useState<string | null>()
 
     const { swap } = useSwapDataState();
-    const { networks } = useSettingsState();
+    const { layers } = useSettingsState();
     const { setSwapTransaction } = useSwapTransactionStore();
     const { isConnected, address: fromAddress } = useAccount();
 
     const web3 = useWeb3Signer();
     const { source_network: source_network_internal_name } = swap || {}
-    const source_network = networks.find(n => n.internal_name === source_network_internal_name);
-    const token = networks?.find(n => swap?.source_network == n?.internal_name)?.currencies.find(c => c.asset == swap?.source_network_asset);
-    const decimals = source_network?.currencies.find(c => c.asset === source_network.native_currency)?.decimals;
+    const source_network = layers.find(n => n.internal_name === source_network_internal_name);
+    const token = layers?.find(n => swap?.source_network == n?.internal_name)?.assets.find(c => c.asset == swap?.source_network_asset);
 
     useEffect(() => {
         const disconnect = async () => {
@@ -143,11 +142,11 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                     storageId: storageId.offchainId,
                     token: {
                         tokenId: Number(token?.contract_address),
-                        volume: parseUnits(swap.requested_amount.toString(), Number(decimals)).toString(),
+                        volume: parseUnits(swap.requested_amount.toString(), Number(token?.decimals)).toString(),
                     },
                     maxFee: {
                         tokenId: Number(token?.contract_address),
-                        volume: fee.fees[String(token?.asset)].fee ?? "9400000000000000000",
+                        volume: fee.fees[String(token?.asset)].fee,
                     },
                     validUntil: Math.round(Date.now() / 1000) + 30 * 86400,
                     memo: swap?.sequence_number.toString(),
