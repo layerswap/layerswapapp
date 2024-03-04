@@ -42,6 +42,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
 
                     <FeeDetails.Item>
                         <ReceiveAmounts
+                            sourceIsExchange={!!fromExchange}
                             currency={toCurrency}
                             to={to}
                             refuel={!!refuel}
