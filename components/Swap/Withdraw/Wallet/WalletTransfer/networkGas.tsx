@@ -3,7 +3,6 @@ import { NetworkCurrency } from "../../../../../Models/CryptoNetwork"
 import { Layer } from "../../../../../Models/Layer"
 import { useBalancesState } from "../../../../../context/balances"
 import { truncateDecimals } from "../../../../utils/RoundDecimals"
-import { Fuel } from "lucide-react"
 
 type NetworkGasProps = {
     network: Layer,
@@ -21,14 +20,13 @@ const NetworkGas: FC<NetworkGasProps> = ({ selected_currency, network }) => {
     const source_native_currnecy = network.assets.find(a => a.is_native)
 
     const estimatedGas = (networkGas && source_native_currnecy) ?
-        truncateDecimals(networkGas, source_native_currnecy?.precision)
-        : truncateDecimals(networkGas, selected_currency?.precision)
+        truncateDecimals(networkGas * source_native_currnecy.usd_price, 2)
+        : truncateDecimals(networkGas * selected_currency.usd_price, 2)
 
-    return <div className="flex flex-row items-center gap-1 w-full text-sm px-1 mb-2.5 justify-end">
-        <Fuel className="h-4 w-4 text-secondary-text" />
-        <p className="text-secondary-text">Estimated gas:</p>
-        <div className="text-right flex items-center gap-1">
-            {isGasLoading ? <div className='h-[10px] w-10 bg-gray-500 rounded-sm animate-pulse' /> : estimatedGas} <span>{network?.assets.find(a => a.is_native)?.asset ?? selected_currency.asset}</span>
+    return <div className="flex flex-row items-center justify-between w-full text-sm">
+        <p className="text-secondary-text">Network fee</p>
+        <div className="text-right flex items-center text-primary-actionButtonText">
+            <span>$</span>{!~isGasLoading ? <div className='h-[10px] w-6 bg-gray-500 rounded-sm animate-pulse' /> : estimatedGas}
         </div>
     </div>
 }
