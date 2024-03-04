@@ -19,7 +19,7 @@ import useWallet from '../../../../hooks/useWallet';
 import Link from 'next/link';
 
 type Props = {
-    depositAddress: string,
+    depositAddress?: string,
     amount: number
 }
 
@@ -136,7 +136,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const handleTransfer = useCallback(async () => {
 
-        if (!swap || !syncWallet) return
+        if (!swap || !syncWallet || !depositAddress) return
 
         setLoading(true)
         try {
@@ -235,7 +235,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     }
                     {
                         syncWallet && accountIsActivated &&
-                        <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        <SubmitButton isDisabled={!!(loading || transferDone)|| !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>
                     }

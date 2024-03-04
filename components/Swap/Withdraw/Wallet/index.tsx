@@ -51,33 +51,49 @@ const WalletTransferContent: FC = () => {
     const requested_amount = Number(minAllowedAmount) > Number(swap?.requested_amount) ? minAllowedAmount : swap?.requested_amount
 
     if (sourceIsImmutableX)
-        return <ImtblxWalletWithdrawStep depositAddress={depositAddress} />
+        return <ImtblxWalletWithdrawStep
+            depositAddress={depositAddress}
+        />
     else if (sourceIsStarknet)
-        return <StarknetWalletWithdrawStep amount={requested_amount} depositAddress={depositAddress} />
+        return <StarknetWalletWithdrawStep
+            amount={requested_amount}
+            depositAddress={depositAddress}
+        />
     else if (sourceIsZkSync)
         return <>
-            {requested_amount && depositAddress && <ZkSyncWalletWithdrawStep depositAddress={depositAddress} amount={requested_amount} />}
+            {requested_amount
+                && <ZkSyncWalletWithdrawStep
+                    depositAddress={depositAddress}
+                    amount={requested_amount}
+                />}
         </>
     else if (sourceIsLoopring)
-        return <LoopringWalletWithdraw amount={requested_amount} depositAddress={depositAddress} />
-    else if (sourceIsSolana)
-    return <>
-        {requested_amount && depositAddress && <SolanaWalletWithdrawStep depositAddress={depositAddress} amount={requested_amount} />}
-    </>
-else
-    return <>
-        {swap && source_layer && sourceAsset && requested_amount && sourceChainId && <TransferFromWallet
-            sequenceNumber={swap?.sequence_number}
-            swapId={swap.id}
-            networkDisplayName={source_layer?.display_name}
-            tokenDecimals={sourceAsset?.decimals}
-            tokenContractAddress={sourceAsset.contract_address}
-            chainId={sourceChainId}
-            depositAddress={depositAddress}
-            userDestinationAddress={swap.destination_address}
+        return <LoopringWalletWithdraw
             amount={requested_amount}
-        />}
-    </>
+            depositAddress={depositAddress}
+        />
+    else if (sourceIsSolana)
+        return <>
+            {requested_amount &&
+                <SolanaWalletWithdrawStep
+                    depositAddress={depositAddress}
+                    amount={requested_amount}
+                />}
+        </>
+    else
+        return <>
+            {swap && source_layer && sourceAsset && requested_amount && sourceChainId && <TransferFromWallet
+                sequenceNumber={swap?.sequence_number}
+                swapId={swap.id}
+                networkDisplayName={source_layer?.display_name}
+                tokenDecimals={sourceAsset?.decimals}
+                tokenContractAddress={sourceAsset.contract_address}
+                chainId={sourceChainId}
+                depositAddress={depositAddress}
+                userDestinationAddress={swap.destination_address}
+                amount={requested_amount}
+            />}
+        </>
 }
 
 

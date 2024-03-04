@@ -8,6 +8,7 @@ import sdk, {
     WalletAPI, 
     WsAPI 
 } from "@loopring-web/loopring-sdk";
+import * as lp from "@loopring-web/loopring-sdk";
 
 export class LoopringAPI {
     public static userAPI: UserAPI;
@@ -34,4 +35,4 @@ export class LoopringAPI {
     };
 }
 
-LoopringAPI.InitApi(1); 
+LoopringAPI.InitApi(lp.ChainId.GOERLI); 
