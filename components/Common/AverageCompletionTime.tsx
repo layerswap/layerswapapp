@@ -11,9 +11,20 @@ const AverageCompletionTime: FC<AverageCompletionTimeProps> = ({ avgCompletionTi
     const time = avgCompletionTime?.split(':');
     const hours = Number(time[0])
     const minutes = Number(time[1])
-    const seconds = Number(time[2])
+    const seconds = Number(time[2])?.toFixed()
 
-    return <p><span>{hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''}</span> <span>{minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}</span> <span>{(seconds > 0 && minutes == 0 && hours == 0) ? `${seconds.toFixed()} seconds` : ''}</span></p>
+    return <p>
+        <span>
+            {hours > 0 && hours <= 9 ? `0${hours.toFixed()}:` : hours > 9 ? `${hours.toFixed()}:` : ''}
+        </span>
+        <span>
+            {minutes > 0 && minutes <= 9 ? `0${minutes.toFixed()}:` : minutes > 9 ? `${minutes.toFixed()}:` : ''}
+        </span>
+        <span>
+            <span>{hours === 0 && minutes === 0 && Number(seconds) > 0 ? '00:' : ''}</span>
+            <span>{Number(seconds) > 0 && Number(seconds) <= 9 ? `0${seconds}` : Number(seconds) > 9 ? `${seconds}` : ''}</span>
+        </span>
+    </p>
 }
 
 export default AverageCompletionTime
