@@ -146,36 +146,23 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                     }
                 </div>
             </div>
-            <div className="flex flex-col w-full gap-1 pt-2 px-1">
+            <div className="flex flex-col w-full gap-1 pt-2 px-3">
                 {
-                    displayFee && (
-                        isMobile ?
-                            <div className="flex flex-row justify-between w-full items-center text-sm cursor-default">
-                                <div className="flex items-center">
-                                    <p>Fee</p>
-                                    <ClickTooltip text={<FeeTooltip fee={fee} withdrawType={withdrawType} />} />
-                                </div>
-                                <p className="text-primary-actionButtonText">${truncateDecimals(displayFee, 2)}</p>
-                            </div>
-                            :
-                            <Tooltip>
-                                <TooltipTrigger>
-                                    <div className="flex flex-row justify-between w-full items-center text-sm cursor-default">
-                                        <p>Fee</p>
-                                        <p className="text-primary-actionButtonText">${truncateDecimals(displayFee, 2)}</p>
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <FeeTooltip fee={fee} withdrawType={withdrawType} />
-                                </TooltipContent>
-                            </Tooltip>
-                    )
+                    displayFee &&
+                    <div className="flex flex-row justify-between w-full items-center text-sm cursor-default">
+                        <div className="flex items-center">
+                            <p>Fee</p>
+                            <ClickTooltip text={<FeeTooltip fee={fee} withdrawType={withdrawType} />} />
+                        </div>
+                        <p className="text-primary-actionButtonText">${truncateDecimals(displayFee, 2)}</p>
+                    </div>
                 }
                 {
                     from && sourceCurrency &&
                     <NetworkGas network={from} selected_currency={sourceCurrency} />
                 }
             </div>
+            <hr className="border-secondary-600 mt-3" />
         </ResizablePanel>
     )
 }

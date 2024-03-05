@@ -116,7 +116,7 @@ const Withdraw: FC = () => {
                             {
                                 showTabsHeader &&
                                 <>
-                                    <div className="mb-4 ml-1 text-base">Choose how you&apos;d like to complete the swap</div>
+                                    <div className="mb-4 ml-3 text-base">Choose how you&apos;d like to complete the swap</div>
                                     <div className="flex space-x-3 w-full">
                                         {activeTabId && tabs.filter(t => t.enabled).map((tab) => (
                                             <TabHeader
