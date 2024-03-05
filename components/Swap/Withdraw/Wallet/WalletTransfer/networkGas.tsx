@@ -26,7 +26,7 @@ const NetworkGas: FC<NetworkGasProps> = ({ selected_currency, network }) => {
     return <div className="flex flex-row items-center justify-between w-full text-sm">
         <p className="text-secondary-text">Network fee</p>
         <div className="text-right flex items-center text-primary-actionButtonText">
-            <span>$</span>{!~isGasLoading ? <div className='h-[10px] w-6 bg-gray-500 rounded-sm animate-pulse' /> : estimatedGas}
+            <span>$</span>{isGasLoading ? <div className='h-[10px] w-6 bg-gray-500 rounded-sm animate-pulse' /> : estimatedGas}
         </div>
     </div>
 }
