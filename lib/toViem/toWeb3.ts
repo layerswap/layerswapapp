@@ -29,7 +29,7 @@ export function useWeb3Signer(chainId = 1) {
 
   const data = useEthersSigner()
   const unspecifiedData: any = data
-  const web3 = new Web3(unspecifiedData?.provider?.provider)
+  const web3 = new Web3(unspecifiedData?.provider)
 
   return React.useMemo(
     () =>

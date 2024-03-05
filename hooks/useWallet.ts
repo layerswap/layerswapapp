@@ -67,7 +67,6 @@ export default function useWallet() {
 
     const getWithdrawalProvider = (network: Layer) => {
         const provider = WalletProviders.find(provider => provider.withdrawalSupportedNetworks.includes(network.internal_name))
-        console.log("provider", provider)
         return provider
     }
 

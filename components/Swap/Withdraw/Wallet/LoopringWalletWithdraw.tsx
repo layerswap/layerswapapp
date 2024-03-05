@@ -18,7 +18,7 @@ import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClie
 import { disconnect as wagmiDisconnect } from '@wagmi/core'
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import SignatureIcon from '../../../icons/SignatureIcon';
-import Web3 from "web3";
+
 
 type Props = {
     depositAddress?: string,
@@ -54,14 +54,12 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const { setSwapTransaction } = useSwapTransactionStore();
     const { isConnected, address: fromAddress } = useAccount();
 
-    const web3 = useWeb3Signer();
+    const web3 = useWeb3Signer(lp.ChainId.GOERLI);
 
     const { source_network: source_network_internal_name } = swap || {}
     const source_network = layers.find(n => n.internal_name === source_network_internal_name);
     const source_currency = source_network?.assets?.find(c => c.asset.toLocaleUpperCase() === swap?.source_network_asset.toLocaleUpperCase());
     const token = layers?.find(n => swap?.source_network == n?.internal_name)?.assets.find(c => c.asset == swap?.source_network_asset);
-    const { chain } = useNetwork();
-    const l1Network = layers.find(n => n.internal_name === source_network?.metadata?.L1Network);
 
     useEffect(() => {
         (async () => {
@@ -95,14 +93,14 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
             const { accInfo } = loopringAccount
             const exchangeApi: lp.ExchangeAPI = new lp.ExchangeAPI({ chainId: lp.ChainId.GOERLI, });
             const { exchangeInfo } = await exchangeApi.getExchangeInfo();
-            const eddsaKeyData = await generateActivateKeyPair(accInfo, web3, fromAddress as `0x${string}`);
+            await connectProvides.MetaMask({ chainId: lp.ChainId.GOERLI, })
+            const eddsaKeyData = await generateActivateKeyPair(accInfo, connectProvides.usedWeb3, fromAddress as `0x${string}`);
             const fee = await LoopringAPI.globalAPI.getActiveFeeInfo({
                 accountId: accInfo.accountId,
             });
 
             const { eddsaKey, keySeed } = eddsaKeyData
             const publicKey = { x: eddsaKey.formatedPx, y: eddsaKey.formatedPy }
-            await connectProvides.MetaMask({ chainId: lp.ChainId.GOERLI, })
 
             const activationResult = await LoopringAPI.userAPI.updateAccount({
                 request: {
@@ -118,7 +116,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                     validUntil: Math.round(Date.now() / 1000) + 30 * 86400,
                     nonce: accInfo.nonce as number,
                 },
-                web3: connectProvides.usedProvide as any,
+                web3: connectProvides.usedWeb3 as any,
                 chainId: lp.ChainId.GOERLI,
                 walletType: ConnectorNames.MetaMask,
                 isHWAddr: false,
