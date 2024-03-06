@@ -200,6 +200,7 @@ export type Transaction = {
     usd_value: number,
     usd_price: number,
     status: TransactionStatus,
+    timestamp?: string,
 }
 
 export enum TransactionType {
