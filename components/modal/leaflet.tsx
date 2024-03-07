@@ -30,7 +30,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
         const height = mobileModalRef.current?.getBoundingClientRect().height || 0;
         if (offset > height / 2 || velocity > 800) {
             await controls.start({ y: "100%", transition: transitionProps, });
-            setShow(false);
+            setShow(false)
         } else {
             controls.start({ y: 0, transition: transitionProps });
         }
@@ -69,7 +69,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
         <div ref={topmostRef}>
             <motion.div
                 key="backdrop"
-                className={`${position} inset-0 z-20 bg-black/50 block`}
+                className={`${position} asdasdasdaasdsddd inset-0 z-40 bg-black/50 block`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -89,8 +89,8 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
-                <div className={`py-3 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
-                    <div className='px-6 flex justify-between items-center'>
+                <div className={`py-3 flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
+                    <div className='px-6 flex justify-between items-center pb-2'>
                         <div className="text-lg text-primary-text font-semibold">
                             <div>{title}</div>
                         </div>

@@ -46,13 +46,13 @@ export type SwapData = {
     selectedAssetNetwork: NetworkCurrency | undefined
 }
 
-export function SwapDataProvider({ children }) {
+export function SwapDataProvider({ id, children }: { id?: string, children: any }) {
     const [addressConfirmed, setAddressConfirmed] = useState<boolean>(false)
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [depositeAddressIsfromAccount, setDepositeAddressIsfromAccount] = useState<boolean>()
     const router = useRouter();
-    const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
+    const [swapId, setSwapId] = useState<string | undefined>(id || router.query.swapId?.toString())
     const { layers } = useSettingsState()
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -60,7 +60,6 @@ export function SwapDataProvider({ children }) {
     const swap_details_endpoint = `/swaps/${swapId}?version=${apiVersion}`
     const [interval, setInterval] = useState(0)
     const { data: swapResponse, mutate, error } = useSWR<ApiResponse<SwapItem>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
-
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const source_exchange = layers.find(n => n?.internal_name?.toLowerCase() === swapResponse?.data?.source_exchange?.toLowerCase())
 
@@ -73,7 +72,9 @@ export function SwapDataProvider({ children }) {
     useEffect(() => {
         if (swapStatus)
             setInterval(ResolvePollingInterval(swapStatus))
-        return () => setInterval(0)
+        return () => {
+            setInterval(0)
+        }
     }, [swapStatus])
 
     useEffect(() => {
@@ -84,7 +85,7 @@ export function SwapDataProvider({ children }) {
         if (!swapId)
             return
         const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-        const txForSwap = data?.[swapId];
+        const txForSwap = data.state.swapTransactions?.[swapId];
         setSwapTransaction(txForSwap)
     }, [swapId])
 

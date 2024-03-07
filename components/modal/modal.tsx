@@ -16,7 +16,7 @@ export interface ModalProps {
     modalId: string;
 }
 
-const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow, modalId }) => {
+const Modal: FC<ModalProps> = (({ header, modalId, height, className, children, subHeader, show, setShow }) => {
     const { isMobile, isDesktop } = useWindowDimensions()
     const mobileModalRef = useRef(null)
 
@@ -37,7 +37,7 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
                                 key={modalId}
                                 position="absolute"
                                 height={height ?? 'full'}
-                                show={show}
+                                ref={mobileModalRef} show={show}
                                 setShow={setShow}
                                 title={header}
                                 description={subHeader}

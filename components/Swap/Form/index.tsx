@@ -8,11 +8,11 @@ import ConnectNetwork from "../../ConnectNetwork";
 import toast from "react-hot-toast";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "../../../lib/generateSwapInitialValues";
-import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { SwapStatusInNumbers } from "../../../lib/layerSwapApiClient";
 import Modal from "../../modal/modal";
 import SwapForm from "./Form";
-import { NextRouter, useRouter } from "next/router";
 import useSWR from "swr";
+import { NextRouter, useRouter } from "next/router";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
@@ -21,10 +21,6 @@ import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 import { useQueryState } from "../../../context/query";
 import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
-import StatusIcon from "../../SwapHistory/StatusIcons";
-import Image from 'next/image';
-import { ChevronRight } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
@@ -131,16 +127,21 @@ export default function Form() {
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
     }, [router, swap])
 
+
+    const handleCloseSwapModal = () => {
+        let homeURL = window.location.protocol + "//"
+            + window.location.host
+
+        const params = resolvePersistantQueryParams(router.query)
+        if (params && Object.keys(params).length) {
+            const search = new URLSearchParams(params as any);
+            if (search)
+                homeURL += `?${search}`
+        }
+        window.history.replaceState({ ...window.history.state, as: homeURL, url: homeURL }, '', homeURL);
+    }
+
     return <>
-        <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
-            <AnimatePresence mode='wait'>
-                {
-                    swap &&
-                    !showSwapModal &&
-                    <PendingSwap key="pendingSwap" onClick={() => handleShowSwapModal(true)} />
-                }
-            </AnimatePresence>
-        </div>
         <Modal
             height="fit"
             show={showConnectNetworkModal}
@@ -148,15 +149,18 @@ export default function Form() {
             header={`${networkToConnect?.DisplayName} connect`}
             modalId="showNetwork"
         >
-            {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
+            {networkToConnect &&
+                <ConnectNetwork
+                    NetworkDisplayName={networkToConnect?.DisplayName}
+                    AppURL={networkToConnect?.AppURL}
+                />
+            }
         </Modal>
-        <Modal
-            height='fit'
+        <Modal height='fit'
             show={showSwapModal}
             setShow={handleShowSwapModal}
             header={`Complete the swap`}
-            modalId="showSwap"
-        >
+            modalId="showSwap">
             <ResizablePanel>
                 <SwapDetails type="contained" />
             </ResizablePanel>
@@ -171,107 +175,6 @@ export default function Form() {
             <SwapForm isPartnerWallet={!!isPartnerWallet} partner={partner} />
         </Formik>
     </>
-}
-
-const textMotion = {
-    rest: {
-        color: "grey",
-        x: 0,
-        transition: {
-            duration: 0.4,
-            type: "tween",
-            ease: "easeIn"
-        }
-    },
-    hover: {
-        color: "blue",
-        x: 30,
-        transition: {
-            duration: 0.4,
-            type: "tween",
-            ease: "easeOut"
-        }
-    }
-};
-
-const PendingSwap = ({ onClick }: { onClick: () => void }) => {
-    const { swap } = useSwapDataState()
-    const {
-        destination_network: destination_network_internal_name,
-        source_network: source_network_internal_name,
-        destination_exchange,
-        source_exchange
-    } = swap || {}
-
-    const settings = useSettingsState()
-
-    if (!swap)
-        return <></>
-
-    const { resolveImgSrc, layers, exchanges } = settings
-    const source = layers.find(e => e.internal_name === source_network_internal_name)
-    const destination = layers.find(n => n.internal_name === destination_network_internal_name)
-
-    const sourceExchange = exchanges.find(e => e.internal_name === source_exchange)
-    const destExchange = exchanges.find(e => e.internal_name === destination_exchange)
-
-    return <motion.div
-        initial={{ y: 10, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: -10, opacity: 0 }}
-        transition={{ duration: 0.2 }}
-    >
-        <motion.div
-            onClick={onClick}
-            initial="rest" whileHover="hover" animate="rest"
-            className="relative bg-secondary-600 rounded-r-lg">
-            <motion.div
-                variants={textMotion}
-                className="flex items-center bg-secondary-600 rounded-r-lg">
-                <div className="text-primary-text flex px-3 p-2 items-center space-x-2">
-                    <span className="flex items-center">
-                        {swap && <StatusIcon swap={swap} short={true} />}
-                    </span>
-                    <div className="flex-shrink-0 h-5 w-5 relative">
-                        {sourceExchange ? <Image
-                            src={resolveImgSrc(sourceExchange)}
-                            alt="From Logo"
-                            height="60"
-                            width="60"
-                            className="rounded-md object-contain"
-                        /> : source ?
-                            <Image
-                                src={resolveImgSrc(source)}
-                                alt="From Logo"
-                                height="60"
-                                width="60"
-                                className="rounded-md object-contain"
-                            /> : null
-                        }
-                    </div>
-                    <ChevronRight className="block h-4 w-4 mx-1" />
-                    <div className="flex-shrink-0 h-5 w-5 relative block">
-                        {destExchange ? <Image
-                            src={resolveImgSrc(destination)}
-                            alt="To Logo"
-                            height="60"
-                            width="60"
-                            className="rounded-md object-contain"
-                        /> : destination ?
-                            <Image
-                                src={resolveImgSrc(destination)}
-                                alt="To Logo"
-                                height="60"
-                                width="60"
-                                className="rounded-md object-contain"
-                            /> : null
-                        }
-                    </div>
-                </div>
-
-            </motion.div>
-        </motion.div>
-    </motion.div>
 }
 
 const setSwapPath = (swapId: string, router: NextRouter) => {
