@@ -40,10 +40,10 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const { layers } = useSettingsState()
 
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { source_network: source_network_internal_name } = swap || {}
+    const source_network_internal_name = swap?.source_network.name
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
-    const sourceCurrency = source_network?.assets.find(c => c.asset?.toLowerCase() === swap?.source_network_asset?.toLowerCase())
+    const sourceCurrency = source_network?.assets.find(c => c.asset?.toLowerCase() === swap?.source_token.symbol?.toLowerCase())
     const sourceChainId = source_network?.chain_id
 
     const provider = useMemo(() => {
@@ -121,7 +121,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
             const watch = watchDogContract.populate(
                 "watch",
-                [swap.sequence_number],
+                [swap.metadata.sequence_number],
             );
 
             try {

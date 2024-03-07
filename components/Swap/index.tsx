@@ -15,15 +15,11 @@ import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 
 const SwapDetails: FC<Props> = ({ type }) => {
     const { swap } = useSwapDataState()
-    const settings = useSettingsState()
     const swapStatus = swap?.status;
     const storedWalletTransactions = useSwapTransactionStore()
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id || '']
-
-    const sourceNetwork = settings.layers.find(l => l.internal_name === swap?.source_network)
-    const currency = sourceNetwork?.assets.find(c => c.asset === swap?.source_network_asset)
 
     if (!swap) return <>
         <div className="w-full h-[430px]">
@@ -48,9 +44,8 @@ const SwapDetails: FC<Props> = ({ type }) => {
             </Container>
             {
                 process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
-                && sourceNetwork
-                && currency &&
-                <GasDetails network={sourceNetwork} currency={currency} />
+                && swap &&
+                <GasDetails network={swap.source_network.name} currency={swap.source_token.symbol} />
             }
         </>
     )

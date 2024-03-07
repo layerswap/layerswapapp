@@ -14,7 +14,7 @@ export const ConnectWalletButton: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
     const { getWithdrawalProvider: getProvider } = useWallet()
-    const source_layer = layers.find(l => l.internal_name === swap?.source_network)
+    const source_layer = layers.find(l => l.internal_name === swap?.source_network.name)
     const provider = useMemo(() => {
         return source_layer && getProvider(source_layer)
     }, [source_layer, getProvider])

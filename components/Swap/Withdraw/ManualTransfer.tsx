@@ -20,12 +20,11 @@ const ManualTransfer: FC = () => {
     const { swap } = useSwapDataState()
     const hintsStore = useSwapDepositHintClicked()
     const hintClicked = hintsStore.swapTransactions[swap?.id || ""]
-    const { source_network: source_network_internal_name } = swap || {}
 
     const layerswapApiClient = new LayerSwapApiClient()
     const {
         data: generatedDeposit,
-    } = useSWR<ApiResponse<DepositAddress>>(`/networks/${source_network_internal_name}/deposit_addresses`,
+    } = useSWR<ApiResponse<DepositAddress>>(`/networks/${swap?.source_network.name}/deposit_addresses`,
         layerswapApiClient.fetcher,
         {
             dedupingInterval: 60000,
@@ -73,17 +72,14 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
     const { valuesChanger, minAllowedAmount } = useFee()
 
     const {
-        source_network: source_network_internal_name,
-        destination_network: destination_network_internal_name,
-        source_network_asset,
-        destination_network_asset,
         source_exchange
     } = swap || {}
-
+    const source_network_internal_name = swap?.source_network.name
+    const destination_network_internal_name = swap?.destination_network.name
     const source = layers.find(n => n.internal_name === source_network_internal_name)
-    const sourceAsset = source?.assets.find(c => c.asset == source_network_asset)
+    const sourceAsset = source?.assets.find(c => c.asset == swap?.source_token.symbol)
     const destination = layers.find(n => n.internal_name === destination_network_internal_name)
-    const destinationAsset = destination?.assets.find(c => c.asset == destination_network_asset)
+    const destinationAsset = destination?.assets.find(c => c.asset == swap?.destination_token.symbol)
 
     useEffect(() => {
         if (swap) {
@@ -94,7 +90,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                 fromCurrency: sourceAsset,
                 to: destination,
                 toCurrency: destinationAsset,
-                refuel: swap.has_refuel,
+                refuel: !!swap.refuel,
             })
         }
     }, [swap])
@@ -199,15 +195,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
 }
 
 const ExchangeNetworkPicker: FC<{ onChange?: (exchnage: Exchange) => void }> = ({ onChange }) => {
-    const { layers, resolveImgSrc } = useSettingsState()
     const { swap } = useSwapDataState()
-    const {
-        source_exchange: source_exchange_internal_name,
-        destination_network,
-        source_network_asset,
-        source_network
-    } = swap || {}
-    const source_layer = layers.find(n => n.internal_name === source_network)
 
     //const exchangeAssets = source_exchange?.assets?.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network?.status !== "inactive")
     //const defaultSourceNetwork = exchangeAssets?.find(sn => sn.is_default) || exchangeAssets?.[0]
@@ -222,8 +210,8 @@ const ExchangeNetworkPicker: FC<{ onChange?: (exchnage: Exchange) => void }> = (
         <span>Network:</span>
         {/* {exchangeAssets?.length === 1 ? */}
         <div className='flex space-x-1 items-center w-fit font-semibold text-primary-text'>
-            <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={resolveImgSrc(source_layer)}></Image>
-            <span>{source_layer?.display_name}</span>
+            <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={swap?.source_network.logo || ''}></Image>
+            <span>{swap?.source_network.display_name}</span>
         </div>
         {/* :
             <Select onValueChange={handleChangeSelectedNetwork} defaultValue={defaultSourceNetwork?.network_internal_name}>

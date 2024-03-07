@@ -21,9 +21,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     const { layers } = useSettingsState()
     const { setSwapTransaction } = useSwapTransactionStore();
 
-    const { source_network: source_network_internal_name } = swap || {}
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name)
-    const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
+    const source_layer = layers.find(n => n.internal_name === swap?.source_network.name)
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
         return source_layer && getProvider(source_layer)
@@ -41,13 +39,13 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     }, [provider, source_layer])
 
     const handleTransfer = useCallback(async () => {
-        if (!source_network || !swap || !depositAddress)
+        if (!source_layer || !swap || !depositAddress)
             return
         setLoading(true)
         try {
             const ImtblClient = (await import('../../../../lib/imtbl')).default;
-            const imtblClient = new ImtblClient(source_network?.internal_name)
-            const source_currency = source_network.assets.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
+            const imtblClient = new ImtblClient(source_layer?.internal_name)
+            const source_currency = source_layer.assets.find(c => c.asset.toLocaleUpperCase() === swap.source_token.symbol.toLocaleUpperCase())
             if (!source_currency) {
                 throw new Error("No source currency could be found");
             }
@@ -68,7 +66,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [imxAccount, swap, source_network, depositAddress])
+    }, [imxAccount, swap, source_layer, depositAddress])
 
     return (
         <>
@@ -78,7 +76,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                         <span className='flex-none'>
                             Learn how to send from
                         </span>
-                        <GuideLink text={source_network?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex' />
+                        <GuideLink text={source_layer?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex' />
                     </WarningMessage>
                     {
                         !imxAccount &&

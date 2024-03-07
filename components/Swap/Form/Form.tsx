@@ -274,7 +274,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
             process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
             && values.from
             && values.fromCurrency &&
-            <GasDetails network={values.from} currency={values.fromCurrency} />
+            <GasDetails network={values.from.internal_name} currency={values.fromCurrency.asset} />
         }
     </>
 }

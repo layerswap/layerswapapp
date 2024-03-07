@@ -26,15 +26,13 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const { swap } = useSwapDataState();
 
     const { layers } = useSettingsState();
-    const { source_network: source_network_internal_name } = swap || {};
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name);
-    const source_layer = layers.find(l => l.internal_name === source_network_internal_name)
-    const source_currency = source_network?.assets?.find(c => c.asset.toLocaleUpperCase() === swap?.source_network_asset.toLocaleUpperCase());
+    const source_layer = layers.find(l => l.internal_name === swap?.source_network.name)
+    const source_currency = source_layer?.assets?.find(c => c.asset.toUpperCase() === swap?.source_token.symbol.toUpperCase());
 
     const provider = getWithdrawalProvider(source_layer!);
     const wallet = provider?.getConnectedWallet();
     const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
-    const solanaNode = source_network?.nodes[0].url;
+    const solanaNode = source_layer?.nodes[0].url;
 
     const handleConnect = useCallback(async () => {
         setLoading(true)

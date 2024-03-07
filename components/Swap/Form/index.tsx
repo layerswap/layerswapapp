@@ -197,8 +197,6 @@ const textMotion = {
 const PendingSwap = ({ onClick }: { onClick: () => void }) => {
     const { swap } = useSwapDataState()
     const {
-        destination_network: destination_network_internal_name,
-        source_network: source_network_internal_name,
         destination_exchange,
         source_exchange
     } = swap || {}
@@ -209,11 +207,11 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
         return <></>
 
     const { resolveImgSrc, layers, exchanges } = settings
-    const source = layers.find(e => e.internal_name === source_network_internal_name)
-    const destination = layers.find(n => n.internal_name === destination_network_internal_name)
+    const source = layers.find(e => e.internal_name === swap.source_network.name)
+    const destination = layers.find(n => n.internal_name === swap.destination_network.name)
 
-    const sourceExchange = exchanges.find(e => e.internal_name === source_exchange)
-    const destExchange = exchanges.find(e => e.internal_name === destination_exchange)
+    const sourceExchange = exchanges.find(e => e.internal_name === source_exchange?.name)
+    const destExchange = exchanges.find(e => e.internal_name === destination_exchange?.name)
 
     return <motion.div
         initial={{ y: 10, opacity: 0 }}

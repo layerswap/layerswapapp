@@ -9,10 +9,10 @@ import { createPublicClient, http } from "viem"
 
 export default function useWalletTransferOptions() {
     const { swap } = useSwapDataState()
-    const { addContractWallet, getContractWallet, updateContractWallet, contractWallets } = useContractWalletsStore()
+    const { addContractWallet, getContractWallet, updateContractWallet } = useContractWalletsStore()
     const { getWithdrawalProvider: getProvider } = useWallet()
     const { layers } = useSettingsState()
-    const source_layer = layers.find(n => n.internal_name === swap?.source_network)
+    const source_layer = layers.find(n => n.internal_name === swap?.source_network.name)
     const provider = useMemo(() => {
         return source_layer && getProvider(source_layer)
     }, [source_layer, getProvider])

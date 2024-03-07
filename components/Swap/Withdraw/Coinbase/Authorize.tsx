@@ -26,7 +26,7 @@ type Props = {
 
 const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
     const { swap } = useSwapDataState()
-    const { layers, exchanges } = useSettingsState()
+    const { exchanges } = useSettingsState()
     const router = useRouter()
     let alreadyFamiliar = useCoinbaseStore((state) => state.alreadyFamiliar);
     let toggleAlreadyFamiliar = useCoinbaseStore((state) => state.toggleAlreadyFamiliar);
@@ -36,18 +36,18 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
     const [firstScreen, setFirstScreen] = useState<boolean>(true)
 
     const carouselRef = useRef<CarouselRef | null>(null)
-    const exchange_internal_name = swap?.source_exchange
-    const asset_name = swap?.source_network_asset
+    const exchange_internal_name = swap?.source_exchange?.name
 
     const exchange = exchanges?.find(e => e.internal_name?.toLowerCase() === exchange_internal_name?.toLowerCase())
-    const network = layers?.find(l => l.internal_name?.toLowerCase() === swap?.source_network?.toLowerCase())
-    const currency = network?.assets.find(c => asset_name?.toLocaleUpperCase() === c.asset?.toLocaleUpperCase())
+    const exchange_name = exchange?.display_name
+
+    const currency = swap?.source_token
 
     const coinbaseOauthProvider = exchange?.o_auth
     const { authorize_url } = coinbaseOauthProvider || {}
 
-    const minimalAuthorizeAmount = currency?.usd_price ?
-        CalculateMinimalAuthorizeAmount(currency?.usd_price, Number(swap?.requested_amount)) : null
+    const minimalAuthorizeAmount = currency?.price_in_usd ?
+        CalculateMinimalAuthorizeAmount(currency?.price_in_usd, Number(swap?.requested_amount)) : null
 
     const checkShouldStartPolling = useCallback(() => {
         let authWindowHref: string | undefined = ""
@@ -96,7 +96,6 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
         return;
     }, [])
 
-    const exchange_name = exchange?.display_name
 
     const onCarouselLast = (value) => {
         setCarouselFinished(value)

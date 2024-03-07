@@ -21,18 +21,11 @@ const WalletTransferContent: FC = () => {
     const [isLoading, setIsloading] = useState(false);
     const { mutateSwap } = useSwapDataUpdate()
 
-    const {
-        source_network: source_network_internal_name,
-        source_exchange: source_exchange_internal_name,
-        source_network_asset
-    } = swap || {}
+    const source_exchange = layers.find(n => n.internal_name === swap?.source_exchange?.name)
+    const source_layer = layers.find(n => n.internal_name === swap?.source_network.name)
+    const source_asset = source_layer?.assets.find(a => a.asset === swap?.source_token.symbol)
 
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name)
-    const source_exchange = layers.find(n => n.internal_name === source_exchange_internal_name)
-    const source_layer = layers.find(n => n.internal_name === swap?.source_network)
-    const source_asset = source_layer?.assets.find(a => a.asset === source_network_asset)
-
-    const sourceNetworkType = source_network?.type
+    const sourceNetworkType = source_layer?.type
     const provider = useMemo(() => {
         return source_layer && getProvider(source_layer)
     }, [source_layer, getProvider])

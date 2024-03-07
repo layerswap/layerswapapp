@@ -43,7 +43,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
         setLoading(true)
         try {
             const layerswapApiClient = new LayerSwapApiClient()
-            await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange, values.Code)
+            await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange.name, values.Code)
             await onSuccess(swap.id)
         }
         catch (error) {
@@ -73,7 +73,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
         try {
             formikRef.current?.setFieldValue("Code", "");
             const layerswapApiClient = new LayerSwapApiClient()
-            await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange)
+            await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange.name)
         } catch (error) {
             const data: ApiError = error?.response?.data?.error
 

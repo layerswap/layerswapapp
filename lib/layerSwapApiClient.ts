@@ -48,17 +48,17 @@ export default class LayerSwapApiClient {
         return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/networks?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
     }
 
-    async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<CreateSwapData>> {
+    async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<SwapResponse>> {
         const correlationId = uuidv4()
-        return await this.AuthenticatedRequest<ApiResponse<CreateSwapData>>("POST", `/swaps?version=${LayerSwapApiClient.apiVersion}`, params, { 'X-LS-CORRELATION-ID': correlationId });
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("POST", `/swaps?version=${LayerSwapApiClient.apiVersion}`, params, { 'X-LS-CORRELATION-ID': correlationId });
     }
 
-    async GetSwapsAsync(page: number, status?: SwapStatusInNumbers): Promise<ApiResponse<SwapItem[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?page=${page}${status ? `&status=${status}` : ''}&version=${LayerSwapApiClient.apiVersion}`);
+    async GetSwapsAsync(page: number, status?: SwapStatusInNumbers): Promise<ApiResponse<SwapResponse[]>> {
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/swaps?page=${page}${status ? `&status=${status}` : ''}&version=${LayerSwapApiClient.apiVersion}`);
     }
 
-    async GetPendingSwapsAsync(): Promise<ApiResponse<SwapItem[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem[]>>("GET", `/swaps?status=0&version=${LayerSwapApiClient.apiVersion}`);
+    async GetPendingSwapsAsync(): Promise<ApiResponse<SwapResponse[]>> {
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/swaps?status=0&version=${LayerSwapApiClient.apiVersion}`);
     }
 
     async CancelSwapAsync(swapid: string): Promise<ApiResponse<void>> {
@@ -69,8 +69,8 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/swaps/${swapid}/exchange/${exchangeName}/disconnect`);
     }
 
-    async GetSwapDetailsAsync(id: string): Promise<ApiResponse<SwapItem>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapItem>>("GET", `/swaps/${id}?version=${LayerSwapApiClient.apiVersion}`);
+    async GetSwapDetailsAsync(id: string): Promise<ApiResponse<SwapResponse>> {
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("GET", `/swaps/${id}?version=${LayerSwapApiClient.apiVersion}`);
     }
 
     async GetDepositAddress(network: string, source: DepositAddressSource): Promise<ApiResponse<DepositAddress>> {
@@ -91,10 +91,6 @@ export default class LayerSwapApiClient {
 
     async RewardLeaderboard(campaign: string): Promise<ApiResponse<any>> {
         return await this.AuthenticatedRequest<ApiResponse<any>>("PUT", `/campaigns/${campaign}/leaderboard`);
-    }
-
-    async GetFee(params: GetFeeParams): Promise<ApiResponse<any>> {
-        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/swaps/quote?version=${LayerSwapApiClient.apiVersion}`, params);
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
@@ -124,12 +120,6 @@ export enum DepositAddressSource {
     Managed = 1
 }
 
-type NetworkAccountParams = {
-    address: string,
-    network: string,
-    signature: string
-}
-
 export type NetworkAccount = {
     id: string,
     address: string,
@@ -139,46 +129,110 @@ export type NetworkAccount = {
 }
 
 export type CreateSwapParams = {
-    amount: string,
-    source: string,
-    destination: string,
+    source_network: string,
     source_asset: string,
+    destination_network: string,
     destination_asset: string
+    refuel?: boolean,
+    slippage?: number,
+    destination_address: string,
+    source_address?: string
+    amount: string,
+    reference_id?: string,
     source_exchange?: string
     destination_exchange?: string
-    destination_address: string,
+    deposit_mode: string
     app_name?: string,
-    reference_id?: string,
-    refuel?: boolean,
+}
+
+export type SwapResponse = {
+    swap: SwapItem;
+    deposit_methods: DepositMethods
+    quote: SwapQuote
 }
 
 export type SwapItem = {
     id: string,
     created_date: string,
-    fee: number,
+    source_network: SwapNetwork,
+    source_token: SwapToken,
+    source_exchange?: SwapExchange,
+    destination_network: SwapNetwork,
+    destination_token: SwapToken,
+    destination_exchange?: SwapExchange,
+    refuel: {
+        token: SwapToken,
+        network: SwapNetwork,
+        refuel_amount: number
+    },
     status: SwapStatus,
+    source_address: `0x${string}`,
     destination_address: `0x${string}`,
     requested_amount: number,
-    message?: string,
-    reference_id?: string,
-    app_name?: string,
-    refuel_price?: number,
-    refuel_transaction_id?: string,
-    source_network_asset: string,
-    source_network: string,
-    source_exchange?: string,
-    destination_network_asset: string,
-    destination_network: string,
-    destination_exchange?: string,
+    deposit_mode: string
     transactions: Transaction[]
-    has_refuel?: boolean,
     exchange_account_connected: boolean;
     exchange_account_name?: string;
-    fiat_session_id?: string;
-    fiat_redirect_url?: string;
-    has_pending_deposit: boolean;
-    sequence_number: number;
     fail_reason?: string;
+    metadata: {
+        reference_id: string | null;
+        app: string | null;
+        sequence_number: number
+    }
+}
+
+export type SwapNetwork = {
+    name: string,
+    display_name: string,
+    logo: string,
+    chain_id: string
+}
+
+export type SwapToken = {
+    symbol: string,
+    logo: string,
+    contract: string,
+    decimals: number,
+    price_in_usd: number
+}
+
+export type SwapExchange = {
+    name: string,
+    display_name: string,
+    logo: string
+}
+
+export type DepositMethods = {
+    deposit_address: {
+        amount: number,
+        amount_in_base_units: string,
+        base_units: number,
+        network: string,
+        asset: string,
+        chain_id: string,
+        deposit_address: string,
+        asset_contract_address: string
+    },
+    wallet: {
+        amount: number,
+        amount_in_base_units: string,
+        base_units: number,
+        network: string,
+        asset: string,
+        chain_id: string,
+        to_address: `0x${string}`,
+        call_data: string
+    }
+}
+
+export type SwapQuote = {
+    receive_amount: number,
+    min_receive_amount: number,
+    total_fee: number,
+    total_fee_in_usd: number,
+    blockchain_fee: number,
+    service_fee: number,
+    avg_completion_time: string
 }
 
 export type AddressBookItem = {
@@ -194,7 +248,7 @@ export type Transaction = {
     to: string,
     created_date: string,
     amount: number,
-    transaction_id: string,
+    transaction_hash: string,
     confirmations: number,
     max_confirmations: number,
     usd_value: number,
@@ -212,25 +266,6 @@ export enum TransactionStatus {
     Completed = 'completed',
     Initiated = 'initiated',
     Pending = 'pending'
-}
-
-export enum DepositType {
-    Manual = 'manual',
-    Wallet = 'wallet'
-}
-
-export type Fee = {
-    min_amount: number,
-    max_amount: number,
-    fee_amount: number,
-    deposit_type: DepositType
-}
-
-type GetFeeParams = {
-    source: string,
-    destination: string,
-    asset: string,
-    refuel?: boolean
 }
 
 export enum PublishedSwapTransactionStatus {
@@ -261,16 +296,6 @@ export enum WithdrawType {
     Stripe = 'stripe',
     Coinbase = 'coinbase',
     External = 'external'
-}
-export type ConnectParams = {
-    api_key: string,
-    api_secret: string,
-    keyphrase?: string,
-    exchange: string
-}
-
-export type CreateSwapData = {
-    swap_id: string
 }
 
 export enum SwapStatusInNumbers {

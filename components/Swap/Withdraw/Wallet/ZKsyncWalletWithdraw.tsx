@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowLeftRight, Info } from 'lucide-react';
+import { ArrowLeftRight, Info } from 'lucide-react';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
@@ -10,7 +10,7 @@ import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClie
 import { useSwapDataState } from '../../../../context/swap';
 import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
-import { useAccount, useNetwork } from 'wagmi';
+import { useNetwork } from 'wagmi';
 import { Transaction } from 'zksync';
 import ClickTooltip from '../../../Tooltips/ClickTooltip';
 import SignatureIcon from '../../../icons/SignatureIcon';
@@ -38,12 +38,11 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const signer = useEthersSigner();
 
     const { layers } = useSettingsState();
-    const { source_network: source_network_internal_name } = swap || {};
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name);
+    const source_network_internal_name = swap?.source_network.name
     const source_layer = layers.find(l => l.internal_name === source_network_internal_name)
-    const source_currency = source_network?.assets?.find(c => c.asset.toLocaleUpperCase() === swap?.source_network_asset.toLocaleUpperCase());
-    const defaultProvider = swap?.source_network?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "goerli";
-    const l1Network = layers.find(n => n.internal_name === source_network?.metadata?.L1Network);
+    const source_currency = source_layer?.assets?.find(c => c.asset.toLocaleUpperCase() === swap?.source_token.symbol.toLocaleUpperCase());
+    const defaultProvider = source_network_internal_name?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "goerli";
+    const l1Network = layers.find(n => n.internal_name === source_layer?.metadata?.L1Network);
 
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -142,9 +141,9 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         try {
             const tf = await syncWallet?.syncTransfer({
                 to: depositAddress,
-                token: swap?.source_network_asset,
+                token: swap?.source_token.symbol,
                 amount: zksync.closestPackableTransactionAmount(utils.parseUnits(amount.toString(), source_currency?.decimals)),
-                validUntil: zksync.utils.MAX_TIMESTAMP - swap?.sequence_number,
+                validUntil: zksync.utils.MAX_TIMESTAMP - swap?.metadata?.sequence_number,
             });
 
             if (tf?.txHash) {

@@ -35,7 +35,7 @@ export default class ImtblClient {
 
     async Transfer(swap: SwapItem, currency: NetworkCurrency, deposit_address: string) {
         try {
-            if (swap.source_network_asset === KnownInternalNames.Currencies.ETH) {
+            if (swap.source_token.symbol === KnownInternalNames.Currencies.ETH) {
                 const res = await this.link.transfer([
                     {
                         type: ETHTokenType.ETH,
@@ -55,7 +55,7 @@ export default class ImtblClient {
                         amount: swap.requested_amount.toString(),
                         toAddress: deposit_address,
                         tokenAddress: currency.contract_address.toLowerCase(),
-                        symbol: swap.source_network_asset
+                        symbol: swap.source_token.symbol
                     }
                 ])
                 return res;

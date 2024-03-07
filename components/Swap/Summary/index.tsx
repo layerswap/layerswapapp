@@ -19,24 +19,15 @@ const SwapSummary: FC = () => {
         account,
     } = useQueryState()
 
-    const {
-        source_network: source_network_internal_name,
-        source_exchange: source_exchange_internal_name,
-        destination_exchange: destination_exchange_internal_name,
-        destination_network: destination_network_internal_name,
-        source_network_asset,
-        destination_network_asset
-    } = swap || {}
-
     const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
     const { fee: feeData, valuesChanger, minAllowedAmount } = useFee()
 
-    const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
-    const sourceAsset = source_layer?.assets?.find(currency => currency?.asset === source_network_asset)
-    const destination_layer = layers?.find(l => l.internal_name === destination_network_internal_name)
-    const destinationAsset = destination_layer?.assets?.find(currency => currency?.asset === destination_network_asset)
-    const sourceExchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
-    const destExchange = exchanges.find(e => e.internal_name === destination_exchange_internal_name)
+    const source_layer = layers.find(n => n.internal_name === swap?.source_network.name)
+    const sourceAsset = source_layer?.assets?.find(currency => currency?.asset === swap?.source_token.symbol)
+    const destination_layer = layers?.find(l => l.internal_name === swap?.destination_token.symbol)
+    const destinationAsset = destination_layer?.assets?.find(currency => currency?.asset === swap?.destination_token.symbol)
+    const sourceExchange = exchanges.find(e => e.internal_name === swap?.source_exchange?.name)
+    const destExchange = exchanges.find(e => e.internal_name === swap?.destination_exchange?.name)
 
     const provider = useMemo(() => {
         return source_layer && getProvider(source_layer)
@@ -52,7 +43,7 @@ const SwapSummary: FC = () => {
             to: destination_layer,
             fromCurrency: sourceAsset,
             toCurrency: destinationAsset,
-            refuel: swap?.has_refuel,
+            refuel: !!swap?.refuel,
         })
     }, [swap])
 
@@ -80,7 +71,7 @@ const SwapSummary: FC = () => {
     const receiveAmount = withdrawType === WithdrawType.Wallet ? feeData?.walletReceiveAmount : feeData?.manualReceiveAmount
     const calculatedReceiveAmount = swapOutputTransaction?.amount ?? receiveAmount
 
-    const refuelAmountInNativeCurrency = swap?.has_refuel
+    const refuelAmountInNativeCurrency = !!swap?.refuel
         ? ((swapRefuelTransaction?.amount ??
             (feeData?.refuelAmount))) : undefined;
 
@@ -114,7 +105,7 @@ const SwapSummary: FC = () => {
         requestedAmount={requested_amount}
         receiveAmount={calculatedReceiveAmount}
         destinationAddress={swap.destination_address}
-        hasRefuel={swap?.has_refuel}
+        hasRefuel={!!swap?.refuel}
         refuelAmount={refuelAmountInNativeCurrency}
         exchange_account_connected={swap?.exchange_account_connected}
         exchange_account_name={swap?.exchange_account_name}

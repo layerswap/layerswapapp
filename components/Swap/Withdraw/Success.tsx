@@ -17,15 +17,14 @@ const Success: FC = () => {
     const { swap } = useSwapDataState()
     const router = useRouter()
     const { externalId } = useQueryState()
-    const { destination_network: destination_network_internal_name } = swap || {}
-    const destination_network = layers.find(n => n.internal_name === destination_network_internal_name)
+    const destination_network = layers.find(n => n.internal_name === swap?.destination_network.name)
     const transaction_explorer_template = destination_network?.transaction_explorer_template
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
 
     const handleViewInExplorer = useCallback(() => {
         if (!transaction_explorer_template)
             return
-        window.open(`${AppSettings.ExplorerURl}/${swapOutputTransaction?.transaction_id}`, '_blank')
+        window.open(`${AppSettings.ExplorerURl}/${swapOutputTransaction?.transaction_hash}`, '_blank')
     }, [transaction_explorer_template])
 
     return (
@@ -34,7 +33,7 @@ const Success: FC = () => {
                 <MessageComponent.Buttons>
                     <div className="flex flex-row text-primary-text text-base space-x-2">
                         {!externalId &&
-                            ((transaction_explorer_template && swapOutputTransaction?.transaction_id) ?
+                            ((transaction_explorer_template && swapOutputTransaction?.transaction_hash) ?
                                 <>
                                     <div className='grow'>
                                         <SubmitButton text_align='left' buttonStyle='filled' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer} icon={<ExternalLink className='h-5 w-5' />}>
@@ -56,7 +55,7 @@ const Success: FC = () => {
                                 </div>)
                         }
                         {
-                            externalId && transaction_explorer_template && swapOutputTransaction?.transaction_id &&
+                            externalId && transaction_explorer_template && swapOutputTransaction?.transaction_hash &&
                             <div className='grow'>
                                 <SubmitButton text_align='center' buttonStyle='outline' isDisabled={false} isSubmitting={false} onClick={handleViewInExplorer} icon={<ExternalLink className='h-5 w-5' />}>
                                     View in explorer

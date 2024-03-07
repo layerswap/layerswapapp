@@ -23,9 +23,7 @@ const TransferElements: FC = () => {
     const { swap, codeRequested } = useSwapDataState()
     const { setCodeRequested, mutateSwap } = useSwapDataUpdate()
     const { layers } = useSettingsState()
-    const {
-        destination_network: destination_network_internal_name,
-    } = swap || {}
+
     const { start: startTimer } = useTimerState()
     const { setSwapTransaction } = useSwapTransactionStore();
 
@@ -33,8 +31,6 @@ const TransferElements: FC = () => {
     const [openCoinbase2FA, setOpenCoinbase2FA] = useState(false)
 
     const [loading, setLoading] = useState(false)
-
-    const destination_network = layers.find(n => n.internal_name === destination_network_internal_name)
 
     const handleTransfer = useCallback(async () => {
         if (!swap || !swap.source_exchange)
@@ -45,7 +41,7 @@ const TransferElements: FC = () => {
         else {
             try {
                 const layerswapApiClient = new LayerSwapApiClient()
-                await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange)
+                await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange.name)
             }
             catch (e) {
                 if (e?.response?.data?.error?.code === LSAPIKnownErrorCode.COINBASE_INVALID_2FA) {
@@ -65,7 +61,7 @@ const TransferElements: FC = () => {
             }
         }
         setLoading(false)
-    }, [swap, destination_network, codeRequested])
+    }, [swap, codeRequested])
 
     const openConnect = () => {
         setShowCoinbaseConnectModal(true)

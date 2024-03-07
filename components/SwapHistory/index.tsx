@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers, TransactionType } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapItem, SwapResponse, SwapStatusInNumbers, TransactionType } from "../../lib/layerSwapApiClient"
 import SpinIcon from "../icons/spinIcon"
 import { ArrowRight, ChevronRight, Eye, RefreshCcw, Scroll } from 'lucide-react';
 import SwapDetails from "./SwapDetailsComponent"
@@ -24,7 +24,7 @@ function TransactionsHistory() {
   const settings = useSettingsState()
   const { layers, resolveImgSrc, exchanges } = settings
   const [isLastPage, setIsLastPage] = useState(false)
-  const [swaps, setSwaps] = useState<SwapItem[]>()
+  const [swaps, setSwaps] = useState<SwapResponse[]>()
   const [loading, setLoading] = useState(false)
   const router = useRouter();
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
@@ -179,25 +179,22 @@ function TransactionsHistory() {
                           </tr>
                         </thead>
                         <tbody>
-                          {swaps?.map((swap, index) => {
-
-                            const { source_exchange: source_exchange_internal_name,
-                              destination_network: destination_network_internal_name,
-                              source_network: source_network_internal_name,
-                              destination_exchange: destination_exchange_internal_name,
-                              source_network_asset,
-                              destination_network_asset
+                          {swaps?.map((swapData, index) => {
+                            const swap = swapData.swap
+                            const { 
+                              source_network,
+                              destination_network,
+                              source_exchange,
+                              destination_exchange,
+                              source_token,
+                              destination_token
                             } = swap
 
-                            const sourceNetwork = layers.find(e => e.internal_name === source_network_internal_name)
-                            const sourceCurrency = sourceNetwork?.assets?.find(c => c.asset === source_network_asset)
-                            const destinationNetwork = layers.find(n => n.internal_name === destination_network_internal_name)
-                            const destinationCurrency = destinationNetwork?.assets.find(a => a.asset === destination_network_asset)
+                            const sourceNetwork = layers.find(e => e.internal_name === source_network.name)
+                            const sourceCurrency = sourceNetwork?.assets?.find(c => c.asset === source_token.symbol)
+                            const destinationNetwork = layers.find(n => n.internal_name === destination_network.name)
+                            const destinationCurrency = destinationNetwork?.assets.find(a => a.asset === destination_token.symbol)
                             const output_transaction = swap.transactions.find(t => t.type === TransactionType.Output)
-
-                            const sourceExchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
-                            const destExchange = exchanges.find(e => e.internal_name === destination_exchange_internal_name)
-
 
                             return <tr onClick={() => handleopenSwapDetails(swap)} key={swap.id}>
 
@@ -209,9 +206,9 @@ function TransactionsHistory() {
                               >
                                 <div className="text-primary-text flex items-center">
                                   <div className="flex-shrink-0 h-5 w-5 relative">
-                                    {sourceNetwork &&
+                                    {source_network &&
                                       <Image
-                                        src={resolveImgSrc(sourceExchange || sourceNetwork)}
+                                        src={source_exchange?.logo || source_network.logo}
                                         alt="Source Logo"
                                         height="60"
                                         width="60"
@@ -221,9 +218,9 @@ function TransactionsHistory() {
                                   </div>
                                   <ArrowRight className="h-4 w-4 mx-2" />
                                   <div className="flex-shrink-0 h-5 w-5 relative block">
-                                    {destinationNetwork &&
+                                    {destination_network &&
                                       <Image
-                                        src={resolveImgSrc(destExchange || destinationNetwork)}
+                                        src={destination_exchange?.logo || destination_network.logo}
                                         alt="Destination Logo"
                                         height="60"
                                         width="60"
