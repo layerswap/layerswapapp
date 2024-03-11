@@ -10,7 +10,7 @@ import { Layer } from "../../Models/Layer";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useQueryState } from "../../context/query";
-import { NetworkCurrency } from "../../Models/CryptoNetwork";
+import { Token } from "../../Models/Network";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import useSWR from "swr";
 import { ApiResponse } from "../../Models/ApiResponse";
@@ -40,7 +40,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const currencies = direction === 'from' ? from?.assets : to?.assets;
 
     const lockedCurrency = lockAsset
-        ? currencies?.find(c => c?.asset?.toUpperCase() === (asset)?.toUpperCase())
+        ? currencies?.find(c => c?.symbol?.toUpperCase() === (asset)?.toUpperCase())
         : undefined
 
     const apiClient = new LayerSwapApiClient()
@@ -56,7 +56,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
                 ...(to && toCurrency &&
                 {
                     destination_network: to.internal_name,
-                    destination_asset: toCurrency?.asset
+                    destination_asset: toCurrency?.symbol
                 })
             })
     });
@@ -72,7 +72,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
                 ...(from && fromCurrency &&
                 {
                     source_network: from.internal_name,
-                    source_asset: fromCurrency?.asset
+                    source_asset: fromCurrency?.symbol
                 }
                 )
             })
@@ -103,9 +103,9 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const filteredCurrencies = currencies?.filter(currency => {
         if (direction === "from") {
-            return currency.availableInSource;
+            return currency.available_in_source;
         } else {
-            return currency.availableInDestination;
+            return currency.available_in_destination;
         }
     });
 
@@ -118,21 +118,21 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         balances[walletAddress || ''],
         query
     )
-    const currencyAsset = direction === 'from' ? fromCurrency?.asset : toCurrency?.asset;
+    const currencyAsset = direction === 'from' ? fromCurrency?.symbol : toCurrency?.symbol;
 
     useEffect(() => {
         if (direction !== "to") return
 
-        let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset)
+        let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.symbol === currencyAsset)
 
         if (currencyIsAvailable) return
 
         const default_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.asset?.toUpperCase() === (query?.toAsset)?.toUpperCase())
+            c.baseObject?.symbol?.toUpperCase() === (query?.toAsset)?.toUpperCase())
             || currencyMenuItems?.[0]
 
         const selected_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.asset?.toUpperCase() === fromCurrency?.asset?.toUpperCase())
+            c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase())
 
         if (selected_currency && destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === selected_currency.name)) {
             setFieldValue(name, selected_currency.baseObject)
@@ -146,16 +146,16 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     useEffect(() => {
         if (direction !== "from") return
 
-        let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset)
+        let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.symbol === currencyAsset)
 
         if (currencyIsAvailable) return
 
         const default_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.asset?.toUpperCase() === (query?.fromAsset)?.toUpperCase())
+            c.baseObject?.symbol?.toUpperCase() === (query?.fromAsset)?.toUpperCase())
             || currencyMenuItems?.[0]
 
         const selected_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.asset?.toUpperCase() === toCurrency?.asset?.toUpperCase())
+            c.baseObject?.symbol?.toUpperCase() === toCurrency?.symbol?.toUpperCase())
 
         if (selected_currency
             && sourceRoutes?.data
@@ -173,7 +173,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
             if (destinationRoutes?.data
                 && !destinationRoutes?.data
                     ?.filter(r => r.network === to?.internal_name)
-                    ?.some(r => r.asset === toCurrency?.asset)) {
+                    ?.some(r => r.asset === toCurrency?.symbol)) {
                 setFieldValue(name, null)
             }
         }
@@ -184,7 +184,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
             if (sourceRoutes?.data
                 && !sourceRoutes?.data
                     ?.filter(r => r.network === from?.internal_name)
-                    ?.some(r => r.asset === fromCurrency?.asset)) {
+                    ?.some(r => r.asset === fromCurrency?.symbol)) {
                 setFieldValue(name, null)
             }
         }
@@ -192,7 +192,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const value = currencyMenuItems?.find(x => x.id == currencyAsset);
 
-    const handleSelect = useCallback((item: SelectMenuItem<NetworkCurrency>) => {
+    const handleSelect = useCallback((item: SelectMenuItem<Token>) => {
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
@@ -211,22 +211,22 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 };
 
 export function GenerateCurrencyMenuItems(
-    currencies: NetworkCurrency[],
-    resolveImgSrc: (item: Layer | NetworkCurrency) => string,
+    currencies: Token[],
+    resolveImgSrc: (item: Layer | Token) => string,
     values: SwapFormValues,
     routes?: { network: string, asset: string }[],
     direction?: string,
     balances?: Balance[],
-    query?: QueryParams): SelectMenuItem<NetworkCurrency>[] {
+    query?: QueryParams): SelectMenuItem<Token>[] {
     const { to, from } = values
     const lockAsset = direction === 'from' ? query?.lockFromAsset
         : query?.lockToAsset
 
-    let currencyIsAvailable = (currency: NetworkCurrency) => {
+    let currencyIsAvailable = (currency: Token) => {
         if (lockAsset) {
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
-        else if ((from || to) && !routes?.filter(r => r.network === (direction === 'from' ? from?.internal_name : to?.internal_name)).some(r => r.asset === currency.asset)) {
+        else if ((from || to) && !routes?.filter(r => r.network === (direction === 'from' ? from?.internal_name : to?.internal_name)).some(r => r.asset === currency.symbol)) {
             if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset) {
                 return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
             }
@@ -239,15 +239,15 @@ export function GenerateCurrencyMenuItems(
 
     return currencies?.map(c => {
         const currency = c
-        const displayName = currency.display_asset ?? currency.asset;
-        const balance = balances?.find(b => b?.token === c?.asset && (direction === 'from' ? from : to)?.internal_name === b.network)
+        const displayName = currency.symbol;
+        const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.internal_name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
 
-        const res: SelectMenuItem<NetworkCurrency> = {
+        const res: SelectMenuItem<Token> = {
             baseObject: c,
-            id: c.asset,
+            id: c.symbol,
             name: displayName || "-",
-            order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
+            order: CurrencySettings.KnownSettings[c.symbol]?.Order ?? 5,
             imgSrc: resolveImgSrc && resolveImgSrc(c),
             isAvailable: currencyIsAvailable(c),
             details: `${formatted_balance_amount}`,

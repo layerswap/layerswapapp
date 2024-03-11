@@ -61,8 +61,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     } = values
 
     const { minAllowedAmount, valuesChanger, fee } = useFee()
-    const toAsset = values.toCurrency?.asset
-    const fromAsset = values.fromCurrency?.asset
+    const toAsset = values.toCurrency?.symbol
+    const fromAsset = values.fromCurrency?.symbol
 
     const { authData } = useAuthState()
 
@@ -137,10 +137,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         { rotate: 180 }
     );
     //TODO always map to toAsset from query
-    const lockedCurrency = query?.lockAsset ? values.to?.assets?.find(c => c?.asset?.toUpperCase() === toAsset?.toUpperCase()) : null;
+    const lockedCurrency = query?.lockAsset ? values.to?.assets?.find(c => c?.symbol?.toUpperCase() === toAsset?.toUpperCase()) : null;
     const apiVersion = LayerSwapApiClient.apiVersion
-    const sourceRoutesEndpoint = `/routes/sources?destination_network=${source?.internal_name}&destination_asset=${fromCurrency?.asset}${apiVersion ? '&version=' : ''}${apiVersion}`
-    const destinationRoutesEndpoint = `/routes/destinations?source_network=${destination?.internal_name}&source_asset=${toCurrency?.asset}${apiVersion ? '&version=' : ''}${apiVersion}`
+    const sourceRoutesEndpoint = `/routes/sources?destination_network=${source?.internal_name}&destination_asset=${fromCurrency?.symbol}${apiVersion ? '&version=' : ''}${apiVersion}`
+    const destinationRoutesEndpoint = `/routes/destinations?source_network=${destination?.internal_name}&source_asset=${toCurrency?.symbol}${apiVersion ? '&version=' : ''}${apiVersion}`
     const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<{
         network: string,
         asset: string
@@ -274,7 +274,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
             process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
             && values.from
             && values.fromCurrency &&
-            <GasDetails network={values.from.internal_name} currency={values.fromCurrency.asset} />
+            <GasDetails network={values.from.internal_name} currency={values.fromCurrency.symbol} />
         }
     </>
 }

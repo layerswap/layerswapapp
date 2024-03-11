@@ -1,13 +1,13 @@
 import { FC } from "react";
 import { Layer } from "../../Models/Layer";
 import { GetDefaultAsset } from "../../helpers/settingsHelper";
-import { NetworkCurrency } from "../../Models/CryptoNetwork";
+import { Token } from "../../Models/Network";
 import { Fee } from "../../context/feeContext";
 import { Fuel } from "lucide-react";
 
 type WillReceiveProps = {
     sourceIsExchange: boolean;
-    currency?: NetworkCurrency | null;
+    currency?: Token | null;
     to: Layer | undefined | null;
     refuel: boolean;
     fee: Fee | undefined
@@ -16,11 +16,11 @@ type WillReceiveProps = {
 export const ReceiveAmounts: FC<WillReceiveProps> = ({ sourceIsExchange, currency, to, refuel, fee, onButtonClick }) => {
     const receive_amount = sourceIsExchange ? fee?.manualReceiveAmount : fee?.walletReceiveAmount
     const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(currency?.precision) || "")
-    const destinationNetworkCurrency = (to && currency) ? GetDefaultAsset(to, currency.asset) : null
+    const destinationNetworkCurrency = (to && currency) ? GetDefaultAsset(to, currency.symbol) : null
 
-    const destinationAsset = to?.assets?.find(c => c?.asset === currency?.asset)
+    const destinationAsset = to?.assets?.find(c => c?.symbol === currency?.symbol)
     const destinationNativeAsset = to?.assets.find(a => a.is_native)
-    const receiveAmountInUsd = receive_amount && destinationAsset ? (destinationAsset?.usd_price * receive_amount).toFixed(2) : undefined
+    const receiveAmountInUsd = receive_amount && destinationAsset ? (destinationAsset?.price_in_usd * receive_amount).toFixed(2) : undefined
 
     return <div className="flex items-start justify-between w-full">
         <span className="md:font-semibold text-sm md:text-base text-primary-buttonTextColor leading-8 md:leading-8 flex-1">
@@ -38,7 +38,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ sourceIsExchange, currenc
                                     <>{parsedReceiveAmount}</>
                                     &nbsp;
                                     <span>
-                                        {destinationNetworkCurrency?.asset}
+                                        {destinationNetworkCurrency?.symbol}
                                     </span>
                                     {
                                         receiveAmountInUsd !== undefined && Number(receiveAmountInUsd) > 0 &&
@@ -51,7 +51,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ sourceIsExchange, currenc
                             {
                                 refuel ?
                                     <p onClick={() => onButtonClick()} className='flex cursor-pointer justify-end rounded-md gap-1 items-center text-xs text-primary-buttonTextColor leading-8 md:leading-none font-semibold'>
-                                        <span>+</span> <span>{fee?.refuelAmount} {destinationNativeAsset?.asset}</span> <span className="bg-primary/20 p-1 rounded-md"><Fuel className="h-3 w-3 text-primary" /></span>
+                                        <span>+</span> <span>{fee?.refuelAmount} {destinationNativeAsset?.symbol}</span> <span className="bg-primary/20 p-1 rounded-md"><Fuel className="h-3 w-3 text-primary" /></span>
                                     </p>
                                     :
                                     <></>

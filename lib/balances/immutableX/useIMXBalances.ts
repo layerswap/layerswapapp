@@ -18,14 +18,14 @@ export default function useImxBalance(): BalanceProvider {
         const res: BalancesResponse = await axios.get(`${layer?.nodes[0].url}/v2/balances/${address}`).then(r => r.data)
 
         const balances = layer?.assets?.map(asset => {
-            const balance = res.result.find(r => r.symbol === asset.asset)
+            const balance = res.result.find(r => r.symbol === asset.symbol)
 
             return {
                 network: layer.internal_name,
                 amount: formatAmount(balance?.balance, asset.decimals),
                 decimals: asset.decimals,
                 isNativeCurrency: false,
-                token: asset.asset,
+                token: asset.symbol,
                 request_time: new Date().toJSON(),
             }
         })

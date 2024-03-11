@@ -1,7 +1,7 @@
 import { AssetGroup } from "../components/Input/CEXCurrencyFormField";
 import { groupBy } from "../components/utils/groupBy";
 import NetworkSettings from "../lib/NetworkSettings";
-import { CryptoNetwork, NetworkCurrency } from "./CryptoNetwork";
+import { CryptoNetwork, Token } from "./Network";
 import { Exchange } from "./Exchange";
 import { Layer } from "./Layer";
 import { LayerSwapSettings, Route } from "./LayerSwapSettings";
@@ -22,7 +22,7 @@ export class LayerSwapAppSettings {
     sourceRoutes: Route[]
     destinationRoutes: Route[]
 
-    resolveImgSrc = (item: Layer | Exchange | NetworkCurrency | Pick<Layer, 'internal_name'> | { asset: string } | Partner | undefined) => {
+    resolveImgSrc = (item: Layer | Exchange | Token | Pick<Layer, 'internal_name'> | { asset: string } | Partner | undefined) => {
 
         if (!item) {
             return "/images/logo_placeholder.png";
@@ -57,8 +57,8 @@ export class LayerSwapAppSettings {
         const networkLayers: Layer[] = networks?.map((n): Layer =>
         ({
             assets: LayerSwapAppSettings.ResolveNetworkAssets(n, sourceRoutes, destinationRoutes),
-            img_url: `${basePath}layerswap/networks/${n?.internal_name?.toLowerCase()}.png`,
-            is_featured: NetworkSettings.KnownSettings[n.internal_name]?.isFeatured ?? false,
+            img_url: `${basePath}layerswap/networks/${n?.name?.toLowerCase()}.png`,
+            is_featured: NetworkSettings.KnownSettings[n.name]?.isFeatured ?? false,
             ...n,
         }))
         return networkLayers
@@ -78,10 +78,10 @@ export class LayerSwapAppSettings {
         return resolvedExchanges
     }
 
-    static ResolveNetworkAssets(network: CryptoNetwork, sourceRoutes: Route[], destinationRoutes: Route[]): NetworkCurrency[] {
-        return network?.currencies?.map(c => {
-            const availableInSource = sourceRoutes?.some(r => r.asset === c.asset && r.network === network.internal_name)
-            const availableInDestination = destinationRoutes?.some(r => r.asset === c.asset && r.network === network.internal_name)
+    static ResolveNetworkAssets(network: CryptoNetwork, sourceRoutes: Route[], destinationRoutes: Route[]): Token[] {
+        return network?.tokens?.map(c => {
+            const availableInSource = sourceRoutes?.some(r => r.asset === c.symbol && r.network === network.name)
+            const availableInDestination = destinationRoutes?.some(r => r.asset === c.symbol && r.network === network.name)
             return ({
                 ...c,
                 availableInSource,
@@ -92,19 +92,19 @@ export class LayerSwapAppSettings {
 
     static ResolveAssetGroups(networks: CryptoNetwork[]) {
 
-        interface Asset extends NetworkCurrency {
+        interface Asset extends Token {
             network: string
         }
 
         const assets: Asset[] = []
-        networks.forEach(n => assets?.push(...n.currencies.map(c => ({ network: n.internal_name, ...c }))))
+        networks.forEach(n => assets?.push(...n.tokens.map(c => ({ network: n.name, ...c }))))
 
         const groupsWithGroupName = groupBy(assets, ({ group_name }) => group_name || 'without_group')
 
-        const groupsWithoutGroupName = groupBy(groupsWithGroupName.without_group, ({ asset }) => asset)
+        const groupsWithoutGroupName = groupBy(groupsWithGroupName.without_group, ({ symbol: asset }) => asset)
 
-        const groupsWithGroupNameArray = Object.keys(groupsWithGroupName).filter(f => f !== "without_group").map(a => ({ name: a, values: groupsWithGroupName[a]?.map(g => ({ asset: g.asset, network: g.network })), groupedInBackend: true }))
-        const groupsWithoutGroupNameArray = Object.keys(groupsWithoutGroupName).map(a => ({ name: a, values: groupsWithoutGroupName[a]?.map(g => ({ asset: g.asset, network: g.network })), groupedInBackend: false }))
+        const groupsWithGroupNameArray = Object.keys(groupsWithGroupName).filter(f => f !== "without_group").map(a => ({ name: a, values: groupsWithGroupName[a]?.map(g => ({ asset: g.symbol, network: g.network })), groupedInBackend: true }))
+        const groupsWithoutGroupNameArray = Object.keys(groupsWithoutGroupName).map(a => ({ name: a, values: groupsWithoutGroupName[a]?.map(g => ({ asset: g.symbol, network: g.network })), groupedInBackend: false }))
         const groups = [...groupsWithGroupNameArray, ...groupsWithoutGroupNameArray]
 
         return groups

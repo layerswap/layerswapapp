@@ -1,7 +1,7 @@
 import { ReactNode, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import useWallet from "../../hooks/useWallet";
-import { NetworkType } from "../../Models/CryptoNetwork";
+import { NetworkType } from "../../Models/Network";
 import RainbowIcon from "../icons/Wallets/Rainbow";
 import TON from "../icons/Wallets/TON";
 import {

@@ -42,7 +42,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
-    const nativeCurrency = destination_layer?.assets?.find(c => c.asset === destination_layer?.assets.find(a => a.is_native)?.asset)
+    const nativeCurrency = destination_layer?.assets?.find(c => c.symbol === destination_layer?.assets.find(a => a.is_native)?.symbol)
     const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
 
     const progressStatuses = getProgressStatuses(swap, swapStatus)
@@ -151,15 +151,15 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         },
         "refuel": {
             upcoming: {
-                name: `Sending ${nativeCurrency?.asset} to your address`,
+                name: `Sending ${nativeCurrency?.symbol} to your address`,
                 description: null
             },
             current: {
-                name: `Sending ${nativeCurrency?.asset} to your address`,
+                name: `Sending ${nativeCurrency?.symbol} to your address`,
                 description: null
             },
             complete: {
-                name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your address`,
+                name: `${truncatedRefuelAmount} ${nativeCurrency?.symbol} was sent to your address`,
                 description: <div className='flex items-center space-x-1'>
                     <span>Transaction: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>

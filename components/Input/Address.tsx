@@ -252,7 +252,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                                 width="15"
                                                 className='rounded-sm'
                                             />
-                                            <span className="text-primary-text">{destinationAsset.asset}</span>
+                                            <span className="text-primary-text">{destinationAsset.symbol}</span>
                                         </span>
                                     </span>
                                     <span>as asset</span>

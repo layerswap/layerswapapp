@@ -41,7 +41,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     const { layers, resolveImgSrc } = useSettingsState();
     const filterWith = direction === "from" ? to : from
-    const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
+    const filterWithAsset = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
 
     const apiClient = new LayerSwapApiClient()
     const version = LayerSwapApiClient.apiVersion
@@ -96,7 +96,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     const handleSelect = useCallback((item: SelectMenuItem<{ network: string, asset: string }>) => {
         if (!item) return
         const layer = layers.find(l => l.internal_name === item.baseObject.network)
-        const currency = layer?.assets.find(a => a.asset === item.baseObject.asset)
+        const currency = layer?.assets.find(a => a.symbol === item.baseObject.asset)
         setFieldValue(name, layer, true)
         setFieldValue(`${name}Currency`, currency, false)
         setShowModal(false)
@@ -107,7 +107,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     //TODO set default currency & reset currency if not available
     const value = menuItems?.find(item =>
         item.baseObject.asset ===
-        (direction === 'from' ? fromCurrency : toCurrency)?.asset
+        (direction === 'from' ? fromCurrency : toCurrency)?.symbol
         && item.baseObject.network === formValue?.internal_name)
 
     //Setting default value
@@ -137,11 +137,11 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                 <span>{direction === 'from' ? 'Withdrawal network' : 'Deposit network'}</span>
             </div>
             {
-                currency?.contract_address && isValidAddress(currency.contract_address, network) && network &&
+                currency?.contract && isValidAddress(currency.contract, network) && network &&
                 <div className="justify-self-end space-x-1">
                     <span>Contract:</span>
-                    <Link target="_blank" href={network.account_explorer_template?.replace("{0}", currency.contract_address)} className="underline text-primary-buttonTextColor hover:no-underline w-fit">
-                        {shortenAddress(currency?.contract_address)}
+                    <Link target="_blank" href={network.account_explorer_template?.replace("{0}", currency.contract)} className="underline text-primary-buttonTextColor hover:no-underline w-fit">
+                        {shortenAddress(currency?.contract)}
                     </Link>
                 </div>
             }

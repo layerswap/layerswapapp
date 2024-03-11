@@ -1,6 +1,6 @@
 import { PublicClient, encodeFunctionData } from "viem";
 import { erc20ABI } from "wagmi";
-import { NetworkCurrency } from "../../../Models/CryptoNetwork";
+import { Token } from "../../../Models/Network";
 import { Layer } from "../../../Models/Layer";
 import { Gas } from "../../../Models/Balance";
 
@@ -11,9 +11,9 @@ export default abstract class getEVMGas {
     protected contract_address: `0x${string}`
     protected account: `0x${string}`
     protected from: Layer
-    protected currency: NetworkCurrency
+    protected currency: Token
     protected destination: `0x${string}`
-    protected nativeToken: NetworkCurrency
+    protected nativeToken: Token
     protected isSweeplessTx: boolean
     constructor(
         publicClient: PublicClient,
@@ -21,9 +21,9 @@ export default abstract class getEVMGas {
         contract_address: `0x${string}`,
         account: `0x${string}`,
         from: Layer,
-        currency: NetworkCurrency,
+        currency: Token,
         destination: `0x${string}`,
-        nativeToken: NetworkCurrency,
+        nativeToken: Token,
         isSweeplessTx: boolean
     ) {
         this.publicClient = publicClient

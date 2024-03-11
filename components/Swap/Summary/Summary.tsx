@@ -12,12 +12,12 @@ import useSWR from 'swr'
 import KnownInternalNames from "../../../lib/knownIds";
 import useWallet from "../../../hooks/useWallet";
 import { useQueryState } from "../../../context/query";
-import { NetworkCurrency } from "../../../Models/CryptoNetwork";
+import { Token } from "../../../Models/Network";
 import { Exchange } from "../../../Models/Exchange";
 
 type SwapInfoProps = {
-    sourceCurrency: NetworkCurrency,
-    destinationCurrency: NetworkCurrency,
+    sourceCurrency: Token,
+    destinationCurrency: Token,
     source: Layer,
     destination: Layer;
     requestedAmount: number | undefined;
@@ -51,13 +51,13 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
     const source = hideFrom ? partner : from
     const destination = hideTo ? partner : to
 
-    const requestedAmountInUsd = requestedAmount && (sourceCurrency?.usd_price * requestedAmount).toFixed(2)
-    const receiveAmountInUsd = receiveAmount ? (destinationCurrency?.usd_price * receiveAmount).toFixed(2) : undefined
+    const requestedAmountInUsd = requestedAmount && (sourceCurrency?.price_in_usd * requestedAmount).toFixed(2)
+    const receiveAmountInUsd = receiveAmount ? (destinationCurrency?.price_in_usd * receiveAmount).toFixed(2) : undefined
     const nativeCurrency = refuelAmount && to.assets.find(c => c.is_native)
 
     const truncatedRefuelAmount = nativeCurrency && (hasRefuel && refuelAmount) ?
         truncateDecimals(refuelAmount, nativeCurrency?.precision) : null
-    const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.usd_price || 1) * (truncatedRefuelAmount || 0)).toFixed(2)
+    const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.price_in_usd || 1) * (truncatedRefuelAmount || 0)).toFixed(2)
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
 
@@ -87,7 +87,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                     <div className="flex flex-col items-end">
                         {
                             requestedAmount &&
-                            <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.display_asset ?? sourceCurrency.asset}</p>
+                            <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.symbol}</p>
                         }
                         <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
                     </div>
@@ -109,7 +109,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                     {
                         receiveAmount != undefined ?
                             <div className="flex flex-col justify-end">
-                                <p className="text-primary-text text-sm">{truncateDecimals(receiveAmount, destinationCurrency.precision)} {destinationCurrency.display_asset ?? destinationCurrency.asset}</p>
+                                <p className="text-primary-text text-sm">{truncateDecimals(receiveAmount, destinationCurrency.precision)} {destinationCurrency.symbol}</p>
                                 <p className="text-secondary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
                             </div>
                             :
@@ -129,7 +129,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                                 <p>Refuel</p>
                             </div>
                             <div className="flex flex-col items-end">
-                                <p className="text-primary-text text-sm">{truncatedRefuelAmount} {nativeCurrency.display_asset ?? nativeCurrency?.asset}</p>
+                                <p className="text-primary-text text-sm">{truncatedRefuelAmount} {nativeCurrency?.symbol}</p>
                                 <p className="text-secondary-text text-sm flex justify-end">${refuelAmountInUsd}</p>
                             </div>
                         </div>

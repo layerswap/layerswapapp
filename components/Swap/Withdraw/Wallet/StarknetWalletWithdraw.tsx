@@ -43,7 +43,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const source_network_internal_name = swap?.source_network.name
     const source_network = layers.find(n => n.internal_name === source_network_internal_name)
     const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
-    const sourceCurrency = source_network?.assets.find(c => c.asset?.toLowerCase() === swap?.source_token.symbol?.toLowerCase())
+    const sourceCurrency = source_network?.assets.find(c => c.symbol?.toLowerCase() === swap?.source_token.symbol?.toLowerCase())
     const sourceChainId = source_network?.chain_id
 
     const provider = useMemo(() => {
@@ -87,7 +87,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             if (!wallet) {
                 throw Error("starknet wallet not connected")
             }
-            if (!sourceCurrency.contract_address) {
+            if (!sourceCurrency.contract) {
                 throw Error("starknet contract_address is not defined")
             }
             if (!source_network?.metadata?.WatchdogContractAddress) {
@@ -101,7 +101,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             }
             const erc20Contract = new Contract(
                 Erc20Abi,
-                sourceCurrency.contract_address,
+                sourceCurrency.contract,
                 wallet.metadata?.starknetAccount?.account,
             )
 

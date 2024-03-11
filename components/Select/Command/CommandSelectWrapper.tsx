@@ -4,7 +4,7 @@ import { ChevronDown } from 'lucide-react'
 import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
 import CommandSelect, { SelectMenuItemGroup } from './commandSelect'
 import { Layer } from '../../../Models/Layer'
-import { NetworkCurrency } from '../../../Models/CryptoNetwork'
+import { Token } from '../../../Models/Network'
 import { LeafletHeight } from '../../modal/leaflet'
 
 type CommandSelectWrapperProps = {
@@ -18,7 +18,7 @@ type CommandSelectWrapperProps = {
     isLoading: boolean;
     isExchange?: boolean;
     network?: Layer | undefined;
-    currency?: NetworkCurrency | undefined;
+    currency?: Token | undefined;
     networkImgSrc?: string;
     modalHeight?: LeafletHeight
 }
@@ -84,7 +84,7 @@ export default function CommandSelectWrapper<T>({
                                 <span className="ml-3 flex font-medium flex-auto space-x-1 items-center">
                                     <div className="text-primary-buttonTextColor flex">{network?.display_name}</div>
                                     <div className="text-primary-text-placeholder inline-flex items-center justify-self-end gap-1">
-                                        ({currency?.asset})
+                                        ({currency?.symbol})
                                     </div>
                                 </span>
                                 :

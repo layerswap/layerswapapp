@@ -1,11 +1,11 @@
-import { NetworkCurrency } from "../Models/CryptoNetwork";
+import { Token } from "../Models/Network";
 import { Layer } from "../Models/Layer";
 import { THEME_COLORS } from "../Models/Theme";
 
-export function GetDefaultAsset(layer: Layer, asset: string): NetworkCurrency | undefined {
+export function GetDefaultAsset(layer: Layer, asset: string): Token | undefined {
     return layer
         ?.assets
-        ?.find(a => a.asset === asset)
+        ?.find(a => a.symbol === asset)
 }
 
 export const getThemeData = async (query: any) => {

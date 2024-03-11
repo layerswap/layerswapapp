@@ -19,14 +19,14 @@ export default function useLoopringBalance(): BalanceProvider {
 
             const account: { data: AccountInfo } = await axios.get(`${uri}/account?owner=${address}`)
             const accInfo = account.data
-            const tokens = layer?.assets?.map(obj => obj.contract_address).join(',');
+            const tokens = layer?.assets?.map(obj => obj.contract).join(',');
             const result: { data: LpBalance[] } = await axios.get(`${uri}/user/balances?accountId=${accInfo.accountId}&tokens=${tokens}`)
 
             const loopringBalances = layer?.assets?.map(asset => {
-                const amount = result.data.find(d => d.tokenId == Number(asset.contract_address))?.total;
+                const amount = result.data.find(d => d.tokenId == Number(asset.contract))?.total;
                 return ({
                     network: layer.internal_name,
-                    token: asset?.asset,
+                    token: asset?.symbol,
                     amount: amount ? formatAmount(amount, Number(asset?.decimals)) : 0,
                     request_time: new Date().toJSON(),
                     decimals: Number(asset?.decimals),
@@ -57,11 +57,11 @@ export default function useLoopringBalance(): BalanceProvider {
             const accInfo = account.data
 
             const result: { data: LpFee } = await axios.get(`${uri}/user/offchainFee?accountId=${accInfo.accountId}&requestType=3`)
-            const currencyDec = layer?.assets?.find(c => c?.asset == currency.asset)?.decimals;
-            const formatedGas = formatAmount(result.data.fees.find(f => f?.token === currency.asset)?.fee, Number(currencyDec));
+            const currencyDec = layer?.assets?.find(c => c?.symbol == currency.symbol)?.decimals;
+            const formatedGas = formatAmount(result.data.fees.find(f => f?.token === currency.symbol)?.fee, Number(currencyDec));
 
             gas = [{
-                token: currency.asset,
+                token: currency.symbol,
                 gas: formatedGas,
                 request_time: new Date().toJSON()
             }]

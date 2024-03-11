@@ -45,7 +45,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
         try {
             const ImtblClient = (await import('../../../../lib/imtbl')).default;
             const imtblClient = new ImtblClient(source_layer?.internal_name)
-            const source_currency = source_layer.assets.find(c => c.asset.toLocaleUpperCase() === swap.source_token.symbol.toLocaleUpperCase())
+            const source_currency = source_layer.assets.find(c => c.symbol.toLocaleUpperCase() === swap.source_token.symbol.toLocaleUpperCase())
             if (!source_currency) {
                 throw new Error("No source currency could be found");
             }

@@ -1,5 +1,5 @@
 import { ERC20TokenType, ETHTokenType, Link, LinkResults } from '@imtbl/imx-sdk'
-import { NetworkCurrency } from '../Models/CryptoNetwork'
+import { Token } from '../Models/Network'
 import KnownInternalNames from './knownIds'
 import { SwapItem } from './layerSwapApiClient'
 import NetworkSettings from './NetworkSettings'
@@ -33,7 +33,7 @@ export default class ImtblClient {
         }
     }
 
-    async Transfer(swap: SwapItem, currency: NetworkCurrency, deposit_address: string) {
+    async Transfer(swap: SwapItem, currency: Token, deposit_address: string) {
         try {
             if (swap.source_token.symbol === KnownInternalNames.Currencies.ETH) {
                 const res = await this.link.transfer([
@@ -46,7 +46,7 @@ export default class ImtblClient {
                 return res;
             }
             else {
-                if(!currency.contract_address){
+                if(!currency.contract){
                     throw Error("immutable contract_address is not defined")
                 }
                 const res = await this.link.transfer([
@@ -54,7 +54,7 @@ export default class ImtblClient {
                         type: ERC20TokenType.ERC20,
                         amount: swap.requested_amount.toString(),
                         toAddress: deposit_address,
-                        tokenAddress: currency.contract_address.toLowerCase(),
+                        tokenAddress: currency.contract.toLowerCase(),
                         symbol: swap.source_token.symbol
                     }
                 ])

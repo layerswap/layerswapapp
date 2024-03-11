@@ -1,6 +1,6 @@
 import { useSettingsState } from "../context/settings"
 import { useSwapDataState } from "../context/swap"
-import { NetworkType } from "../Models/CryptoNetwork"
+import { NetworkType } from "../Models/Network"
 import useWallet from "./useWallet"
 import { useEffect, useMemo } from "react"
 import { useContractWalletsStore } from "../stores/contractWalletsStore"

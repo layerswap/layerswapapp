@@ -37,7 +37,7 @@ export default function useSolanaBalance(): BalanceProvider {
         for (let i = 0; i < layer.assets.length; i++) {
             try {
                 const asset = layer.assets[i]
-                const sourceToken = new PublicKey(asset?.contract_address!);
+                const sourceToken = new PublicKey(asset?.contract!);
                 const associatedTokenFrom = await getAssociatedTokenAddress(
                     sourceToken,
                     walletPublicKey
@@ -47,7 +47,7 @@ export default function useSolanaBalance(): BalanceProvider {
                 if (result != null && !isNaN(result)) {
                     const balance = {
                         network: layer.internal_name,
-                        token: asset.asset,
+                        token: asset.symbol,
                         amount: result,
                         request_time: new Date().toJSON(),
                         decimals: Number(asset?.decimals),
@@ -98,7 +98,7 @@ export default function useSolanaBalance(): BalanceProvider {
             const formatedGas = formatAmount(result.value, currencyDec!)
 
             gas = [{
-                token: currency.asset,
+                token: currency.symbol,
                 gas: formatedGas,
                 request_time: new Date().toJSON()
             }]

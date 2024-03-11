@@ -11,7 +11,7 @@ import { publicProvider } from 'wagmi/providers/public';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitgetWallet, argentWallet, phantomWallet } from '@rainbow-me/rainbowkit/wallets';
 import { useSettingsState } from "../context/settings";
 import { Chain, WagmiConfig, configureChains, createConfig, mainnet } from "wagmi";
-import { NetworkType } from "../Models/CryptoNetwork";
+import { NetworkType } from "../Models/Network";
 import resolveChain from "../lib/resolveChain";
 import React from "react";
 import AddressIcon from "./AddressIcon";

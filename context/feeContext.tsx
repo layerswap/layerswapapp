@@ -58,12 +58,12 @@ export function FeeProvider({ children }) {
         wallet_min_amount: number
         wallet_min_amount_in_usd: number
     }>>((from && fromCurrency && to && toCurrency) ?
-        `/routes/limits/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?version=${version}&refuel=${!!refuel}` : null, apiClient.fetcher, {
+        `/routes/limits/${from?.internal_name}/${fromCurrency?.symbol}/${to?.internal_name}/${toCurrency?.symbol}?version=${version}&refuel=${!!refuel}` : null, apiClient.fetcher, {
         refreshInterval: 10000
     })
 
     const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading, error: lsFeeError } = useSWR<ApiResponse<RateResponse>>((from && fromCurrency && to && toCurrency && debouncedAmount) ?
-        `/routes/rate/${from?.internal_name}/${fromCurrency?.asset}/${to?.internal_name}/${toCurrency?.asset}?amount=${debouncedAmount}&refuel=${!!refuel}&version=${version}` : null, apiClient.fetcher, {
+        `/routes/rate/${from?.internal_name}/${fromCurrency?.symbol}/${to?.internal_name}/${toCurrency?.symbol}?amount=${debouncedAmount}&refuel=${!!refuel}&version=${version}` : null, apiClient.fetcher, {
         refreshInterval: 10000,
         fallbackData: { data: cachedRateData }
     })

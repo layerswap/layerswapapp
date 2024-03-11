@@ -15,7 +15,7 @@ import CurrencyFormField from "./CurrencyFormField";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { NetworkCurrency } from "../../Models/CryptoNetwork";
+import { Token } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
@@ -70,7 +70,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     let menuItems: SelectMenuItem<Layer | Exchange>[];
 
     const filterWith = direction === "from" ? to : from
-    const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
+    const filterWithAsset = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
 
     const filterWithExchange = direction === 'from' ? toExchange : fromExchange
 
@@ -147,7 +147,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             setFieldValue(`${name}Exchange`, null, true)
             setFieldValue(name, item.baseObject, true)
             const currency = name == "from" ? fromCurrency : toCurrency
-            const assetSubstitute = (item.baseObject as Layer)?.assets?.find(a => a.asset === currency?.asset)
+            const assetSubstitute = (item.baseObject as Layer)?.assets?.find(a => a.symbol === currency?.symbol)
             if (assetSubstitute) {
                 setFieldValue(`${name}Currency`, assetSubstitute, true)
             }
@@ -201,7 +201,7 @@ function groupByType(values: ISelectMenuItem[]) {
     return groups;
 }
 
-function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc: (item: Layer | Exchange | NetworkCurrency) => string, direction: SwapDirection, lock: boolean, routesData: Route[] | undefined, query: QueryParams): SelectMenuItem<Layer | Exchange>[] {
+function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc: (item: Layer | Exchange | Token) => string, direction: SwapDirection, lock: boolean, routesData: Route[] | undefined, query: QueryParams): SelectMenuItem<Layer | Exchange>[] {
 
     let layerIsAvailable = (layer: Layer) => {
         if (lock) {

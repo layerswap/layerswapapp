@@ -191,9 +191,9 @@ function TransactionsHistory() {
                             } = swap
 
                             const sourceNetwork = layers.find(e => e.internal_name === source_network.name)
-                            const sourceCurrency = sourceNetwork?.assets?.find(c => c.asset === source_token.symbol)
+                            const sourceCurrency = sourceNetwork?.assets?.find(c => c.symbol === source_token.symbol)
                             const destinationNetwork = layers.find(n => n.internal_name === destination_network.name)
-                            const destinationCurrency = destinationNetwork?.assets.find(a => a.asset === destination_token.symbol)
+                            const destinationCurrency = destinationNetwork?.assets.find(a => a.symbol === destination_token.symbol)
                             const output_transaction = swap.transactions.find(t => t.type === TransactionType.Output)
 
                             return <tr onClick={() => handleopenSwapDetails(swap)} key={swap.id}>
@@ -252,7 +252,7 @@ function TransactionsHistory() {
                                       <span>
                                         {truncateDecimals(swap.requested_amount, sourceCurrency?.precision)}
                                       </span>
-                                      <span className="ml-1">{sourceCurrency?.display_asset ?? sourceCurrency?.asset}</span>
+                                      <span className="ml-1">{sourceCurrency?.symbol}</span>
                                     </div>
                                     {
                                       output_transaction ?
@@ -260,7 +260,7 @@ function TransactionsHistory() {
                                           <span>
                                             {truncateDecimals(output_transaction?.amount, sourceCurrency?.precision)}
                                           </span>
-                                          <span className="ml-1">{destinationCurrency?.display_asset ?? destinationCurrency?.asset}</span>
+                                          <span className="ml-1">{destinationCurrency?.symbol}</span>
                                         </div>
                                         : <div className="text-left text-base">-</div>
                                     }

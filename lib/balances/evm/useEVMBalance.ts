@@ -1,6 +1,6 @@
 import { useSettingsState } from "../../../context/settings"
 import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../Models/Balance"
-import { NetworkType } from "../../../Models/CryptoNetwork"
+import { NetworkType } from "../../../Models/Network"
 import NetworkSettings, { GasCalculation } from "../../NetworkSettings"
 
 export default function useEVMBalance(): BalanceProvider {
@@ -71,7 +71,7 @@ export default function useEVMBalance(): BalanceProvider {
         if (!nativeToken || !chainId || !layer)
             return
 
-        const contract_address = layer?.assets?.find(a => a?.asset === currency?.asset)?.contract_address as `0x${string}`
+        const contract_address = layer?.assets?.find(a => a?.symbol === currency?.symbol)?.contract as `0x${string}`
         const destination_address = layer?.managed_accounts?.[0]?.address as `0x${string}`
 
         try {

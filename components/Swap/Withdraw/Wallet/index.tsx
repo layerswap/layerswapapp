@@ -23,7 +23,7 @@ const WalletTransferContent: FC = () => {
     const { source_network, source_token } = swap || {}
     const source_network_internal_name = source_network?.name
     const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
-    const sourceAsset = source_layer?.assets?.find(c => c.asset.toLowerCase() === source_token?.symbol.toLowerCase())
+    const sourceAsset = source_layer?.assets?.find(c => c.symbol.toLowerCase() === source_token?.symbol.toLowerCase())
 
     const sourceIsImmutableX = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsZkSync = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
@@ -68,7 +68,7 @@ const WalletTransferContent: FC = () => {
                 swapId={swap.id}
                 networkDisplayName={source_layer?.display_name}
                 tokenDecimals={sourceAsset?.decimals}
-                tokenContractAddress={sourceAsset.contract_address}
+                tokenContractAddress={sourceAsset.contract}
                 chainId={sourceChainId}
                 depositAddress={depositAddress}
                 userDestinationAddress={swap.destination_address}
@@ -83,7 +83,7 @@ const WalletTransferWrapper = () => {
     const { layers } = useSettingsState()
 
     const source_layer = layers.find(n => n.internal_name === swap?.source_network?.name)
-    const sourceAsset = source_layer?.assets?.find(c => c.asset.toLowerCase() === swap?.source_token.symbol.toLowerCase())
+    const sourceAsset = source_layer?.assets?.find(c => c.symbol.toLowerCase() === swap?.source_token.symbol.toLowerCase())
 
     return <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
         {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}

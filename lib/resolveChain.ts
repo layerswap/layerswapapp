@@ -24,8 +24,8 @@ export default function resolveChain(network: Layer): (Chain & RainbowKitChain) 
         name: network.display_name,
         network: network.internal_name,
         nativeCurrency: {
-            name: nativeCurrency.asset,
-            symbol: nativeCurrency.asset,
+            name: nativeCurrency.symbol,
+            symbol: nativeCurrency.symbol,
             decimals: nativeCurrency.decimals
         },
         iconUrl: network.img_url,

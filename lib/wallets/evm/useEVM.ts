@@ -1,7 +1,7 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { disconnect } from '@wagmi/core'
 import { useAccount } from "wagmi"
-import { NetworkType } from "../../../Models/CryptoNetwork"
+import { NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"

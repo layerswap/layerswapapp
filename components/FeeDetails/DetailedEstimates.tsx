@@ -13,8 +13,8 @@ const DetailedEstimates: FC = () => {
     const fee_amount = fromExchange ? fee?.manualFee : fee?.walletFee
 
     const parsedFee = fee && parseFloat(Number(fee_amount).toFixed(fromCurrency?.precision))
-    const currencyName = fromCurrency?.display_asset || fromCurrency?.asset || " "
-    const feeAmountInUsd = parsedFee && fromCurrency ? (fromCurrency?.usd_price * parsedFee).toFixed(2) : undefined
+    const currencyName = fromCurrency?.symbol || " "
+    const feeAmountInUsd = parsedFee && fromCurrency ? (fromCurrency?.price_in_usd * parsedFee).toFixed(2) : undefined
 
     return <div className="flex flex-col w-full gap-2">
         {

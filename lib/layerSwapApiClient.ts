@@ -8,7 +8,7 @@ import { NextRouter } from "next/router";
 import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
-import { CryptoNetwork } from "../Models/CryptoNetwork";
+import { CryptoNetwork, Network, Token } from "../Models/Network";
 import { Exchange } from "../Models/Exchange";
 
 export default class LayerSwapApiClient {
@@ -154,15 +154,15 @@ export type SwapResponse = {
 export type SwapItem = {
     id: string,
     created_date: string,
-    source_network: SwapNetwork,
-    source_token: SwapToken,
+    source_network: Network,
+    source_token: Token,
     source_exchange?: SwapExchange,
-    destination_network: SwapNetwork,
-    destination_token: SwapToken,
+    destination_network: Network,
+    destination_token: Token,
     destination_exchange?: SwapExchange,
     refuel: {
-        token: SwapToken,
-        network: SwapNetwork,
+        token: Token,
+        network: Network,
         refuel_amount: number
     },
     status: SwapStatus,
@@ -179,21 +179,6 @@ export type SwapItem = {
         app: string | null;
         sequence_number: number
     }
-}
-
-export type SwapNetwork = {
-    name: string,
-    display_name: string,
-    logo: string,
-    chain_id: string
-}
-
-export type SwapToken = {
-    symbol: string,
-    logo: string,
-    contract: string,
-    decimals: number,
-    price_in_usd: number
 }
 
 export type SwapExchange = {
@@ -251,8 +236,7 @@ export type Transaction = {
     transaction_hash: string,
     confirmations: number,
     max_confirmations: number,
-    usd_value: number,
-    usd_price: number,
+    
     status: TransactionStatus,
 }
 

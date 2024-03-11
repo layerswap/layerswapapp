@@ -8,39 +8,36 @@ export enum NetworkType {
     TON = 'ton'
 }
 
-export class CryptoNetwork {
+export class Network {
+    name: string;
     display_name: string;
-    internal_name: string;
+    logo: string;
+    chain_id: string;
+    node_url: string;
+    type: NetworkType;
     transaction_explorer_template: string;
     account_explorer_template: string;
-    currencies: NetworkCurrency[];
-    chain_id: string;
-    type: NetworkType;
-    created_date: string;
-    nodes: NetworkNode[];
-    managed_accounts: ManagedAccount[];
     metadata: Metadata | null | undefined;
-    is_testnet?: boolean;
-    img_url?: string
 }
 
-export class NetworkCurrency {
-    asset: string;
-    display_asset: string | null
+export class CryptoNetwork extends Network {
+    tokens: Token[];
+}
+
+export class Token {
+    symbol: string;
+    logo: string;
     //TODO may be plain string
-    contract_address: `0x${string}` | null | undefined;
+    contract: `0x${string}` | null | undefined;
     decimals: number;
-    is_native: boolean
+    price_in_usd: number;
     precision: number;
-    usd_price: number;
-    refuel_amount_in_usd: number | null;
+    is_native: boolean
     group_name?: string | null;
-    availableInSource?: boolean;
-    availableInDestination?: boolean;
+    available_in_source?: boolean;
+    available_in_destination?: boolean;
 }
-export class NetworkNode {
-    url: string;
-}
+
 export class ManagedAccount {
     address: `0x${string}`;
 }

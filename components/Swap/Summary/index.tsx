@@ -23,9 +23,9 @@ const SwapSummary: FC = () => {
     const { fee: feeData, valuesChanger, minAllowedAmount } = useFee()
 
     const source_layer = layers.find(n => n.internal_name === swap?.source_network.name)
-    const sourceAsset = source_layer?.assets?.find(currency => currency?.asset === swap?.source_token.symbol)
+    const sourceAsset = source_layer?.assets?.find(currency => currency?.symbol === swap?.source_token.symbol)
     const destination_layer = layers?.find(l => l.internal_name === swap?.destination_token.symbol)
-    const destinationAsset = destination_layer?.assets?.find(currency => currency?.asset === swap?.destination_token.symbol)
+    const destinationAsset = destination_layer?.assets?.find(currency => currency?.symbol === swap?.destination_token.symbol)
     const sourceExchange = exchanges.find(e => e.internal_name === swap?.source_exchange?.name)
     const destExchange = exchanges.find(e => e.internal_name === swap?.destination_exchange?.name)
 

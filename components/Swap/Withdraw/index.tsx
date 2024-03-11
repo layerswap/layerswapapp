@@ -11,7 +11,7 @@ import Coinbase from './Coinbase';
 import External from './External';
 import { WithdrawType } from '../../../lib/layerSwapApiClient';
 import WalletIcon from '../../icons/WalletIcon';
-import { NetworkType } from '../../../Models/CryptoNetwork';
+import { NetworkType } from '../../../Models/Network';
 import { useQueryState } from '../../../context/query';
 import { Widget } from '../../Widget/Index';
 import WalletTransferContent from './WalletTransferContent';

@@ -9,7 +9,7 @@ import useImxBalance from "../lib/balances/immutableX/useIMXBalances"
 import { BalanceProvider } from "../Models/Balance"
 import useWallet from "./useWallet"
 import { useBalancesState, useBalancesUpdate } from "../context/balances"
-import { NetworkCurrency } from "../Models/CryptoNetwork"
+import { Token } from "../Models/Network"
 import useQueryBalances from "../lib/balances/query/useQueryBalances"
 import { useQueryState } from "../context/query"
 
@@ -66,7 +66,7 @@ export default function useBalanceProvider() {
         }
     }
 
-    const fetchGas = async (network: Layer, currency: NetworkCurrency, userDestinationAddress: string) => {
+    const fetchGas = async (network: Layer, currency: Token, userDestinationAddress: string) => {
 
         if (!network) {
             return
@@ -74,7 +74,7 @@ export default function useBalanceProvider() {
 
 
         const destination_address = network?.managed_accounts?.[0]?.address as `0x${string}`
-        const gas = gases[network.internal_name]?.find(g => g?.token === currency?.asset)
+        const gas = gases[network.internal_name]?.find(g => g?.token === currency?.symbol)
         const isGasOutDated = !gas || new Date().getTime() - (new Date(gas.request_time).getTime() || 0) > 10000
 
         const provider = getAutofillProvider(network)
@@ -96,7 +96,7 @@ export default function useBalanceProvider() {
                 }) || []
 
                 if (gas) {
-                    const filteredGases = gases[network.internal_name]?.some(b => b?.token === currency?.asset) ? gases[network.internal_name].filter(g => g.token !== currency.asset) : gases[network.internal_name] || []
+                    const filteredGases = gases[network.internal_name]?.some(b => b?.token === currency?.symbol) ? gases[network.internal_name].filter(g => g.token !== currency.symbol) : gases[network.internal_name] || []
                     setAllGases((data) => ({ ...data, [network.internal_name]: filteredGases.concat(gas) }))
                 }
             }

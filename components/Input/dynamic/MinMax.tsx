@@ -30,8 +30,8 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
         setFieldValue('amount', minAllowedAmount);
     }
 
-    const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.asset)?.gas || 0
-    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
+    const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.symbol)?.gas || 0
+    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.symbol)
     const native_currency = from?.assets.find(a => a.is_native)
 
     let maxAllowedAmount: number | null = maxAmountFromApi || 0
@@ -40,14 +40,14 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
             const balancesFromQueries = new URL(window.location.href.replaceAll('&quot;', '"')).searchParams.get('balances');
             const parsedBalances = balancesFromQueries && JSON.parse(balancesFromQueries)
             let balancesTyped = parsedBalances
-            if (balancesTyped && balancesTyped[fromCurrency.asset] && balancesTyped[fromCurrency.asset] > Number(minAllowedAmount)) {
-                maxAllowedAmount = Math.min(maxAllowedAmount, balancesTyped[fromCurrency.asset]);
+            if (balancesTyped && balancesTyped[fromCurrency.symbol] && balancesTyped[fromCurrency.symbol] > Number(minAllowedAmount)) {
+                maxAllowedAmount = Math.min(maxAllowedAmount, balancesTyped[fromCurrency.symbol]);
             }
         }
         // in case the query parameter had bad formatting just ignoe
         catch { }
     } else if (walletBalance && (walletBalance.amount >= Number(minAllowedAmount) && walletBalance.amount <= Number(maxAmountFromApi))) {
-        if (((native_currency?.asset === fromCurrency?.asset) || !native_currency) && ((walletBalance.amount - gasAmount) >= Number(minAllowedAmount) && (walletBalance.amount - gasAmount) <= Number(maxAmountFromApi))) {
+        if (((native_currency?.symbol === fromCurrency?.symbol) || !native_currency) && ((walletBalance.amount - gasAmount) >= Number(minAllowedAmount) && (walletBalance.amount - gasAmount) <= Number(maxAmountFromApi))) {
             maxAllowedAmount = walletBalance.amount - gasAmount
         }
         else maxAllowedAmount = walletBalance.amount

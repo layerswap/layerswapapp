@@ -7,7 +7,7 @@ import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
 import { useAccountModal } from '@rainbow-me/rainbowkit';
 import Image from 'next/image';
 import SpinIcon from '../../icons/spinIcon';
-import { NetworkType } from '../../../Models/CryptoNetwork';
+import { NetworkType } from '../../../Models/Network';
 import useWallet from '../../../hooks/useWallet';
 import { useBalancesState } from '../../../context/balances';
 import { truncateDecimals } from '../../utils/RoundDecimals';
@@ -23,7 +23,7 @@ const WalletTransferContent: FC = () => {
 
     const source_exchange = layers.find(n => n.internal_name === swap?.source_exchange?.name)
     const source_layer = layers.find(n => n.internal_name === swap?.source_network.name)
-    const source_asset = source_layer?.assets.find(a => a.asset === swap?.source_token.symbol)
+    const source_asset = source_layer?.assets.find(a => a.symbol === swap?.source_token.symbol)
 
     const sourceNetworkType = source_layer?.type
     const provider = useMemo(() => {
@@ -36,7 +36,7 @@ const WalletTransferContent: FC = () => {
     const { fetchBalance, fetchGas } = useBalance()
 
     const sourceNetworkWallet = provider?.getConnectedWallet()
-    const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === source_layer?.internal_name && b?.token === source_asset?.asset)
+    const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === source_layer?.internal_name && b?.token === source_asset?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_asset?.precision)
 
     useEffect(() => {

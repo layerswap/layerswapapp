@@ -1,4 +1,4 @@
-import { CryptoNetwork } from "./CryptoNetwork";
+import { CryptoNetwork } from "./Network";
 import { Exchange } from "./Exchange";
 
 export class LayerSwapSettings {

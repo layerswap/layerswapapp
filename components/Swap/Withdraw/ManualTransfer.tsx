@@ -77,9 +77,9 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
     const source_network_internal_name = swap?.source_network.name
     const destination_network_internal_name = swap?.destination_network.name
     const source = layers.find(n => n.internal_name === source_network_internal_name)
-    const sourceAsset = source?.assets.find(c => c.asset == swap?.source_token.symbol)
+    const sourceAsset = source?.assets.find(c => c.symbol == swap?.source_token.symbol)
     const destination = layers.find(n => n.internal_name === destination_network_internal_name)
-    const destinationAsset = destination?.assets.find(c => c.asset == swap?.destination_token.symbol)
+    const destinationAsset = destination?.assets.find(c => c.symbol == swap?.destination_token.symbol)
 
     useEffect(() => {
         if (swap) {
@@ -164,13 +164,13 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                     {requested_amount}
                 </p>
             </BackgroundField>
-            <BackgroundField header={'Asset'} withoutBorder Explorable={sourceAsset?.contract_address != null && isValidAddress(sourceAsset?.contract_address, source)} toExplore={sourceAsset?.contract_address != null ? source?.account_explorer_template?.replace("{0}", sourceAsset?.contract_address) : undefined}>
+            <BackgroundField header={'Asset'} withoutBorder Explorable={sourceAsset?.contract != null && isValidAddress(sourceAsset?.contract, source)} toExplore={sourceAsset?.contract != null ? source?.account_explorer_template?.replace("{0}", sourceAsset?.contract) : undefined}>
                 <div className="flex items-center gap-2">
                     <div className="flex-shrink-0 h-7 w-7 relative">
                         {
                             sourceAsset &&
                             <Image
-                                src={resolveImgSrc({ asset: sourceAsset?.asset })}
+                                src={resolveImgSrc({ symbol: sourceAsset?.symbol })}
                                 alt="From Logo"
                                 height="60"
                                 width="60"
@@ -180,11 +180,11 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                     </div>
                     <div className="flex flex-col">
                         <span className="font-semibold leading-4">
-                            {sourceAsset?.asset}
+                            {sourceAsset?.symbol}
                         </span>
-                        {sourceAsset?.contract_address && isValidAddress(sourceAsset.contract_address, source) &&
+                        {sourceAsset?.contract && isValidAddress(sourceAsset.contract, source) &&
                             <span className="text-xs text-secondary-text flex items-center leading-3">
-                                {shortenAddress(sourceAsset?.contract_address)}
+                                {shortenAddress(sourceAsset?.contract)}
                             </span>
                         }
                     </div>

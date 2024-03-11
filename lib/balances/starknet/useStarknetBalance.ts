@@ -36,13 +36,13 @@ export default function useStarknetBalance(): BalanceProvider {
             try {
                 const asset = layer.assets[i]
 
-                const erc20 = new Contract(Erc20Abi, asset.contract_address!, provider);
+                const erc20 = new Contract(Erc20Abi, asset.contract!, provider);
                 const balanceResult = await erc20.balanceOf(address);
                 const balanceInWei = BigNumber.from(uint256.uint256ToBN(balanceResult.balance).toString()).toString();
 
                 const balance = {
                     network: layer.internal_name,
-                    token: asset.asset,
+                    token: asset.symbol,
                     amount: formatAmount(balanceInWei, asset.decimals),
                     request_time: new Date().toJSON(),
                     decimals: asset.decimals,
@@ -66,9 +66,9 @@ export default function useStarknetBalance(): BalanceProvider {
     const getGas = async ({ layer, currency, wallet }: GasProps) => {
 
         const nodeUrl = layer.nodes[0].url
-        const asset = layer.assets.find(a => a.asset === currency.asset)
+        const asset = layer.assets.find(a => a.symbol === currency.symbol)
         const nativeAsset = layer.assets.find(a => a.is_native)
-        const contract_address = asset?.contract_address
+        const contract_address = asset?.contract
         const recipient = layer.managed_accounts[0].address
 
         if (!asset || !nativeAsset) return
@@ -84,7 +84,7 @@ export default function useStarknetBalance(): BalanceProvider {
         const feeInWei = feeEstimateResponse.data.suggestedMaxFee.toString();
 
         const gas = {
-            token: currency.asset,
+            token: currency.symbol,
             gas: formatAmount(feeInWei, nativeAsset.decimals),
             request_time: new Date().toJSON()
         }

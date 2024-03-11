@@ -16,12 +16,12 @@ export default function useZkSyncBalance(): BalanceProvider {
         try {
             const result = await client.getAccountInfo(layer.nodes[0].url, address);
             const zkSyncBalances = layer.assets.map((a) => {
-                const currency = layer?.assets?.find(c => c?.asset == a.asset);
-                const amount = currency && result.committed.balances[currency.asset];
+                const currency = layer?.assets?.find(c => c?.symbol == a.symbol);
+                const amount = currency && result.committed.balances[currency.symbol];
 
                 return ({
                     network: layer.internal_name,
-                    token: a.asset,
+                    token: a.symbol,
                     amount: formatAmount(amount, Number(currency?.decimals)),
                     request_time: new Date().toJSON(),
                     decimals: Number(currency?.decimals),
@@ -46,12 +46,12 @@ export default function useZkSyncBalance(): BalanceProvider {
         if (!layer.assets || !address) return
 
         try {
-            const result = await client.getTransferFee(layer.nodes[0].url, address, currency.asset);
-            const currencyDec = layer?.assets?.find(c => c?.asset == currency.asset)?.decimals;
+            const result = await client.getTransferFee(layer.nodes[0].url, address, currency.symbol);
+            const currencyDec = layer?.assets?.find(c => c?.symbol == currency.symbol)?.decimals;
             const formatedGas = formatAmount(result.totalFee, Number(currencyDec))
 
             gas = [{
-                token: currency.asset,
+                token: currency.symbol,
                 gas: formatedGas,
                 request_time: new Date().toJSON()
             }]

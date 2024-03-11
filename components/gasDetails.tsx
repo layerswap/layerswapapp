@@ -1,4 +1,4 @@
-import { NetworkCurrency } from "../Models/CryptoNetwork"
+import { Token } from "../Models/Network"
 import { Layer } from "../Models/Layer"
 import { useBalancesState } from "../context/balances"
 

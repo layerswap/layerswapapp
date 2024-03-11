@@ -27,7 +27,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const { layers } = useSettingsState();
     const source_layer = layers.find(l => l.internal_name === swap?.source_network.name)
-    const source_currency = source_layer?.assets?.find(c => c.asset.toUpperCase() === swap?.source_token.symbol.toUpperCase());
+    const source_currency = source_layer?.assets?.find(c => c.symbol.toUpperCase() === swap?.source_token.symbol.toUpperCase());
 
     const provider = getWithdrawalProvider(source_layer!);
     const wallet = provider?.getConnectedWallet();
@@ -58,7 +58,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 "confirmed"
             );
 
-            const sourceToken = new PublicKey(source_currency?.contract_address!);
+            const sourceToken = new PublicKey(source_currency?.contract!);
             const recipientAddress = new PublicKey(depositAddress);
 
             const transactionInstructions: TransactionInstruction[] = [];
