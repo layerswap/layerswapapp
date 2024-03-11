@@ -10,7 +10,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     displayName?: string | undefined;
     isAvailable: {
         value: boolean;
-        disabledReason: LayerDisabledReason | CurrencyDisabledReason | null
+        disabledReason?: LayerDisabledReason | CurrencyDisabledReason | null
     };
     type: ItemType;
     group?: string;
@@ -41,7 +41,7 @@ export interface ISelectMenuItem {
     group?: string;
     isAvailable: {
         value: boolean;
-        disabledReason: LayerDisabledReason | CurrencyDisabledReason | null
+        disabledReason?: LayerDisabledReason | CurrencyDisabledReason | null
     };
     type: ItemType
     details?: string;

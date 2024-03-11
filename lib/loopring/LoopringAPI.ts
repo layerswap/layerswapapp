@@ -6,7 +6,6 @@ import sdk, {
     NFTAPI,
     UserAPI,
     WalletAPI,
-    contracts,
     WsAPI
 } from "@loopring-web/loopring-sdk";
 import * as lp from "@loopring-web/loopring-sdk";
@@ -19,7 +18,7 @@ export class LoopringAPI {
     public static wsAPI: WsAPI;
     public static nftAPI: NFTAPI;
     public static delegate: DelegateAPI;
-    public static contractAPI: typeof contracts;
+    // public static contractAPI: typeof contracts;
     public static globalAPI: GlobalAPI;
     public static __chainId__: sdk.ChainId;
     public static InitApi = (chainId: sdk.ChainId) => {
@@ -32,7 +31,7 @@ export class LoopringAPI {
         LoopringAPI.nftAPI = new NFTAPI({ chainId });
         LoopringAPI.delegate = new DelegateAPI({ chainId });
         LoopringAPI.__chainId__ = chainId;
-        LoopringAPI.contractAPI = contracts;
+        // LoopringAPI.contractAPI = contracts;
     };
 }
 LoopringAPI.InitApi(lp.ChainId.GOERLI); 

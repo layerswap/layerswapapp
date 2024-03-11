@@ -23,7 +23,7 @@ const DetailedEstimates: FC = () => {
                             Estimated time
                         </label>
                         <div className="text-right text-secondary-text">
-                            <AverageCompletionTime avgCompletionTime={fee.avgCompletionTime} />
+                            <AverageCompletionTime avgCompletionTime={"00:00:00.025"} />
                         </div>
                     </div>
                 </div>
