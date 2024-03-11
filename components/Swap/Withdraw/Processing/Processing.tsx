@@ -17,6 +17,7 @@ import { useFee } from '../../../../context/feeContext';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import FormattedAverageCompletionTime from '../../../Common/FormattedAverageCompletionTime';
 import CountdownTimer from '../../../Common/CountDownTimer';
+import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
     settings: LayerSwapAppSettings;
@@ -50,6 +51,11 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     const progressStatuses = getProgressStatuses(swap, swapStatus)
     const stepStatuses = progressStatuses.stepStatuses;
+
+    const renderingError = new Error("Transaction is taking longer than expected");
+    renderingError.name = `LongTransactionError`;
+    renderingError.cause = renderingError;
+    datadogRum.addError(renderingError);
 
     const outputPendingDetails = <div className='flex items-center space-x-1'>
         <span>Estimated arrival after confirmation:</span>

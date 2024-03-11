@@ -8,10 +8,11 @@ import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { BalancesStateContext, BalancesStateUpdateContext } from '../context/balances';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, bitgetWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
-import { FC } from 'react';
+import { FC, useEffect, useRef } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange, cancelled, expired } from './Data/swaps'
 import { SettingChains, Settings } from './Data/settings';
+import { initialValues } from './Data/initialValues';
 import { AuthDataUpdateContext, AuthStateContext, UserType } from '../context/authContext';
 import { IntercomProvider } from 'react-use-intercom';
 import { THEME_COLORS } from '../Models/Theme';
@@ -22,6 +23,11 @@ import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
 import WalletMockFunctions from './Mocks/context/BalancesMockFunctions';
 import BalancesStateMock from './Mocks/context/BalancesState';
+import { Formik, FormikProps } from 'formik';
+import { SwapFormValues } from '../components/DTOs/SwapFormValues';
+import { useQueryState } from '../context/query';
+import MainStepValidation from '../lib/mainStepValidator';
+import { FeeProvider, useFee } from '../context/feeContext';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 const settingsChains = SettingChains;
@@ -52,18 +58,22 @@ const connectors = connectorsForWallets([
     },
 ]);
 window.plausible = () => { }
-const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, theme?: "default" | "light" }> = ({ settings, swap, failedSwap, failedSwapOutOfRange, theme }) => {
+const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues }> = ({ settings, swap, failedSwap, failedSwapOutOfRange, theme, initialValues }) => {
+    const query = useQueryState()
     const wagmiConfig = createConfig({
         autoConnect: true,
         connectors,
         publicClient,
     })
+    const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const appSettings = new LayerSwapAppSettings(Settings)
     const swapContextInitialValues: SwapData = { codeRequested: false, swap, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
+
     if (!appSettings) {
         return <div>Loading...</div>
     }
     const themeData = theme ? THEME_COLORS[theme] : THEME_COLORS["default"];
+
     return <WagmiConfig config={wagmiConfig}>
         <IntercomProvider appId='123'>
             <SettingsStateContext.Provider value={appSettings}>
@@ -75,7 +85,17 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
                                     <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
                                         <BalancesStateContext.Provider value={BalancesStateMock}>
                                             <BalancesStateUpdateContext.Provider value={WalletMockFunctions}>
-                                                <SwapDetails type='widget' />
+                                                <Formik
+                                                    innerRef={formikRef}
+                                                    initialValues={initialValues!}
+                                                    validateOnMount={true}
+                                                    validate={MainStepValidation({ minAllowedAmount: 8, maxAllowedAmount: 10 })}
+                                                    onSubmit={() => { }}
+                                                >
+                                                    <FeeProvider>
+                                                        <Component initialValues={initialValues} />
+                                                    </FeeProvider>
+                                                </Formik>
                                             </BalancesStateUpdateContext.Provider>
                                         </BalancesStateContext.Provider>
                                     </SwapDataUpdateContext.Provider>
@@ -87,6 +107,16 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
             </SettingsStateContext.Provider>
         </IntercomProvider>
     </WagmiConfig >
+}
+
+const Component = ({ initialValues }: { initialValues: SwapFormValues | undefined }) => {
+    const { valuesChanger } = useFee()
+    useEffect(() => {
+        valuesChanger(initialValues!)
+    }, [])
+    return (
+        <SwapDetails type='widget' />
+    )
 }
 
 const DUMMY_TRANSACTION = {
@@ -101,6 +131,7 @@ const DUMMY_TRANSACTION = {
     type: TransactionType,
     usd_value: 1.6916886,
     status: TransactionStatus,
+    timestamp: "2024-03-11T12:24:40.870Z"
 }
 
 const meta = {
@@ -116,9 +147,9 @@ const meta = {
         theme: {
             options: ['light', 'default', 'evmos', 'imxMarketplace', 'ea7df14a1597407f9f755f05e25bab42'],
             control: { type: 'select' },
-        },
+        }
     },
-    render: (args, { loaded: { settings } }) => <Comp {...args} settings={settings} />,
+    render: (args, { loaded: { settings } }) => <Comp {...args} settings={settings} initialValues={initialValues} />,
 } satisfies Meta<typeof Comp>;
 
 export default meta;
@@ -132,6 +163,9 @@ export const UserTransferInitiated: Story = {
             transactions: [
             ]
         },
+        initialValues: {
+
+        }
     },
     loaders: [
         async () => ({

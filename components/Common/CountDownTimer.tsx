@@ -3,6 +3,7 @@ import { SwapStatus } from "../../Models/SwapStatus";
 import { useIntercom } from "react-use-intercom";
 import { useAuthState } from "../../context/authContext";
 import { SwapItem, TransactionType } from "../../lib/layerSwapApiClient";
+import { datadogRum } from "@datadog/browser-rum";
 
 const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTime, swap }) => {
     const { email, userId } = useAuthState();
@@ -44,6 +45,13 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
         const seconds = totalSeconds % 60;
         return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     };
+
+    if (countdown === "00:00:00" && swap.status !== SwapStatus.Completed) {
+        const renderingError = new Error("Transaction is taking longer than expected");
+        renderingError.name = `LongTransactionError`;
+        renderingError.cause = renderingError;
+        datadogRum.addError(renderingError);
+    }
 
     return (
         <div className='flex items-center space-x-1'>

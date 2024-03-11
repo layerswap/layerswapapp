@@ -130,7 +130,7 @@ export default function Form() {
         setShowSwapModal(value)
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
     }, [router, swap])
-
+    console.log(initialValues, "initialValues")
     return <>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
