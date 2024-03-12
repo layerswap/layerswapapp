@@ -210,13 +210,12 @@ function GenerateMenuItems(
                 baseObject: e,
                 id: index.toString(),
                 name: `${e.network}_${e.asset}`,
-                asset: e.asset,
                 displayName: network?.display_name,
                 order: indexOf > -1 ? indexOf : 100,
                 imgSrc: network?.img_url || '',
                 isAvailable: { value: true, disabledReason: null },
-                type: 'cex',
-                group: ''
+                group: '',
+                details: e.asset
             }
             return item;
         }).sort(SortingByOrder)
