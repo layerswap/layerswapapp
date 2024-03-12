@@ -20,6 +20,7 @@ import { evmConnectorNameResolver } from '../../../../../lib/wallets/evm/KnownEV
 import { ActivationTokenPicker } from './ActivationTokentPicker';
 import { useLoopringAccount } from './hooks';
 
+
 type Props = {
     depositAddress?: string,
     amount?: number
@@ -62,7 +63,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
             if (!accInfo || !loopringWalletResolver || !token)
                 return
 
-            await loopringWalletResolver.resolver({ chainId: lp.ChainId.GOERLI, })
+            await loopringWalletResolver.resolver({ chainId: LoopringAPI.CHAIN, })
             const unlockedAccountData = await LoopringAPI.userAPI.unLockAccount(
                 {
                     keyPair: {
@@ -70,7 +71,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                         address: accInfo.owner,
                         keySeed: accInfo.keySeed,
                         walletType: loopringWalletResolver.type,
-                        chainId: lp.ChainId.GOERLI,
+                        chainId: LoopringAPI.CHAIN,
                         accountId: Number(accInfo.accountId),
                     },
                     request: {
@@ -81,7 +82,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
             );
             if (unlockedAccountData["apiKey"]) {
                 setUnlockedAccount(unlockedAccountData as UnlockedAccountType)
-                await connectProvides.MetaMask({ chainId: lp.ChainId.GOERLI, })
+                await connectProvides.MetaMask({ chainId: LoopringAPI.CHAIN, })
             }
             else {
                 //TODO detailed error
@@ -102,9 +103,9 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
             if (!accInfo || !loopringWalletResolver || !token || !selectedActivationAsset)
                 return
 
-            await loopringWalletResolver.resolver({ chainId: lp.ChainId.GOERLI, })
+            await loopringWalletResolver.resolver({ chainId: LoopringAPI.CHAIN, })
 
-            const exchangeApi: lp.ExchangeAPI = new lp.ExchangeAPI({ chainId: lp.ChainId.GOERLI, });
+            const exchangeApi: lp.ExchangeAPI = new lp.ExchangeAPI({ chainId: LoopringAPI.CHAIN, });
             const { exchangeInfo } = await exchangeApi.getExchangeInfo();
 
 
@@ -130,7 +131,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                     nonce: accInfo.nonce as number,
                 },
                 web3: connectProvides.usedWeb3 as any,
-                chainId: lp.ChainId.GOERLI,
+                chainId: LoopringAPI.CHAIN,
                 walletType: loopringWalletResolver.type,
                 isHWAddr: false,
             });
@@ -155,7 +156,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const handleTransfer = useCallback(async () => {
         setLoading(true)
         try {
-            const exchangeApi: lp.ExchangeAPI = new lp.ExchangeAPI({ chainId: lp.ChainId.GOERLI, });
+            const exchangeApi: lp.ExchangeAPI = new lp.ExchangeAPI({ chainId: LoopringAPI.CHAIN, });
             const { exchangeInfo } = await exchangeApi.getExchangeInfo();
 
             if (!swap || !accInfo || !unlockedAccount || !loopringWalletResolver)
@@ -195,7 +196,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                     memo: swap?.sequence_number.toString(),
                 },
                 web3: connectProvides.usedWeb3 as any,
-                chainId: lp.ChainId.GOERLI,
+                chainId: LoopringAPI.CHAIN,
                 walletType: loopringWalletResolver?.type,
                 apiKey,
                 eddsaKey: eddsaKey.sk

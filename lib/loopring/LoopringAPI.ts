@@ -9,6 +9,7 @@ import sdk, {
     WsAPI
 } from "@loopring-web/loopring-sdk";
 import * as lp from "@loopring-web/loopring-sdk";
+import AppSettings from "../AppSettings";
 
 export class LoopringAPI {
     public static userAPI: UserAPI;
@@ -21,6 +22,9 @@ export class LoopringAPI {
     // public static contractAPI: typeof contracts;
     public static globalAPI: GlobalAPI;
     public static __chainId__: sdk.ChainId;
+    public static CHAIN = AppSettings.ApiVersion === "sandbox" ? lp.ChainId.GOERLI : lp.ChainId.MAINNET;
+    public static BaseApi = this.CHAIN === lp.ChainId.GOERLI ? "https://uat2.loopring.io" : "https://api3.loopring.io"
+
     public static InitApi = (chainId: sdk.ChainId) => {
         LoopringAPI.userAPI = new UserAPI({ chainId });
         LoopringAPI.exchangeAPI = new ExchangeAPI({ chainId });
@@ -34,4 +38,5 @@ export class LoopringAPI {
         // LoopringAPI.contractAPI = contracts;
     };
 }
-LoopringAPI.InitApi(lp.ChainId.GOERLI); 
+
+LoopringAPI.InitApi(LoopringAPI.CHAIN); 

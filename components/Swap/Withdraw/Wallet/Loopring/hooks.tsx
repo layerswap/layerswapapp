@@ -1,10 +1,11 @@
 import useSWR from "swr";
 import * as lp from "@loopring-web/loopring-sdk";
+import { LoopringAPI } from "../../../../../lib/loopring/LoopringAPI";
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export const useLoopringAccountBalance = (accountId?: number) => {
-    const url = `${loopringAPIs.GOERLI}${lp.LOOPRING_URLs.GET_USER_EXCHANGE_BALANCES}?accountId=${accountId}`
+    const url = `${LoopringAPI.BaseApi}${lp.LOOPRING_URLs.GET_USER_EXCHANGE_BALANCES}?accountId=${accountId}`
     const { data, isLoading } =
         useSWR<[lp.UserBalanceInfo]>(accountId ? url : null,
             fetcher);
@@ -12,9 +13,8 @@ export const useLoopringAccountBalance = (accountId?: number) => {
     return { data, isLoading }
 }
 
-
 export const useLoopringAccount = ({ address }: { address?: `0x${string}` }) => {
-    const url = `${loopringAPIs.GOERLI}${lp.LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`
+    const url = `${LoopringAPI.BaseApi}${lp.LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`
     const { data: accountData, isLoading, mutate } =
         useSWR<lp.AccountInfo>(address ? url : null,
             fetcher,
@@ -27,9 +27,8 @@ export const useLoopringAccount = ({ address }: { address?: `0x${string}` }) => 
     return { account, isLoading, noAccount, mutate }
 }
 
-
 export const useLoopringFees = (accountId?: number) => {
-    const url = `${loopringAPIs.GOERLI}${lp.LOOPRING_URLs.GET_OFFCHAIN_FEE_AMT}?accountId=${accountId}&requestType=${lp.OffchainFeeReqType.UPDATE_ACCOUNT}`
+    const url = `${LoopringAPI.BaseApi}${lp.LOOPRING_URLs.GET_OFFCHAIN_FEE_AMT}?accountId=${accountId}&requestType=${lp.OffchainFeeReqType.UPDATE_ACCOUNT}`
     const { data, isLoading } =
         useSWR<{
             fees: {
@@ -43,9 +42,4 @@ export const useLoopringFees = (accountId?: number) => {
             fetcher);
 
     return { data, isLoading }
-}
-
-const loopringAPIs = {
-    GOERLI: "https://uat2.loopring.io",
-    MAINNET: "https://api3.loopring.io"
 }
