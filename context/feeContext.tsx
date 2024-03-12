@@ -67,8 +67,7 @@ export function FeeProvider({ children }) {
         refreshInterval: 10000,
         fallbackData: { data: cachedRateData }
     })
-    console.log(amountRange, "amountRange")
-    console.log(lsFee, "lsFee")
+
     useEffect(() => {
         setCachedRateData(lsFee?.data)
     }, [lsFee])

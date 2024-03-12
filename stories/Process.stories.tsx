@@ -130,8 +130,7 @@ const DUMMY_TRANSACTION = {
     usd_price: 1819.02,
     type: TransactionType,
     usd_value: 1.6916886,
-    status: TransactionStatus,
-    timestamp: "2024-03-11T12:24:40.870Z"
+    status: TransactionStatus
 }
 
 const meta = {
@@ -193,7 +192,7 @@ export const UserTransferPendingInputCompleted: Story = {
             ...failedSwap,
             status: SwapStatus.UserTransferPending,
             transactions: [
-                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input, timestamp: `'${new Date().toISOString()}'` },
             ]
         }
     }
