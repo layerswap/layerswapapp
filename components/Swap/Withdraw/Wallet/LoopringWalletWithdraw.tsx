@@ -57,19 +57,17 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const source_currency = source_network?.assets?.find(c => c.asset.toLocaleUpperCase() === swap?.source_network_asset.toLocaleUpperCase());
     const token = layers?.find(n => swap?.source_network == n?.internal_name)?.assets.find(c => c.asset == swap?.source_network_asset);
 
-    const { account: accInfo, isLoading: loadingAccount, noAccount } = useLoopringAccount({ address: fromAddress, poll: false })
+    const { account: accInfo, isLoading: loadingAccount, noAccount, mutate: refetchAccount } = useLoopringAccount({ address: fromAddress })
     const loopringWalletResolver = connector && resolveConnectProvedes(evmConnectorNameResolver(connector))
-    const { data } = useLoopringFees(accInfo?.accountId)
 
     const activateAccout = useCallback(async () => {
         setButtonClicked(true)
         setLoading(true)
         try {
-            if (!accInfo || !loopringWalletResolver || !token || !selectedActivationAsset)
+            if (!accInfo || !loopringWalletResolver || !token)
                 return
 
             await loopringWalletResolver.resolver({ chainId: lp.ChainId.GOERLI, })
-
             if (accInfo.publicKey.x
                 && accInfo.publicKey.y) {
                 const unlockedAccountData = await LoopringAPI.userAPI.unLockAccount(
@@ -113,6 +111,8 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
             const { eddsaKey, keySeed } = eddsaKeyData
             const publicKey = { x: eddsaKey.formatedPx, y: eddsaKey.formatedPy }
 
+            if (!selectedActivationAsset)
+                return
             const activationResult = await LoopringAPI.userAPI.updateAccount({
                 request: {
                     exchange: exchangeInfo.exchangeAddress,
@@ -134,12 +134,11 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
             });
 
             setActivationPubKey(publicKey)
-            const account = await LoopringAPI.exchangeAPI.getAccount({
-                owner: accInfo.owner
-            });
 
-            const unlockedAccountData = await LoopringAPI.userAPI.getUserApiKey({
-                accountId: account.accInfo.accountId,
+            await refetchAccount()
+
+            await LoopringAPI.userAPI.getUserApiKey({
+                accountId: accInfo.accountId,
             }, eddsaKey.sk)
 
         }
@@ -149,7 +148,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         finally {
             setLoading(false)
         }
-    }, [source_currency, accInfo, loopringWalletResolver, selectedActivationAsset])
+    }, [source_currency, accInfo, loopringWalletResolver, selectedActivationAsset, refetchAccount])
 
     const handleUnlock = useCallback(async () => {
         setButtonClicked(true)
@@ -247,11 +246,18 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 apiKey,
                 eddsaKey: eddsaKey.sk
             });
-
+            debugger
             const txHash = (transferResult as any)?.hash
+            const message = (transferResult as any)?.message
             if (txHash) {
                 setSwapTransaction(swap.id, PublishedSwapTransactionStatus.Pending, txHash);
                 setTransferDone(true)
+            }
+            else if (message) {
+                toast(message)
+            }
+            else {
+                throw new Error("Unexpected error")
             }
         }
         catch (e) {
@@ -297,7 +303,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     //         />
     //     )
     // }
-    
+
     const shouldActivate = accInfo && !(accInfo.publicKey.x
         || accInfo.publicKey.y)
 
@@ -353,7 +359,6 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     )
 }
 import Image from 'next/image';
-import { BigNumber } from 'ethers';
 
 const ActivationTokenPicker = ({ accountId, onChange }: { accountId: number | undefined, onChange: (v: string | undefined) => void }) => {
     const { data: loopringBalnce, isLoading: lpBalanceIsLoading } = useLoopringBalance(accountId)
@@ -382,13 +387,15 @@ const ActivationTokenPicker = ({ accountId, onChange }: { accountId: number | un
         onChange(v)
         setSelectedValue(v)
     }
+
     const defaultValue = feeData && loopringBalnce?.find(b => {
         const tfee = feeData?.fees?.find(f => f.tokenId === b.tokenId)?.fee
         return Number(b.total) >= Number(tfee)
     });
+
     useEffect(() => {
         if (!selectedValue && defaultValue) {
-            setSelectedValue(TOKEN_INFO.idIndex[defaultValue.tokenId])
+            handleChange(TOKEN_INFO.idIndex[defaultValue.tokenId])
         }
     }, [defaultValue])
 
@@ -451,18 +458,18 @@ type ConnectWalet = {
     type: ConnectorNames
 }
 
-const useLoopringAccount = ({ address, poll }: { address?: `0x${string}`, poll: boolean }) => {
+const useLoopringAccount = ({ address }: { address?: `0x${string}` }) => {
     const url = `${loopringAPIs.GOERLI}${lp.LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`
-    const { data: accountData, isLoading } =
+    const { data: accountData, isLoading, mutate } =
         useSWR<lp.AccountInfo>(address ? url : null,
             fetcher,
             {
-                refreshInterval: poll ? 10000 : 0
+                refreshInterval: (latestData) => latestData?.frozen ? 3000 : 0
             });
+    const noAccount = (accountData as any)?.resultInfo?.code == 101002
+    const account = noAccount ? undefined : accountData
 
-    const account = accountData
-
-    return { account, isLoading, noAccount: (account as any)?.code == 101002 }
+    return { account, isLoading, noAccount, mutate }
 }
 const useLoopringFees = (accountId?: number) => {
     const url = `${loopringAPIs.GOERLI}${lp.LOOPRING_URLs.GET_OFFCHAIN_FEE_AMT}?accountId=${accountId}&requestType=${lp.OffchainFeeReqType.UPDATE_ACCOUNT}`
