@@ -1,27 +1,24 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
-import { FC, useCallback, useEffect, useState } from 'react'
-import SubmitButton from '../../../buttons/submitButton';
-import { useSwapDataState } from '../../../../context/swap';
+import { FC, useCallback, useState } from 'react'
+import SubmitButton from '../../../../buttons/submitButton';
+import { useSwapDataState } from '../../../../../context/swap';
 import toast from 'react-hot-toast';
-import { useSettingsState } from '../../../../context/settings';
+import { useSettingsState } from '../../../../../context/settings';
 import { useAccount } from 'wagmi';
-import { LoopringAPI } from '../../../../lib/loopring/LoopringAPI';
+import { LoopringAPI } from '../../../../../lib/loopring/LoopringAPI';
 import { ConnectorNames } from '@loopring-web/loopring-sdk';
 import { connectProvides } from '@loopring-web/web3-provider';
-import { ConnectWalletButton } from './WalletTransfer/buttons';
+import { ConnectWalletButton } from '../WalletTransfer/buttons';
 import * as lp from "@loopring-web/loopring-sdk";
-import { generateActivateKeyPair } from '../../../../lib/loopring/helpers';
+import { generateActivateKeyPair } from '../../../../../lib/loopring/helpers';
 import { parseUnits } from 'viem';
-import WalletMessage from './WalletTransfer/message';
-import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import SignatureIcon from '../../../icons/SignatureIcon';
-import useSWR from 'swr';
-import { evmConnectorNameResolver } from '../../../../lib/wallets/evm/KnownEVMConnectors';
-import PopoverSelectWrapper from '../../../Select/Popover/PopoverSelectWrapper';
-import { ISelectMenuItem, SelectMenuItem } from '../../../Select/Shared/Props/selectMenuItem';
-import formatAmount from '../../../../lib/formatAmount';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../../../shadcn/select';
+import WalletMessage from '../WalletTransfer/message';
+import { PublishedSwapTransactionStatus } from '../../../../../lib/layerSwapApiClient';
+import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
+import SignatureIcon from '../../../../icons/SignatureIcon';
+import { evmConnectorNameResolver } from '../../../../../lib/wallets/evm/KnownEVMConnectors';
+import { ActivationTokenPicker } from './ActivationTokentPicker';
+import { useLoopringAccount } from './hooks';
 
 type Props = {
     depositAddress?: string,
@@ -45,11 +42,10 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const [transferDone, setTransferDone] = useState<boolean>();
     const [activationPubKey, setActivationPubKey] = useState<{ x: string; y: string }>()
     const [unlockedAccount, setUnlockedAccount] = useState<UnlockedAccountType>()
-    const [buttonClicked, setButtonClicked] = useState(false)
     const [selectedActivationAsset, setSelectedActivationAsset] = useState<string>()
 
     const { swap } = useSwapDataState();
-    const { layers, resolveImgSrc } = useSettingsState();
+    const { layers } = useSettingsState();
     const { setSwapTransaction } = useSwapTransactionStore();
     const { isConnected, address: fromAddress, connector } = useAccount();
     const { source_network: source_network_internal_name } = swap || {}
@@ -60,45 +56,53 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const { account: accInfo, isLoading: loadingAccount, noAccount, mutate: refetchAccount } = useLoopringAccount({ address: fromAddress })
     const loopringWalletResolver = connector && resolveConnectProvedes(evmConnectorNameResolver(connector))
 
-    const activateAccout = useCallback(async () => {
-        setButtonClicked(true)
+    const unlockAccount = useCallback(async () => {
         setLoading(true)
         try {
             if (!accInfo || !loopringWalletResolver || !token)
                 return
 
             await loopringWalletResolver.resolver({ chainId: lp.ChainId.GOERLI, })
-            if (accInfo.publicKey.x
-                && accInfo.publicKey.y) {
-                const unlockedAccountData = await LoopringAPI.userAPI.unLockAccount(
-                    {
-                        keyPair: {
-                            web3: connectProvides.usedWeb3 as any,
-                            address: accInfo.owner,
-                            keySeed: accInfo.keySeed,
-                            walletType: loopringWalletResolver.type,
-                            chainId: lp.ChainId.GOERLI,
-                            accountId: Number(accInfo.accountId),
-                        },
-                        request: {
-                            accountId: accInfo.accountId,
-                        },
+            const unlockedAccountData = await LoopringAPI.userAPI.unLockAccount(
+                {
+                    keyPair: {
+                        web3: connectProvides.usedWeb3 as any,
+                        address: accInfo.owner,
+                        keySeed: accInfo.keySeed,
+                        walletType: loopringWalletResolver.type,
+                        chainId: lp.ChainId.GOERLI,
+                        accountId: Number(accInfo.accountId),
                     },
-                    accInfo.publicKey
-                );
-                if (unlockedAccountData["apiKey"]) {
-                    setUnlockedAccount(unlockedAccountData as UnlockedAccountType)
-                    await connectProvides.MetaMask({ chainId: lp.ChainId.GOERLI, })
-                }
-                else {
-                    //TODO detailed error
-                    throw Error("Could not unlock account")
-                }
-                setButtonClicked(true)
-                setLoading(true)
-                return
+                    request: {
+                        accountId: accInfo.accountId,
+                    },
+                },
+                accInfo.publicKey
+            );
+            if (unlockedAccountData["apiKey"]) {
+                setUnlockedAccount(unlockedAccountData as UnlockedAccountType)
+                await connectProvides.MetaMask({ chainId: lp.ChainId.GOERLI, })
             }
+            else {
+                //TODO detailed error
+                throw Error("Could not unlock account")
+            }
+        }
+        catch (e) {
+            toast(e.message)
+        }
+        finally {
+            setLoading(false)
+        }
+    }, [source_currency, accInfo, loopringWalletResolver, selectedActivationAsset, refetchAccount])
 
+    const activateAccout = useCallback(async () => {
+        setLoading(true)
+        try {
+            if (!accInfo || !loopringWalletResolver || !token || !selectedActivationAsset)
+                return
+
+            await loopringWalletResolver.resolver({ chainId: lp.ChainId.GOERLI, })
 
             const exchangeApi: lp.ExchangeAPI = new lp.ExchangeAPI({ chainId: lp.ChainId.GOERLI, });
             const { exchangeInfo } = await exchangeApi.getExchangeInfo();
@@ -111,9 +115,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
             const { eddsaKey, keySeed } = eddsaKeyData
             const publicKey = { x: eddsaKey.formatedPx, y: eddsaKey.formatedPy }
 
-            if (!selectedActivationAsset)
-                return
-            const activationResult = await LoopringAPI.userAPI.updateAccount({
+            await LoopringAPI.userAPI.updateAccount({
                 request: {
                     exchange: exchangeInfo.exchangeAddress,
                     owner: accInfo.owner,
@@ -150,55 +152,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         }
     }, [source_currency, accInfo, loopringWalletResolver, selectedActivationAsset, refetchAccount])
 
-    const handleUnlock = useCallback(async () => {
-        setButtonClicked(true)
-        setLoading(true)
-        try {
-            if (!accInfo)
-                return
-
-            if (!accInfo.publicKey.x
-                || !accInfo.publicKey.y
-                || !loopringWalletResolver)
-                return
-
-            await loopringWalletResolver.resolver({ chainId: lp.ChainId.GOERLI, })
-
-            const unlockedAccountData = await LoopringAPI.userAPI.unLockAccount(
-                {
-                    keyPair: {
-                        web3: connectProvides.usedWeb3 as any,
-                        address: accInfo.owner,
-                        keySeed: accInfo.keySeed,
-                        walletType: loopringWalletResolver.type,
-                        chainId: lp.ChainId.GOERLI,
-                        accountId: Number(accInfo.accountId),
-                    },
-                    request: {
-                        accountId: accInfo.accountId,
-                    },
-                },
-                accInfo.publicKey
-            );
-            if (unlockedAccountData["apiKey"]) {
-                setUnlockedAccount(unlockedAccountData as UnlockedAccountType)
-                await connectProvides.MetaMask({ chainId: lp.ChainId.GOERLI, })
-            }
-            else {
-                //TODO detailed error
-                throw Error("Could not unlock account")
-            }
-        }
-        catch (e) {
-            toast(e.message)
-        }
-        finally {
-            setLoading(false)
-        }
-    }, [source_network, fromAddress, accInfo, loopringWalletResolver])
-
     const handleTransfer = useCallback(async () => {
-        setButtonClicked(true)
         setLoading(true)
         try {
             const exchangeApi: lp.ExchangeAPI = new lp.ExchangeAPI({ chainId: lp.ChainId.GOERLI, });
@@ -343,7 +297,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                                 <SubmitButton
                                     isDisabled={loadingAccount || !accInfo || loading}
                                     isSubmitting={loadingAccount || loading}
-                                    onClick={activateAccout}
+                                    onClick={shouldActivate ? activateAccout : unlockAccount}
                                     icon={shouldActivate ?
                                         <SignatureIcon className="h-5 w-5 ml-2" aria-hidden="true" />
                                         : <Link className="h-5 w-5 ml-2" aria-hidden="true" />
@@ -358,83 +312,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         </>
     )
 }
-import Image from 'next/image';
 
-const ActivationTokenPicker = ({ accountId, onChange }: { accountId: number | undefined, onChange: (v: string | undefined) => void }) => {
-    const { data: loopringBalnce, isLoading: lpBalanceIsLoading } = useLoopringBalance(accountId)
-    const { data: feeData } = useLoopringFees(accountId)
-
-    const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL;
-    const activationCurrencyValues: ISelectMenuItem[]
-        = loopringBalnce?.map(b => {
-            const asset: string = TOKEN_INFO.idIndex[b.tokenId]
-            const decimals = TOKEN_INFO.tokenMap[asset].decimals
-            return {
-                id: asset,
-                name: asset,
-                isAvailable: { value: true },
-                type: 'currency',
-                imgSrc: `${resource_storage_url}layerswap/currencies/${asset.toLowerCase()}.png`,
-                baseObject: asset,
-                details: `${formatAmount(b.total, decimals)}`,
-                order: 0,
-            }
-        }) || []
-
-    const [selectedValue, setSelectedValue] = useState<string>(activationCurrencyValues?.[0]?.name)
-
-    const handleChange = (v: string) => {
-        onChange(v)
-        setSelectedValue(v)
-    }
-
-    const defaultValue = feeData && loopringBalnce?.find(b => {
-        const tfee = feeData?.fees?.find(f => f.tokenId === b.tokenId)?.fee
-        return Number(b.total) >= Number(tfee)
-    });
-
-    useEffect(() => {
-        if (!selectedValue && defaultValue) {
-            handleChange(TOKEN_INFO.idIndex[defaultValue.tokenId])
-        }
-    }, [defaultValue])
-
-    const decimals = TOKEN_INFO.tokenMap[selectedValue]?.decimals
-    const selectedTokenFee = feeData?.fees?.find(f => f.token === selectedValue)?.fee
-    const formattedFee = selectedTokenFee && formatAmount(selectedTokenFee, decimals)
-    return activationCurrencyValues.length > 0 ? <Select onValueChange={handleChange} value={selectedValue} >
-        <SelectTrigger className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
-            <SelectValue>
-                <span className='space-x-1'><span>{formattedFee}</span><span>{selectedValue}</span></span>
-            </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-            <SelectGroup>
-                <SelectLabel>Fee token</SelectLabel>
-                {activationCurrencyValues?.map(cv => (
-                    <SelectItem key={cv.name} value={cv.name}>
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0 h-5 w-5 relative">
-                                {
-                                    cv &&
-                                    <Image
-                                        src={cv.imgSrc}
-                                        alt="From Logo"
-                                        height="60"
-                                        width="60"
-                                        className="rounded-md object-contain"
-                                    />
-                                }
-                            </div>
-                            <div className="mx-1 block"><span className='text-primary-text'>{cv.name}</span> <span>{cv.details}</span></div>
-                        </div>
-                    </SelectItem>
-                ))}
-            </SelectGroup>
-        </SelectContent>
-    </Select>
-        : <></>
-}
 
 
 
@@ -448,7 +326,6 @@ const ConnectProvedesMapping = {
     "walletconnectv1": { resolver: connectProvides.WalletConnectV1, type: ConnectorNames.WalletConnect },
     "gamestop": { resolver: connectProvides.GameStop, type: ConnectorNames.Gamestop },
 }
-const fetcher = (url) => fetch(url).then((res) => res.json());
 
 type ConnectWalet = {
     resolver: ({ chainId, ...props }: {
@@ -458,53 +335,6 @@ type ConnectWalet = {
     type: ConnectorNames
 }
 
-const useLoopringAccount = ({ address }: { address?: `0x${string}` }) => {
-    const url = `${loopringAPIs.GOERLI}${lp.LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`
-    const { data: accountData, isLoading, mutate } =
-        useSWR<lp.AccountInfo>(address ? url : null,
-            fetcher,
-            {
-                refreshInterval: (latestData) => latestData?.frozen ? 3000 : 0
-            });
-    const noAccount = (accountData as any)?.resultInfo?.code == 101002
-    const account = noAccount ? undefined : accountData
-
-    return { account, isLoading, noAccount, mutate }
-}
-const useLoopringFees = (accountId?: number) => {
-    const url = `${loopringAPIs.GOERLI}${lp.LOOPRING_URLs.GET_OFFCHAIN_FEE_AMT}?accountId=${accountId}&requestType=${lp.OffchainFeeReqType.UPDATE_ACCOUNT}`
-    const { data, isLoading } =
-        useSWR<{
-            fees: {
-                token: string,
-                tokenId: number,
-                fee: string,
-                discount: number
-            }[],
-            gasPrice: string
-        }>(accountId ? url : null,
-            fetcher);
-
-    return { data, isLoading }
-}
-
-const useLoopringBalance = (accountId?: number) => {
-    const url = `${loopringAPIs.GOERLI}${lp.LOOPRING_URLs.GET_USER_EXCHANGE_BALANCES}?accountId=${accountId}`
-    const { data, isLoading } =
-        useSWR<[lp.UserBalanceInfo]>(accountId ? url : null,
-            fetcher);
-
-    return { data, isLoading }
-}
-
-const loopringAPIs = {
-    GOERLI: "https://uat2.loopring.io",
-    MAINNET: "https://api3.loopring.io"
-}
-
-const ButtonText = ({ text, buttonClicked }: { text: string, buttonClicked: boolean }) => {
-    return buttonClicked ? text : "Send from wallet"
-}
 
 export default LoopringWalletWithdraw;
 

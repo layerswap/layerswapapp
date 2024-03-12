@@ -10,7 +10,7 @@ import useSWR from 'swr'
 import TransferFromWallet from "./WalletTransfer"
 import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw"
 import useWalletTransferOptions from "../../../../hooks/useWalletTransferOptions"
-import LoopringWalletWithdraw from "./LoopringWalletWithdraw"
+import LoopringWalletWithdraw from "./Loopring"
 import { useFee } from "../../../../context/feeContext"
 import SolanaWalletWithdrawStep from "./SolanaWalletWithdraw"
 import NetworkGas from "./WalletTransfer/networkGas"
