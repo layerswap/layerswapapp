@@ -164,21 +164,22 @@ const meta = {
         const handleUpdateArgs = () => {
             const updatedSwap = {
                 ...args.swap,
-                transactions: swap.transactions.map(transaction => {
-                    if (transaction.type === 'input') {
+                transactions: swap?.transactions?.map(transaction => {
+                    if (transaction.type === 'input' && transaction.timestamp) {
                         return {
                             ...transaction,
-                            timestamp: timestamp ? new Date(timestamp).toISOString() : new Date().toISOString(),
+                            timestamp: timestamp ? new Date(timestamp)?.toISOString() : new Date().toISOString(),
                         };
                     }
                     return transaction;
                 }),
             };
-            updateArgs({ swap: updatedSwap, timestamp: new Date(timestamp).toISOString() || new Date().toISOString() });
+            if (updatedSwap?.transactions?.[0]?.timestamp)
+                updateArgs({ swap: updatedSwap, timestamp: new Date(timestamp)?.toISOString() || new Date().toISOString() });
         }
 
         useEffect(() => {
-            if (timestamp !== swap?.transactions[0]?.timestamp) {
+            if (timestamp !== swap?.transactions?.[0]?.timestamp) {
                 handleUpdateArgs()
             }
         }, [timestamp, swap])
@@ -197,15 +198,12 @@ export const UserTransferInitiated: Story = {
             transactions: [
             ]
         },
-        initialValues: {
-
-        }
     },
     loaders: [
         async () => ({
             A: window.localStorage.setItem("swapTransactions", `{"${swap.id}": {"hash": "0xe1d8539c6dbe522560c41d645f10ffc3f50b8f689a4ce4774573576cb845d5fc", "status":2}}`)
         }),
-    ]
+    ],
 };
 
 export const UserTransferDetected: Story = {

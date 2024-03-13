@@ -48,6 +48,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     const nativeCurrency = destination_layer?.assets?.find(c => c.asset === destination_layer?.assets.find(a => a.is_native)?.asset)
     const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
+    let inputIsCompleted = swapInputTransaction?.status == TransactionStatus.Completed && swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations;
 
     const progressStatuses = getProgressStatuses(swap, swapStatus)
     const stepStatuses = progressStatuses.stepStatuses;
@@ -236,9 +237,11 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                                     <span className="font-medium text-primary-text">
                                         {progressStatuses.generalStatus.title}
                                     </span>
-                                    <span className='text-sm block space-x-1 text-secondary-text'>
-                                        <span>{swapInputTransaction?.timestamp ? countDownTimer : outputPendingDetails}</span>
-                                    </span>
+                                    {inputIsCompleted && (swapOutputTransaction?.status == TransactionStatus.Pending || swapRefuelTransaction?.status == TransactionStatus.Pending) &&
+                                        <span className='text-sm block space-x-1 text-secondary-text'>
+                                            <span>{swapInputTransaction?.timestamp ? countDownTimer : outputPendingDetails}</span>
+                                        </span>
+                                    }
                                 </div>
                             </div></div>
                         <div className='pt-4'>
