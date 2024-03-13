@@ -236,13 +236,13 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
             return <WalletMessage
                 status="pending"
                 header='Your account is beeing activated'
-                details={`Bla bla bla`} />
+                details={`You will be able to make transfers in 3-5 minutes.`} />
         }
         else {
             return <WalletMessage
                 status="pending"
                 header='Your account is frozen'
-                details={`Go to loopring and bla Bla bla bla`} />
+                details={`If you have just activated your account it will be unfrozen in couple of minutes.`} />
         }
     }
 
