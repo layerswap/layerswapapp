@@ -33,6 +33,7 @@ export const swap: SwapItem = {
             "type": TransactionType.Input,
             "usd_value": 2.728530,
             "status": TransactionStatus.Pending,
+            "timestamp": ""
         },
         {
             "from": "0x5da5c2a98e26fd28914b91212b1232d58eb9bbab",
@@ -94,7 +95,7 @@ export const failedSwap: SwapItem = {
             "usd_price": 1718.42,
             "type": TransactionType.Input,
             "status": TransactionStatus.Pending,
-            "usd_value": 3.093156
+            "usd_value": 3.093156,
         },
     ]
 }
@@ -168,7 +169,7 @@ export const cancelled: SwapItem = {
     "has_refuel": true,
     "fail_reason": "",
     "transactions": [
-        
+
     ]
 }
 
@@ -192,6 +193,6 @@ export const expired: SwapItem = {
     "has_refuel": true,
     "fail_reason": "",
     "transactions": [
-        
+
     ]
 }

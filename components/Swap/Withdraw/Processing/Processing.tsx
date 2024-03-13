@@ -5,7 +5,6 @@ import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
 import { GetDefaultAsset } from '../../../../helpers/settingsHelper';
-import AverageCompletionTime from '../../../Common/AverageCompletionTime';
 import { SwapItem, TransactionStatus, TransactionType } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
@@ -16,6 +15,9 @@ import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
 import { useFee } from '../../../../context/feeContext';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
+import FormattedAverageCompletionTime from '../../../Common/FormattedAverageCompletionTime';
+import CountdownTimer from '../../../Common/CountDownTimer';
+import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
     settings: LayerSwapAppSettings;
@@ -41,20 +43,31 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     const transactionHash = swapInputTransaction?.transaction_id || storedWalletTransaction?.hash
 
-
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
     const nativeCurrency = destination_layer?.assets?.find(c => c.asset === destination_layer?.assets.find(a => a.is_native)?.asset)
     const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
+    let inputIsCompleted = swapInputTransaction?.status == TransactionStatus.Completed && swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations;
 
     const progressStatuses = getProgressStatuses(swap, swapStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
+    const renderingError = new Error("Transaction is taking longer than expected");
+    renderingError.name = `LongTransactionError`;
+    renderingError.cause = renderingError;
+    datadogRum.addError(renderingError);
+
     const outputPendingDetails = <div className='flex items-center space-x-1'>
         <span>Estimated arrival after confirmation:</span>
         <div className='text-primary-text'>
-            <AverageCompletionTime avgCompletionTime={fee?.avgCompletionTime} />
+            <FormattedAverageCompletionTime avgCompletionTime={fee?.avgCompletionTime} />
+        </div>
+    </div>
+
+    const countDownTimer = <div className='flex items-center space-x-1'>
+        <div className='text-primary-text'>
+            <CountdownTimer initialTime={String(fee?.avgCompletionTime)} swap={swap} />
         </div>
     </div>
 
@@ -224,9 +237,11 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                                     <span className="font-medium text-primary-text">
                                         {progressStatuses.generalStatus.title}
                                     </span>
-                                    <span className='text-sm block space-x-1 text-secondary-text'>
-                                        <span>{progressStatuses.generalStatus.subTitle ?? outputPendingDetails}</span>
-                                    </span>
+                                    {inputIsCompleted && (swapOutputTransaction?.status == TransactionStatus.Pending || swapRefuelTransaction?.status == TransactionStatus.Pending) &&
+                                        <span className='text-sm block space-x-1 text-secondary-text'>
+                                            <span>{swapInputTransaction?.timestamp ? countDownTimer : outputPendingDetails}</span>
+                                        </span>
+                                    }
                                 </div>
                             </div></div>
                         <div className='pt-4'>
