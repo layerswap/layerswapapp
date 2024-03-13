@@ -1,0 +1,134 @@
+import { Meta, Primary, Controls, Story, Canvas } from "@storybook/blocks";
+import * as ProcessStories from "../../Process.stories";
+
+<Meta of={ProcessStories} />
+
+# User transfer initiated
+
+Signals the beginning of a swap process in your blockchain exchange app. Users have triggered a transfer, prompting the system to commence the necessary steps for the exchange. This status marks the initial action taken by the user to initiate a swap transaction.
+
+<Canvas of={ProcessStories.UserTransferInitiated} />
+
+## Props
+
+<Controls of={ProcessStories.UserTransferInitiated} />
+
+# User transfer detected
+
+Signifies that the system has identified and acknowledged the user's initiated transfer. This stage confirms that the blockchain exchange app has successfully recognized the incoming transaction, preparing for further processing in the swap.
+
+<Canvas of={ProcessStories.UserTransferDetected} />
+
+## Props
+
+<Controls of={ProcessStories.UserTransferDetected} />
+
+# User transfer pending input completed
+
+Indicates that the required user input for the initiated transfer has been fulfilled, and the system is now awaiting additional details or confirmations before proceeding with the swap. This stage ensures that all necessary information from the user has been provided, setting the groundwork for the next steps in the exchange process.
+
+<Canvas of={ProcessStories.UserTransferPendingInputCompleted} />
+
+## Props
+
+<Controls of={ProcessStories.UserTransferPendingInputCompleted} />
+
+# Ls transfer pending
+
+Denotes that the initiated swap is in a transitional phase, awaiting confirmation or processing. At this stage, the system is actively working on the transfer, and users may need to wait for the finalization of the transaction.
+
+<Canvas of={ProcessStories.LsTransferPending} />
+
+## Props
+
+<Controls of={ProcessStories.LsTransferPending} />
+
+# Ls transfer pending with refuel
+
+Indicates that the swap is temporarily on hold, awaiting additional funds (refuel) to proceed. Users are prompted to add more funds to their account before the system can complete the transfer. This status ensures that there are sufficient resources to carry out the transaction successfully.
+
+<Canvas of={ProcessStories.LsTransferPendingWithRefuel} />
+
+## Props
+
+<Controls of={ProcessStories.LsTransferPendingWithRefuel} />
+
+# Ls transfer initiated
+
+Signals that the swap process has been officially started after user input and system confirmation. At this stage, the system is actively processing the transfer, taking the necessary steps to execute the exchange on the blockchain.
+
+<Canvas of={ProcessStories.LsTransferInitiated} />
+
+## Props
+
+<Controls of={ProcessStories.LsTransferInitiated} />
+
+# Completed
+
+Signifies the successful conclusion of the swap process. At this stage, the exchange initiated by the user has been executed, and the transaction is finalized on the blockchain. Users can view this status as an indication that their swap has been successfully completed.
+
+<Canvas of={ProcessStories.Completed} />
+
+## Props
+
+<Controls of={ProcessStories.Completed} />
+
+# Only refuel completed
+
+Indicates that the swap process is on hold, and the only action taken so far is the addition of funds (refuel) to the user's account. This status suggests that the system is awaiting further instructions or additional steps before proceeding with the complete swap
+
+<Canvas of={ProcessStories.OnlyRefuelCompleted} />
+
+## Props
+
+<Controls of={ProcessStories.OnlyRefuelCompleted} />
+
+# User transfer delayed
+
+Suggests that there is a temporary hold or delay in processing the user-initiated transfer. This status notifies users that the system is encountering a delay and that the transfer is not proceeding as quickly as expected. Users may need to be patient or take additional actions as advised by the application.
+
+<Canvas of={ProcessStories.UserTransferDelayed} />
+
+## Props
+
+<Controls of={ProcessStories.UserTransferDelayed} />
+
+# Failed
+
+Indicates that the swap process was unsuccessful or encountered an issue. This status alerts users that the transaction could not be completed as intended, and they may need to review the details, address any errors, or take corrective actions before attempting the swap again.
+
+<Canvas of={ProcessStories.Failed} />
+
+## Props
+
+<Controls of={ProcessStories.Failed} />
+
+# Failed out of range amount
+
+Indicates that the swap process was unsuccessful because the specified amount for the transaction falls outside the acceptable range. Users need to review and adjust the transaction amount within the permitted limits to proceed with a successful swap.
+
+<Canvas of={ProcessStories.FailedOutOfRangeAmount} />
+
+## Props
+
+<Controls of={ProcessStories.FailedOutOfRangeAmount} />
+
+# Cancelled
+
+Denotes that the user or the system has intentionally aborted the swap process. This status indicates that the transaction, which was previously initiated, will not be completed, and any associated actions or funds have been reversed or voided.
+
+<Canvas of={ProcessStories.Cancelled} />
+
+## Props
+
+<Controls of={ProcessStories.Cancelled} />
+
+# Expired
+
+Signifies that the swap process has elapsed without completion within the designated timeframe. This status indicates that the transaction has reached its expiration time, and further actions are needed, such as reinitiating the swap or addressing any time-sensitive requirements.
+
+<Canvas of={ProcessStories.Expired} />
+
+## Props
+
+<Controls of={ProcessStories.Expired} />

@@ -1,5 +1,6 @@
 import type { Preview } from "@storybook/react";
 import "../styles/globals.css";
+import { themes } from '@storybook/theming';
 
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
@@ -12,6 +13,9 @@ const preview: Preview = {
     }),
   ],
   parameters: {
+    docs: {
+      theme: themes.dark,
+    },
     actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
       matchers: {
