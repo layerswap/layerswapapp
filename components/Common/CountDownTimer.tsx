@@ -12,19 +12,18 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
 
     useEffect(() => {
-        const targetTime = new Date(swapInputTransaction?.timestamp!);
         const avgCompletionTime = parseTime(initialTime);
-        targetTime.setSeconds(targetTime.getSeconds() + avgCompletionTime);
+        new Date(swapInputTransaction?.timestamp!).setSeconds(new Date(swapInputTransaction?.timestamp!).getSeconds() + avgCompletionTime);
 
         const timer = setInterval(() => {
             const currentTime = new Date();
-            const remainingTime = Math.max(targetTime.getTime() - currentTime.getTime(), 0);
+            const remainingTime = Math.max(new Date(swapInputTransaction?.timestamp!).getTime() - currentTime.getTime(), 0);
             const formattedTime = formatTime(remainingTime);
             setCountdown(formattedTime);
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [initialTime, swap.status]);
+    }, [initialTime, swap.status, swapInputTransaction]);
 
     const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } });
     const startIntercom = useCallback(() => {

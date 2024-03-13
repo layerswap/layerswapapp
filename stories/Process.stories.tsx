@@ -28,6 +28,7 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { useQueryState } from '../context/query';
 import MainStepValidation from '../lib/mainStepValidator';
 import { FeeProvider, useFee } from '../context/feeContext';
+import { useArgs } from '@storybook/preview-api';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 const settingsChains = SettingChains;
@@ -58,15 +59,17 @@ const connectors = connectorsForWallets([
     },
 ]);
 window.plausible = () => { }
-const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues }> = ({ settings, swap, failedSwap, failedSwapOutOfRange, theme, initialValues }) => {
+const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ settings, swap, failedSwap, failedSwapOutOfRange, theme, initialValues, timestamp }) => {
     const query = useQueryState()
     const wagmiConfig = createConfig({
         autoConnect: true,
         connectors,
         publicClient,
     })
+
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const appSettings = new LayerSwapAppSettings(Settings)
+
     const swapContextInitialValues: SwapData = { codeRequested: false, swap, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
 
     if (!appSettings) {
@@ -130,7 +133,8 @@ const DUMMY_TRANSACTION = {
     usd_price: 1819.02,
     type: TransactionType,
     usd_value: 1.6916886,
-    status: TransactionStatus
+    status: TransactionStatus,
+    timestamp: ''
 }
 
 const meta = {
@@ -141,14 +145,45 @@ const meta = {
     },
     args: {
         theme: 'default',
+        timestamp: '',
     },
     argTypes: {
         theme: {
             options: ['light', 'default', 'evmos', 'imxMarketplace', 'ea7df14a1597407f9f755f05e25bab42'],
             control: { type: 'select' },
+        },
+        timestamp: {
+            control: 'date',
         }
     },
-    render: (args, { loaded: { settings } }) => <Comp {...args} settings={settings} initialValues={initialValues} />,
+
+    render: function Render(args, { loaded: { settings } }) {
+        const [{ swap, timestamp }, updateArgs] = useArgs();
+
+
+        const handleUpdateArgs = () => {
+            const updatedSwap = {
+                ...args.swap,
+                transactions: swap.transactions.map(transaction => {
+                    if (transaction.type === 'input') {
+                        return {
+                            ...transaction,
+                            timestamp: timestamp ? new Date(timestamp).toISOString() : new Date().toISOString(),
+                        };
+                    }
+                    return transaction;
+                }),
+            };
+            updateArgs({ swap: updatedSwap, timestamp: new Date(timestamp).toISOString() || new Date().toISOString() });
+        }
+
+        useEffect(() => {
+            if (timestamp !== swap?.transactions[0]?.timestamp) {
+                handleUpdateArgs()
+            }
+        }, [timestamp, swap])
+        return <Comp {...args} settings={settings} initialValues={initialValues} />
+    },
 } satisfies Meta<typeof Comp>;
 
 export default meta;
@@ -184,18 +219,16 @@ export const UserTransferDetected: Story = {
         }
     }
 };
-
-
 export const UserTransferPendingInputCompleted: Story = {
     args: {
         swap: {
             ...failedSwap,
             status: SwapStatus.UserTransferPending,
             transactions: [
-                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input, timestamp: `'${new Date().toISOString()}'` },
+                { ...DUMMY_TRANSACTION, status: TransactionStatus.Completed, type: TransactionType.Input },
             ]
         }
-    }
+    },
 };
 
 export const LsTransferPending: Story = {

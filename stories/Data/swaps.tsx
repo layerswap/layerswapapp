@@ -95,7 +95,6 @@ export const failedSwap: SwapItem = {
             "type": TransactionType.Input,
             "status": TransactionStatus.Pending,
             "usd_value": 3.093156,
-            "timestamp": "2024-03-11T13:41:40.870Z"
         },
     ]
 }
