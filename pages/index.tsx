@@ -17,7 +17,7 @@ export default function Home({ settings, themeData }: InferGetServerSidePropsTyp
                 Update notice
               </p>
               <p className="text-secondary-text">
-                We're gearing up for the Ethereum Dencun hard fork! As part of our preparations, transfers from Ethereum and its L2 networks will be back online at 14:55 UTC. Stay tuned and thank you for your support!
+                We&apos;re gearing up for the Ethereum Dencun hard fork! As part of our preparations, transfers from Ethereum and its L2 networks will be back online at 14:55 UTC. Stay tuned and thank you for your support!
               </p>
             </h1>
           </div>
