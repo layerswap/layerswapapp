@@ -110,7 +110,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     const { data: routes, isLoading, error } = useSWR<ApiResponse<Route[]>>(routesEndpoint, apiClient.fetcher)
 
-    const [routesData, setRoutesData] = useState<Route[]>()
+    const [routesData, setRoutesData] = useState<Route[] | undefined>(direction === 'from' ? sourceRoutes : destinationRoutes)
 
     useEffect(() => {
         if (!isLoading && routes?.data) setRoutesData(routes.data)
