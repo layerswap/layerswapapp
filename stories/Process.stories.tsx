@@ -165,7 +165,6 @@ const meta = {
                 ...args.swap,
                 transactions: swap?.transactions?.map(transaction => {
                     if (transaction.type === 'input' && (transaction.timestamp || transaction.timestamp === '')) {
-                        console.log(timestamp, "transaction1")
                         return {
                             ...transaction,
                             timestamp: timestamp ? new Date(timestamp)?.toISOString() : new Date().toISOString(),
@@ -175,7 +174,6 @@ const meta = {
                 }),
             };
             if (updatedSwap?.transactions?.[0]?.timestamp || updatedSwap?.transactions?.[0]?.timestamp === '') {
-                console.log(updatedSwap, "transaction2")
                 updateArgs({ swap: updatedSwap, timestamp: new Date(timestamp)?.toISOString() || new Date().toISOString() })
             }
         }

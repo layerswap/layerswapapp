@@ -14,7 +14,7 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
     useEffect(() => {
         const timer = setInterval(() => {
             const currentTime = new Date();
-            const remainingTime = Math.max(new Date(swapInputTransaction?.timestamp!).getTime() - currentTime.getTime(), 0);
+            const remainingTime = Math.max(currentTime.getTime() - new Date(swapInputTransaction?.timestamp!).getTime(), 0);
             const formattedTime = formatTime(remainingTime);
             setCountdown(formattedTime);
         }, 1000);
