@@ -12,9 +12,6 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
 
     useEffect(() => {
-        const avgCompletionTime = parseTime(initialTime);
-        new Date(swapInputTransaction?.timestamp!).setSeconds(new Date(swapInputTransaction?.timestamp!).getSeconds() + avgCompletionTime);
-
         const timer = setInterval(() => {
             const currentTime = new Date();
             const remainingTime = Math.max(new Date(swapInputTransaction?.timestamp!).getTime() - currentTime.getTime(), 0);
@@ -31,11 +28,6 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
         show();
         updateWithProps();
     }, [boot, show, updateWithProps]);
-
-    const parseTime = (timeString: string): number => {
-        const [hours, minutes, seconds] = timeString.split(':').map(Number);
-        return hours * 3600 + minutes * 60 + seconds;
-    };
 
     const formatTime = (milliseconds: number): string => {
         const totalSeconds = Math.floor(milliseconds / 1000);

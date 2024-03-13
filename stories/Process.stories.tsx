@@ -160,12 +160,12 @@ const meta = {
     render: function Render(args, { loaded: { settings } }) {
         const [{ swap, timestamp }, updateArgs] = useArgs();
 
-
         const handleUpdateArgs = () => {
             const updatedSwap = {
                 ...args.swap,
                 transactions: swap?.transactions?.map(transaction => {
-                    if (transaction.type === 'input' && transaction.timestamp) {
+                    if (transaction.type === 'input' && (transaction.timestamp || transaction.timestamp === '')) {
+                        console.log(timestamp, "transaction1")
                         return {
                             ...transaction,
                             timestamp: timestamp ? new Date(timestamp)?.toISOString() : new Date().toISOString(),
@@ -174,8 +174,10 @@ const meta = {
                     return transaction;
                 }),
             };
-            if (updatedSwap?.transactions?.[0]?.timestamp)
-                updateArgs({ swap: updatedSwap, timestamp: new Date(timestamp)?.toISOString() || new Date().toISOString() });
+            if (updatedSwap?.transactions?.[0]?.timestamp || updatedSwap?.transactions?.[0]?.timestamp === '') {
+                console.log(updatedSwap, "transaction2")
+                updateArgs({ swap: updatedSwap, timestamp: new Date(timestamp)?.toISOString() || new Date().toISOString() })
+            }
         }
 
         useEffect(() => {
