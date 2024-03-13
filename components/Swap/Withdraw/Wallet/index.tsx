@@ -28,7 +28,8 @@ const WalletTransferContent: FC = () => {
     const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsZkSync = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
     const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
-    const sourceIsLoopring = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.LoopringMainnet?.toUpperCase()
+    const sourceIsLoopring = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.LoopringMainnet?.toUpperCase() ||
+        swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.LoopringGoerli?.toUpperCase()
     const sourceIsSolana = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
 
     const { canDoSweepless, isContractWallet } = useWalletTransferOptions()

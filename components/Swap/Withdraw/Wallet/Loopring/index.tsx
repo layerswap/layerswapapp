@@ -4,11 +4,11 @@ import SubmitButton from '../../../../buttons/submitButton';
 import { useSwapDataState } from '../../../../../context/swap';
 import toast from 'react-hot-toast';
 import { useSettingsState } from '../../../../../context/settings';
-import { useAccount } from 'wagmi';
+import { useAccount, useNetwork } from 'wagmi';
 import { LoopringAPI } from '../../../../../lib/loopring/LoopringAPI';
 import { ConnectorNames } from '@loopring-web/loopring-sdk';
 import { connectProvides } from '@loopring-web/web3-provider';
-import { ConnectWalletButton } from '../WalletTransfer/buttons';
+import { ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
 import * as lp from "@loopring-web/loopring-sdk";
 import { generateActivateKeyPair } from '../../../../../lib/loopring/helpers';
 import { parseUnits } from 'viem';
@@ -44,7 +44,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const [activationPubKey, setActivationPubKey] = useState<{ x: string; y: string }>()
     const [unlockedAccount, setUnlockedAccount] = useState<UnlockedAccountType>()
     const [selectedActivationAsset, setSelectedActivationAsset] = useState<string>()
-
+    const { chain } = useNetwork()
     const { swap } = useSwapDataState();
     const { layers } = useSettingsState();
     const { setSwapTransaction } = useSwapTransactionStore();
@@ -167,7 +167,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
             const storageId = await LoopringAPI.userAPI.getNextStorageId(
                 {
                     accountId: accInfo.accountId,
-                    sellTokenId: 1,
+                    sellTokenId: Number(token?.contract_address),
                 },
                 apiKey);
 
@@ -250,14 +250,14 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         return <ConnectWalletButton />
     }
 
-    // if (source_network && chain?.id !== Number(source_network.chain_id)) {
-    //     return (
-    //         <ChangeNetworkButton
-    //             chainId={Number(source_network?.chain_id)}
-    //             network={source_network?.display_name}
-    //         />
-    //     )
-    // }
+    if (source_network && chain?.id !== Number(source_network.chain_id)) {
+        return (
+            <ChangeNetworkButton
+                chainId={Number(source_network?.chain_id)}
+                network={source_network?.display_name}
+            />
+        )
+    }
 
     const shouldActivate = accInfo && !(accInfo.publicKey.x
         || accInfo.publicKey.y)

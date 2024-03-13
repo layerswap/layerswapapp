@@ -31,6 +31,7 @@ const Withdraw: FC = () => {
     const sourceIsArbitrumOne = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
     const sourceIsLoopring = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.LoopringMainnet?.toUpperCase()
+        || swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.LoopringGoerli?.toUpperCase()
     const sourceIsCoinbase =
         swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
     const sourceIsSolana = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
