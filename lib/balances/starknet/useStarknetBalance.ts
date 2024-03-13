@@ -1,10 +1,7 @@
 import KnownInternalNames from "../../knownIds"
 import Erc20Abi from '../../abis/ERC20.json'
 import formatAmount from "../../formatAmount";
-import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../Models/Balance";
-import InternalApiClient from "../../internalApiClient";
-import { EstimateFee } from "starknet";
-import { ApiResponse } from "../../../Models/ApiResponse";
+import { Balance, BalanceProps, BalanceProvider } from "../../../Models/Balance";
 import { useRouter } from "next/router";
 
 export default function useStarknetBalance(): BalanceProvider {

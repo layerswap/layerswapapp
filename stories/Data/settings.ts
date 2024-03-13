@@ -4,817 +4,214 @@ import { LayerSwapSettings } from "../../Models/LayerSwapSettings";
 export const Settings: LayerSwapSettings = {
     "exchanges": [
         {
-            "display_name": "Kucoin",
-            "name": "KUCOIN",
-            "type": "cex",
-            "is_featured": false,
-            "is_enabled": true,
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "metadata": {
-
-            },
-            "created_date": "2021-07-15T20:32:51.223453+00:00"
-        },
-        {
-            "display_name": "Coinspot",
-            "name": "COINSPOT",
-            "type": "cex",
-            "is_featured": false,
-            "is_enabled": true,
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "metadata": {
-
-            },
-            "created_date": "2022-07-14T20:23:10.387669+00:00"
-        },
-        {
-            "display_name": "FTX.US",
-            "name": "FTXUS",
-            "is_enabled": true,
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "type": "cex",
-            "is_featured": false,
-            "metadata": {
-
-            },
-            "created_date": "2021-11-03T18:59:10.567873+00:00"
-        },
-        {
-            "display_name": "Kraken",
-            "is_enabled": true,
-            "name": "KRAKEN",
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "type": "cex",
-            "is_featured": false,
-            "metadata": {
-
-            },
-            "created_date": "2022-04-06T15:12:15.394338+00:00"
-        },
-        {
-            "display_name": "FTX.COM",
-            "is_enabled": true,
-            "name": "FTXCOM",
-            "type": "cex",
-            "is_featured": false,
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "metadata": {
-
-            },
-            "created_date": "2021-11-19T13:16:03.731917+00:00"
-        },
-        {
-            "display_name": "OKX",
-            "is_enabled": true,
-            "name": "OKEX",
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "type": "cex",
-            "is_featured": true,
-            "metadata": {
-
-            },
-            "created_date": "2021-12-04T07:33:13.42+00:00"
-        },
-        {
-            "display_name": "Binance",
-            "is_enabled": true,
-            "name": "BINANCE",
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "type": "cex",
-            "is_featured": true,
-            "metadata": {
-
-            },
-            "created_date": "2021-07-15T20:32:51.223453+00:00"
-        },
-        {
-            "display_name": "Bittrex Global",
-            "is_enabled": true,
-            "name": "BITTREX",
-            "type": "cex",
-            "is_featured": false,
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "metadata": {
-
-            },
-            "created_date": "2022-04-20T11:12:45.601969+00:00"
-        },
-        {
-            "display_name": "Huobi Global",
-            "is_enabled": true,
-            "name": "HUOBI",
-            "type": "cex",
-            "is_featured": false,
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "metadata": {
-
-            },
-            "created_date": "2021-10-04T13:47:57.841453+00:00"
-        },
-        {
-            "display_name": "Coinbase",
-            "is_enabled": true,
-            "name": "COINBASE",
-            "type": "cex",
-            "is_featured": false,
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "metadata": {
-
-            },
-            "created_date": "2021-07-15T20:32:51.223453+00:00"
-        },
-        {
-            "display_name": "Bitfinex",
-            "is_enabled": true,
-            "name": "BITFINEX",
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "type": "cex",
-            "is_featured": false,
-            "metadata": {
-
-            },
-            "created_date": "2022-03-11T12:19:44.846116+00:00"
-        },
-        {
-            "display_name": "Crypto.com Exchange",
-            "is_enabled": true,
-            "name": "CRYPTOCOM",
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "type": "cex",
-            "is_featured": false,
-            "metadata": {
-
-            },
-            "created_date": "2022-04-20T11:12:45.226973+00:00"
-        },
-        {
-            "display_name": "Blocktane",
-            "is_enabled": true,
-            "name": "BLOCKTANE",
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "type": "cex",
-            "is_featured": false,
-            "metadata": {
-
-            },
-            "created_date": "2022-05-25T12:41:10.828229+00:00"
-        },
-        {
-            "display_name": "Gate.io",
-            "is_enabled": true,
-            "name": "GATEIO",
-            "type": "cex",
-            "is_featured": false, "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "metadata": {
-
-            },
-            "created_date": "2023-01-24T07:35:23.018867+00:00"
-        },
-        {
-            "display_name": "MEXC Global",
-            "is_enabled": true,
-            "name": "MEXC",
-            "type": "cex",
-            "is_featured": false, "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "metadata": {
-
-            },
-            "created_date": "2023-01-24T07:37:59.220166+00:00"
-        },
-        {
-            "display_name": "BitGet",
-            "is_enabled": true,
-            "name": "BITGET",
-            "type": "cex",
-            "is_featured": false, "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "metadata": {
-
-            },
-            "created_date": "2023-01-24T07:39:09.156272+00:00"
-        },
-        {
-            "display_name": "Swyftx",
-            "is_enabled": true,
-            "name": "SWYFTX",
-            "type": "cex",
-            "is_featured": false, "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "metadata": {
-
-            },
-            "created_date": "2023-01-24T07:39:42.908059+00:00"
-        },
-        {
-            "display_name": "Gemini",
-            "is_enabled": true,
-            "name": "GEMINI",
-            "type": "cex",
-            "is_featured": false,
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "metadata": {
-
-            },
-            "created_date": "2023-01-24T07:39:56.495305+00:00"
-        },
-        {
-            "display_name": "Crypto.com APP",
-            "is_enabled": true,
-            "name": "CRYPTOCOMAPP",
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "type": "cex",
-            "is_featured": false,
-            "metadata": {
-
-            },
-            "created_date": "2023-01-24T07:40:26.335368+00:00"
-        },
-        {
-            "display_name": "Newton",
-            "is_enabled": true,
-            "name": "NEWTON",
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "type": "cex",
-            "is_featured": false,
-            "metadata": {
-
-            },
-            "created_date": "2023-03-06T10:43:35.112998+00:00"
-        },
-        {
-            "display_name": "Binance US",
-            "is_enabled": true,
-            "name": "BINANCEUS",
-            "type": "cex",
-            "is_featured": false,
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "metadata": {
-
-            },
-            "created_date": "2023-03-09T13:47:54.104821+00:00"
-        },
-        {
-            "display_name": "Bybit",
-            "is_enabled": true,
-            "name": "BYBIT",
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "type": "cex",
-            "is_featured": false,
-            "metadata": {
-
-            },
-            "created_date": "2023-06-01T15:31:13.965751+00:00"
-        },
-        {
-            "display_name": "US Bank or Card (via Stripe)",
-            "is_enabled": true,
+            "token_groups": [
+                {
+                    "symbol": "USDC",
+                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/usdc.png"
+                },
+                {
+                    "symbol": "ETH",
+                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/eth.png"
+                }
+            ],
             "name": "STRIPE",
-            "o_auth": {
-                "authorize_url": "test",
-                "connect_url": "test"
-            },
-            "type": "fiat",
-            "is_featured": false,
+            "display_name": "Stripe (Only US)",
+            "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/exchanges/stripe.png",
             "metadata": {
-
-            },
-            "created_date": "2023-07-25T10:03:26.889752+00:00"
+                "o_auth": null,
+                "listing_date": "2023-05-23T16:16:30.241581+00:00"
+            }
+        },
+        {
+            "token_groups": [
+                {
+                    "symbol": "USDC",
+                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/usdc.png"
+                },
+                {
+                    "symbol": "ETH",
+                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/eth.png"
+                }
+            ],
+            "name": "COINBASE",
+            "display_name": "Coinbase",
+            "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/exchanges/coinbase.png",
+            "metadata": {
+                "o_auth": {
+                    "authorize_url": "https://www.coinbase.com/oauth/authorize?client_id=d1794c48e67c2eea97cef6154f42d0e099b13805264e739c96a9175a4acd9308&redirect_uri=https%3A%2F%2Fbridge-api-dev.layerswap.cloud%2Fapi%2Fcallback%2Fcoinbase&response_type=code&account=all&scope=wallet%3Atransactions%3Aread%2Cwallet%3Auser%3Aread%2Cwallet%3Aaccounts%3Aread%2Cwallet%3Atransactions%3Asend%2Cwallet%3Auser%3Aemail&meta[send_limit_amount]=1&meta[send_limit_currency]=USD&meta[send_limit_period]=month&state=",
+                    "connect_url": "https://www.coinbase.com/oauth/authorize?client_id=d1794c48e67c2eea97cef6154f42d0e099b13805264e739c96a9175a4acd9308&redirect_uri=https%3A%2F%2Fbridge-api-dev.layerswap.cloud%2Fapi%2Fcallback%2Fcoinbase&response_type=code&account=all&scope=wallet%3Auser%3Aemail%2Cwallet%3Aaddresses%3Aread%2Cwallet%3Aaddresses%3Acreate&state="
+                },
+                "listing_date": "2021-07-15T20:32:51.223453+00:00"
+            }
+        },
+        {
+            "token_groups": [
+                {
+                    "symbol": "USDC",
+                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/usdc.png"
+                },
+                {
+                    "symbol": "ETH",
+                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/eth.png"
+                }
+            ],
+            "name": "LSCEX",
+            "display_name": "Fake CEX (for testing)",
+            "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/exchanges/lscex.png",
+            "metadata": {
+                "o_auth": null,
+                "listing_date": "2023-01-13T13:23:55.633636+00:00"
+            }
+        },
+        {
+            "token_groups": [
+                {
+                    "symbol": "USDC",
+                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/usdc.png"
+                },
+                {
+                    "symbol": "ETH",
+                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/eth.png"
+                }
+            ],
+            "name": "PIPE",
+            "display_name": "Pipe",
+            "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/exchanges/pipe.png",
+            "metadata": {
+                "o_auth": null,
+                "listing_date": "2023-10-26T11:33:05.256894+00:00"
+            }
         }
     ],
-    "networks": [
+    "networks":[
         {
-            "display_name": "StarkNet Goerli",
-            "name": "STARKNET_GOERLI",
-            "chain_id": "0x534e5f474f45524c49",
-            "type": NetworkType.Starknet,
-            "transaction_explorer_template": "https://testnet.starkscan.co/tx/{0}",
-            "account_explorer_template": "https://testnet.starkscan.co/contract/{0}",
-            "metadata": {
-                "WatchdogContractAddress": "0x021c2b56536381dc9bf5273d1173dd0cfb178b57763915038cf196b92f7c3ccc"
+          "tokens": [
+            {
+              "symbol": "jUSDC",
+              "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/jusdc.png",
+              "contract": "EQB-MPwrd1G6WKNkLz_VnV6WqBDd142KMQv-g1O-8QUA3728",
+              "decimals": 6,
+              "price_in_usd": 1.11,
+              "precision": 6,
+              "group_name": null,
+              "is_native": false
             },
-            "created_date": "2023-12-27T16:46:50.617075+00:00",
-            "tokens": [
-                {
-                    "symbol": "USDC",
-                    "contract": "0x05a8b3e116670381596e169c09de832f0055a4408464dc2cdadaca3d0aa3993a",
-                    "decimals": 6,
-                    "is_native": false,
-                    "precision": 6,
-                    "price_in_usd": 0.998876,
-                    "refuel_amount_in_usd": null,
-                    "group_name": "USDC"
-                },
-                {
-                    "symbol": "ETH",
-                    "contract": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-                    "decimals": 18,
-                    "is_native": false,
-                    "precision": 6,
-                    "price_in_usd": 2528.64,
-                    "refuel_amount_in_usd": null,
-                    "group_name": "ETH"
-                }
-            ],
-            "managed_accounts": [
-                {
-                    "address": "0x2109F6e78970B282e6068d255EA4c815D14f68a31a9d3330c74d4eB56a0d724"
-                }
-            ],
-            "node_url": [
-                {
-                    "url": "https://starknet-goerli.infura.io/v3/9201404b0d164605888e8537e0416f45"
-                }
-            ]
+            {
+              "symbol": "TON",
+              "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/ton.png",
+              "contract": null,
+              "decimals": 9,
+              "price_in_usd": 2.86,
+              "precision": 6,
+              "group_name": null,
+              "is_native": true
+            }
+          ],
+          "name": "TON_MAINNET",
+          "display_name": "Ton",
+          "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ton_mainnet.png",
+          "chain_id": null,
+          "node_url": 'null',
+          "type": NetworkType.TON,
+          "transaction_explorer_template": "https://tonscan.org/tx/{0}",
+          "account_explorer_template": "https://tonscan.org/address/{0}",
+          "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": null,
+            "evm_multi_call_contract": null
+          }
         },
         {
-            "display_name": "Arbitrum One Sepolia",
-            "name": "ARBITRUM_SEPOLIA",
-            "chain_id": "421614",
-            "type": NetworkType.EVM,
-            "transaction_explorer_template": "https://sepolia.arbiscan.io/tx/{0}",
-            "account_explorer_template": "https://sepolia.arbiscan.io/address/{0}",
-            "metadata": null,
-            "created_date": "2023-12-27T16:46:50.617075+00:00",
-            "tokens": [
-                {
-                    "symbol": "ETH",
-                    "contract": null,
-                    "decimals": 18,
-                    "is_native": true,
-                    "precision": 6,
-                    "price_in_usd": 2528.64,
-                    "refuel_amount_in_usd": null,
-                    "group_name": "ETH"
-                },
-                {
-                    "symbol": "USDC.ero",
-                    "contract": "0x0bbe6b2a1440bf6175468c66efcf9669d74b67ff",
-                    "decimals": 6,
-                    "is_native": false,
-                    "precision": 6,
-                    "price_in_usd": 0.998876,
-                    "refuel_amount_in_usd": null,
-                    "group_name": null
-                },
-                {
-                    "symbol": "USDC",
-                    "contract": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
-                    "decimals": 6,
-                    "is_native": false,
-                    "precision": 6,
-                    "price_in_usd": 0.998876,
-                    "refuel_amount_in_usd": null,
-                    "group_name": "USDC"
-                }
-            ],
-            "managed_accounts": [
-                {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
-                }
-            ],
-            "node_url": [
-                {
-                    "url": "https://arbitrum-sepolia.blastapi.io/b80cc803-ddc6-4582-9e56-481ec38ec039"
-                }
-            ]
-        },
-        {
-            "display_name": "Ethereum Sepolia",
-            "name": "ETHEREUM_SEPOLIA",
-            "chain_id": "11155111",
-            "type": NetworkType.EVM,
-            "transaction_explorer_template": "https://sepolia.etherscan.io/tx/{0}",
-            "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
-            "metadata": null,
-            "created_date": "2023-12-27T16:46:50.617075+00:00",
-            "tokens": [
-                {
-                    "symbol": "ETH",
-                    "contract": null,
-                    "decimals": 18,
-                    "is_native": true,
-                    "precision": 6,
-                    "price_in_usd": 2528.64,
-                    "refuel_amount_in_usd": null,
-                    "group_name": "ETH"
-                },
-                {
-                    "symbol": "USDC",
-                    "contract": "0xF6c4b249CbCBC46f4f29F39ea69aCf68f07CF473",
-                    "decimals": 6,
-                    "is_native": false,
-                    "precision": 6,
-                    "price_in_usd": 0.998876,
-                    "refuel_amount_in_usd": null,
-                    "group_name": "USDC"
-                }
-            ],
-            "managed_accounts": [
-                {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
-                }
-            ],
-            "node_url": [
-                {
-                    "url": "https://eth-sepolia.blastapi.io/b80cc803-ddc6-4582-9e56-481ec38ec039"
-                }
-            ]
-        },
-        {
-            "display_name": "ImmutableX Sepolia",
-            "name": "IMMUTABLEX_SEPOLIA",
-            "chain_id": "11155111",
-            "type": NetworkType.StarkEx,
-            "transaction_explorer_template": "https://immutascan.io/tx/{0}",
-            "account_explorer_template": "https://immutascan.io/address/{0}",
-            "metadata": {
-                "L1Network": "ETHEREUM_SEPOLIA"
+          "tokens": [
+            {
+              "symbol": "USDC",
+              "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.png",
+              "contract": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+              "decimals": 6,
+              "price_in_usd": 1.001,
+              "precision": 6,
+              "group_name": null,
+              "is_native": false
             },
-            "created_date": "2023-12-27T16:46:50.617075+00:00",
-            "tokens": [
-                {
-                    "symbol": "ETH",
-                    "contract": null,
-                    "decimals": 18,
-                    "is_native": false,
-                    "precision": 6,
-                    "price_in_usd": 2528.64,
-                    "refuel_amount_in_usd": null,
-                    "group_name": "ETH"
-                }
-            ],
-            "managed_accounts": [
-                {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
-                }
-            ],
-            "node_url": [
-                {
-                    "url": "https://api.sandbox.x.immutable.com"
-                }
-            ]
-        },
-        {
-            "display_name": "Linea Goerli",
-            "name": "LINEA_GOERLI",
-            "chain_id": "59140",
-            "type": NetworkType.EVM,
-            "transaction_explorer_template": "https://goerli.lineascan.build/tx/{0}",
-            "account_explorer_template": "https://goerli.lineascan.build/address/{0}",
-            "metadata": null,
-            "created_date": "2023-12-27T16:46:50.617075+00:00",
-            "tokens": [
-                {
-                    "symbol": "ETH",
-                    "contract": null,
-                    "decimals": 18,
-                    "is_native": true,
-                    "precision": 6,
-                    "price_in_usd": 2528.64,
-                    "refuel_amount_in_usd": null,
-                    "group_name": "ETH"
-                }
-            ],
-            "managed_accounts": [
-                {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
-                }
-            ],
-            "node_url": [
-                {
-                    "url": "https://rpc.goerli.linea.build"
-                }
-            ]
-        },
-        {
-            "display_name": "Optimism Sepolia",
-            "name": "OPTIMISM_SEPOLIA",
-            "chain_id": "11155420",
-            "type": NetworkType.EVM,
-            "transaction_explorer_template": "https://sepolia-optimism.etherscan.io/tx/{0}",
-            "account_explorer_template": "https://sepolia-optimism.etherscan.io/address/{0}",
-            "metadata": {
-                "evm_oracle_contract": "0x420000000000000000000000000000000000000F"
+            {
+              "symbol": "ETH",
+              "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
+              "contract": null,
+              "decimals": 18,
+              "price_in_usd": 3918.98,
+              "precision": 6,
+              "group_name": null,
+              "is_native": true
             },
-            "created_date": "2023-12-27T16:46:50.617075+00:00",
-            "tokens": [
-                {
-                    "symbol": "USDC",
-                    "contract": "0x7E07E15D2a87A24492740D16f5bdF58c16db0c4E",
-                    "decimals": 6,
-                    "is_native": false,
-                    "precision": 6,
-                    "price_in_usd": 0.998876,
-                    "refuel_amount_in_usd": null,
-                    "group_name": "USDC"
-                },
-                {
-                    "symbol": "ETH",
-                    "contract": null,
-                    "decimals": 18,
-                    "is_native": true,
-                    "precision": 6,
-                    "price_in_usd": 2528.64,
-                    "refuel_amount_in_usd": null,
-                    "group_name": "ETH"
-                }
-            ],
-            "managed_accounts": [
-                {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
-                }
-            ],
-            "node_url": []
+            {
+              "symbol": "USDC.e",
+              "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.e.png",
+              "contract": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
+              "decimals": 6,
+              "price_in_usd": 1.001,
+              "precision": 6,
+              "group_name": null,
+              "is_native": false
+            }
+          ],
+          "name": "ARBITRUM_MAINNET",
+          "display_name": "Arbitrum One",
+          "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_mainnet.png",
+          "chain_id": "42161",
+          "node_url": "https://arbitrum-one.public.blastapi.io",
+          "type": NetworkType.EVM,
+          "transaction_explorer_template": "https://arbiscan.io/tx/{0}",
+          "account_explorer_template": "https://arbiscan.io/address/{0}",
+          "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": "",
+            "evm_multi_call_contract": ""
+          }
         },
         {
-            "display_name": "Base Sepolia",
-            "name": "BASE_SEPOLIA",
-            "chain_id": "84532",
-            "type": NetworkType.EVM,
-            "transaction_explorer_template": "https://sepolia.basescan.org/tx/{0}",
-            "account_explorer_template": "https://sepolia.basescan.org/address/{0}",
-            "metadata": {
-                "evm_oracle_contract": "0x420000000000000000000000000000000000000F"
-            },
-            "created_date": "2023-12-27T16:46:50.617075+00:00",
-            "tokens": [
-                {
-                    "symbol": "ETH",
-                    "contract": null,
-                    "decimals": 18,
-                    "is_native": true,
-                    "precision": 6,
-                    "price_in_usd": 2528.64,
-                    "refuel_amount_in_usd": null,
-                    "group_name": "ETH"
-                }
-            ],
-            "managed_accounts": [],
-            "node_url": []
+          "tokens": [
+            {
+              "symbol": "ETH",
+              "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
+              "contract": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+              "decimals": 18,
+              "price_in_usd": 3918.98,
+              "precision": 6,
+              "group_name": null,
+              "is_native": true
+            }
+          ],
+          "name": "STARKNET_MAINNET",
+          "display_name": "StarkNet",
+          "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/starknet_mainnet.png",
+          "chain_id": "0x534e5f4d41494e",
+          "node_url": "https://starknet-mainnet.blastapi.io/0087e28f-aeff-41d3-8f42-0d46f40509c9",
+          "type": NetworkType.Starknet,
+          "transaction_explorer_template": "https://starkscan.co/tx/{0}",
+          "account_explorer_template": "https://starkscan.co/contract/{0}",
+          "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": "",
+            "evm_multi_call_contract": ""
+          }
         },
         {
-            "display_name": "Evmos Testnet",
-            "name": "EVMOS_TESTNET",
-            "chain_id": "9000",
-            "type": NetworkType.EVM,
-            "transaction_explorer_template": "https://testnet.escan.live/tx/{0}",
-            "account_explorer_template": "https://testnet.escan.live/address/{0}",
-            "metadata": null,
-            "created_date": "2023-12-27T16:46:50.617075+00:00",
-            "tokens": [
-                {
-                    "symbol": "EVMOS",
-                    "contract": null,
-                    "decimals": 18,
-                    "is_native": true,
-                    "precision": 6,
-                    "price_in_usd": 0.098277,
-                    "refuel_amount_in_usd": null,
-                    "group_name": null
-                }
-            ],
-            "managed_accounts": [
-                {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
-                }
-            ],
-            "node_url": []
-        },
-        {
-            "display_name": "Solana Devnet",
-            "name": "SOLANA_DEVNET",
-            "chain_id": "1399811149",
-            "type": NetworkType.Solana,
-            "transaction_explorer_template": "https://explorer.solana.com/tx/{0}?cluster=devnet",
-            "account_explorer_template": "https://explorer.solana.com/address/{0}?cluster=devnet",
-            "metadata": null,
-            "created_date": "2023-12-27T16:46:50.617075+00:00",
-            "tokens": [
-                {
-                    "symbol": "SOL",
-                    "contract": null,
-                    "decimals": 9,
-                    "is_native": true,
-                    "precision": 6,
-                    "price_in_usd": 96.74,
-                    "refuel_amount_in_usd": null,
-                    "group_name": null
-                },
-                {
-                    "symbol": "USDC",
-                    "contract": "Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr" as any,
-                    "decimals": 6,
-                    "is_native": false,
-                    "precision": 6,
-                    "price_in_usd": 0.998876,
-                    "refuel_amount_in_usd": null,
-                    "group_name": null
-                }
-            ],
-            "managed_accounts": [
-                {
-                    "address": "CRWWbf61eLEE1tjkvDP5DaDsX2Ttb3arZ4CcQpwe7g4N" as any
-                }
-            ],
-            "node_url": []
-        },
-        {
-            "display_name": "Brine Testnet",
-            "name": "BRINE_TESTNET",
-            "chain_id": '',
-            "type": NetworkType.StarkEx,
-            "transaction_explorer_template": "https://testnet.brine.finance/",
-            "account_explorer_template": "https://testnet.brine.finance/",
-            "metadata": {},
-            "created_date": "2023-12-27T16:46:50.617075+00:00",
-            "tokens": [
-                {
-                    "symbol": "USDC",
-                    "contract": null,
-                    "decimals": 6,
-                    "is_native": false,
-                    "precision": 6,
-                    "price_in_usd": 0.998876,
-                    "refuel_amount_in_usd": null,
-                    "group_name": "USDC"
-                }
-            ],
-            "managed_accounts": [
-                {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
-                }
-            ],
-            "node_url": []
-        },
-        {
-            "display_name": "Immutable zkEVM Testnet",
-            "name": "IMMUTABLEZK_TESTNET",
-            "chain_id": "13473",
-            "type": NetworkType.EVM,
-            "transaction_explorer_template": "https://explorer.testnet.immutable.com/tx/{0}",
-            "account_explorer_template": "https://explorer.testnet.immutable.com/address/{0}",
-            "metadata": null,
-            "created_date": "2023-12-27T16:46:50.617075+00:00",
-            "tokens": [
-                {
-                    "symbol": "tIMX",
-                    "contract": null,
-                    "decimals": 18,
-                    "is_native": true,
-                    "precision": 6,
-                    "price_in_usd": 2.05,
-                    "refuel_amount_in_usd": null,
-                    "group_name": null
-                }
-            ],
-            "managed_accounts": [
-                {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
-                }
-            ],
-            "node_url": [
-                {
-                    "url": "https://rpc.testnet.immutable.com/"
-                }
-            ]
-        },
-        {
-            "display_name": "StarkNet Sepolia",
-            "name": "STARKNET_SEPOLIA",
-            "chain_id": "0x534e5f5345504f4c4941",
-            "type": NetworkType.Starknet,
-            "transaction_explorer_template": "https://sepolia.starkscan.co/tx/{0}",
-            "account_explorer_template": "https://sepolia.starkscan.co/contract/{0}",
-            "metadata": {
-                "WatchdogContractAddress": "0x0423074c4bf903478daaa719bb3b1539d23af07db07101d263c78d75e5e6e0a3"
-            },
-            "created_date": "2024-01-10T10:17:29.071644+00:00",
-            "tokens": [
-                {
-                    "symbol": "ETH",
-                    "contract": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-                    "decimals": 18,
-                    "is_native": false,
-                    "precision": 6,
-                    "price_in_usd": 2528.64,
-                    "refuel_amount_in_usd": null,
-                    "group_name": "ETH"
-                },
-                {
-                    "symbol": "ARUSDC",
-                    "contract": "0x04a762673b08014b8e7a969f94cc752a93b8ae209ace1aa01fea14a22f8a865c",
-                    "decimals": 6,
-                    "is_native": false,
-                    "precision": 6,
-                    "price_in_usd": 1,
-                    "refuel_amount_in_usd": null,
-                    "group_name": "USDC"
-                }
-            ],
-            "managed_accounts": [
-                {
-                    "address": "0x65A93bf9a33C87346f534A3B6c825e5c9E86A8e612cbA683D0271aAe5062d21"
-                }
-            ],
-            "node_url": []
-        },
-        {
-            "display_name": "Metis Sepolia",
-            "name": "METIS_SEPOLIA",
-            "chain_id": "59901",
-            "type": NetworkType.EVM,
-            "transaction_explorer_template": "https://sepolia.explorer.metisdevops.link/tx/{0}",
-            "account_explorer_template": "https://sepolia.explorer.metisdevops.link/address/{0}\r\n",
-            "metadata": null,
-            "created_date": "2024-01-12T15:15:58.168996+00:00",
-            "tokens": [
-                {
-                    "symbol": "TMETIS",
-                    "contract": null,
-                    "decimals": 18,
-                    "is_native": true,
-                    "precision": 6,
-                    "price_in_usd": 2542.81,
-                    "refuel_amount_in_usd": null,
-                    "group_name": null
-                }
-            ],
-            "managed_accounts": [
-                {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
-                }
-            ],
-            "node_url": [
-                {
-                    "url": "https://sepolia.rpc.metisdevops.link/"
-                }
-            ]
+          "tokens": [],
+          "name": "ETHEREUM_MAINNET",
+          "display_name": "Ethereum",
+          "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_mainnet.png",
+          "chain_id": "1",
+          "node_url": 'null',
+          "type": NetworkType.EVM,
+          "transaction_explorer_template": "https://etherscan.io/tx/{0}",
+          "account_explorer_template": "https://etherscan.io/address/{0}",
+          "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": "",
+            "evm_multi_call_contract": ""
+          }
         }
-    ],
+      ],
 }
 
 export const SettingChains: any = [

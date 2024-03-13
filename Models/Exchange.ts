@@ -6,9 +6,11 @@ export class Exchange {
         symbol: string;
         logo: string
     }[]
-    created_date: string;
-    o_auth: {
-        connect_url: string,
-        authorize_url: string
-    } | null
+    metadata: {
+        o_auth: {
+            connect_url: string,
+            authorize_url: string
+        } | null
+        listing_date: string
+    }
 }

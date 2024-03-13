@@ -10,7 +10,7 @@ import { Partner } from "./Partner";
 export class LayerSwapAppSettings {
     constructor(settings: LayerSwapSettings | any) {
         this.layers = LayerSwapAppSettings.ResolveLayers(settings.networks, settings.sourceRoutes, settings.destinationRoutes);
-        this.exchanges = LayerSwapAppSettings.ResolveExchanges(settings.exchanges);
+        this.exchanges = settings.exchanges;
         this.assetGroups = LayerSwapAppSettings.ResolveAssetGroups(settings.networks);
         this.sourceRoutes = settings.sourceRoutes
         this.destinationRoutes = settings.destinationRoutes
@@ -58,23 +58,8 @@ export class LayerSwapAppSettings {
             ...n,
             tokens: LayerSwapAppSettings.ResolveNetworkAssets(n, sourceRoutes, destinationRoutes),
             is_featured: NetworkSettings.KnownSettings[n.name]?.isFeatured ?? false,
-            created_date: n.metadata.listing_date,
         }))
         return networkLayers
-    }
-
-    static ResolveExchanges(exchanges: Exchange[]): Exchange[] {
-        const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
-        if (!resource_storage_url)
-            throw new Error("NEXT_PUBLIC_RESOURCE_STORAGE_URL is not set up in env vars")
-
-        const basePath = new URL(resource_storage_url);
-        const resolvedExchanges: Exchange[] = exchanges?.map((n): Exchange =>
-        ({
-            img_url: `${basePath}layerswap/networks/${n?.name?.toLowerCase()}.png`,
-            ...n,
-        }))
-        return resolvedExchanges
     }
 
     static ResolveNetworkAssets(network: CryptoNetwork, sourceRoutes: Route[], destinationRoutes: Route[]): Token[] {

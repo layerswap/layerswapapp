@@ -43,7 +43,7 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
 
     const currency = swap?.source_token
 
-    const coinbaseOauthProvider = exchange?.o_auth
+    const coinbaseOauthProvider = exchange?.metadata.o_auth
     const { authorize_url } = coinbaseOauthProvider || {}
 
     const minimalAuthorizeAmount = currency?.price_in_usd ?

@@ -48,7 +48,7 @@ export default function resolveChain(network: Layer): (Chain & RainbowKitChain) 
         contracts: {
             ...(evm_multi_call_contract ? {
                 multicall3: {
-                    address: evm_multi_call_contract
+                    address: evm_multi_call_contract as `0x${string}`
                 }
             } : {}),
         },

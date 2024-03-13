@@ -38,7 +38,7 @@ const getGroupName = (value: Layer | Exchange, type: 'cex' | 'layer', layerIsAva
     if (NetworkSettings.KnownSettings[value.name].isFeatured && layerIsAvailable?.disabledReason !== LayerDisabledReason.InvalidRoute) {
         return "Popular";
     }
-    else if (new Date(value.created_date).getTime() >= (new Date().getTime() - 2629800000)) {
+    else if (new Date(value.metadata?.listing_date).getTime() >= (new Date().getTime() - 2629800000)) {
         return "New";
     }
     else if (type === 'layer') {

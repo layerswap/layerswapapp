@@ -68,7 +68,7 @@ const WalletTransferContent: FC = () => {
                 swapId={swap.id}
                 networkDisplayName={source_layer?.display_name}
                 tokenDecimals={sourceAsset?.decimals}
-                tokenContractAddress={sourceAsset.contract}
+                tokenContractAddress={sourceAsset.contract as `0x${string}`}
                 chainId={sourceChainId}
                 depositAddress={depositAddress}
                 userDestinationAddress={swap.destination_address}
