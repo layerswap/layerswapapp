@@ -13,6 +13,7 @@ import { Exchange } from "../Models/Exchange";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
+    static bridgeApiBaseEndpoint?: string = AppSettings.LayerswapBridgeApiUri;
     static apiVersion: string = AppSettings.ApiVersion;
 
     _authInterceptor: AxiosInstance;
@@ -22,26 +23,16 @@ export default class LayerSwapApiClient {
 
     fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
 
-    async GetSourceRoutesAsync(): Promise<ApiResponse<{
-        network: string;
-        asset: string;
-    }[]>> {
+    async GetSourceRoutesAsync(): Promise<ApiResponse<CryptoNetwork[]>> {
         return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/routes/sources?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
     }
 
-    async GetDestinationRoutesAsync(): Promise<ApiResponse<{
-        network: string;
-        asset: string;
-    }[]>> {
+    async GetDestinationRoutesAsync(): Promise<ApiResponse<CryptoNetwork[]>> {
         return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/routes/destinations?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
     }
 
     async GetExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
         return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/exchanges?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
-    }
-
-    async GetSettingsAsync(): Promise<ApiResponse<LayerSwapSettings>> {
-        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/settings?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
     }
 
     async GetLSNetworksAsync(): Promise<ApiResponse<CryptoNetwork[]>> {
@@ -61,8 +52,9 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/swaps?status=0&version=${LayerSwapApiClient.apiVersion}`);
     }
 
-    async CancelSwapAsync(swapid: string): Promise<ApiResponse<void>> {
-        return await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/swaps/${swapid}`);
+    async GetQuote({ params }: { params: GetQuoteParams }): Promise<ApiResponse<Quote>> {
+        const { source_network, source_asset, source_address, destination_address, destination_asset, destination_network, amount, deposit_mode, include_gas, refuel } = params
+        return await this.AuthenticatedRequest<ApiResponse<Quote>>("GET", `/quote?source_network=${source_network}&source_asset=${source_asset}&source_address=${source_address}&destination_network=${destination_network}&destination_asset=${destination_asset}&destination_address=${destination_address}&deposit_mode=${deposit_mode}&include_gas=${include_gas}&amount=${amount}&refuel=${refuel}&version=${LayerSwapApiClient.apiVersion}`);
     }
 
     async DisconnectExchangeAsync(swapid: string, exchangeName: string): Promise<ApiResponse<void>> {
@@ -94,7 +86,7 @@ export default class LayerSwapApiClient {
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
-        let uri = LayerSwapApiClient.apiBaseEndpoint + "/api" + endpoint;
+        let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2-alpha" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
             .then(res => {
                 return res?.data;
@@ -210,12 +202,36 @@ export type DepositMethods = {
     }
 }
 
+export type Quote = {
+    quote: SwapQuote,
+    refuel: {
+        network: Network
+        token: Token,
+        amount: number,
+        amount_in_usd: number
+    },
+}
+
+export type GetQuoteParams = {
+    source_network: string,
+    source_asset: string,
+    source_address?: string,
+    destination_network: string,
+    destination_asset: string,
+    destination_address: string,
+    deposit_mode: string,
+    include_gas?: boolean,
+    amount: number,
+    refuel?: boolean
+}
+
 export type SwapQuote = {
     receive_amount: number,
     min_receive_amount: number,
     total_fee: number,
     total_fee_in_usd: number,
     blockchain_fee: number,
+    deposit_gas_fee: number,
     service_fee: number,
     avg_completion_time: string
 }
@@ -236,7 +252,6 @@ export type Transaction = {
     transaction_hash: string,
     confirmations: number,
     max_confirmations: number,
-    
     status: TransactionStatus,
 }
 

@@ -19,7 +19,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
     const { fee } = useFee()
     const query = useQueryState();
     const [openModal, setOpenModal] = useState<boolean>(false)
-    const nativeAsset = to?.assets.find(a => a.is_native)
+    const nativeAsset = to?.tokens.find(a => a.is_native)
 
     return (
         <>
@@ -42,7 +42,6 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
 
                     <FeeDetails.Item>
                         <ReceiveAmounts
-                            sourceIsExchange={!!fromExchange}
                             currency={toCurrency}
                             to={to}
                             refuel={!!refuel}

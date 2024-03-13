@@ -22,10 +22,10 @@ export default function useSolanaBalance(): BalanceProvider {
         const walletPublicKey = new PublicKey(address)
         let balances: Balance[] = []
 
-        if (!layer.assets || !walletPublicKey) return
+        if (!layer.tokens || !walletPublicKey) return
 
         const connection = new SolanaConnection(
-            `${layer.nodes[0].url}`,
+            `${layer.node_url}`,
             "confirmed"
         );
 
@@ -34,9 +34,9 @@ export default function useSolanaBalance(): BalanceProvider {
             return info?.value?.uiAmount;
         }
 
-        for (let i = 0; i < layer.assets.length; i++) {
+        for (let i = 0; i < layer.tokens.length; i++) {
             try {
-                const asset = layer.assets[i]
+                const asset = layer.tokens[i]
                 const sourceToken = new PublicKey(asset?.contract!);
                 const associatedTokenFrom = await getAssociatedTokenAddress(
                     sourceToken,
@@ -46,7 +46,7 @@ export default function useSolanaBalance(): BalanceProvider {
 
                 if (result != null && !isNaN(result)) {
                     const balance = {
-                        network: layer.internal_name,
+                        network: layer.name,
                         token: asset.symbol,
                         amount: result,
                         request_time: new Date().toJSON(),
@@ -76,10 +76,10 @@ export default function useSolanaBalance(): BalanceProvider {
         const walletPublicKey = new PublicKey(address)
 
         let gas: Gas[] = [];
-        if (!layer.assets) return
+        if (!layer.tokens) return
 
         const connection = new Connection(
-            `${layer.nodes[0].url}`,
+            `${layer.node_url}`,
             "confirmed"
         );
 
@@ -94,7 +94,7 @@ export default function useSolanaBalance(): BalanceProvider {
 
             const message = transaction.compileMessage();
             const result = await connection.getFeeForMessage(message)
-            const currencyDec = layer?.assets?.find(l => l.is_native)?.decimals
+            const currencyDec = layer?.tokens?.find(l => l.is_native)?.decimals
             const formatedGas = formatAmount(result.value, currencyDec!)
 
             gas = [{

@@ -9,22 +9,22 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
     const { layers, exchanges, sourceRoutes, destinationRoutes } = settings || {}
 
     const lockedSourceCurrency = lockFromAsset ?
-        layers.find(l => l.internal_name === to)
-            ?.assets?.find(c => c?.symbol?.toUpperCase() === fromAsset?.toUpperCase())
+        layers.find(l => l.name === to)
+            ?.tokens?.find(c => c?.symbol?.toUpperCase() === fromAsset?.toUpperCase())
         : undefined
     const lockedDestinationCurrency = lockToAsset ?
-        layers.find(l => l.internal_name === to)
-            ?.assets?.find(c => c?.symbol?.toUpperCase() === toAsset?.toUpperCase())
+        layers.find(l => l.name === to)
+            ?.tokens?.find(c => c?.symbol?.toUpperCase() === toAsset?.toUpperCase())
         : undefined
 
-    const sourceLayer = layers.find(l => l.internal_name.toUpperCase() === from?.toUpperCase())
-    const destinationLayer = layers.find(l => l.internal_name.toUpperCase() === to?.toUpperCase())
+    const sourceLayer = layers.find(l => l.name.toUpperCase() === from?.toUpperCase())
+    const destinationLayer = layers.find(l => l.name.toUpperCase() === to?.toUpperCase())
 
-    const sourceItems = layers.filter(l => sourceRoutes?.some(r => r.network === l.internal_name))
-    const destinationItems = layers.filter(l => destinationRoutes?.some(r => r.network === l.internal_name))
+    const sourceItems = layers.filter(l => sourceRoutes?.some(r => r.network === l.name))
+    const destinationItems = layers.filter(l => destinationRoutes?.some(r => r.network === l.name))
 
-    const initialSourceExchange = exchanges.find(e => e.is_enabled && e.internal_name.toLowerCase() === from?.toLowerCase())
-    const initialDestinationExchange = exchanges.find(e => e.is_enabled && e.internal_name.toLowerCase() === to?.toLowerCase())
+    const initialSourceExchange = exchanges.find(e => e.name.toLowerCase() === from?.toLowerCase())
+    const initialDestinationExchange = exchanges.find(e => e.name.toLowerCase() === to?.toLowerCase())
 
     const initialSource = sourceLayer ?
         sourceItems.find(i => i == sourceLayer)
@@ -35,11 +35,11 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
 
     const filteredSourceCurrencies = lockedSourceCurrency ?
         [lockedSourceCurrency]
-        : layers.find(l => l.internal_name === from)?.assets
+        : layers.find(l => l.name === from)?.tokens
 
     const filteredDestinationCurrencies = lockedDestinationCurrency ?
         [lockedDestinationCurrency]
-        : layers.find(l => l.internal_name === to)?.assets
+        : layers.find(l => l.name === to)?.tokens
 
     let initialAddress =
         destAddress && initialDestination && isValidAddress(destAddress, destinationLayer) ? destAddress : "";
@@ -82,19 +82,19 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
 
     const { layers, exchanges, destinationRoutes, sourceRoutes, assetGroups } = settings || {}
 
-    const from = layers.find(l => l.internal_name === source_network.name);
-    const to = layers.find(l => l.internal_name === destination_network.name);
+    const from = layers.find(l => l.name === source_network.name);
+    const to = layers.find(l => l.name === destination_network.name);
 
-    const fromExchange = exchanges.find(e => e.internal_name === source_exchange?.name);
-    const toExchange = exchanges.find(e => e.internal_name === destination_exchange?.name);
+    const fromExchange = exchanges.find(e => e.name === source_exchange?.name);
+    const toExchange = exchanges.find(e => e.name === destination_exchange?.name);
 
     const direction = fromExchange ? 'from' : 'to';
     const routes = direction === 'from' ? sourceRoutes : destinationRoutes;
     const availableAssetGroups = assetGroups.filter(g => g.values.some(v => routes.some(r => r.asset === v.asset && r.network === v.network)))
     const currencyGroup = availableAssetGroups.find(a => a.name === (direction === 'from' ? source_token.symbol : destination_token.symbol))
 
-    const fromCurrency = from?.assets.find(c => c.symbol === source_token.symbol);
-    const toCurrency = to?.assets.find(c => c.symbol === destination_token.symbol);
+    const fromCurrency = from?.tokens.find(c => c.symbol === source_token.symbol);
+    const toCurrency = to?.tokens.find(c => c.symbol === destination_token.symbol);
 
     const result: SwapFormValues = {
         from,

@@ -34,8 +34,8 @@ const Withdraw: FC = () => {
         swap?.source_exchange?.name.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
     const sourceIsSolana = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
 
-    const source_layer = layers.find(n => n.internal_name === swap?.source_network.name)
-    const sourceLayerIsEthereum = source_layer?.internal_name?.toUpperCase() === KnownInternalNames.Networks.EthereumMainnet || source_layer?.internal_name?.toUpperCase() === KnownInternalNames.Networks.EthereumGoerli
+    const source_layer = layers.find(n => n.name === swap?.source_network.name)
+    const sourceLayerIsEthereum = source_layer?.name?.toUpperCase() === KnownInternalNames.Networks.EthereumMainnet || source_layer?.name?.toUpperCase() === KnownInternalNames.Networks.EthereumGoerli
     const sourceNetworkType = source_layer?.type
     const manualIsAvailable = !(sourceIsStarknet || sourceIsImmutableX)
     const walletIsAvailable = !swap?.source_exchange

@@ -82,7 +82,7 @@ type CampaignProps = {
 }
 const CampaignItem: FC<CampaignProps> = ({ campaign, layers, resolveImgSrc }) => {
 
-    const campaignLayer = layers.find(l => l.internal_name === campaign.network)
+    const campaignLayer = layers.find(l => l.name === campaign.network)
     const campaignDaysLeft = ((new Date(campaign.end_date).getTime() - new Date().getTime()) / 86400000).toFixed()
     const campaignIsActive = IsCampaignActive(campaign)
 

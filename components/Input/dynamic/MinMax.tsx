@@ -12,7 +12,7 @@ import upperCaseKeys from "../../utils/upperCaseKeys";
 const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) => {
 
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
-    const { fromCurrency, from, to, destination_address } = values || {};
+    const { fromCurrency, from, to, toCurrency, destination_address, amount } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
     const { balances, gases } = useBalancesState()
     const query = useQueryState()
@@ -30,9 +30,9 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
         setFieldValue('amount', minAllowedAmount);
     }
 
-    const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.symbol)?.gas || 0
-    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.symbol)
-    const native_currency = from?.assets.find(a => a.is_native)
+    const gasAmount = gases[from?.name || '']?.find(g => g?.token === fromCurrency?.symbol)?.gas || 0
+    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+    const native_currency = from?.tokens.find(a => a.is_native)
 
     let maxAllowedAmount: number | null = maxAmountFromApi || 0
     if (query.balances && fromCurrency) {
@@ -60,7 +60,7 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
     const handleSetMaxAmount = useCallback(async () => {
         setFieldValue('amount', maxAllowedAmount);
         from && fetchBalance(from);
-        from && fromCurrency && fetchGas(from, fromCurrency, destination_address || "");
+        from && fromCurrency && to && toCurrency && amount && fetchGas(from, fromCurrency, to, toCurrency, destination_address || "", amount);
     }, [from, to, fromCurrency, destination_address, maxAllowedAmount])
 
     useEffect(() => {

@@ -2,24 +2,22 @@ import { FC } from "react";
 import { Layer } from "../../Models/Layer";
 import { GetDefaultAsset } from "../../helpers/settingsHelper";
 import { Token } from "../../Models/Network";
-import { Fee } from "../../context/feeContext";
 import { Fuel } from "lucide-react";
+import { Quote } from "../../lib/layerSwapApiClient";
 
 type WillReceiveProps = {
-    sourceIsExchange: boolean;
     currency?: Token | null;
     to: Layer | undefined | null;
     refuel: boolean;
-    fee: Fee | undefined
+    fee: Quote | undefined
     onButtonClick: () => void
 }
-export const ReceiveAmounts: FC<WillReceiveProps> = ({ sourceIsExchange, currency, to, refuel, fee, onButtonClick }) => {
-    const receive_amount = sourceIsExchange ? fee?.manualReceiveAmount : fee?.walletReceiveAmount
+export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee, onButtonClick }) => {
+    const receive_amount = fee?.quote.receive_amount
     const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(currency?.precision) || "")
     const destinationNetworkCurrency = (to && currency) ? GetDefaultAsset(to, currency.symbol) : null
 
-    const destinationAsset = to?.assets?.find(c => c?.symbol === currency?.symbol)
-    const destinationNativeAsset = to?.assets.find(a => a.is_native)
+    const destinationAsset = to?.tokens?.find(c => c?.symbol === currency?.symbol)
     const receiveAmountInUsd = receive_amount && destinationAsset ? (destinationAsset?.price_in_usd * receive_amount).toFixed(2) : undefined
 
     return <div className="flex items-start justify-between w-full">
@@ -51,7 +49,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ sourceIsExchange, currenc
                             {
                                 refuel ?
                                     <p onClick={() => onButtonClick()} className='flex cursor-pointer justify-end rounded-md gap-1 items-center text-xs text-primary-buttonTextColor leading-8 md:leading-none font-semibold'>
-                                        <span>+</span> <span>{fee?.refuelAmount} {destinationNativeAsset?.symbol}</span> <span className="bg-primary/20 p-1 rounded-md"><Fuel className="h-3 w-3 text-primary" /></span>
+                                        <span>+</span> <span>{fee?.refuel.amount} {fee?.refuel.token?.symbol}</span> <span className="bg-primary/20 p-1 rounded-md"><Fuel className="h-3 w-3 text-primary" /></span>
                                     </p>
                                     :
                                     <></>

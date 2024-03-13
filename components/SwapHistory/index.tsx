@@ -190,10 +190,10 @@ function TransactionsHistory() {
                               destination_token
                             } = swap
 
-                            const sourceNetwork = layers.find(e => e.internal_name === source_network.name)
-                            const sourceCurrency = sourceNetwork?.assets?.find(c => c.symbol === source_token.symbol)
-                            const destinationNetwork = layers.find(n => n.internal_name === destination_network.name)
-                            const destinationCurrency = destinationNetwork?.assets.find(a => a.symbol === destination_token.symbol)
+                            const sourceNetwork = layers.find(e => e.name === source_network.name)
+                            const sourceCurrency = sourceNetwork?.tokens?.find(c => c.symbol === source_token.symbol)
+                            const destinationNetwork = layers.find(n => n.name === destination_network.name)
+                            const destinationCurrency = destinationNetwork?.tokens.find(a => a.symbol === destination_token.symbol)
                             const output_transaction = swap.transactions.find(t => t.type === TransactionType.Output)
 
                             return <tr onClick={() => handleopenSwapDetails(swap)} key={swap.id}>

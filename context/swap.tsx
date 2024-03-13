@@ -27,7 +27,6 @@ export const SwapDataUpdateContext = createContext<UpdateInterface | null>(null)
 export type UpdateInterface = {
     createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<string>,
     setCodeRequested: (codeSubmitted: boolean) => void;
-    cancelSwap: (swapId: string) => Promise<void>;
     setAddressConfirmed: (value: boolean) => void;
     setInterval: (value: number) => void,
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
@@ -66,11 +65,11 @@ export function SwapDataProvider({ children }) {
     const { data: swapData, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
     const swapResponse = swapData?.data?.swap
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
-    const source_exchange = layers.find(n => n?.internal_name?.toLowerCase() === swapResponse?.source_exchange?.name.toLowerCase())
+    const source_exchange = layers.find(n => n?.name?.toLowerCase() === swapResponse?.source_exchange?.name.toLowerCase())
 
-    const exchangeAssets = source_exchange?.assets?.filter(a => a?.symbol === swapResponse?.source_token.symbol)
-    const source_network = layers.find(n => n.internal_name?.toLowerCase() === swapResponse?.source_network?.name.toLowerCase())
-    const defaultSourceNetwork = exchangeAssets?.[0] || source_network?.assets?.[0]
+    const exchangeAssets = source_exchange?.tokens?.filter(a => a?.symbol === swapResponse?.source_token.symbol)
+    const source_network = layers.find(n => n.name?.toLowerCase() === swapResponse?.source_network?.name.toLowerCase())
+    const defaultSourceNetwork = exchangeAssets?.[0] || source_network?.tokens?.[0]
     const [selectedAssetNetwork, setSelectedAssetNetwork] = useState<Token | undefined>(defaultSourceNetwork)
 
     const swapStatus = swapResponse?.status;
@@ -106,12 +105,12 @@ export function SwapDataProvider({ children }) {
 
         const data: CreateSwapParams = {
             amount: values.amount,
-            source_network: sourceLayer?.internal_name,
-            destination_network: destinationLayer?.internal_name,
+            source_network: sourceLayer?.name,
+            destination_network: destinationLayer?.name,
             source_asset: fromCurrency.symbol,
             destination_asset: toCurrency.symbol,
-            source_exchange: fromExchange?.internal_name,
-            destination_exchange: toExchange?.internal_name,
+            source_exchange: fromExchange?.name,
+            destination_exchange: toExchange?.name,
             destination_address: values.destination_address,
             //TODO query?.appName may be undefined
             app_name: partner ? query?.appName : (apiVersion === 'sandbox' ? 'LayerswapSandbox' : 'Layerswap'),
@@ -132,14 +131,9 @@ export function SwapDataProvider({ children }) {
         return swapId;
     }, [])
 
-    const cancelSwap = useCallback(async (swapId: string) => {
-        await layerswapApiClient.CancelSwapAsync(swapId)
-    }, [router])
-
     const updateFns: UpdateInterface = {
         createSwap: createSwap,
         setCodeRequested: setCodeRequested,
-        cancelSwap: cancelSwap,
         setAddressConfirmed: setAddressConfirmed,
         setInterval: setInterval,
         mutateSwap: mutate,

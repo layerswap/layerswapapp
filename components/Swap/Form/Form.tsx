@@ -114,7 +114,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     //If destination changed to exchange, remove destination_address
     useEffect(() => {
         if ((previouslySelectedDestination.current &&
-            (destination?.internal_name != previouslySelectedDestination.current?.internal_name)
+            (destination?.name != previouslySelectedDestination.current?.name)
             || destination && !isValidAddress(values.destination_address, destination)) && !lockAddress) {
             setFieldValue("destination_address", '')
             setDepositeAddressIsfromAccount(false)
@@ -137,10 +137,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         { rotate: 180 }
     );
     //TODO always map to toAsset from query
-    const lockedCurrency = query?.lockAsset ? values.to?.assets?.find(c => c?.symbol?.toUpperCase() === toAsset?.toUpperCase()) : null;
+    const lockedCurrency = query?.lockAsset ? values.to?.tokens?.find(c => c?.symbol?.toUpperCase() === toAsset?.toUpperCase()) : null;
     const apiVersion = LayerSwapApiClient.apiVersion
-    const sourceRoutesEndpoint = `/routes/sources?destination_network=${source?.internal_name}&destination_asset=${fromCurrency?.symbol}${apiVersion ? '&version=' : ''}${apiVersion}`
-    const destinationRoutesEndpoint = `/routes/destinations?source_network=${destination?.internal_name}&source_asset=${toCurrency?.symbol}${apiVersion ? '&version=' : ''}${apiVersion}`
+    const sourceRoutesEndpoint = `/routes/sources?destination_network=${source?.name}&destination_asset=${fromCurrency?.symbol}${apiVersion ? '&version=' : ''}${apiVersion}`
+    const destinationRoutesEndpoint = `/routes/destinations?source_network=${destination?.name}&source_asset=${toCurrency?.symbol}${apiVersion ? '&version=' : ''}${apiVersion}`
     const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<{
         network: string,
         asset: string
@@ -153,8 +153,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     }[]>>((destination && toCurrency) ?
         destinationRoutesEndpoint : `/routes/destinations?${apiVersion ? 'version=' : ''}${apiVersion}`, layerswapApiClient.fetcher)
 
-    const sourceCanBeSwapped = destinationRoutes?.data?.some(l => l.network === source?.internal_name)
-    const destinationCanBeSwapped = sourceRoutes?.data?.some(l => l.network === destination?.internal_name)
+    const sourceCanBeSwapped = destinationRoutes?.data?.some(l => l.network === source?.name)
+    const destinationCanBeSwapped = sourceRoutes?.data?.some(l => l.network === destination?.name)
 
     if (query.lockTo || query.lockFrom || query.hideTo || query.hideFrom) {
         valuesSwapperDisabled = true;
@@ -162,7 +162,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     if (!(sourceCanBeSwapped || destinationCanBeSwapped)) {
         valuesSwapperDisabled = true;
     }
-    const seconds = fee?.avgCompletionTime && calculateSeconds(fee.avgCompletionTime)
 
     const hideAddress = query?.hideAddress
         && query?.to
@@ -274,7 +273,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
             process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
             && values.from
             && values.fromCurrency &&
-            <GasDetails network={values.from.internal_name} currency={values.fromCurrency.symbol} />
+            <GasDetails network={values.from.name} currency={values.fromCurrency.symbol} />
         }
     </>
 }

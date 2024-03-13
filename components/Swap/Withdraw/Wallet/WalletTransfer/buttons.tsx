@@ -14,14 +14,14 @@ export const ConnectWalletButton: FC = () => {
     const { swap } = useSwapDataState()
     const { layers } = useSettingsState()
     const { getWithdrawalProvider: getProvider } = useWallet()
-    const source_layer = layers.find(l => l.internal_name === swap?.source_network.name)
+    const source_layer = layers.find(l => l.name === swap?.source_network.name)
     const provider = useMemo(() => {
         return source_layer && getProvider(source_layer)
     }, [source_layer, getProvider])
 
     const clickHandler = useCallback(() => {
         if (!provider)
-            throw new Error(`No provider from ${source_layer?.internal_name}`)
+            throw new Error(`No provider from ${source_layer?.name}`)
 
         return provider.connectWallet(provider?.name)
     }, [provider])

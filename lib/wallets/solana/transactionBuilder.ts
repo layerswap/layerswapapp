@@ -4,17 +4,17 @@ import { createAssociatedTokenAccountInstruction, createTransferInstruction, get
 import { Token } from "../../../Models/Network";
 
 const transactionBuilder = async (layer: Layer, currency: Token, walletPublicKey: PublicKey) => {
-    if (!layer.assets) return
+    if (!layer.tokens) return
 
     const connection = new Connection(
-        `${layer.nodes[0].url}`,
+        `${layer.node_url}`,
         "confirmed"
     );
 
-    const asset = layer?.assets?.find(a => currency.symbol === a.symbol)
+    const asset = layer?.tokens?.find(a => currency.symbol === a.symbol)
 
     const sourceToken = new PublicKey(asset?.contract!);
-    const recipientAddress = new PublicKey(layer.managed_accounts[0].address!);
+    const recipientAddress = new PublicKey('');
 
     const transactionInstructions: TransactionInstruction[] = [];
     const associatedTokenFrom = await getAssociatedTokenAddress(

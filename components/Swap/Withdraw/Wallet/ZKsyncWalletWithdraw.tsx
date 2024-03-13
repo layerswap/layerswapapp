@@ -17,6 +17,7 @@ import SignatureIcon from '../../../icons/SignatureIcon';
 import formatAmount from '../../../../lib/formatAmount';
 import useWallet from '../../../../hooks/useWallet';
 import Link from 'next/link';
+import KnownInternalNames from '../../../../lib/knownIds';
 
 type Props = {
     depositAddress: string,
@@ -39,10 +40,10 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const { layers } = useSettingsState();
     const source_network_internal_name = swap?.source_network.name
-    const source_layer = layers.find(l => l.internal_name === source_network_internal_name)
-    const source_currency = source_layer?.assets?.find(c => c.symbol.toLocaleUpperCase() === swap?.source_token.symbol.toLocaleUpperCase());
+    const source_layer = layers.find(l => l.name === source_network_internal_name)
+    const source_currency = source_layer?.tokens?.find(c => c.symbol.toLocaleUpperCase() === swap?.source_token.symbol.toLocaleUpperCase());
     const defaultProvider = source_network_internal_name?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "goerli";
-    const l1Network = layers.find(n => n.internal_name === source_layer?.metadata?.L1Network);
+    const l1Network = layers.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
 
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -92,7 +93,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     ChangePubKey: 'ECDSA'
                 }, wallet.address(), Number(source_currency?.contract));
                 const formatedGas = formatAmount(activationFee.totalFee, Number(source_currency?.decimals))
-                let assetUsdPrice = source_layer?.assets.find(x => x.symbol == source_currency?.symbol)?.price_in_usd;
+                let assetUsdPrice = source_layer?.tokens.find(x => x.symbol == source_currency?.symbol)?.price_in_usd;
                 setActivationFee({ feeInAsset: formatedGas, feeInUsd: formatedGas * (assetUsdPrice ?? 0) })
             }
             setSyncWallet(wallet)

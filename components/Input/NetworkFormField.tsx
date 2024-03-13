@@ -15,7 +15,7 @@ import CurrencyFormField from "./CurrencyFormField";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { Token } from "../../Models/Network";
+import { CryptoNetwork, Token } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
@@ -35,7 +35,7 @@ type LayerIsAvailable = {
 }
 const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
 const getGroupName = (value: Layer | Exchange, type: 'cex' | 'layer', layerIsAvailable?: LayerIsAvailable) => {
-    if (value.is_featured && layerIsAvailable?.disabledReason !== LayerDisabledReason.InvalidRoute) {
+    if (NetworkSettings.KnownSettings[value.name].isFeatured && layerIsAvailable?.disabledReason !== LayerDisabledReason.InvalidRoute) {
         return "Popular";
     }
     else if (new Date(value.created_date).getTime() >= (new Date().getTime() - 2629800000)) {
@@ -85,7 +85,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             } : {})
             :
             {
-                [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.internal_name,
+                [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.name,
                 [direction === 'to' ? 'source_asset' : 'destination_asset']: filterWithAsset,
             }
         )
@@ -95,7 +95,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         version,
         ...(filterWith && filterWithAsset ?
             {
-                [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.internal_name,
+                [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.name,
                 [direction === 'to' ? 'source_asset' : 'destination_asset']: filterWithAsset,
             }
             : {}
@@ -107,9 +107,9 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const destinationRoutesURL = `/routes/destinations?${params.toString()}`
     const routesEndpoint = direction === "from" ? sourceRoutesURL : destinationRoutesURL
 
-    const { data: routes, isLoading, error } = useSWR<ApiResponse<Route[]>>(routesEndpoint, apiClient.fetcher)
+    const { data: routes, isLoading, error } = useSWR<ApiResponse<CryptoNetwork[]>>(routesEndpoint, apiClient.fetcher)
 
-    const [routesData, setRoutesData] = useState<Route[]>()
+    const [routesData, setRoutesData] = useState<CryptoNetwork[]>()
 
     useEffect(() => {
         if (!isLoading && routes?.data) setRoutesData(routes.data)
@@ -119,22 +119,22 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
-        filteredLayers = layers.filter(l => sourceRoutes?.some(r => r.network === l.internal_name))
-        menuItems = GenerateMenuItems(filteredLayers, toExchange ? [] : exchanges.filter(e => e.is_enabled), resolveImgSrc, direction, !!(from && lockFrom), routesData, query);
+        filteredLayers = layers.filter(l => sourceRoutes?.some(r => r.network === l.name))
+        menuItems = GenerateMenuItems(filteredLayers, toExchange ? [] : exchanges, resolveImgSrc, direction, !!(from && lockFrom), routesData, query);
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        filteredLayers = layers.filter(l => destinationRoutes?.some(r => r.network === l.internal_name))
-        menuItems = GenerateMenuItems(filteredLayers, fromExchange ? [] : exchanges.filter(e => e.is_enabled), resolveImgSrc, direction, !!(to && lockTo), routesData, query);
+        filteredLayers = layers.filter(l => destinationRoutes?.some(r => r.network === l.name))
+        menuItems = GenerateMenuItems(filteredLayers, fromExchange ? [] : exchanges, resolveImgSrc, direction, !!(to && lockTo), routesData, query);
     }
 
     const value = menuItems.find(x => x.type === 'layer' ?
-        x.id == (direction === "from" ? from : to)?.internal_name :
-        x.id == (direction === 'from' ? fromExchange : toExchange)?.internal_name);
+        x.id == (direction === "from" ? from : to)?.name :
+        x.id == (direction === 'from' ? fromExchange : toExchange)?.name);
 
     const handleSelect = useCallback((item: SelectMenuItem<Layer | Exchange>) => {
-        if (item.baseObject.internal_name === value?.baseObject.internal_name)
+        if (item.baseObject.name === value?.baseObject.name)
             return
         if (!item.isAvailable.value && item.isAvailable.disabledReason == LayerDisabledReason.InvalidRoute) {
             setFieldValue(name === "from" ? "to" : "from", null)
@@ -147,7 +147,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             setFieldValue(`${name}Exchange`, null, true)
             setFieldValue(name, item.baseObject, true)
             const currency = name == "from" ? fromCurrency : toCurrency
-            const assetSubstitute = (item.baseObject as Layer)?.assets?.find(a => a.symbol === currency?.symbol)
+            const assetSubstitute = (item.baseObject as Layer)?.tokens?.find(a => a.symbol === currency?.symbol)
             if (assetSubstitute) {
                 setFieldValue(`${name}Currency`, assetSubstitute, true)
             }
@@ -201,13 +201,13 @@ function groupByType(values: ISelectMenuItem[]) {
     return groups;
 }
 
-function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc: (item: Layer | Exchange | Token) => string, direction: SwapDirection, lock: boolean, routesData: Route[] | undefined, query: QueryParams): SelectMenuItem<Layer | Exchange>[] {
+function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc: (item: Layer | Exchange | Token) => string, direction: SwapDirection, lock: boolean, routesData: CryptoNetwork[] | undefined, query: QueryParams): SelectMenuItem<Layer | Exchange>[] {
 
     let layerIsAvailable = (layer: Layer) => {
         if (lock) {
             return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
         }
-        else if (!routesData?.some(r => r.network === layer.internal_name)) {
+        else if (!routesData?.some(r => r.name === layer.name)) {
             if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange) {
                 return { value: false, disabledReason: LayerDisabledReason.InvalidRoute }
             }
@@ -230,10 +230,10 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
 
     const mappedLayers = layers.map(l => {
         let orderProp: keyof NetworkSettings | keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
-        const order = NetworkSettings.KnownSettings[l.internal_name]?.[orderProp]
+        const order = NetworkSettings.KnownSettings[l.name]?.[orderProp]
         const res: SelectMenuItem<Layer> = {
             baseObject: l,
-            id: l.internal_name,
+            id: l.name,
             name: l.display_name,
             order: order || 100,
             imgSrc: resolveImgSrc && resolveImgSrc(l),
@@ -246,10 +246,10 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
 
     const mappedExchanges = exchanges.map(e => {
         let orderProp: keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
-        const order = ExchangeSettings.KnownSettings[e.internal_name]?.[orderProp]
+        const order = ExchangeSettings.KnownSettings[e.name]?.[orderProp]
         const res: SelectMenuItem<Exchange> = {
             baseObject: e,
-            id: e.internal_name,
+            id: e.name,
             name: e.display_name,
             order: order || 100,
             imgSrc: resolveImgSrc && resolveImgSrc(e),
@@ -262,11 +262,6 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
 
     const items = [...mappedExchanges, ...mappedLayers]
     return items
-}
-
-type Route = {
-    network: string,
-    asset: string
 }
 
 export default NetworkFormField

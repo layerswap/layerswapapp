@@ -4,7 +4,7 @@ import { THEME_COLORS } from "../Models/Theme";
 
 export function GetDefaultAsset(layer: Layer, asset: string): Token | undefined {
     return layer
-        ?.assets
+        ?.tokens
         ?.find(a => a.symbol === asset)
 }
 

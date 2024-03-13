@@ -38,7 +38,7 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
     const carouselRef = useRef<CarouselRef | null>(null)
     const exchange_internal_name = swap?.source_exchange?.name
 
-    const exchange = exchanges?.find(e => e.internal_name?.toLowerCase() === exchange_internal_name?.toLowerCase())
+    const exchange = exchanges?.find(e => e.name?.toLowerCase() === exchange_internal_name?.toLowerCase())
     const exchange_name = exchange?.display_name
 
     const currency = swap?.source_token

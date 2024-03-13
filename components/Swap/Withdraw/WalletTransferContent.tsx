@@ -17,13 +17,14 @@ const WalletTransferContent: FC = () => {
     const { openAccountModal } = useAccountModal();
     const { getWithdrawalProvider: getProvider, disconnectWallet } = useWallet()
     const { layers, resolveImgSrc } = useSettingsState()
-    const { swap } = useSwapDataState()
+    const { swap, depositMethods } = useSwapDataState()
     const [isLoading, setIsloading] = useState(false);
     const { mutateSwap } = useSwapDataUpdate()
 
-    const source_exchange = layers.find(n => n.internal_name === swap?.source_exchange?.name)
-    const source_layer = layers.find(n => n.internal_name === swap?.source_network.name)
-    const source_asset = source_layer?.assets.find(a => a.symbol === swap?.source_token.symbol)
+    const source_exchange = swap?.source_exchange
+    const source_layer = layers.find(n => n.name === swap?.source_network.name)
+    const destination_network = layers.find(n => n.name === swap?.destination_network.name)
+    const source_asset = swap?.source_token
 
     const sourceNetworkType = source_layer?.type
     const provider = useMemo(() => {
@@ -36,7 +37,7 @@ const WalletTransferContent: FC = () => {
     const { fetchBalance, fetchGas } = useBalance()
 
     const sourceNetworkWallet = provider?.getConnectedWallet()
-    const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === source_layer?.internal_name && b?.token === source_asset?.symbol)
+    const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === source_layer?.name && b?.token === source_asset?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_asset?.precision)
 
     useEffect(() => {
@@ -44,7 +45,7 @@ const WalletTransferContent: FC = () => {
     }, [source_layer, sourceNetworkWallet?.address])
 
     useEffect(() => {
-        sourceNetworkWallet?.address && source_layer && source_asset && fetchGas(source_layer, source_asset, swap?.destination_address || sourceNetworkWallet.address)
+        sourceNetworkWallet?.address && source_layer && source_asset && destination_network && depositMethods?.wallet.to_address && fetchGas(source_layer, source_asset, destination_network, swap.destination_token, swap?.destination_address || sourceNetworkWallet.address, swap.requested_amount.toString())
     }, [source_layer, source_asset, sourceNetworkWallet?.address])
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
@@ -84,17 +85,17 @@ const WalletTransferContent: FC = () => {
             <span className='ml-1'>{swap?.source_exchange ? "Connected account" : "Connected wallet"}</span>
             {
                 walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
-                <div className="text-right">
-                    <div>
-                        <span>Balance:&nbsp;</span>
-                        {isBalanceLoading ?
-                            <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                            :
-                            <span>{walletBalanceAmount}</span>}
+                    <div className="text-right">
+                        <div>
+                            <span>Balance:&nbsp;</span>
+                            {isBalanceLoading ?
+                                <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                :
+                                <span>{walletBalanceAmount}</span>}
+                        </div>
                     </div>
-                </div>
-                :
-                <></>
+                    :
+                    <></>
             }
         </div>
         <div onClick={handleOpenAccount} className={`${canOpenAccount ? 'cursor-pointer' : 'cursor-auto'} text-left min-h-12  space-x-2 border border-secondary-600 bg-secondary-700/70 flex text-sm rounded-md items-center w-full pl-4 pr-2 py-1.5`}>

@@ -11,16 +11,16 @@ export default function useZkSyncBalance(): BalanceProvider {
     const getBalance = async ({ layer, address }: BalanceProps) => {
         let balances: Balance[] = []
 
-        if (!layer.assets) return
+        if (!layer.tokens) return
 
         try {
-            const result = await client.getAccountInfo(layer.nodes[0].url, address);
-            const zkSyncBalances = layer.assets.map((a) => {
-                const currency = layer?.assets?.find(c => c?.symbol == a.symbol);
+            const result = await client.getAccountInfo(layer.node_url, address);
+            const zkSyncBalances = layer.tokens.map((a) => {
+                const currency = layer?.tokens?.find(c => c?.symbol == a.symbol);
                 const amount = currency && result.committed.balances[currency.symbol];
 
                 return ({
-                    network: layer.internal_name,
+                    network: layer.name,
                     token: a.symbol,
                     amount: formatAmount(amount, Number(currency?.decimals)),
                     request_time: new Date().toJSON(),
@@ -43,11 +43,11 @@ export default function useZkSyncBalance(): BalanceProvider {
     const getGas = async ({ layer, currency, address }: GasProps) => {
 
         let gas: Gas[] = [];
-        if (!layer.assets || !address) return
+        if (!layer.tokens || !address) return
 
         try {
-            const result = await client.getTransferFee(layer.nodes[0].url, address, currency.symbol);
-            const currencyDec = layer?.assets?.find(c => c?.symbol == currency.symbol)?.decimals;
+            const result = await client.getTransferFee(layer.node_url, address, currency.symbol);
+            const currencyDec = layer?.tokens?.find(c => c?.symbol == currency.symbol)?.decimals;
             const formatedGas = formatAmount(result.totalFee, Number(currencyDec))
 
             gas = [{

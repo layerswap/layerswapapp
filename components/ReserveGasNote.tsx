@@ -22,9 +22,9 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, netwo
 
     const wallet = provider?.getConnectedWallet()
 
-    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === values?.from?.internal_name && b?.token === values?.fromCurrency?.symbol)
-    const networkGas = values.from?.internal_name ?
-        gases?.[values.from?.internal_name]?.find(g => g?.token === values?.fromCurrency?.symbol)
+    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === values?.from?.name && b?.token === values?.fromCurrency?.symbol)
+    const networkGas = values.from?.name ?
+        gases?.[values.from?.name]?.find(g => g?.token === values?.fromCurrency?.symbol)
         : null
 
     const mightBeAutOfGas = !!(networkGas && walletBalance?.isNativeCurrency && Number(values.amount)

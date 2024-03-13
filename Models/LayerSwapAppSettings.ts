@@ -22,7 +22,7 @@ export class LayerSwapAppSettings {
     sourceRoutes: Route[]
     destinationRoutes: Route[]
 
-    resolveImgSrc = (item: Layer | Exchange | Token | Pick<Layer, 'internal_name'> | { asset: string } | Partner | undefined) => {
+    resolveImgSrc = (item: Layer | Exchange | Token | Pick<Layer, 'name'> | { asset: string } | Partner | undefined) => {
 
         if (!item) {
             return "/images/logo_placeholder.png";
@@ -53,13 +53,12 @@ export class LayerSwapAppSettings {
         if (!resource_storage_url)
             throw new Error("NEXT_PUBLIC_RESOURCE_STORAGE_URL is not set up in env vars")
 
-        const basePath = new URL(resource_storage_url);
         const networkLayers: Layer[] = networks?.map((n): Layer =>
         ({
-            assets: LayerSwapAppSettings.ResolveNetworkAssets(n, sourceRoutes, destinationRoutes),
-            img_url: `${basePath}layerswap/networks/${n?.name?.toLowerCase()}.png`,
-            is_featured: NetworkSettings.KnownSettings[n.name]?.isFeatured ?? false,
             ...n,
+            tokens: LayerSwapAppSettings.ResolveNetworkAssets(n, sourceRoutes, destinationRoutes),
+            is_featured: NetworkSettings.KnownSettings[n.name]?.isFeatured ?? false,
+            created_date: n.metadata.listing_date,
         }))
         return networkLayers
     }
@@ -72,7 +71,7 @@ export class LayerSwapAppSettings {
         const basePath = new URL(resource_storage_url);
         const resolvedExchanges: Exchange[] = exchanges?.map((n): Exchange =>
         ({
-            img_url: `${basePath}layerswap/networks/${n?.internal_name?.toLowerCase()}.png`,
+            img_url: `${basePath}layerswap/networks/${n?.name?.toLowerCase()}.png`,
             ...n,
         }))
         return resolvedExchanges

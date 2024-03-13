@@ -10,7 +10,7 @@ const DetailedEstimates: FC = () => {
     const { fromCurrency, fromExchange } = values;
     const { fee, isFeeLoading } = useFee()
 
-    const fee_amount = fromExchange ? fee?.manualFee : fee?.walletFee
+    const fee_amount = fee?.quote.total_fee
 
     const parsedFee = fee && parseFloat(Number(fee_amount).toFixed(fromCurrency?.precision))
     const currencyName = fromCurrency?.symbol || " "
@@ -18,14 +18,14 @@ const DetailedEstimates: FC = () => {
 
     return <div className="flex flex-col w-full gap-2">
         {
-            fee && fee.avgCompletionTime !== '00:00:00' ?
+            fee && fee.quote.avg_completion_time !== '00:00:00' ?
                 <div className="flex justify-between w-full items-center">
                     <div className="flex items-baseline w-full justify-between gap-1">
                         <label className="inline-flex items-center text-left text-primary-buttonTextColor">
                             Estimated time
                         </label>
                         <div className="text-right text-secondary-text">
-                            <AverageCompletionTime avgCompletionTime={fee.avgCompletionTime} />
+                            <AverageCompletionTime avgCompletionTime={fee.quote.avg_completion_time} />
                         </div>
                     </div>
                 </div>

@@ -54,7 +54,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                     [direction === 'to'
                         ? 'source_network'
                         : 'destination_network']
-                        : filterWith.internal_name,
+                        : filterWith.name,
                     [direction === 'to'
                         ? 'source_asset'
                         : 'destination_asset']
@@ -73,9 +73,9 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     const historicalNetworksEndpoint =
         (fromExchange || toExchange)
         && (`/exchanges/${direction === 'from'
-            ? `historical_sources?source_exchange=${fromExchange?.internal_name}`
+            ? `historical_sources?source_exchange=${fromExchange?.name}`
             :
-            `historical_destinations?destination_exchange=${toExchange?.internal_name}`}&version=${version}`)
+            `historical_destinations?destination_exchange=${toExchange?.name}`}&version=${version}`)
 
     const { data: historicalNetworks } = useSWR<ApiResponse<{
         network: string,
@@ -91,12 +91,12 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         && historicalNetworks
         && GenerateMenuItems(routesData, historicalNetworks?.data, currencyGroup, layers)
             .filter(item => layers.find(l =>
-                l.internal_name === item.baseObject.network));
+                l.name === item.baseObject.network));
 
     const handleSelect = useCallback((item: SelectMenuItem<{ network: string, asset: string }>) => {
         if (!item) return
-        const layer = layers.find(l => l.internal_name === item.baseObject.network)
-        const currency = layer?.assets.find(a => a.symbol === item.baseObject.asset)
+        const layer = layers.find(l => l.name === item.baseObject.network)
+        const currency = layer?.tokens.find(a => a.symbol === item.baseObject.asset)
         setFieldValue(name, layer, true)
         setFieldValue(`${name}Currency`, currency, false)
         setShowModal(false)
@@ -108,7 +108,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     const value = menuItems?.find(item =>
         item.baseObject.asset ===
         (direction === 'from' ? fromCurrency : toCurrency)?.symbol
-        && item.baseObject.network === formValue?.internal_name)
+        && item.baseObject.network === formValue?.name)
 
     //Setting default value
     useEffect(() => {
@@ -178,7 +178,7 @@ function GenerateMenuItems(
                     .find(n => n.asset === e.asset && n.network === e.network)
                     || { network: '', asset: '' }))
 
-            const network = layers?.find(l => l.internal_name == e.network);
+            const network = layers?.find(l => l.name == e.network);
 
             const item: SelectMenuItem<{ network: string, asset: string }> = {
                 baseObject: e,
@@ -187,7 +187,7 @@ function GenerateMenuItems(
                 asset: e.asset,
                 displayName: network?.display_name,
                 order: indexOf > -1 ? indexOf : 100,
-                imgSrc: network?.img_url || '',
+                imgSrc: network?.logo || '',
                 isAvailable: { value: true, disabledReason: null },
                 type: 'cex',
                 group: ''

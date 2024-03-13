@@ -28,7 +28,7 @@ const Campaign: FC<CampaignProps> = ({
     const campaign = campaignsData
         ?.data
         ?.find(c =>
-            c?.network === destination?.internal_name
+            c?.network === destination?.name
             && c.status == 'active'
             && new Date(c?.end_date).getTime() - now > 0)
 
@@ -48,8 +48,8 @@ type CampaignDisplayProps = {
 }
 const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_currency }) => {
     const { resolveImgSrc, layers } = useSettingsState()
-    const layer = layers.find(l => l.internal_name === campaign.network)
-    const campaignAsset = layer?.assets.find(c => c?.symbol === campaign?.asset)
+    const layer = layers.find(l => l.name === campaign.network)
+    const campaignAsset = layer?.tokens.find(c => c?.symbol === campaign?.asset)
     const feeinUsd = fee * selected_currency.price_in_usd
     const reward = truncateDecimals(((feeinUsd * (campaign?.percentage || 0) / 100) / (campaignAsset?.price_in_usd || 1)), (campaignAsset?.precision || 0))
 

@@ -5,7 +5,7 @@ export const Settings: LayerSwapSettings = {
     "exchanges": [
         {
             "display_name": "Kucoin",
-            "internal_name": "KUCOIN",
+            "name": "KUCOIN",
             "type": "cex",
             "is_featured": false,
             "is_enabled": true,
@@ -20,7 +20,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "Coinspot",
-            "internal_name": "COINSPOT",
+            "name": "COINSPOT",
             "type": "cex",
             "is_featured": false,
             "is_enabled": true,
@@ -35,7 +35,7 @@ export const Settings: LayerSwapSettings = {
         },
         {
             "display_name": "FTX.US",
-            "internal_name": "FTXUS",
+            "name": "FTXUS",
             "is_enabled": true,
             "o_auth": {
                 "authorize_url": "test",
@@ -51,7 +51,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Kraken",
             "is_enabled": true,
-            "internal_name": "KRAKEN",
+            "name": "KRAKEN",
             "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
@@ -66,7 +66,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "FTX.COM",
             "is_enabled": true,
-            "internal_name": "FTXCOM",
+            "name": "FTXCOM",
             "type": "cex",
             "is_featured": false,
             "o_auth": {
@@ -81,7 +81,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "OKX",
             "is_enabled": true,
-            "internal_name": "OKEX",
+            "name": "OKEX",
             "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
@@ -96,7 +96,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Binance",
             "is_enabled": true,
-            "internal_name": "BINANCE",
+            "name": "BINANCE",
             "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
@@ -111,7 +111,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Bittrex Global",
             "is_enabled": true,
-            "internal_name": "BITTREX",
+            "name": "BITTREX",
             "type": "cex",
             "is_featured": false,
             "o_auth": {
@@ -126,7 +126,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Huobi Global",
             "is_enabled": true,
-            "internal_name": "HUOBI",
+            "name": "HUOBI",
             "type": "cex",
             "is_featured": false,
             "o_auth": {
@@ -141,7 +141,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Coinbase",
             "is_enabled": true,
-            "internal_name": "COINBASE",
+            "name": "COINBASE",
             "type": "cex",
             "is_featured": false,
             "o_auth": {
@@ -156,7 +156,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Bitfinex",
             "is_enabled": true,
-            "internal_name": "BITFINEX",
+            "name": "BITFINEX",
             "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
@@ -171,7 +171,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Crypto.com Exchange",
             "is_enabled": true,
-            "internal_name": "CRYPTOCOM",
+            "name": "CRYPTOCOM",
             "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
@@ -186,7 +186,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Blocktane",
             "is_enabled": true,
-            "internal_name": "BLOCKTANE",
+            "name": "BLOCKTANE",
             "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
@@ -201,7 +201,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Gate.io",
             "is_enabled": true,
-            "internal_name": "GATEIO",
+            "name": "GATEIO",
             "type": "cex",
             "is_featured": false, "o_auth": {
                 "authorize_url": "test",
@@ -215,7 +215,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "MEXC Global",
             "is_enabled": true,
-            "internal_name": "MEXC",
+            "name": "MEXC",
             "type": "cex",
             "is_featured": false, "o_auth": {
                 "authorize_url": "test",
@@ -229,7 +229,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "BitGet",
             "is_enabled": true,
-            "internal_name": "BITGET",
+            "name": "BITGET",
             "type": "cex",
             "is_featured": false, "o_auth": {
                 "authorize_url": "test",
@@ -243,7 +243,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Swyftx",
             "is_enabled": true,
-            "internal_name": "SWYFTX",
+            "name": "SWYFTX",
             "type": "cex",
             "is_featured": false, "o_auth": {
                 "authorize_url": "test",
@@ -257,7 +257,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Gemini",
             "is_enabled": true,
-            "internal_name": "GEMINI",
+            "name": "GEMINI",
             "type": "cex",
             "is_featured": false,
             "o_auth": {
@@ -272,7 +272,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Crypto.com APP",
             "is_enabled": true,
-            "internal_name": "CRYPTOCOMAPP",
+            "name": "CRYPTOCOMAPP",
             "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
@@ -287,7 +287,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Newton",
             "is_enabled": true,
-            "internal_name": "NEWTON",
+            "name": "NEWTON",
             "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
@@ -302,7 +302,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Binance US",
             "is_enabled": true,
-            "internal_name": "BINANCEUS",
+            "name": "BINANCEUS",
             "type": "cex",
             "is_featured": false,
             "o_auth": {
@@ -317,7 +317,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "Bybit",
             "is_enabled": true,
-            "internal_name": "BYBIT",
+            "name": "BYBIT",
             "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
@@ -332,7 +332,7 @@ export const Settings: LayerSwapSettings = {
         {
             "display_name": "US Bank or Card (via Stripe)",
             "is_enabled": true,
-            "internal_name": "STRIPE",
+            "name": "STRIPE",
             "o_auth": {
                 "authorize_url": "test",
                 "connect_url": "test"
@@ -558,7 +558,7 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://sepolia-optimism.etherscan.io/tx/{0}",
             "account_explorer_template": "https://sepolia-optimism.etherscan.io/address/{0}",
             "metadata": {
-                "GasPriceOracleContract": "0x420000000000000000000000000000000000000F"
+                "evm_oracle_contract": "0x420000000000000000000000000000000000000F"
             },
             "created_date": "2023-12-27T16:46:50.617075+00:00",
             "tokens": [
@@ -598,7 +598,7 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://sepolia.basescan.org/tx/{0}",
             "account_explorer_template": "https://sepolia.basescan.org/address/{0}",
             "metadata": {
-                "GasPriceOracleContract": "0x420000000000000000000000000000000000000F"
+                "evm_oracle_contract": "0x420000000000000000000000000000000000000F"
             },
             "created_date": "2023-12-27T16:46:50.617075+00:00",
             "tokens": [

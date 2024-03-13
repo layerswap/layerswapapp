@@ -8,10 +8,10 @@ export default function useEVMBalance(): BalanceProvider {
     const supportedNetworks = layers
         .filter(l =>
             l.type === NetworkType.EVM
-            && NetworkSettings.KnownSettings[l.internal_name]
+            && NetworkSettings.KnownSettings[l.name]
                 ?.GasCalculationType !== GasCalculation.OptimismType
-            && l.assets.some(a => a.is_native))
-        .map(l => l.internal_name)
+            && l.tokens.some(a => a.is_native))
+        .map(l => l.name)
 
     const getBalance = async ({ layer, address }: BalanceProps) => {
         try {
@@ -35,9 +35,9 @@ export default function useEVMBalance(): BalanceProvider {
             const erc20BalancesContractRes = await getErc20Balances({
                 address: address,
                 chainId: Number(layer?.chain_id),
-                assets: layer.assets,
+                assets: layer.tokens,
                 publicClient,
-                hasMulticall: !!layer.metadata?.multicall3
+                hasMulticall: !!layer.metadata?.evm_multi_call_contract
             });
 
             const erc20Balances = (erc20BalancesContractRes && await resolveERC20Balances(
@@ -59,57 +59,57 @@ export default function useEVMBalance(): BalanceProvider {
 
     }
 
-    const getGas = async ({ layer, address, currency, userDestinationAddress }: GasProps) => {
+    // const getGas = async ({ layer, address, currency, userDestinationAddress }: GasProps) => {
 
-        if (!layer || !address) {
-            return
-        }
-        const chainId = Number(layer?.chain_id)
-        const nativeToken = layer?.assets
-            .find(a => a.is_native)
+    //     if (!layer || !address) {
+    //         return
+    //     }
+    //     const chainId = Number(layer?.chain_id)
+    //     const nativeToken = layer?.tokens
+    //         .find(a => a.is_native)
 
-        if (!nativeToken || !chainId || !layer)
-            return
+    //     if (!nativeToken || !chainId || !layer)
+    //         return
 
-        const contract_address = layer?.assets?.find(a => a?.symbol === currency?.symbol)?.contract as `0x${string}`
-        const destination_address = layer?.managed_accounts?.[0]?.address as `0x${string}`
+    //     const contract_address = layer?.tokens?.find(a => a?.symbol === currency?.symbol)?.contract as `0x${string}`
+    //     const destination_address = layer?.managed_accounts?.[0]?.address as `0x${string}`
 
-        try {
+    //     try {
 
-            const { createPublicClient, http } = await import("viem")
-            const resolveChain = (await import("../../resolveChain")).default
-            const publicClient = createPublicClient({
-                chain: resolveChain(layer),
-                transport: http(),
-            })
+    //         const { createPublicClient, http } = await import("viem")
+    //         const resolveChain = (await import("../../resolveChain")).default
+    //         const publicClient = createPublicClient({
+    //             chain: resolveChain(layer),
+    //             transport: http(),
+    //         })
 
-            const getEthereumGas = (await import("./ethereum/getGas")).default
-            const gasProvider = new getEthereumGas(
-                publicClient,
-                chainId,
-                contract_address,
-                address,
-                layer,
-                currency,
-                destination_address,
-                nativeToken,
-                address !== userDestinationAddress,
-            )
+    //         const getEthereumGas = (await import("./ethereum/getGas")).default
+    //         const gasProvider = new getEthereumGas(
+    //             publicClient,
+    //             chainId,
+    //             contract_address,
+    //             address,
+    //             layer,
+    //             currency,
+    //             destination_address,
+    //             nativeToken,
+    //             address !== userDestinationAddress,
+    //         )
 
-            const gas = await gasProvider.resolveGas()
+    //         const gas = await gasProvider.resolveGas()
 
-            return [gas!]
+    //         return [gas!]
 
-        }
-        catch (e) {
-            console.log(e)
-        }
+    //     }
+    //     catch (e) {
+    //         console.log(e)
+    //     }
 
-    }
+    // }
 
     return {
         getBalance,
-        getGas,
+        // getGas,
         supportedNetworks
     }
 }

@@ -31,7 +31,7 @@ function CampaignDetails() {
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
     const campaign = campaignsData?.data?.find(c => c.name === camapaignName)
 
-    const network = layers.find(n => n.internal_name === campaign?.network)
+    const network = layers.find(n => n.name === campaign?.network)
 
     if (isLoading) {
         return <Loading />

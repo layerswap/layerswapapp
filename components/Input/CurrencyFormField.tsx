@@ -37,7 +37,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const lockAsset = direction === 'from' ? query?.lockFromAsset
         : query?.lockToAsset
     const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
-    const currencies = direction === 'from' ? from?.assets : to?.assets;
+    const currencies = direction === 'from' ? from?.tokens : to?.tokens;
 
     const lockedCurrency = lockAsset
         ? currencies?.find(c => c?.symbol?.toUpperCase() === (asset)?.toUpperCase())
@@ -55,7 +55,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
             : {
                 ...(to && toCurrency &&
                 {
-                    destination_network: to.internal_name,
+                    destination_network: to.name,
                     destination_asset: toCurrency?.symbol
                 })
             })
@@ -71,7 +71,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
             : {
                 ...(from && fromCurrency &&
                 {
-                    source_network: from.internal_name,
+                    source_network: from.name,
                     source_asset: fromCurrency?.symbol
                 }
                 )
@@ -134,7 +134,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         const selected_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase())
 
-        if (selected_currency && destinationRoutes?.data?.filter(r => r.network === to?.internal_name)?.some(r => r.asset === selected_currency.name)) {
+        if (selected_currency && destinationRoutes?.data?.filter(r => r.network === to?.name)?.some(r => r.asset === selected_currency.name)) {
             setFieldValue(name, selected_currency.baseObject)
         }
         else if (default_currency) {
@@ -159,7 +159,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
         if (selected_currency
             && sourceRoutes?.data
-                ?.filter(r => r.network === from?.internal_name)
+                ?.filter(r => r.network === from?.name)
                 ?.some(r => r.asset === selected_currency.name)) {
             setFieldValue(name, selected_currency.baseObject)
         }
@@ -172,7 +172,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         if (name === "toCurrency" && toCurrency) {
             if (destinationRoutes?.data
                 && !destinationRoutes?.data
-                    ?.filter(r => r.network === to?.internal_name)
+                    ?.filter(r => r.network === to?.name)
                     ?.some(r => r.asset === toCurrency?.symbol)) {
                 setFieldValue(name, null)
             }
@@ -183,7 +183,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         if (name === "fromCurrency" && fromCurrency) {
             if (sourceRoutes?.data
                 && !sourceRoutes?.data
-                    ?.filter(r => r.network === from?.internal_name)
+                    ?.filter(r => r.network === from?.name)
                     ?.some(r => r.asset === fromCurrency?.symbol)) {
                 setFieldValue(name, null)
             }
@@ -226,7 +226,7 @@ export function GenerateCurrencyMenuItems(
         if (lockAsset) {
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
-        else if ((from || to) && !routes?.filter(r => r.network === (direction === 'from' ? from?.internal_name : to?.internal_name)).some(r => r.asset === currency.symbol)) {
+        else if ((from || to) && !routes?.filter(r => r.network === (direction === 'from' ? from?.name : to?.name)).some(r => r.asset === currency.symbol)) {
             if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset) {
                 return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
             }
@@ -240,7 +240,7 @@ export function GenerateCurrencyMenuItems(
     return currencies?.map(c => {
         const currency = c
         const displayName = currency.symbol;
-        const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.internal_name === b.network)
+        const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
 
         const res: SelectMenuItem<Token> = {

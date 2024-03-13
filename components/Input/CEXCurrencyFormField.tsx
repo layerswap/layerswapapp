@@ -45,7 +45,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
             : {
                 ...(to && toCurrency &&
                 {
-                    destination_network: to.internal_name,
+                    destination_network: to.name,
                     destination_asset: toCurrency?.symbol
                 })
             })
@@ -60,7 +60,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
             : {
                 ...(from && fromCurrency &&
                 {
-                    source_network: from.internal_name,
+                    source_network: from.name,
                     source_asset: fromCurrency?.symbol
                 })
             })

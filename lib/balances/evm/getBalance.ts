@@ -20,13 +20,13 @@ export const resolveERC20Balances = async (
     multicallRes: ERC20ContractRes[],
     from: Layer,
 ) => {
-    const assets = from?.assets?.filter(a => a.contract)
+    const assets = from?.tokens?.filter(a => a.contract)
     if (!assets)
         return null
     const contractBalances = multicallRes?.map((d, index) => {
         const currency = assets[index]
         return {
-            network: from.internal_name,
+            network: from.name,
             token: currency.symbol,
             amount: formatAmount(d.result, currency.decimals),
             request_time: new Date().toJSON(),
@@ -122,13 +122,13 @@ export const resolveNativeBalance = async (
     from: Layer,
     nativeTokenRes: FetchBalanceResult
 ) => {
-    const native_currency = from.assets.find(a => a.is_native)
+    const native_currency = from.tokens.find(a => a.is_native)
     if (!native_currency) {
         return null
     }
 
     const nativeBalance: Balance = {
-        network: from.internal_name,
+        network: from.name,
         token: native_currency.symbol,
         amount: formatAmount(nativeTokenRes?.value, native_currency.decimals),
         request_time: new Date().toJSON(),

@@ -207,11 +207,11 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
         return <></>
 
     const { resolveImgSrc, layers, exchanges } = settings
-    const source = layers.find(e => e.internal_name === swap.source_network.name)
-    const destination = layers.find(n => n.internal_name === swap.destination_network.name)
+    const source = layers.find(e => e.name === swap.source_network.name)
+    const destination = layers.find(n => n.name === swap.destination_network.name)
 
-    const sourceExchange = exchanges.find(e => e.internal_name === source_exchange?.name)
-    const destExchange = exchanges.find(e => e.internal_name === destination_exchange?.name)
+    const sourceExchange = exchanges.find(e => e.name === source_exchange?.name)
+    const destExchange = exchanges.find(e => e.name === destination_exchange?.name)
 
     return <motion.div
         initial={{ y: 10, opacity: 0 }}

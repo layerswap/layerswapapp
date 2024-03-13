@@ -4,37 +4,37 @@ import { SendErrorMessage } from "./telegram";
 
 export default function resolveChain(network: Layer): (Chain & RainbowKitChain) | undefined {
 
-    const nativeCurrency = network.assets.find(c => c.is_native);
+    const nativeCurrency = network.tokens.find(c => c.is_native);
     const blockExplorersBaseURL =
         network.transaction_explorer_template ?
             new URL(network.transaction_explorer_template).origin
             : null
 
     const metadata = network.metadata
-    const { ensRegistry, ensUniversalResolver, multicall3 } = metadata || {}
+    const { evm_multi_call_contract } = metadata || {}
 
     if (!nativeCurrency) {
         if (process.env.NEXT_PUBLIC_API_VERSION !== 'sandbox')
-            SendErrorMessage("UI Settings error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: could not find native currency for ${network.internal_name} ${JSON.stringify(network)} %0A`)
+            SendErrorMessage("UI Settings error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: could not find native currency for ${network.name} ${JSON.stringify(network)} %0A`)
         return
     }
 
     const res: Chain & RainbowKitChain = {
         id: Number(network.chain_id),
         name: network.display_name,
-        network: network.internal_name,
+        network: network.name,
         nativeCurrency: {
             name: nativeCurrency.symbol,
             symbol: nativeCurrency.symbol,
             decimals: nativeCurrency.decimals
         },
-        iconUrl: network.img_url,
+        iconUrl: network.logo,
         rpcUrls: {
             default: {
-                http: network.nodes.map(n => n?.url),
+                http: [network.node_url],
             },
             public: {
-                http: network.nodes.map(n => n?.url),
+                http: [network.node_url],
             },
         },
         ...(blockExplorersBaseURL ? {
@@ -46,23 +46,16 @@ export default function resolveChain(network: Layer): (Chain & RainbowKitChain) 
             }
         } : {}),
         contracts: {
-            ...(multicall3 ? {
-                multicall3:
-                    multicall3
-            } : {}),
-            ...(ensRegistry ? {
-                ensRegistry:
-                    ensRegistry
-            } : {}),
-            ...(ensUniversalResolver ? {
-                ensUniversalResolver:
-                    ensUniversalResolver
+            ...(evm_multi_call_contract ? {
+                multicall3: {
+                    address: evm_multi_call_contract
+                }
             } : {}),
         },
     }
 
-    const defaultPriorityFee = NetworkSettings.KnownSettings[network.internal_name]?.DefaultPriorityFee?.toString()
-    const baseFeeMultiplier = NetworkSettings.KnownSettings[network.internal_name]?.BaseFeeMultiplier ?? 1.2
+    const defaultPriorityFee = NetworkSettings.KnownSettings[network.name]?.DefaultPriorityFee?.toString()
+    const baseFeeMultiplier = NetworkSettings.KnownSettings[network.name]?.BaseFeeMultiplier ?? 1.2
 
     if (defaultPriorityFee) {
         res.fees = {

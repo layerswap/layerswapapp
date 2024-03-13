@@ -28,8 +28,8 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const storedWalletTransactions = useSwapTransactionStore();
     const { fee } = useFee()
 
-    const source_network = settings.layers?.find(e => e.internal_name === swap.source_network.name)
-    const destination_layer = settings.layers?.find(e => e.internal_name === swap.destination_network.name)
+    const source_network = settings.layers?.find(e => e.name === swap.source_network.name)
+    const destination_layer = settings.layers?.find(e => e.name === swap.destination_network.name)
 
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_layer?.transaction_explorer_template
@@ -42,7 +42,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
-    const nativeCurrency = destination_layer?.assets?.find(c => c.symbol === destination_layer?.assets.find(a => a.is_native)?.symbol)
+    const nativeCurrency = destination_layer?.tokens?.find(c => c.symbol === destination_layer?.tokens.find(a => a.is_native)?.symbol)
     const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
 
     const progressStatuses = getProgressStatuses(swap, swapStatus)
@@ -51,7 +51,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const outputPendingDetails = <div className='flex items-center space-x-1'>
         <span>Estimated arrival after confirmation:</span>
         <div className='text-primary-text'>
-            <AverageCompletionTime avgCompletionTime={fee?.avgCompletionTime} />
+            <AverageCompletionTime avgCompletionTime={fee?.quote.avg_completion_time} />
         </div>
     </div>
 

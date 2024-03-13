@@ -21,12 +21,12 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const [isFocused, setIsFocused] = useState(false);
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const [walletAddress, setWalletAddress] = useState<string>()
-    const native_currency = from?.assets.find(a => a.is_native)
+    const native_currency = from?.tokens.find(a => a.is_native)
     const query = useQueryState()
 
-    const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.symbol)?.gas || 0
+    const gasAmount = gases[from?.name || '']?.find(g => g?.token === fromCurrency?.symbol)?.gas || 0
     const name = "amount"
-    const walletBalance = walletAddress && balances[walletAddress]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.symbol)
+    const walletBalance = walletAddress && balances[walletAddress]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     let maxAllowedAmount: number | null = maxAmountFromApi || 0
     if (query.balances && fromCurrency) {
         try {

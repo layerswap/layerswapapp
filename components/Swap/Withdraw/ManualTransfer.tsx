@@ -76,10 +76,10 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
     } = swap || {}
     const source_network_internal_name = swap?.source_network.name
     const destination_network_internal_name = swap?.destination_network.name
-    const source = layers.find(n => n.internal_name === source_network_internal_name)
-    const sourceAsset = source?.assets.find(c => c.symbol == swap?.source_token.symbol)
-    const destination = layers.find(n => n.internal_name === destination_network_internal_name)
-    const destinationAsset = destination?.assets.find(c => c.symbol == swap?.destination_token.symbol)
+    const source = layers.find(n => n.name === source_network_internal_name)
+    const sourceAsset = source?.tokens.find(c => c.symbol == swap?.source_token.symbol)
+    const destination = layers.find(n => n.name === destination_network_internal_name)
+    const destinationAsset = destination?.tokens.find(c => c.symbol == swap?.destination_token.symbol)
 
     useEffect(() => {
         if (swap) {
@@ -96,7 +96,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
     }, [swap])
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const generateDepositParams = shouldGenerateAddress ? [source?.internal_name ?? null] : null
+    const generateDepositParams = shouldGenerateAddress ? [source?.name ?? null] : null
 
     const {
         data: generatedDeposit
@@ -170,7 +170,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                         {
                             sourceAsset &&
                             <Image
-                                src={resolveImgSrc({ symbol: sourceAsset?.symbol })}
+                                src={sourceAsset.logo}
                                 alt="From Logo"
                                 height="60"
                                 width="60"

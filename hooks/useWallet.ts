@@ -66,12 +66,12 @@ export default function useWallet() {
     }
 
     const getWithdrawalProvider = (network: Layer) => {
-        const provider = WalletProviders.find(provider => provider.withdrawalSupportedNetworks.includes(network.internal_name))
+        const provider = WalletProviders.find(provider => provider.withdrawalSupportedNetworks.includes(network.name))
         return provider
     }
 
     const getAutofillProvider = (network: Layer) => {
-        const provider = WalletProviders.find(provider => provider?.autofillSupportedNetworks?.includes(network.internal_name))
+        const provider = WalletProviders.find(provider => provider?.autofillSupportedNetworks?.includes(network.name))
         return provider
     }
 

@@ -1,5 +1,4 @@
 import { SwapFormValues } from '../DTOs/SwapFormValues';
-import { Fee } from '../../context/feeContext';
 import { Dispatch, FC, SetStateAction, useMemo } from 'react';
 import useWallet from '../../hooks/useWallet';
 import { useBalancesState } from '../../context/balances';
@@ -7,12 +6,13 @@ import Modal from '../modal/modal';
 import { Fuel } from 'lucide-react';
 import { truncateDecimals } from '../utils/RoundDecimals';
 import SubmitButton from '../buttons/submitButton';
+import { Quote } from '../../lib/layerSwapApiClient';
 
 type RefuelModalProps = {
     values: SwapFormValues
     openModal: boolean,
     setOpenModal: Dispatch<SetStateAction<boolean>>
-    fee: Fee | undefined
+    fee: Quote | undefined
 }
 
 const RefuelModal: FC<RefuelModalProps> = ({ values, openModal, setOpenModal, fee }) => {
@@ -26,9 +26,9 @@ const RefuelModal: FC<RefuelModalProps> = ({ values, openModal, setOpenModal, fe
         return values?.to && getProvider(values?.to)
     }, [values?.to, getProvider])
 
-    const nativeAsset = to?.assets.find(a => a.is_native)
+    const nativeAsset = to?.tokens.find(a => a.is_native)
     const connectedWallet = provider?.getConnectedWallet()
-    const destNativeTokenBalance = balances[connectedWallet?.address || '']?.find(b => b.token === nativeAsset?.symbol && b.network === to?.internal_name)
+    const destNativeTokenBalance = balances[connectedWallet?.address || '']?.find(b => b.token === nativeAsset?.symbol && b.network === to?.name)
     const amountInUsd = (destNativeTokenBalance && nativeAsset) ? (destNativeTokenBalance.amount * nativeAsset.price_in_usd).toFixed(2) : undefined
 
     return (
@@ -67,7 +67,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ values, openModal, setOpenModal, fe
                                         You will receive
                                     </div>
                                     <p>
-                                        <span>{fee?.refuelAmount} {nativeAsset?.symbol}</span> <span className="text-secondary-text">(${fee?.refuelAmountInUsd})</span>
+                                        <span>{fee?.refuel.amount} {nativeAsset?.symbol}</span> <span className="text-secondary-text">(${fee?.refuel.amount_in_usd})</span>
                                     </p>
                                 </div>
                             </div>

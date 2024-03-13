@@ -33,7 +33,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
     const payouts = payoutsData?.data || []
     const totalBudget = campaign.total_budget
 
-    const network = layers.find(n => n.internal_name === campaign.network)
+    const network = layers.find(n => n.name === campaign.network)
     const rewards = rewardsData?.data
     const campaignEndDate = new Date(campaign.end_date)
     const now = new Date()
@@ -49,7 +49,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
     const campaignIsEnded = (campaignEndDate.getTime() - now.getTime()) < 0 || campaign.status !== 'active'
 
     const DistributedAmount = ((campaign.distributed_amount / campaign.total_budget) * 100)
-    const usdc_price = network?.assets?.find(c => c.symbol === campaign.asset)?.price_in_usd
+    const usdc_price = network?.tokens?.find(c => c.symbol === campaign.asset)?.price_in_usd
     const total_amount = rewards?.user_reward.total_amount
     const total_in_usd = (total_amount && usdc_price) ? (usdc_price * total_amount).toFixed(2) : null
 

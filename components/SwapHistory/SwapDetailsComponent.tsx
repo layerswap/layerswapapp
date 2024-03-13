@@ -26,8 +26,8 @@ const SwapDetails: FC<Props> = ({ id }) => {
 
     const { source_token, destination_token, source_network, destination_network } = swap || {}
 
-    const input_tx_id = layers.find(e => e.internal_name === source_network?.name)?.transaction_explorer_template
-    const output_tx_id = layers.find(e => e.internal_name === destination_network?.name)?.transaction_explorer_template
+    const input_tx_id = layers.find(e => e.name === source_network?.name)?.transaction_explorer_template
+    const output_tx_id = layers.find(e => e.name === destination_network?.name)?.transaction_explorer_template
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)

@@ -17,7 +17,7 @@ export class Network {
     type: NetworkType;
     transaction_explorer_template: string;
     account_explorer_template: string;
-    metadata: Metadata | null | undefined;
+    metadata: Metadata;
 }
 
 export class CryptoNetwork extends Network {
@@ -36,23 +36,13 @@ export class Token {
     group_name?: string | null;
     available_in_source?: boolean;
     available_in_destination?: boolean;
+
+    //remove
+    refuel_amount_in_usd: number
 }
 
-export class ManagedAccount {
-    address: `0x${string}`;
-}
 export class Metadata {
-    multicall3?: {
-        address: `0x${string}`
-        blockCreated: number
-    }
-    ensRegistry?: {
-        address: `0x${string}`
-    }
-    ensUniversalResolver?: {
-        address: `0x${string}`
-    }
-    GasPriceOracleContract?: `0x${string}`
-    WatchdogContractAddress?: `0x${string}`
-    L1Network?: string
+    evm_oracle_contract?: `0x${string}`
+    evm_multi_call_contract?: `0x${string}`
+    listing_date: string
 }

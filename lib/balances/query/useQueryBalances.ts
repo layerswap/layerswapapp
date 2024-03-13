@@ -6,10 +6,10 @@ export default function useQueryBalances(): BalanceProvider {
 
     const query = useQueryState()
     const { layers } = useSettingsState()
-    const supportedNetworks = [(layers.find(l => l.internal_name.toLowerCase() === query.from?.toLowerCase())?.internal_name || ''), (layers.find(l => l.internal_name.toLowerCase() === query.to?.toLowerCase())?.internal_name || '')]
+    const supportedNetworks = [(layers.find(l => l.name.toLowerCase() === query.from?.toLowerCase())?.name || ''), (layers.find(l => l.name.toLowerCase() === query.to?.toLowerCase())?.name || '')]
 
     const getBalance = ({ layer }: BalanceProps) => {
-        const asset = layer.assets.find(a => a.symbol === query.fromAsset)
+        const asset = layer.tokens.find(a => a.symbol === query.fromAsset)
 
         const balancesFromQueries = new URL(window.location.href.replaceAll('&quot;', '"')).searchParams.get('balances');
         const parsedBalances = balancesFromQueries && JSON.parse(balancesFromQueries)
@@ -17,7 +17,7 @@ export default function useQueryBalances(): BalanceProvider {
         if (!parsedBalances || !asset) return
 
         const balances = [{
-            network: layer.internal_name,
+            network: layer.name,
             amount: parsedBalances[asset.symbol],
             decimals: asset.decimals,
             isNativeCurrency: asset.is_native,

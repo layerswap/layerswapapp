@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSwapDataState } from '../../../../context/swap';
 import { useSettingsState } from '../../../../context/settings';
-import { Transaction, Connection, PublicKey, TransactionInstruction, TransactionResponse } from '@solana/web3.js';
+import { Transaction, Connection, PublicKey, TransactionInstruction } from '@solana/web3.js';
 import useWallet from '../../../../hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
@@ -26,13 +26,13 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const { swap } = useSwapDataState();
 
     const { layers } = useSettingsState();
-    const source_layer = layers.find(l => l.internal_name === swap?.source_network.name)
-    const source_currency = source_layer?.assets?.find(c => c.symbol.toUpperCase() === swap?.source_token.symbol.toUpperCase());
+    const source_layer = layers.find(l => l.name === swap?.source_network.name)
+    const source_currency = source_layer?.tokens?.find(c => c.symbol.toUpperCase() === swap?.source_token.symbol.toUpperCase());
 
     const provider = getWithdrawalProvider(source_layer!);
     const wallet = provider?.getConnectedWallet();
     const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
-    const solanaNode = source_layer?.nodes[0].url;
+    const solanaNode = source_layer?.node_url
 
     const handleConnect = useCallback(async () => {
         setLoading(true)

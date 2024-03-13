@@ -14,4 +14,5 @@ export type SwapFormValues = {
   fromExchange?: Exchange,
   toExchange?: Exchange,
   currencyGroup?: AssetGroup
+  depositMethod?: string
 }

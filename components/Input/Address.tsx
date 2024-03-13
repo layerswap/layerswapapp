@@ -41,14 +41,14 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const inputReference = useRef<HTMLInputElement>(null);
     const destination = values.to
     const destinationExchange = values.toExchange
-    const valid_addresses = address_book?.filter(a => destinationExchange ? a.exchanges.some(e => destinationExchange.internal_name === e) : a.networks?.some(n => destination?.internal_name === n) && isValidAddress(a.address, destination)) || []
+    const valid_addresses = address_book?.filter(a => destinationExchange ? a.exchanges.some(e => destinationExchange.name === e) : a.networks?.some(n => destination?.name === n) && isValidAddress(a.address, destination)) || []
 
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const placeholder = "Enter your address here"
     const [inputValue, setInputValue] = useState<string | undefined>(values?.destination_address || "")
     const [validInputAddress, setValidInputAddress] = useState<string | undefined>('')
-    const destinationIsStarknet = destination?.internal_name === KnownInternalNames.Networks.StarkNetGoerli
-        || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
+    const destinationIsStarknet = destination?.name === KnownInternalNames.Networks.StarkNetGoerli
+        || destination?.name === KnownInternalNames.Networks.StarkNetMainnet
 
     const { connectWallet, disconnectWallet, getAutofillProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -180,7 +180,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                             {wrongNetwork && !inputValue &&
                                 <div className="basis-full text-xs text-primary">
                                     {
-                                        destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
+                                        destination?.name === KnownInternalNames.Networks.StarkNetMainnet
                                             ? <span>Please switch to Starknet Mainnet with your wallet and click Autofill again</span>
                                             : <span>Please switch to Starknet Goerli with your wallet and click Autofill again</span>
                                     }

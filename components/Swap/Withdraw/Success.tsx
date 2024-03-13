@@ -17,7 +17,7 @@ const Success: FC = () => {
     const { swap } = useSwapDataState()
     const router = useRouter()
     const { externalId } = useQueryState()
-    const destination_network = layers.find(n => n.internal_name === swap?.destination_network.name)
+    const destination_network = layers.find(n => n.name === swap?.destination_network.name)
     const transaction_explorer_template = destination_network?.transaction_explorer_template
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
 

@@ -12,7 +12,7 @@ export default function useWalletTransferOptions() {
     const { addContractWallet, getContractWallet, updateContractWallet } = useContractWalletsStore()
     const { getWithdrawalProvider: getProvider } = useWallet()
     const { layers } = useSettingsState()
-    const source_layer = layers.find(n => n.internal_name === swap?.source_network.name)
+    const source_layer = layers.find(n => n.name === swap?.source_network.name)
     const provider = useMemo(() => {
         return source_layer && getProvider(source_layer)
     }, [source_layer, getProvider])
@@ -20,19 +20,19 @@ export default function useWalletTransferOptions() {
     const wallet = provider?.getConnectedWallet()
     useEffect(() => {
         if (wallet?.address == undefined || source_layer == undefined) return;
-        let contractWallet = getContractWallet(wallet.address, source_layer.internal_name);
+        let contractWallet = getContractWallet(wallet.address, source_layer.name);
         if (!contractWallet) {
             // add before checking to check only once
-            addContractWallet(wallet.address, source_layer.internal_name);
+            addContractWallet(wallet.address, source_layer.name);
             checkContractWallet(wallet.address, source_layer).then(
                 result => {
-                    updateContractWallet(wallet.address, source_layer.internal_name, result)
+                    updateContractWallet(wallet.address, source_layer.name, result)
                 }
             )
         }
     }, [wallet?.address])
 
-    const walletAddressType = getContractWallet(wallet?.address, source_layer?.internal_name)
+    const walletAddressType = getContractWallet(wallet?.address, source_layer?.name)
 
     const canDoSweepless = source_layer && ((source_layer.type == NetworkType.EVM
         && (walletAddressType?.ready && !walletAddressType?.isContract))
