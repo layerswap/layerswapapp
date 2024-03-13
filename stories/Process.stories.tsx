@@ -104,7 +104,7 @@ const DUMMY_TRANSACTION = {
 }
 
 const meta = {
-    title: 'Example/Process',
+    title: 'LayerSwap/Process',
     component: Comp,
     parameters: {
         layout: 'centered',
