@@ -25,7 +25,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const routes = direction === 'from' ? settingsSourceRoutes : settingsDestinationRoutes
 
-    const availableAssetGroups = assetGroups.filter(g => g.values.some(v => routes.some(r => r.asset === v.asset && r.network === v.network)))
+    const availableAssetGroups = assetGroups.filter(g => g.values.some(v => routes.some(r => !!r.tokens.find(t => t.symbol === v.asset) && r.name === v.network)))
 
     const lockAsset = direction === 'from' ? query?.lockFromAsset : query?.lockToAsset
     const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
@@ -34,10 +34,8 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         : undefined
 
     const apiClient = new LayerSwapApiClient()
-    const version = LayerSwapApiClient.apiVersion
 
     const sourceRouteParams = new URLSearchParams({
-        version,
         ...(toExchange && currencyGroup && currencyGroup?.groupedInBackend ?
             {
                 destination_asset_group: currencyGroup?.name
@@ -52,7 +50,6 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     });
 
     const destinationRouteParams = new URLSearchParams({
-        version,
         ...(fromExchange && currencyGroup && currencyGroup?.groupedInBackend ?
             {
                 source_asset_group: currencyGroup?.name
@@ -66,8 +63,8 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
             })
     });
 
-    const sourceRoutesURL = `/routes/sources?${sourceRouteParams}`
-    const destinationRoutesURL = `/routes/destinations?${destinationRouteParams}`
+    const sourceRoutesURL = `/sources?${sourceRouteParams}`
+    const destinationRoutesURL = `/destinations?${destinationRouteParams}`
 
     const {
         data: sourceRoutes,

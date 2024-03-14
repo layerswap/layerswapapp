@@ -1,4 +1,3 @@
-import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import { SwapStatus } from "../Models/SwapStatus";
 import AppSettings from "./AppSettings";
 import { InitializeInstance } from "./axiosInterceptor"
@@ -14,7 +13,6 @@ import { Exchange } from "../Models/Exchange";
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
     static bridgeApiBaseEndpoint?: string = AppSettings.LayerswapBridgeApiUri;
-    static apiVersion: string = AppSettings.ApiVersion;
 
     _authInterceptor: AxiosInstance;
     constructor(private readonly _router?: NextRouter, private readonly _redirect?: string) {
@@ -24,37 +22,37 @@ export default class LayerSwapApiClient {
     fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
 
     async GetSourceRoutesAsync(): Promise<ApiResponse<CryptoNetwork[]>> {
-        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/routes/sources?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/v2-alpha/sources`).then(res => res.data);
     }
 
     async GetDestinationRoutesAsync(): Promise<ApiResponse<CryptoNetwork[]>> {
-        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/routes/destinations?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/v2-alpha/destinations`).then(res => res.data);
     }
 
     async GetExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
-        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/exchanges?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/v2-alpha/exchanges`).then(res => res.data);
     }
 
     async GetLSNetworksAsync(): Promise<ApiResponse<CryptoNetwork[]>> {
-        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/networks?version=${LayerSwapApiClient.apiVersion}`).then(res => res.data);
+        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/v2-alpha/networks`).then(res => res.data);
     }
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<SwapResponse>> {
         const correlationId = uuidv4()
-        return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("POST", `/swaps?version=${LayerSwapApiClient.apiVersion}`, params, { 'X-LS-CORRELATION-ID': correlationId });
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("POST", `/swaps`, params, { 'X-LS-CORRELATION-ID': correlationId });
     }
 
     async GetSwapsAsync(page: number, status?: SwapStatusInNumbers): Promise<ApiResponse<SwapResponse[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/swaps?page=${page}${status ? `&status=${status}` : ''}&version=${LayerSwapApiClient.apiVersion}`);
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/swaps?page=${page}${status ? `&status=${status}` : ''}`);
     }
 
     async GetPendingSwapsAsync(): Promise<ApiResponse<SwapResponse[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/swaps?status=0&version=${LayerSwapApiClient.apiVersion}`);
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/swaps?status=0`);
     }
 
     async GetQuote({ params }: { params: GetQuoteParams }): Promise<ApiResponse<Quote>> {
         const { source_network, source_asset, source_address, destination_address, destination_asset, destination_network, amount, deposit_mode, include_gas, refuel } = params
-        return await this.AuthenticatedRequest<ApiResponse<Quote>>("GET", `/quote?source_network=${source_network}&source_asset=${source_asset}&source_address=${source_address}&destination_network=${destination_network}&destination_asset=${destination_asset}&destination_address=${destination_address}&deposit_mode=${deposit_mode}&include_gas=${include_gas}&amount=${amount}&refuel=${refuel}&version=${LayerSwapApiClient.apiVersion}`);
+        return await this.AuthenticatedRequest<ApiResponse<Quote>>("GET", `/quote?source_network=${source_network}&source_asset=${source_asset}&source_address=${source_address}&destination_network=${destination_network}&destination_asset=${destination_asset}&destination_address=${destination_address}&deposit_mode=${deposit_mode}&include_gas=${include_gas}&amount=${amount}&refuel=${refuel}`);
     }
 
     async DisconnectExchangeAsync(swapid: string, exchangeName: string): Promise<ApiResponse<void>> {
@@ -62,7 +60,7 @@ export default class LayerSwapApiClient {
     }
 
     async GetSwapDetailsAsync(id: string): Promise<ApiResponse<SwapResponse>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("GET", `/swaps/${id}?version=${LayerSwapApiClient.apiVersion}`);
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("GET", `/swaps/${id}`);
     }
 
     async GetDepositAddress(network: string, source: DepositAddressSource): Promise<ApiResponse<DepositAddress>> {
@@ -112,14 +110,6 @@ export enum DepositAddressSource {
     Managed = 1
 }
 
-export type NetworkAccount = {
-    id: string,
-    address: string,
-    note: string,
-    network_id: string,
-    network: string
-}
-
 export type CreateSwapParams = {
     source_network: string,
     source_asset: string,
@@ -148,10 +138,10 @@ export type SwapItem = {
     created_date: string,
     source_network: Network,
     source_token: Token,
-    source_exchange?: SwapExchange,
+    source_exchange?: Exchange,
     destination_network: Network,
     destination_token: Token,
-    destination_exchange?: SwapExchange,
+    destination_exchange?: Exchange,
     refuel: {
         token: Token,
         network: Network,
@@ -171,13 +161,7 @@ export type SwapItem = {
         app: string | null;
         sequence_number: number
     }
-}
-
-export type SwapExchange = {
-    name: string,
-    display_name: string,
-    logo: string
-}
+} 
 
 export type DepositMethods = {
     deposit_address: {

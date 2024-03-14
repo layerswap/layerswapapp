@@ -138,20 +138,19 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     );
     //TODO always map to toAsset from query
     const lockedCurrency = query?.lockAsset ? values.to?.tokens?.find(c => c?.symbol?.toUpperCase() === toAsset?.toUpperCase()) : null;
-    const apiVersion = LayerSwapApiClient.apiVersion
-    const sourceRoutesEndpoint = `/routes/sources?destination_network=${source?.name}&destination_asset=${fromCurrency?.symbol}${apiVersion ? '&version=' : ''}${apiVersion}`
-    const destinationRoutesEndpoint = `/routes/destinations?source_network=${destination?.name}&source_asset=${toCurrency?.symbol}${apiVersion ? '&version=' : ''}${apiVersion}`
+    const sourceRoutesEndpoint = `/sources?destination_network=${source?.name}&destination_asset=${fromCurrency?.symbol}`
+    const destinationRoutesEndpoint = `/destinations?source_network=${destination?.name}&source_asset=${toCurrency?.symbol}`
     const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<{
         network: string,
         asset: string
     }[]>>((source && fromCurrency) ?
-        sourceRoutesEndpoint : `/routes/sources?${apiVersion ? 'version=' : ''}${apiVersion}`, layerswapApiClient.fetcher)
+        sourceRoutesEndpoint : `/sources`, layerswapApiClient.fetcher)
 
     const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<{
         network: string,
         asset: string
     }[]>>((destination && toCurrency) ?
-        destinationRoutesEndpoint : `/routes/destinations?${apiVersion ? 'version=' : ''}${apiVersion}`, layerswapApiClient.fetcher)
+        destinationRoutesEndpoint : `/destinations`, layerswapApiClient.fetcher)
 
     const sourceCanBeSwapped = destinationRoutes?.data?.some(l => l.network === source?.name)
     const destinationCanBeSwapped = sourceRoutes?.data?.some(l => l.network === destination?.name)

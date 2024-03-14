@@ -14,8 +14,7 @@ export default function resolveChain(network: Layer): (Chain & RainbowKitChain) 
     const { evm_multi_call_contract } = metadata || {}
 
     if (!nativeCurrency) {
-        if (process.env.NEXT_PUBLIC_API_VERSION !== 'sandbox')
-            SendErrorMessage("UI Settings error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: could not find native currency for ${network.name} ${JSON.stringify(network)} %0A`)
+        SendErrorMessage("UI Settings error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: could not find native currency for ${network.name} ${JSON.stringify(network)} %0A`)
         return
     }
 

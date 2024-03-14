@@ -38,7 +38,6 @@ export function FeeProvider({ children }) {
     }, [amount, 1000]);
 
     const apiClient = new LayerSwapApiClient()
-    const version = LayerSwapApiClient.apiVersion
 
     const { data: amountRange } = useSWR<ApiResponse<{
         manual_min_amount: number
@@ -48,12 +47,12 @@ export function FeeProvider({ children }) {
         wallet_min_amount: number
         wallet_min_amount_in_usd: number
     }>>((from && fromCurrency && to && toCurrency) ?
-        `/routes/limits/${from?.name}/${fromCurrency?.symbol}/${to?.name}/${toCurrency?.symbol}?refuel=${!!refuel}&version=${version}` : null, apiClient.fetcher, {
+        `/routes/limits/${from?.name}/${fromCurrency?.symbol}/${to?.name}/${toCurrency?.symbol}?refuel=${!!refuel}` : null, apiClient.fetcher, {
         refreshInterval: 10000
     })
 
     const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<Quote>>((from && fromCurrency && to && toCurrency && debouncedAmount) ?
-        `/quote/${from?.name}/${fromCurrency?.symbol}/${to?.name}/${toCurrency?.symbol}?amount=${debouncedAmount}&refuel=${!!refuel}&deposit_mode=${depositMethod}&version=${version}` : null, apiClient.fetcher, {
+        `/quote/${from?.name}/${fromCurrency?.symbol}/${to?.name}/${toCurrency?.symbol}?amount=${debouncedAmount}&refuel=${!!refuel}&deposit_mode=${depositMethod}` : null, apiClient.fetcher, {
         refreshInterval: 10000,
         fallbackData: { data: cachedRateData }
     })

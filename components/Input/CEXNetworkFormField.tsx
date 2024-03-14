@@ -6,7 +6,6 @@ import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import Image from "next/image";
 import { AssetGroup } from "./CEXCurrencyFormField";
 import { isValidAddress } from "../../lib/addressValidator";
 import shortenAddress from "../utils/ShortenAddress";
@@ -17,6 +16,8 @@ import { Layer } from "../../Models/Layer";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import { Info } from "lucide-react";
+import { CryptoNetwork } from "../../Models/Network";
+import { ExchangeNetwork } from "../../Models/Exchange";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -29,7 +30,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = direction
-    const [showModal, setShowModal] = useState(false)
 
     const {
         from,
@@ -38,7 +38,8 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         toCurrency,
         fromExchange,
         toExchange,
-        currencyGroup
+        currencyGroup,
+        amount
     } = values
 
     const { layers } = useSettingsState();
@@ -46,10 +47,8 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     const filterWithAsset = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
 
     const apiClient = new LayerSwapApiClient()
-    const version = LayerSwapApiClient.apiVersion
 
     const destinationRouteParams = new URLSearchParams({
-        version,
         ...(filterWith && filterWithAsset
             ? (
                 {
@@ -64,34 +63,28 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                 }) : {}),
     });
 
-    const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}?${destinationRouteParams.toString()}`
+    const routesEndpoint = `/${direction === "from" ? "sources" : "destinations"}?${destinationRouteParams.toString()}`
 
-    const { data: routes, isLoading } = useSWR<ApiResponse<{
-        network: string,
-        asset: string
-    }[]>>(routesEndpoint, apiClient.fetcher)
+    const { data: routes, isLoading } = useSWR<ApiResponse<CryptoNetwork[]>>(routesEndpoint, apiClient.fetcher)
     const routesData = routes?.data
 
-    const historicalNetworksEndpoint =
+    const exchangeNetworksEndpoint =
         (fromExchange || toExchange)
-        && (`/exchanges/${direction === 'from'
-            ? `historical_sources?source_exchange=${fromExchange?.name}`
-            :
-            `historical_destinations?destination_exchange=${toExchange?.name}`}&version=${version}`)
+        && amount
+        && (`/${direction === 'from' ?
+            `exchange_deposit_networks?source_exchange=${fromExchange?.name}&&source_token_group=${currencyGroup?.name}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&amount=${amount}`
+            : `exchange_withdrawal_networks?destination_exchange=${toExchange?.name}&destination_token_group=${currencyGroup?.name}&source_network=${from?.name}&source_token=${fromCurrency?.symbol}&amount=${amount}`}`)
 
-    const { data: historicalNetworks } = useSWR<ApiResponse<{
-        network: string,
-        asset: string
-    }[]>>(historicalNetworksEndpoint, apiClient.fetcher)
+    const { data: historicalNetworks } = useSWR<ApiResponse<ExchangeNetwork[]>>(exchangeNetworksEndpoint, apiClient.fetcher)
 
     const network = (direction === 'from' ? from : to)
     const currency = (direction === 'from' ? fromCurrency : toCurrency)
 
     const menuItems = routesData
-        && historicalNetworks
-        && GenerateMenuItems(routesData, historicalNetworks?.data, currencyGroup, layers)
+        && historicalNetworks?.data
+        && GenerateMenuItems(routesData, historicalNetworks.data, currencyGroup, layers)
             .filter(item => layers.find(l =>
-                l.name === item.baseObject.network));
+                l.name === item.baseObject.network.name));
 
     const handleSelect = useCallback((item: SelectMenuItem<{ network: string, asset: string }>) => {
         if (!item) return
@@ -99,16 +92,15 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         const currency = layer?.tokens.find(a => a.symbol === item.baseObject.asset)
         setFieldValue(name, layer, true)
         setFieldValue(`${name}Currency`, currency, false)
-        setShowModal(false)
     }, [name])
 
     const formValue = (direction === 'from' ? from : to)
 
     //TODO set default currency & reset currency if not available
     const value = menuItems?.find(item =>
-        item.baseObject.asset ===
+        item.baseObject.token.symbol ===
         (direction === 'from' ? fromCurrency : toCurrency)?.symbol
-        && item.baseObject.network === formValue?.name)
+        && item.baseObject.network.name === formValue?.name)
 
     //Setting default value
     useEffect(() => {
@@ -184,31 +176,28 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 })
 
 function GenerateMenuItems(
-    items: { network: string, asset: string }[],
-    historicalNetworks: { network: string, asset: string }[] | undefined,
+    items: CryptoNetwork[],
+    historicalNetworks: ExchangeNetwork[],
     currencyGroup: AssetGroup | undefined,
     layers: Layer[],
-): SelectMenuItem<{ network: string, asset: string }>[] {
-    const menuItems = items
-        .filter(i => currencyGroup?.values?.some(v => v.asset == i.asset && v.network == i.network))
-        .map((e, index) => {
-            const indexOf = Number(historicalNetworks
-                ?.indexOf(historicalNetworks
-                    .find(n => n.asset === e.asset && n.network === e.network)
-                    || { network: '', asset: '' }))
+): SelectMenuItem<ExchangeNetwork>[] {
+    const menuItems = historicalNetworks.map((e, index) => {
+            // const indexOf = Number(historicalNetworks
+            //     ?.indexOf(historicalNetworks
+            //         .find(n => n.asset === e.asset && n.network === e.network)
+            //         || { network: '', asset: '' }))
 
-            const network = layers?.find(l => l.name == e.network);
+            const network = layers?.find(l => l.name == e.network.name);
 
-            const item: SelectMenuItem<{ network: string, asset: string }> = {
+            const item: SelectMenuItem<ExchangeNetwork> = {
                 baseObject: e,
                 id: index.toString(),
-                name: `${e.network}_${e.asset}`,
+                name: `${e.network.name}_${e.token.symbol}`,
                 displayName: network?.display_name,
-                order: indexOf > -1 ? indexOf : 100,
+                order: 1,
                 imgSrc: network?.logo || '',
                 isAvailable: { value: true, disabledReason: null },
-                group: '',
-                details: e.asset
+                details: e.token.symbol
             }
             return item;
         }).sort(SortingByOrder)

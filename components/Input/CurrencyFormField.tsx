@@ -44,10 +44,8 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         : undefined
 
     const apiClient = new LayerSwapApiClient()
-    const version = LayerSwapApiClient.apiVersion
 
     const sourceRouteParams = new URLSearchParams({
-        version,
         ...(toExchange && currencyGroup && currencyGroup.groupedInBackend ?
             {
                 destination_asset_group: currencyGroup.name
@@ -63,7 +61,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
 
     const destinationRouteParams = new URLSearchParams({
-        version,
         ...(fromExchange && currencyGroup && currencyGroup.groupedInBackend ?
             {
                 source_asset_group: currencyGroup.name
@@ -78,8 +75,8 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
             })
     });
 
-    const sourceRoutesURL = `/routes/sources?${sourceRouteParams}`
-    const destinationRoutesURL = `/routes/destinations?${destinationRouteParams}`
+    const sourceRoutesURL = `/sources?${sourceRouteParams}`
+    const destinationRoutesURL = `/destinations?${destinationRouteParams}`
 
     const { data: sourceRoutes,
         error: sourceRoutesError,

@@ -59,8 +59,7 @@ export function SwapDataProvider({ children }) {
     const { layers } = useSettingsState()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const apiVersion = LayerSwapApiClient.apiVersion
-    const swap_details_endpoint = `/swaps/${swapId}?version=${apiVersion}`
+    const swap_details_endpoint = `/swaps/${swapId}`
     const [interval, setInterval] = useState(0)
     const { data: swapData, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
     const swapResponse = swapData?.data?.swap
@@ -113,7 +112,7 @@ export function SwapDataProvider({ children }) {
             destination_exchange: toExchange?.name,
             destination_address: values.destination_address,
             //TODO query?.appName may be undefined
-            app_name: partner ? query?.appName : (apiVersion === 'sandbox' ? 'LayerswapSandbox' : 'Layerswap'),
+            // app_name: partner ? query?.appName : (apiVersion === 'sandbox' ? 'LayerswapSandbox' : 'Layerswap'),
             reference_id: query.externalId,
             refuel: !!refuel,
             deposit_mode: ''

@@ -1,3 +1,5 @@
+import { Network, Token } from "./Network";
+
 export class Exchange {
     display_name: string;
     name: string;
@@ -12,5 +14,14 @@ export class Exchange {
             authorize_url: string
         } | null
         listing_date: string
+    }
+}
+
+export class ExchangeNetwork {
+    token: Token;
+    network: Network;
+    fee: {
+        total_fee: number;
+        total_fee_in_usd: number
     }
 }

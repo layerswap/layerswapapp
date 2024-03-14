@@ -64,12 +64,12 @@ export class LayerSwapAppSettings {
 
     static ResolveNetworkAssets(network: CryptoNetwork, sourceRoutes: Route[], destinationRoutes: Route[]): Token[] {
         return network?.tokens?.map(c => {
-            const availableInSource = sourceRoutes?.some(r => r.asset === c.symbol && r.network === network.name)
-            const availableInDestination = destinationRoutes?.some(r => r.asset === c.symbol && r.network === network.name)
+            const available_in_source = sourceRoutes?.some(r => r.asset === c.symbol && r.network === network.name)
+            const available_in_destination = destinationRoutes?.some(r => r.asset === c.symbol && r.network === network.name)
             return ({
                 ...c,
-                availableInSource,
-                availableInDestination,
+                available_in_source,
+                available_in_destination,
             })
         })
     }

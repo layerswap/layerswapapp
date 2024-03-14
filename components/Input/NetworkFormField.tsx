@@ -6,7 +6,7 @@ import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMe
 import { Layer } from "../../Models/Layer";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import ExchangeSettings from "../../lib/ExchangeSettings";
-import { SortingByAvailability, SortingByOrder } from "../../lib/sorting"
+import { SortingByAvailability } from "../../lib/sorting"
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
@@ -15,7 +15,7 @@ import CurrencyFormField from "./CurrencyFormField";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { CryptoNetwork, Token } from "../../Models/Network";
+import { CryptoNetwork } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
@@ -36,7 +36,7 @@ type LayerIsAvailable = {
 }
 const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
 const getGroupName = (value: Layer | Exchange, type: 'cex' | 'layer', layerIsAvailable?: LayerIsAvailable) => {
-    if (NetworkSettings.KnownSettings[value.name].isFeatured && layerIsAvailable?.disabledReason !== LayerDisabledReason.InvalidRoute) {
+    if (NetworkSettings.KnownSettings[value.name]?.isFeatured && layerIsAvailable?.disabledReason !== LayerDisabledReason.InvalidRoute) {
         return "Popular";
     }
     else if (new Date(value.metadata?.listing_date).getTime() >= (new Date().getTime() - 2629800000)) {
@@ -64,7 +64,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const query = useQueryState()
     const { lockFrom, lockTo } = query
 
-    const { resolveImgSrc, layers, exchanges, destinationRoutes, sourceRoutes, assetGroups } = useSettingsState();
+    const { layers, exchanges, destinationRoutes, sourceRoutes, assetGroups } = useSettingsState();
     let placeholder = "";
     let searchHint = "";
     let filteredLayers: Layer[];
@@ -76,24 +76,21 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const filterWithExchange = direction === 'from' ? toExchange : fromExchange
 
     const apiClient = new LayerSwapApiClient()
-    const version = LayerSwapApiClient.apiVersion
 
     const exchangeParams = new URLSearchParams({
-        version,
         ...(currencyGroup?.groupedInBackend ?
             (currencyGroup ? {
                 [direction === 'to' ? 'source_asset_group' : 'destination_asset_group']: currencyGroup.name
             } : {})
             :
-            {
-                [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.name,
+            (filterWithAsset && filterWith ? {
+                [direction === 'to' ? 'source_network' : 'destination_network']: filterWith.name,
                 [direction === 'to' ? 'source_asset' : 'destination_asset']: filterWithAsset,
-            }
+            } : {})
         )
     });
 
     const networkParams = new URLSearchParams({
-        version,
         ...(filterWith && filterWithAsset ?
             {
                 [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.name,
@@ -104,8 +101,8 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     });
 
     const params = (filterWithExchange && currencyGroup) ? exchangeParams : networkParams
-    const sourceRoutesURL = `/routes/sources?${params.toString()}`
-    const destinationRoutesURL = `/routes/destinations?${params.toString()}`
+    const sourceRoutesURL = `/sources?${params.toString()}`
+    const destinationRoutesURL = `/destinations?${params.toString()}`
     const routesEndpoint = direction === "from" ? sourceRoutesURL : destinationRoutesURL
 
     const { data: routes, isLoading, error } = useSWR<ApiResponse<CryptoNetwork[]>>(routesEndpoint, apiClient.fetcher)
