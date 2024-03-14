@@ -251,7 +251,6 @@ export function GenerateCurrencyMenuItems(
             imgSrc: resolveImgSrc && resolveImgSrc(c),
             isAvailable: currencyIsAvailable(c),
             details: `${formatted_balance_amount}`,
-            type: "currency"
         };
 
         return res
