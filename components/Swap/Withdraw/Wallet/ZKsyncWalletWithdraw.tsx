@@ -6,12 +6,11 @@ import * as zksync from 'zksync';
 import { utils } from 'ethers';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSwapDataState } from '../../../../context/swap';
 import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
 import { useNetwork } from 'wagmi';
-import { Transaction } from 'zksync';
 import ClickTooltip from '../../../Tooltips/ClickTooltip';
 import SignatureIcon from '../../../icons/SignatureIcon';
 import formatAmount from '../../../../lib/formatAmount';
@@ -26,10 +25,7 @@ type Props = {
 
 const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
-    const [transferDone, setTransferDone] = useState<boolean>();
     const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>();
-    const [syncTransfer, setSyncTransfer] = useState<Transaction>();
-    const [txHash, setTxHash] = useState('');
     const [accountIsActivated, setAccountIsActivated] = useState(false);
     const [activationFee, setActivationFee] = useState<({ feeInAsset: number, feeInUsd: number } | undefined)>(undefined);
 
@@ -57,28 +53,6 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             setSyncWallet(null)
         }
     }, [signer?._address]);
-
-    useEffect(() => {
-        const getTxReceipt = async () => {
-            const syncProvider = await zksync.getDefaultProvider(defaultProvider);
-            const txReceipt = await syncProvider.getTxReceipt(String(syncTransfer?.txHash));
-            // TODO: might be unnecessary why handleTransaction does not do this
-            if (swap?.id) {
-                if (txReceipt.executed && !txReceipt.success) {
-                    setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, txHash, txReceipt?.failReason);
-                    toast(String(txReceipt.failReason))
-                    setLoading(false)
-                } else if (txReceipt.executed && txReceipt.success) {
-                    setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Completed, txHash);
-                    setTransferDone(true);
-                } else {
-                    setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Pending, txHash);
-                }
-            }
-        };
-        if (txHash)
-            getTxReceipt();
-    }, [syncTransfer, swap, txHash]);
 
     const handleAuthorize = useCallback(async () => {
         if (!signer)
@@ -148,8 +122,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             });
 
             if (tf?.txHash) {
-                setTxHash(tf?.txHash?.replace('sync-tx:', ''))
-                setSyncTransfer(tf);
+                setSwapTransaction(swap?.id, BackendTransactionStatus.Pending, tf?.txHash?.replace('sync-tx:', ''));
             }
         }
         catch (e) {
@@ -235,7 +208,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     }
                     {
                         syncWallet && accountIsActivated &&
-                        <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        <SubmitButton isDisabled={!!(loading)} isSubmitting={!!loading} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Transfer
                         </SubmitButton>
                     }

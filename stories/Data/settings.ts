@@ -224,7 +224,7 @@ export const SettingChains: any = [
             "symbol": "IMX",
             "decimals": 18
         },
-        "iconUrl": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_goerli.png",
+        "iconUrl": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_goerli.png",
         "rpcUrls": {
             "default": {
                 "http": [
@@ -260,7 +260,7 @@ export const SettingChains: any = [
             "symbol": "USDC",
             "decimals": 6
         },
-        "iconUrl": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_goerli.png",
+        "iconUrl": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_sepolia.png",
         "rpcUrls": {
             "default": {
                 "http": [
@@ -296,7 +296,7 @@ export const SettingChains: any = [
             "symbol": "ETH",
             "decimals": 18
         },
-        "iconUrl": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/optimism_goerli.png",
+        "iconUrl": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/optimism_goerli.png",
         "rpcUrls": {
             "default": {
                 "http": [

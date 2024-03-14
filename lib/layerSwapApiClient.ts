@@ -83,6 +83,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<any>>("PUT", `/campaigns/${campaign}/leaderboard`);
     }
 
+    async GetTransactionStatus(network: string, tx_id: string): Promise<ApiResponse<any>> {
+        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/networks/${network}/transaction_status`, { transaction_id: tx_id });
+    }
+
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2-alpha" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
@@ -236,7 +240,9 @@ export type Transaction = {
     transaction_hash: string,
     confirmations: number,
     max_confirmations: number,
-    status: TransactionStatus,
+    usd_value: number,
+    usd_price: number,
+    status: BackendTransactionStatus,
 }
 
 export enum TransactionType {
@@ -245,16 +251,36 @@ export enum TransactionType {
     Refuel = 'refuel'
 }
 
-export enum TransactionStatus {
+export enum BackendTransactionStatus {
     Completed = 'completed',
+    Failed = 'failed',
     Initiated = 'initiated',
     Pending = 'pending'
 }
 
-export enum PublishedSwapTransactionStatus {
-    Pending,
-    Error,
-    Completed
+export enum TransactionStatus {
+    Completed = 'completed',
+    Failed = 'failed',
+    Pending = 'pending'
+}
+
+export enum DepositType {
+    Manual = 'manual',
+    Wallet = 'wallet'
+}
+
+export type Fee = {
+    min_amount: number,
+    max_amount: number,
+    fee_amount: number,
+    deposit_type: DepositType
+}
+
+type GetFeeParams = {
+    source: string,
+    destination: string,
+    asset: string,
+    refuel?: boolean
 }
 
 export type PublishedSwapTransactions = {
@@ -264,7 +290,7 @@ export type PublishedSwapTransactions = {
 
 export type SwapTransaction = {
     hash: string,
-    status: PublishedSwapTransactionStatus
+    status: BackendTransactionStatus
 }
 
 export enum SwapType {
