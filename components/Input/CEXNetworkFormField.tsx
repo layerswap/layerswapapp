@@ -134,7 +134,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     const valueDetails = <>
         <div className="flex">{network?.display_name}</div>
         <div className="text-primary-text-placeholder inline-flex items-center justify-self-end gap-1">
-            ({currency?.asset})
+            ({currency?.symbol})
         </div>
     </>
 

@@ -19,8 +19,8 @@ export class LayerSwapAppSettings {
     exchanges: Exchange[]
     layers: Layer[]
     assetGroups: AssetGroup[]
-    sourceRoutes: Route[]
-    destinationRoutes: Route[]
+    sourceRoutes: CryptoNetwork[]
+    destinationRoutes: CryptoNetwork[]
 
     resolveImgSrc = (item: Layer | Exchange | Token | Pick<Layer, 'name'> | { asset: string } | Partner | undefined) => {
 
