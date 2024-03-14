@@ -1,16 +1,17 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { PublishedSwapTransactionStatus } from '../lib/layerSwapApiClient';
+import { BackendTransactionStatus, TransactionStatus } from '../lib/layerSwapApiClient';
 
 type SwapTransaction = {
     hash: string;
-    status: PublishedSwapTransactionStatus;
+    status: BackendTransactionStatus | TransactionStatus;
     failReason?: string;
 };
 
 type SwapTransactionStore = {
     swapTransactions: Record<string, SwapTransaction>;
-    setSwapTransaction: (Id: string, status: PublishedSwapTransactionStatus, txHash: string, failReason?: string) => void;
+    setSwapTransaction: (Id: string, status: BackendTransactionStatus | TransactionStatus, txHash: string, failReason?: string) => void;
+    removeSwapTransaction: (Id: string) => void;
 };
 
 type SwapDepositHintClickedStore = {
@@ -34,6 +35,12 @@ export const useSwapTransactionStore = create(
                         }
                     };
                     return { swapTransactions: txForSwap };
+                });
+            },
+            removeSwapTransaction: (id) => {
+                set((state) => {
+                    const { [id]: deletedTransaction, ...remainingTransactions } = state.swapTransactions;
+                    return { swapTransactions: remainingTransactions };
                 });
             },
         }),

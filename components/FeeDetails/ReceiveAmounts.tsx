@@ -6,15 +6,16 @@ import { Fee } from "../../context/feeContext";
 import { Fuel } from "lucide-react";
 
 type WillReceiveProps = {
+    sourceIsExchange: boolean;
     currency?: NetworkCurrency | null;
     to: Layer | undefined | null;
     refuel: boolean;
     fee: Fee | undefined
     onButtonClick: () => void
 }
-export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee, onButtonClick }) => {
-    const receive_amount = fee?.walletReceiveAmount
-    const parsedReceiveAmount = parseFloat(fee?.walletReceiveAmount?.toFixed(currency?.precision) || "")
+export const ReceiveAmounts: FC<WillReceiveProps> = ({ sourceIsExchange, currency, to, refuel, fee, onButtonClick }) => {
+    const receive_amount = sourceIsExchange ? fee?.manualReceiveAmount : fee?.walletReceiveAmount
+    const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(currency?.precision) || "")
     const destinationNetworkCurrency = (to && currency) ? GetDefaultAsset(to, currency.asset) : null
 
     const destinationAsset = to?.assets?.find(c => c?.asset === currency?.asset)
@@ -49,9 +50,9 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee
                             </div>
                             {
                                 refuel ?
-                                        <p onClick={() => onButtonClick()} className='flex cursor-pointer justify-end rounded-md gap-1 items-center text-xs text-primary-buttonTextColor leading-8 md:leading-none font-semibold'>
-                                            <span>+</span> <span>{fee?.refuelAmount} {destinationNativeAsset?.asset}</span> <span className="bg-primary/20 p-1 rounded-md"><Fuel className="h-3 w-3 text-primary" /></span>
-                                        </p>
+                                    <p onClick={() => onButtonClick()} className='flex cursor-pointer justify-end rounded-md gap-1 items-center text-xs text-primary-buttonTextColor leading-8 md:leading-none font-semibold'>
+                                        <span>+</span> <span>{fee?.refuelAmount} {destinationNativeAsset?.asset}</span> <span className="bg-primary/20 p-1 rounded-md"><Fuel className="h-3 w-3 text-primary" /></span>
+                                    </p>
                                     :
                                     <></>
                             }

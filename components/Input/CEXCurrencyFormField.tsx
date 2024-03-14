@@ -166,7 +166,6 @@ export function GenerateCurrencyMenuItems(
             order: CurrencySettings.KnownSettings[c.name]?.Order ?? 5,
             imgSrc: `${storageUrl}layerswap/currencies/${c.name.toLowerCase()}.png`,
             isAvailable: currencyIsAvailable(c),
-            type: 'currency',
             group,
         };
         return res

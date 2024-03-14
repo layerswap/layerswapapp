@@ -17,7 +17,7 @@ type CommandSelectWrapperProps = {
     modalHeight?: LeafletHeight;
     valueDetails?: React.ReactNode;
     exchangeDetails?: React.ReactNode;
-    lockDetails?: React.ReactNode;
+    modalContent?: React.ReactNode;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -31,7 +31,7 @@ export default function CommandSelectWrapper<T>({
     isLoading,
     modalHeight,
     valueDetails,
-    lockDetails
+    modalContent
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -55,23 +55,29 @@ export default function CommandSelectWrapper<T>({
                 >
                     <span className='flex grow text-left items-center text-xs md:text-base'>
                         {
-                            value && <div className="flex items-center">
+                            value?.imgSrc && <div className="flex items-center">
                                 <div className="flex-shrink-0 h-6 w-6 relative">
-                                    {
-                                        value.imgSrc && <Image
-                                            src={value.imgSrc}
-                                            alt="Project Logo"
-                                            height="40"
-                                            width="40"
-                                            loading="eager"
-                                            priority
-                                            className="rounded-md object-contain"
-                                        />
-                                    }
+                                    <Image
+                                        src={value.imgSrc}
+                                        alt="Project Logo"
+                                        height="40"
+                                        width="40"
+                                        loading="eager"
+                                        priority
+                                        className="rounded-md object-contain"
+                                    />
                                 </div>
                             </div>
                         }
-                        {valueDetails && valueDetails}
+                        {value ?
+                            <span className="ml-3 flex font-medium flex-auto space-x-1 text-primary-buttonTextColor items-center">
+                                {valueDetails || value.name}
+                            </span>
+                            :
+                            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                                {placeholder}
+                            </span>
+                        }
                     </span>
                     <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-primary-text">
                         <ChevronDown className="h-4 w-4" aria-hidden="true" />
@@ -88,7 +94,7 @@ export default function CommandSelectWrapper<T>({
                 values={values}
                 isLoading={isLoading}
                 modalHeight={modalHeight}
-                lockDetails={lockDetails}
+                modalContent={modalContent}
             />
         </>
     )
