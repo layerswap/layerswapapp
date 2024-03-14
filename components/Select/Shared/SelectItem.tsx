@@ -17,9 +17,6 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
         <div className="ml-4 flex items-center gap-3 justify-between w-full">
             <p className='text-md font-medium flex w-full justify-between'>
                 <span>{item.displayName ? item.displayName : item.name}</span>
-                {item.asset &&
-                    <span className="text-secondary-text text-medium">({item.asset})</span>
-                }
             </p>
             {
                 item.details &&
