@@ -110,7 +110,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const valueDetails = <div>
         {value
             ?
-            <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
+            <span className="block font-medium text-primary-text flex-auto items-center">
                 {value?.name}
             </span>
             :

@@ -203,7 +203,6 @@ function GenerateMenuItems(
                 baseObject: e,
                 id: `${e?.asset?.toLowerCase()}_${e?.network?.toLowerCase()}`,
                 name: `${e.network}_${e.asset}`,
-                displayName: network?.display_name,
                 order: indexOf > -1 ? indexOf : 100,
                 imgSrc: network?.img_url || '',
                 isAvailable: { value: true, disabledReason: null },
