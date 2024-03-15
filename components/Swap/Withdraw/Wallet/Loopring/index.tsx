@@ -1,4 +1,4 @@
-import { Link, ArrowLeftRight } from 'lucide-react';
+import { Link, ArrowLeftRight, Lock } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../../buttons/submitButton';
 import { useSwapDataState } from '../../../../../context/swap';
@@ -226,7 +226,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         //TODO fix text
         return <WalletMessage
             status="error"
-            header='Activate your Loopring account'
+            header='Account is not activated'
             details={`Make a deposit to your address for activating Loopring account`} />
     }
 
@@ -301,7 +301,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                                     onClick={shouldActivate ? activateAccout : unlockAccount}
                                     icon={shouldActivate ?
                                         <SignatureIcon className="h-5 w-5 ml-2" aria-hidden="true" />
-                                        : <Link className="h-5 w-5 ml-2" aria-hidden="true" />
+                                        : <Lock className="h-5 w-5 ml-2" aria-hidden="true" />
                                     }
                                 >
                                     {shouldActivate ? <>Activate account</> : <>Unlock account</>}
