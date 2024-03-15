@@ -1,62 +1,17 @@
-<a name="readme-top"></a>
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
-
-
-
-<!-- PROJECT LOGO -->
 <br />
-<div align="center">
-  <a href="https://github.com/layerswap/layerswapapp">
-    <img src="public/symbol.png" alt="Logo" width="80" height="80">
-  </a>
-
-<h3 align="center">Layerswap</h3>
-
-  <p align="center">
-    project_description
-    <br />
-    <a href="https://github.com/layerswap/layerswapapp"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/layerswap/layerswapapp">View Demo</a>
-    ·
-    <a href="https://github.com/layerswap/layerswapapp/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/layerswap/layerswapapp/issues">Request Feature</a>
-  </p>
+<div align="left">
+  <h1 align="left">UI for Layerswap web application</h1>
 </div>
 
+### Run locally
 
+This is an example of how to list things you need to use the software and how to install them.
+  ```sh
+  yarn
+  yarn dev 
+  ```
 
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ol>
-</details>
 
 
 
