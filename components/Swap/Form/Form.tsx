@@ -12,8 +12,8 @@ import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
 import { ArrowUpDown, Loader2 } from 'lucide-react'
 import WarningMessage from "../../WarningMessage";
+import { useAuthState } from "../../../context/authContext";
 import { GetDefaultAsset } from "../../../helpers/settingsHelper";
-import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
@@ -59,6 +59,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
     const { minAllowedAmount, valuesChanger, fee } = useFee()
     const toAsset = values.toCurrency?.asset
+    const fromAsset = values.fromCurrency?.asset
+
+    const { authData } = useAuthState()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const query = useQueryState();
@@ -66,19 +69,15 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
     const actionDisplayName = query?.actionButtonText || "Swap now"
 
-    const handleConfirmToggleChange = (value: boolean) => {
-        setFieldValue('refuel', value)
-    }
-
     useEffect(() => {
         valuesChanger(values)
     }, [values])
 
     useEffect(() => {
         if (!source || !toAsset || !GetDefaultAsset(source, toAsset)?.refuel_amount_in_usd) {
-            handleConfirmToggleChange(false)
+            setFieldValue('refuel', false, true)
         }
-    }, [toAsset, destination, source])
+    }, [toAsset, destination, source, fromAsset, currencyGroup])
 
     useEffect(() => {
         (async () => {
@@ -127,7 +126,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         valuesSwapperDisabled = true;
     }
     const seconds = fee?.avgCompletionTime && calculateSeconds(fee.avgCompletionTime)
-    const averageTimeInMinutes = seconds && (seconds / 60) || 0
 
     const hideAddress = query?.hideAddress
         && query?.to
@@ -192,13 +190,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                     <div className="w-full">
                         <FeeDetailsComponent values={values} />
                         {
-                            //TODO refactor 
-                            destination && toAsset && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal"><span>{destination?.display_name}</span> <span>network congestion. Transactions can take up to 1 hour.</span></span>
-                            </WarningMessage>
-                        }
-                        {
                             values.amount &&
                             <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
                         }
@@ -227,6 +218,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: string): string {
     return errors.from?.toString()
         || errors.to?.toString()
+        || errors.fromCurrency
+        || errors.toCurrency
+        || errors.currencyGroup
         || errors.amount
         || errors.destination_address
         || (actionDisplayName)

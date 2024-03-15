@@ -8,7 +8,7 @@ import {
 } from "wagmi";
 import { parseEther, createPublicClient, http } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
-import { PublishedSwapTransactionStatus } from "../../../../../lib/layerSwapApiClient";
+import { BackendTransactionStatus } from "../../../../../lib/layerSwapApiClient";
 import WalletIcon from "../../../../icons/WalletIcon";
 import Modal from '../../../../modal/modal';
 import MessageComponent from "../../../../MessageComponent";
@@ -43,8 +43,9 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         to: isContractWallet?.ready ? depositAddress : undefined,
         value: amount ? parseEther(amount.toString()) : undefined,
         chainId: chainId,
+        enabled: isContractWallet?.ready
     })
-    const encodedData: `0x${string}` = (canDoSweepless && address !== userDestinationAddress) ? `0x${sequenceNumber}` : "0x"
+    const encodedData: `0x${string}` = (canDoSweepless && address?.toLowerCase() !== userDestinationAddress?.toLowerCase()) ? `0x${sequenceNumber}` : "0x"
 
     const tx = {
         to: depositAddress,
@@ -78,7 +79,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     useEffect(() => {
         try {
             if (transaction?.data?.hash && transaction?.data?.hash as `0x${string}`) {
-                setSwapTransaction(swapId, PublishedSwapTransactionStatus.Pending, transaction?.data?.hash)
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, transaction?.data?.hash)
                 if (!!isContractWallet?.isContract)
                     SendTransactionData(swapId, transaction?.data?.hash)
             }
@@ -93,12 +94,12 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         hash: transaction?.data?.hash || savedTransactionHash,
         onSuccess: async (trxRcpt) => {
             setApplyingTransaction(true)
-            setSwapTransaction(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
+            setSwapTransaction(swapId, BackendTransactionStatus.Completed, trxRcpt.transactionHash);
             setApplyingTransaction(false)
         },
         onError: async (err) => {
             if (transaction?.data?.hash)
-                setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, transaction?.data?.hash, err.message);
+                setSwapTransaction(swapId, BackendTransactionStatus.Failed, transaction?.data?.hash, err.message);
         }
     })
 
@@ -136,7 +137,7 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
             <>
                 <ButtonWrapper
                     clcikHandler={clickHandler}
-                    disabled={sendTransactionPrepare?.isLoading}
+                    disabled={sendTransactionPrepare?.isLoading || !isContractWallet?.ready}
                     icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 >
                     {(isError && buttonClicked) ? <span>Try again</span>

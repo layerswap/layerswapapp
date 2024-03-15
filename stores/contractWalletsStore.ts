@@ -5,7 +5,7 @@ import { Layer } from '../Models/Layer';
 interface WalletState {
     contractWallets: ContractWalletInfo[];
     addContractWallet: (address: string, network_internal_name: string) => void;
-    getContractWallet:  (address, network_internal_name) => ContractWalletInfo | undefined;
+    getContractWallet: (address, network_internal_name) => ContractWalletInfo | undefined;
     updateContractWallet: (address, network_internal_name, isContractWallet) => void;
 }
 
@@ -22,8 +22,8 @@ export class ContractWalletInfo {
 
 export const useContractWalletsStore = create<WalletState>()(persist((set, get) => ({
     contractWallets: [],
-    getContractWallet:  (address, network_internal_name) => {
-        return get().contractWallets.find(x=> x.key == ContractWalletInfo.keyDeriver(address, network_internal_name))
+    getContractWallet: (address, network_internal_name) => {
+        return get().contractWallets.find(x => x.key == ContractWalletInfo.keyDeriver(address, network_internal_name))
     },
     addContractWallet: (address, network_internal_name) =>
         set((state) => {
