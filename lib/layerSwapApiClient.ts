@@ -1,9 +1,8 @@
 import { SwapStatus } from "../Models/SwapStatus";
 import AppSettings from "./AppSettings";
-import { InitializeInstance } from "./axiosInterceptor"
+import { InitializeUnauthInstance, InitializeAuthInstance } from "./axiosInterceptor"
 import { v4 as uuidv4 } from 'uuid';
 import axios, { AxiosInstance, Method } from "axios";
-import { NextRouter } from "next/router";
 import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
@@ -15,26 +14,24 @@ export default class LayerSwapApiClient {
     static bridgeApiBaseEndpoint?: string = AppSettings.LayerswapBridgeApiUri;
 
     _authInterceptor: AxiosInstance;
-    constructor(private readonly _router?: NextRouter, private readonly _redirect?: string) {
-        this._authInterceptor = InitializeInstance(LayerSwapAuthApiClient.identityBaseEndpoint);
+    _unauthInterceptor: AxiosInstance
+    constructor() {
+        this._authInterceptor = InitializeAuthInstance(LayerSwapAuthApiClient.identityBaseEndpoint);
+        this._unauthInterceptor = InitializeUnauthInstance(LayerSwapApiClient.apiBaseEndpoint)
     }
 
     fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
 
-    async GetSourceRoutesAsync(): Promise<ApiResponse<CryptoNetwork[]>> {
-        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/v2-alpha/sources`).then(res => res.data);
-    }
-
-    async GetDestinationRoutesAsync(): Promise<ApiResponse<CryptoNetwork[]>> {
-        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/v2-alpha/destinations`).then(res => res.data);
+    async GetRoutesAsync(direction: 'sources' | 'destinations'): Promise<ApiResponse<CryptoNetwork[]>> {
+        return await this.UnauthenticatedRequest<ApiResponse<CryptoNetwork[]>>("GET", `/${direction}`)
     }
 
     async GetExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
-        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/v2-alpha/exchanges`).then(res => res.data);
+        return await this.UnauthenticatedRequest<ApiResponse<Exchange[]>>("GET", `/exchanges`);
     }
 
     async GetLSNetworksAsync(): Promise<ApiResponse<CryptoNetwork[]>> {
-        return await axios.get(`${LayerSwapApiClient.apiBaseEndpoint}/api/v2-alpha/networks`).then(res => res.data);
+        return await this.UnauthenticatedRequest<ApiResponse<CryptoNetwork[]>>("GET", `/networks`);
     }
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<SwapResponse>> {
@@ -90,6 +87,22 @@ export default class LayerSwapApiClient {
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2-alpha" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
+            .then(res => {
+                return res?.data;
+            })
+            .catch(async reason => {
+                if (reason instanceof AuthRefreshFailedError) {
+                    return Promise.resolve(new EmptyApiResponse());
+                }
+                else {
+                    return Promise.reject(reason);
+                }
+            });
+    }
+
+    private async UnauthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
+        let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2-alpha" + endpoint;
+        return await this._unauthInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
             .then(res => {
                 return res?.data;
             })
@@ -165,7 +178,7 @@ export type SwapItem = {
         app: string | null;
         sequence_number: number
     }
-} 
+}
 
 export type DepositMethods = {
     deposit_address: {
