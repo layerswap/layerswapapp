@@ -132,7 +132,6 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
                 applyingTransaction={applyingTransaction}
             />
         }
-        <span>Ready <>{isContractWallet?.ready ? "yes" : "no"}</></span>
         {
             !isLoading &&
             <>
