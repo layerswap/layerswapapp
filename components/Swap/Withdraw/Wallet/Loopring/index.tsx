@@ -18,7 +18,7 @@ import { useSwapTransactionStore } from '../../../../../stores/swapTransactionSt
 import SignatureIcon from '../../../../icons/SignatureIcon';
 import { evmConnectorNameResolver } from '../../../../../lib/wallets/evm/KnownEVMConnectors';
 import { ActivationTokenPicker } from './ActivationTokentPicker';
-import { useLoopringAccount } from './hooks';
+import { useActivationData, useLoopringAccount } from './hooks';
 
 
 type Props = {
@@ -53,9 +53,9 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const source_network = layers.find(n => n.internal_name === source_network_internal_name);
     const source_currency = source_network?.assets?.find(c => c.asset.toLocaleUpperCase() === swap?.source_network_asset.toLocaleUpperCase());
     const token = layers?.find(n => swap?.source_network == n?.internal_name)?.assets.find(c => c.asset == swap?.source_network_asset);
-
     const { account: accInfo, isLoading: loadingAccount, noAccount, mutate: refetchAccount } = useLoopringAccount({ address: fromAddress })
     const loopringWalletResolver = connector && resolveConnectProvedes(evmConnectorNameResolver(connector))
+    const { availableBalances, defaultValue, loading: activationDataIsLoading, feeData } = useActivationData(accInfo?.accountId)
 
     const unlockAccount = useCallback(async () => {
         setLoading(true)
@@ -262,6 +262,12 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const shouldActivate = accInfo && !(accInfo.publicKey.x
         || accInfo.publicKey.y)
 
+    if (!activationDataIsLoading && (!availableBalances || !defaultValue || !feeData))
+        return <WalletMessage
+            status="error"
+            header='Not enough fee'
+            details={`You do not have enugh amount of token for account activation.`} />
+
     return (
         <>
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
@@ -274,26 +280,12 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                             :
                             <>
                                 {shouldActivate &&
-                                    <div className="flex text-center mb-2 space-x-2">
-                                        <div className="text-left space-y-1">
-                                            <p className="text-md font-semibold self-center text-primary-text">
-                                                Activate Loopring L2 Account
-                                            </p>
-                                            <p className="text-sm text-secondary-text break-allspace-x-1 ">
-                                                <p className='flex mt-4 w-full justify-between items-center text-sm text-secondary-text'>
-                                                    <span className='font-bold sm:inline hidden'>One time activation fee</span> <span className='font-bold sm:hidden'>Fee</span> <span className='text-primary-text text-sm sm:text-base flex items-center'>
-                                                        <span className=' text-secondary-text text-sm ml-1'>
-                                                            <span></span>
-                                                            <ActivationTokenPicker
-                                                                onChange={setSelectedActivationAsset}
-                                                                accountId={accInfo.accountId}
-                                                            />
-                                                        </span>
-                                                    </span>
-                                                </p>
-                                            </p>
-                                        </div>
-                                    </div>
+                                    <ActivationTokenPicker
+                                        onChange={setSelectedActivationAsset}
+                                        availableBalances={availableBalances}
+                                        defaultValue={defaultValue}
+                                        feeData={feeData}
+                                    />
                                 }
                                 <SubmitButton
                                     isDisabled={loadingAccount || !accInfo || loading}

@@ -1,17 +1,16 @@
 import Image from 'next/image';
-import { useLoopringAccountBalance, useLoopringFees } from './hooks';
+import { FeeData, useLoopringAccountBalance, useLoopringFees } from './hooks';
 import { ISelectMenuItem } from '../../../../Select/Shared/Props/selectMenuItem';
 import formatAmount from '../../../../../lib/formatAmount';
 import { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../../../../shadcn/select';
+import * as lp from "@loopring-web/loopring-sdk";
 
-export const ActivationTokenPicker = ({ accountId, onChange }: { accountId: number | undefined, onChange: (v: string | undefined) => void }) => {
-    const { data: loopringBalnce, isLoading: lpBalanceIsLoading } = useLoopringAccountBalance(accountId)
-    const { data: feeData } = useLoopringFees(accountId)
+export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChange, feeData }: { availableBalances: lp.UserBalanceInfo[] | undefined, defaultValue: lp.UserBalanceInfo | undefined, feeData: FeeData | undefined, onChange: (v: string | undefined) => void }) => {
 
     const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL;
     const activationCurrencyValues: ISelectMenuItem[]
-        = loopringBalnce?.map(b => {
+        = availableBalances?.map(b => {
             const asset: string = TOKEN_INFO.idIndex[b.tokenId]
             const decimals = TOKEN_INFO.tokenMap[asset].decimals
             return {
@@ -33,10 +32,6 @@ export const ActivationTokenPicker = ({ accountId, onChange }: { accountId: numb
         setSelectedValue(v)
     }
 
-    const defaultValue = feeData && loopringBalnce?.find(b => {
-        const tfee = feeData?.fees?.find(f => f.tokenId === b.tokenId)?.fee
-        return Number(b.total) >= Number(tfee)
-    });
 
     useEffect(() => {
         if (!selectedValue && defaultValue) {
@@ -47,41 +42,49 @@ export const ActivationTokenPicker = ({ accountId, onChange }: { accountId: numb
     const decimals = TOKEN_INFO.tokenMap[selectedValue]?.decimals
     const selectedTokenFee = feeData?.fees?.find(f => f.token === selectedValue)?.fee
     const formattedFee = selectedTokenFee && formatAmount(selectedTokenFee, decimals)
-    return activationCurrencyValues.length > 0 ? <Select onValueChange={handleChange} value={selectedValue} >
-        <SelectTrigger className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
-            <SelectValue>
-                <span className='space-x-1'><span>{formattedFee}</span><span>{selectedValue}</span></span>
-            </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-            <SelectGroup>
-                <SelectLabel>Fee token</SelectLabel>
-                {activationCurrencyValues?.map(cv => (
-                    <SelectItem key={cv.name} value={cv.name}>
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0 h-5 w-5 relative">
-                                {
-                                    cv &&
-                                    <Image
-                                        src={cv.imgSrc}
-                                        alt="From Logo"
-                                        height="60"
-                                        width="60"
-                                        className="rounded-md object-contain"
-                                    />
-                                }
-                            </div>
-                            <div className="mx-1 block"><span className='text-primary-text'>{cv.name}</span> <span>{cv.details}</span></div>
-                        </div>
-                    </SelectItem>
-                ))}
-            </SelectGroup>
-        </SelectContent>
-    </Select>
-        : <></>
+
+    return <p className="break-allspace-x-1 flex mt-4 w-full justify-between items-center text-sm text-secondary-text">
+        <span className='font-bold sm:inline hidden'>One time activation fee</span>
+        <span className='text-primary-text text-sm sm:text-base flex items-center'>
+            <span className=' text-secondary-text text-sm ml-1'>
+                {
+                    activationCurrencyValues.length > 0 ? <Select onValueChange={handleChange} value={selectedValue} >
+                        <SelectTrigger className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
+                            <SelectValue>
+                                <span className='space-x-1'><span>{formattedFee}</span><span>{selectedValue}</span></span>
+                            </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectLabel>Fee token</SelectLabel>
+                                {activationCurrencyValues?.map(cv => (
+                                    <SelectItem key={cv.name} value={cv.name}>
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0 h-5 w-5 relative">
+                                                {
+                                                    cv &&
+                                                    <Image
+                                                        src={cv.imgSrc}
+                                                        alt="From Logo"
+                                                        height="60"
+                                                        width="60"
+                                                        className="rounded-md object-contain"
+                                                    />
+                                                }
+                                            </div>
+                                            <div className="mx-1 block"><span className='text-primary-text'>{cv.name}</span> <span>{cv.details}</span></div>
+                                        </div>
+                                    </SelectItem>
+                                ))}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                        : <></>
+                }
+            </span>
+        </span>
+    </p>
 }
-
-
 
 export let TOKEN_INFO = {
     addressIndex: {

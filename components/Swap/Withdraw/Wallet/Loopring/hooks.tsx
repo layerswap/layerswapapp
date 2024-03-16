@@ -43,3 +43,34 @@ export const useLoopringFees = (accountId?: number) => {
 
     return { data, isLoading }
 }
+
+
+
+export const useActivationData = (accountId?: number) => {
+    const { data: loopringBalnce, isLoading: lpBalanceIsLoading } = useLoopringAccountBalance(accountId)
+    const { data: feeData, isLoading: feeDataIsLoading } = useLoopringFees(accountId)
+
+    const availableBalances = feeData && loopringBalnce?.filter(b => {
+        const tfee = feeData?.fees?.find(f => f.tokenId === b.tokenId)?.fee
+        return Number(b.total) >= Number(tfee)
+    })
+
+    const defaultValue = availableBalances?.[0]
+
+    return {
+        availableBalances,
+        defaultValue,
+        loading: lpBalanceIsLoading || feeDataIsLoading,
+        feeData
+    }
+}
+
+export type FeeData = {
+    fees: {
+        token: string;
+        tokenId: number;
+        fee: string;
+        discount: number;
+    }[];
+    gasPrice: string;
+}
