@@ -19,6 +19,7 @@ export const useLoopringAccount = ({ address }: { address?: `0x${string}` }) => 
         useSWR<lp.AccountInfo>(address ? url : null,
             fetcher,
             {
+                dedupingInterval: 1000,
                 refreshInterval: (latestData) => latestData?.frozen ? 3000 : 0
             });
     const noAccount = (accountData as any)?.resultInfo?.code == 101002
@@ -39,7 +40,7 @@ export const useLoopringFees = (accountId?: number) => {
             }[],
             gasPrice: string
         }>(accountId ? url : null,
-            fetcher);
+            fetcher, { dedupingInterval: 1000 });
 
     return { data, isLoading }
 }

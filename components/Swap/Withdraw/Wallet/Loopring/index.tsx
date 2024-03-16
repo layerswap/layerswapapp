@@ -266,7 +266,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         return <WalletMessage
             status="error"
             header='Not enough fee'
-            details={`You do not have enugh amount of token for account activation.`} />
+            details={`The balance of the account is not enough to activate it․`} />
 
     return (
         <>
@@ -288,7 +288,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                                     />
                                 }
                                 <SubmitButton
-                                    isDisabled={loadingAccount || !accInfo || loading}
+                                    isDisabled={loadingAccount || !accInfo || loading || activationDataIsLoading}
                                     isSubmitting={loadingAccount || loading}
                                     onClick={shouldActivate ? activateAccout : unlockAccount}
                                     icon={shouldActivate ?
