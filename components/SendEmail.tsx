@@ -127,9 +127,9 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                     </Disclosure>
                                 </div>
                                 :
-                                <div>
+                                <div className='h-full flex flex-col justify-between'>
                                     <Widget.Content center={true}>
-                                        <User className='w-16 h-16 text-primary self-center mt-auto' />
+                                        <User className='w-16 h-16 text-primary self-center mt-5 sm:mt-auto' />
                                         <div>
                                             <p className='mb-6 mt-2 pt-2 text-2xl font-bold text-primary-text leading-6 text-center font-roboto'>
                                                 What&apos;s your email?

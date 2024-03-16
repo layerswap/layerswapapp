@@ -168,7 +168,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         if (selected_currency
             && destinationRoutes?.data
                 ?.filter(r => r.network === to?.internal_name)
-                ?.some(r => r.asset === selected_currency.name)) {
+                ?.some(r => r.asset === selected_currency?.baseObject?.network)) {
             setFieldValue(name, selected_currency.baseObject)
         }
         else if (default_currency) {
@@ -177,6 +177,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     }, [to, query])
 
     useEffect(() => {
+
         if (direction !== "from" || !from) return
 
         let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset && c?.baseObject?.network === currencyNetwork)
@@ -193,7 +194,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         if (selected_currency
             && sourceRoutes?.data
                 ?.filter(r => r.network === from?.internal_name)
-                ?.some(r => r.asset === selected_currency.name && r.network === selected_currency?.network)) {
+                ?.some(r => r.asset === selected_currency.name && r.network === selected_currency?.baseObject?.network)) {
             setFieldValue(name, selected_currency.baseObject)
         }
         else if (default_currency) {
@@ -234,7 +235,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const valueDetails = <div>
         {value
             ?
-            <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
+            <span className="block font-medium text-primary-text flex-auto items-center">
                 {value?.name}
             </span>
             :
@@ -362,11 +363,9 @@ export function GenerateCurrencyMenuItems(
             menuItemDetails: details,
             menuItemImage: NetworkImage,
             balanceAmount: Number(formatted_balance_amount),
-            network_display_name: c.network_display_name,
             order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
             imgSrc: resolveImgSrc && resolveImgSrc(c),
             isAvailable: currencyIsAvailable(c),
-            type: "currency",
             group: getGroupName(c.network_display_name === (direction === "from" ? from?.display_name : to?.display_name) ? c.network_display_name : "All networks"),
         };
 

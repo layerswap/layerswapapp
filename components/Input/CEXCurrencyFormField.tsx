@@ -110,7 +110,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const valueDetails = <div>
         {value
             ?
-            <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
+            <span className="block font-medium text-primary-text flex-auto items-center">
                 {value?.name}
             </span>
             :
@@ -166,7 +166,6 @@ export function GenerateCurrencyMenuItems(
             order: CurrencySettings.KnownSettings[c.name]?.Order ?? 5,
             imgSrc: `${storageUrl}layerswap/currencies/${c.name.toLowerCase()}.png`,
             isAvailable: currencyIsAvailable(c),
-            type: 'currency',
             group,
         };
         return res

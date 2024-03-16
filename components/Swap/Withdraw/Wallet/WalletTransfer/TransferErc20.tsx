@@ -7,7 +7,7 @@ import {
     useNetwork,
     erc20ABI,
 } from "wagmi";
-import { PublishedSwapTransactionStatus } from "../../../../../lib/layerSwapApiClient";
+import { BackendTransactionStatus } from "../../../../../lib/layerSwapApiClient";
 import WalletIcon from "../../../../icons/WalletIcon";
 import { encodeFunctionData, http, parseUnits, createWalletClient, publicActions } from 'viem'
 import TransactionMessage from "./transactionMessage";
@@ -87,7 +87,7 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
     useEffect(() => {
         try {
             if (contractWrite?.data?.hash) {
-                setSwapTransaction(swapId, PublishedSwapTransactionStatus.Pending, contractWrite?.data?.hash);
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, contractWrite?.data?.hash);
                 if (!!isContractWallet?.isContract)
                     SendTransactionData(swapId, contractWrite?.data?.hash)
             }
@@ -110,12 +110,12 @@ const TransferErc20Button: FC<TransferERC20ButtonProps> = ({
         hash: contractWrite?.data?.hash || savedTransactionHash,
         onSuccess: async (trxRcpt) => {
             setApplyingTransaction(true)
-            setSwapTransaction(swapId, PublishedSwapTransactionStatus.Completed, trxRcpt.transactionHash);
+            setSwapTransaction(swapId, BackendTransactionStatus.Completed, trxRcpt.transactionHash);
             setApplyingTransaction(false)
         },
         onError: async (err) => {
             if (contractWrite?.data?.hash)
-                setSwapTransaction(swapId, PublishedSwapTransactionStatus.Error, contractWrite.data.hash, err.message);
+                setSwapTransaction(swapId, BackendTransactionStatus.Failed, contractWrite.data.hash, err.message);
         }
     })
 

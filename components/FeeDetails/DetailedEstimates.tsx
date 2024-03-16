@@ -7,10 +7,12 @@ import AverageCompletionTime from "../Common/AverageCompletionTime";
 const DetailedEstimates: FC = () => {
 
     const { values } = useFormikContext<SwapFormValues>();
-    const { fromCurrency } = values;
+    const { fromCurrency, fromExchange } = values;
     const { fee, isFeeLoading } = useFee()
 
-    const parsedFee = fee && parseFloat(Number(fee.walletFee).toFixed(fromCurrency?.precision))
+    const fee_amount = fromExchange ? fee?.manualFee : fee?.walletFee
+
+    const parsedFee = fee && parseFloat(Number(fee_amount).toFixed(fromCurrency?.precision))
     const currencyName = fromCurrency?.display_asset || fromCurrency?.asset || " "
     const feeAmountInUsd = parsedFee && fromCurrency ? (fromCurrency?.usd_price * parsedFee).toFixed(2) : undefined
 

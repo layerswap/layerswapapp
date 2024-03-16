@@ -41,7 +41,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         currencyGroup
     } = values
 
-    const { layers, resolveImgSrc } = useSettingsState();
+    const { layers } = useSettingsState();
     const filterWith = direction === "from" ? to : from
     const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
 
@@ -131,19 +131,12 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         else if (value) return
     }, [currencyGroup])
 
-    const valueDetails = <div>
-        {value ?
-            <span className="ml-3 flex font-medium flex-auto space-x-1 items-center">
-                <div className="text-primary-buttonTextColor flex">{network?.display_name}</div>
-                <div className="text-primary-text-placeholder inline-flex items-center justify-self-end gap-1">
-                    ({currency?.asset})
-                </div>
-            </span>
-            :
-            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
-                Network
-            </span>}
-    </div>
+    const valueDetails = <>
+        <div className="flex">{network?.display_name}</div>
+        <div className="text-primary-text-placeholder inline-flex items-center justify-self-end gap-1">
+            ({currency?.asset})
+        </div>
+    </>
 
     const networkDetails = <div>
         {
@@ -185,7 +178,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             isLoading={isLoading}
             modalHeight="80%"
             valueDetails={valueDetails}
-            lockDetails={networkDetails}
+            modalContent={networkDetails}
         />
     </div>)
 })
@@ -210,12 +203,9 @@ function GenerateMenuItems(
                 baseObject: e,
                 id: `${e?.asset?.toLowerCase()}_${e?.network?.toLowerCase()}`,
                 name: `${e.network}_${e.asset}`,
-                asset: e.asset,
-                displayName: network?.display_name,
                 order: indexOf > -1 ? indexOf : 100,
                 imgSrc: network?.img_url || '',
                 isAvailable: { value: true, disabledReason: null },
-                type: 'cex',
                 group: '',
                 menuItemLabel: network?.display_name
             }
