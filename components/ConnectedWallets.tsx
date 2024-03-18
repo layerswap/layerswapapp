@@ -118,9 +118,12 @@ const ConnectedWalletsDialog = ({ openDialog, setOpenDialog }: { openDialog: boo
                                     }
                                     <p>{shortenAddress(wallet.address)}</p>
                                 </div>
-                                <button onClick={() => { disconnectWallet(wallet.providerName); wallets.length === 1 && setOpenDialog(false) }} className="p-1 hover:bg-secondary-700 text-xs text-secondary-text hover:opacity-75">
-                                    Disconnect
-                                </button>
+                                {
+                                    wallet.providerName !== 'query' &&
+                                    <button onClick={() => { disconnectWallet(wallet.providerName); wallets.length === 1 && setOpenDialog(false) }} className="p-1 hover:bg-secondary-700 text-xs text-secondary-text hover:opacity-75">
+                                        Disconnect
+                                    </button>
+                                }
                             </div>
                         ))
                     }
@@ -136,6 +139,6 @@ const ConnectedWalletsDialog = ({ openDialog, setOpenDialog }: { openDialog: boo
                     </ConnectButton>
                 </DialogFooter>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     )
 }

@@ -23,7 +23,7 @@ export const ConnectWalletButton: FC = () => {
         if (!provider)
             throw new Error(`No provider from ${source_layer?.internal_name}`)
 
-        return provider.connectWallet(provider?.name)
+        return provider.connectWallet && provider.connectWallet(provider?.name)
     }, [provider])
 
     return <ButtonWrapper

@@ -36,7 +36,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
             throw new Error(`No provider from ${source_layer?.internal_name}`)
 
         setLoading(true)
-        await provider?.connectWallet(source_layer?.chain_id)
+        provider?.connectWallet && await provider.connectWallet(source_layer?.chain_id)
         setLoading(false)
     }, [provider, source_layer])
 

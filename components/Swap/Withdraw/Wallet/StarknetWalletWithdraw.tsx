@@ -58,7 +58,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
         setLoading(true)
         try {
-            await provider.connectWallet(source_layer?.chain_id)
+            provider.connectWallet && await provider.connectWallet(source_layer?.chain_id)
         }
         catch (e) {
             toast(e.message)
@@ -71,7 +71,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         if (source_layer && connectedChainId && connectedChainId !== sourceChainId && provider) {
             (async () => {
                 setIsWrongNetwork(true)
-                await provider.disconnectWallet()
+                provider.disconnectWallet && await provider.disconnectWallet()
             })()
         } else if (source_layer && connectedChainId && connectedChainId === sourceChainId) {
             setIsWrongNetwork(false)
