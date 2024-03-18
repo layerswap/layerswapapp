@@ -3,7 +3,7 @@ import NetworkSettings from "./NetworkSettings";
 import { SendErrorMessage } from "./telegram";
 
 export default function resolveChain(network: Layer): (Chain & RainbowKitChain) | undefined {
-
+    
     const nativeCurrency = network.assets.find(c => c.is_native);
     const blockExplorersBaseURL =
         network.transaction_explorer_template ?

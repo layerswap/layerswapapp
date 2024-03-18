@@ -37,12 +37,16 @@ export class NetworkCurrency {
     group_name?: string | null;
     availableInSource?: boolean;
     availableInDestination?: boolean;
+    balanceAmountInUsd?: number;
+    network_display_name?: string | undefined;
+    network?: string | undefined;
 }
 export class NetworkNode {
     url: string;
 }
 export class ManagedAccount {
     address: `0x${string}`;
+    type?: string;
 }
 export class Metadata {
     multicall3?: {

@@ -59,7 +59,7 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
 
     const handleSetMaxAmount = useCallback(async () => {
         setFieldValue('amount', maxAllowedAmount);
-        from && fetchBalance(from);
+        from && fetchBalance({ network: from });
         from && fromCurrency && fetchGas(from, fromCurrency, destination_address || "");
     }, [from, to, fromCurrency, destination_address, maxAllowedAmount])
 

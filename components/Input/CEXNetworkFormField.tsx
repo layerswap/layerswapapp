@@ -201,14 +201,13 @@ function GenerateMenuItems(
 
             const item: SelectMenuItem<{ network: string, asset: string }> = {
                 baseObject: e,
-                id: index.toString(),
+                id: `${e?.asset?.toLowerCase()}_${e?.network?.toLowerCase()}`,
                 name: `${e.network}_${e.asset}`,
-                displayName: network?.display_name,
                 order: indexOf > -1 ? indexOf : 100,
                 imgSrc: network?.img_url || '',
                 isAvailable: { value: true, disabledReason: null },
                 group: '',
-                details: e.asset
+                menuItemLabel: network?.display_name
             }
             return item;
         }).sort(SortingByOrder)

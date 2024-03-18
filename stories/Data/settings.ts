@@ -571,7 +571,8 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
             "nodes": [
@@ -617,7 +618,8 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
             "nodes": [
@@ -654,7 +656,8 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
             "nodes": [
@@ -664,7 +667,41 @@ export const Settings: LayerSwapSettings = {
             ]
         },
         {
-            "img_url": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/optimism_sepolia.png",
+            "display_name": "Linea Goerli",
+            "internal_name": "LINEA_GOERLI",
+            "chain_id": "59140",
+            "is_testnet": true,
+            "type": NetworkType.EVM,
+            "transaction_explorer_template": "https://goerli.lineascan.build/tx/{0}",
+            "account_explorer_template": "https://goerli.lineascan.build/address/{0}",
+            "metadata": null,
+            "created_date": "2023-12-27T16:46:50.617075+00:00",
+            "currencies": [
+                {
+                    "display_asset": null,
+                    "asset": "ETH",
+                    "contract_address": null,
+                    "decimals": 18,
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 2528.64,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "ETH"
+                }
+            ],
+            "managed_accounts": [
+                {
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
+                }
+            ],
+            "nodes": [
+                {
+                    "url": "https://rpc.goerli.linea.build"
+                }
+            ]
+        },
+        {
             "display_name": "Optimism Sepolia",
             "internal_name": "OPTIMISM_SEPOLIA",
             "chain_id": "11155420",
@@ -702,13 +739,89 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
-            "nodes": []
+            "nodes": [
+                {
+                    "url": "https://rpc.goerli.linea.build"
+                }
+            ]
         },
         {
-            "img_url": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/solana_devnet.png",
+            "display_name": "Base Sepolia",
+            "internal_name": "BASE_SEPOLIA",
+            "chain_id": "84532",
+            "is_testnet": true,
+            "type": NetworkType.EVM,
+            "transaction_explorer_template": "https://sepolia.basescan.org/tx/{0}",
+            "account_explorer_template": "https://sepolia.basescan.org/address/{0}",
+            "metadata": {
+                "GasPriceOracleContract": "0x420000000000000000000000000000000000000F"
+            },
+            "created_date": "2023-12-27T16:46:50.617075+00:00",
+            "currencies": [
+                {
+                    "display_asset": null,
+                    "asset": "ETH",
+                    "contract_address": null,
+                    "decimals": 18,
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 2528.64,
+                    "refuel_amount_in_usd": null,
+                    "group_name": "ETH"
+                }
+            ],
+            "managed_accounts": [
+                {
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
+                }
+            ],
+            "nodes": [
+                {
+                    "url": "https://rpc.goerli.linea.build"
+                }
+            ]
+        },
+        {
+            "display_name": "Evmos Testnet",
+            "internal_name": "EVMOS_TESTNET",
+            "chain_id": "9000",
+            "is_testnet": true,
+            "type": NetworkType.EVM,
+            "transaction_explorer_template": "https://testnet.escan.live/tx/{0}",
+            "account_explorer_template": "https://testnet.escan.live/address/{0}",
+            "metadata": null,
+            "created_date": "2023-12-27T16:46:50.617075+00:00",
+            "currencies": [
+                {
+                    "display_asset": null,
+                    "asset": "EVMOS",
+                    "contract_address": null,
+                    "decimals": 18,
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 0.098277,
+                    "refuel_amount_in_usd": null,
+                    "group_name": null
+                }
+            ],
+            "managed_accounts": [
+                {
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
+                }
+            ],
+            "nodes": [
+                {
+                    "url": "https://rpc.goerli.linea.build"
+                }
+            ]
+        },
+        {
             "display_name": "Solana Devnet",
             "internal_name": "SOLANA_DEVNET",
             "chain_id": "1399811149",
@@ -744,10 +857,15 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0xCRWWbf61eLEE1tjkvDP5DaDsX2Ttb3arZ4CcQpwe7g4N"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
-            "nodes": []
+            "nodes": [
+                {
+                    "url": "https://rpc.goerli.linea.build"
+                }
+            ]
         },
         {
             "img_url": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/starknet_goerli.png",
@@ -773,7 +891,31 @@ export const Settings: LayerSwapSettings = {
                     "usd_price": 0.998876,
                     "refuel_amount_in_usd": null,
                     "group_name": "USDC"
-                },
+                }
+            ],
+            "managed_accounts": [
+                {
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
+                }
+            ],
+            "nodes": [
+                {
+                    "url": "https://rpc.goerli.linea.build"
+                }
+            ]
+        },
+        {
+            "display_name": "Immutable zkEVM Testnet",
+            "internal_name": "IMMUTABLEZK_TESTNET",
+            "chain_id": "13473",
+            "is_testnet": true,
+            "type": NetworkType.EVM,
+            "transaction_explorer_template": "https://explorer.testnet.immutable.com/tx/{0}",
+            "account_explorer_template": "https://explorer.testnet.immutable.com/address/{0}",
+            "metadata": null,
+            "created_date": "2023-12-27T16:46:50.617075+00:00",
+            "currencies": [
                 {
                     "display_asset": null,
                     "asset": "ETH",
@@ -788,12 +930,13 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x2109F6e78970B282e6068d255EA4c815D14f68a31a9d3330c74d4eB56a0d724"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
             "nodes": [
                 {
-                    "url": "https://starknet-goerli.infura.io/v3/9201404b0d164605888e8537e0416f45"
+                    "url": "https://rpc.goerli.linea.build"
                 }
             ]
         },
@@ -836,10 +979,50 @@ export const Settings: LayerSwapSettings = {
             ],
             "managed_accounts": [
                 {
-                    "address": "0x65A93bf9a33C87346f534A3B6c825e5c9E86A8e612cbA683D0271aAe5062d21"
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
                 }
             ],
-            "nodes": []
+            "nodes": [
+                {
+                    "url": "https://rpc.goerli.linea.build"
+                }
+            ]
+        },
+        {
+            "display_name": "Metis Sepolia",
+            "internal_name": "METIS_SEPOLIA",
+            "chain_id": "59901",
+            "is_testnet": true,
+            "type": NetworkType.EVM,
+            "transaction_explorer_template": "https://sepolia.explorer.metisdevops.link/tx/{0}",
+            "account_explorer_template": "https://sepolia.explorer.metisdevops.link/address/{0}\r\n",
+            "metadata": null,
+            "created_date": "2024-01-12T15:15:58.168996+00:00",
+            "currencies": [
+                {
+                    "display_asset": null,
+                    "asset": "TMETIS",
+                    "contract_address": null,
+                    "decimals": 18,
+                    "is_native": true,
+                    "precision": 6,
+                    "usd_price": 2542.81,
+                    "refuel_amount_in_usd": null,
+                    "group_name": null
+                }
+            ],
+            "managed_accounts": [
+                {
+                    "address": "0x5dA5C2a98e26FD28914b91212b1232D58eb9bbab",
+                    "type": "HotWallet"
+                }
+            ],
+            "nodes": [
+                {
+                    "url": "https://rpc.goerli.linea.build"
+                }
+            ]
         }
     ]
 }

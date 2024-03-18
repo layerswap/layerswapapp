@@ -3,13 +3,14 @@ import { FC, useCallback, useEffect } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
-import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import CurrencySettings from "../../lib/CurrencySettings";
 import { SortingByAvailability } from "../../lib/sorting";
 import { useQueryState } from "../../context/query";
 import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
+import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
+import { groupByType } from "./CurrencyFormField";
 
 const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
@@ -18,7 +19,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     } = useFormikContext<SwapFormValues>();
     const { to, fromCurrency, toCurrency, from, currencyGroup, toExchange, fromExchange } = values
 
-    const { sourceRoutes: settingsSourceRoutes, destinationRoutes: settingsDestinationRoutes, assetGroups } = useSettingsState();
+    const { sourceRoutes: settingsSourceRoutes, destinationRoutes: settingsDestinationRoutes, assetGroups, resolveImgSrc } = useSettingsState();
     const name = 'currencyGroup'
 
     const query = useQueryState()
@@ -86,6 +87,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     }[]>>(destinationRoutesURL, apiClient.fetcher)
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : availableAssetGroups
+    const isLoading = sourceRoutesLoading || destRoutesLoading
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
@@ -94,7 +96,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         lockedCurrency,
     )
 
-    const value = currencyMenuItems?.find(x => x.id == currencyGroup?.name);
+    const value = currencyMenuItems?.find(x => x.name == currencyGroup?.name);
 
     useEffect(() => {
         if (value) return
@@ -105,12 +107,29 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
-    return <PopoverSelectWrapper
+    const valueDetails = <div>
+        {value
+            ?
+            <span className="block font-medium text-primary-text flex-auto items-center">
+                {value?.name}
+            </span>
+            :
+            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                Asset
+            </span>}
+    </div>
+
+
+    return <CommandSelectWrapper
+        disabled={!value?.isAvailable?.value || isLoading}
+        valueGrouper={groupByType}
         placeholder="Asset"
-        values={currencyMenuItems}
-        value={value}
         setValue={handleSelect}
-        disabled={!value?.isAvailable?.value}
+        value={value}
+        values={currencyMenuItems}
+        searchHint='Search'
+        isLoading={isLoading}
+        valueDetails={valueDetails}
     />;
 }
 
@@ -134,6 +153,7 @@ export function GenerateCurrencyMenuItems(
     }
 
     const storageUrl = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
+    const group = values?.fromExchange?.display_name
 
     return currencies?.map(c => {
         const currency = c
@@ -141,11 +161,12 @@ export function GenerateCurrencyMenuItems(
 
         const res: SelectMenuItem<AssetGroup> = {
             baseObject: c,
-            id: c.name,
+            id: `${c?.name?.toLowerCase()}`,
             name: displayName || "-",
             order: CurrencySettings.KnownSettings[c.name]?.Order ?? 5,
             imgSrc: `${storageUrl}layerswap/currencies/${c.name.toLowerCase()}.png`,
             isAvailable: currencyIsAvailable(c),
+            group,
         };
         return res
     }).sort(SortingByAvailability);
