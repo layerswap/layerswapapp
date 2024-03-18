@@ -17,7 +17,9 @@ type ContextType = {
 
 export type Fee = {
     walletFee: number | undefined,
+    walletFeeInUsd: number | undefined,
     manualFee: number | undefined,
+    manualFeeInUsd: number | undefined,
     avgCompletionTime: string | undefined;
     walletReceiveAmount: number | undefined,
     manualReceiveAmount: number | undefined,
@@ -74,7 +76,9 @@ export function FeeProvider({ children }) {
 
     const fee = lsFee?.data && !lsFeeError ? {
         walletFee: lsFee?.data?.wallet_fee,
+        walletFeeInUsd: lsFee.data.wallet_fee_in_usd,
         manualFee: lsFee?.data?.manual_fee,
+        manualFeeInUsd: lsFee.data.manual_fee_in_usd,
         walletReceiveAmount: lsFee?.data?.wallet_receive_amount,
         manualReceiveAmount: lsFee?.data?.manual_receive_amount,
         refuelAmount: lsFee?.data?.refuel_amount,

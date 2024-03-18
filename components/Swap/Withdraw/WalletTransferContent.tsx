@@ -87,8 +87,8 @@ const WalletTransferContent: FC = () => {
     }
 
     return <div className="grid content-end">
-        <div className='flex w-full items-center text-sm justify-between mb-1 '>
-            <span className='ml-1'>{swap?.source_exchange ? "Connected account" : "Connected wallet"}</span>
+        <div className='flex w-full items-center text-sm justify-between mb-1 px-3'>
+            <span className=''>{swap?.source_exchange ? "Connected account" : "Connected wallet"}</span>
             {
                 walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
                 <div className="text-right">

@@ -12,7 +12,6 @@ import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw"
 import useWalletTransferOptions from "../../../../hooks/useWalletTransferOptions"
 import { useFee } from "../../../../context/feeContext"
 import SolanaWalletWithdrawStep from "./SolanaWalletWithdraw"
-import NetworkGas from "./WalletTransfer/networkGas"
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 const WalletTransferContent: FC = () => {
@@ -78,15 +77,7 @@ const WalletTransferContent: FC = () => {
 
 
 const WalletTransferWrapper = () => {
-    const { swap } = useSwapDataState()
-    const { layers } = useSettingsState()
-
-    const { source_network: source_network_internal_name } = swap || {}
-    const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
-    const sourceAsset = source_layer?.assets?.find(c => c.asset.toLowerCase() === swap?.source_network_asset.toLowerCase())
-
     return <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
-        {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}
         <WalletTransferContent />
     </div>
 }

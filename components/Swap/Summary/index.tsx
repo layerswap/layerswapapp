@@ -119,6 +119,8 @@ const SwapSummary: FC = () => {
         exchange_account_connected={swap?.exchange_account_connected}
         exchange_account_name={swap?.exchange_account_name}
         sourceAccountAddress={sourceAccountAddress}
+        fee={feeData}
+        withdrawType={withdrawType}
     />
 }
 export default SwapSummary
