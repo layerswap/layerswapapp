@@ -14,6 +14,7 @@ import useWallet from "../../../hooks/useWallet";
 import { Address, AddressGroup, useAddressBookStore } from "../../../stores/addressBookStore";
 import { groupBy } from "../../utils/groupBy";
 import { CommandGroup, CommandItem, CommandList, CommandWrapper } from "../../shadcn/command";
+import SubmitButton from "../../buttons/submitButton";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -108,86 +109,34 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const destinationAsset = values.toCurrency
     const groupedAddresses = groupBy(addresses, ({ group }) => group)
-    const groupedAddressesArray = Object.keys(groupedAddresses).map(g => { const items: Address[] = groupedAddresses[g]; return ({ name: g, items: items, order: (g === AddressGroup.ManualAdded && 3 || g === AddressGroup.RecentlyUsed && 1 || g === AddressGroup.ConnectedWallet && 2) || 10 }) })
+    const groupedAddressesArray = Object.keys(groupedAddresses).map(g => { const items: Address[] = groupedAddresses[g]; return ({ name: g, items: items, order: (g === AddressGroup.ManualAdded && 3 || g === AddressGroup.RecentlyUsed && 2 || g === AddressGroup.ConnectedWallet && 1) || 10 }) })
 
     return (<>
         <div className='w-full flex flex-col justify-between h-full text-primary-text pt-2'>
             <div className='flex flex-col self-center grow w-full'>
                 <div className='flex flex-col self-center grow w-full space-y-3'>
                     {
-                        !disabled && addresses?.length > 0 &&
-                        <div className="text-left">
-                            <CommandWrapper>
-                                <CommandList>
-                                    {groupedAddressesArray.sort((a, b) => a.order - b.order).map((group) => {
-                                        return (
-                                            <CommandGroup key={group.name} heading={group.name} className="[&_[cmdk-group-heading]]:!px-0 [&_[cmdk-group-heading]]:!p-0 [&_[cmdk-group-heading]]:!pb-0 [&_[cmdk-group-heading]]:!pt-2 !py-0 !px-0">
-                                                {group.items.map(item => {
-                                                    const difference_in_days = item.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(item.date).getTime()) / (1000 * 3600 * 24))) : undefined
-
-                                                    return (
-                                                        <CommandItem value={item.address} key={item.address} onSelect={handleSelectAddress} className="!px-0 !pt-1.5 !bg-transparent !pb-1">
-                                                            <div className={`flex items-center justify-between w-full transform transition duration-200 rounded-md hover:opacity-70`}>
-                                                                <div className={`space-x-2 flex text-sm items-center`}>
-                                                                    <div className='flex bg-secondary-400 text-primary-text flex-row items-left rounded-md p-2'>
-                                                                        <item.icon className="h-5 w-5" strokeWidth={2} />
-                                                                    </div>
-                                                                    <div className="flex flex-col">
-                                                                        <div className="block text-sm font-medium">
-                                                                            {shortenAddress(item.address)}
-                                                                        </div>
-                                                                        <div className="text-gray-500">
-                                                                            {
-                                                                                item.group === 'Recently used' &&
-                                                                                (difference_in_days === 0 ?
-                                                                                    <>Used today</>
-                                                                                    :
-                                                                                    (difference_in_days && difference_in_days > 1 ?
-                                                                                        <>Used {difference_in_days} days ago</>
-                                                                                        : <>Used yesterday</>))
-                                                                            }
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="flex h-6 items-center px-1">
-                                                                    <input
-                                                                        id={`address-${item.address}`}
-                                                                        name="address"
-                                                                        onChange={() => { }}
-                                                                        checked={item.address === destination_address}
-                                                                        type="radio"
-                                                                        className="h-4 w-4 border-secondary-300 bg-secondary-600 text-primary-500 focus:ring-primary-500 cursor-pointer"
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        </CommandItem>
-                                                    )
-                                                })}
-                                            </CommandGroup>)
-                                    })}
-                                </CommandList>
-                            </CommandWrapper>
-                        </div>
-                    }
-                    {
                         !disabled
                         && destination
                         && provider
                         && !connectedWallet
                         && !values.toExchange &&
-                        <div onClick={() => { connectWallet(provider.name) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70 flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
-                            <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
-                                <WalletIcon className="w-5 h-5 text-primary-text" />
-                            </div>
-                            <div className="flex flex-col">
-                                <div className="block text-sm font-medium">
-                                    Autofill from wallet
-                                </div>
-                                <div className="text-gray-500">
-                                    Connect your wallet to fetch the address
-                                </div>
-                            </div>
-                        </div>
+                        // <div onClick={() => { connectWallet(provider.name) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70 flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
+                        //     <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
+                        //         <WalletIcon className="w-5 h-5 text-primary-text" />
+                        //     </div>
+                        //     <div className="flex flex-col">
+                        //         <div className="block text-sm font-medium">
+                        //             Autofill from wallet
+                        //         </div>
+                        //         <div className="text-gray-500">
+                        //             Connect your wallet to fetch the address
+                        //         </div>
+                        //     </div>
+                        // </div>
+                        <SubmitButton onClick={() => { connectWallet(provider.name) }} text_align="left" icon={<WalletIcon className='stroke-2 w-6 h-6' strokeWidth={2} />} className="bg-primary/20 border-none !text-primary !px-5 gap-1" type="button" isDisabled={false} isSubmitting={false}>
+                            Connect a wallet
+                        </SubmitButton>
                     }
                     {
                         wrongNetwork && !destination_address &&
@@ -200,13 +149,73 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         </div>
                     }
                     {
-                        addresses && addresses.length > 0 &&
-                        <hr className="border-secondary-500" />
+                        !disabled && addresses?.length > 0 &&
+                        <div className="text-left">
+                            <CommandWrapper>
+                                <CommandList>
+                                    {groupedAddressesArray.sort((a, b) => a.order - b.order).map((group) => {
+                                        return (
+                                            <div>
+                                                <CommandGroup key={group.name} heading={group.name} className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-3 [&_[cmdk-group-heading]]:!pt-2 !py-0 !px-0">
+                                                    <div className="bg-secondary-800 overflow-hidden rounded-lg divide-y divide-secondary-600">
+                                                        {group.items.map(item => {
+                                                            const difference_in_days = item.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(item.date).getTime()) / (1000 * 3600 * 24))) : undefined
+
+                                                            return (
+                                                                <CommandItem value={item.address} key={item.address} onSelect={handleSelectAddress} className="!bg-transparent !px-3 hover:!bg-secondary-700">
+                                                                    <div className={`flex items-center justify-between w-full`}>
+                                                                        <div className={`space-x-2 flex text-sm items-center`}>
+                                                                            <div className='flex bg-secondary-400 text-primary-text flex-row items-left rounded-md p-2'>
+                                                                                <item.icon className="h-5 w-5" strokeWidth={2} />
+                                                                            </div>
+                                                                            <div className="flex flex-col">
+                                                                                <div className="block text-sm font-medium">
+                                                                                    {shortenAddress(item.address)}
+                                                                                </div>
+                                                                                <div className="text-gray-500">
+                                                                                    {
+                                                                                        item.group === 'Recently used' &&
+                                                                                        (difference_in_days === 0 ?
+                                                                                            <>Used today</>
+                                                                                            :
+                                                                                            (difference_in_days && difference_in_days > 1 ?
+                                                                                                <>Used {difference_in_days} days ago</>
+                                                                                                : <>Used yesterday</>))
+                                                                                    }
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex h-6 items-center px-1">
+                                                                            {
+                                                                                item.address === destination_address &&
+                                                                                <Check />
+                                                                            }
+                                                                        </div>
+                                                                    </div>
+                                                                </CommandItem>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                </CommandGroup>
+                                            </div>
+                                        )
+                                    })}
+                                </CommandList>
+                            </CommandWrapper>
+                        </div>
                     }
+                    <div className="w-full flex items-center gap-2">
+                        {
+                            !destinationExchange &&
+                            <p className="text-primary-text-muted mb-1">
+                                or
+                            </p>
+                        }
+                        <hr className="border-secondary-500 w-full" />
+                    </div>
                     <div className="text-left">
-                        <label className="text-secondary-text" htmlFor={name}>New address</label>
                         {isPartnerWallet && partner && <span className='truncate text-sm text-secondary-text'> ({partner?.display_name})</span>}
-                        <div className="flex flex-wrap flex-col md:flex-row items-center mt-1.5">
+                        <div className="flex flex-wrap flex-col md:flex-row items-center">
                             <div className="relative flex grow rounded-lg shadow-sm bg-secondary-700 border-secondary-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary w-full sm:w-fit">
                                 {isPartnerWallet &&
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -241,23 +250,20 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                         </button>
                                     </span>
                                 }
-                            </div>
-                            {
-                                manualAddress &&
-                                <span className="inline-flex items-center">
-                                    <div className="text-xs flex items-center space-x-2 md:ml-3 bg-secondary-500 rounded-md border border-secondary-500">
+                                {
+                                    manualAddress &&
+                                    <span className="inline-flex items-center mr-2">
                                         <button
                                             type="button"
-                                            className="p-0.5 duration-200 transition hover:bg-secondary-400 rounded-md border border-secondary-500 hover:border-secondary-200"
+                                            className="p-0.5 duration-200 transition  hover:bg-secondary-400  rounded-md border border-secondary-500 hover:border-secondary-200"
                                             onClick={handleSaveNewAddress}
                                         >
-                                            <div className="flex items-center px-2 text-sm py-1 font-semibold">
-                                                Save
-                                            </div>
+                                            <Check className="h-5 w-5" />
                                         </button>
-                                    </div>
-                                </span>
-                            }
+                                    </span>
+                                }
+                            </div>
+
                             {
                                 errorMessage &&
                                 <div className="basis-full text-xs text-primary">
