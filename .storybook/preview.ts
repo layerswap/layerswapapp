@@ -9,7 +9,7 @@ export const parameters = {
 const preview: Preview = {
   loaders: [
     async () => ({
-      settings: await (await fetch(`https://api-dev.layerswap.cloud/api/networks`)).json(),
+      settings: await (await fetch(`https://api-dev.layerswap.cloud/api/v2-alpha/networks`)).json(),
     }),
   ],
   parameters: {
