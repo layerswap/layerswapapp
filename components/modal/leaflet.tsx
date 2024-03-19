@@ -23,7 +23,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 40 };
-    
+
     const handleDragEnd = useCallback(async (_, info) => {
         const offset = info.offset.y;
         const velocity = info.velocity.y;
@@ -94,7 +94,6 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                         <div className="text-lg text-primary-text font-semibold">
                             <div className='font-normal leading-none tracking-tight'>{title}</div>
                         </div>
-                        <div className='absolute start-[50%] top-0 -translate-x-1/2 h-3 w-32 self-start bg-secondary-600 rounded-b-lg'></div>
                         <IconButton onClick={handleCloseModal} icon={
                             <X strokeWidth={3} />
                         }>
