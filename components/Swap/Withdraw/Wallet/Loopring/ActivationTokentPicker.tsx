@@ -1,12 +1,12 @@
 import Image from 'next/image';
-import { FeeData, useLoopringAccountBalance, useLoopringFees } from './hooks';
+import { FeeData } from './hooks';
 import { ISelectMenuItem } from '../../../../Select/Shared/Props/selectMenuItem';
 import formatAmount from '../../../../../lib/formatAmount';
 import { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../../../../shadcn/select';
-import * as lp from "@loopring-web/loopring-sdk";
+import { UserBalanceInfo } from '../../../../../lib/loopring/defs';
 
-export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChange, feeData }: { availableBalances: lp.UserBalanceInfo[] | undefined, defaultValue: lp.UserBalanceInfo | undefined, feeData: FeeData | undefined, onChange: (v: string | undefined) => void }) => {
+export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChange, feeData }: { availableBalances: UserBalanceInfo[] | undefined, defaultValue: UserBalanceInfo | undefined, feeData: FeeData | undefined, onChange: (v: string | undefined) => void }) => {
 
     const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL;
     const activationCurrencyValues: ISelectMenuItem[]

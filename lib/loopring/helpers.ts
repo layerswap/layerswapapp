@@ -1,42 +1,229 @@
-import { AccountInfo, ChainId, ConnectorNames, GlobalAPI, generateKeyPair } from "@loopring-web/loopring-sdk";
-import Web3 from "web3";
-import { providers } from "ethers";
+import { LoopringAPI } from "./LoopringAPI";
+import { sortObjDictionary } from "./formatter";
+import { signTypedData } from '@wagmi/core'
+import { signMessage } from '@wagmi/core'
+import { parseUnits } from 'viem';
+import { AccountInfo, ExchangeInfo, KEY_MESSAGE, LOOPRING_URLs, LpFee, OffchainFeeReqType, OriginTransferRequestV3, TOKEN_INFO, TokenVolumeV3, UnlockedAccount } from "./defs";
+import { NetworkCurrency } from "../../Models/CryptoNetwork";
+import { generatePrivateKey, getEdDSASig, getTransferTypedData, getUpdateAccountEcdsaTypedData, get_EddsaSig_Transfer } from "./utils";
 
-export async function generateUnlockKeyPair(accInfo: AccountInfo, _web3: Web3, exchangeAddress: string) {
-    global.ethereum = providers?.EtherscanProvider
-
-    const keySeed = !accInfo.keySeed && accInfo.keySeed == ''
-        ? GlobalAPI.KEY_MESSAGE.replace(
-            '${exchangeAddress}',
-            exchangeAddress,
-        ).replace('${nonce}', (accInfo.nonce ? accInfo.nonce - 1 : 0).toString())
-        : accInfo.keySeed;
-
-    const eddsaKey = await generateKeyPair({
-        web3: _web3,
-        address: accInfo.owner,
-        keySeed,
-        walletType: ConnectorNames.MetaMask,
-        chainId: ChainId.MAINNET,
-    })
-
-    return { eddsaKey, keySeed }
+type UnlockApiRes = {
+    apiKey: string;
+    resultInfo?: undefined
+} | {
+    apiKey: undefined,
+    resultInfo: {
+        code: number,
+        message: string
+    }
 }
-export async function generateActivateKeyPair(accInfo: AccountInfo, _web3: Web3, exchangeAddress: string) {
-    global.ethereum = providers?.EtherscanProvider
+export async function unlockAccount(accInfo: AccountInfo)
+    : Promise<UnlockedAccount> {
 
-    const keySeed = GlobalAPI.KEY_MESSAGE.replace(
+    const sig = await signMessage({ message: accInfo.keySeed })
+    const eddsaKeyData = generatePrivateKey(sig)
+    const { sk } = eddsaKeyData
+    const { accountId } = accInfo
+    const url = `${LoopringAPI.BaseApi}${LOOPRING_URLs.API_KEY_ACTION}?accountId=${accountId}`
+    const dataToSign: Map<string, any> = sortObjDictionary({ accountId })
+    const eddsa = getEdDSASig(
+        "GET",
+        LoopringAPI.BaseApi,
+        LOOPRING_URLs.API_KEY_ACTION,
+        dataToSign,
+        sk
+    )
+    const res: UnlockApiRes = await (await fetch(url, {
+        headers: {
+            'X-Api-Sig': eddsa
+        }
+    })).json()
+
+    if (res.apiKey) {
+        return { eddsaKey: eddsaKeyData, apiKey: res.apiKey }
+    }
+    else {
+        throw Error(`Could not unlock account, error:${res.resultInfo?.message || ' unknown'}`)
+    }
+
+}
+
+async function getExchangeInfo()
+    : Promise<ExchangeInfo> {
+    const result: ExchangeInfo = await (await fetch(`${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_EXCHANGE_INFO}`)).json()
+    return result
+}
+
+export async function getOffchainFeeAmt
+    (accountId: number,
+        type: OffchainFeeReqType)
+    : Promise<LpFee> {
+    const result: LpFee = await (await fetch(`${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_OFFCHAIN_FEE_AMT}?accountId=${accountId}&requestType=${type}`)).json()
+    return result
+}
+
+type StorageIdRes = {
+    orderId: number;
+    offchainId: number;
+}
+
+async function getNextStorageId
+    (req: {
+        accountId: number,
+        tokenId: number
+    }, apiKey: string)
+    : Promise<StorageIdRes> {
+    const { accountId, tokenId } = req
+    const url = `${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_NEXT_STORAGE_ID}?accountId=${accountId}&sellTokenId=${tokenId}`
+    const result: StorageIdRes = await (await fetch(url, {
+        headers: {
+            'X-Api-Key': apiKey
+        }
+    })).json()
+    return result
+}
+
+type TransferProps = {
+    unlockedAccount: UnlockedAccount,
+    accInfo: AccountInfo,
+    token: NetworkCurrency,
+    depositAddress: `0x${string}`,
+    amount: string,
+    sequence_number: string
+}
+
+type TransferApiRes = {
+    hash: string;
+    resultInfo: undefined
+} | {
+
+    hash: undefined,
+    resultInfo: {
+        code: number,
+        message: string
+    }
+}
+
+
+export async function transfer
+    ({
+        accInfo,
+        amount,
+        depositAddress,
+        sequence_number,
+        token,
+        unlockedAccount
+    }: TransferProps): Promise<TransferApiRes> {
+
+    const exchangeInfo = await getExchangeInfo();
+    const { apiKey, eddsaKey } = unlockedAccount
+    const storageId = await getNextStorageId(
+        {
+            accountId: accInfo.accountId,
+            tokenId: Number(token?.contract_address),
+        },
+        apiKey)
+    const feeData = await getOffchainFeeAmt(accInfo.accountId, OffchainFeeReqType.TRANSFER)
+    const fee = feeData.fees.find(f => f.token.toUpperCase() == token.asset.toUpperCase())?.fee
+    if (!fee) {
+        throw new Error(`Could not get fee for ${token.asset.toUpperCase()}`)
+    }
+    const req = {
+        exchange: exchangeInfo.exchangeAddress,
+        payerAddr: accInfo.owner,
+        payerId: accInfo.accountId,
+        payeeAddr: depositAddress as `0x${string}`,
+        payeeId: 0,
+        storageId: storageId.offchainId,
+        token: {
+            tokenId: Number(token?.contract_address),
+            volume: parseUnits(amount, Number(token?.decimals)).toString(),
+        },
+        maxFee: {
+            tokenId: Number(token?.contract_address),
+            volume: fee,
+        },
+        validUntil: Math.round(Date.now() / 1000) + 30 * 86400,
+        memo: sequence_number,
+    }
+
+    return await submitInternalTransfer(req, apiKey, eddsaKey.sk)
+}
+
+
+async function submitInternalTransfer
+    (req: OriginTransferRequestV3, apiKey: string, eddsaKey: string)
+    : Promise<TransferApiRes> {
+
+    const typedData = getTransferTypedData(req, LoopringAPI.CHAIN)
+    const ecdsaSignature = (await signTypedData(typedData as any)).slice(0, 132)
+    const eddsaSignature = get_EddsaSig_Transfer(req, eddsaKey).result
+    return await (await fetch(`${LoopringAPI.BaseApi}${LOOPRING_URLs.POST_INTERNAL_TRANSFER}`, {
+        method: "POST",
+        body: JSON.stringify({
+            ...req,
+            eddsaSignature,
+            ecdsaSignature: ecdsaSignature,
+        }),
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Api-Sig': ecdsaSignature,
+            'X-Api-Key': apiKey
+        }
+    })).json()
+}
+
+
+
+type ActivateAccountProps = {
+    token: string,
+    accInfo: AccountInfo
+}
+
+export async function activateAccount
+    ({
+        token,
+        accInfo
+    }: ActivateAccountProps)
+    : Promise<void> {
+
+    const exchangeInfo = await getExchangeInfo();
+
+    const fee = await getOffchainFeeAmt(accInfo.accountId, OffchainFeeReqType.UPDATE_ACCOUNT);
+
+    const message = KEY_MESSAGE.replace(
         "${exchangeAddress}",
-        exchangeAddress
+        exchangeInfo.exchangeAddress
     ).replace("${nonce}", accInfo.nonce.toString());
 
-    const eddsaKey = await generateKeyPair({
-        web3: _web3,
-        address: accInfo.owner,
-        keySeed,
-        walletType: ConnectorNames.MetaMask,
-        chainId: ChainId.MAINNET,
-    })
+    const sig = await signMessage({ message })
 
-    return { eddsaKey, keySeed }
+    const eddsaKeyData = generatePrivateKey(sig)
+    const { formatedPx, formatedPy } = eddsaKeyData
+    const publicKey = { x: formatedPx, y: formatedPy }
+
+    const req = {
+        exchange: exchangeInfo.exchangeAddress,
+        owner: accInfo.owner,
+        accountId: accInfo.accountId,
+        publicKey,
+        maxFee: {
+            tokenId: TOKEN_INFO.tokenMap[token]?.tokenId,
+            volume: fee.fees[token]?.fee,
+        },
+        keySeed: message,
+        validUntil: 1713438026,
+        nonce: accInfo.nonce as number,
+    }
+
+    const typedData = getUpdateAccountEcdsaTypedData(req, LoopringAPI.CHAIN)
+    const ecdsaSignature = await signTypedData(typedData as any)
+    await (await fetch(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}`, {
+        method: "POST",
+        body: JSON.stringify({ ...req, ecdsaSignature: ecdsaSignature.slice(0, 132) }),
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Api-Sig': ecdsaSignature.slice(0, 132)
+        }
+    })).json()
 }

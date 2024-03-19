@@ -1,22 +1,22 @@
 import useSWR from "swr";
-import * as lp from "@loopring-web/loopring-sdk";
 import { LoopringAPI } from "../../../../../lib/loopring/LoopringAPI";
+import { AccountInfo, LOOPRING_URLs, OffchainFeeReqType, UserBalanceInfo } from "../../../../../lib/loopring/defs";
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export const useLoopringAccountBalance = (accountId?: number) => {
-    const url = `${LoopringAPI.BaseApi}${lp.LOOPRING_URLs.GET_USER_EXCHANGE_BALANCES}?accountId=${accountId}`
+    const url = `${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_USER_EXCHANGE_BALANCES}?accountId=${accountId}`
     const { data, isLoading } =
-        useSWR<[lp.UserBalanceInfo]>(accountId ? url : null,
+        useSWR<[UserBalanceInfo]>(accountId ? url : null,
             fetcher);
 
     return { data, isLoading }
 }
 
 export const useLoopringAccount = ({ address }: { address?: `0x${string}` }) => {
-    const url = `${LoopringAPI.BaseApi}${lp.LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`
+    const url = `${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`
     const { data: accountData, isLoading, mutate } =
-        useSWR<lp.AccountInfo>(address ? url : null,
+        useSWR<AccountInfo>(address ? url : null,
             fetcher,
             {
                 dedupingInterval: 1000,
@@ -28,8 +28,8 @@ export const useLoopringAccount = ({ address }: { address?: `0x${string}` }) => 
     return { account, isLoading, noAccount, mutate }
 }
 
-export const useLoopringFees = (accountId?: number) => {
-    const url = `${LoopringAPI.BaseApi}${lp.LOOPRING_URLs.GET_OFFCHAIN_FEE_AMT}?accountId=${accountId}&requestType=${lp.OffchainFeeReqType.UPDATE_ACCOUNT}`
+const useAccountActivationFees = (accountId?: number) => {
+    const url = `${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_OFFCHAIN_FEE_AMT}?accountId=${accountId}&requestType=${OffchainFeeReqType.UPDATE_ACCOUNT}`
     const { data, isLoading } =
         useSWR<{
             fees: {
@@ -49,7 +49,7 @@ export const useLoopringFees = (accountId?: number) => {
 
 export const useActivationData = (accountId?: number) => {
     const { data: loopringBalnce, isLoading: lpBalanceIsLoading } = useLoopringAccountBalance(accountId)
-    const { data: feeData, isLoading: feeDataIsLoading } = useLoopringFees(accountId)
+    const { data: feeData, isLoading: feeDataIsLoading } = useAccountActivationFees(accountId)
 
     const availableBalances = feeData && loopringBalnce?.filter(b => {
         const tfee = feeData?.fees?.find(f => f.tokenId === b.tokenId)?.fee
