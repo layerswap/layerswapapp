@@ -155,49 +155,47 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                 <CommandList>
                                     {groupedAddressesArray.sort((a, b) => a.order - b.order).map((group) => {
                                         return (
-                                            <div>
-                                                <CommandGroup key={group.name} heading={group.name} className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-3 [&_[cmdk-group-heading]]:!pt-2 !py-0 !px-0">
-                                                    <div className="bg-secondary-800 overflow-hidden rounded-lg divide-y divide-secondary-600">
-                                                        {group.items.map(item => {
-                                                            const difference_in_days = item.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(item.date).getTime()) / (1000 * 3600 * 24))) : undefined
+                                            <CommandGroup key={group.name} heading={group.name} className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-3 [&_[cmdk-group-heading]]:!pt-2 !py-0 !px-0">
+                                                <div className="bg-secondary-800 overflow-hidden rounded-lg divide-y divide-secondary-600">
+                                                    {group.items.map(item => {
+                                                        const difference_in_days = item.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(item.date).getTime()) / (1000 * 3600 * 24))) : undefined
 
-                                                            return (
-                                                                <CommandItem value={item.address} key={item.address} onSelect={handleSelectAddress} className="!bg-transparent !px-3 hover:!bg-secondary-700">
-                                                                    <div className={`flex items-center justify-between w-full`}>
-                                                                        <div className={`space-x-2 flex text-sm items-center`}>
-                                                                            <div className='flex bg-secondary-400 text-primary-text flex-row items-left rounded-md p-2'>
-                                                                                <item.icon className="h-5 w-5" strokeWidth={2} />
-                                                                            </div>
-                                                                            <div className="flex flex-col">
-                                                                                <div className="block text-sm font-medium">
-                                                                                    {shortenAddress(item.address)}
-                                                                                </div>
-                                                                                <div className="text-gray-500">
-                                                                                    {
-                                                                                        item.group === 'Recently used' &&
-                                                                                        (difference_in_days === 0 ?
-                                                                                            <>Used today</>
-                                                                                            :
-                                                                                            (difference_in_days && difference_in_days > 1 ?
-                                                                                                <>Used {difference_in_days} days ago</>
-                                                                                                : <>Used yesterday</>))
-                                                                                    }
-                                                                                </div>
-                                                                            </div>
+                                                        return (
+                                                            <CommandItem value={item.address} key={item.address} onSelect={handleSelectAddress} className="!bg-transparent !px-3 hover:!bg-secondary-700">
+                                                                <div className={`flex items-center justify-between w-full`}>
+                                                                    <div className={`space-x-2 flex text-sm items-center`}>
+                                                                        <div className='flex bg-secondary-400 text-primary-text flex-row items-left rounded-md p-2'>
+                                                                            <item.icon className="h-5 w-5" strokeWidth={2} />
                                                                         </div>
-                                                                        <div className="flex h-6 items-center px-1">
-                                                                            {
-                                                                                item.address === destination_address &&
-                                                                                <Check />
-                                                                            }
+                                                                        <div className="flex flex-col">
+                                                                            <div className="block text-sm font-medium">
+                                                                                {shortenAddress(item.address)}
+                                                                            </div>
+                                                                            <div className="text-gray-500">
+                                                                                {
+                                                                                    item.group === 'Recently used' &&
+                                                                                    (difference_in_days === 0 ?
+                                                                                        <>Used today</>
+                                                                                        :
+                                                                                        (difference_in_days && difference_in_days > 1 ?
+                                                                                            <>Used {difference_in_days} days ago</>
+                                                                                            : <>Used yesterday</>))
+                                                                                }
+                                                                            </div>
                                                                         </div>
                                                                     </div>
-                                                                </CommandItem>
-                                                            )
-                                                        })}
-                                                    </div>
-                                                </CommandGroup>
-                                            </div>
+                                                                    <div className="flex h-6 items-center px-1">
+                                                                        {
+                                                                            item.address === destination_address &&
+                                                                            <Check />
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </CommandItem>
+                                                        )
+                                                    })}
+                                                </div>
+                                            </CommandGroup>
                                         )
                                     })}
                                 </CommandList>
