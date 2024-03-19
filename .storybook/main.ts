@@ -6,7 +6,7 @@ const config: StorybookConfig = {
     NEXT_PUBLIC_IDENTITY_API: "/",
     NEXT_PUBLIC_RESOURCE_STORAGE_URL: "https://devlslayerswapbridgesa.blob.core.windows.net",
     NEXT_PUBLIC_LS_API: "https://api-dev.layerswap.cloud",
-    NEXT_PUBLIC_API_KEY: "+ov+NmG0IjisqoCIQuOUQTNOkkzP+b4QphPkbq3JnId/6bjRyaAQVSqGqRTb9LizsTHVF0wimdlKvb9kR7O54g"
+    NEXT_PUBLIC_API_KEY: "NHPls+1CSPTx8imeiQUlKm5DvoCJpm1kq7SLcVXVNIx9y69lm1ywl9DKTOWzqClwPsyECo3STBNMZteyLsfnRw"
   }),
   stories: [
     "../stories/**/*.mdx",
