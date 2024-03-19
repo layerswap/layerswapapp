@@ -11,7 +11,7 @@ const preview: Preview = {
     async () => ({
       settings: await (await fetch(`https://api-dev.layerswap.cloud/api/networks`, {
         headers: {
-          'X-LS-APIKEY': '+ov+NmG0IjisqoCIQuOUQTNOkkzP+b4QphPkbq3JnId/6bjRyaAQVSqGqRTb9LizsTHVF0wimdlKvb9kR7O54g'
+          'X-LS-APIKEY': 'NHPls+1CSPTx8imeiQUlKm5DvoCJpm1kq7SLcVXVNIx9y69lm1ywl9DKTOWzqClwPsyECo3STBNMZteyLsfnRw'
         },
       })).json(),
     }),
