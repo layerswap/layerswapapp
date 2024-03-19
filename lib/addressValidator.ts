@@ -2,19 +2,13 @@ import { keccak256 } from "js-sha3";
 import KnownInternalNames from "./knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
 import { PublicKey } from '@solana/web3.js'
-import { Layer } from "../Models/Layer";
 
 export function isValidAddress(address?: string, network?: { name: string } | null): boolean {
-    if (!address) {
+
+    if (!address || isBlacklistedAddress(address)) {
         return false
     }
-    if (network?.name === KnownInternalNames.Networks.RoninMainnet) {
-        if (address.startsWith("ronin:")) {
-            return isValidEtherAddress(address.replace("ronin:", "0x"));
-        }
-        return false;
-    }
-    else if (network?.name.toLowerCase().startsWith("ZKSYNC".toLowerCase())) {
+    if (network?.name.toLowerCase().startsWith("ZKSYNC".toLowerCase())) {
         if (address?.startsWith("zksync:")) {
             return isValidEtherAddress(address.replace("zksync:", ""));
         }
@@ -78,3 +72,20 @@ function isChecksumAddress(address: string): boolean {
     }
     return true;
 };
+
+function isBlacklistedAddress(address: string): boolean {
+
+    const BlacklistedAddresses = [
+        "0xa9d38c3FB49074c00596a25CcF396402362C92C5",
+        "0x4d70500858f9705ddbd56d007d13bbc92c9c67d1"
+    ]
+
+    let account = address
+
+    if (account.includes(":")) {
+        account = account.split(":")[1]
+    }
+
+    if (BlacklistedAddresses.find(a => a.toLowerCase() === account.toLowerCase())) return true
+    else return false
+}
