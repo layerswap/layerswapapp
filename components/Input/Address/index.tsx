@@ -85,7 +85,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
 
     //If wallet connected set address from wallet
     useEffect(() => {
-        if (destination && connectedWallet?.address && isValidAddress(connectedWallet?.address, destination) && (addresses.find(a => a.address === values.destination_address)?.group.toLowerCase() === AddressGroup.ConnectedWallet || !values?.destination_address) && !toExchange) {
+        if (destination && connectedWallet?.address && isValidAddress(connectedWallet?.address, destination) && (addresses.find(a => a.address === values.destination_address)?.group === AddressGroup.ConnectedWallet || !values?.destination_address) && !toExchange) {
             //TODO move to wallet implementation
             if (connectedWallet
                 && connectedWallet.providerName === 'starknet'
@@ -170,12 +170,15 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWall
             <div className="truncate">
                 {values.destination_address ?
                     <div className="flex items-center gap-2">
-                        {
-                            address &&
-                            <div className='flex bg-secondary-400 text-primary-buttonTextColor flex-row items-left rounded-md p-1.5'>
-                                <address.icon className="h-5 w-5" strokeWidth={2} />
-                            </div>
-                        }
+                        <div className='flex bg-secondary-400 text-primary-buttonTextColor flex-row items-left rounded-md p-1.5'>
+
+                            {
+                                address ?
+                                    <address.icon className="h-5 w-5" strokeWidth={2} />
+                                    :
+                                    <WalletIcon className="h-5 w-5" strokeWidth={2} />
+                            }
+                        </div>
                         <TruncatedAdrress address={values.destination_address} />
                     </div>
                     :
