@@ -1,4 +1,4 @@
-import { Network, NetworkType, Token } from "../../Models/Network"
+import { NetworkType } from "../../Models/Network"
 import { SwapStatus } from "../../Models/SwapStatus"
 import { SwapItem, BackendTransactionStatus, TransactionType } from "../../lib/layerSwapApiClient"
 

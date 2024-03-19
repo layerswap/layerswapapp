@@ -2,6 +2,129 @@ import { NetworkType } from "../../Models/Network";
 import { LayerSwapSettings } from "../../Models/LayerSwapSettings";
 
 export const Settings: LayerSwapSettings = {
+    "networks": [
+        {
+            "tokens": [
+                {
+                    "symbol": "jUSDC",
+                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/jusdc.png",
+                    "contract": "EQB-MPwrd1G6WKNkLz_VnV6WqBDd142KMQv-g1O-8QUA3728",
+                    "decimals": 6,
+                    "price_in_usd": 1.097,
+                    "precision": 6,
+                    "is_native": false
+                },
+                {
+                    "symbol": "TON",
+                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/ton.png",
+                    "contract": null,
+                    "decimals": 9,
+                    "price_in_usd": 3.76,
+                    "precision": 6,
+                    "is_native": true
+                }
+            ],
+            "name": "TON_MAINNET",
+            "display_name": "Ton",
+            "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ton_mainnet.png",
+            "chain_id": null,
+            "node_url": "",
+            "type": NetworkType.TON,
+            "transaction_explorer_template": "https://tonscan.org/tx/{0}",
+            "account_explorer_template": "https://tonscan.org/address/{0}",
+            "metadata": {
+                "listing_date": "2023-12-27T16:46:50.617075+00:00",
+                "evm_oracle_contract": null,
+                "evm_multi_call_contract": null
+            }
+        },
+        {
+            "tokens": [
+                {
+                    "symbol": "USDC",
+                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.png",
+                    "contract": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+                    "decimals": 6,
+                    "price_in_usd": 1.002,
+                    "precision": 6,
+                    "is_native": false
+                },
+                {
+                    "symbol": "ETH",
+                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
+                    "contract": null,
+                    "decimals": 18,
+                    "price_in_usd": 3272.24,
+                    "precision": 6,
+                    "is_native": true
+                },
+                {
+                    "symbol": "USDC.e",
+                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.e.png",
+                    "contract": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
+                    "decimals": 6,
+                    "price_in_usd": 1.002,
+                    "precision": 6,
+                    "is_native": false
+                }
+            ],
+            "name": "ARBITRUM_MAINNET",
+            "display_name": "Arbitrum One",
+            "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_mainnet.png",
+            "chain_id": "42161",
+            "node_url": "https://arbitrum-one.public.blastapi.io",
+            "type": NetworkType.EVM,
+            "transaction_explorer_template": "https://arbiscan.io/tx/{0}",
+            "account_explorer_template": "https://arbiscan.io/address/{0}",
+            "metadata": {
+                "listing_date": "2023-12-27T16:46:50.617075+00:00",
+                "evm_oracle_contract": "",
+                "evm_multi_call_contract": ""
+            }
+        },
+        {
+            "tokens": [
+                {
+                    "symbol": "ETH",
+                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
+                    "contract": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+                    "decimals": 18,
+                    "price_in_usd": 3272.24,
+                    "precision": 6,
+                    "is_native": true
+                }
+            ],
+            "name": "STARKNET_MAINNET",
+            "display_name": "StarkNet",
+            "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/starknet_mainnet.png",
+            "chain_id": "0x534e5f4d41494e",
+            "node_url": "https://starknet-mainnet.blastapi.io/0087e28f-aeff-41d3-8f42-0d46f40509c9",
+            "type": NetworkType.Starknet,
+            "transaction_explorer_template": "https://starkscan.co/tx/{0}",
+            "account_explorer_template": "https://starkscan.co/contract/{0}",
+            "metadata": {
+                "listing_date": "2023-12-27T16:46:50.617075+00:00",
+                "evm_oracle_contract": "",
+                "evm_multi_call_contract": ""
+            }
+        },
+        {
+            "tokens": [],
+            "name": "ETHEREUM_MAINNET",
+            "display_name": "Ethereum",
+            "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_mainnet.png",
+            "chain_id": "1",
+            "node_url": "",
+            "type": NetworkType.EVM,
+            "transaction_explorer_template": "https://etherscan.io/tx/{0}",
+            "account_explorer_template": "https://etherscan.io/address/{0}",
+            "metadata": {
+                "listing_date": "2023-12-27T16:46:50.617075+00:00",
+                "evm_oracle_contract": "",
+                "evm_multi_call_contract": ""
+            }
+        }
+    ],
     "exchanges": [
         {
             "token_groups": [
@@ -83,135 +206,8 @@ export const Settings: LayerSwapSettings = {
             }
         }
     ],
-    "networks":[
-        {
-          "tokens": [
-            {
-              "symbol": "jUSDC",
-              "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/jusdc.png",
-              "contract": "EQB-MPwrd1G6WKNkLz_VnV6WqBDd142KMQv-g1O-8QUA3728",
-              "decimals": 6,
-              "price_in_usd": 1.11,
-              "precision": 6,
-              "group_name": null,
-              "is_native": false
-            },
-            {
-              "symbol": "TON",
-              "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/ton.png",
-              "contract": null,
-              "decimals": 9,
-              "price_in_usd": 2.86,
-              "precision": 6,
-              "group_name": null,
-              "is_native": true
-            }
-          ],
-          "name": "TON_MAINNET",
-          "display_name": "Ton",
-          "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ton_mainnet.png",
-          "chain_id": null,
-          "node_url": 'null',
-          "type": NetworkType.TON,
-          "transaction_explorer_template": "https://tonscan.org/tx/{0}",
-          "account_explorer_template": "https://tonscan.org/address/{0}",
-          "metadata": {
-            "listing_date": "2023-12-27T16:46:50.617075+00:00",
-            "evm_oracle_contract": null,
-            "evm_multi_call_contract": null
-          }
-        },
-        {
-          "tokens": [
-            {
-              "symbol": "USDC",
-              "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.png",
-              "contract": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-              "decimals": 6,
-              "price_in_usd": 1.001,
-              "precision": 6,
-              "group_name": null,
-              "is_native": false
-            },
-            {
-              "symbol": "ETH",
-              "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
-              "contract": null,
-              "decimals": 18,
-              "price_in_usd": 3918.98,
-              "precision": 6,
-              "group_name": null,
-              "is_native": true
-            },
-            {
-              "symbol": "USDC.e",
-              "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.e.png",
-              "contract": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
-              "decimals": 6,
-              "price_in_usd": 1.001,
-              "precision": 6,
-              "group_name": null,
-              "is_native": false
-            }
-          ],
-          "name": "ARBITRUM_MAINNET",
-          "display_name": "Arbitrum One",
-          "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_mainnet.png",
-          "chain_id": "42161",
-          "node_url": "https://arbitrum-one.public.blastapi.io",
-          "type": NetworkType.EVM,
-          "transaction_explorer_template": "https://arbiscan.io/tx/{0}",
-          "account_explorer_template": "https://arbiscan.io/address/{0}",
-          "metadata": {
-            "listing_date": "2023-12-27T16:46:50.617075+00:00",
-            "evm_oracle_contract": "",
-            "evm_multi_call_contract": ""
-          }
-        },
-        {
-          "tokens": [
-            {
-              "symbol": "ETH",
-              "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
-              "contract": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-              "decimals": 18,
-              "price_in_usd": 3918.98,
-              "precision": 6,
-              "group_name": null,
-              "is_native": true
-            }
-          ],
-          "name": "STARKNET_MAINNET",
-          "display_name": "StarkNet",
-          "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/starknet_mainnet.png",
-          "chain_id": "0x534e5f4d41494e",
-          "node_url": "https://starknet-mainnet.blastapi.io/0087e28f-aeff-41d3-8f42-0d46f40509c9",
-          "type": NetworkType.Starknet,
-          "transaction_explorer_template": "https://starkscan.co/tx/{0}",
-          "account_explorer_template": "https://starkscan.co/contract/{0}",
-          "metadata": {
-            "listing_date": "2023-12-27T16:46:50.617075+00:00",
-            "evm_oracle_contract": "",
-            "evm_multi_call_contract": ""
-          }
-        },
-        {
-          "tokens": [],
-          "name": "ETHEREUM_MAINNET",
-          "display_name": "Ethereum",
-          "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_mainnet.png",
-          "chain_id": "1",
-          "node_url": 'null',
-          "type": NetworkType.EVM,
-          "transaction_explorer_template": "https://etherscan.io/tx/{0}",
-          "account_explorer_template": "https://etherscan.io/address/{0}",
-          "metadata": {
-            "listing_date": "2023-12-27T16:46:50.617075+00:00",
-            "evm_oracle_contract": "",
-            "evm_multi_call_contract": ""
-          }
-        }
-      ],
+    "sources": [],
+    "destinations": []
 }
 
 export const SettingChains: any = [
