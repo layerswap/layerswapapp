@@ -1,4 +1,4 @@
-import { Dispatch, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef } from 'react'
+import { Dispatch, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef, useState } from 'react'
 import { motion, useAnimation } from "framer-motion";
 import { forwardRef } from 'react';
 import IconButton from '../buttons/iconButton';
@@ -23,7 +23,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 40 };
-
+    
     const handleDragEnd = useCallback(async (_, info) => {
         const offset = info.offset.y;
         const velocity = info.velocity.y;
@@ -78,9 +78,9 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
+                animate={controls}
                 className={`${wrapperHeightClass} max-h-full overflow-y-auto group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'rounded-t-2xl border-t border-secondary-500' : ''}  bg-secondary-900 ${className} shadow-lg`}
                 initial={{ y: "20%" }}
-                animate={controls}
                 exit={{ y: "100%" }}
                 transition={transitionProps}
                 drag={height != 'full' ? "y" : false}
@@ -90,18 +90,23 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
                 <div className={`py-3 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
-                    <div className='px-6 flex justify-between items-center'>
+                    <motion.div className='px-6 flex justify-between items-center hover:cursor-grab'>
                         <div className="text-lg text-primary-text font-semibold">
                             <div className='font-normal leading-none tracking-tight'>{title}</div>
                         </div>
+                        <div className='absolute start-[50%] top-0 -translate-x-1/2 h-3 w-32 self-start bg-secondary-600 rounded-b-lg'></div>
                         <IconButton onClick={handleCloseModal} icon={
                             <X strokeWidth={3} />
                         }>
                         </IconButton>
-                    </div>
-                    <div className='select-text max-h-full overflow-y-auto styled-scroll px-6 h-full'>
+                    </motion.div>
+                    <motion.div
+                        drag="y"
+                        dragConstraints={{ top: 0, bottom: 0 }}
+                        dragElastic={0}
+                        className='select-text max-h-full overflow-y-auto styled-scroll px-6 h-full'>
                         {children}
-                    </div>
+                    </motion.div>
                 </div>
             </motion.div>
         </div>

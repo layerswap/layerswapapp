@@ -19,7 +19,7 @@ export interface ModalProps {
 const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow, modalId }) => {
     const { isMobile, isDesktop } = useWindowDimensions()
     const mobileModalRef = useRef(null)
-
+    
     useEffect(() => {
         if (isMobile && show) {
             window.document.body.style.overflow = 'hidden'
