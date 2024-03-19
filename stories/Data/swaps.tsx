@@ -1,3 +1,4 @@
+import { Network, NetworkType, Token } from "../../Models/Network"
 import { SwapStatus } from "../../Models/SwapStatus"
 import { SwapItem, BackendTransactionStatus, TransactionType } from "../../lib/layerSwapApiClient"
 
@@ -9,16 +10,81 @@ export const swap: SwapItem = {
         "sequence_number": 2308
     },
     "requested_amount": 0.0015,
-    "fee": 0.00057,
+    "deposit_mode": "",
+    "source_address": "0xisjvievhi83r7837r883h83hd838dd8h38",
     "exchange_account_connected": false,
     "created_date": "2023-08-16T16:31:11.934618+00:00",
     "status": SwapStatus.Created,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
-    "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_SEPOLIA",
-    "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_SEPOLIA",
-    "has_refuel": true,
+    "source_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+        "is_native": false
+    },
+    "source_network": {
+        "account_explorer_template": "snjsncj",
+        "chain_id": "1",
+        "display_name": "",
+        "logo": "",
+        "metadata": {
+            "listing_date": ""
+        },
+        "name": "",
+        "node_url": "",
+        "transaction_explorer_template": "",
+        "type": NetworkType.EVM
+    },
+    "destination_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+        "is_native": false
+    },
+    "destination_network": {
+        "account_explorer_template": "snjsncj",
+        "chain_id": "1",
+        "display_name": "",
+        "logo": "",
+        "metadata": {
+            "listing_date": ""
+        },
+        "name": "",
+        "node_url": "",
+        "transaction_explorer_template": "",
+        "type": NetworkType.EVM
+    },
+    "refuel": {
+        "token": {
+            "symbol": "",
+            "logo": "",
+            "contract": "",
+            "decimals": 18,
+            "price_in_usd": 2,
+            "precision": 6,
+            "is_native": false
+        },
+        "network": {
+            "account_explorer_template": "snjsncj",
+            "chain_id": "1",
+            "display_name": "",
+            "logo": "",
+            "metadata": {
+                "listing_date": ""
+            },
+            "name": "",
+            "node_url": "",
+            "transaction_explorer_template": "",
+            "type": NetworkType.EVM
+        },
+        "refuel_amount": 6
+    },
     "fail_reason": "",
     "transactions": [
         {
@@ -70,17 +136,82 @@ export const failedSwap: SwapItem = {
         "app": null,
         "sequence_number": 2571
     },
+    "deposit_mode": "",
+    "source_address": "0xlskcsvknskvkscnkjcnskncskncksvsv",
     "requested_amount": 0.0018,
-    "fee": 0.00057,
     "exchange_account_connected": false,
     "created_date": "2023-08-30T09:04:41.673486+00:00",
     "status": SwapStatus.Failed,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
-    "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_SEPOLIA",
-    "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_SEPOLIA",
-    "has_refuel": false,
+    "source_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+        "is_native": false
+    },
+    "source_network": {
+        "account_explorer_template": "snjsncj",
+        "chain_id": "1",
+        "display_name": "",
+        "logo": "",
+        "metadata": {
+            "listing_date": ""
+        },
+        "name": "",
+        "node_url": "",
+        "transaction_explorer_template": "",
+        "type": NetworkType.EVM
+    },
+    "destination_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+        "is_native": false
+    },
+    "destination_network": {
+        "account_explorer_template": "snjsncj",
+        "chain_id": "1",
+        "display_name": "",
+        "logo": "",
+        "metadata": {
+            "listing_date": ""
+        },
+        "name": "",
+        "node_url": "",
+        "transaction_explorer_template": "",
+        "type": NetworkType.EVM
+    },
+    "refuel": {
+        "token": {
+            "symbol": "",
+            "logo": "",
+            "contract": "",
+            "decimals": 18,
+            "price_in_usd": 2,
+            "precision": 6,
+            "is_native": false
+        },
+        "network": {
+            "account_explorer_template": "snjsncj",
+            "chain_id": "1",
+            "display_name": "",
+            "logo": "",
+            "metadata": {
+                "listing_date": ""
+            },
+            "name": "",
+            "node_url": "",
+            "transaction_explorer_template": "",
+            "type": NetworkType.EVM
+        },
+        "refuel_amount": 6
+    },
     "fail_reason": "",
     "transactions": [
         {
@@ -101,29 +232,94 @@ export const failedSwap: SwapItem = {
 
 export const failedInputSwap: SwapItem = {
     "id": "d8a32946-1250-46d3-999f-cd195304c55e",
-    "sequence_number": 4355,
     "requested_amount": 0.0018,
-    "fee": 0.00057,
-    "message": undefined,
-    "reference_id": undefined,
     "exchange_account_connected": false,
-    "app_name": "Layerswap",
-    "has_pending_deposit": false,
     "created_date": "2024-02-23T12:41:48.389955+00:00",
     "status": SwapStatus.Failed,
+    "deposit_mode": "",
+    "metadata": {
+        "reference_id": null,
+        "app": null,
+        "sequence_number": 2570
+    },
+    "source_address": "0xf51c208e2c37a99b13dcf01a3434ccsvsvsvsvs",
     "destination_address": "0xf51c208e2c37a99b13dcf01a3434cc71be8b2bdd",
-    "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_SEPOLIA",
-    "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_SEPOLIA",
-    "has_refuel": false,
+    "source_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+        "is_native": false
+    },
+    "source_network": {
+        "account_explorer_template": "snjsncj",
+        "chain_id": "1",
+        "display_name": "",
+        "logo": "",
+        "metadata": {
+            "listing_date": ""
+        },
+        "name": "",
+        "node_url": "",
+        "transaction_explorer_template": "",
+        "type": NetworkType.EVM
+    },
+    "destination_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+        "is_native": false
+    },
+    "destination_network": {
+        "account_explorer_template": "snjsncj",
+        "chain_id": "1",
+        "display_name": "",
+        "logo": "",
+        "metadata": {
+            "listing_date": ""
+        },
+        "name": "",
+        "node_url": "",
+        "transaction_explorer_template": "",
+        "type": NetworkType.EVM
+    },
+    "refuel": {
+        "token": {
+            "symbol": "",
+            "logo": "",
+            "contract": "",
+            "decimals": 18,
+            "price_in_usd": 2,
+            "precision": 6,
+            "is_native": false
+        },
+        "network": {
+            "account_explorer_template": "snjsncj",
+            "chain_id": "1",
+            "display_name": "",
+            "logo": "",
+            "metadata": {
+                "listing_date": ""
+            },
+            "name": "",
+            "node_url": "",
+            "transaction_explorer_template": "",
+            "type": NetworkType.EVM
+        },
+        "refuel_amount": 6
+    },
     "fail_reason": "",
     "transactions": [
         {
             "from": "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
             "to": "0xf51c208e2c37a99b13dcf01a3434cc71be8b2bdd",
             "created_date": "2023-08-30T09:07:34.213877+00:00",
-            "transaction_id": "0x529ab89f4ed2ece53ca51f52d11e5123f5e5c43c09a9d054d243de0e0829d15f",
+            "transaction_hash": "0x529ab89f4ed2ece53ca51f52d11e5123f5e5c43c09a9d054d243de0e0829d15f",
             "confirmations": 3,
             "max_confirmations": 3,
             "amount": 0.0018,
@@ -144,15 +340,80 @@ export const failedSwapOutOfRange: SwapItem = {
     },
     "requested_amount": 0.0015,
     "exchange_account_connected": false,
-    "fee": 0.000633,
+    "deposit_mode": "",
+    "source_address": "0xd11Ed17eF0F48a9941fD4A66",
     "created_date": "2023-08-29T14:16:02.389108+00:00",
     "status": SwapStatus.Failed,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
-    "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_SEPOLIA",
-    "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_SEPOLIA",
-    "has_refuel": true,
+    "source_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+        "is_native": false
+    },
+    "source_network": {
+        "account_explorer_template": "snjsncj",
+        "chain_id": "1",
+        "display_name": "",
+        "logo": "",
+        "metadata": {
+            "listing_date": ""
+        },
+        "name": "",
+        "node_url": "",
+        "transaction_explorer_template": "",
+        "type": NetworkType.EVM
+    },
+    "destination_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+        "is_native": false
+    },
+    "destination_network": {
+        "account_explorer_template": "snjsncj",
+        "chain_id": "1",
+        "display_name": "",
+        "logo": "",
+        "metadata": {
+            "listing_date": ""
+        },
+        "name": "",
+        "node_url": "",
+        "transaction_explorer_template": "",
+        "type": NetworkType.EVM
+    },
+    "refuel": {
+        "token": {
+            "symbol": "",
+            "logo": "",
+            "contract": "",
+            "decimals": 18,
+            "price_in_usd": 2,
+            "precision": 6,
+            "is_native": false
+        },
+        "network": {
+            "account_explorer_template": "snjsncj",
+            "chain_id": "1",
+            "display_name": "",
+            "logo": "",
+            "metadata": {
+                "listing_date": ""
+            },
+            "name": "",
+            "node_url": "",
+            "transaction_explorer_template": "",
+            "type": NetworkType.EVM
+        },
+        "refuel_amount": 6
+    },
     "fail_reason": "received_more_than_valid_range",
     "transactions": [
         {
@@ -191,17 +452,82 @@ export const cancelled: SwapItem = {
         "app": null,
         "sequence_number": 2570
     },
+    "deposit_mode": "",
+    "source_address": "0xd11Ed17eF0F48a9941fD4A66",
     "requested_amount": 0.0015,
     "exchange_account_connected": false,
-    "fee": 0.000633,
     "created_date": "2023-08-29T14:16:02.389108+00:00",
     "status": SwapStatus.Cancelled,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
-    "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_SEPOLIA",
-    "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_SEPOLIA",
-    "has_refuel": true,
+    "source_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+        "is_native": false
+    },
+    "source_network": {
+        "account_explorer_template": "snjsncj",
+        "chain_id": "1",
+        "display_name": "",
+        "logo": "",
+        "metadata": {
+            "listing_date": ""
+        },
+        "name": "",
+        "node_url": "",
+        "transaction_explorer_template": "",
+        "type": NetworkType.EVM
+    },
+    "destination_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+        "is_native": false
+    },
+    "destination_network": {
+        "account_explorer_template": "snjsncj",
+        "chain_id": "1",
+        "display_name": "",
+        "logo": "",
+        "metadata": {
+            "listing_date": ""
+        },
+        "name": "",
+        "node_url": "",
+        "transaction_explorer_template": "",
+        "type": NetworkType.EVM
+    },
+    "refuel": {
+        "token": {
+            "symbol": "",
+            "logo": "",
+            "contract": "",
+            "decimals": 18,
+            "price_in_usd": 2,
+            "precision": 6,
+            "is_native": false
+        },
+        "network": {
+            "account_explorer_template": "snjsncj",
+            "chain_id": "1",
+            "display_name": "",
+            "logo": "",
+            "metadata": {
+                "listing_date": ""
+            },
+            "name": "",
+            "node_url": "",
+            "transaction_explorer_template": "",
+            "type": NetworkType.EVM
+        },
+        "refuel_amount": 6
+    },
     "fail_reason": "",
     "transactions": [
 
@@ -215,17 +541,82 @@ export const expired: SwapItem = {
         "app": null,
         "sequence_number": 2570
     },
+    "source_address": "0x42c03fC8fd30d11Ed17eF0F48a9941fD4A66svsv",
     "requested_amount": 0.0015,
+    "deposit_mode": "",
     "exchange_account_connected": false,
-    "fee": 0.000633,
     "created_date": "2023-08-29T14:16:02.389108+00:00",
     "status": SwapStatus.Expired,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
-    "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_SEPOLIA",
-    "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_SEPOLIA",
-    "has_refuel": true,
+    "source_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+        "is_native": false
+    },
+    "source_network": {
+        "account_explorer_template": "snjsncj",
+        "chain_id": "1",
+        "display_name": "",
+        "logo": "",
+        "metadata": {
+            "listing_date": ""
+        },
+        "name": "",
+        "node_url": "",
+        "transaction_explorer_template": "",
+        "type": NetworkType.EVM
+    },
+    "destination_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+        "is_native": false
+    },
+    "destination_network": {
+        "account_explorer_template": "snjsncj",
+        "chain_id": "1",
+        "display_name": "",
+        "logo": "",
+        "metadata": {
+            "listing_date": ""
+        },
+        "name": "",
+        "node_url": "",
+        "transaction_explorer_template": "",
+        "type": NetworkType.EVM
+    },
+    "refuel": {
+        "token": {
+            "symbol": "",
+            "logo": "",
+            "contract": "",
+            "decimals": 18,
+            "price_in_usd": 2,
+            "precision": 6,
+            "is_native": false
+        },
+        "network": {
+            "account_explorer_template": "snjsncj",
+            "chain_id": "1",
+            "display_name": "",
+            "logo": "",
+            "metadata": {
+                "listing_date": ""
+            },
+            "name": "",
+            "node_url": "",
+            "transaction_explorer_template": "",
+            "type": NetworkType.EVM
+        },
+        "refuel_amount": 6
+    },
     "fail_reason": "",
     "transactions": [
 
