@@ -12,7 +12,8 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 1.097,
                     "precision": 6,
-                    "is_native": false
+                    "is_native": false,
+                    "status": "active"
                 },
                 {
                     "symbol": "TON",
@@ -21,7 +22,8 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 9,
                     "price_in_usd": 3.76,
                     "precision": 6,
-                    "is_native": true
+                    "is_native": true,
+                    "status": "active"
                 }
             ],
             "name": "TON_MAINNET",
@@ -47,7 +49,8 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 1.002,
                     "precision": 6,
-                    "is_native": false
+                    "is_native": false,
+                    "status": "active"
                 },
                 {
                     "symbol": "ETH",
@@ -56,7 +59,8 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3272.24,
                     "precision": 6,
-                    "is_native": true
+                    "is_native": true,
+                    "status": "active"
                 },
                 {
                     "symbol": "USDC.e",
@@ -65,7 +69,8 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 1.002,
                     "precision": 6,
-                    "is_native": false
+                    "is_native": false,
+                    "status": "active"
                 }
             ],
             "name": "ARBITRUM_MAINNET",
@@ -91,7 +96,8 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3272.24,
                     "precision": 6,
-                    "is_native": true
+                    "is_native": true,
+                    "status": "active"
                 }
             ],
             "name": "STARKNET_MAINNET",
