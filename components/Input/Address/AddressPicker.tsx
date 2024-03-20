@@ -15,6 +15,7 @@ import { Address, AddressGroup, useAddressBookStore } from "../../../stores/addr
 import { groupBy } from "../../utils/groupBy";
 import { CommandGroup, CommandItem, CommandList, CommandWrapper } from "../../shadcn/command";
 import SubmitButton from "../../buttons/submitButton";
+import AddressIcon from "../../AddressIcon";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -62,9 +63,9 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
         let addresses: Address[] = []
 
-        if (recentlyUsedAddresses && values.to) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: values.to?.type, icon: History }))]
-        if (connectedWalletAddress && values.to) addresses = [...addresses.filter(a => connectedWalletAddress !== a.address), { address: connectedWalletAddress, group: AddressGroup.ConnectedWallet, networkType: values.to.type, icon: connectedWallet ? connectedWallet.icon : WalletIcon }]
-        if (newAddress && values.to) addresses = [...addresses.filter(a => newAddress !== a.address), { address: newAddress, group: AddressGroup.ManualAdded, networkType: values.to.type, icon: FilePlus2 }]
+        if (recentlyUsedAddresses && values.to) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: values.to?.type }))]
+        if (connectedWalletAddress && values.to) addresses = [...addresses.filter(a => connectedWalletAddress !== a.address), { address: connectedWalletAddress, group: AddressGroup.ConnectedWallet, networkType: values.to.type }]
+        if (newAddress && values.to) addresses = [...addresses.filter(a => newAddress !== a.address), { address: newAddress, group: AddressGroup.ManualAdded, networkType: values.to.type }]
 
         addAddresses(addresses.filter(a => a.networkType === values.to?.type))
 
@@ -75,6 +76,12 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             inputReference?.current?.focus()
         }
     }, [canFocus])
+
+    useEffect(() => {
+        if (values.destination_address && addresses.find(a => a.address === values.destination_address)?.group === AddressGroup.ManualAdded) {
+            setManualAddress(values.destination_address)
+        }
+    }, [])
 
     const handleRemoveNewDepositeAddress = useCallback(async () => {
         setManualAddress('')
@@ -89,8 +96,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     let errorMessage = '';
     if (manualAddress && !isValidAddress(manualAddress, destination)) {
         errorMessage = `Enter a valid ${values.to?.display_name} address`
-    } else if (addresses.some(a => a.address.toLowerCase() === manualAddress.toLowerCase())) {
-        errorMessage = "Entered address already exist in this list"
     }
 
     const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -105,6 +110,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             setFieldValue(name, manualAddress)
             setManualAddress("")
         }
+        close()
     }
 
     const destinationAsset = values.toCurrency
@@ -121,19 +127,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         && provider
                         && !connectedWallet
                         && !values.toExchange &&
-                        // <div onClick={() => { connectWallet(provider.name) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70 flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
-                        //     <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
-                        //         <WalletIcon className="w-5 h-5 text-primary-text" />
-                        //     </div>
-                        //     <div className="flex flex-col">
-                        //         <div className="block text-sm font-medium">
-                        //             Autofill from wallet
-                        //         </div>
-                        //         <div className="text-gray-500">
-                        //             Connect your wallet to fetch the address
-                        //         </div>
-                        //     </div>
-                        // </div>
                         <SubmitButton onClick={() => { connectWallet(provider.name) }} text_align="left" icon={<WalletIcon className='stroke-2 w-6 h-6' strokeWidth={2} />} className="bg-primary/20 border-none !text-primary !px-5 gap-1" type="button" isDisabled={false} isSubmitting={false}>
                             Connect a wallet
                         </SubmitButton>
@@ -153,7 +146,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         <div className="text-left">
                             <CommandWrapper>
                                 <CommandList>
-                                    {groupedAddressesArray.sort((a, b) => a.order - b.order).map((group) => {
+                                    {groupedAddressesArray.filter(a => a.name !== AddressGroup.ManualAdded).sort((a, b) => a.order - b.order).map((group) => {
                                         return (
                                             <CommandGroup key={group.name} heading={group.name} className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-3 [&_[cmdk-group-heading]]:!pt-2 !py-0 !px-0">
                                                 <div className="bg-secondary-800 overflow-hidden rounded-lg divide-y divide-secondary-600">
@@ -161,11 +154,11 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                                         const difference_in_days = item.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(item.date).getTime()) / (1000 * 3600 * 24))) : undefined
 
                                                         return (
-                                                            <CommandItem value={item.address} key={item.address} onSelect={handleSelectAddress} className="!bg-transparent !px-3 hover:!bg-secondary-700">
+                                                            <CommandItem value={item.address} key={item.address} onSelect={handleSelectAddress} className="!bg-transparent !px-3 hover:!bg-secondary-700 transition duration-200">
                                                                 <div className={`flex items-center justify-between w-full`}>
                                                                     <div className={`space-x-2 flex text-sm items-center`}>
                                                                         <div className='flex bg-secondary-400 text-primary-text flex-row items-left rounded-md p-2'>
-                                                                            <item.icon className="h-5 w-5" strokeWidth={2} />
+                                                                            <AddressIcon address={item.address} size={20} />
                                                                         </div>
                                                                         <div className="flex flex-col">
                                                                             <div className="block text-sm font-medium">
@@ -248,18 +241,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                         </button>
                                     </span>
                                 }
-                                {
-                                    manualAddress &&
-                                    <span className="inline-flex items-center mr-2">
-                                        <button
-                                            type="button"
-                                            className="p-0.5 duration-200 transition  hover:bg-secondary-400  rounded-md border border-secondary-500 hover:border-secondary-200"
-                                            onClick={handleSaveNewAddress}
-                                        >
-                                            <Check className="h-5 w-5" />
-                                        </button>
-                                    </span>
-                                }
+
                             </div>
 
                             {
@@ -308,6 +290,25 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                             <span>as network</span>
                                         </li>
                                     </ul>
+                                </div>
+                            }
+                            {
+                                manualAddress && !errorMessage &&
+                                <div onClick={handleSaveNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 bg-secondary-800 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-700 transition duration-200 p-3 hover:shadow-xl mt-3`}>
+                                    <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
+                                        <AddressIcon size={20} address={manualAddress} />
+                                    </div>
+                                    <div className="flex flex-col grow">
+                                        <div className="block text-md font-medium text-primary-text">
+                                            {shortenAddress(manualAddress)}
+                                        </div>
+                                    </div>
+                                    <div className='flex text-primary-text flex-row items-left h-6 rounded-md px-1'>
+                                        {
+                                            manualAddress === destination_address &&
+                                            <Check />
+                                        }
+                                    </div>
                                 </div>
                             }
                         </div>
