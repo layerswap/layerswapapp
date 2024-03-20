@@ -95,7 +95,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     useEffect(() => {
         if (value) return
-        setFieldValue(name, currencyMenuItems?.[0].baseObject)
+        setFieldValue(name, currencyMenuItems?.[0]?.baseObject)
     }, [])
 
     const handleSelect = useCallback((item: SelectMenuItem<AssetGroup>) => {
