@@ -44,13 +44,13 @@ export function FeeProvider({ children }) {
         min_amount_in_usd: number
         max_amount: number
         max_amount_in_usd: number
-    }>>((from && fromCurrency && to && toCurrency) ?
-        `/limits?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&deposit_mode=${depositMethod}&refuel=${!!refuel}` : null, apiClient.fetcher, {
+    }>>((from && fromCurrency && to && toCurrency && depositMethod) ?
+        `/limits?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&deposit_mode=${depositMethod?.id || 'wallet'}&refuel=${!!refuel}` : null, apiClient.fetcher, {
         refreshInterval: 10000
     })
 
     const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<Quote>>((from && fromCurrency && to && toCurrency && debouncedAmount) ?
-        `/quote/${from?.name}/${fromCurrency?.symbol}/${to?.name}/${toCurrency?.symbol}?amount=${debouncedAmount}&refuel=${!!refuel}&deposit_mode=${depositMethod}` : null, apiClient.fetcher, {
+        `/quote/${from?.name}/${fromCurrency?.symbol}/${to?.name}/${toCurrency?.symbol}?amount=${debouncedAmount}&refuel=${!!refuel}&deposit_mode=${depositMethod?.id || 'wallet'}` : null, apiClient.fetcher, {
         refreshInterval: 10000,
         fallbackData: { data: cachedRateData }
     })
