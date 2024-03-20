@@ -42,13 +42,14 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         amount
     } = values
 
-    const { layers } = useSettingsState();
     const filterWith = direction === "from" ? to : from
     const filterWithAsset = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
 
     const apiClient = new LayerSwapApiClient()
+    const include_unmatched = 'true'
 
     const destinationRouteParams = new URLSearchParams({
+        include_unmatched,
         ...(filterWith && filterWithAsset
             ? (
                 {
@@ -65,7 +66,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     const routesEndpoint = `/${direction === "from" ? "sources" : "destinations"}?${destinationRouteParams.toString()}`
 
-    const { data: routes, isLoading } = useSWR<ApiResponse<CryptoNetwork[]>>(routesEndpoint, apiClient.fetcher)
+    const { data: routes, isLoading } = useSWR<ApiResponse<CryptoNetwork[]>>(`${routesEndpoint}`, apiClient.fetcher)
     const routesData = routes?.data
 
     const exchangeNetworksEndpoint =
@@ -82,15 +83,15 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     const menuItems = routesData
         && historicalNetworks?.data
-        && GenerateMenuItems(routesData, historicalNetworks.data, currencyGroup, layers)
-            .filter(item => layers.find(l =>
+        && GenerateMenuItems(routesData, historicalNetworks.data, currencyGroup, routes?.data)
+            .filter(item => routes?.data?.find(l =>
                 l.name === item.baseObject.network.name));
 
     const handleSelect = useCallback((item: SelectMenuItem<{ network: string, asset: string }>) => {
         if (!item) return
-        const layer = layers.find(l => l.name === item.baseObject.network)
-        const currency = layer?.tokens.find(a => a.symbol === item.baseObject.asset)
-        setFieldValue(name, layer, true)
+        const route = routes?.data?.find(l => l.name === item.baseObject.network)
+        const currency = route?.tokens.find(a => a.symbol === item.baseObject.asset)
+        setFieldValue(name, route, true)
         setFieldValue(`${name}Currency`, currency, false)
     }, [name])
 
@@ -179,35 +180,35 @@ function GenerateMenuItems(
     items: CryptoNetwork[],
     historicalNetworks: ExchangeNetwork[],
     currencyGroup: AssetGroup | undefined,
-    layers: Layer[],
+    routes: CryptoNetwork[] | undefined,
 ): SelectMenuItem<ExchangeNetwork>[] {
     const menuItems = historicalNetworks.map((e, index) => {
-            // const indexOf = Number(historicalNetworks
-            //     ?.indexOf(historicalNetworks
-            //         .find(n => n.asset === e.asset && n.network === e.network)
-            //         || { network: '', asset: '' }))
+        // const indexOf = Number(historicalNetworks
+        //     ?.indexOf(historicalNetworks
+        //         .find(n => n.asset === e.asset && n.network === e.network)
+        //         || { network: '', asset: '' }))
 
-            const network = layers?.find(l => l.name == e.network.name);
+        const network = routes?.find(l => l.name == e.network.name);
 
-            const item: SelectMenuItem<ExchangeNetwork> = {
-                baseObject: e,
-                id: index.toString(),
-                name: `${e.network.name}_${e.token.symbol}`,
-                displayName: network?.display_name,
-                order: 1,
-                imgSrc: network?.logo || '',
-                isAvailable: { value: true, disabledReason: null },
-                details: e.token.symbol
-            }
-            return item;
-        }).sort(SortingByOrder)
+        const item: SelectMenuItem<ExchangeNetwork> = {
+            baseObject: e,
+            id: index.toString(),
+            name: `${e.network.name}_${e.token.symbol}`,
+            displayName: network?.display_name,
+            order: 1,
+            imgSrc: network?.logo || '',
+            isAvailable: { value: true, disabledReason: null },
+            details: e.token.symbol
+        }
+        return item;
+    }).sort(SortingByOrder)
     const res = menuItems
     return res
 }
 
 export default CEXNetworkFormField
 
-export function groupByType(values: SelectMenuItem<Layer>[]) {
+export function groupByType(values: SelectMenuItem<CryptoNetwork>[]) {
     let groups: SelectMenuItemGroup[] = [];
     values?.forEach((v) => {
         let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });

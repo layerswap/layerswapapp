@@ -71,13 +71,15 @@ export const InitializeAuthInstance = (baseURL?: string) => {
             let token = TokenService.getAuthData()?.access_token;
             const apiKey = process.env.NEXT_PUBLIC_API_KEY
 
+            if (apiKey) {
+                config.headers["X-LS-APIKEY"] = apiKey
+            } else {
+                throw new Error("NEXT_PUBLIC_API_KEY is not set up in env vars")
+            }
+
             if (token) {
                 config.headers["Authorization"] = 'Bearer ' + token;
-                if (apiKey) {
-                    config.headers["X-LS-APIKEY"] = apiKey
-                } else {
-                    throw new Error("NEXT_PUBLIC_API_KEY is not set up in env vars")
-                }
+
             }
             return config;
         },

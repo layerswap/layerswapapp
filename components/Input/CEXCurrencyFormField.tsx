@@ -34,8 +34,10 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         : undefined
 
     const apiClient = new LayerSwapApiClient()
+    const include_unmatched = 'true'
 
     const sourceRouteParams = new URLSearchParams({
+        include_unmatched,
         ...(toExchange && currencyGroup && currencyGroup?.groupedInBackend ?
             {
                 destination_asset_group: currencyGroup?.name
@@ -50,6 +52,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     });
 
     const destinationRouteParams = new URLSearchParams({
+        include_unmatched,
         ...(fromExchange && currencyGroup && currencyGroup?.groupedInBackend ?
             {
                 source_asset_group: currencyGroup?.name
@@ -69,18 +72,12 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
         data: sourceRoutes,
         isLoading: sourceRoutesLoading,
-    } = useSWR<ApiResponse<{
-        network: string;
-        asset: string;
-    }[]>>(sourceRoutesURL, apiClient.fetcher)
+    } = useSWR<ApiResponse<{ network: string; asset: string }[]>>(`${sourceRoutesURL}`, apiClient.fetcher)
 
     const {
         data: destinationRoutes,
         isLoading: destRoutesLoading,
-    } = useSWR<ApiResponse<{
-        network: string;
-        asset: string;
-    }[]>>(destinationRoutesURL, apiClient.fetcher)
+    } = useSWR<ApiResponse<{ network: string; asset: string }[]>>(`${destinationRoutesURL}`, apiClient.fetcher)
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : availableAssetGroups
 

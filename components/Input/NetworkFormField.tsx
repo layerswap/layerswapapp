@@ -35,14 +35,14 @@ type LayerIsAvailable = {
     disabledReason: null;
 }
 const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
-const getGroupName = (value: Layer | Exchange, type: 'cex' | 'layer', layerIsAvailable?: LayerIsAvailable) => {
+const getGroupName = (value: CryptoNetwork | Exchange, type: 'cex' | 'network', layerIsAvailable?: LayerIsAvailable) => {
     if (NetworkSettings.KnownSettings[value.name]?.isFeatured && layerIsAvailable?.disabledReason !== LayerDisabledReason.InvalidRoute) {
         return "Popular";
     }
     else if (new Date(value.metadata?.listing_date).getTime() >= (new Date().getTime() - 2629800000)) {
         return "New";
     }
-    else if (type === 'layer') {
+    else if (type === 'network') {
         return "Networks";
     }
     else if (type === 'cex') {
@@ -64,11 +64,10 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const query = useQueryState()
     const { lockFrom, lockTo } = query
 
-    const { layers, exchanges, destinationRoutes, sourceRoutes, assetGroups } = useSettingsState();
+    const { exchanges, destinationRoutes, sourceRoutes, assetGroups } = useSettingsState();
     let placeholder = "";
     let searchHint = "";
-    let filteredLayers: Layer[];
-    let menuItems: (SelectMenuItem<Layer | Exchange> & { isExchange: boolean })[];
+    let menuItems: (SelectMenuItem<CryptoNetwork | Exchange> & { isExchange: boolean })[];
 
     const filterWith = direction === "from" ? to : from
     const filterWithAsset = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
@@ -90,7 +89,10 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         )
     });
 
+    const include_unmatched = 'true'
+
     const networkParams = new URLSearchParams({
+        include_unmatched,
         ...(filterWith && filterWithAsset ?
             {
                 [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.name,
@@ -105,7 +107,11 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const destinationRoutesURL = `/destinations?${params.toString()}`
     const routesEndpoint = direction === "from" ? sourceRoutesURL : destinationRoutesURL
 
-    const { data: routes, isLoading, error } = useSWR<ApiResponse<CryptoNetwork[]>>(routesEndpoint, apiClient.fetcher)
+    const {
+        data: routes,
+        isLoading,
+        error
+    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${routesEndpoint}`, apiClient.fetcher)
 
     const [routesData, setRoutesData] = useState<CryptoNetwork[] | undefined>(direction === 'from' ? sourceRoutes : destinationRoutes)
 
@@ -117,14 +123,12 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
-        filteredLayers = layers.filter(l => sourceRoutes?.some(r => r.name === l.name))
-        menuItems = GenerateMenuItems(filteredLayers, toExchange ? [] : exchanges, direction, !!(from && lockFrom), routesData, query);
+        menuItems = GenerateMenuItems(routesData, toExchange ? [] : exchanges, direction, !!(from && lockFrom), query);
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        filteredLayers = layers.filter(l => destinationRoutes?.some(r => r.name === l.name))
-        menuItems = GenerateMenuItems(filteredLayers, fromExchange ? [] : exchanges, direction, !!(to && lockTo), routesData, query);
+        menuItems = GenerateMenuItems(routesData, fromExchange ? [] : exchanges, direction, !!(to && lockTo), query);
     }
 
     const value = menuItems.find(x => !x.isExchange ?
@@ -209,13 +213,13 @@ function groupByType(values: ISelectMenuItem[]) {
     return groups;
 }
 
-function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], direction: SwapDirection, lock: boolean, routesData: CryptoNetwork[] | undefined, query: QueryParams): (SelectMenuItem<Layer | Exchange> & { isExchange: boolean })[] {
+function GenerateMenuItems(routes: CryptoNetwork[] | undefined, exchanges: Exchange[], direction: SwapDirection, lock: boolean, query: QueryParams): (SelectMenuItem<CryptoNetwork | Exchange> & { isExchange: boolean })[] {
 
-    let layerIsAvailable = (layer: Layer) => {
+    let layerIsAvailable = (route: CryptoNetwork) => {
         if (lock) {
             return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
         }
-        else if (!routesData?.some(r => r.name === layer.name)) {
+        else if (!route.tokens?.some(r => r.status === 'active')) {
             if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange) {
                 return { value: false, disabledReason: LayerDisabledReason.InvalidRoute }
             }
@@ -236,21 +240,21 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], direction: Sw
         }
     }
 
-    const mappedLayers = layers.map(l => {
+    const mappedLayers = routes?.map(l => {
         let orderProp: keyof NetworkSettings | keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
         const order = NetworkSettings.KnownSettings[l.name]?.[orderProp]
-        const res: SelectMenuItem<Layer> & { isExchange: boolean } = {
+        const res: SelectMenuItem<CryptoNetwork> & { isExchange: boolean } = {
             baseObject: l,
             id: l.name,
             name: l.display_name,
             order: order || 100,
             imgSrc: l.logo,
             isAvailable: layerIsAvailable(l),
-            group: getGroupName(l, 'layer', layerIsAvailable(l)),
+            group: getGroupName(l, 'network', layerIsAvailable(l)),
             isExchange: false,
         }
         return res;
-    }).sort(SortingByAvailability);
+    }).sort(SortingByAvailability) || [];
 
     const mappedExchanges = exchanges.map(e => {
         let orderProp: keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';

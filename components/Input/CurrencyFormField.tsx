@@ -6,11 +6,10 @@ import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import CurrencySettings from "../../lib/CurrencySettings";
 import { SortingByAvailability } from "../../lib/sorting";
-import { Layer } from "../../Models/Layer";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useQueryState } from "../../context/query";
-import { Token } from "../../Models/Network";
+import { CryptoNetwork, Token } from "../../Models/Network";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import useSWR from "swr";
 import { ApiResponse } from "../../Models/ApiResponse";
@@ -44,8 +43,10 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         : undefined
 
     const apiClient = new LayerSwapApiClient()
+    const include_unmatched = 'true'
 
     const sourceRouteParams = new URLSearchParams({
+        include_unmatched,
         ...(toExchange && currencyGroup && currencyGroup.groupedInBackend ?
             {
                 destination_asset_group: currencyGroup.name
@@ -61,6 +62,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
 
     const destinationRouteParams = new URLSearchParams({
+        include_unmatched,
         ...(fromExchange && currencyGroup && currencyGroup.groupedInBackend ?
             {
                 source_asset_group: currencyGroup.name
@@ -81,33 +83,18 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const { data: sourceRoutes,
         error: sourceRoutesError,
         isLoading: sourceRoutesLoading
-    } = useSWR<ApiResponse<{
-        network: string;
-        asset: string;
-    }[]>>(sourceRoutesURL, apiClient.fetcher)
+    } = useSWR<ApiResponse<{ network: string; asset: string; }[]>>(`${sourceRoutesURL}`, apiClient.fetcher)
 
     const {
         data: destinationRoutes,
         error: destRoutesError,
         isLoading: destRoutesLoading
-    } = useSWR<ApiResponse<{
-        network: string;
-        asset: string;
-    }[]>>(destinationRoutesURL, apiClient.fetcher)
+    } = useSWR<ApiResponse<{ network: string; asset: string; }[]>>(`${destinationRoutesURL}`, apiClient.fetcher)
 
     const isLoading = sourceRoutesLoading || destRoutesLoading
 
-
-    const filteredCurrencies = currencies?.filter(currency => {
-        if (direction === "from") {
-            return currency.available_in_source;
-        } else {
-            return currency.available_in_destination;
-        }
-    });
-
     const currencyMenuItems = GenerateCurrencyMenuItems(
-        filteredCurrencies!,
+        currencies!,
         resolveImgSrc,
         values,
         direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
@@ -209,7 +196,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
 export function GenerateCurrencyMenuItems(
     currencies: Token[],
-    resolveImgSrc: (item: Layer | Token) => string,
+    resolveImgSrc: (item: CryptoNetwork | Token) => string,
     values: SwapFormValues,
     routes?: { network: string, asset: string }[],
     direction?: string,
@@ -223,7 +210,7 @@ export function GenerateCurrencyMenuItems(
         if (lockAsset) {
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
-        else if ((from || to) && !routes?.filter(r => r.network === (direction === 'from' ? from?.name : to?.name)).some(r => r.asset === currency.symbol)) {
+        else if (currency?.status !== "active") {
             if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset) {
                 return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
             }
