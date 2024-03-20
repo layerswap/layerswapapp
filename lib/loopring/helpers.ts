@@ -189,8 +189,6 @@ export async function activateAccount
 
     const exchangeInfo = await getExchangeInfo();
 
-    const fee = await getOffchainFeeAmt(accInfo.accountId, OffchainFeeReqType.UPDATE_ACCOUNT);
-
     const message = KEY_MESSAGE.replace(
         "${exchangeAddress}",
         exchangeInfo.exchangeAddress
@@ -201,7 +199,11 @@ export async function activateAccount
     const eddsaKeyData = generatePrivateKey(sig)
     const { formatedPx, formatedPy } = eddsaKeyData
     const publicKey = { x: formatedPx, y: formatedPy }
-
+    const feeData = await getOffchainFeeAmt(accInfo.accountId, OffchainFeeReqType.UPDATE_ACCOUNT);
+    const fee = feeData.fees.find(f => f.token.toUpperCase() == token.toUpperCase())?.fee
+    if (!fee) {
+        throw new Error(`Could not get fee for ${token.toUpperCase()}`)
+    }
     const req = {
         exchange: exchangeInfo.exchangeAddress,
         owner: accInfo.owner,
@@ -209,7 +211,7 @@ export async function activateAccount
         publicKey,
         maxFee: {
             tokenId: TOKEN_INFO.tokenMap[token]?.tokenId,
-            volume: fee.fees[token]?.fee,
+            volume: fee,
         },
         keySeed: message,
         validUntil: 1713438026,
@@ -217,13 +219,14 @@ export async function activateAccount
     }
 
     const typedData = getUpdateAccountEcdsaTypedData(req, LoopringAPI.CHAIN)
-    const ecdsaSignature = await signTypedData(typedData as any)
+    const ecdsaSignature = (await signTypedData(typedData as any)).slice(0, 132)
+
     await (await fetch(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}`, {
         method: "POST",
-        body: JSON.stringify({ ...req, ecdsaSignature: ecdsaSignature.slice(0, 132) }),
+        body: JSON.stringify({ ...req, ecdsaSignature: ecdsaSignature }),
         headers: {
             'Content-Type': 'application/json',
-            'X-Api-Sig': ecdsaSignature.slice(0, 132)
+            'X-Api-Sig': ecdsaSignature
         }
     })).json()
 }
