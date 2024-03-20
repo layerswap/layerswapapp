@@ -6,17 +6,15 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     name: string;
     order: number;
     imgSrc: string;
-    asset?: string | undefined;
     displayName?: string | undefined;
     isAvailable: {
         value: boolean;
         disabledReason?: LayerDisabledReason | CurrencyDisabledReason | null
     };
-    type: ItemType;
     group?: string;
     details?: string;
     baseObject: T;
-    constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, type: ItemType, group?: string, details?: string) {
+    constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, group?: string, details?: string) {
         this.baseObject = baseObject;
         this.id = id;
         this.name = name;
@@ -28,7 +26,6 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
             value: true,
             disabledReason: null
         }
-        this.type = type
     }
 }
 
@@ -36,15 +33,12 @@ export interface ISelectMenuItem {
     id: string;
     name: string;
     imgSrc: string;
-    asset?: string | undefined;
     displayName?: string | undefined;
     group?: string;
     isAvailable: {
         value: boolean;
         disabledReason?: LayerDisabledReason | CurrencyDisabledReason | null
     };
-    type: ItemType
     details?: string;
     order?: number;
 }
-type ItemType = 'layer' | 'cex' | 'currency'

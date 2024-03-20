@@ -16,9 +16,7 @@ import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
 import { ArrowUpDown, Loader2 } from 'lucide-react'
 import { useAuthState } from "../../../context/authContext";
-import WarningMessage from "../../WarningMessage";
 import { GetDefaultAsset } from "../../../helpers/settingsHelper";
-import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
@@ -165,7 +163,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         valuesSwapperDisabled = true;
     }
     const seconds = fee?.avgCompletionTime && calculateSeconds(fee.avgCompletionTime)
-    const averageTimeInMinutes = seconds && (seconds / 60) || 0
 
     const hideAddress = query?.hideAddress
         && query?.to
@@ -307,7 +304,7 @@ type AddressButtonProps = {
 }
 const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, partnerImage, disabled }) => {
     return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-buttonTextColor bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full px-3.5 py-3">
-        {isPartnerWallet &&
+        {isPartnerWallet && values.destination_address &&
             <div className="shrink-0 flex items-center pointer-events-none">
                 {
                     partnerImage &&
