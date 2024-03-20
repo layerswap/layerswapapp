@@ -75,11 +75,12 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 exit={{ opacity: 0 }}
                 onClick={handleCloseModal}
             />
+
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
                 animate={controls}
-                className={`${wrapperHeightClass} max-h-full overflow-y-auto group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'rounded-t-2xl border-t border-secondary-500' : ''}  bg-secondary-900 ${className} shadow-lg`}
+                className={`${wrapperHeightClass} max-h-full group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'rounded-t-2xl border-t border-secondary-500' : ''}  bg-secondary-900 ${className} shadow-lg`}
                 initial={{ y: "20%" }}
                 exit={{ y: "100%" }}
                 transition={transitionProps}
@@ -90,7 +91,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
                 <div className={`py-3 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
-                    <motion.div className='px-6 flex justify-between items-center hover:cursor-grab'>
+                    <div className='px-6 flex justify-between items-center hover:cursor-grab'>
                         <div className="text-lg text-primary-text font-semibold">
                             <div className='font-normal leading-none tracking-tight'>{title}</div>
                         </div>
@@ -98,14 +99,11 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                             <X strokeWidth={3} />
                         }>
                         </IconButton>
-                    </motion.div>
-                    <motion.div
-                        drag="y"
-                        dragConstraints={{ top: 0, bottom: 0 }}
-                        dragElastic={0}
+                    </div>
+                    <div
                         className='select-text max-h-full overflow-y-auto styled-scroll px-6 h-full'>
                         {children}
-                    </motion.div>
+                    </div>
                 </div>
             </motion.div>
         </div>

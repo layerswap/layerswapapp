@@ -1,5 +1,5 @@
 import { AnimatePresence } from "framer-motion";
-import React, { Dispatch, ReactNode, SetStateAction, useEffect, useRef } from "react";
+import React, { Dispatch, ReactNode, SetStateAction, useEffect, useRef, useState } from "react";
 import { FC } from "react"
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { Leaflet, LeafletHeight } from "./leaflet";
@@ -19,7 +19,9 @@ export interface ModalProps {
 const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow, modalId }) => {
     const { isMobile, isDesktop } = useWindowDimensions()
     const mobileModalRef = useRef(null)
-    
+    //Fixes draggable closing
+    const [delayedShow, setDelayedShow] = useState<boolean>()
+
     useEffect(() => {
         if (isMobile && show) {
             window.document.body.style.overflow = 'hidden'
@@ -27,17 +29,21 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
         return () => { window.document.body.style.overflow = '' }
     }, [isMobile, show])
 
+    useEffect(() => {
+        setDelayedShow(show)
+    }, [show])
+
     return (
         <>
             {isDesktop && (
                 <ReactPortal wrapperId="widget_root">
                     <AnimatePresence>
-                        {show &&
+                        {delayedShow &&
                             <Leaflet
                                 key={modalId}
                                 position="absolute"
                                 height={height ?? 'full'}
-                                show={show}
+                                show={delayedShow}
                                 setShow={setShow}
                                 title={header}
                                 description={subHeader}
@@ -51,12 +57,12 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
             )}
             {isMobile && (
                 <AnimatePresence>
-                    {show &&
+                    {delayedShow &&
                         <Leaflet
                             position="fixed"
                             height={height == 'full' ? '80%' : height == 'fit' ? 'fit' : 'full'}
                             ref={mobileModalRef}
-                            show={show}
+                            show={delayedShow}
                             setShow={setShow}
                             title={header}
                             description={subHeader}
