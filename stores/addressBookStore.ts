@@ -16,7 +16,6 @@ export enum AddressGroup {
 export type Address = {
     address: string,
     group: AddressGroup,
-    icon: (props: any) => ReactNode,
     networkType?: NetworkType
     date?: string
 }

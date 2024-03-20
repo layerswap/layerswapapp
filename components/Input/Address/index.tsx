@@ -17,7 +17,7 @@ import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap"
 import useWallet from "../../../hooks/useWallet"
 import { Address, AddressGroup, useAddressBookStore } from "../../../stores/addressBookStore"
 import { ChevronRight } from "lucide-react"
-import WalletIcon from "../../icons/WalletIcon"
+import AddressIcon from "../../AddressIcon"
 
 type AddressProps = {
     isPartnerWallet: boolean
@@ -97,8 +97,10 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
                 })()
                 return
             }
-            addAddresses([{ address: connectedWallet?.address, group: AddressGroup.ConnectedWallet, networkType: values?.to?.type, icon: connectedWallet ? connectedWallet.icon : WalletIcon }])
+            addAddresses([{ address: connectedWallet?.address, group: AddressGroup.ConnectedWallet, networkType: values?.to?.type }])
             setFieldValue("destination_address", connectedWallet?.address)
+        } else if (addresses.find(a => a.address === values.destination_address)?.group === AddressGroup.ConnectedWallet && !connectedWallet?.address) {
+            setFieldValue('destination_address', undefined)
         }
     }, [connectedWallet?.address, destination])
 
@@ -171,13 +173,7 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWall
                 {values.destination_address ?
                     <div className="flex items-center gap-2">
                         <div className='flex bg-secondary-400 text-primary-buttonTextColor flex-row items-left rounded-md p-1.5'>
-
-                            {
-                                address ?
-                                    <address.icon className="h-5 w-5" strokeWidth={2} />
-                                    :
-                                    <WalletIcon className="h-5 w-5" strokeWidth={2} />
-                            }
+                            <AddressIcon size={20} address={values.destination_address} />
                         </div>
                         <TruncatedAdrress address={values.destination_address} />
                     </div>
