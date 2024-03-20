@@ -43,8 +43,8 @@ export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChang
     const selectedTokenFee = feeData?.fees?.find(f => f.token === selectedValue)?.fee
     const formattedFee = selectedTokenFee && formatAmount(selectedTokenFee, decimals)
 
-    return <p className="break-allspace-x-1 flex mt-4 w-full justify-between items-center text-sm text-secondary-text">
-        <span className='font-bold sm:inline hidden'>One time activation fee</span>
+    return <p className="break-allspace-x-1 flex mt-4 w-full justify-end items-center text-sm text-secondary-text">
+        <span className='font-base sm:inline hidden'>One time activation fee</span>
         <span className='text-primary-text text-sm sm:text-base flex items-center'>
             <span className=' text-secondary-text text-sm ml-1'>
                 {

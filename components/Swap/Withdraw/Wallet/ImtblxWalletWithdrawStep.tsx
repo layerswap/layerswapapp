@@ -89,7 +89,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                     {
                         imxAccount &&
                         <SubmitButton isDisabled={!!(loading || transferDone) || !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Transfer
+                            Send from wallet
                         </SubmitButton>
                     }
                 </div>

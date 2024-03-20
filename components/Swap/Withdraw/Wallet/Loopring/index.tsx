@@ -7,13 +7,13 @@ import { useSettingsState } from '../../../../../context/settings';
 import { useAccount, useNetwork } from 'wagmi';
 import { ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
 import WalletMessage from '../WalletTransfer/message';
-import { PublishedSwapTransactionStatus } from '../../../../../lib/layerSwapApiClient';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
 import SignatureIcon from '../../../../icons/SignatureIcon';
 import { ActivationTokenPicker } from './ActivationTokentPicker';
 import { useActivationData, useLoopringAccount } from './hooks';
 import { LoopringAPI } from '../../../../../lib/loopring/LoopringAPI';
 import { UnlockedAccount } from '../../../../../lib/loopring/defs';
+import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
 
 
 type Props = {
@@ -88,7 +88,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 unlockedAccount
             })
             if (transferResult.hash) {
-                setSwapTransaction(swap.id, PublishedSwapTransactionStatus.Pending, transferResult.hash);
+                setSwapTransaction(swap.id, BackendTransactionStatus.Pending, transferResult.hash);
                 setTransferDone(true)
             }
             else {
@@ -159,7 +159,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                             </SubmitButton>
                             :
                             <>
-                                {shouldActivate &&
+                                {
                                     <ActivationTokenPicker
                                         onChange={setSelectedActivationAsset}
                                         availableBalances={availableBalances}
