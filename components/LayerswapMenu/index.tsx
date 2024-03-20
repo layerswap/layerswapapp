@@ -111,7 +111,7 @@ export default function LayerswapMenu() {
                         </IconButton>
 
                     </div>
-                    <Modal show={openTopModal} setShow={setOpenTopModal} header={<h2 className="font-normal leading-none tracking-tight">Menu</h2>} modalId="topModel">
+                    <Modal show={openTopModal} setShow={setOpenTopModal} header={<h2>Menu</h2>} modalId="topModel">
                         <div className="text-sm font-medium focus:outline-none h-full">
                             <Menu>
 

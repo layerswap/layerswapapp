@@ -14,8 +14,7 @@ import { NetworkCurrency } from '../Models/CryptoNetwork';
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
     swap: undefined,
-    addressConfirmed: false,
-    depositeAddressIsfromAccount: false,
+    depositAddressIsFromAccount: false,
     withdrawType: undefined,
     swapTransaction: undefined,
     selectedAssetNetwork: undefined
@@ -26,10 +25,9 @@ export type UpdateInterface = {
     createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<string>,
     setCodeRequested: (codeSubmitted: boolean) => void;
     cancelSwap: (swapId: string) => Promise<void>;
-    setAddressConfirmed: (value: boolean) => void;
     setInterval: (value: number) => void,
     mutateSwap: KeyedMutator<ApiResponse<SwapItem>>
-    setDepositeAddressIsfromAccount: (value: boolean) => void,
+    setDepositAddressIsFromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
     setSelectedAssetNetwork: (assetNetwork: NetworkCurrency) => void
     setSwapId: (value: string) => void
@@ -39,18 +37,16 @@ export type SwapData = {
     codeRequested: boolean,
     swap?: SwapItem,
     swapApiError?: ApiError,
-    addressConfirmed: boolean,
-    depositeAddressIsfromAccount: boolean,
+    depositAddressIsFromAccount: boolean,
     withdrawType: WithdrawType | undefined,
     swapTransaction: SwapTransaction | undefined,
     selectedAssetNetwork: NetworkCurrency | undefined
 }
 
 export function SwapDataProvider({ children }) {
-    const [addressConfirmed, setAddressConfirmed] = useState<boolean>(false)
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
-    const [depositeAddressIsfromAccount, setDepositeAddressIsfromAccount] = useState<boolean>()
+    const [depositAddressIsFromAccount, setDepositAddressIsFromAccount] = useState<boolean>()
     const router = useRouter();
     const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
     const { layers } = useSettingsState()
@@ -135,10 +131,9 @@ export function SwapDataProvider({ children }) {
         createSwap: createSwap,
         setCodeRequested: setCodeRequested,
         cancelSwap: cancelSwap,
-        setAddressConfirmed: setAddressConfirmed,
         setInterval: setInterval,
         mutateSwap: mutate,
-        setDepositeAddressIsfromAccount,
+        setDepositAddressIsFromAccount: setDepositAddressIsFromAccount,
         setWithdrawType,
         setSelectedAssetNetwork,
         setSwapId
@@ -147,10 +142,9 @@ export function SwapDataProvider({ children }) {
         <SwapDataStateContext.Provider value={{
             withdrawType,
             codeRequested,
-            addressConfirmed,
             swapTransaction,
             selectedAssetNetwork,
-            depositeAddressIsfromAccount: !!depositeAddressIsfromAccount,
+            depositAddressIsFromAccount: !!depositAddressIsFromAccount,
             swap: swapResponse?.data,
             swapApiError: error,
         }}>
