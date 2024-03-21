@@ -84,7 +84,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             :
             (filterWithAsset && filterWith ? {
                 [direction === 'to' ? 'source_network' : 'destination_network']: filterWith.name,
-                [direction === 'to' ? 'source_asset' : 'destination_asset']: filterWithAsset,
+                [direction === 'to' ? 'source_asset' : 'destination_token']: filterWithAsset,
             } : {})
         )
     });
@@ -96,7 +96,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         ...(filterWith && filterWithAsset ?
             {
                 [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.name,
-                [direction === 'to' ? 'source_asset' : 'destination_asset']: filterWithAsset,
+                [direction === 'to' ? 'source_asset' : 'destination_token']: filterWithAsset,
             }
             : {}
         )
@@ -117,7 +117,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     useEffect(() => {
         if (!isLoading && routes?.data) setRoutesData(routes.data)
-        else if (!isLoading && !routes?.data) setRoutesData(undefined)
+        // else if (!isLoading && !routes?.data) setRoutesData(undefined)
     }, [routes])
 
     if (direction === "from") {

@@ -28,19 +28,10 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     } = useFormikContext<SwapFormValues>();
 
     const { to, fromCurrency, toCurrency, from, currencyGroup, toExchange, fromExchange } = values
-    const { resolveImgSrc, assetGroups } = useSettingsState();
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { balances } = useBalancesState()
     const [walletAddress, setWalletAddress] = useState<string>()
-    const lockAsset = direction === 'from' ? query?.lockFromAsset
-        : query?.lockToAsset
-    const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
-    const currencies = direction === 'from' ? from?.tokens : to?.tokens;
-
-    const lockedCurrency = lockAsset
-        ? currencies?.find(c => c?.symbol?.toUpperCase() === (asset)?.toUpperCase())
-        : undefined
 
     const apiClient = new LayerSwapApiClient()
     const include_unmatched = 'true'
@@ -55,7 +46,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
                 ...(to && toCurrency &&
                 {
                     destination_network: to.name,
-                    destination_asset: toCurrency?.symbol
+                    destination_token: toCurrency?.symbol
                 })
             })
     });
@@ -83,21 +74,21 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const { data: sourceRoutes,
         error: sourceRoutesError,
         isLoading: sourceRoutesLoading
-    } = useSWR<ApiResponse<{ network: string; asset: string; }[]>>(`${sourceRoutesURL}`, apiClient.fetcher)
+    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${sourceRoutesURL}`, apiClient.fetcher)
 
     const {
         data: destinationRoutes,
         error: destRoutesError,
         isLoading: destRoutesLoading
-    } = useSWR<ApiResponse<{ network: string; asset: string; }[]>>(`${destinationRoutesURL}`, apiClient.fetcher)
+    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${destinationRoutesURL}`, apiClient.fetcher)
 
     const isLoading = sourceRoutesLoading || destRoutesLoading
 
+    const currencies = direction === 'from' ? sourceRoutes?.data?.find(r => r.name === from?.name)?.tokens : destinationRoutes?.data?.find(r => r.name === to?.name)?.tokens;
+
     const currencyMenuItems = GenerateCurrencyMenuItems(
         currencies!,
-        resolveImgSrc,
         values,
-        direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
         direction,
         balances[walletAddress || ''],
         query
@@ -118,7 +109,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         const selected_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase())
 
-        if (selected_currency && destinationRoutes?.data?.filter(r => r.network === to?.name)?.some(r => r.asset === selected_currency.name)) {
+        if (selected_currency && destinationRoutes?.data?.find(r => r.name === to?.name)?.tokens?.some(r => r.symbol === selected_currency.name && r.status === 'active')) {
             setFieldValue(name, selected_currency.baseObject)
         }
         else if (default_currency) {
@@ -143,8 +134,8 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
         if (selected_currency
             && sourceRoutes?.data
-                ?.filter(r => r.network === from?.name)
-                ?.some(r => r.asset === selected_currency.name)) {
+                ?.find(r => r.name === from?.name)?.tokens
+                ?.some(r => r.symbol === selected_currency.name && r.status === 'active')) {
             setFieldValue(name, selected_currency.baseObject)
         }
         else if (default_currency) {
@@ -155,9 +146,9 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     useEffect(() => {
         if (name === "toCurrency" && toCurrency) {
             if (destinationRoutes?.data
-                && !destinationRoutes?.data
-                    ?.filter(r => r.network === to?.name)
-                    ?.some(r => r.asset === toCurrency?.symbol)) {
+                && !!destinationRoutes?.data
+                    ?.find(r => r.name === to?.name)?.tokens
+                    ?.some(r => r.symbol === toCurrency?.symbol && r.status === 'route_not_found')) {
                 setFieldValue(name, null)
             }
         }
@@ -166,9 +157,9 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     useEffect(() => {
         if (name === "fromCurrency" && fromCurrency) {
             if (sourceRoutes?.data
-                && !sourceRoutes?.data
-                    ?.filter(r => r.network === from?.name)
-                    ?.some(r => r.asset === fromCurrency?.symbol)) {
+                && !!sourceRoutes?.data
+                    ?.find(r => r.name === from?.name)?.tokens
+                    ?.find(r => r.symbol === fromCurrency?.symbol && r.status === 'route_not_found')) {
                 setFieldValue(name, null)
             }
         }
@@ -196,9 +187,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
 export function GenerateCurrencyMenuItems(
     currencies: Token[],
-    resolveImgSrc: (item: CryptoNetwork | Token) => string,
     values: SwapFormValues,
-    routes?: { network: string, asset: string }[],
     direction?: string,
     balances?: Balance[],
     query?: QueryParams): SelectMenuItem<Token>[] {
@@ -232,7 +221,7 @@ export function GenerateCurrencyMenuItems(
             id: c.symbol,
             name: displayName || "-",
             order: CurrencySettings.KnownSettings[c.symbol]?.Order ?? 5,
-            imgSrc: resolveImgSrc && resolveImgSrc(c),
+            imgSrc: c.logo,
             isAvailable: currencyIsAvailable(c),
             details: `${formatted_balance_amount}`,
         };
