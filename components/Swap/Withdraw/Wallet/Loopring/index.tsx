@@ -159,7 +159,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                             </SubmitButton>
                             :
                             <>
-                                {
+                                {shouldActivate &&
                                     <ActivationTokenPicker
                                         onChange={setSelectedActivationAsset}
                                         availableBalances={availableBalances}
