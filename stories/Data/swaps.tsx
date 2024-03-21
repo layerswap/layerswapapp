@@ -23,7 +23,8 @@ export const swap: SwapItem = {
         "decimals": 18,
         "price_in_usd": 2,
         "precision": 6,
-        "is_native": false
+        "is_native": false,
+        "status": "active"
     },
     "source_network": {
         "account_explorer_template": "snjsncj",
@@ -45,7 +46,8 @@ export const swap: SwapItem = {
         "decimals": 18,
         "price_in_usd": 2,
         "precision": 6,
-        "is_native": false
+        "is_native": false,
+        "status": "active"
     },
     "destination_network": {
         "account_explorer_template": "snjsncj",
@@ -68,7 +70,8 @@ export const swap: SwapItem = {
             "decimals": 18,
             "price_in_usd": 2,
             "precision": 6,
-            "is_native": false
+            "is_native": false,
+            "status": "active"
         },
         "network": {
             "account_explorer_template": "snjsncj",
@@ -150,7 +153,8 @@ export const failedSwap: SwapItem = {
         "decimals": 18,
         "price_in_usd": 2,
         "precision": 6,
-        "is_native": false
+        "is_native": false,
+        "status": "active"
     },
     "source_network": {
         "account_explorer_template": "snjsncj",
@@ -172,7 +176,8 @@ export const failedSwap: SwapItem = {
         "decimals": 18,
         "price_in_usd": 2,
         "precision": 6,
-        "is_native": false
+        "is_native": false,
+        "status": "active"
     },
     "destination_network": {
         "account_explorer_template": "snjsncj",
@@ -195,7 +200,8 @@ export const failedSwap: SwapItem = {
             "decimals": 18,
             "price_in_usd": 2,
             "precision": 6,
-            "is_native": false
+            "is_native": false,
+            "status": "active"
         },
         "network": {
             "account_explorer_template": "snjsncj",
@@ -251,7 +257,8 @@ export const failedInputSwap: SwapItem = {
         "decimals": 18,
         "price_in_usd": 2,
         "precision": 6,
-        "is_native": false
+        "is_native": false,
+        "status": "active"
     },
     "source_network": {
         "account_explorer_template": "snjsncj",
@@ -273,7 +280,8 @@ export const failedInputSwap: SwapItem = {
         "decimals": 18,
         "price_in_usd": 2,
         "precision": 6,
-        "is_native": false
+        "is_native": false,
+        "status": "active"
     },
     "destination_network": {
         "account_explorer_template": "snjsncj",
@@ -296,7 +304,8 @@ export const failedInputSwap: SwapItem = {
             "decimals": 18,
             "price_in_usd": 2,
             "precision": 6,
-            "is_native": false
+            "is_native": false,
+            "status": "active"
         },
         "network": {
             "account_explorer_template": "snjsncj",
@@ -352,7 +361,8 @@ export const failedSwapOutOfRange: SwapItem = {
         "decimals": 18,
         "price_in_usd": 2,
         "precision": 6,
-        "is_native": false
+        "is_native": false,
+        "status": "active"
     },
     "source_network": {
         "account_explorer_template": "snjsncj",
@@ -374,7 +384,8 @@ export const failedSwapOutOfRange: SwapItem = {
         "decimals": 18,
         "price_in_usd": 2,
         "precision": 6,
-        "is_native": false
+        "is_native": false,
+        "status": "active"
     },
     "destination_network": {
         "account_explorer_template": "snjsncj",
@@ -397,7 +408,8 @@ export const failedSwapOutOfRange: SwapItem = {
             "decimals": 18,
             "price_in_usd": 2,
             "precision": 6,
-            "is_native": false
+            "is_native": false,
+            "status": "active"
         },
         "network": {
             "account_explorer_template": "snjsncj",
@@ -466,7 +478,8 @@ export const cancelled: SwapItem = {
         "decimals": 18,
         "price_in_usd": 2,
         "precision": 6,
-        "is_native": false
+        "is_native": false,
+        "status": "active"
     },
     "source_network": {
         "account_explorer_template": "snjsncj",
@@ -488,7 +501,8 @@ export const cancelled: SwapItem = {
         "decimals": 18,
         "price_in_usd": 2,
         "precision": 6,
-        "is_native": false
+        "is_native": false,
+        "status": "active"
     },
     "destination_network": {
         "account_explorer_template": "snjsncj",
@@ -511,7 +525,8 @@ export const cancelled: SwapItem = {
             "decimals": 18,
             "price_in_usd": 2,
             "precision": 6,
-            "is_native": false
+            "is_native": false,
+            "status": "active"
         },
         "network": {
             "account_explorer_template": "snjsncj",
@@ -555,7 +570,8 @@ export const expired: SwapItem = {
         "decimals": 18,
         "price_in_usd": 2,
         "precision": 6,
-        "is_native": false
+        "is_native": false,
+        "status": "active"
     },
     "source_network": {
         "account_explorer_template": "snjsncj",
@@ -577,7 +593,8 @@ export const expired: SwapItem = {
         "decimals": 18,
         "price_in_usd": 2,
         "precision": 6,
-        "is_native": false
+        "is_native": false,
+        "status": "active"
     },
     "destination_network": {
         "account_explorer_template": "snjsncj",
@@ -600,7 +617,8 @@ export const expired: SwapItem = {
             "decimals": 18,
             "price_in_usd": 2,
             "precision": 6,
-            "is_native": false
+            "is_native": false,
+            "status": "active"
         },
         "network": {
             "account_explorer_template": "snjsncj",
