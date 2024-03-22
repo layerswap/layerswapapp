@@ -9,7 +9,7 @@ import { useQueryState } from '../../context/query';
 import ResizablePanel from '../ResizablePanel';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import DepositMethod from '../DepositMethod';
+import DepositMethod from './DepositMethod';
 
 const RefuelModal = dynamic(() => import("./RefuelModal"), {
     loading: () => <></>,

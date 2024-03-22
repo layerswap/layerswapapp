@@ -20,7 +20,7 @@ export function FeeProvider({ children }) {
     const [values, setValues] = useState<SwapFormValues>()
     const [cachedRateData, setCachedRateData] = useState<Quote>()
 
-    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = values || {}
+    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod, destination_address } = values || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount);
 
     const valuesChanger = (values: SwapFormValues) => {
@@ -49,8 +49,8 @@ export function FeeProvider({ children }) {
         refreshInterval: 10000
     })
 
-    const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<Quote>>((from && fromCurrency && to && toCurrency && debouncedAmount && depositMethod) ?
-        `/quote?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&amount=${debouncedAmount}&refuel=${!!refuel}&deposit_mode=${depositMethod}` : null, apiClient.fetcher, {
+    const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<Quote>>((from && fromCurrency && to && toCurrency && debouncedAmount && depositMethod && destination_address) ?
+        `/quote?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&amount=${debouncedAmount}&refuel=${!!refuel}&deposit_mode=${depositMethod}&destination_address=${destination_address}` : null, apiClient.fetcher, {
         refreshInterval: 10000,
         fallbackData: { data: cachedRateData }
     })

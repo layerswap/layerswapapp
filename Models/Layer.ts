@@ -12,5 +12,6 @@ export type Layer = {
     transaction_explorer_template: string | null
     account_explorer_template: string,
     type: NetworkType,
-    node_url: string
+    node_url: string,
+    deposit_methods: string[]
 }

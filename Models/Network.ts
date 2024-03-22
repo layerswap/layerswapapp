@@ -18,6 +18,7 @@ export class Network {
     transaction_explorer_template: string;
     account_explorer_template: string;
     metadata: Metadata;
+    deposit_methods: string[]
 }
 
 export class CryptoNetwork extends Network {

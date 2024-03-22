@@ -16,6 +16,7 @@ import { ApiResponse } from "../../Models/ApiResponse";
 import { Balance } from "../../Models/Balance";
 import dynamic from "next/dynamic";
 import { QueryParams } from "../../Models/QueryParams";
+import { ApiError, LSAPIKnownErrorCode } from "../../Models/ApiError";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -51,7 +52,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
             })
     });
 
-
     const destinationRouteParams = new URLSearchParams({
         include_unmatched,
         ...(fromExchange && currencyGroup && currencyGroup.groupedInBackend ?
@@ -62,7 +62,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
                 ...(from && fromCurrency &&
                 {
                     source_network: from.name,
-                    source_asset: fromCurrency?.symbol
+                    source_token: fromCurrency?.symbol
                 }
                 )
             })
@@ -91,7 +91,8 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         values,
         direction,
         balances[walletAddress || ''],
-        query
+        query,
+        (direction === 'from' ? sourceRoutesError : destRoutesError)?.response?.data?.error
     )
     const currencyAsset = direction === 'from' ? fromCurrency?.symbol : toCurrency?.symbol;
 
@@ -185,12 +186,14 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     )
 };
 
-export function GenerateCurrencyMenuItems(
+function GenerateCurrencyMenuItems(
     currencies: Token[],
     values: SwapFormValues,
     direction?: string,
     balances?: Balance[],
-    query?: QueryParams): SelectMenuItem<Token>[] {
+    query?: QueryParams,
+    error?: ApiError
+): SelectMenuItem<Token>[] {
     const { to, from } = values
     const lockAsset = direction === 'from' ? query?.lockFromAsset
         : query?.lockToAsset
@@ -199,7 +202,7 @@ export function GenerateCurrencyMenuItems(
         if (lockAsset) {
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
-        else if (currency?.status !== "active") {
+        else if (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) {
             if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset) {
                 return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
             }
