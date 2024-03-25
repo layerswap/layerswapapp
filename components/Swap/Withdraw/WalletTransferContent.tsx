@@ -11,17 +11,20 @@ import useWallet from '../../../hooks/useWallet';
 import { useBalancesState } from '../../../context/balances';
 import { truncateDecimals } from '../../utils/RoundDecimals';
 import useBalance from '../../../hooks/useBalance';
+import { useSettingsState } from '../../../context/settings';
 
 const WalletTransferContent: FC = () => {
     const { openAccountModal } = useAccountModal();
     const { getWithdrawalProvider: getProvider, disconnectWallet } = useWallet()
     const { swapResponse } = useSwapDataState()
     const { swap, deposit_methods } = swapResponse || {}
-    const { source_network, destination_network, source_exchange, source_token, destination_token, destination_address, requested_amount } = swap || {}
+    const { source_exchange, source_token, destination_token, destination_address, requested_amount } = swap || {}
     const [isLoading, setIsloading] = useState(false);
     const { mutateSwap } = useSwapDataUpdate()
-
-    const sourceNetworkType = source_network?.type
+    const { networks } = useSettingsState()
+    const source_network = networks.find(n => n.name === swap?.source_network?.name)
+    const destination_network = networks.find(n => n.name === swap?.destination_network?.name)
+    
     const provider = useMemo(() => {
         return source_network && getProvider(source_network)
     }, [source_network, getProvider])
@@ -35,13 +38,13 @@ const WalletTransferContent: FC = () => {
     const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
-    // useEffect(() => {
-    //     source_network && fetchBalance(source_network);
-    // }, [source_network, sourceNetworkWallet?.address])
+    useEffect(() => {
+        source_network && fetchBalance(source_network);
+    }, [source_network, sourceNetworkWallet?.address])
 
-    // useEffect(() => {
-    //     sourceNetworkWallet?.address && source_network && source_token && destination_network && deposit_methods?.wallet.to_address && fetchGas(source_network, source_token, destination_network, destination_token, destination_address || sourceNetworkWallet.address, requested_amount?.toString())
-    // }, [source_network, source_token, sourceNetworkWallet?.address])
+    useEffect(() => {
+        sourceNetworkWallet?.address && source_network && source_token && destination_token && destination_network && requested_amount && deposit_methods?.wallet.to_address && fetchGas(source_network, source_token, destination_network, destination_token, destination_address || sourceNetworkWallet.address, requested_amount?.toString())
+    }, [source_network, source_token, sourceNetworkWallet?.address])
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!wallet) return
@@ -50,7 +53,7 @@ const WalletTransferContent: FC = () => {
         if (source_exchange) await mutateSwap()
         setIsloading(false);
         e?.stopPropagation();
-    }, [sourceNetworkType, swap?.source_exchange, disconnectWallet])
+    }, [source_network?.type, swap?.source_exchange, disconnectWallet])
 
     let accountAddress: string | undefined = ""
     if (swap?.source_exchange) {
@@ -60,7 +63,7 @@ const WalletTransferContent: FC = () => {
         accountAddress = wallet.address || "";
     }
 
-    const canOpenAccount = sourceNetworkType === NetworkType.EVM && !swap?.source_exchange
+    const canOpenAccount = source_network?.type === NetworkType.EVM && !swap?.source_exchange
 
     const handleOpenAccount = useCallback(() => {
         if (canOpenAccount && openAccountModal)
