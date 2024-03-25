@@ -1,12 +1,9 @@
 import { FC } from "react"
-import { ApiResponse } from "../../../../Models/ApiResponse"
 import { useSettingsState } from "../../../../context/settings"
 import { useSwapDataState } from "../../../../context/swap"
 import KnownInternalNames from "../../../../lib/knownIds"
-import LayerSwapApiClient, { DepositAddress } from "../../../../lib/layerSwapApiClient"
 import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep"
 import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw"
-import useSWR from 'swr'
 import TransferFromWallet from "./WalletTransfer"
 import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw"
 import useWalletTransferOptions from "../../../../hooks/useWalletTransferOptions"
@@ -32,16 +29,9 @@ const WalletTransferContent: FC = () => {
     const sourceIsSolana = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
 
     const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
-    const shouldGetGeneratedAddress = isContractWallet?.ready && !canDoSweepless
-    const generateDepositParams = shouldGetGeneratedAddress ? [source_network_internal_name] : null
-
-    const layerswapApiClient = new LayerSwapApiClient()
-    const {
-        data: generatedDeposit
-    } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
 
     const managedDepositAddress = deposit_methods?.wallet.to_address
-    const generatedDepositAddress = generatedDeposit?.data?.address
+    const generatedDepositAddress = deposit_methods?.deposit_address.deposit_address as `0x${string}`
 
     const depositAddress = isContractWallet?.ready ?
         (canDoSweepless ? managedDepositAddress : generatedDepositAddress)

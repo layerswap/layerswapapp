@@ -1,40 +1,23 @@
-import { FC, useCallback, useEffect } from "react"
-import useSWR from "swr"
+import { FC, useCallback } from "react"
 import { ArrowLeftRight } from "lucide-react"
 import Image from 'next/image';
-import { ApiResponse } from "../../../Models/ApiResponse";
-import { useSettingsState } from "../../../context/settings";
 import { useSwapDataState } from "../../../context/swap";
 import KnownInternalNames from "../../../lib/knownIds";
 import BackgroundField from "../../backgroundField";
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../../lib/layerSwapApiClient";
 import SubmitButton from "../../buttons/submitButton";
 import shortenAddress from "../../utils/ShortenAddress";
 import { isValidAddress } from "../../../lib/addressValidator";
 import { useSwapDepositHintClicked } from "../../../stores/swapTransactionStore";
-import { useFee } from "../../../context/feeContext";
 import { Exchange } from "../../../Models/Exchange";
 import Link from "next/link";
 
 const ManualTransfer: FC = () => {
     const { swapResponse: swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
+    const { swap, deposit_methods } = swapResponse || {}
     const hintsStore = useSwapDepositHintClicked()
     const hintClicked = hintsStore.swapTransactions[swap?.id || ""]
 
-    const layerswapApiClient = new LayerSwapApiClient()
-    const {
-        data: generatedDeposit,
-    } = useSWR<ApiResponse<DepositAddress>>(`/networks/${swap?.source_network.name}/deposit_addresses`,
-        layerswapApiClient.fetcher,
-        {
-            dedupingInterval: 60000,
-            shouldRetryOnError: false
-        }
-    )
-
-    let generatedDepositAddress = generatedDeposit?.data?.address
-    let shouldGenerateAddress = !generatedDepositAddress && hintClicked
+    let generatedDepositAddress = deposit_methods?.deposit_address.deposit_address
 
     const handleCloseNote = useCallback(async () => {
         if (swap)
@@ -59,14 +42,14 @@ const ManualTransfer: FC = () => {
                 </SubmitButton>
             </div>
             <div className={hintClicked ? "" : "invisible"}>
-                <TransferInvoice address={generatedDepositAddress} shouldGenerateAddress={shouldGenerateAddress} />
+                <TransferInvoice deposit_address={generatedDepositAddress} />
             </div>
         </div>
     )
 
 }
 
-const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> = ({ address: existingDepositAddress, shouldGenerateAddress }) => {
+const TransferInvoice: FC<{ deposit_address?: string }> = ({ deposit_address }) => {
 
     const { swapResponse: swapResponse } = useSwapDataState()
     const { swap, quote: swapQuote } = swapResponse || {}
@@ -80,16 +63,8 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
     } = swap || {}
     const source_network_internal_name = swap?.source_network.name
 
-    const layerswapApiClient = new LayerSwapApiClient()
-    const generateDepositParams = shouldGenerateAddress ? [source_network?.name ?? null] : null
-
-    const {
-        data: generatedDeposit
-    } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
-
     //TODO pick manual transfer minAllowedAmount when its available
     const requested_amount = Number(minAllowedAmount) > Number(swap?.requested_amount) ? minAllowedAmount : swap?.requested_amount
-    const depositAddress = existingDepositAddress || generatedDeposit?.data?.address
 
     // const handleChangeSelectedNetwork = useCallback((n: NetworkCurrency) => {
     //     setSelectedAssetNetwork(n)
@@ -101,12 +76,12 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
         </div>
         }
         <div className="flex divide-x divide-secondary-500">
-            <BackgroundField Copiable={true} QRable={true} header={"Deposit address"} toCopy={depositAddress} withoutBorder>
+            <BackgroundField Copiable={true} QRable={true} header={"Deposit address"} toCopy={deposit_address} withoutBorder>
                 <div>
                     {
-                        depositAddress ?
+                        deposit_address ?
                             <p className='break-all'>
-                                {depositAddress}
+                                {deposit_address}
                             </p>
                             :
                             <div className='bg-gray-500 w-56 h-5 animate-pulse rounded-md' />
