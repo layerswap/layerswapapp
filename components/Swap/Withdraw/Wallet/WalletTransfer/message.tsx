@@ -51,7 +51,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, showIn
                     <p className="text-md font-semibold self-center text-primary-text">
                         {header}
                     </p>
-                    <p className={`text-sm text-secondary-text ${details.length > 200 ? 'break-all' : ''}`}>
+                    <p className={`text-sm text-secondary-text ${details.length > 200 ? 'break-words' : ''}`}>
                         {details}
                     </p>
                 </div>
