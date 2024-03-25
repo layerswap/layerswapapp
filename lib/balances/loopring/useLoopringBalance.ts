@@ -9,7 +9,7 @@ export default function useLoopringBalance(): BalanceProvider {
         KnownInternalNames.Networks.LoopringGoerli
     ]
 
-    const getBalance = async ({ layer, address }: BalanceProps) => {
+    const getBalance = async ({ network: layer, address }: BalanceProps) => {
         let balances: Balance[] = [];
 
         const uri = 'https://api3.loopring.io/api/v3'
@@ -45,7 +45,7 @@ export default function useLoopringBalance(): BalanceProvider {
         return balances
     }
 
-    const getGas = async ({ layer, currency, address }: GasProps) => {
+    const getGas = async ({ network: layer, currency, address }: GasProps) => {
         let gas: Gas[] = [];
         if (!layer.tokens) return
 

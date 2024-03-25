@@ -1,6 +1,5 @@
-import { Token } from "../../Models/Network";
+import { CryptoNetwork, Token } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
-import { Layer } from "../../Models/Layer";
 import { AssetGroup } from "../Input/CEXCurrencyFormField";
 
 export type SwapFormValues = {
@@ -9,8 +8,8 @@ export type SwapFormValues = {
   fromCurrency?: Token;
   toCurrency?: Token;
   refuel?: boolean;
-  from?: Layer;
-  to?: Layer;
+  from?: CryptoNetwork;
+  to?: CryptoNetwork;
   fromExchange?: Exchange,
   toExchange?: Exchange,
   currencyGroup?: AssetGroup

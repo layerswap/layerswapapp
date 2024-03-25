@@ -1,6 +1,5 @@
 import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useState } from "react";
-import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";

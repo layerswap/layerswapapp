@@ -1,15 +1,12 @@
 import { AssetGroup } from "../components/Input/CEXCurrencyFormField";
 import { groupBy } from "../components/utils/groupBy";
-import NetworkSettings from "../lib/NetworkSettings";
 import { CryptoNetwork, Token } from "./Network";
 import { Exchange } from "./Exchange";
-import { Layer } from "./Layer";
-import { LayerSwapSettings, Route } from "./LayerSwapSettings";
-import { Partner } from "./Partner";
+import { LayerSwapSettings } from "./LayerSwapSettings";
 
 export class LayerSwapAppSettings {
     constructor(settings: LayerSwapSettings | any) {
-        this.layers = LayerSwapAppSettings.ResolveLayers(settings.networks, settings.sourceRoutes, settings.destinationRoutes);
+        this.networks = settings.networks;
         this.exchanges = settings.exchanges;
         this.assetGroups = LayerSwapAppSettings.ResolveAssetGroups(settings.networks);
         this.sourceRoutes = settings.sourceRoutes
@@ -17,62 +14,10 @@ export class LayerSwapAppSettings {
     }
 
     exchanges: Exchange[]
-    layers: Layer[]
+    networks: CryptoNetwork[]
     assetGroups: AssetGroup[]
     sourceRoutes: CryptoNetwork[]
     destinationRoutes: CryptoNetwork[]
-
-    resolveImgSrc = (item: Layer | Exchange | Token | Pick<Layer, 'name'> | { asset: string } | Partner | undefined) => {
-
-        if (!item) {
-            return "/images/logo_placeholder.png";
-        }
-
-        const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
-        if (!resource_storage_url)
-            throw new Error("NEXT_PUBLIC_RESOURCE_STORAGE_URL is not set up in env vars")
-
-        const basePath = new URL(resource_storage_url);
-
-        // Shitty way to check for partner
-        if ((item as Partner).is_wallet != undefined) {
-            return (item as Partner)?.logo_url;
-        }
-        else if ((item as any)?.internal_name != undefined) {
-            basePath.pathname = `/layerswap/networks/${(item as any)?.internal_name?.toLowerCase()}.png`;
-        }
-        else if ((item as any)?.asset != undefined) {
-            basePath.pathname = `/layerswap/currencies/${(item as any)?.asset?.toLowerCase()}.png`;
-        }
-
-        return basePath.href;
-    }
-
-    static ResolveLayers(networks: CryptoNetwork[], sourceRoutes: Route[], destinationRoutes: Route[]): Layer[] {
-        const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
-        if (!resource_storage_url)
-            throw new Error("NEXT_PUBLIC_RESOURCE_STORAGE_URL is not set up in env vars")
-
-        const networkLayers: Layer[] = networks?.map((n): Layer =>
-        ({
-            ...n,
-            tokens: LayerSwapAppSettings.ResolveNetworkAssets(n, sourceRoutes, destinationRoutes),
-            is_featured: NetworkSettings.KnownSettings[n.name]?.isFeatured ?? false,
-        }))
-        return networkLayers
-    }
-
-    static ResolveNetworkAssets(network: CryptoNetwork, sourceRoutes: Route[], destinationRoutes: Route[]): Token[] {
-        return network?.tokens?.map(c => {
-            const available_in_source = sourceRoutes?.some(r => r.asset === c.symbol && r.network === network.name)
-            const available_in_destination = destinationRoutes?.some(r => r.asset === c.symbol && r.network === network.name)
-            return ({
-                ...c,
-                available_in_source,
-                available_in_destination,
-            })
-        })
-    }
 
     static ResolveAssetGroups(networks: CryptoNetwork[]) {
 

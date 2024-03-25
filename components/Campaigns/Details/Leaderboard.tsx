@@ -41,8 +41,8 @@ const Component: FC<Props> = ({ campaign }) => {
     }
 
     const rewards = rewardsData?.data
-    const { resolveImgSrc, layers } = settings
-    const network = layers.find(n => n.name === campaign?.network)
+    const { networks } = settings
+    const network = networks.find(n => n.name === campaign?.network)
     const position = rewards?.user_reward.position || NaN
     const campaignAsset = network?.tokens.find(c => c?.symbol === campaign?.asset)
 
@@ -88,7 +88,7 @@ const Component: FC<Props> = ({ campaign }) => {
                                                 <span>+</span>
                                                 <div className="h-3.5 w-3.5 relative">
                                                     <Image
-                                                        src={resolveImgSrc(campaign)}
+                                                        src={network?.logo || ''}
                                                         alt="Project Logo"
                                                         height="40"
                                                         width="40"
@@ -170,7 +170,7 @@ const Component: FC<Props> = ({ campaign }) => {
                                                     <span>+</span>
                                                     <div className="h-3.5 w-3.5 relative">
                                                         <Image
-                                                            src={resolveImgSrc(campaign)}
+                                                            src={network?.logo || ''}
                                                             alt="Address Logo"
                                                             height="40"
                                                             width="40"

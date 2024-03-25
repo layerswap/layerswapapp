@@ -19,7 +19,7 @@ type Props = {
 
 const Rewards: FC<Props> = ({ campaign }) => {
     const settings = useSettingsState()
-    const { resolveImgSrc, layers } = settings
+    const { networks } = settings
     const { address } = useAccount();
     const apiClient = new LayerSwapApiClient()
 
@@ -33,7 +33,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
     const payouts = payoutsData?.data || []
     const totalBudget = campaign.total_budget
 
-    const network = layers.find(n => n.name === campaign.network)
+    const network = networks.find(n => n.name === campaign.network)
     const rewards = rewardsData?.data
     const campaignEndDate = new Date(campaign.end_date)
     const now = new Date()
@@ -72,7 +72,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
                             <div className="flex items-center space-x-1">
                                 <div className="h-5 w-5 relative">
                                     <Image
-                                        src={resolveImgSrc(campaign)}
+                                        src={network?.logo || ''}
                                         alt="Project Logo"
                                         height="40"
                                         width="40"
@@ -97,7 +97,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
                         <div className="flex items-center space-x-1">
                             <div className="h-5 w-5 relative">
                                 <Image
-                                    src={resolveImgSrc(campaign)}
+                                    src={network?.logo || ''}
                                     alt="Project Logo"
                                     height="40"
                                     width="40"

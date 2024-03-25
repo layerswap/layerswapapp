@@ -37,7 +37,7 @@ export class Token {
     group_name?: string | null;
     available_in_source?: boolean;
     available_in_destination?: boolean;
-    status: string;
+    status?: string;
     //remove
     refuel_amount_in_usd?: number
 }

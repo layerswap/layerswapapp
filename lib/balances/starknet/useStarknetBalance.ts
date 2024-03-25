@@ -13,7 +13,7 @@ export default function useStarknetBalance(): BalanceProvider {
     ]
     const router = useRouter()
 
-    const getBalance = async ({ layer, address }: BalanceProps) => {
+    const getBalance = async ({ network: layer, address }: BalanceProps) => {
         const {
             Contract,
             RpcProvider,

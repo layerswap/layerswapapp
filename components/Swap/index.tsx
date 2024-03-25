@@ -6,7 +6,6 @@ import Processing from './Withdraw/Processing';
 import { BackendTransactionStatus, TransactionType } from '../../lib/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
 import GasDetails from '../gasDetails';
-import { useSettingsState } from '../../context/settings';
 
 type Props = {
     type: "widget" | "contained",
@@ -17,7 +16,8 @@ import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import SubmitButton from '../buttons/submitButton';
 
 const SwapDetails: FC<Props> = ({ type }) => {
-    const { swap } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const swapStatus = swap?.status;
     const storedWalletTransactions = useSwapTransactionStore()
     const router = useRouter();

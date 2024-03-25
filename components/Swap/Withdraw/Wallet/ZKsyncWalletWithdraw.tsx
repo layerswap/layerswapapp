@@ -30,26 +30,26 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [activationFee, setActivationFee] = useState<({ feeInAsset: number, feeInUsd: number } | undefined)>(undefined);
 
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { swap } = useSwapDataState();
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
+    const { source_network, source_token } = swap || {}
     const { chain } = useNetwork();
     const signer = useEthersSigner();
 
-    const { layers } = useSettingsState();
+    const { networks: layers } = useSettingsState();
     const source_network_internal_name = swap?.source_network.name
-    const source_layer = layers.find(l => l.name === source_network_internal_name)
-    const source_currency = source_layer?.tokens?.find(c => c.symbol.toLocaleUpperCase() === swap?.source_token.symbol.toLocaleUpperCase());
     const defaultProvider = source_network_internal_name?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "goerli";
     const l1Network = layers.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
 
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
-        return source_layer && getProvider(source_layer)
-    }, [source_layer, getProvider])
+        return source_network && getProvider(source_network)
+    }, [source_network, getProvider])
 
     const wallet = provider?.getConnectedWallet()
 
     useEffect(() => {
-        if (signer?._address !== syncWallet?.cachedAddress && source_layer) {
+        if (signer?._address !== syncWallet?.cachedAddress && source_network) {
             setSyncWallet(null)
         }
     }, [signer?._address]);
@@ -65,9 +65,9 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             if (!accountIsActivated) {
                 let activationFee = await syncProvider.getTransactionFee({
                     ChangePubKey: 'ECDSA'
-                }, wallet.address(), Number(source_currency?.contract));
-                const formatedGas = formatAmount(activationFee.totalFee, Number(source_currency?.decimals))
-                let assetUsdPrice = source_layer?.tokens.find(x => x.symbol == source_currency?.symbol)?.price_in_usd;
+                }, wallet.address(), Number(source_token?.contract));
+                const formatedGas = formatAmount(activationFee.totalFee, Number(source_token?.decimals))
+                let assetUsdPrice = source_token?.price_in_usd;
                 setActivationFee({ feeInAsset: formatedGas, feeInUsd: formatedGas * (assetUsdPrice ?? 0) })
             }
             setSyncWallet(wallet)
@@ -78,7 +78,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         finally {
             setLoading(false)
         }
-    }, [signer, defaultProvider, source_currency])
+    }, [signer, defaultProvider, source_token])
 
     const activateAccout = useCallback(async () => {
         if (!syncWallet)
@@ -90,7 +90,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 setLoading(false);
                 return
             }
-            const changePubkeyHandle = await syncWallet.setSigningKey({ ethAuthType: "ECDSA", feeToken: Number(source_currency?.contract) });
+            const changePubkeyHandle = await syncWallet.setSigningKey({ ethAuthType: "ECDSA", feeToken: Number(source_token?.contract) });
             const receipt = await changePubkeyHandle.awaitReceipt()
             if (receipt.success)
                 setAccountIsActivated(true)
@@ -106,7 +106,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         finally {
             setLoading(false)
         }
-    }, [syncWallet, source_currency])
+    }, [syncWallet, source_token])
 
     const handleTransfer = useCallback(async () => {
 
@@ -117,7 +117,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             const tf = await syncWallet?.syncTransfer({
                 to: depositAddress,
                 token: swap?.source_token.symbol,
-                amount: zksync.closestPackableTransactionAmount(utils.parseUnits(amount.toString(), source_currency?.decimals)),
+                amount: zksync.closestPackableTransactionAmount(utils.parseUnits(amount.toString(), source_token?.decimals)),
                 validUntil: zksync.utils.MAX_TIMESTAMP - swap?.metadata?.sequence_number,
             });
 
@@ -134,7 +134,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         finally {
             setLoading(false)
         }
-    }, [syncWallet, swap, depositAddress, source_currency, amount])
+    }, [syncWallet, swap, depositAddress, source_token, amount])
 
     if (wallet && wallet?.connector?.toLowerCase() === 'argent') return (
         <div className="rounded-md bg-secondary-800 p-4">
@@ -199,7 +199,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                                 <p className="text-sm text-primary-text break-normal">
                                     Sign a message to activate your zkSync Lite account.
                                 </p>
-                                <p className='flex mt-4 w-full justify-between items-center text-sm text-secondary-text'><span className='font-bold sm:inline hidden'>One time activation fee</span> <span className='font-bold sm:hidden'>Fee</span> <span className='text-primary-text text-sm sm:text-base flex items-center'>{activationFee?.feeInAsset}{source_currency?.symbol}<span className='text-secondary-text text-sm'>({activationFee?.feeInUsd.toFixed(2)}$)</span></span></p>
+                                <p className='flex mt-4 w-full justify-between items-center text-sm text-secondary-text'><span className='font-bold sm:inline hidden'>One time activation fee</span> <span className='font-bold sm:hidden'>Fee</span> <span className='text-primary-text text-sm sm:text-base flex items-center'>{activationFee?.feeInAsset}{source_token?.symbol}<span className='text-secondary-text text-sm'>({activationFee?.feeInUsd.toFixed(2)}$)</span></span></p>
                             </div>
                             <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={activateAccout} icon={<SignatureIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
                                 Sign to activate

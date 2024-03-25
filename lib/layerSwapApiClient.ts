@@ -48,8 +48,8 @@ export default class LayerSwapApiClient {
     }
 
     async GetQuote({ params }: { params: GetQuoteParams }): Promise<ApiResponse<Quote>> {
-        const { source_network, source_asset, source_address, destination_address, destination_asset, destination_network, amount, deposit_mode, include_gas, refuel } = params
-        return await this.AuthenticatedRequest<ApiResponse<Quote>>("GET", `/quote?source_network=${source_network}&source_asset=${source_asset}&source_address=${source_address}&destination_network=${destination_network}&destination_asset=${destination_asset}&destination_address=${destination_address}&deposit_mode=${deposit_mode}&include_gas=${include_gas}&amount=${amount}&refuel=${refuel}`);
+        const { source_network, source_token, source_address, destination_address, destination_token, destination_network, amount, deposit_mode, include_gas, refuel } = params
+        return await this.AuthenticatedRequest<ApiResponse<Quote>>("GET", `/quote?source_network=${source_network}&source_token=${source_token}&source_address=${source_address}&destination_network=${destination_network}&destination_token=${destination_token}&destination_address=${destination_address}&deposit_mode=${deposit_mode}&include_gas=${include_gas}&amount=${amount}&refuel=${refuel}`);
     }
 
     async DisconnectExchangeAsync(swapid: string, exchangeName: string): Promise<ApiResponse<void>> {
@@ -129,9 +129,9 @@ export enum DepositAddressSource {
 
 export type CreateSwapParams = {
     source_network: string,
-    source_asset: string,
+    source_token: string,
     destination_network: string,
-    destination_asset: string
+    destination_token: string
     refuel?: boolean,
     slippage?: number,
     destination_address: string,
@@ -148,6 +148,14 @@ export type SwapResponse = {
     swap: SwapItem;
     deposit_methods: DepositMethods
     quote: SwapQuote
+    refuel: Refuel,
+}
+
+export type Refuel = {
+    network: Network
+    token: Token,
+    amount: number,
+    amount_in_usd: number
 }
 
 export type SwapItem = {
@@ -159,11 +167,6 @@ export type SwapItem = {
     destination_network: Network,
     destination_token: Token,
     destination_exchange?: Exchange,
-    refuel: {
-        token: Token,
-        network: Network,
-        refuel_amount: number
-    },
     status: SwapStatus,
     source_address: `0x${string}`,
     destination_address: `0x${string}`,
@@ -205,20 +208,15 @@ export type DepositMethods = {
 
 export type Quote = {
     quote: SwapQuote,
-    refuel: {
-        network: Network
-        token: Token,
-        amount: number,
-        amount_in_usd: number
-    },
+    refuel: Refuel,
 }
 
 export type GetQuoteParams = {
     source_network: string,
-    source_asset: string,
+    source_token: string,
     source_address?: string,
     destination_network: string,
-    destination_asset: string,
+    destination_token: string,
     destination_address: string,
     deposit_mode: string,
     include_gas?: boolean,

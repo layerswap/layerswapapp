@@ -16,7 +16,6 @@ import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
 import { ArrowUpDown, Loader2 } from 'lucide-react'
 import { useAuthState } from "../../../context/authContext";
-import { GetDefaultAsset } from "../../../helpers/settingsHelper";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
@@ -28,6 +27,7 @@ import dynamic from "next/dynamic";
 import { Balance, Gas } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
+import { CryptoNetwork } from "../../../Models/Network";
 
 type Props = {
     isPartnerWallet?: boolean,
@@ -60,8 +60,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     } = values
 
     const { minAllowedAmount, valuesChanger, fee } = useFee()
-    const toAsset = values.toCurrency?.symbol
-    const fromAsset = values.fromCurrency?.symbol
+    const toAsset = values.toCurrency
+    const fromAsset = values.fromCurrency
 
     const { authData } = useAuthState()
 
@@ -94,7 +94,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     }, [depositeAddressIsfromAccount])
 
     useEffect(() => {
-        if (!source || !toAsset || !GetDefaultAsset(source, toAsset)?.refuel_amount_in_usd) {
+        if (!source || !toAsset || !toAsset.refuel_amount_in_usd) {
             setFieldValue('refuel', false, true)
         }
     }, [toAsset, destination, source, fromAsset, currencyGroup])
@@ -135,24 +135,17 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         { rotate: 0 },
         { rotate: 180 }
     );
-    //TODO always map to toAsset from query
-    const lockedCurrency = query?.lockAsset ? values.to?.tokens?.find(c => c?.symbol?.toUpperCase() === toAsset?.toUpperCase()) : null;
+
     const sourceRoutesEndpoint = `/sources?include_unmatched=true&destination_network=${source?.name}&destination_token=${fromCurrency?.symbol}`
-    const destinationRoutesEndpoint = `/destinations?include_unmatched=true&source_network=${destination?.name}&source_asset=${toCurrency?.symbol}`
-    const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<{
-        network: string,
-        asset: string
-    }[]>>((source && fromCurrency) ?
+    const destinationRoutesEndpoint = `/destinations?include_unmatched=true&source_network=${destination?.name}&source_token=${toCurrency?.symbol}`
+    const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<CryptoNetwork[]>>((source && fromCurrency) ?
         sourceRoutesEndpoint : `/sources?include_unmatched=true`, layerswapApiClient.fetcher)
 
-    const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<{
-        network: string,
-        asset: string
-    }[]>>((destination && toCurrency) ?
+    const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<CryptoNetwork[]>>((destination && toCurrency) ?
         destinationRoutesEndpoint : `/destinations?include_unmatched=true`, layerswapApiClient.fetcher)
 
-    const sourceCanBeSwapped = destinationRoutes?.data?.some(l => l.network === source?.name)
-    const destinationCanBeSwapped = sourceRoutes?.data?.some(l => l.network === destination?.name)
+    const sourceCanBeSwapped = destinationRoutes?.data?.some(l => l.name === source?.name)
+    const destinationCanBeSwapped = sourceRoutes?.data?.some(l => l.name === destination?.name)
 
     if (query.lockTo || query.lockFrom || query.hideTo || query.hideFrom) {
         valuesSwapperDisabled = true;

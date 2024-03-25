@@ -16,8 +16,9 @@ import NetworkGas from "./WalletTransfer/networkGas"
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 const WalletTransferContent: FC = () => {
-    const { swap, depositMethods } = useSwapDataState()
-    const { layers } = useSettingsState()
+    const { swapResponse } = useSwapDataState()
+    const { swap, deposit_methods } = swapResponse || {}
+    const { networks: layers } = useSettingsState()
     const { minAllowedAmount } = useFee()
 
     const { source_network, source_token } = swap || {}
@@ -39,7 +40,7 @@ const WalletTransferContent: FC = () => {
         data: generatedDeposit
     } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
 
-    const managedDepositAddress = depositMethods?.wallet.to_address
+    const managedDepositAddress = deposit_methods?.wallet.to_address
     const generatedDepositAddress = generatedDeposit?.data?.address
 
     const depositAddress = isContractWallet?.ready ?
@@ -79,8 +80,9 @@ const WalletTransferContent: FC = () => {
 
 
 const WalletTransferWrapper = () => {
-    const { swap } = useSwapDataState()
-    const { layers } = useSettingsState()
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
+    const { networks: layers } = useSettingsState()
 
     const source_layer = layers.find(n => n.name === swap?.source_network?.name)
     const sourceAsset = source_layer?.tokens?.find(c => c.symbol.toLowerCase() === swap?.source_token.symbol.toLowerCase())

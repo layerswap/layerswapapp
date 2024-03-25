@@ -4,7 +4,6 @@ import LayerSwapApiClient, { SwapItem, SwapResponse, SwapStatusInNumbers, Transa
 import SpinIcon from "../icons/spinIcon"
 import { ArrowRight, ChevronRight, Eye, RefreshCcw, Scroll } from 'lucide-react';
 import SwapDetails from "./SwapDetailsComponent"
-import { useSettingsState } from "../../context/settings"
 import Image from 'next/image'
 import { classNames } from "../utils/classNames"
 import SubmitButton from "../buttons/submitButton"
@@ -21,8 +20,6 @@ import { truncateDecimals } from "../utils/RoundDecimals";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
-  const settings = useSettingsState()
-  const { layers, resolveImgSrc, exchanges } = settings
   const [isLastPage, setIsLastPage] = useState(false)
   const [swaps, setSwaps] = useState<SwapResponse[]>()
   const [loading, setLoading] = useState(false)
@@ -190,10 +187,6 @@ function TransactionsHistory() {
                               destination_token
                             } = swap
 
-                            const sourceNetwork = layers.find(e => e.name === source_network.name)
-                            const sourceCurrency = sourceNetwork?.tokens?.find(c => c.symbol === source_token.symbol)
-                            const destinationNetwork = layers.find(n => n.name === destination_network.name)
-                            const destinationCurrency = destinationNetwork?.tokens.find(a => a.symbol === destination_token.symbol)
                             const output_transaction = swap.transactions.find(t => t.type === TransactionType.Output)
 
                             return <tr onClick={() => handleopenSwapDetails(swap)} key={swap.id}>
@@ -250,17 +243,17 @@ function TransactionsHistory() {
                                   <div>
                                     <div className="text text-secondary-text text-left">
                                       <span>
-                                        {truncateDecimals(swap.requested_amount, sourceCurrency?.precision)}
+                                        {truncateDecimals(swap.requested_amount, source_token?.precision)}
                                       </span>
-                                      <span className="ml-1">{sourceCurrency?.symbol}</span>
+                                      <span className="ml-1">{source_token?.symbol}</span>
                                     </div>
                                     {
                                       output_transaction ?
                                         <div className="text-secprimary-text text-left text-base">
                                           <span>
-                                            {truncateDecimals(output_transaction?.amount, sourceCurrency?.precision)}
+                                            {truncateDecimals(output_transaction?.amount, source_token?.precision)}
                                           </span>
-                                          <span className="ml-1">{destinationCurrency?.symbol}</span>
+                                          <span className="ml-1">{destination_token?.symbol}</span>
                                         </div>
                                         : <div className="text-left text-base">-</div>
                                     }

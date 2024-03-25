@@ -2,11 +2,11 @@ import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./addressValidator";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
-import { SwapItem } from "./layerSwapApiClient";
+import { SwapItem, SwapResponse } from "./layerSwapApiClient";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
     const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, addressSource } = queryParams
-    const { layers, exchanges, sourceRoutes, destinationRoutes } = settings || {}
+    const { networks: layers, exchanges, sourceRoutes, destinationRoutes } = settings || {}
 
     const lockedSourceCurrency = lockFromAsset ?
         layers.find(l => l.name === to)
@@ -67,7 +67,8 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
 }
 
 
-export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: LayerSwapAppSettings): SwapFormValues {
+export function generateSwapInitialValuesFromSwap(swapResponse: SwapResponse, settings: LayerSwapAppSettings): SwapFormValues {
+    const { swap, refuel } = swapResponse || ''
     const {
         destination_address,
         requested_amount,
@@ -77,10 +78,9 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
         destination_token,
         source_exchange,
         destination_exchange,
-        refuel
     } = swap
 
-    const { layers, exchanges, destinationRoutes, sourceRoutes, assetGroups } = settings || {}
+    const { networks: layers, exchanges, destinationRoutes, sourceRoutes, assetGroups } = settings || {}
 
     const from = layers.find(l => l.name === source_network.name);
     const to = layers.find(l => l.name === destination_network.name);

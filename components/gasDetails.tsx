@@ -1,5 +1,3 @@
-import { Token } from "../Models/Network"
-import { Layer } from "../Models/Layer"
 import { useBalancesState } from "../context/balances"
 
 const GasDetails = ({ network, currency }: { network: string, currency: string }) => {

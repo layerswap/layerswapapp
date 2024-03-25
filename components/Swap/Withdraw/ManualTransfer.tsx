@@ -17,7 +17,8 @@ import { Exchange } from "../../../Models/Exchange";
 import Link from "next/link";
 
 const ManualTransfer: FC = () => {
-    const { swap } = useSwapDataState()
+    const { swapResponse: swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const hintsStore = useSwapDepositHintClicked()
     const hintClicked = hintsStore.swapTransactions[swap?.id || ""]
 
@@ -67,36 +68,20 @@ const ManualTransfer: FC = () => {
 
 const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> = ({ address: existingDepositAddress, shouldGenerateAddress }) => {
 
-    const { layers, resolveImgSrc } = useSettingsState()
-    const { swap } = useSwapDataState()
-    const { valuesChanger, minAllowedAmount } = useFee()
+    const { swapResponse: swapResponse } = useSwapDataState()
+    const { swap, quote: swapQuote } = swapResponse || {}
+
+    const minAllowedAmount = swapQuote?.min_receive_amount
 
     const {
-        source_exchange
+        source_exchange,
+        source_network,
+        source_token,
     } = swap || {}
     const source_network_internal_name = swap?.source_network.name
-    const destination_network_internal_name = swap?.destination_network.name
-    const source = layers.find(n => n.name === source_network_internal_name)
-    const sourceAsset = source?.tokens.find(c => c.symbol == swap?.source_token.symbol)
-    const destination = layers.find(n => n.name === destination_network_internal_name)
-    const destinationAsset = destination?.tokens.find(c => c.symbol == swap?.destination_token.symbol)
-
-    useEffect(() => {
-        if (swap) {
-            valuesChanger({
-                amount: swap.requested_amount.toString(),
-                destination_address: swap.destination_address,
-                from: source,
-                fromCurrency: sourceAsset,
-                to: destination,
-                toCurrency: destinationAsset,
-                refuel: !!swap.refuel,
-            })
-        }
-    }, [swap])
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const generateDepositParams = shouldGenerateAddress ? [source?.name ?? null] : null
+    const generateDepositParams = shouldGenerateAddress ? [source_network?.name ?? null] : null
 
     const {
         data: generatedDeposit
@@ -164,13 +149,13 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                     {requested_amount}
                 </p>
             </BackgroundField>
-            <BackgroundField header={'Asset'} withoutBorder Explorable={sourceAsset?.contract != null && isValidAddress(sourceAsset?.contract, source)} toExplore={sourceAsset?.contract != null ? source?.account_explorer_template?.replace("{0}", sourceAsset?.contract) : undefined}>
+            <BackgroundField header={'Asset'} withoutBorder Explorable={source_token?.contract != null && isValidAddress(source_token?.contract, source_network)} toExplore={source_token?.contract != null ? source_network?.account_explorer_template?.replace("{0}", source_token?.contract) : undefined}>
                 <div className="flex items-center gap-2">
                     <div className="flex-shrink-0 h-7 w-7 relative">
                         {
-                            sourceAsset &&
+                            source_token &&
                             <Image
-                                src={sourceAsset.logo}
+                                src={source_token.logo}
                                 alt="From Logo"
                                 height="60"
                                 width="60"
@@ -180,11 +165,11 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                     </div>
                     <div className="flex flex-col">
                         <span className="font-semibold leading-4">
-                            {sourceAsset?.symbol}
+                            {source_token?.symbol}
                         </span>
-                        {sourceAsset?.contract && isValidAddress(sourceAsset.contract, source) &&
+                        {source_token?.contract && isValidAddress(source_token.contract, source_network) &&
                             <span className="text-xs text-secondary-text flex items-center leading-3">
-                                {shortenAddress(sourceAsset?.contract)}
+                                {shortenAddress(source_token?.contract)}
                             </span>
                         }
                     </div>
@@ -195,7 +180,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
 }
 
 const ExchangeNetworkPicker: FC<{ onChange?: (exchnage: Exchange) => void }> = ({ onChange }) => {
-    const { swap } = useSwapDataState()
+    const { swapResponse: swap } = useSwapDataState()
 
     //const exchangeAssets = source_exchange?.assets?.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network?.status !== "inactive")
     //const defaultSourceNetwork = exchangeAssets?.find(sn => sn.is_default) || exchangeAssets?.[0]
@@ -210,8 +195,8 @@ const ExchangeNetworkPicker: FC<{ onChange?: (exchnage: Exchange) => void }> = (
         <span>Network:</span>
         {/* {exchangeAssets?.length === 1 ? */}
         <div className='flex space-x-1 items-center w-fit font-semibold text-primary-text'>
-            <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={swap?.source_network.logo || ''}></Image>
-            <span>{swap?.source_network.display_name}</span>
+            <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={swap?.swap.source_network.logo || ''}></Image>
+            <span>{swap?.swap.source_network.display_name}</span>
         </div>
         {/* :
             <Select onValueChange={handleChangeSelectedNetwork} defaultValue={defaultSourceNetwork?.network_internal_name}>

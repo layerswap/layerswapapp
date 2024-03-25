@@ -12,7 +12,6 @@ import shortenAddress from "../utils/ShortenAddress";
 import Link from "next/link";
 import { SortingByOrder } from "../../lib/sorting";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
-import { Layer } from "../../Models/Layer";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import { Info } from "lucide-react";
@@ -58,7 +57,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                         : 'destination_network']
                         : filterWith.name,
                     [direction === 'to'
-                        ? 'source_asset'
+                        ? 'source_token'
                         : 'destination_asset']
                         : filterWithAsset
                 }) : {}),

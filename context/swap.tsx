@@ -1,6 +1,6 @@
-import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
+import { Context, useCallback, useEffect, useState, createContext, useContext } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, SwapItem, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, SwapQuote, DepositMethods } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, SwapItem, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, SwapQuote, DepositMethods, Refuel } from '../lib/layerSwapApiClient';
 import { useRouter } from 'next/router';
 import { useSettingsState } from './settings';
 import { QueryParams } from '../Models/QueryParams';
@@ -13,9 +13,7 @@ import { Token } from '../Models/Network';
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
-    swap: undefined,
-    swapQuote: undefined,
-    depositMethods: undefined,
+    swapResponse: undefined,
     addressConfirmed: false,
     depositeAddressIsfromAccount: false,
     withdrawType: undefined,
@@ -38,9 +36,7 @@ export type UpdateInterface = {
 
 export type SwapData = {
     codeRequested: boolean,
-    swap?: SwapItem,
-    swapQuote?: SwapQuote,
-    depositMethods?: DepositMethods
+    swapResponse?: SwapResponse,
     swapApiError?: ApiError,
     addressConfirmed: boolean,
     depositeAddressIsfromAccount: boolean,
@@ -56,22 +52,22 @@ export function SwapDataProvider({ children }) {
     const [depositeAddressIsfromAccount, setDepositeAddressIsfromAccount] = useState<boolean>()
     const router = useRouter();
     const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
-    const { layers } = useSettingsState()
+    const { networks: layers } = useSettingsState()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}`
     const [interval, setInterval] = useState(0)
     const { data: swapData, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
-    const swapResponse = swapData?.data?.swap
+    const swapResponse = swapData?.data
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
-    const source_exchange = layers.find(n => n?.name?.toLowerCase() === swapResponse?.source_exchange?.name.toLowerCase())
+    const source_exchange = layers.find(n => n?.name?.toLowerCase() === swapResponse?.swap.source_exchange?.name.toLowerCase())
 
-    const exchangeAssets = source_exchange?.tokens?.filter(a => a?.symbol === swapResponse?.source_token.symbol)
-    const source_network = layers.find(n => n.name?.toLowerCase() === swapResponse?.source_network?.name.toLowerCase())
+    const exchangeAssets = source_exchange?.tokens?.filter(a => a?.symbol === swapResponse?.swap.source_token.symbol)
+    const source_network = layers.find(n => n.name?.toLowerCase() === swapResponse?.swap.source_network?.name.toLowerCase())
     const defaultSourceNetwork = exchangeAssets?.[0] || source_network?.tokens?.[0]
     const [selectedAssetNetwork, setSelectedAssetNetwork] = useState<Token | undefined>(defaultSourceNetwork)
 
-    const swapStatus = swapResponse?.status;
+    const swapStatus = swapResponse?.swap.status;
     useEffect(() => {
         if (swapStatus)
             setInterval(ResolvePollingInterval(swapStatus))
@@ -94,28 +90,26 @@ export function SwapDataProvider({ children }) {
         if (!values)
             throw new Error("No swap data")
 
-        const { to, fromCurrency, toCurrency, from, refuel, fromExchange, toExchange } = values
+        const { to, fromCurrency, toCurrency, from, refuel, fromExchange, toExchange, depositMethod, amount, destination_address } = values
 
-        if (!to || !fromCurrency || !toCurrency || !from || !values.amount || !values.destination_address)
+        if (!to || !fromCurrency || !toCurrency || !from || !amount || !destination_address || !depositMethod)
             throw new Error("Form data is missing")
 
         const sourceLayer = from
         const destinationLayer = to
 
         const data: CreateSwapParams = {
-            amount: values.amount,
+            amount: amount,
             source_network: sourceLayer?.name,
             destination_network: destinationLayer?.name,
-            source_asset: fromCurrency.symbol,
-            destination_asset: toCurrency.symbol,
+            source_token: fromCurrency.symbol,
+            destination_token: toCurrency.symbol,
             source_exchange: fromExchange?.name,
             destination_exchange: toExchange?.name,
-            destination_address: values.destination_address,
-            //TODO query?.appName may be undefined
-            // app_name: partner ? query?.appName : (apiVersion === 'sandbox' ? 'LayerswapSandbox' : 'Layerswap'),
+            destination_address: destination_address,
             reference_id: query.externalId,
             refuel: !!refuel,
-            deposit_mode: ''
+            deposit_mode: depositMethod!
         }
 
         const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
@@ -149,9 +143,7 @@ export function SwapDataProvider({ children }) {
             swapTransaction,
             selectedAssetNetwork,
             depositeAddressIsfromAccount: !!depositeAddressIsfromAccount,
-            swap: swapResponse,
-            swapQuote: swapData?.data?.quote,
-            depositMethods: swapData?.data?.deposit_methods,
+            swapResponse: swapResponse,
             swapApiError: error,
         }}>
             <SwapDataUpdateContext.Provider value={updateFns}>

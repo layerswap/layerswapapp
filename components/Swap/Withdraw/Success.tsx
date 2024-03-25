@@ -9,13 +9,12 @@ import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import GoHomeButton from '../../utils/GoHome';
 import { TransactionType } from '../../../lib/layerSwapApiClient';
 import AppSettings from '../../../lib/AppSettings';
-import { useRouter } from 'next/router';
 import { useQueryState } from '../../../context/query';
 
 const Success: FC = () => {
-    const { layers } = useSettingsState()
-    const { swap } = useSwapDataState()
-    const router = useRouter()
+    const { networks: layers } = useSettingsState()
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const { externalId } = useQueryState()
     const destination_network = layers.find(n => n.name === swap?.destination_network.name)
     const transaction_explorer_template = destination_network?.transaction_explorer_template

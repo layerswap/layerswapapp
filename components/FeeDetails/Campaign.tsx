@@ -1,5 +1,4 @@
 import { FC } from "react"
-import { Layer } from "../../Models/Layer"
 import LayerSwapApiClient, { Campaign } from "../../lib/layerSwapApiClient"
 import useSWR from "swr"
 import { ApiResponse } from "../../Models/ApiResponse"
@@ -8,10 +7,10 @@ import { truncateDecimals } from "../utils/RoundDecimals"
 import { motion } from "framer-motion"
 import ClickTooltip from "../Tooltips/ClickTooltip"
 import Image from 'next/image';
-import { Token } from "../../Models/Network"
+import { CryptoNetwork, Token } from "../../Models/Network"
 
 type CampaignProps = {
-    destination: Layer,
+    destination: CryptoNetwork,
     fee: number | undefined,
     selected_currency: Token,
 }
@@ -47,9 +46,9 @@ type CampaignDisplayProps = {
     selected_currency: Token,
 }
 const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_currency }) => {
-    const { resolveImgSrc, layers } = useSettingsState()
-    const layer = layers.find(l => l.name === campaign.network)
-    const campaignAsset = layer?.tokens.find(c => c?.symbol === campaign?.asset)
+    const { networks } = useSettingsState()
+    const network = networks.find(l => l.name === campaign.network)
+    const campaignAsset = network?.tokens.find(c => c?.symbol === campaign?.asset)
     const feeinUsd = fee * selected_currency.price_in_usd
     const reward = truncateDecimals(((feeinUsd * (campaign?.percentage || 0) / 100) / (campaignAsset?.price_in_usd || 1)), (campaignAsset?.precision || 0))
 
@@ -74,7 +73,7 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_cur
                 <span>+</span>
                 <div className="h-5 w-5 relative">
                     <Image
-                        src={resolveImgSrc(campaign)}
+                        src={network?.logo || ''}
                         alt="Project Logo"
                         height="40"
                         width="40"

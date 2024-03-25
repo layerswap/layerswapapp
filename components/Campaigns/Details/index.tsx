@@ -16,13 +16,13 @@ import { Widget } from "../../Widget/Index";
 import Leaderboard from "./Leaderboard"
 import Rewards from "./Rewards";
 import SpinIcon from "../../icons/spinIcon"
-import { Layer } from "../../../Models/Layer"
+import { CryptoNetwork } from "../../../Models/Network"
 
 function CampaignDetails() {
 
     const settings = useSettingsState()
     const router = useRouter();
-    const { resolveImgSrc, layers } = settings
+    const { networks } = settings
     const camapaignName = router.query.campaign?.toString()
 
     const { isConnected } = useAccount();
@@ -31,7 +31,7 @@ function CampaignDetails() {
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
     const campaign = campaignsData?.data?.find(c => c.name === camapaignName)
 
-    const network = layers.find(n => n.name === campaign?.network)
+    const network = networks.find(n => n.name === campaign?.network)
 
     if (isLoading) {
         return <Loading />
@@ -48,7 +48,7 @@ function CampaignDetails() {
                     <div className="flex items-center gap-1">
                         <div className="h-7 w-7 relative">
                             {network && <Image
-                                src={resolveImgSrc(network)}
+                                src={network.logo}
                                 alt="Project Logo"
                                 height="40"
                                 width="40"
@@ -91,7 +91,7 @@ function CampaignDetails() {
 
 type BriefInformationProps = {
     campaign: Campaign,
-    network?: Layer
+    network?: CryptoNetwork
 }
 const BriefInformation: FC<BriefInformationProps> = ({ campaign, network }) =>
     <p className="text-secondary-text text-base">

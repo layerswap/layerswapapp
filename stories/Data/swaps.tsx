@@ -27,17 +27,23 @@ export const swap: SwapItem = {
         "status": "active"
     },
     "source_network": {
-        "account_explorer_template": "snjsncj",
-        "chain_id": "1",
-        "display_name": "",
-        "logo": "",
+        "name": "ARBITRUM_SEPOLIA",
+        "display_name": "Arbitrum One Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_sepolia.png",
+        "chain_id": "421614",
+        "node_url": "https://arbitrum-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.arbiscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.arbiscan.io/address/{0}",
         "metadata": {
-            "listing_date": ""
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": "0x420000000000000000000000000000000000000F",
+            "evm_multi_call_contract": ""
         },
-        "name": "",
-        "node_url": "",
-        "transaction_explorer_template": "",
-        "type": NetworkType.EVM
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
     },
     "destination_token": {
         "symbol": "",
@@ -50,43 +56,23 @@ export const swap: SwapItem = {
         "status": "active"
     },
     "destination_network": {
-        "account_explorer_template": "snjsncj",
-        "chain_id": "1",
-        "display_name": "",
-        "logo": "",
+        "name": "ETHEREUM_SEPOLIA",
+        "display_name": "Ethereum Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_sepolia.png",
+        "chain_id": "11155111",
+        "node_url": "https://eth-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.etherscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
         "metadata": {
-            "listing_date": ""
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": null,
+            "evm_multi_call_contract": null
         },
-        "name": "",
-        "node_url": "",
-        "transaction_explorer_template": "",
-        "type": NetworkType.EVM
-    },
-    "refuel": {
-        "token": {
-            "symbol": "",
-            "logo": "",
-            "contract": "",
-            "decimals": 18,
-            "price_in_usd": 2,
-            "precision": 6,
-            "is_native": false,
-            "status": "active"
-        },
-        "network": {
-            "account_explorer_template": "snjsncj",
-            "chain_id": "1",
-            "display_name": "",
-            "logo": "",
-            "metadata": {
-                "listing_date": ""
-            },
-            "name": "",
-            "node_url": "",
-            "transaction_explorer_template": "",
-            "type": NetworkType.EVM
-        },
-        "refuel_amount": 6
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
     },
     "fail_reason": "",
     "transactions": [
@@ -157,17 +143,23 @@ export const failedSwap: SwapItem = {
         "status": "active"
     },
     "source_network": {
-        "account_explorer_template": "snjsncj",
-        "chain_id": "1",
-        "display_name": "",
-        "logo": "",
+        "name": "ARBITRUM_SEPOLIA",
+        "display_name": "Arbitrum One Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_sepolia.png",
+        "chain_id": "421614",
+        "node_url": "https://arbitrum-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.arbiscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.arbiscan.io/address/{0}",
         "metadata": {
-            "listing_date": ""
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": "0x420000000000000000000000000000000000000F",
+            "evm_multi_call_contract": ""
         },
-        "name": "",
-        "node_url": "",
-        "transaction_explorer_template": "",
-        "type": NetworkType.EVM
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
     },
     "destination_token": {
         "symbol": "",
@@ -180,43 +172,23 @@ export const failedSwap: SwapItem = {
         "status": "active"
     },
     "destination_network": {
-        "account_explorer_template": "snjsncj",
-        "chain_id": "1",
-        "display_name": "",
-        "logo": "",
+        "name": "ETHEREUM_SEPOLIA",
+        "display_name": "Ethereum Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_sepolia.png",
+        "chain_id": "11155111",
+        "node_url": "https://eth-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.etherscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
         "metadata": {
-            "listing_date": ""
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": null,
+            "evm_multi_call_contract": null
         },
-        "name": "",
-        "node_url": "",
-        "transaction_explorer_template": "",
-        "type": NetworkType.EVM
-    },
-    "refuel": {
-        "token": {
-            "symbol": "",
-            "logo": "",
-            "contract": "",
-            "decimals": 18,
-            "price_in_usd": 2,
-            "precision": 6,
-            "is_native": false,
-            "status": "active"
-        },
-        "network": {
-            "account_explorer_template": "snjsncj",
-            "chain_id": "1",
-            "display_name": "",
-            "logo": "",
-            "metadata": {
-                "listing_date": ""
-            },
-            "name": "",
-            "node_url": "",
-            "transaction_explorer_template": "",
-            "type": NetworkType.EVM
-        },
-        "refuel_amount": 6
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
     },
     "fail_reason": "",
     "transactions": [
@@ -261,17 +233,23 @@ export const failedInputSwap: SwapItem = {
         "status": "active"
     },
     "source_network": {
-        "account_explorer_template": "snjsncj",
-        "chain_id": "1",
-        "display_name": "",
-        "logo": "",
+        "name": "ARBITRUM_SEPOLIA",
+        "display_name": "Arbitrum One Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_sepolia.png",
+        "chain_id": "421614",
+        "node_url": "https://arbitrum-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.arbiscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.arbiscan.io/address/{0}",
         "metadata": {
-            "listing_date": ""
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": "0x420000000000000000000000000000000000000F",
+            "evm_multi_call_contract": ""
         },
-        "name": "",
-        "node_url": "",
-        "transaction_explorer_template": "",
-        "type": NetworkType.EVM
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
     },
     "destination_token": {
         "symbol": "",
@@ -284,43 +262,23 @@ export const failedInputSwap: SwapItem = {
         "status": "active"
     },
     "destination_network": {
-        "account_explorer_template": "snjsncj",
-        "chain_id": "1",
-        "display_name": "",
-        "logo": "",
+        "name": "ETHEREUM_SEPOLIA",
+        "display_name": "Ethereum Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_sepolia.png",
+        "chain_id": "11155111",
+        "node_url": "https://eth-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.etherscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
         "metadata": {
-            "listing_date": ""
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": null,
+            "evm_multi_call_contract": null
         },
-        "name": "",
-        "node_url": "",
-        "transaction_explorer_template": "",
-        "type": NetworkType.EVM
-    },
-    "refuel": {
-        "token": {
-            "symbol": "",
-            "logo": "",
-            "contract": "",
-            "decimals": 18,
-            "price_in_usd": 2,
-            "precision": 6,
-            "is_native": false,
-            "status": "active"
-        },
-        "network": {
-            "account_explorer_template": "snjsncj",
-            "chain_id": "1",
-            "display_name": "",
-            "logo": "",
-            "metadata": {
-                "listing_date": ""
-            },
-            "name": "",
-            "node_url": "",
-            "transaction_explorer_template": "",
-            "type": NetworkType.EVM
-        },
-        "refuel_amount": 6
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
     },
     "fail_reason": "",
     "transactions": [
@@ -365,17 +323,23 @@ export const failedSwapOutOfRange: SwapItem = {
         "status": "active"
     },
     "source_network": {
-        "account_explorer_template": "snjsncj",
-        "chain_id": "1",
-        "display_name": "",
-        "logo": "",
+        "name": "ARBITRUM_SEPOLIA",
+        "display_name": "Arbitrum One Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_sepolia.png",
+        "chain_id": "421614",
+        "node_url": "https://arbitrum-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.arbiscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.arbiscan.io/address/{0}",
         "metadata": {
-            "listing_date": ""
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": "0x420000000000000000000000000000000000000F",
+            "evm_multi_call_contract": ""
         },
-        "name": "",
-        "node_url": "",
-        "transaction_explorer_template": "",
-        "type": NetworkType.EVM
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
     },
     "destination_token": {
         "symbol": "",
@@ -388,43 +352,23 @@ export const failedSwapOutOfRange: SwapItem = {
         "status": "active"
     },
     "destination_network": {
-        "account_explorer_template": "snjsncj",
-        "chain_id": "1",
-        "display_name": "",
-        "logo": "",
+        "name": "ETHEREUM_SEPOLIA",
+        "display_name": "Ethereum Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_sepolia.png",
+        "chain_id": "11155111",
+        "node_url": "https://eth-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.etherscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
         "metadata": {
-            "listing_date": ""
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": null,
+            "evm_multi_call_contract": null
         },
-        "name": "",
-        "node_url": "",
-        "transaction_explorer_template": "",
-        "type": NetworkType.EVM
-    },
-    "refuel": {
-        "token": {
-            "symbol": "",
-            "logo": "",
-            "contract": "",
-            "decimals": 18,
-            "price_in_usd": 2,
-            "precision": 6,
-            "is_native": false,
-            "status": "active"
-        },
-        "network": {
-            "account_explorer_template": "snjsncj",
-            "chain_id": "1",
-            "display_name": "",
-            "logo": "",
-            "metadata": {
-                "listing_date": ""
-            },
-            "name": "",
-            "node_url": "",
-            "transaction_explorer_template": "",
-            "type": NetworkType.EVM
-        },
-        "refuel_amount": 6
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
     },
     "fail_reason": "received_more_than_valid_range",
     "transactions": [
@@ -482,17 +426,23 @@ export const cancelled: SwapItem = {
         "status": "active"
     },
     "source_network": {
-        "account_explorer_template": "snjsncj",
-        "chain_id": "1",
-        "display_name": "",
-        "logo": "",
+        "name": "ARBITRUM_SEPOLIA",
+        "display_name": "Arbitrum One Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_sepolia.png",
+        "chain_id": "421614",
+        "node_url": "https://arbitrum-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.arbiscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.arbiscan.io/address/{0}",
         "metadata": {
-            "listing_date": ""
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": "0x420000000000000000000000000000000000000F",
+            "evm_multi_call_contract": ""
         },
-        "name": "",
-        "node_url": "",
-        "transaction_explorer_template": "",
-        "type": NetworkType.EVM
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
     },
     "destination_token": {
         "symbol": "",
@@ -505,43 +455,23 @@ export const cancelled: SwapItem = {
         "status": "active"
     },
     "destination_network": {
-        "account_explorer_template": "snjsncj",
-        "chain_id": "1",
-        "display_name": "",
-        "logo": "",
+        "name": "ETHEREUM_SEPOLIA",
+        "display_name": "Ethereum Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_sepolia.png",
+        "chain_id": "11155111",
+        "node_url": "https://eth-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.etherscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
         "metadata": {
-            "listing_date": ""
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": null,
+            "evm_multi_call_contract": null
         },
-        "name": "",
-        "node_url": "",
-        "transaction_explorer_template": "",
-        "type": NetworkType.EVM
-    },
-    "refuel": {
-        "token": {
-            "symbol": "",
-            "logo": "",
-            "contract": "",
-            "decimals": 18,
-            "price_in_usd": 2,
-            "precision": 6,
-            "is_native": false,
-            "status": "active"
-        },
-        "network": {
-            "account_explorer_template": "snjsncj",
-            "chain_id": "1",
-            "display_name": "",
-            "logo": "",
-            "metadata": {
-                "listing_date": ""
-            },
-            "name": "",
-            "node_url": "",
-            "transaction_explorer_template": "",
-            "type": NetworkType.EVM
-        },
-        "refuel_amount": 6
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
     },
     "fail_reason": "",
     "transactions": [
@@ -574,17 +504,23 @@ export const expired: SwapItem = {
         "status": "active"
     },
     "source_network": {
-        "account_explorer_template": "snjsncj",
-        "chain_id": "1",
-        "display_name": "",
-        "logo": "",
+        "name": "ARBITRUM_SEPOLIA",
+        "display_name": "Arbitrum One Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_sepolia.png",
+        "chain_id": "421614",
+        "node_url": "https://arbitrum-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.arbiscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.arbiscan.io/address/{0}",
         "metadata": {
-            "listing_date": ""
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": "0x420000000000000000000000000000000000000F",
+            "evm_multi_call_contract": ""
         },
-        "name": "",
-        "node_url": "",
-        "transaction_explorer_template": "",
-        "type": NetworkType.EVM
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
     },
     "destination_token": {
         "symbol": "",
@@ -597,43 +533,23 @@ export const expired: SwapItem = {
         "status": "active"
     },
     "destination_network": {
-        "account_explorer_template": "snjsncj",
-        "chain_id": "1",
-        "display_name": "",
-        "logo": "",
+        "name": "ETHEREUM_SEPOLIA",
+        "display_name": "Ethereum Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_sepolia.png",
+        "chain_id": "11155111",
+        "node_url": "https://eth-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.etherscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
         "metadata": {
-            "listing_date": ""
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": null,
+            "evm_multi_call_contract": null
         },
-        "name": "",
-        "node_url": "",
-        "transaction_explorer_template": "",
-        "type": NetworkType.EVM
-    },
-    "refuel": {
-        "token": {
-            "symbol": "",
-            "logo": "",
-            "contract": "",
-            "decimals": 18,
-            "price_in_usd": 2,
-            "precision": 6,
-            "is_native": false,
-            "status": "active"
-        },
-        "network": {
-            "account_explorer_template": "snjsncj",
-            "chain_id": "1",
-            "display_name": "",
-            "logo": "",
-            "metadata": {
-                "listing_date": ""
-            },
-            "name": "",
-            "node_url": "",
-            "transaction_explorer_template": "",
-            "type": NetworkType.EVM
-        },
-        "refuel_amount": 6
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
     },
     "fail_reason": "",
     "transactions": [

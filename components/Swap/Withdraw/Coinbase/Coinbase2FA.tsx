@@ -28,7 +28,8 @@ type Props = {
 //TODO email code is almost identical create reusable component for email and two factor code verification
 const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
     const initialValues: CodeFormValues = { Code: '' }
-    const { swap } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const [loading, setLoading] = useState(false)
     const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState(false)
     const [showFundsOnHoldModal, setShowFundsOnHoldModal] = useState(false)

@@ -3,7 +3,6 @@ import { forwardRef, useCallback, useEffect, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
-import { Layer } from "../../Models/Layer";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import ExchangeSettings from "../../lib/ExchangeSettings";
 import { SortingByAvailability } from "../../lib/sorting"
@@ -135,7 +134,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         x.id == (direction === "from" ? from : to)?.name :
         x.id == (direction === 'from' ? fromExchange : toExchange)?.name);
 
-    const handleSelect = useCallback((item: SelectMenuItem<Layer | Exchange> & { isExchange: boolean }) => {
+    const handleSelect = useCallback((item: SelectMenuItem<CryptoNetwork | Exchange> & { isExchange: boolean }) => {
         if (item.baseObject.name === value?.baseObject.name)
             return
         if (!item.isAvailable.value && item.isAvailable.disabledReason == LayerDisabledReason.InvalidRoute) {
@@ -149,7 +148,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             setFieldValue(`${name}Exchange`, null, true)
             setFieldValue(name, item.baseObject, true)
             const currency = name == "from" ? fromCurrency : toCurrency
-            const assetSubstitute = (item.baseObject as Layer)?.tokens?.find(a => a.symbol === currency?.symbol)
+            const assetSubstitute = (item.baseObject as CryptoNetwork)?.tokens?.find(a => a.symbol === currency?.symbol)
             if (assetSubstitute) {
                 setFieldValue(`${name}Currency`, assetSubstitute, true)
             }

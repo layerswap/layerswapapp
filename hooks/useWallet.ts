@@ -1,5 +1,4 @@
 import toast from "react-hot-toast"
-import { Layer } from "../Models/Layer"
 import LayerSwapApiClient, { SwapItem } from "../lib/layerSwapApiClient"
 import { Wallet } from "../stores/walletStore"
 import useTON from "../lib/wallets/ton/useTON"
@@ -7,6 +6,7 @@ import useEVM from "../lib/wallets/evm/useEVM"
 import useStarknet from "../lib/wallets/starknet/useStarknet"
 import useImmutableX from "../lib/wallets/immutableX/useIMX"
 import useSolana from "../lib/wallets/solana/useSolana"
+import { CryptoNetwork, Network } from "../Models/Network"
 
 
 export type WalletProvider = {
@@ -65,12 +65,12 @@ export default function useWallet() {
         return connectedWallets
     }
 
-    const getWithdrawalProvider = (network: Layer) => {
+    const getWithdrawalProvider = (network: Network) => {
         const provider = WalletProviders.find(provider => provider.withdrawalSupportedNetworks.includes(network.name))
         return provider
     }
 
-    const getAutofillProvider = (network: Layer) => {
+    const getAutofillProvider = (network: Network) => {
         const provider = WalletProviders.find(provider => provider?.autofillSupportedNetworks?.includes(network.name))
         return provider
     }

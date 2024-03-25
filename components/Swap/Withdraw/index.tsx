@@ -17,9 +17,10 @@ import { Widget } from '../../Widget/Index';
 import WalletTransferContent from './WalletTransferContent';
 
 const Withdraw: FC = () => {
-    const { swap } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const { setWithdrawType } = useSwapDataUpdate()
-    const { layers } = useSettingsState()
+    const { networks: layers } = useSettingsState()
     const { appName, signature } = useQueryState()
 
     const sourceIsStarknet = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase()

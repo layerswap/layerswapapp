@@ -25,7 +25,8 @@ type Props = {
 }
 
 const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
-    const { swap } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const { exchanges } = useSettingsState()
     const router = useRouter()
     let alreadyFamiliar = useCoinbaseStore((state) => state.alreadyFamiliar);

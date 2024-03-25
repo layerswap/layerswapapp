@@ -1,4 +1,3 @@
-import { Layer } from "../Models/Layer"
 import useEVMBalance from "../lib/balances/evm/useEVMBalance"
 import useLoopringBalance from "../lib/balances/loopring/useLoopringBalance"
 import useOptimismBalance from "../lib/balances/evm/optimism/useOptimismBalance"
@@ -9,7 +8,7 @@ import useImxBalance from "../lib/balances/immutableX/useIMXBalances"
 import { BalanceProvider } from "../Models/Balance"
 import useWallet from "./useWallet"
 import { useBalancesState, useBalancesUpdate } from "../context/balances"
-import { Token } from "../Models/Network"
+import { CryptoNetwork, Token } from "../Models/Network"
 import useQueryBalances from "../lib/balances/query/useQueryBalances"
 import { useQueryState } from "../context/query"
 import LayerSwapApiClient, { GetQuoteParams } from "../lib/layerSwapApiClient"
@@ -40,7 +39,7 @@ export default function useBalanceProvider() {
 
     const { getAutofillProvider } = useWallet()
 
-    const fetchBalance = async (network: Layer) => {
+    const fetchBalance = async (network: CryptoNetwork) => {
         const provider = getAutofillProvider(network)
         const wallet = provider?.getConnectedWallet()
         const address = query.account || wallet?.address
@@ -58,7 +57,7 @@ export default function useBalanceProvider() {
 
             const provider = getBalanceProvider(network)
             const ercAndNativeBalances = await provider?.getBalance({
-                layer: network,
+                network: network,
                 address: address
             }) || []
 
@@ -67,7 +66,7 @@ export default function useBalanceProvider() {
         }
     }
 
-    const fetchGas = async (source_network: Layer, source_token: Token, destination_network: Layer, destination_token: Token, userDestinationAddress: string, amount: string) => {
+    const fetchGas = async (source_network: CryptoNetwork, source_token: Token, destination_network: CryptoNetwork, destination_token: Token, userDestinationAddress: string, amount: string) => {
 
         if (!source_network) {
             return
@@ -81,10 +80,10 @@ export default function useBalanceProvider() {
 
         const params: GetQuoteParams = {
             source_network: source_network.name,
-            source_asset: source_token.symbol,
+            source_token: source_token.symbol,
             source_address: wallet?.address,
             destination_network: destination_network.name,
-            destination_asset: destination_token.symbol,
+            destination_token: destination_token.symbol,
             destination_address: userDestinationAddress,
             deposit_mode: 'wallet',
             include_gas: true,
@@ -102,7 +101,7 @@ export default function useBalanceProvider() {
 
                 const provider = getBalanceProvider(source_network)
                 const gas = provider?.getGas && await provider?.getGas({
-                    layer: source_network,
+                    network: source_network,
                     address: wallet?.address as `0x${string}`,
                     currency: source_token,
                     userDestinationAddress,
@@ -119,7 +118,7 @@ export default function useBalanceProvider() {
         }
     }
 
-    const getBalanceProvider = (network: Layer) => {
+    const getBalanceProvider = (network: CryptoNetwork) => {
         const provider = BalanceProviders.find(provider => provider.supportedNetworks.includes(network.name))
         return provider
     }

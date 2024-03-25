@@ -14,7 +14,7 @@ export default function useSolanaBalance(): BalanceProvider {
         KnownInternalNames.Networks.SolanaMainnet
     ]
 
-    const getBalance = async ({ layer, address }: BalanceProps) => {
+    const getBalance = async ({ network: layer, address }: BalanceProps) => {
         const SolanaWeb3 = await import("@solana/web3.js");
         const { PublicKey, Connection } = SolanaWeb3
         class SolanaConnection extends Connection { }
@@ -68,7 +68,7 @@ export default function useSolanaBalance(): BalanceProvider {
         return balances
     }
 
-    const getGas = async ({ layer, currency, address }: GasProps) => {
+    const getGas = async ({ network: layer, currency, address }: GasProps) => {
         if (!address)
             return
         const { PublicKey, Connection } = await import("@solana/web3.js");

@@ -1,7 +1,6 @@
 import { useRouter } from 'next/router';
 import { FC, useEffect, useState } from 'react'
-import { useSettingsState } from '../../context/settings';
-import LayerSwapApiClient, { SwapItem, SwapResponse, TransactionType } from '../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapResponse, TransactionType } from '../../lib/layerSwapApiClient';
 import Image from 'next/image'
 import toast from 'react-hot-toast';
 import shortenAddress from '../utils/ShortenAddress';
@@ -21,13 +20,10 @@ const SwapDetails: FC<Props> = ({ id }) => {
     const swap = swapData?.swap
     const [loading, setLoading] = useState(false)
     const router = useRouter();
-    const settings = useSettingsState()
-    const { layers, resolveImgSrc } = settings
-
     const { source_token, destination_token, source_network, destination_network } = swap || {}
 
-    const input_tx_id = layers.find(e => e.name === source_network?.name)?.transaction_explorer_template
-    const output_tx_id = layers.find(e => e.name === destination_network?.name)?.transaction_explorer_template
+    const input_tx_explorer_template = source_network?.transaction_explorer_template
+    const output_tx_explorer_template = destination_network?.transaction_explorer_template
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
@@ -145,7 +141,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                     <span className="text-primary-text">
                                         <div className='inline-flex items-center'>
                                             <div className='underline hover:no-underline flex items-center space-x-1'>
-                                                <a target={"_blank"} href={input_tx_id?.replace("{0}", swapInputTransaction.transaction_hash)}>{shortenAddress(swapInputTransaction.transaction_hash)}</a>
+                                                <a target={"_blank"} href={input_tx_explorer_template?.replace("{0}", swapInputTransaction.transaction_hash)}>{shortenAddress(swapInputTransaction.transaction_hash)}</a>
                                                 <ExternalLink className='h-4' />
                                             </div>
                                         </div>
@@ -165,7 +161,7 @@ const SwapDetails: FC<Props> = ({ id }) => {
                                                     <span><CopyButton toCopy={swapOutputTransaction.transaction_hash} iconClassName="text-gray-500">{shortenAddress(swapOutputTransaction.transaction_hash)}</CopyButton></span>
                                                     :
                                                     <div className='underline hover:no-underline flex items-center space-x-1'>
-                                                        <a target={"_blank"} href={output_tx_id?.replace("{0}", swapOutputTransaction.transaction_hash)}>{shortenAddress(swapOutputTransaction.transaction_hash)}</a>
+                                                        <a target={"_blank"} href={output_tx_explorer_template?.replace("{0}", swapOutputTransaction.transaction_hash)}>{shortenAddress(swapOutputTransaction.transaction_hash)}</a>
                                                         <ExternalLink className='h-4' />
                                                     </div>
                                                 }

@@ -9,7 +9,7 @@ export default function useImxBalance(): BalanceProvider {
         KnownInternalNames.Networks.ImmutableXGoerli
     ]
 
-    const getBalance = async ({ layer, address }: BalanceProps) => {
+    const getBalance = async ({ network: layer, address }: BalanceProps) => {
 
         const axios = (await import("axios")).default
 

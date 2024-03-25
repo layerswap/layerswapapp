@@ -61,7 +61,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
                 ...(from && fromCurrency &&
                 {
                     source_network: from.name,
-                    source_asset: fromCurrency?.symbol
+                    source_token: fromCurrency?.symbol
                 })
             })
     });

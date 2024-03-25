@@ -8,12 +8,12 @@ import useSWR from 'swr'
 import { useSettingsState } from "../../context/settings";
 import Image from "next/image";
 import LinkWrapper from "../LinkWraapper";
-import { Layer } from "../../Models/Layer";
 import { Widget } from "../Widget/Index";
+import { CryptoNetwork } from "../../Models/Network";
 
 const Rewards = () => {
 
-    const { layers, resolveImgSrc } = useSettingsState()
+    const { networks } = useSettingsState()
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
     const campaigns = campaignsData?.data
@@ -35,8 +35,7 @@ const Rewards = () => {
                                             activeCampaigns.map(c =>
                                                 <CampaignItem
                                                     campaign={c}
-                                                    layers={layers}
-                                                    resolveImgSrc={resolveImgSrc}
+                                                    layers={networks}
                                                     key={c.id}
                                                 />)
                                             :
@@ -57,8 +56,7 @@ const Rewards = () => {
                                         {inactiveCampaigns.map(c =>
                                             <CampaignItem
                                                 campaign={c}
-                                                layers={layers}
-                                                resolveImgSrc={resolveImgSrc}
+                                                layers={networks}
                                                 key={c.id}
                                             />)}
                                     </div >
@@ -77,12 +75,11 @@ const Rewards = () => {
 }
 type CampaignProps = {
     campaign: Campaign,
-    layers: Layer[],
-    resolveImgSrc: (item: Layer) => string
+    layers: CryptoNetwork[],
 }
-const CampaignItem: FC<CampaignProps> = ({ campaign, layers, resolveImgSrc }) => {
+const CampaignItem: FC<CampaignProps> = ({ campaign, layers }) => {
 
-    const campaignLayer = layers.find(l => l.name === campaign.network)
+    const campaignNetwork = layers.find(l => l.name === campaign.network)
     const campaignDaysLeft = ((new Date(campaign.end_date).getTime() - new Date().getTime()) / 86400000).toFixed()
     const campaignIsActive = IsCampaignActive(campaign)
 
@@ -90,8 +87,8 @@ const CampaignItem: FC<CampaignProps> = ({ campaign, layers, resolveImgSrc }) =>
         className="flex justify-between items-center">
         <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
             <span className="h-5 w-5 relative">
-                {campaignLayer && <Image
-                    src={resolveImgSrc(campaignLayer)}
+                {campaignNetwork && <Image
+                    src={campaignNetwork.logo}
                     alt="Project Logo"
                     height="40"
                     width="40"

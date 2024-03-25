@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import LayerSwapApiClient, { SwapItem, BackendTransactionStatus, TransactionType } from '../lib/layerSwapApiClient';
+import { SwapItem, BackendTransactionStatus, TransactionType, SwapResponse } from '../lib/layerSwapApiClient';
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapData, SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
@@ -8,7 +8,7 @@ import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { BalancesStateContext, BalancesStateUpdateContext } from '../context/balances';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, bitgetWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
-import { FC, useEffect } from 'react';
+import { FC } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange, failedInputSwap, cancelled, expired } from './Data/swaps'
 import { SettingChains, Settings } from './Data/settings';
@@ -22,8 +22,6 @@ import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
 import WalletMockFunctions from './Mocks/context/BalancesMockFunctions';
 import BalancesStateMock from './Mocks/context/BalancesState';
-import useSWR from 'swr';
-import { ApiResponse } from '../Models/ApiResponse';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 const settingsChains = SettingChains;
@@ -62,7 +60,7 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
     })
 
     const appSettings = new LayerSwapAppSettings(Settings)
-    const swapContextInitialValues: SwapData = { codeRequested: false, swap, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
+    const swapContextInitialValues: SwapData = { codeRequested: false, swapResponse: undefined, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
 
     if (!appSettings) {
         return <div>Loading...</div>

@@ -8,7 +8,7 @@ export default function useZkSyncBalance(): BalanceProvider {
         KnownInternalNames.Networks.ZksyncMainnet
     ]
     const client = new ZkSyncLiteRPCClient();
-    const getBalance = async ({ layer, address }: BalanceProps) => {
+    const getBalance = async ({ network: layer, address }: BalanceProps) => {
         let balances: Balance[] = []
 
         if (!layer.tokens) return
@@ -40,7 +40,7 @@ export default function useZkSyncBalance(): BalanceProvider {
         return balances
     }
 
-    const getGas = async ({ layer, currency, address }: GasProps) => {
+    const getGas = async ({ network: layer, currency, address }: GasProps) => {
 
         let gas: Gas[] = [];
         if (!layer.tokens || !address) return

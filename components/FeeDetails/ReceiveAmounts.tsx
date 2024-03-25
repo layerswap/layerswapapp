@@ -1,13 +1,11 @@
 import { FC } from "react";
-import { Layer } from "../../Models/Layer";
-import { GetDefaultAsset } from "../../helpers/settingsHelper";
-import { Token } from "../../Models/Network";
+import { CryptoNetwork, Token } from "../../Models/Network";
 import { Fuel } from "lucide-react";
 import { Quote } from "../../lib/layerSwapApiClient";
 
 type WillReceiveProps = {
     currency?: Token | null;
-    to: Layer | undefined | null;
+    to: CryptoNetwork | undefined | null;
     refuel: boolean;
     fee: Quote | undefined
     onButtonClick: () => void
@@ -15,7 +13,6 @@ type WillReceiveProps = {
 export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee, onButtonClick }) => {
     const receive_amount = fee?.quote.receive_amount
     const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(currency?.precision) || "")
-    const destinationNetworkCurrency = (to && currency) ? GetDefaultAsset(to, currency.symbol) : null
 
     const destinationAsset = to?.tokens?.find(c => c?.symbol === currency?.symbol)
     const receiveAmountInUsd = receive_amount && destinationAsset ? (destinationAsset?.price_in_usd * receive_amount).toFixed(2) : undefined
@@ -36,7 +33,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee
                                     <>{parsedReceiveAmount}</>
                                     &nbsp;
                                     <span>
-                                        {destinationNetworkCurrency?.symbol}
+                                        {currency?.symbol}
                                     </span>
                                     {
                                         receiveAmountInUsd !== undefined && Number(receiveAmountInUsd) > 0 &&

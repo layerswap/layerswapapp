@@ -5,10 +5,10 @@ import { useSettingsState } from "../../../context/settings"
 export default function useQueryBalances(): BalanceProvider {
 
     const query = useQueryState()
-    const { layers } = useSettingsState()
+    const { networks: layers } = useSettingsState()
     const supportedNetworks = [(layers.find(l => l.name.toLowerCase() === query.from?.toLowerCase())?.name || ''), (layers.find(l => l.name.toLowerCase() === query.to?.toLowerCase())?.name || '')]
 
-    const getBalance = ({ layer }: BalanceProps) => {
+    const getBalance = ({ network: layer }: BalanceProps) => {
         const asset = layer.tokens.find(a => a.symbol === query.fromAsset)
 
         const balancesFromQueries = new URL(window.location.href.replaceAll('&quot;', '"')).searchParams.get('balances');

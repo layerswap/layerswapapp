@@ -1,8 +1,8 @@
-import { Layer } from "../Models/Layer";
+import { CryptoNetwork } from "../Models/Network";
 import NetworkSettings from "./NetworkSettings";
 import { SendErrorMessage } from "./telegram";
 
-export default function resolveChain(network: Layer): (Chain & RainbowKitChain) | undefined {
+export default function resolveChain(network: CryptoNetwork): (Chain & RainbowKitChain) | undefined {
 
     const nativeCurrency = network.tokens.find(c => c.is_native);
     const blockExplorersBaseURL =

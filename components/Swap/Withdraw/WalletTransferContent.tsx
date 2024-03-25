@@ -1,6 +1,5 @@
 import { X } from 'lucide-react';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
-import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import WalletIcon from '../../icons/WalletIcon';
 import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
@@ -16,20 +15,16 @@ import useBalance from '../../../hooks/useBalance';
 const WalletTransferContent: FC = () => {
     const { openAccountModal } = useAccountModal();
     const { getWithdrawalProvider: getProvider, disconnectWallet } = useWallet()
-    const { layers, resolveImgSrc } = useSettingsState()
-    const { swap, depositMethods } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
+    const { swap, deposit_methods } = swapResponse || {}
+    const { source_network, destination_network, source_exchange, source_token, destination_token, destination_address, requested_amount } = swap || {}
     const [isLoading, setIsloading] = useState(false);
     const { mutateSwap } = useSwapDataUpdate()
 
-    const source_exchange = swap?.source_exchange
-    const source_layer = layers.find(n => n.name === swap?.source_network.name)
-    const destination_network = layers.find(n => n.name === swap?.destination_network.name)
-    const source_asset = swap?.source_token
-
-    const sourceNetworkType = source_layer?.type
+    const sourceNetworkType = source_network?.type
     const provider = useMemo(() => {
-        return source_layer && getProvider(source_layer)
-    }, [source_layer, getProvider])
+        return source_network && getProvider(source_network)
+    }, [source_network, getProvider])
 
     const wallet = provider?.getConnectedWallet()
 
@@ -37,16 +32,16 @@ const WalletTransferContent: FC = () => {
     const { fetchBalance, fetchGas } = useBalance()
 
     const sourceNetworkWallet = provider?.getConnectedWallet()
-    const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === source_layer?.name && b?.token === source_asset?.symbol)
-    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_asset?.precision)
+    const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
+    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
-    useEffect(() => {
-        source_layer && fetchBalance(source_layer);
-    }, [source_layer, sourceNetworkWallet?.address])
+    // useEffect(() => {
+    //     source_network && fetchBalance(source_network);
+    // }, [source_network, sourceNetworkWallet?.address])
 
-    useEffect(() => {
-        sourceNetworkWallet?.address && source_layer && source_asset && destination_network && depositMethods?.wallet.to_address && fetchGas(source_layer, source_asset, destination_network, swap.destination_token, swap?.destination_address || sourceNetworkWallet.address, swap.requested_amount.toString())
-    }, [source_layer, source_asset, sourceNetworkWallet?.address])
+    // useEffect(() => {
+    //     sourceNetworkWallet?.address && source_network && source_token && destination_network && deposit_methods?.wallet.to_address && fetchGas(source_network, source_token, destination_network, destination_token, destination_address || sourceNetworkWallet.address, requested_amount?.toString())
+    // }, [source_network, source_token, sourceNetworkWallet?.address])
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!wallet) return
@@ -111,7 +106,7 @@ const WalletTransferContent: FC = () => {
                     source_exchange
                     && <Image
                         className="w-6 h-6 rounded-full p-0"
-                        src={resolveImgSrc(source_exchange)}
+                        src={source_exchange.logo}
                         alt={accountAddress}
                         width={25}
                         height={25} />

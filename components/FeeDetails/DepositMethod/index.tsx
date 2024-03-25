@@ -1,8 +1,8 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback } from "react";
+import { FC, useCallback, useEffect } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../../shadcn/select";
-import { Layer } from "../../../Models/Layer";
+import { Network } from "../../../Models/Network";
 
 const DepositMethod: FC = () => {
     const {
@@ -10,7 +10,7 @@ const DepositMethod: FC = () => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
-    const { to, fromCurrency, toCurrency, from } = values
+    const { from, depositMethod } = values
     const name = 'depositMethod'
 
     const depositMethods = [
@@ -20,15 +20,19 @@ const DepositMethod: FC = () => {
         },
         {
             id: 'deposit_address',
-            display_name: 'Deposit Address'
+            display_name: 'Deposit address'
         }
     ]
 
-    const menuItems = from && GenerateDepositMethodMenuItems(from)
+    const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods)
+
+    useEffect(() => {
+        if (!depositMethod) setFieldValue(name, menuItems?.[0].id, true)
+    }, [menuItems])
 
     const handleSelect = useCallback((item: string) => {
         setFieldValue(name, item, true)
-    }, [name, toCurrency, fromCurrency, from, to])
+    }, [name, depositMethod, menuItems])
 
     return (
         <div className="relative w-full">
@@ -39,7 +43,7 @@ const DepositMethod: FC = () => {
                 <div>
                     {
                         menuItems && (menuItems?.length > 1 ?
-                            <Select onValueChange={handleSelect} defaultValue={depositMethods[0].id}>
+                            <Select onValueChange={handleSelect} value={depositMethod} defaultValue={menuItems[0].id}>
                                 <SelectTrigger className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
                                     <SelectValue />
                                 </SelectTrigger>
@@ -57,10 +61,10 @@ const DepositMethod: FC = () => {
                             </Select>
                             :
                             <div className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
-                                {menuItems[0].display_name}
-                            </div>)
+                                {depositMethods.find(m => m.id === depositMethod)?.display_name}
+                            </div>
+                        )
                     }
-
                 </div>
             </div>
         </div>
@@ -72,18 +76,7 @@ type DepositMethod = {
     display_name: string
 }
 
-function GenerateDepositMethodMenuItems(network: Layer): DepositMethod[] {
-
-    const depositMethods: DepositMethod[] = [
-        {
-            id: 'wallet',
-            display_name: 'Wallet'
-        },
-        {
-            id: 'deposit_address',
-            display_name: 'Deposit Address'
-        }
-    ]
+function GenerateDepositMethodMenuItems(network: Network, depositMethods: DepositMethod[]): DepositMethod[] {
 
     return network.deposit_methods.map(m => ({
         id: m,

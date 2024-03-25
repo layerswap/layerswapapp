@@ -246,8 +246,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     <span>Select</span>
                                     <span className="inline-block mx-1">
                                         <span className='flex gap-1 items-baseline text-sm '>
-                                            <Image src={settings.resolveImgSrc(destinationAsset)}
-                                                alt="Project Logo"
+                                            <Image src={destinationAsset.logo}
+                                                alt="Asset Logo"
                                                 height="15"
                                                 width="15"
                                                 className='rounded-sm'
@@ -261,8 +261,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     <span>Select</span>
                                     <span className="inline-block mx-1">
                                         <span className='flex gap-1 items-baseline text-sm '>
-                                            <Image src={settings.resolveImgSrc(values.to)}
-                                                alt="Project Logo"
+                                            <Image src={values.to?.logo || ''}
+                                                alt="Destination Logo"
                                                 height="15"
                                                 width="15"
                                                 className='rounded-sm'

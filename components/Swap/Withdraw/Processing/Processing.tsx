@@ -4,9 +4,8 @@ import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
-import { GetDefaultAsset } from '../../../../helpers/settingsHelper';
 import AverageCompletionTime from '../../../Common/AverageCompletionTime';
-import LayerSwapApiClient, { SwapItem, BackendTransactionStatus, TransactionType, TransactionStatus } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItem, BackendTransactionStatus, TransactionType, TransactionStatus, Refuel, SwapResponse } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
@@ -22,17 +21,18 @@ import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
     settings: LayerSwapAppSettings;
-    swap: SwapItem;
+    swapResponse: SwapResponse;
 }
 
-const Processing: FC<Props> = ({ settings, swap }) => {
+const Processing: FC<Props> = ({ settings, swapResponse }) => {
 
-    const swapStatus = swap.status;
+    const { swap } = swapResponse
+
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
     const { fee } = useFee()
 
-    const source_layer = settings.layers?.find(e => e.name === swap.source_network.name)
-    const destination_layer = settings.layers?.find(e => e.name === swap.destination_network.name)
+    const source_layer = settings.networks?.find(e => e.name === swap.source_network.name)
+    const destination_layer = settings.networks?.find(e => e.name === swap.destination_network.name)
 
     const input_tx_explorer = source_layer?.transaction_explorer_template
     const output_tx_explorer = destination_layer?.transaction_explorer_template
@@ -66,7 +66,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const nativeCurrency = destination_layer?.tokens?.find(c => c.symbol === destination_layer?.tokens.find(a => a.is_native)?.symbol)
     const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
 
-    const progressStatuses = getProgressStatuses(swap, swapStatus, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
+    const progressStatuses = getProgressStatuses(swapResponse, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
     const outputPendingDetails = <div className='flex items-center space-x-1'>
@@ -276,7 +276,10 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     )
 }
 
-const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus, inputTxStatus: TransactionStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
+const getProgressStatuses = (swapResponse: SwapResponse, inputTxStatus: TransactionStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
+    const { swap, refuel: swapRefuel } = swapResponse
+    const swapStatus = swap.status
+
     let generalTitle = "Transfer in progress";
     let subtitle: string | null = "";
     //TODO might need to check stored wallet transaction statuses
@@ -298,7 +301,7 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus, inputTxStat
                 : ProgressStatus.Upcoming;
 
     let refuel_transfer =
-        (!!swap.refuel && !swapRefuelTransaction) ? ProgressStatus.Upcoming
+        (!!swapRefuel && !swapRefuelTransaction) ? ProgressStatus.Upcoming
             : swapRefuelTransaction?.status == BackendTransactionStatus.Pending ? ProgressStatus.Current
                 : swapRefuelTransaction?.status == BackendTransactionStatus.Initiated || swapRefuelTransaction?.status == BackendTransactionStatus.Completed ? ProgressStatus.Complete
                     : ProgressStatus.Removed;

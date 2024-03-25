@@ -1,4 +1,3 @@
-import { useSettingsState } from "../context/settings"
 import { useSwapDataState } from "../context/swap"
 import { NetworkType } from "../Models/Network"
 import useWallet from "./useWallet"
@@ -8,35 +7,36 @@ import resolveChain from "../lib/resolveChain"
 import { createPublicClient, http } from "viem"
 
 export default function useWalletTransferOptions() {
-    const { swap } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
+    const {source_network} = swap || {}
     const { addContractWallet, getContractWallet, updateContractWallet } = useContractWalletsStore()
     const { getWithdrawalProvider: getProvider } = useWallet()
-    const { layers } = useSettingsState()
-    const source_layer = layers.find(n => n.name === swap?.source_network.name)
+
     const provider = useMemo(() => {
-        return source_layer && getProvider(source_layer)
-    }, [source_layer, getProvider])
+        return source_network && getProvider(source_network)
+    }, [source_network, getProvider])
 
     const wallet = provider?.getConnectedWallet()
     useEffect(() => {
-        if (wallet?.address == undefined || source_layer == undefined) return;
-        let contractWallet = getContractWallet(wallet.address, source_layer.name);
+        if (wallet?.address == undefined || source_network == undefined) return;
+        let contractWallet = getContractWallet(wallet.address, source_network.name);
         if (!contractWallet) {
             // add before checking to check only once
-            addContractWallet(wallet.address, source_layer.name);
-            checkContractWallet(wallet.address, source_layer).then(
+            addContractWallet(wallet.address, source_network.name);
+            checkContractWallet(wallet.address, source_network).then(
                 result => {
-                    updateContractWallet(wallet.address, source_layer.name, result)
+                    updateContractWallet(wallet.address, source_network.name, result)
                 }
             )
         }
     }, [wallet?.address])
 
-    const walletAddressType = getContractWallet(wallet?.address, source_layer?.name)
+    const walletAddressType = getContractWallet(wallet?.address, source_network?.name)
 
-    const canDoSweepless = source_layer && ((source_layer.type == NetworkType.EVM
+    const canDoSweepless = source_network && ((source_network.type == NetworkType.EVM
         && (walletAddressType?.ready && !walletAddressType?.isContract))
-        || source_layer.type == NetworkType.Starknet)
+        || source_network.type == NetworkType.Starknet)
         || wallet?.address?.toLowerCase() === swap?.destination_address.toLowerCase()
 
     return { canDoSweepless, isContractWallet: walletAddressType }

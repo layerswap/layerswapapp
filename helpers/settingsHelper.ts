@@ -1,12 +1,4 @@
-import { Token } from "../Models/Network";
-import { Layer } from "../Models/Layer";
 import { THEME_COLORS } from "../Models/Theme";
-
-export function GetDefaultAsset(layer: Layer, asset: string): Token | undefined {
-    return layer
-        ?.tokens
-        ?.find(a => a.symbol === asset)
-}
 
 export const getThemeData = async (query: any) => {
     try {

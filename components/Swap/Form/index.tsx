@@ -62,7 +62,8 @@ export default function Form() {
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.appName && `/apps?name=${query?.appName}`, layerswapApiClient.fetcher)
     const partner = query?.appName && partnerData?.data?.client_id?.toLowerCase() === (query?.appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
-    const { swap } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const { minAllowedAmount, maxAllowedAmount } = useFee()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
@@ -123,7 +124,7 @@ export default function Form() {
 
     const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
-    const initialValues: SwapFormValues = swap ? generateSwapInitialValuesFromSwap(swap, settings)
+    const initialValues: SwapFormValues = swapResponse ? generateSwapInitialValuesFromSwap(swapResponse, settings)
         : generateSwapInitialValues(settings, query)
 
     const handleShowSwapModal = useCallback((value: boolean) => {
@@ -195,23 +196,19 @@ const textMotion = {
 };
 
 const PendingSwap = ({ onClick }: { onClick: () => void }) => {
-    const { swap } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const {
         destination_exchange,
-        source_exchange
+        source_exchange,
+        source_network,
+        destination_network
     } = swap || {}
 
     const settings = useSettingsState()
 
     if (!swap)
         return <></>
-
-    const { resolveImgSrc, layers, exchanges } = settings
-    const source = layers.find(e => e.name === swap.source_network.name)
-    const destination = layers.find(n => n.name === swap.destination_network.name)
-
-    const sourceExchange = exchanges.find(e => e.name === source_exchange?.name)
-    const destExchange = exchanges.find(e => e.name === destination_exchange?.name)
 
     return <motion.div
         initial={{ y: 10, opacity: 0 }}
@@ -231,15 +228,15 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                         {swap && <StatusIcon swap={swap} short={true} />}
                     </span>
                     <div className="flex-shrink-0 h-5 w-5 relative">
-                        {sourceExchange ? <Image
-                            src={resolveImgSrc(sourceExchange)}
+                        {source_exchange ? <Image
+                            src={source_exchange.logo}
                             alt="From Logo"
                             height="60"
                             width="60"
                             className="rounded-md object-contain"
-                        /> : source ?
+                        /> : source_network ?
                             <Image
-                                src={resolveImgSrc(source)}
+                                src={source_network.logo}
                                 alt="From Logo"
                                 height="60"
                                 width="60"
@@ -249,15 +246,15 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                     </div>
                     <ChevronRight className="block h-4 w-4 mx-1" />
                     <div className="flex-shrink-0 h-5 w-5 relative block">
-                        {destExchange ? <Image
-                            src={resolveImgSrc(destination)}
+                        {destination_exchange ? <Image
+                            src={destination_exchange.logo}
                             alt="To Logo"
                             height="60"
                             width="60"
                             className="rounded-md object-contain"
-                        /> : destination ?
+                        /> : destination_network ?
                             <Image
-                                src={resolveImgSrc(destination)}
+                                src={destination_network.logo}
                                 alt="To Logo"
                                 height="60"
                                 width="60"

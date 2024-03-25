@@ -8,7 +8,6 @@ import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
 import LayerSwapApiClient, { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { LSAPIKnownErrorCode } from '../../../../Models/ApiError';
 import toast from 'react-hot-toast';
-import { useSettingsState } from '../../../../context/settings';
 import { TimerProvider, useTimerState } from '../../../../context/timerContext';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 const TIMER_SECONDS = 120
@@ -20,9 +19,9 @@ const Coinbase: FC = () => {
 }
 
 const TransferElements: FC = () => {
-    const { swap, codeRequested } = useSwapDataState()
+    const { swapResponse, codeRequested } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const { setCodeRequested, mutateSwap } = useSwapDataUpdate()
-    const { layers } = useSettingsState()
 
     const { start: startTimer } = useTimerState()
     const { setSwapTransaction } = useSwapTransactionStore();

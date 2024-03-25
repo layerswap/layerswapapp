@@ -9,9 +9,9 @@ import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 
 export default function useEVM(): WalletProvider {
-    const { layers } = useSettingsState()
+    const { networks: layers } = useSettingsState()
     const withdrawalSupportedNetworks = [
-        ...layers.filter(layer => layer.type === NetworkType.EVM).map(l => l.name),
+        ...layers.filter(layer => layer.type.toLowerCase() === NetworkType.EVM).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet
     ]
     const autofillSupportedNetworks = [

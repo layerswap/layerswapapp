@@ -1,12 +1,11 @@
 import { FC } from "react"
-import { Token } from "../../../../../Models/Network"
-import { Layer } from "../../../../../Models/Layer"
+import { CryptoNetwork, Token } from "../../../../../Models/Network"
 import { useBalancesState } from "../../../../../context/balances"
 import { truncateDecimals } from "../../../../utils/RoundDecimals"
 import { Fuel } from "lucide-react"
 
 type NetworkGasProps = {
-    network: Layer,
+    network: CryptoNetwork,
     selected_currency: Token,
 }
 const NetworkGas: FC<NetworkGasProps> = ({ selected_currency, network }) => {
