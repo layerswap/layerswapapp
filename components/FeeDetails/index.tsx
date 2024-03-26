@@ -28,7 +28,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                 <FeeDetails>
 
                     {
-                        from && to && toCurrency && fromCurrency &&
+                        from && to && toCurrency && fromCurrency && !fromExchange &&
                         <FeeDetails.Item>
                             <DepositMethod />
                         </FeeDetails.Item>

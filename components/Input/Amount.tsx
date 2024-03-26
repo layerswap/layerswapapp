@@ -16,7 +16,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
-    const { fromCurrency, from, to, amount, toCurrency } = values || {};
+    const { fromCurrency, from, to, amount, toCurrency, fromExchange, toExchange } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
     const [isFocused, setIsFocused] = useState(false);
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
@@ -55,6 +55,8 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
     const amountRef = useRef(ref)
 
+    const diasbled = (fromExchange && !toCurrency) || (toExchange && !fromCurrency)
+
     const updateRequestedAmountInUsd = useCallback((requestedAmount: number) => {
         if (fromCurrency?.price_in_usd && !isNaN(requestedAmount)) {
             setRequestedAmountInUsd((fromCurrency?.price_in_usd * requestedAmount).toFixed(2));
@@ -72,7 +74,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         <div className="flex w-full justify-between bg-secondary-700 rounded-lg">
             <div className="relative w-full">
                 <NumericInput
-                    disabled={!fromCurrency || !toCurrency}
+                    disabled={diasbled}
                     placeholder={placeholder}
                     min={minAllowedAmount}
                     max={maxAllowedAmount || 0}

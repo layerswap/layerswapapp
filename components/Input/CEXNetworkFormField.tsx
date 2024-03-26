@@ -63,13 +63,13 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                 }) : {}),
     });
 
-    const routesEndpoint = `/${direction === "from" ? "sources" : "destinations"}?${destinationRouteParams.toString()}`
+    const routesEndpoint = `/${direction === "from" ? `exchange_source_networks?destination_token_group=${currencyGroup?.name}` : `exchange_destination_networks?source_asset_group=${currencyGroup?.name}`}&${destinationRouteParams.toString()}`
 
     const { data: routes, isLoading } = useSWR<ApiResponse<CryptoNetwork[]>>(`${routesEndpoint}`, apiClient.fetcher)
     const routesData = routes?.data
 
     const exchangeNetworksEndpoint =
-        (fromExchange || toExchange)
+        ((fromExchange && to) || (toExchange && from))
         && amount
         && (`/${direction === 'from' ?
             `exchange_deposit_networks?source_exchange=${fromExchange?.name}&&source_token_group=${currencyGroup?.name}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&amount=${amount}`
@@ -80,16 +80,15 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     const network = (direction === 'from' ? from : to)
     const currency = (direction === 'from' ? fromCurrency : toCurrency)
 
-    const menuItems = routesData
-        && historicalNetworks?.data
-        && GenerateMenuItems(routesData, historicalNetworks.data, currencyGroup, routes?.data)
+    const menuItems = historicalNetworks?.data && routesData
+        && GenerateMenuItems(historicalNetworks.data, routes?.data)
             .filter(item => routes?.data?.find(l =>
                 l.name === item.baseObject.network.name));
 
-    const handleSelect = useCallback((item: SelectMenuItem<{ network: string, asset: string }>) => {
+    const handleSelect = useCallback((item: SelectMenuItem<ExchangeNetwork>) => {
         if (!item) return
-        const route = routes?.data?.find(l => l.name === item.baseObject.network)
-        const currency = route?.tokens.find(a => a.symbol === item.baseObject.asset)
+        const route = routes?.data?.find(l => l.name === item.baseObject.network.name)
+        const currency = route?.tokens.find(a => a.symbol === item.baseObject.token.symbol)
         setFieldValue(name, route, true)
         setFieldValue(`${name}Currency`, currency, false)
     }, [name])
@@ -101,7 +100,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         item.baseObject.token.symbol ===
         (direction === 'from' ? fromCurrency : toCurrency)?.symbol
         && item.baseObject.network.name === formValue?.name)
-
+    debugger
     //Setting default value
     useEffect(() => {
         if (!menuItems) return
@@ -176,9 +175,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 })
 
 function GenerateMenuItems(
-    items: CryptoNetwork[],
     historicalNetworks: ExchangeNetwork[],
-    currencyGroup: AssetGroup | undefined,
     routes: CryptoNetwork[] | undefined,
 ): SelectMenuItem<ExchangeNetwork>[] {
     const menuItems = historicalNetworks.map((e, index) => {
