@@ -111,7 +111,7 @@ export default function useBalanceProvider() {
                 const gas = {
                     token: source_token.symbol,
                     gas: Number(response?.data?.quote?.deposit_gas_fee),
-                    request_time: String(response?.data?.quote?.avg_completion_time)
+                    request_time: new Date().toJSON()
                 }
 
                 if (gas) {
