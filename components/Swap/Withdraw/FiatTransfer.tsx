@@ -1,7 +1,7 @@
 import { Context, FC, createContext, useContext, useEffect, useRef, useState } from "react";
 import { useSwapDataState } from "../../../context/swap";
 import { StripeOnramp, loadStripeOnramp } from "@stripe/crypto";
-import { PublishedSwapTransactionStatus } from "../../../lib/layerSwapApiClient";
+import { BackendTransactionStatus } from "../../../lib/layerSwapApiClient";
 import { useSwapTransactionStore } from "../../../stores/swapTransactionStore";
 import inIframe from "../../utils/inIframe";
 import SubmitButton from "../../buttons/submitButton";
@@ -98,16 +98,16 @@ export const OnrampElement: FC<OnrampElementProps> = ({
                     })
                     .mount(containerRef)
                 const eventListener = async (e) => {
-                    let transactionStatus: PublishedSwapTransactionStatus
+                    let transactionStatus: BackendTransactionStatus
                     if (e.payload.session.status === "fulfillment_complete")
-                        transactionStatus = PublishedSwapTransactionStatus.Completed
+                        transactionStatus = BackendTransactionStatus.Completed
                     else if (e.payload.session.status === "fulfillment_processing")
-                        transactionStatus = PublishedSwapTransactionStatus.Pending
+                        transactionStatus = BackendTransactionStatus.Pending
                     else {
                         // TODO handle
                         return
                     }
-                    await setSwapTransaction(swapId, PublishedSwapTransactionStatus.Completed, e.payload.session.id);
+                    await setSwapTransaction(swapId, BackendTransactionStatus.Completed, e.payload.session.id);
                 }
 
                 session.addEventListener("onramp_session_updated", eventListener)

@@ -1,12 +1,12 @@
 import { ExternalLink } from 'lucide-react';
-import { FC } from 'react'
+import { FC, useEffect } from 'react'
 import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
 import { GetDefaultAsset } from '../../../../helpers/settingsHelper';
 import AverageCompletionTime from '../../../Common/AverageCompletionTime';
-import { SwapItem, TransactionStatus, TransactionType } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItem, BackendTransactionStatus, TransactionType, TransactionStatus, Transaction } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
@@ -16,6 +16,9 @@ import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
 import { useFee } from '../../../../context/feeContext';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
+import useSWR from 'swr';
+import { ApiResponse } from '../../../../Models/ApiResponse';
+import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
     settings: LayerSwapAppSettings;
@@ -24,31 +27,47 @@ type Props = {
 
 const Processing: FC<Props> = ({ settings, swap }) => {
 
-    const swapStatus = swap.status;
-    const storedWalletTransactions = useSwapTransactionStore();
+    const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
     const { fee } = useFee()
 
-    const source_network = settings.layers?.find(e => e.internal_name === swap.source_network)
+    const source_layer = settings.layers?.find(e => e.internal_name === swap.source_network)
     const destination_layer = settings.layers?.find(e => e.internal_name === swap.destination_network)
 
-    const input_tx_explorer = source_network?.transaction_explorer_template
+    const input_tx_explorer = source_layer?.transaction_explorer_template
     const output_tx_explorer = destination_layer?.transaction_explorer_template
 
     const destinationNetworkCurrency = destination_layer ? GetDefaultAsset(destination_layer, swap?.destination_network_asset) : null
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
-    const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id]
+    const storedWalletTransaction = swapTransactions?.[swap?.id]
 
     const transactionHash = swapInputTransaction?.transaction_id || storedWalletTransaction?.hash
-
-
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
+
+    const apiClient = new LayerSwapApiClient()
+    const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_layer?.internal_name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
+    
+    const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
+
+    useEffect(() => {
+        if (storedWalletTransaction?.status !== inputTxStatus) setSwapTransaction(swap?.id, inputTxStatus, storedWalletTransaction?.hash)
+    }, [inputTxStatus])
+
+    useEffect(() => {
+        if (inputTxStatus === TransactionStatus.Failed) {
+            const err = new Error("Transaction failed")
+            const renderingError = new Error("Transaction failed test");
+            renderingError.name = `TransactionFailed`;
+            renderingError.cause = err;
+            datadogRum.addError(renderingError);
+        }
+    }, [inputTxStatus])
 
     const nativeCurrency = destination_layer?.assets?.find(c => c.asset === destination_layer?.assets.find(a => a.is_native)?.asset)
     const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
 
-    const progressStatuses = getProgressStatuses(swap, swapStatus)
+    const progressStatuses = getProgressStatuses(swap, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
     const outputPendingDetails = <div className='flex items-center space-x-1'>
@@ -95,13 +114,22 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                 description: <div className='flex space-x-1'>
                     <span>Error: </span>
                     <div className='space-x-1 text-primary-text'>
-                        {swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
-                            "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
+                        {inputTxStatus === TransactionStatus.Failed ?
+                            <div className="flex flex-col">
+                                <p>Check the transfer in the explorer</p>
+                                <div className='underline hover:no-underline flex items-center space-x-1'>
+                                    <a target={"_blank"} href={input_tx_explorer?.replace("{0}", transactionHash)}>{shortenAddress(transactionHash)}</a>
+                                    <ExternalLink className='h-4' />
+                                </div>
+                            </div>
                             :
-                            swap?.fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
-                                "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
+                            swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
+                                "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
                                 :
-                                "Something went wrong while processing the transfer. Please contact support"
+                                swap?.fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
+                                    "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
+                                    :
+                                    "Something went wrong while processing the transfer. Please contact support"
                         }
                     </div>
                 </div>
@@ -205,13 +233,14 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     let stepsProgressPercentage = currentSteps.filter(x => x.status == ProgressStatus.Complete).length / currentSteps.length * 100;
 
     if (!swap) return <></>
+
     return (
         <Widget.Content>
             <div className={`w-full min-h-[422px] space-y-5 flex flex-col justify-between text-primary-text`}>
                 <div className='space-y-5'>
                     <div className="w-full flex flex-col h-full space-y-5">
                         <div className="bg-secondary-700 font-normal px-3 py-4 rounded-lg flex flex-col border border-secondary-500 w-full relative z-10">
-                            <SwapSummary></SwapSummary>
+                            <SwapSummary />
                         </div>
                     </div>
                     <div className="bg-secondary-700 font-normal px-3 py-6 rounded-lg flex flex-col border border-secondary-500 w-full relative z-10 divide-y-2 divide-secondary-500 divide-dashed">
@@ -249,37 +278,56 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 }
 
 
+const resolveSwapInputTxStatus = (swapInputTransaction: Transaction | undefined, inputTxStatusFromApi: TransactionStatus) => {
+    if (swapInputTransaction)
+        return swapInputTransaction?.status
+    if (inputTxStatusFromApi === TransactionStatus.Failed)
+        return inputTxStatusFromApi
+    else
+        ///For cases when transaction is completed but not detected by bridge API
+        return TransactionStatus.Pending
+}
 
-
-const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
+const getProgressStatuses = (swap: SwapItem, inputTxStatusFromApi: TransactionStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
+    const swapStatus = swap.status;
     let generalTitle = "Transfer in progress";
     let subtitle: string | null = "";
-    //TODO might need to check stored wallet transaction statuses
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
+    const swapInputTxStatus = resolveSwapInputTxStatus(swapInputTransaction, inputTxStatusFromApi)
 
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
-    let inputIsCompleted = swapInputTransaction?.status == TransactionStatus.Completed && swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations;
+
+    let inputIsCompleted = swapInputTransaction && swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations;
+
     if (!inputIsCompleted) {
         // Magic case, shows estimated time
         subtitle = null
     }
-    let input_transfer = inputIsCompleted ? ProgressStatus.Complete : ProgressStatus.Current;
+
+    let input_transfer = transactionStatusToProgressStatus(swapInputTxStatus) || ''
 
     let output_transfer =
-        (!swapOutputTransaction && inputIsCompleted) || swapOutputTransaction?.status == TransactionStatus.Pending ? ProgressStatus.Current
-            : swapOutputTransaction?.status == TransactionStatus.Initiated || swapOutputTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete
+        (!swapOutputTransaction && inputIsCompleted) || swapOutputTransaction?.status == BackendTransactionStatus.Pending ? ProgressStatus.Current
+            : swapOutputTransaction?.status == BackendTransactionStatus.Initiated || swapOutputTransaction?.status == BackendTransactionStatus.Completed ? ProgressStatus.Complete
                 : ProgressStatus.Upcoming;
 
     let refuel_transfer =
         (swap.has_refuel && !swapRefuelTransaction) ? ProgressStatus.Upcoming
-            : swapRefuelTransaction?.status == TransactionStatus.Pending ? ProgressStatus.Current
-                : swapRefuelTransaction?.status == TransactionStatus.Initiated || swapRefuelTransaction?.status == TransactionStatus.Completed ? ProgressStatus.Complete
+            : swapRefuelTransaction?.status == BackendTransactionStatus.Pending ? ProgressStatus.Current
+                : swapRefuelTransaction?.status == BackendTransactionStatus.Initiated || swapRefuelTransaction?.status == BackendTransactionStatus.Completed ? ProgressStatus.Complete
                     : ProgressStatus.Removed;
+
 
     if (swapStatus === SwapStatus.Failed) {
         output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed;
         refuel_transfer = refuel_transfer !== ProgressStatus.Complete ? ProgressStatus.Removed : refuel_transfer;
+        generalTitle = swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? "Transfer on hold" : "Transfer failed";
+        subtitle = "View instructions below"
+    }
+
+    if (swapInputTxStatus == TransactionStatus.Failed) {
+        input_transfer = ProgressStatus.Failed;
         generalTitle = swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? "Transfer on hold" : "Transfer failed";
         subtitle = "View instructions below"
     }
@@ -316,6 +364,20 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus): { stepStat
         }
     };
 
+}
+
+const transactionStatusToProgressStatus = (transactionStatus: BackendTransactionStatus | TransactionStatus | undefined): ProgressStatus => {
+    switch (transactionStatus) {
+        case BackendTransactionStatus.Completed:
+            return ProgressStatus.Complete;
+        case BackendTransactionStatus.Failed:
+            return ProgressStatus.Failed;
+        case BackendTransactionStatus.Initiated:
+        case BackendTransactionStatus.Pending:
+            return ProgressStatus.Current;
+        default:
+            return ProgressStatus.Upcoming;
+    }
 }
 
 export default Processing;

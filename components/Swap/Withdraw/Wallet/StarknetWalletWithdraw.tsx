@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
-import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import { Contract, BigNumberish, cairo } from 'starknet';
@@ -127,7 +127,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             try {
                 const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.account?.execute([call, watch]) || {});
                 if (transferTxHash) {
-                    setSwapTransaction(swap.id, PublishedSwapTransactionStatus.Completed, transferTxHash);
+                    setSwapTransaction(swap.id, BackendTransactionStatus.Completed, transferTxHash);
                     setTransferDone(true)
                 }
                 else {
