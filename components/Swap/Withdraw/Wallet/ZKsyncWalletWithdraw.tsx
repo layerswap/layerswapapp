@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowLeftRight, Info } from 'lucide-react';
+import { ArrowLeftRight, Info } from 'lucide-react';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
@@ -10,7 +10,7 @@ import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSwapDataState } from '../../../../context/swap';
 import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
-import { useAccount, useNetwork } from 'wagmi';
+import { useNetwork } from 'wagmi';
 import ClickTooltip from '../../../Tooltips/ClickTooltip';
 import SignatureIcon from '../../../icons/SignatureIcon';
 import formatAmount from '../../../../lib/formatAmount';
@@ -18,7 +18,7 @@ import useWallet from '../../../../hooks/useWallet';
 import Link from 'next/link';
 
 type Props = {
-    depositAddress: string,
+    depositAddress?: string,
     amount: number
 }
 
@@ -110,7 +110,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const handleTransfer = useCallback(async () => {
 
-        if (!swap || !syncWallet) return
+        if (!swap || !syncWallet || !depositAddress) return
 
         setLoading(true)
         try {
@@ -209,7 +209,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     {
                         syncWallet && accountIsActivated &&
                         <SubmitButton isDisabled={!!(loading)} isSubmitting={!!loading} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Transfer
+                            Send from wallet
                         </SubmitButton>
                     }
                 </div>

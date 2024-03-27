@@ -10,6 +10,7 @@ import useSWR from 'swr'
 import TransferFromWallet from "./WalletTransfer"
 import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw"
 import useWalletTransferOptions from "../../../../hooks/useWalletTransferOptions"
+import LoopringWalletWithdraw from "./Loopring"
 import { useFee } from "../../../../context/feeContext"
 import SolanaWalletWithdrawStep from "./SolanaWalletWithdraw"
 import NetworkGas from "./WalletTransfer/networkGas"
@@ -24,9 +25,11 @@ const WalletTransferContent: FC = () => {
     const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
     const sourceAsset = source_layer?.assets?.find(c => c.asset.toLowerCase() === swap?.source_network_asset.toLowerCase())
 
-    const sourceIsImmutableX = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-    const sourceIsZkSync = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
-    const sourceIsStarknet = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.StarkNetSepolia?.toUpperCase()
+    const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+    const sourceIsZkSync = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
+    const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
+    const sourceIsLoopring = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.LoopringMainnet?.toUpperCase() ||
+        swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.LoopringGoerli?.toUpperCase()
     const sourceIsSolana = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
 
     const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
@@ -39,8 +42,8 @@ const WalletTransferContent: FC = () => {
     } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
 
     const managedDepositAddress = source_layer?.managed_accounts?.[0]?.address;
-    const generatedDepositAddress = generatedDeposit?.data?.address
 
+    const generatedDepositAddress = generatedDeposit?.data?.address
     const depositAddress = isContractWallet?.ready ?
         (canDoSweepless ? managedDepositAddress : generatedDepositAddress)
         : undefined
@@ -49,16 +52,34 @@ const WalletTransferContent: FC = () => {
     const requested_amount = Number(minAllowedAmount) > Number(swap?.requested_amount) ? minAllowedAmount : swap?.requested_amount
 
     if (sourceIsImmutableX)
-        return <ImtblxWalletWithdrawStep depositAddress={depositAddress} />
+        return <ImtblxWalletWithdrawStep
+            depositAddress={depositAddress}
+        />
     else if (sourceIsStarknet)
-        return <StarknetWalletWithdrawStep amount={requested_amount} depositAddress={depositAddress} />
+        return <StarknetWalletWithdrawStep
+            amount={requested_amount}
+            depositAddress={depositAddress}
+        />
     else if (sourceIsZkSync)
         return <>
-            {requested_amount && depositAddress && <ZkSyncWalletWithdrawStep depositAddress={depositAddress} amount={requested_amount} />}
+            {requested_amount
+                && <ZkSyncWalletWithdrawStep
+                    depositAddress={depositAddress}
+                    amount={requested_amount}
+                />}
         </>
+    else if (sourceIsLoopring)
+        return <LoopringWalletWithdraw
+            amount={requested_amount}
+            depositAddress={depositAddress}
+        />
     else if (sourceIsSolana)
         return <>
-            {requested_amount && depositAddress && <SolanaWalletWithdrawStep depositAddress={depositAddress} amount={requested_amount} />}
+            {requested_amount &&
+                <SolanaWalletWithdrawStep
+                    depositAddress={depositAddress}
+                    amount={requested_amount}
+                />}
         </>
     else
         return <>

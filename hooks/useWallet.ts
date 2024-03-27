@@ -80,6 +80,6 @@ export default function useWallet() {
         connectWallet: handleConnect,
         disconnectWallet: handleDisconnect,
         getWithdrawalProvider,
-        getAutofillProvider
+        getAutofillProvider,
     }
 }
