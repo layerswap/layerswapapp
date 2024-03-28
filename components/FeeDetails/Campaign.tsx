@@ -1,5 +1,4 @@
 import { FC } from "react"
-import { Layer } from "../../Models/Layer"
 import LayerSwapApiClient, { Campaign } from "../../lib/layerSwapApiClient"
 import useSWR from "swr"
 import { ApiResponse } from "../../Models/ApiResponse"
@@ -8,12 +7,12 @@ import { truncateDecimals } from "../utils/RoundDecimals"
 import { motion } from "framer-motion"
 import ClickTooltip from "../Tooltips/ClickTooltip"
 import Image from 'next/image';
-import { NetworkCurrency } from "../../Models/CryptoNetwork"
+import { CryptoNetwork, Token } from "../../Models/Network"
 
 type CampaignProps = {
-    destination: Layer,
+    destination: CryptoNetwork,
     fee: number | undefined,
-    selected_currency: NetworkCurrency,
+    selected_currency: Token,
 }
 const Campaign: FC<CampaignProps> = ({
     destination,
@@ -28,7 +27,7 @@ const Campaign: FC<CampaignProps> = ({
     const campaign = campaignsData
         ?.data
         ?.find(c =>
-            c?.network === destination?.internal_name
+            c?.network === destination?.name
             && c.status == 'active'
             && new Date(c?.end_date).getTime() - now > 0)
 
@@ -44,14 +43,14 @@ const Campaign: FC<CampaignProps> = ({
 type CampaignDisplayProps = {
     campaign: Campaign,
     fee: number,
-    selected_currency: NetworkCurrency,
+    selected_currency: Token,
 }
 const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_currency }) => {
-    const { resolveImgSrc, layers } = useSettingsState()
-    const layer = layers.find(l => l.internal_name === campaign.network)
-    const campaignAsset = layer?.assets.find(c => c?.asset === campaign?.asset)
-    const feeinUsd = fee * selected_currency.usd_price
-    const reward = truncateDecimals(((feeinUsd * (campaign?.percentage || 0) / 100) / (campaignAsset?.usd_price || 1)), (campaignAsset?.precision || 0))
+    const { networks } = useSettingsState()
+    const network = networks.find(l => l.name === campaign.network)
+    const campaignAsset = network?.tokens.find(c => c?.symbol === campaign?.asset)
+    const feeinUsd = fee * selected_currency.price_in_usd
+    const reward = truncateDecimals(((feeinUsd * (campaign?.percentage || 0) / 100) / (campaignAsset?.price_in_usd || 1)), (campaignAsset?.precision || 0))
 
     return <motion.div
         initial={{ y: "-100%" }}
@@ -65,7 +64,7 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_cur
         }}
         className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700  relative bottom-2 z-0 pt-4 pb-2 px-3.5 text-right'>
         <div className='flex items-center'>
-            <p>Est. {campaignAsset?.asset} Reward</p>
+            <p>Est. {campaignAsset?.symbol} Reward</p>
             <ClickTooltip text={<span><span>The amount of onboarding reward that you’ll earn.&nbsp;</span><a target='_blank' href='/campaigns' className='text-primary underline hover:no-underline decoration-primary cursor-pointer'>Learn more</a></span>} />
         </div>
         {
@@ -74,7 +73,7 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_cur
                 <span>+</span>
                 <div className="h-5 w-5 relative">
                     <Image
-                        src={resolveImgSrc(campaign)}
+                        src={network?.logo || ''}
                         alt="Project Logo"
                         height="40"
                         width="40"
@@ -82,7 +81,7 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_cur
                         className="rounded-md object-contain" />
                 </div>
                 <p>
-                    {reward} {campaignAsset?.asset}
+                    {reward} {campaignAsset?.symbol}
                 </p>
             </div>
         }

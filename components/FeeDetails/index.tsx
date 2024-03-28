@@ -9,22 +9,30 @@ import { useQueryState } from '../../context/query';
 import ResizablePanel from '../ResizablePanel';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import DepositMethod from './DepositMethod';
 
 const RefuelModal = dynamic(() => import("./RefuelModal"), {
     loading: () => <></>,
 });
 
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
-    const { toCurrency, to, refuel, fromExchange, toExchange } = values || {};
+    const { toCurrency, to, refuel, fromExchange, toExchange, from, fromCurrency } = values || {};
     const { fee } = useFee()
     const query = useQueryState();
     const [openModal, setOpenModal] = useState<boolean>(false)
-    const nativeAsset = to?.assets.find(a => a.is_native)
+    const nativeAsset = to?.tokens.find(a => a.is_native)
 
     return (
         <>
             <ResizablePanel>
                 <FeeDetails>
+
+                    {
+                        from && to && toCurrency && fromCurrency && !fromExchange &&
+                        <FeeDetails.Item>
+                            <DepositMethod />
+                        </FeeDetails.Item>
+                    }
 
                     {
                         toCurrency?.refuel_amount_in_usd && !query.hideRefuel && nativeAsset && !toExchange &&
@@ -42,7 +50,6 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
 
                     <FeeDetails.Item>
                         <ReceiveAmounts
-                            sourceIsExchange={!!fromExchange}
                             currency={toCurrency}
                             to={to}
                             refuel={!!refuel}

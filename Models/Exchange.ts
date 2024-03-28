@@ -1,16 +1,29 @@
+import { Network, Token } from "./Network";
+
 export class Exchange {
     display_name: string;
-    internal_name: string;
-    is_featured: boolean;
-    is_enabled: boolean;
-    type: "cex" | "fiat";
-    created_date: string;
-    metadata: ExchangeMetadata | null | undefined;
-    o_auth: {
-        connect_url: string,
-        authorize_url: string
-    } | null
-    img_url?: string
+    name: string;
+    logo: string;
+    token_groups: ExchangeToken[]
+    metadata: {
+        o_auth: {
+            connect_url: string,
+            authorize_url: string
+        } | null
+        listing_date: string
+    }
 }
 
-export type ExchangeMetadata = {}
+export class ExchangeNetwork {
+    token: Token;
+    network: Network;
+    fee: {
+        total_fee: number;
+        total_fee_in_usd: number
+    }
+}
+
+export class ExchangeToken {
+    symbol: string;
+    logo: string
+}

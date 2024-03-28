@@ -23,7 +23,7 @@ export default class getOptimismGas extends getEVMGas {
         const formattedGas = formatAmount(totalGas, this.nativeToken?.decimals)
         return {
             gas: formattedGas,
-            token: this.currency?.asset,
+            token: this.currency?.symbol,
             gasDetails: {
                 gasLimit: Number(estimatedGasLimit),
                 maxFeePerGas: feeData?.maxFeePerGas ? Number(formatGwei(feeData?.maxFeePerGas)) : undefined,

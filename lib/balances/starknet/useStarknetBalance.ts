@@ -1,10 +1,7 @@
 import KnownInternalNames from "../../knownIds"
 import Erc20Abi from '../../abis/ERC20.json'
 import formatAmount from "../../formatAmount";
-import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../Models/Balance";
-import InternalApiClient from "../../internalApiClient";
-import { EstimateFee } from "starknet";
-import { ApiResponse } from "../../../Models/ApiResponse";
+import { Balance, BalanceProps, BalanceProvider } from "../../../Models/Balance";
 import { useRouter } from "next/router";
 
 export default function useStarknetBalance(): BalanceProvider {
@@ -16,7 +13,7 @@ export default function useStarknetBalance(): BalanceProvider {
     ]
     const router = useRouter()
 
-    const getBalance = async ({ layer, address }: BalanceProps) => {
+    const getBalance = async ({ network: layer, address }: BalanceProps) => {
         const {
             Contract,
             RpcProvider,
@@ -26,23 +23,23 @@ export default function useStarknetBalance(): BalanceProvider {
 
         let balances: Balance[] = []
 
-        if (!layer.assets) return
+        if (!layer.tokens) return
 
         const provider = new RpcProvider({
-            nodeUrl: layer.nodes[0].url,
+            nodeUrl: layer.node_url,
         });
 
-        for (let i = 0; i < layer.assets.length; i++) {
+        for (let i = 0; i < layer.tokens.length; i++) {
             try {
-                const asset = layer.assets[i]
+                const asset = layer.tokens[i]
 
-                const erc20 = new Contract(Erc20Abi, asset.contract_address!, provider);
+                const erc20 = new Contract(Erc20Abi, asset.contract!, provider);
                 const balanceResult = await erc20.balanceOf(address);
                 const balanceInWei = BigNumber.from(uint256.uint256ToBN(balanceResult.balance).toString()).toString();
 
                 const balance = {
-                    network: layer.internal_name,
-                    token: asset.asset,
+                    network: layer.name,
+                    token: asset.symbol,
                     amount: formatAmount(balanceInWei, asset.decimals),
                     request_time: new Date().toJSON(),
                     decimals: asset.decimals,
@@ -63,39 +60,39 @@ export default function useStarknetBalance(): BalanceProvider {
 
     }
 
-    const getGas = async ({ layer, currency, wallet }: GasProps) => {
+    // const getGas = async ({ layer, currency, wallet }: GasProps) => {
 
-        const nodeUrl = layer.nodes[0].url
-        const asset = layer.assets.find(a => a.asset === currency.asset)
-        const nativeAsset = layer.assets.find(a => a.is_native)
-        const contract_address = asset?.contract_address
-        const recipient = layer.managed_accounts[0].address
+    //     const nodeUrl = layer.node_url
+    //     const asset = layer.tokens.find(a => a.symbol === currency.symbol)
+    //     const nativeAsset = layer.tokens.find(a => a.is_native)
+    //     const contract_address = asset?.contract
+    //     const recipient = layer.managed_accounts[0].address
 
-        if (!asset || !nativeAsset) return
+    //     if (!asset || !nativeAsset) return
 
-        const client = new InternalApiClient()
-        const basePath = router.basePath ?? '/'
-        const feeEstimateResponse: ApiResponse<EstimateFee> = await client.GetStarknetFee(`nodeUrl=${nodeUrl}&walletAddress=${wallet?.address}&contractAddress=${contract_address}&recipient=${recipient}&watchDogContract=${layer.metadata?.WatchdogContractAddress}`, basePath)
+    //     const client = new InternalApiClient()
+    //     const basePath = router.basePath ?? '/'
+    //     const feeEstimateResponse: ApiResponse<EstimateFee> = await client.GetStarknetFee(`nodeUrl=${nodeUrl}&walletAddress=${wallet?.address}&contractAddress=${contract_address}&recipient=${recipient}&watchDogContract=${layer.metadata?.WatchdogContractAddress}`, basePath)
 
-        if (!feeEstimateResponse?.data?.suggestedMaxFee) {
-            throw new Error(`Couldn't get fee estimation for the transfer. Response: ${JSON.stringify(feeEstimateResponse)}`);
-        };
+    //     if (!feeEstimateResponse?.data?.suggestedMaxFee) {
+    //         throw new Error(`Couldn't get fee estimation for the transfer. Response: ${JSON.stringify(feeEstimateResponse)}`);
+    //     };
 
-        const feeInWei = feeEstimateResponse.data.suggestedMaxFee.toString();
+    //     const feeInWei = feeEstimateResponse.data.suggestedMaxFee.toString();
 
-        const gas = {
-            token: currency.asset,
-            gas: formatAmount(feeInWei, nativeAsset.decimals),
-            request_time: new Date().toJSON()
-        }
+    //     const gas = {
+    //         token: currency.symbol,
+    //         gas: formatAmount(feeInWei, nativeAsset.decimals),
+    //         request_time: new Date().toJSON()
+    //     }
 
-        return [gas]
+    //     return [gas]
 
-    }
+    // }
 
     return {
         getBalance,
-        getGas,
+        // getGas,
         supportedNetworks
     }
 }

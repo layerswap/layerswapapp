@@ -11,31 +11,32 @@ import Coinbase from './Coinbase';
 import External from './External';
 import { WithdrawType } from '../../../lib/layerSwapApiClient';
 import WalletIcon from '../../icons/WalletIcon';
-import { NetworkType } from '../../../Models/CryptoNetwork';
+import { NetworkType } from '../../../Models/Network';
 import { useQueryState } from '../../../context/query';
 import { Widget } from '../../Widget/Index';
 import WalletTransferContent from './WalletTransferContent';
 
 const Withdraw: FC = () => {
-    const { swap } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const { setWithdrawType } = useSwapDataUpdate()
-    const { layers } = useSettingsState()
+    const { networks: layers } = useSettingsState()
     const { appName, signature } = useQueryState()
 
-    const sourceIsStarknet = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase()
-        || swap?.source_network === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
-        || swap?.source_network === KnownInternalNames.Networks.StarkNetSepolia?.toUpperCase()
-    const sourceIsImmutableX = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-        || swap?.source_network === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-    const sourceIsZkSync = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
-    const sourceIsArbitrumOne = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
-        || swap?.source_network === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
+    const sourceIsStarknet = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase()
+        || swap?.source_network.name === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
+        || swap?.source_network.name === KnownInternalNames.Networks.StarkNetSepolia?.toUpperCase()
+    const sourceIsImmutableX = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
+        || swap?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+    const sourceIsZkSync = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
+    const sourceIsArbitrumOne = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
+        || swap?.source_network.name === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
     const sourceIsCoinbase =
-        swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
-    const sourceIsSolana = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
+        swap?.source_exchange?.name.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
+    const sourceIsSolana = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
 
-    const source_layer = layers.find(n => n.internal_name === swap?.source_network)
-    const sourceLayerIsEthereum = source_layer?.internal_name?.toUpperCase() === KnownInternalNames.Networks.EthereumMainnet || source_layer?.internal_name?.toUpperCase() === KnownInternalNames.Networks.EthereumGoerli
+    const source_layer = layers.find(n => n.name === swap?.source_network.name)
+    const sourceLayerIsEthereum = source_layer?.name?.toUpperCase() === KnownInternalNames.Networks.EthereumMainnet || source_layer?.name?.toUpperCase() === KnownInternalNames.Networks.EthereumGoerli
     const sourceNetworkType = source_layer?.type
     const manualIsAvailable = !(sourceIsStarknet || sourceIsImmutableX)
     const walletIsAvailable = !swap?.source_exchange

@@ -1,14 +1,9 @@
-import { CryptoNetwork } from "./CryptoNetwork";
+import { CryptoNetwork } from "./Network";
 import { Exchange } from "./Exchange";
 
 export class LayerSwapSettings {
     exchanges: Exchange[];
     networks: CryptoNetwork[];
-    sources?: Route[];
-    destinations?: Route[];
+    sources?: CryptoNetwork[];
+    destinations?: CryptoNetwork[];
 };
-
-export class Route {
-    network: string;
-    asset: string;
-}

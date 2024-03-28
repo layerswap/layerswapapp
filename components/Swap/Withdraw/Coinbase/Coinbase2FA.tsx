@@ -28,7 +28,8 @@ type Props = {
 //TODO email code is almost identical create reusable component for email and two factor code verification
 const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
     const initialValues: CodeFormValues = { Code: '' }
-    const { swap } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const [loading, setLoading] = useState(false)
     const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState(false)
     const [showFundsOnHoldModal, setShowFundsOnHoldModal] = useState(false)
@@ -43,7 +44,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
         setLoading(true)
         try {
             const layerswapApiClient = new LayerSwapApiClient()
-            await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange, values.Code)
+            await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange.name, values.Code)
             await onSuccess(swap.id)
         }
         catch (error) {
@@ -73,7 +74,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
         try {
             formikRef.current?.setFieldValue("Code", "");
             const layerswapApiClient = new LayerSwapApiClient()
-            await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange)
+            await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange.name)
         } catch (error) {
             const data: ApiError = error?.response?.data?.error
 

@@ -5,12 +5,12 @@ import Processing from './Processing';
 
 const Component: FC = () => {
 
-    const { swap } = useSwapDataState()
+    const { swapResponse: swap } = useSwapDataState()
     const settings = useSettingsState()
 
     return (
         <>
-            {swap && <Processing settings={settings} swap={swap} />}
+            {swap && <Processing settings={settings} swapResponse={swap} />}
         </>
 
     )

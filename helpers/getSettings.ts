@@ -9,11 +9,12 @@ export async function getServerSideProps(context) {
     );
 
     const apiClient = new LayerSwapApiClient()
+
     const { data: networkData } = await apiClient.GetLSNetworksAsync()
     const { data: exchangeData } = await apiClient.GetExchangesAsync()
 
-    const { data: sourceRoutes } = await apiClient.GetSourceRoutesAsync()
-    const { data: destinationRoutes } = await apiClient.GetDestinationRoutesAsync()
+    const { data: sourceRoutes } = await apiClient.GetRoutesAsync('sources')
+    const { data: destinationRoutes } = await apiClient.GetRoutesAsync('destinations')
 
     if (!networkData || !exchangeData) return
 

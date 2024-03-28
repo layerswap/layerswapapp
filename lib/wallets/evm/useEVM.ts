@@ -1,7 +1,7 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { disconnect } from '@wagmi/core'
 import { useAccount } from "wagmi"
-import { NetworkType } from "../../../Models/CryptoNetwork"
+import { NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
@@ -9,9 +9,9 @@ import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 
 export default function useEVM(): WalletProvider {
-    const { layers } = useSettingsState()
+    const { networks: layers } = useSettingsState()
     const withdrawalSupportedNetworks = [
-        ...layers.filter(layer => layer.type === NetworkType.EVM).map(l => l.internal_name),
+        ...layers.filter(layer => layer.type.toLowerCase() === NetworkType.EVM).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet
     ]
     const autofillSupportedNetworks = [

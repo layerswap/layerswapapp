@@ -9,7 +9,8 @@ import QuestionIcon from '../../icons/Question';
 import Link from 'next/link';
 
 const Failed: FC = () => {
-    const { swap } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ customAttributes: { swapId: swap?.id, email: email, userId: userId } })

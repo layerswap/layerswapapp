@@ -1,12 +1,9 @@
 import { FC } from "react"
-import { ApiResponse } from "../../../../Models/ApiResponse"
 import { useSettingsState } from "../../../../context/settings"
 import { useSwapDataState } from "../../../../context/swap"
 import KnownInternalNames from "../../../../lib/knownIds"
-import LayerSwapApiClient, { DepositAddress } from "../../../../lib/layerSwapApiClient"
 import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep"
 import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw"
-import useSWR from 'swr'
 import TransferFromWallet from "./WalletTransfer"
 import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw"
 import useWalletTransferOptions from "../../../../hooks/useWalletTransferOptions"
@@ -16,13 +13,15 @@ import NetworkGas from "./WalletTransfer/networkGas"
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 const WalletTransferContent: FC = () => {
-    const { swap } = useSwapDataState()
-    const { layers } = useSettingsState()
+    const { swapResponse } = useSwapDataState()
+    const { swap, deposit_methods } = swapResponse || {}
+    const { networks: layers } = useSettingsState()
     const { minAllowedAmount } = useFee()
 
-    const { source_network: source_network_internal_name } = swap || {}
-    const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
-    const sourceAsset = source_layer?.assets?.find(c => c.asset.toLowerCase() === swap?.source_network_asset.toLowerCase())
+    const { source_network, source_token } = swap || {}
+    const source_network_internal_name = source_network?.name
+    const source_layer = layers.find(n => n.name === source_network_internal_name)
+    const sourceAsset = source_layer?.tokens?.find(c => c.symbol.toLowerCase() === source_token?.symbol.toLowerCase())
 
     const sourceIsImmutableX = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const sourceIsZkSync = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
@@ -30,16 +29,9 @@ const WalletTransferContent: FC = () => {
     const sourceIsSolana = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
 
     const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
-    const shouldGetGeneratedAddress = isContractWallet?.ready && !canDoSweepless
-    const generateDepositParams = shouldGetGeneratedAddress ? [source_network_internal_name] : null
 
-    const layerswapApiClient = new LayerSwapApiClient()
-    const {
-        data: generatedDeposit
-    } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
-
-    const managedDepositAddress = source_layer?.managed_accounts?.[0]?.address;
-    const generatedDepositAddress = generatedDeposit?.data?.address
+    const managedDepositAddress = deposit_methods?.wallet.to_address
+    const generatedDepositAddress = deposit_methods?.deposit_address.deposit_address as `0x${string}`
 
     const depositAddress = isContractWallet?.ready ?
         (canDoSweepless ? managedDepositAddress : generatedDepositAddress)
@@ -63,11 +55,11 @@ const WalletTransferContent: FC = () => {
     else
         return <>
             {swap && source_layer && sourceAsset && requested_amount && sourceChainId && <TransferFromWallet
-                sequenceNumber={swap?.sequence_number}
+                sequenceNumber={swap?.metadata.sequence_number}
                 swapId={swap.id}
                 networkDisplayName={source_layer?.display_name}
                 tokenDecimals={sourceAsset?.decimals}
-                tokenContractAddress={sourceAsset.contract_address}
+                tokenContractAddress={sourceAsset.contract as `0x${string}`}
                 chainId={sourceChainId}
                 depositAddress={depositAddress}
                 userDestinationAddress={swap.destination_address}
@@ -78,12 +70,12 @@ const WalletTransferContent: FC = () => {
 
 
 const WalletTransferWrapper = () => {
-    const { swap } = useSwapDataState()
-    const { layers } = useSettingsState()
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
+    const { networks: layers } = useSettingsState()
 
-    const { source_network: source_network_internal_name } = swap || {}
-    const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
-    const sourceAsset = source_layer?.assets?.find(c => c.asset.toLowerCase() === swap?.source_network_asset.toLowerCase())
+    const source_layer = layers.find(n => n.name === swap?.source_network?.name)
+    const sourceAsset = source_layer?.tokens?.find(c => c.symbol.toLowerCase() === swap?.source_token.symbol.toLowerCase())
 
     return <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
         {source_layer && sourceAsset && <NetworkGas network={source_layer} selected_currency={sourceAsset} />}

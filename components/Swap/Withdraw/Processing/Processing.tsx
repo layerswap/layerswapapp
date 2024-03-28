@@ -4,9 +4,8 @@ import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
-import { GetDefaultAsset } from '../../../../helpers/settingsHelper';
 import AverageCompletionTime from '../../../Common/AverageCompletionTime';
-import LayerSwapApiClient, { SwapItem, BackendTransactionStatus, TransactionType, TransactionStatus, Transaction } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItem, BackendTransactionStatus, TransactionType, TransactionStatus, Refuel, SwapResponse, Transaction } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
@@ -22,32 +21,32 @@ import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
     settings: LayerSwapAppSettings;
-    swap: SwapItem;
+    swapResponse: SwapResponse;
 }
 
-const Processing: FC<Props> = ({ settings, swap }) => {
+const Processing: FC<Props> = ({ settings, swapResponse }) => {
+
+    const { swap } = swapResponse
 
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
     const { fee } = useFee()
 
-    const source_layer = settings.layers?.find(e => e.internal_name === swap.source_network)
-    const destination_layer = settings.layers?.find(e => e.internal_name === swap.destination_network)
+    const source_layer = settings.networks?.find(e => e.name === swap.source_network.name)
+    const destination_layer = settings.networks?.find(e => e.name === swap.destination_network.name)
 
     const input_tx_explorer = source_layer?.transaction_explorer_template
     const output_tx_explorer = destination_layer?.transaction_explorer_template
 
-    const destinationNetworkCurrency = destination_layer ? GetDefaultAsset(destination_layer, swap?.destination_network_asset) : null
-
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const storedWalletTransaction = swapTransactions?.[swap?.id]
 
-    const transactionHash = swapInputTransaction?.transaction_id || storedWalletTransaction?.hash
+    const transactionHash = swapInputTransaction?.transaction_hash || storedWalletTransaction?.hash
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
     const apiClient = new LayerSwapApiClient()
-    const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_layer?.internal_name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
-    
+    const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_layer?.name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
+
     const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
 
     useEffect(() => {
@@ -64,16 +63,16 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         }
     }, [inputTxStatus])
 
-    const nativeCurrency = destination_layer?.assets?.find(c => c.asset === destination_layer?.assets.find(a => a.is_native)?.asset)
+    const nativeCurrency = destination_layer?.tokens?.find(c => c.symbol === destination_layer?.tokens.find(a => a.is_native)?.symbol)
     const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
 
-    const progressStatuses = getProgressStatuses(swap, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
+    const progressStatuses = getProgressStatuses(swapResponse, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
     const outputPendingDetails = <div className='flex items-center space-x-1'>
         <span>Estimated arrival after confirmation:</span>
         <div className='text-primary-text'>
-            <AverageCompletionTime avgCompletionTime={fee?.avgCompletionTime} />
+            <AverageCompletionTime avgCompletionTime={fee?.quote.avg_completion_time} />
         </div>
     </div>
 
@@ -141,20 +140,20 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         },
         "output_transfer": {
             upcoming: {
-                name: `Sending ${destinationNetworkCurrency?.asset} to your address`,
+                name: `Sending ${swap.destination_token.symbol} to your address`,
                 description: null
             },
             current: {
-                name: `Sending ${destinationNetworkCurrency?.asset} to your address`,
+                name: `Sending ${swap.destination_token.symbol} to your address`,
                 description: null
             },
             complete: {
-                name: `${swapOutputTransaction?.amount} ${swap?.destination_network_asset} was sent to your address`,
+                name: `${swapOutputTransaction?.amount} ${swap?.destination_token.symbol} was sent to your address`,
                 description: swapOutputTransaction ? <div className="flex flex-col">
                     <div className='flex items-center space-x-1'>
                         <span>Transaction: </span>
                         <div className='underline hover:no-underline flex items-center space-x-1'>
-                            <a target={"_blank"} href={output_tx_explorer?.replace("{0}", swapOutputTransaction.transaction_id)}>{shortenAddress(swapOutputTransaction.transaction_id)}</a>
+                            <a target={"_blank"} href={output_tx_explorer?.replace("{0}", swapOutputTransaction.transaction_hash)}>{shortenAddress(swapOutputTransaction.transaction_hash)}</a>
                             <ExternalLink className='h-4' />
                         </div>
                     </div>
@@ -182,20 +181,20 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         },
         "refuel": {
             upcoming: {
-                name: `Sending ${nativeCurrency?.asset} to your address`,
+                name: `Sending ${nativeCurrency?.symbol} to your address`,
                 description: null
             },
             current: {
-                name: `Sending ${nativeCurrency?.asset} to your address`,
+                name: `Sending ${nativeCurrency?.symbol} to your address`,
                 description: null
             },
             complete: {
-                name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your address`,
+                name: `${truncatedRefuelAmount} ${nativeCurrency?.symbol} was sent to your address`,
                 description: <div className='flex items-center space-x-1'>
                     <span>Transaction: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
                         {swapRefuelTransaction && <>
-                            <a target={"_blank"} href={output_tx_explorer?.replace("{0}", swapRefuelTransaction.transaction_id)}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
+                            <a target={"_blank"} href={output_tx_explorer?.replace("{0}", swapRefuelTransaction.transaction_hash)}>{shortenAddress(swapRefuelTransaction?.transaction_hash)}</a>
                             <ExternalLink className='h-4' />
                         </>}
                     </div>
@@ -288,8 +287,9 @@ const resolveSwapInputTxStatus = (swapInputTransaction: Transaction | undefined,
         return TransactionStatus.Pending
 }
 
-const getProgressStatuses = (swap: SwapItem, inputTxStatusFromApi: TransactionStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
-    const swapStatus = swap.status;
+const getProgressStatuses = (swapResponse: SwapResponse, inputTxStatusFromApi: TransactionStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
+    const { swap, refuel: swapRefuel } = swapResponse
+    const swapStatus = swap.status
     let generalTitle = "Transfer in progress";
     let subtitle: string | null = "";
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
@@ -313,7 +313,7 @@ const getProgressStatuses = (swap: SwapItem, inputTxStatusFromApi: TransactionSt
                 : ProgressStatus.Upcoming;
 
     let refuel_transfer =
-        (swap.has_refuel && !swapRefuelTransaction) ? ProgressStatus.Upcoming
+        (!!swapRefuel && !swapRefuelTransaction) ? ProgressStatus.Upcoming
             : swapRefuelTransaction?.status == BackendTransactionStatus.Pending ? ProgressStatus.Current
                 : swapRefuelTransaction?.status == BackendTransactionStatus.Initiated || swapRefuelTransaction?.status == BackendTransactionStatus.Completed ? ProgressStatus.Complete
                     : ProgressStatus.Removed;
