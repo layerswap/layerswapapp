@@ -43,7 +43,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
         setShow(false)
     }, [setValue])
     return (
-        <Modal height={modalHeight} show={show} setShow={setShow} modalId='comandSelect' >
+        <Modal height={modalHeight} show={show} setShow={setShow} modalId='comandSelect'>
             {show ?
                 <CommandWrapper>
                     {searchHint && <CommandInput autoFocus={isDesktop} placeholder={searchHint} />}
@@ -52,6 +52,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                         <CommandList>
                             <CommandEmpty>No results found.</CommandEmpty>
                             {groups.filter(g => g.items?.length > 0).map((group) => {
+                                console.log(group, "group")
                                 return (
                                     <CommandGroup key={group.name} heading={group.name}>
                                         {group.items.map(item => {

@@ -1,6 +1,5 @@
 import { CryptoNetwork, Token } from "../../Models/Network";
-import { Exchange } from "../../Models/Exchange";
-import { AssetGroup } from "../Input/CEXCurrencyFormField";
+import { Exchange, ExchangeToken } from "../../Models/Exchange";
 
 export type SwapFormValues = {
   amount?: string;
@@ -12,6 +11,6 @@ export type SwapFormValues = {
   to?: CryptoNetwork;
   fromExchange?: Exchange,
   toExchange?: Exchange,
-  currencyGroup?: AssetGroup
+  currencyGroup?: ExchangeToken
   depositMethod?: string
 }

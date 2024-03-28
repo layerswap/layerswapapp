@@ -38,9 +38,9 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const sourceRouteParams = new URLSearchParams({
         include_unmatched,
-        ...(toExchange && currencyGroup && currencyGroup.groupedInBackend ?
+        ...(toExchange && currencyGroup && currencyGroup ?
             {
-                destination_asset_group: currencyGroup.name
+                destination_token_group: currencyGroup.symbol
             }
             : {
                 ...(to && toCurrency &&
@@ -53,9 +53,9 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const destinationRouteParams = new URLSearchParams({
         include_unmatched,
-        ...(fromExchange && currencyGroup && currencyGroup.groupedInBackend ?
+        ...(fromExchange && currencyGroup && currencyGroup ?
             {
-                source_asset_group: currencyGroup.name
+                source_asset_group: currencyGroup.symbol
             }
             : {
                 ...(from && fromCurrency &&

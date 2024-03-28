@@ -1,12 +1,10 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useEffect, useState } from "react";
-import { useSettingsState } from "../../context/settings";
+import { forwardRef, useCallback, useEffect } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { AssetGroup } from "./CEXCurrencyFormField";
 import { isValidAddress } from "../../lib/addressValidator";
 import shortenAddress from "../utils/ShortenAddress";
 import Link from "next/link";
@@ -37,8 +35,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         toCurrency,
         fromExchange,
         toExchange,
-        currencyGroup,
-        amount
+        currencyGroup
     } = values
 
     const filterWith = direction === "from" ? to : from
@@ -58,22 +55,21 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                         : filterWith.name,
                     [direction === 'to'
                         ? 'source_token'
-                        : 'destination_asset']
+                        : 'destination_token']
                         : filterWithAsset
                 }) : {}),
     });
 
-    const routesEndpoint = `/${direction === "from" ? `exchange_source_networks?destination_token_group=${currencyGroup?.name}` : `exchange_destination_networks?source_asset_group=${currencyGroup?.name}`}&${destinationRouteParams.toString()}`
+    const routesEndpoint = `/${direction === "from" ? `exchange_source_networks?destination_token_group=${currencyGroup?.symbol}` : `exchange_destination_networks?source_asset_group=${currencyGroup?.symbol}`}&${destinationRouteParams.toString()}`
 
     const { data: routes, isLoading } = useSWR<ApiResponse<CryptoNetwork[]>>(`${routesEndpoint}`, apiClient.fetcher)
     const routesData = routes?.data
 
     const exchangeNetworksEndpoint =
-        ((fromExchange && to) || (toExchange && from))
-        && amount
+        ((fromExchange && to && toCurrency) || (toExchange && from && fromCurrency))
         && (`/${direction === 'from' ?
-            `exchange_deposit_networks?source_exchange=${fromExchange?.name}&&source_token_group=${currencyGroup?.name}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&amount=${amount}`
-            : `exchange_withdrawal_networks?destination_exchange=${toExchange?.name}&destination_token_group=${currencyGroup?.name}&source_network=${from?.name}&source_token=${fromCurrency?.symbol}&amount=${amount}`}`)
+            `exchange_withdrawal_networks?source_exchange=${fromExchange?.name}&&source_token_group=${currencyGroup?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}`
+            : `exchange_deposit_networks?destination_exchange=${toExchange?.name}&destination_token_group=${currencyGroup?.symbol}&source_network=${from?.name}&source_token=${fromCurrency?.symbol}`}`)
 
     const { data: historicalNetworks } = useSWR<ApiResponse<ExchangeNetwork[]>>(exchangeNetworksEndpoint, apiClient.fetcher)
 
@@ -91,7 +87,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         const currency = route?.tokens.find(a => a.symbol === item.baseObject.token.symbol)
         setFieldValue(name, route, true)
         setFieldValue(`${name}Currency`, currency, false)
-    }, [name])
+    }, [name, routes])
 
     const formValue = (direction === 'from' ? from : to)
 
@@ -100,7 +96,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         item.baseObject.token.symbol ===
         (direction === 'from' ? fromCurrency : toCurrency)?.symbol
         && item.baseObject.network.name === formValue?.name)
-    debugger
+
     //Setting default value
     useEffect(() => {
         if (!menuItems) return
@@ -170,6 +166,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             modalHeight="80%"
             valueDetails={valueDetails}
             modalContent={networkDetails}
+            key={value?.id}
         />
     </div>)
 })
@@ -206,13 +203,7 @@ export default CEXNetworkFormField
 
 export function groupByType(values: SelectMenuItem<CryptoNetwork>[]) {
     let groups: SelectMenuItemGroup[] = [];
-    values?.forEach((v) => {
-        let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });
-        group.items.push(v);
-        if (!groups.find(x => x.name == v.group)) {
-            groups.push(group);
-        }
-    });
+    groups.push({ name: "All networks", items: [...values] });
 
     groups.sort((a, b) => (a.name === "All networks" ? 1 : b.name === "All networks" ? -1 : a.name.localeCompare(b.name)));
     return groups;
