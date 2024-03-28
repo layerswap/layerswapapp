@@ -52,7 +52,6 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                         <CommandList>
                             <CommandEmpty>No results found.</CommandEmpty>
                             {groups.filter(g => g.items?.length > 0).map((group) => {
-                                console.log(group, "group")
                                 return (
                                     <CommandGroup key={group.name} heading={group.name}>
                                         {group.items.map(item => {

@@ -203,8 +203,13 @@ export default CEXNetworkFormField
 
 export function groupByType(values: SelectMenuItem<CryptoNetwork>[]) {
     let groups: SelectMenuItemGroup[] = [];
-    groups.push({ name: "All networks", items: [...values] });
+    values?.forEach((v) => {
+        let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: "All networks", items: [] });
+        group.items.push(v);
+        if (!groups.find(x => x.name == v.group)) {
+            groups.push(group);
+        }
+    });
 
-    groups.sort((a, b) => (a.name === "All networks" ? 1 : b.name === "All networks" ? -1 : a.name.localeCompare(b.name)));
     return groups;
 }
