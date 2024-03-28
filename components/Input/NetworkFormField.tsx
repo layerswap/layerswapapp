@@ -76,9 +76,9 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const apiClient = new LayerSwapApiClient()
 
     const exchangeParams = new URLSearchParams({
-        ...(currencyGroup?.groupedInBackend ?
+        ...(currencyGroup ?
             (currencyGroup ? {
-                [direction === 'to' ? 'source_asset_group' : 'destination_asset_group']: currencyGroup.name
+                [direction === 'to' ? 'source_asset_group' : 'destination_token_group']: currencyGroup.symbol
             } : {})
             :
             (filterWithAsset && filterWith ? {

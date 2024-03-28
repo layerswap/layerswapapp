@@ -55,7 +55,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
     const amountRef = useRef(ref)
 
-    const diasbled = (fromExchange && !toCurrency) || (toExchange && !fromCurrency)
+    const diasbled = Boolean((fromExchange && !toCurrency) || (toExchange && !fromCurrency))
 
     const updateRequestedAmountInUsd = useCallback((requestedAmount: number) => {
         if (fromCurrency?.price_in_usd && !isNaN(requestedAmount)) {
