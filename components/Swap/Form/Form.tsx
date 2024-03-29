@@ -208,7 +208,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                     <div className="mb-6 leading-4">
                         <AmountField />
                     </div>
-
                     {
                         !hideAddress ?
                             <div className="w-full mb-3.5 leading-4">

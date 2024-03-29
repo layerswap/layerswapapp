@@ -38,14 +38,6 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
     const { address } = useAccount();
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
-    const sendTransactionPrepare = usePrepareSendTransaction({
-        to: isContractWallet?.ready ? depositAddress : undefined,
-        value: amount ? parseEther(amount.toString()) : undefined,
-        chainId: chainId,
-        enabled: isContractWallet?.ready
-    })
-    const encodedData: `0x${string}` = (canDoSweepless && address?.toLowerCase() !== userDestinationAddress?.toLowerCase()) ? `0x${sequenceNumber}` : "0x"
 
     const tx = {
         to: depositAddress,

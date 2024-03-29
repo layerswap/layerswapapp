@@ -1,5 +1,5 @@
 import { Formik, FormikProps } from "formik";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useSettingsState } from "../../../context/settings";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
@@ -28,7 +28,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
-import { getSecondsToTomorrow } from "../../utils/timeCalculations";
+import useWallet from "../../../hooks/useWallet";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -53,6 +53,7 @@ export default function Form() {
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
+    const { getWithdrawalProvider } = useWallet()
 
     const settings = useSettingsState();
     const query = useQueryState()
@@ -81,7 +82,10 @@ export default function Form() {
                     return;
                 }
             }
-            const swapId = await createSwap(values, query, partner);
+            const provider = values.from && getWithdrawalProvider(values.from)
+            const wallet = provider?.getConnectedWallet()
+
+            const swapId = await createSwap(values, wallet?.address, query, partner);
             setSwapId(swapId)
             setSwapPath(swapId, router)
             setShowSwapModal(true)
@@ -116,7 +120,7 @@ export default function Form() {
                 toast.error(data.message || error.message)
             }
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap])
+    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getWithdrawalProvider])
 
     const destAddress: string = query?.destAddress as string;
 

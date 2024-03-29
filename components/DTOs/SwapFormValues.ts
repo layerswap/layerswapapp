@@ -4,6 +4,7 @@ import { Exchange, ExchangeToken } from "../../Models/Exchange";
 export type SwapFormValues = {
   amount?: string;
   destination_address?: string;
+  // source_address?: string;
   fromCurrency?: Token;
   toCurrency?: Token;
   refuel?: boolean;
@@ -12,5 +13,5 @@ export type SwapFormValues = {
   fromExchange?: Exchange,
   toExchange?: Exchange,
   currencyGroup?: ExchangeToken
-  depositMethod?: string
+  depositMethod?: string,
 }

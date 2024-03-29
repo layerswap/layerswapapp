@@ -1,11 +1,11 @@
 export enum NetworkType {
-    EVM = "evm",
-    Starknet = "starknet",
-    Solana = "solana",
-    Cosmos = "cosmos",
-    StarkEx = "stark_ex",
-    ZkSyncLite = "zk_sync_lite",
-    TON = 'ton'
+    EVM = "EVM",
+    Starknet = "Starknet",
+    Solana = "Solana",
+    Cosmos = "Cosmos",
+    StarkEx = "StarkEx",//TODO check this
+    ZkSyncLite = "ZkSyncLite",
+    TON = 'Ton'
 }
 
 export class Network {

@@ -167,7 +167,7 @@ export type SwapItem = {
     source_address: `0x${string}`,
     destination_address: `0x${string}`,
     requested_amount: number,
-    deposit_mode: string
+    deposit_mode: "deposit_address" | "wallet"
     transactions: Transaction[]
     exchange_account_connected: boolean;
     exchange_account_name?: string;

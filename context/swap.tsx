@@ -23,7 +23,7 @@ export const SwapDataStateContext = createContext<SwapData>({
 export const SwapDataUpdateContext = createContext<UpdateInterface | null>(null);
 
 export type UpdateInterface = {
-    createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<string>,
+    createSwap: (values: SwapFormValues, source_address: string | undefined, query: QueryParams, partner?: Partner) => Promise<string>,
     setCodeRequested: (codeSubmitted: boolean) => void;
     setAddressConfirmed: (value: boolean) => void;
     setInterval: (value: number) => void,
@@ -86,7 +86,7 @@ export function SwapDataProvider({ children }) {
         setSwapTransaction(txForSwap)
     }, [swapId])
 
-    const createSwap = useCallback(async (values: SwapFormValues, query: QueryParams, partner: Partner) => {
+    const createSwap = useCallback(async (values: SwapFormValues, source_address: string, query: QueryParams, partner: Partner) => {
         if (!values)
             throw new Error("No swap data")
 
@@ -109,7 +109,8 @@ export function SwapDataProvider({ children }) {
             destination_address: destination_address,
             reference_id: query.externalId,
             refuel: !!refuel,
-            deposit_mode: depositMethod!
+            deposit_mode: depositMethod!,
+            source_address
         }
 
         const swapResponse = await layerswapApiClient.CreateSwapAsync(data)

@@ -18,47 +18,11 @@ import WalletTransferContent from './WalletTransferContent';
 
 const Withdraw: FC = () => {
     const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
+    const { swap, deposit_methods } = swapResponse || {}
     const { setWithdrawType } = useSwapDataUpdate()
-    const { networks: layers } = useSettingsState()
-    const { appName, signature } = useQueryState()
-
-    const sourceIsStarknet = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase()
-        || swap?.source_network.name === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
-        || swap?.source_network.name === KnownInternalNames.Networks.StarkNetSepolia?.toUpperCase()
-    const sourceIsImmutableX = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-        || swap?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-    const sourceIsZkSync = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
-    const sourceIsArbitrumOne = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
-        || swap?.source_network.name === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
-    const sourceIsCoinbase =
-        swap?.source_exchange?.name.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
-    const sourceIsSolana = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
-
-    const source_layer = layers.find(n => n.name === swap?.source_network.name)
-    const sourceLayerIsEthereum = source_layer?.name?.toUpperCase() === KnownInternalNames.Networks.EthereumMainnet || source_layer?.name?.toUpperCase() === KnownInternalNames.Networks.EthereumGoerli
-    const sourceNetworkType = source_layer?.type
-    const manualIsAvailable = !(sourceIsStarknet || sourceIsImmutableX)
-    const walletIsAvailable = !swap?.source_exchange
-        && (sourceNetworkType === NetworkType.EVM
-            || sourceNetworkType === NetworkType.Starknet
-            || sourceIsImmutableX || sourceIsZkSync || sourceIsSolana)
-
-    const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
-    const sourceIsSynquote = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
 
     let tabs: Tab[] = []
-    // TODO refactor
-    if (isImtblMarketplace || sourceIsSynquote) {
-        tabs = [{
-            id: WithdrawType.External,
-            label: "Withdrawal pending",
-            enabled: true,
-            icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
-            content: <External />
-        }]
-    }
-    else if (sourceIsStarknet || sourceIsImmutableX) {
+    if (swap?.deposit_mode === "wallet") {
         tabs = [
             {
                 id: WithdrawType.Wallet,
@@ -68,35 +32,71 @@ const Withdraw: FC = () => {
                 content: <WalletTransferContent />,
                 footer: <WalletTransfer />
             }]
-    }
-    else {
+    } else if (swap?.deposit_mode === "deposit_address") {
         tabs = [
-            {
-                id: WithdrawType.Wallet,
-                label: "Via wallet",
-                enabled: walletIsAvailable,
-                icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
-                content: <WalletTransferContent />,
-                footer: <WalletTransfer />
-            },
-            {
-                id: WithdrawType.Coinbase,
-                label: "Automatically",
-                enabled: sourceIsCoinbase && sourceLayerIsEthereum,
-                icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
-                content: <WalletTransferContent />,
-                footer: <Coinbase />
-            },
             {
                 id: WithdrawType.Manually,
                 label: "Manually",
-                enabled: manualIsAvailable,
+                enabled: true,
                 icon: <AlignLeft />,
                 footer: <ManualTransfer />,
                 content: <></>
-            }
-        ];
+            }]
     }
+
+
+    // TODO implement this
+    // if (isImtblMarketplace || sourceIsSynquote) {
+    //     tabs = [{
+    //         id: WithdrawType.External,
+    //         label: "Withdrawal pending",
+    //         enabled: true,
+    //         icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
+    //         content: <External />
+    //     }]
+    // }
+
+
+
+    // if (sourceIsStarknet || sourceIsImmutableX) {
+    //     tabs = [
+    //         {
+    //             id: WithdrawType.Wallet,
+    //             label: "Via wallet",
+    //             enabled: true,
+    //             icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
+    //             content: <WalletTransferContent />,
+    //             footer: <WalletTransfer />
+    //         }]
+    // }
+    // else {
+    //     tabs = [
+    //         {
+    //             id: WithdrawType.Wallet,
+    //             label: "Via wallet",
+    //             enabled: walletIsAvailable,
+    //             icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
+    //             content: <WalletTransferContent />,
+    //             footer: <WalletTransfer />
+    //         },
+    //         {
+    //             id: WithdrawType.Coinbase,
+    //             label: "Automatically",
+    //             enabled: sourceIsCoinbase && sourceLayerIsEthereum,
+    //             icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
+    //             content: <WalletTransferContent />,
+    //             footer: <Coinbase />
+    //         },
+    //         {
+    //             id: WithdrawType.Manually,
+    //             label: "Manually",
+    //             enabled: manualIsAvailable,
+    //             icon: <AlignLeft />,
+    //             footer: <ManualTransfer />,
+    //             content: <></>
+    //         }
+    //     ];
+    // }
     const [activeTabId, setActiveTabId] = useState(tabs.find(t => t.enabled)?.id);
 
     const activeTab = tabs.find(t => t.id === activeTabId)
