@@ -1,5 +1,5 @@
 import { ArrowLeftRight, Lock } from 'lucide-react';
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import SubmitButton from '../../../../buttons/submitButton';
 import { useSwapDataState } from '../../../../../context/swap';
 import toast from 'react-hot-toast';
@@ -35,9 +35,15 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const token = layers?.find(n => swap?.source_network == n?.internal_name)?.assets.find(c => c.asset == swap?.source_network_asset);
     const { account: accInfo, isLoading: loadingAccount, noAccount, mutate: refetchAccount } = useLoopringAccount({ address: fromAddress })
     const { availableBalances, defaultValue, loading: activationDataIsLoading, feeData } = useActivationData(accInfo?.accountId)
-    const [unlockedAccount, setUnlockedAccount] = useState<UnlockedAccount>()
+    const [unlockedAccount, setUnlockedAccount] = useState<UnlockedAccount | undefined>()
     const { tokens } = useLoopringTokens()
     const loopringToken = tokens?.find(t => t.name === selectedActivationAsset)
+
+    useEffect(() => {
+        if (fromAddress) {
+            setUnlockedAccount(undefined)
+        }
+    }, [fromAddress])
 
     const handleUnlockAccount = useCallback(async () => {
         setLoading(true)
