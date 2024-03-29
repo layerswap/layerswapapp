@@ -2,17 +2,10 @@ import { keccak256 } from "js-sha3";
 import KnownInternalNames from "./knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
 import { PublicKey } from '@solana/web3.js'
-import { Layer } from "../Models/Layer";
 
 export function isValidAddress(address?: string, network?: { internal_name: string } | null): boolean {
     if (!address) {
         return false
-    }
-    if (network?.internal_name === KnownInternalNames.Networks.RoninMainnet) {
-        if (address.startsWith("ronin:")) {
-            return isValidEtherAddress(address.replace("ronin:", "0x"));
-        }
-        return false;
     }
     else if (network?.internal_name.toLowerCase().startsWith("ZKSYNC".toLowerCase())) {
         if (address?.startsWith("zksync:")) {
