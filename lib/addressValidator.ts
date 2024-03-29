@@ -7,7 +7,7 @@ export function isValidAddress(address?: string, network?: { internal_name: stri
     if (!address) {
         return false
     }
-    else if (network?.internal_name.toLowerCase().startsWith("ZKSYNC".toLowerCase())) {
+    if (network?.internal_name.toLowerCase().startsWith("ZKSYNC".toLowerCase())) {
         if (address?.startsWith("zksync:")) {
             return isValidEtherAddress(address.replace("zksync:", ""));
         }
