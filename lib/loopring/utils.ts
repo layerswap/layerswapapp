@@ -63,7 +63,7 @@ export type EddsaKey = {
     sk: string
 }
 
-export function generatePrivateKey(sig: string): EddsaKey {
+export function generateKey(sig: string): EddsaKey {
     if (sig) {
         const seedBuff = ethUtil.sha256(fm.toBuffer(sig))
         const seed = BigNumber.from('0x' + seedBuff.toString('hex'))

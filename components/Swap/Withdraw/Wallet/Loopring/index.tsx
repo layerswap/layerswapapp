@@ -10,11 +10,10 @@ import WalletMessage from '../WalletTransfer/message';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
 import SignatureIcon from '../../../../icons/SignatureIcon';
 import { ActivationTokenPicker } from './ActivationTokentPicker';
-import { useActivationData, useLoopringAccount } from './hooks';
+import { useActivationData, useLoopringAccount, useLoopringTokens } from './hooks';
 import { LoopringAPI } from '../../../../../lib/loopring/LoopringAPI';
 import { UnlockedAccount } from '../../../../../lib/loopring/defs';
 import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
-
 
 type Props = {
     depositAddress?: string,
@@ -37,6 +36,8 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const { account: accInfo, isLoading: loadingAccount, noAccount, mutate: refetchAccount } = useLoopringAccount({ address: fromAddress })
     const { availableBalances, defaultValue, loading: activationDataIsLoading, feeData } = useActivationData(accInfo?.accountId)
     const [unlockedAccount, setUnlockedAccount] = useState<UnlockedAccount>()
+    const { tokens } = useLoopringTokens()
+    const loopringToken = tokens?.find(t => t.name === selectedActivationAsset)
 
     const handleUnlockAccount = useCallback(async () => {
         setLoading(true)
@@ -58,10 +59,10 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         setLoading(true)
 
         try {
-            if (!accInfo || !selectedActivationAsset)
+            if (!accInfo || !selectedActivationAsset || !loopringToken)
                 return
-            await LoopringAPI.userAPI.activateAccount({ accInfo, token: selectedActivationAsset })
 
+            await LoopringAPI.userAPI.activateAccount({ accInfo, token: { id: loopringToken?.tokenId, symbol: loopringToken?.name } })
             await refetchAccount()
         }
         catch (e) {
@@ -70,7 +71,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         finally {
             setLoading(false)
         }
-    }, [accInfo, selectedActivationAsset, refetchAccount])
+    }, [accInfo, selectedActivationAsset, refetchAccount, loopringToken])
 
     const handleTransfer = useCallback(async () => {
         setLoading(true)

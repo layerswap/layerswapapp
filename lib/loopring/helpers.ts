@@ -3,9 +3,9 @@ import { sortObjDictionary } from "./formatter";
 import { signTypedData } from '@wagmi/core'
 import { signMessage } from '@wagmi/core'
 import { parseUnits } from 'viem';
-import { AccountInfo, ExchangeInfo, KEY_MESSAGE, LOOPRING_URLs, LpFee, OffchainFeeReqType, OriginTransferRequestV3, TOKEN_INFO, TokenVolumeV3, UnlockedAccount } from "./defs";
+import { AccountInfo, ExchangeInfo, KEY_MESSAGE, LOOPRING_URLs, LpFee, OffchainFeeReqType, OriginTransferRequestV3, UnlockedAccount } from "./defs";
 import { NetworkCurrency } from "../../Models/CryptoNetwork";
-import { generatePrivateKey, getEdDSASig, getTransferTypedData, getUpdateAccountEcdsaTypedData, get_EddsaSig_Transfer } from "./utils";
+import { generateKey, getEdDSASig, getTransferTypedData, getUpdateAccountEcdsaTypedData, get_EddsaSig_Transfer } from "./utils";
 
 type UnlockApiRes = {
     apiKey: string;
@@ -21,7 +21,7 @@ export async function unlockAccount(accInfo: AccountInfo)
     : Promise<UnlockedAccount> {
 
     const sig = await signMessage({ message: accInfo.keySeed })
-    const eddsaKeyData = generatePrivateKey(sig)
+    const eddsaKeyData = generateKey(sig)
     const { sk } = eddsaKeyData
     const { accountId } = accInfo
     const url = `${LoopringAPI.BaseApi}${LOOPRING_URLs.API_KEY_ACTION}?accountId=${accountId}`
@@ -173,10 +173,8 @@ async function submitInternalTransfer
     })).json()
 }
 
-
-
 type ActivateAccountProps = {
-    token: string,
+    token: { symbol: string, id: number },
     accInfo: AccountInfo
 }
 
@@ -196,13 +194,13 @@ export async function activateAccount
 
     const sig = await signMessage({ message })
 
-    const eddsaKeyData = generatePrivateKey(sig)
+    const eddsaKeyData = generateKey(sig)
     const { formatedPx, formatedPy } = eddsaKeyData
     const publicKey = { x: formatedPx, y: formatedPy }
     const feeData = await getOffchainFeeAmt(accInfo.accountId, OffchainFeeReqType.UPDATE_ACCOUNT);
-    const fee = feeData.fees.find(f => f.token.toUpperCase() == token.toUpperCase())?.fee
+    const fee = feeData.fees.find(f => f.token.toUpperCase() == token.symbol.toUpperCase())?.fee
     if (!fee) {
-        throw new Error(`Could not get fee for ${token.toUpperCase()}`)
+        throw new Error(`Could not get fee for ${token.symbol.toUpperCase()}`)
     }
     const req = {
         exchange: exchangeInfo.exchangeAddress,
@@ -210,7 +208,7 @@ export async function activateAccount
         accountId: accInfo.accountId,
         publicKey,
         maxFee: {
-            tokenId: TOKEN_INFO.tokenMap[token]?.tokenId,
+            tokenId: token.id,
             volume: fee,
         },
         keySeed: message,

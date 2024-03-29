@@ -1,6 +1,6 @@
 import useSWR from "swr";
 import { LoopringAPI } from "../../../../../lib/loopring/LoopringAPI";
-import { AccountInfo, LOOPRING_URLs, OffchainFeeReqType, UserBalanceInfo } from "../../../../../lib/loopring/defs";
+import { AccountInfo, LOOPRING_URLs, OffchainFeeReqType, TokenInfo, UserBalanceInfo } from "../../../../../lib/loopring/defs";
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -11,6 +11,17 @@ export const useLoopringAccountBalance = (accountId?: number) => {
             fetcher);
 
     return { data, isLoading }
+}
+
+export const useLoopringTokens = () => {
+    const url = `${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_TOKENS}`
+    const { data: tokens, isLoading } =
+        useSWR<[TokenInfo]>(url,
+            fetcher,
+            {
+                dedupingInterval: 500000,
+            });
+    return { tokens, isLoading }
 }
 
 export const useLoopringAccount = ({ address }: { address?: `0x${string}` }) => {
