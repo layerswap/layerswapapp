@@ -54,9 +54,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const provider = useMemo(() => {
         return values?.to && getProvider(values?.to)
     }, [values?.to, getProvider])
-
     const connectedWallet = provider?.getConnectedWallet()
-    const settings = useSettingsState()
 
     useEffect(() => {
         if (destination && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address && !values.toExchange) {

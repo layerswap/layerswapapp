@@ -6,7 +6,7 @@ import useEVM from "../lib/wallets/evm/useEVM"
 import useStarknet from "../lib/wallets/starknet/useStarknet"
 import useImmutableX from "../lib/wallets/immutableX/useIMX"
 import useSolana from "../lib/wallets/solana/useSolana"
-import { CryptoNetwork, Network } from "../Models/Network"
+import { Network } from "../Models/Network"
 
 
 export type WalletProvider = {
