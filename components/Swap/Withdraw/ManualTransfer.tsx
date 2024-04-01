@@ -12,12 +12,13 @@ import { Exchange } from "../../../Models/Exchange";
 import Link from "next/link";
 
 const ManualTransfer: FC = () => {
-    const { swapResponse: swapResponse } = useSwapDataState()
-    const { swap, deposit_methods } = swapResponse || {}
+    const { swapResponse: swapResponse, swapPrepareData } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const hintsStore = useSwapDepositHintClicked()
     const hintClicked = hintsStore.swapTransactions[swap?.id || ""]
+    const trasnsferACtionData = swapPrepareData?.deposit_actions.find(a => a.type=='transfer')
 
-    let generatedDepositAddress = deposit_methods?.deposit_address.deposit_address
+    let generatedDepositAddress = trasnsferACtionData?.to_address
 
     const handleCloseNote = useCallback(async () => {
         if (swap)
@@ -46,7 +47,6 @@ const ManualTransfer: FC = () => {
             </div>
         </div>
     )
-
 }
 
 const TransferInvoice: FC<{ deposit_address?: string }> = ({ deposit_address }) => {

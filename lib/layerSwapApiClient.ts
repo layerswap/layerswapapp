@@ -142,9 +142,12 @@ export type CreateSwapParams = {
 
 export type SwapResponse = {
     swap: SwapItem;
-    deposit_methods: DepositMethods
     quote: SwapQuote
     refuel: Refuel,
+}
+
+export type SwapPrepareData = {
+    deposit_actions: DepositAction[]
 }
 
 export type Refuel = {
@@ -179,27 +182,16 @@ export type SwapItem = {
     }
 }
 
-export type DepositMethods = {
-    deposit_address: {
-        amount: number,
-        amount_in_base_units: string,
-        base_units: number,
-        network: string,
-        asset: string,
-        chain_id: string,
-        deposit_address: string,
-        asset_contract_address: string
-    },
-    wallet: {
-        amount: number,
-        amount_in_base_units: string,
-        base_units: number,
-        network: string,
-        asset: string,
-        chain_id: string,
-        to_address: `0x${string}`,
-        call_data: string
-    }
+export type DepositAction = {
+    amount: number,
+    amount_in_base_units: string,
+    call_data: string | null,
+    fee: any | null,//TODO: clarify this field type
+    network: Network,
+    order: number,
+    to_address?: `0x${string}`,
+    token: Token,
+    type: 'transfer',
 }
 
 export type Quote = {

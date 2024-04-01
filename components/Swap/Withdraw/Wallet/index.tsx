@@ -13,8 +13,8 @@ import NetworkGas from "./WalletTransfer/networkGas"
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 const WalletTransferContent: FC = () => {
-    const { swapResponse } = useSwapDataState()
-    const { swap, deposit_methods } = swapResponse || {}
+    const { swapResponse, swapPrepareData } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const { networks: layers } = useSettingsState()
     const { minAllowedAmount } = useFee()
 

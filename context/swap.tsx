@@ -1,6 +1,6 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, SwapItem, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, SwapQuote, DepositMethods, Refuel } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, SwapItem, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, SwapPrepareData } from '../lib/layerSwapApiClient';
 import { useRouter } from 'next/router';
 import { useSettingsState } from './settings';
 import { QueryParams } from '../Models/QueryParams';
@@ -18,7 +18,8 @@ export const SwapDataStateContext = createContext<SwapData>({
     depositeAddressIsfromAccount: false,
     withdrawType: undefined,
     swapTransaction: undefined,
-    selectedAssetNetwork: undefined
+    selectedAssetNetwork: undefined,
+    swapPrepareData: undefined,
 });
 export const SwapDataUpdateContext = createContext<UpdateInterface | null>(null);
 
@@ -42,7 +43,8 @@ export type SwapData = {
     depositeAddressIsfromAccount: boolean,
     withdrawType: WithdrawType | undefined,
     swapTransaction: SwapTransaction | undefined,
-    selectedAssetNetwork: Token | undefined
+    selectedAssetNetwork: Token | undefined,
+    swapPrepareData: SwapPrepareData | undefined,
 }
 
 export function SwapDataProvider({ children }) {
@@ -58,7 +60,13 @@ export function SwapDataProvider({ children }) {
     const swap_details_endpoint = `/swaps/${swapId}`
     const [interval, setInterval] = useState(0)
     const { data: swapData, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
+
+    const prepare_endpoint = swapId ? `/swaps/${swapId}/prepare` : null
+    const { data: swapPrepareDataResponse, mutate: mutatePrepare, error: prepareError } = useSWR<ApiResponse<SwapPrepareData>>(prepare_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 3000 })
+
     const swapResponse = swapData?.data
+    const swapPrepareData = swapPrepareDataResponse?.data
+    
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const source_exchange = layers.find(n => n?.name?.toLowerCase() === swapResponse?.swap.source_exchange?.name.toLowerCase())
 
@@ -146,6 +154,7 @@ export function SwapDataProvider({ children }) {
             depositeAddressIsfromAccount: !!depositeAddressIsfromAccount,
             swapResponse: swapResponse,
             swapApiError: error,
+            swapPrepareData
         }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}

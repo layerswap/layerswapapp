@@ -18,7 +18,7 @@ import WalletTransferContent from './WalletTransferContent';
 
 const Withdraw: FC = () => {
     const { swapResponse } = useSwapDataState()
-    const { swap, deposit_methods } = swapResponse || {}
+    const { swap } = swapResponse || {}
     const { setWithdrawType } = useSwapDataUpdate()
 
     let tabs: Tab[] = []
