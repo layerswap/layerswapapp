@@ -1,10 +1,10 @@
 import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
-import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSwapDataState } from '../../../../context/swap';
 import { useSettingsState } from '../../../../context/settings';
-import { Transaction, Connection, PublicKey, TransactionInstruction, TransactionResponse } from '@solana/web3.js';
+import { Transaction, Connection, PublicKey, TransactionInstruction } from '@solana/web3.js';
 import useWallet from '../../../../hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
@@ -13,13 +13,12 @@ import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore
 import WalletIcon from '../../../icons/WalletIcon';
 
 type Props = {
-    depositAddress: string,
+    depositAddress?: string,
     amount: number
 }
 
 const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
-    const [transferDone, setTransferDone] = useState<boolean>();
     const { getWithdrawalProvider } = useWallet()
 
     const { setSwapTransaction } = useSwapTransactionStore();
@@ -29,7 +28,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const { source_network: source_network_internal_name } = swap || {};
     const source_network = layers.find(n => n.internal_name === source_network_internal_name);
     const source_layer = layers.find(l => l.internal_name === source_network_internal_name)
-    const source_currency = source_network?.assets?.find(c => c.asset.toLocaleUpperCase() === swap?.source_network_asset.toLocaleUpperCase());
+    const source_currency = source_network?.assets?.find(c => c.asset.toUpperCase() === swap?.source_network_asset.toUpperCase());
 
     const provider = getWithdrawalProvider(source_layer!);
     const wallet = provider?.getConnectedWallet();
@@ -51,7 +50,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const handleTransfer = useCallback(async () => {
 
-        if (!swap || !walletPublicKey || !signTransaction) return
+        if (!swap || !walletPublicKey || !signTransaction || !depositAddress) return
 
         setLoading(true)
         try {
@@ -100,16 +99,9 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 walletPublicKey,
                 signTransaction
             );
-            const txReceipt = await connection.getTransaction(signature);
 
             if (signature) {
-                if (!txReceipt?.meta?.err)
-                    setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Pending, signature);
-                else {
-                    signature && setSwapTransaction(swap?.id, PublishedSwapTransactionStatus.Error, signature, String(txReceipt.meta.err));
-                    toast(String(txReceipt.meta.err))
-                    setLoading(false)
-                }
+                setSwapTransaction(swap?.id, BackendTransactionStatus.Pending, signature);
             }
 
         }
@@ -136,7 +128,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     }
                     {
                         wallet &&
-                        <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
+                        <SubmitButton isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
                             Send from wallet
                         </SubmitButton>
                     }

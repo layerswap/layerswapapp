@@ -3,7 +3,7 @@ import { FC, useCallback, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
-import { PublishedSwapTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
@@ -58,8 +58,8 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
             else if (transactionRes.status == "error") {
                 toast(transactionRes.message)
             }
-            else if (transactionRes.status == "success") {
-                setSwapTransaction(swap.id, PublishedSwapTransactionStatus.Completed, transactionRes.txId.toString());
+            else if (transactionRes) {
+                setSwapTransaction(swap.id, BackendTransactionStatus.Pending, transactionRes.txId.toString());
                 setTransferDone(true)
             }
         }
@@ -89,7 +89,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                     {
                         imxAccount &&
                         <SubmitButton isDisabled={!!(loading || transferDone) || !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Transfer
+                            Send from wallet
                         </SubmitButton>
                     }
                 </div>
