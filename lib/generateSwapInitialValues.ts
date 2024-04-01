@@ -2,7 +2,7 @@ import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./addressValidator";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
-import { SwapItem, SwapResponse } from "./layerSwapApiClient";
+import { SwapResponse } from "./layerSwapApiClient";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
     const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, addressSource } = queryParams
@@ -80,7 +80,7 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapResponse, se
         destination_exchange,
     } = swap
 
-    const { networks: layers, exchanges, destinationRoutes, sourceRoutes, assetGroups } = settings || {}
+    const { networks: layers, exchanges } = settings || {}
 
     const from = layers.find(l => l.name === source_network.name);
     const to = layers.find(l => l.name === destination_network.name);
@@ -89,9 +89,8 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapResponse, se
     const toExchange = exchanges.find(e => e.name === destination_exchange?.name);
 
     const direction = fromExchange ? 'from' : 'to';
-    const routes = direction === 'from' ? sourceRoutes : destinationRoutes;
-    const availableAssetGroups = assetGroups.filter(g => g.values.some(v => routes.some(r => r.tokens.some(t => t.symbol === v.asset) && r.name === v.network)))
-    const currencyGroup = availableAssetGroups.find(a => a.name === (direction === 'from' ? source_token.symbol : destination_token.symbol))
+    const availableAssetGroups = direction === 'from' ? fromExchange?.token_groups : toExchange?.token_groups;
+    const currencyGroup = availableAssetGroups?.find(a => a.symbol === (direction === 'from' ? source_token.symbol : destination_token.symbol))
 
     const fromCurrency = from?.tokens.find(c => c.symbol === source_token.symbol);
     const toCurrency = to?.tokens.find(c => c.symbol === destination_token.symbol);

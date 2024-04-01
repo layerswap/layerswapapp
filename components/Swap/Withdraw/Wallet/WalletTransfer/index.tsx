@@ -5,9 +5,8 @@ import {
     useNetwork,
 } from "wagmi";
 import { PublishedSwapTransactions } from "../../../../../lib/layerSwapApiClient";
-import TransferNativeTokenButton from "./TransferNativeToken";
 import { ChangeNetworkButton, ConnectWalletButton } from "./buttons";
-import TransferErc20Button from "./TransferErc20";
+import TransferTokenButton from "./TransferToken";
 
 
 type Props = {
@@ -27,8 +26,6 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     depositAddress,
     userDestinationAddress,
     amount,
-    tokenContractAddress,
-    tokenDecimals,
     sequenceNumber,
     swapId,
 }) => {
@@ -71,27 +68,14 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
             network={networkDisplayName}
         />
     }
-    else if (tokenContractAddress) {
-        return <TransferErc20Button
-            swapId={swapId}
-            sequenceNumber={sequence_number_even}
-            amount={amount}
-            depositAddress={depositAddress}
-            userDestinationAddress={userDestinationAddress}
-            savedTransactionHash={savedTransactionHash as `0x${string}`}
-            tokenContractAddress={tokenContractAddress}
-            tokenDecimals={tokenDecimals}
-        />
-    }
     else {
-        return <TransferNativeTokenButton
+        return <TransferTokenButton
             swapId={swapId}
             sequenceNumber={sequence_number_even}
             amount={amount}
             depositAddress={depositAddress}
             userDestinationAddress={userDestinationAddress}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
-            chainId={chainId}
         />
     }
 }

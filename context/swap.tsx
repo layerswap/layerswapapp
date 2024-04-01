@@ -1,6 +1,6 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, SwapItem, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, SwapPrepareData } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, SwapPrepareData } from '../lib/layerSwapApiClient';
 import { useRouter } from 'next/router';
 import { useSettingsState } from './settings';
 import { QueryParams } from '../Models/QueryParams';
@@ -66,7 +66,7 @@ export function SwapDataProvider({ children }) {
 
     const swapResponse = swapData?.data
     const swapPrepareData = swapPrepareDataResponse?.data
-    
+
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const source_exchange = layers.find(n => n?.name?.toLowerCase() === swapResponse?.swap.source_exchange?.name.toLowerCase())
 

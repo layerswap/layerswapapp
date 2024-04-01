@@ -6,7 +6,6 @@ import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep"
 import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw"
 import TransferFromWallet from "./WalletTransfer"
 import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw"
-import useWalletTransferOptions from "../../../../hooks/useWalletTransferOptions"
 import { useFee } from "../../../../context/feeContext"
 import SolanaWalletWithdrawStep from "./SolanaWalletWithdraw"
 import NetworkGas from "./WalletTransfer/networkGas"
@@ -28,14 +27,7 @@ const WalletTransferContent: FC = () => {
     const sourceIsStarknet = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase() || source_network_internal_name === KnownInternalNames.Networks.StarkNetSepolia?.toUpperCase()
     const sourceIsSolana = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
 
-    const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
-
-    const managedDepositAddress = deposit_methods?.wallet.to_address
-    const generatedDepositAddress = deposit_methods?.deposit_address.deposit_address as `0x${string}`
-
-    const depositAddress = isContractWallet?.ready ?
-        (canDoSweepless ? managedDepositAddress : generatedDepositAddress)
-        : undefined
+    const depositAddress = swapPrepareData?.deposit_actions?.find(da => da.type == 'transfer')?.to_address
 
     const sourceChainId = source_layer ? Number(source_layer?.chain_id) : null
     const requested_amount = Number(minAllowedAmount) > Number(swap?.requested_amount) ? minAllowedAmount : swap?.requested_amount

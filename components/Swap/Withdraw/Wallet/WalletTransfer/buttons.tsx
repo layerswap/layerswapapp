@@ -8,7 +8,6 @@ import { ActionData } from "./sharedTypes";
 import SubmitButton from "../../../../buttons/submitButton";
 import useWallet from "../../../../../hooks/useWallet";
 import { useSwapDataState } from "../../../../../context/swap";
-import { useSettingsState } from "../../../../../context/settings";
 
 export const ConnectWalletButton: FC = () => {
     const { swapResponse } = useSwapDataState()

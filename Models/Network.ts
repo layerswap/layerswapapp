@@ -3,8 +3,8 @@ export enum NetworkType {
     Starknet = "starknet",
     Solana = "solana",
     Cosmos = "cosmos",
-    StarkEx = "stark_ex",//TODO check this
-    ZkSyncLite = "zk_sync_lite",
+    StarkEx = "starkex",//TODO check this
+    ZkSyncLite = "zksynclite",
     TON = 'ton'
 }
 

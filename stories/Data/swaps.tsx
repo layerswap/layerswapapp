@@ -10,7 +10,7 @@ export const swap: SwapItem = {
         "sequence_number": 2308
     },
     "requested_amount": 0.0015,
-    "deposit_mode": "",
+    "deposit_mode": "deposit_address",
     "source_address": "0xisjvievhi83r7837r883h83hd838dd8h38",
     "exchange_account_connected": false,
     "created_date": "2023-08-16T16:31:11.934618+00:00",
@@ -125,7 +125,7 @@ export const failedSwap: SwapItem = {
         "app": null,
         "sequence_number": 2571
     },
-    "deposit_mode": "",
+    "deposit_mode": "deposit_address",
     "source_address": "0xlskcsvknskvkscnkjcnskncskncksvsv",
     "requested_amount": 0.0018,
     "exchange_account_connected": false,
@@ -214,7 +214,7 @@ export const failedInputSwap: SwapItem = {
     "exchange_account_connected": false,
     "created_date": "2024-02-23T12:41:48.389955+00:00",
     "status": SwapStatus.Failed,
-    "deposit_mode": "",
+    "deposit_mode": "deposit_address",
     "metadata": {
         "reference_id": null,
         "app": null,
@@ -307,7 +307,7 @@ export const failedSwapOutOfRange: SwapItem = {
     },
     "requested_amount": 0.0015,
     "exchange_account_connected": false,
-    "deposit_mode": "",
+    "deposit_mode": "deposit_address",
     "source_address": "0xd11Ed17eF0F48a9941fD4A66",
     "created_date": "2023-08-29T14:16:02.389108+00:00",
     "status": SwapStatus.Failed,
@@ -408,7 +408,7 @@ export const cancelled: SwapItem = {
         "app": null,
         "sequence_number": 2570
     },
-    "deposit_mode": "",
+    "deposit_mode": "deposit_address",
     "source_address": "0xd11Ed17eF0F48a9941fD4A66",
     "requested_amount": 0.0015,
     "exchange_account_connected": false,
@@ -488,7 +488,7 @@ export const expired: SwapItem = {
     },
     "source_address": "0x42c03fC8fd30d11Ed17eF0F48a9941fD4A66svsv",
     "requested_amount": 0.0015,
-    "deposit_mode": "",
+    "deposit_mode": "deposit_address",
     "exchange_account_connected": false,
     "created_date": "2023-08-29T14:16:02.389108+00:00",
     "status": SwapStatus.Expired,

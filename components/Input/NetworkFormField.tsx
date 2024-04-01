@@ -63,7 +63,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const query = useQueryState()
     const { lockFrom, lockTo } = query
 
-    const { exchanges, destinationRoutes, sourceRoutes, assetGroups } = useSettingsState();
+    const { exchanges, destinationRoutes, sourceRoutes } = useSettingsState();
     let placeholder = "";
     let searchHint = "";
     let menuItems: (SelectMenuItem<CryptoNetwork | Exchange> & { isExchange: boolean })[];
@@ -153,7 +153,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 setFieldValue(`${name}Currency`, assetSubstitute, true)
             }
         }
-    }, [name, assetGroups, value])
+    }, [name, value])
 
     const pickNetworkDetails = <div>
         {

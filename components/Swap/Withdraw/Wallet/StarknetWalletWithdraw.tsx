@@ -24,8 +24,8 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
 
     const { userId } = useAuthState()
-    const { swapResponse } = useSwapDataState()
-    const { swap, deposit_methods } = swapResponse || {}
+    const { swapResponse, swapPrepareData } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const { source_network, source_token } = swap || {}
 
     const { setSwapTransaction } = useSwapTransactionStore();
@@ -37,6 +37,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     }, [source_network, getProvider])
 
     const wallet = provider?.getConnectedWallet()
+    const callData = swapPrepareData?.deposit_actions?.find(da => da.type == 'transfer')?.call_data
 
     const handleConnect = useCallback(async () => {
         if (!provider)
@@ -84,7 +85,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             }
 
             try {
-                const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.account?.execute(deposit_methods?.wallet.call_data) || {});
+                const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.account?.execute(callData) || {});
                 if (transferTxHash) {
                     setSwapTransaction(swap.id, BackendTransactionStatus.Completed, transferTxHash);
                     setTransferDone(true)

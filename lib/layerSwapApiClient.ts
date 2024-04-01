@@ -185,7 +185,7 @@ export type SwapItem = {
 export type DepositAction = {
     amount: number,
     amount_in_base_units: string,
-    call_data: string | null,
+    call_data: `0x${string}`,
     fee: any | null,//TODO: clarify this field type
     network: Network,
     order: number,

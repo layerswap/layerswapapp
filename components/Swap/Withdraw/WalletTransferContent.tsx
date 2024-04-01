@@ -16,20 +16,21 @@ import { useSettingsState } from '../../../context/settings';
 const WalletTransferContent: FC = () => {
     const { openAccountModal } = useAccountModal();
     const { getWithdrawalProvider: getProvider, disconnectWallet } = useWallet()
-    const { swapResponse } = useSwapDataState()
-    const { swap, deposit_methods } = swapResponse || {}
+    const { swapResponse, swapPrepareData } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const { source_exchange, source_token, destination_token, destination_address, requested_amount } = swap || {}
     const [isLoading, setIsloading] = useState(false);
     const { mutateSwap } = useSwapDataUpdate()
     const { networks } = useSettingsState()
     const source_network = networks.find(n => n.name === swap?.source_network?.name)
     const destination_network = networks.find(n => n.name === swap?.destination_network?.name)
-    
+
     const provider = useMemo(() => {
         return source_network && getProvider(source_network)
     }, [source_network, getProvider])
 
     const wallet = provider?.getConnectedWallet()
+    const depositAddress = swapPrepareData?.deposit_actions?.find(da => da.type == 'transfer')?.to_address
 
     const { balances, isBalanceLoading } = useBalancesState()
     const { fetchBalance, fetchGas } = useBalance()
@@ -43,7 +44,7 @@ const WalletTransferContent: FC = () => {
     }, [source_network, sourceNetworkWallet?.address])
 
     useEffect(() => {
-        sourceNetworkWallet?.address && source_network && source_token && destination_token && destination_network && requested_amount && deposit_methods?.wallet.to_address && fetchGas(source_network, source_token, destination_network, destination_token, destination_address || sourceNetworkWallet.address, requested_amount?.toString())
+        sourceNetworkWallet?.address && source_network && source_token && destination_token && destination_network && requested_amount && depositAddress && fetchGas(source_network, source_token, destination_network, destination_token, destination_address || sourceNetworkWallet.address, requested_amount?.toString())
     }, [source_network, source_token, sourceNetworkWallet?.address])
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
