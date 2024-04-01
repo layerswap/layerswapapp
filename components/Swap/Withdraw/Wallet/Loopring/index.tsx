@@ -12,8 +12,8 @@ import SignatureIcon from '../../../../icons/SignatureIcon';
 import { ActivationTokenPicker } from './ActivationTokentPicker';
 import { useActivationData, useLoopringAccount, useLoopringTokens } from './hooks';
 import { LoopringAPI } from '../../../../../lib/loopring/LoopringAPI';
-import { UnlockedAccount } from '../../../../../lib/loopring/defs';
 import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
+import { useLoopringUnlockedAccount } from '../../../../../stores/loopringStore';
 
 type Props = {
     depositAddress?: string,
@@ -29,15 +29,17 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const { swap } = useSwapDataState();
     const { layers } = useSettingsState();
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { isConnected, address: fromAddress, connector } = useAccount();
+    const { isConnected, address: fromAddress } = useAccount();
     const { source_network: source_network_internal_name } = swap || {}
     const source_network = layers.find(n => n.internal_name === source_network_internal_name);
     const token = layers?.find(n => swap?.source_network == n?.internal_name)?.assets.find(c => c.asset == swap?.source_network_asset);
     const { account: accInfo, isLoading: loadingAccount, noAccount, mutate: refetchAccount } = useLoopringAccount({ address: fromAddress })
     const { availableBalances, defaultValue, loading: activationDataIsLoading, feeData } = useActivationData(accInfo?.accountId)
-    const [unlockedAccount, setUnlockedAccount] = useState<UnlockedAccount | undefined>()
     const { tokens } = useLoopringTokens()
     const loopringToken = tokens?.find(t => t.name === selectedActivationAsset)
+
+    const unlockedAccount = useLoopringUnlockedAccount((state) => state.unlockedAccount)
+    const setUnlockedAccount = useLoopringUnlockedAccount((state) => state.setUnlockedAccount)
 
     useEffect(() => {
         if (fromAddress) {
