@@ -6,7 +6,6 @@ import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep"
 import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw"
 import TransferFromWallet from "./WalletTransfer"
 import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw"
-import { useFee } from "../../../../context/feeContext"
 import SolanaWalletWithdrawStep from "./SolanaWalletWithdraw"
 import NetworkGas from "./WalletTransfer/networkGas"
 
@@ -15,7 +14,6 @@ const WalletTransferContent: FC = () => {
     const { swapResponse, swapPrepareData } = useSwapDataState()
     const { swap } = swapResponse || {}
     const { networks: layers } = useSettingsState()
-    const { minAllowedAmount } = useFee()
 
     const { source_network, source_token } = swap || {}
     const source_network_internal_name = source_network?.name
@@ -30,7 +28,7 @@ const WalletTransferContent: FC = () => {
     const depositAddress = swapPrepareData?.deposit_actions?.find(da => da.type == 'transfer')?.to_address
 
     const sourceChainId = source_layer ? Number(source_layer?.chain_id) : null
-    const requested_amount = Number(minAllowedAmount) > Number(swap?.requested_amount) ? minAllowedAmount : swap?.requested_amount
+    const requested_amount = swapPrepareData?.deposit_actions.find(da => da.type == 'transfer')?.amount || 0
 
     if (sourceIsImmutableX)
         return <ImtblxWalletWithdrawStep depositAddress={depositAddress} />
@@ -46,7 +44,7 @@ const WalletTransferContent: FC = () => {
         </>
     else
         return <>
-            {swap && source_layer && sourceAsset && requested_amount && sourceChainId && <TransferFromWallet
+            {swap && source_layer && sourceAsset && sourceChainId && <TransferFromWallet
                 sequenceNumber={swap?.metadata.sequence_number}
                 swapId={swap.id}
                 networkDisplayName={source_layer?.display_name}

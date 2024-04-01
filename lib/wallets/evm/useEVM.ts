@@ -16,7 +16,7 @@ export default function useEVM(): WalletProvider {
 
         KnownInternalNames.Networks.ZksyncMainnet
     ]
-    console.log(networks, 999)
+
     const autofillSupportedNetworks = [
         ...withdrawalSupportedNetworks,
         KnownInternalNames.Networks.ImmutableXMainnet,

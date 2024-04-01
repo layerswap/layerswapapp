@@ -5,7 +5,7 @@ import {
     useWaitForTransaction,
     useNetwork,
 } from "wagmi";
-import { createPublicClient, http } from 'viem'
+import { createPublicClient, http, parseEther } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
 import { BackendTransactionStatus } from "../../../../../lib/layerSwapApiClient";
 import WalletIcon from "../../../../icons/WalletIcon";
@@ -35,6 +35,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
 
     const tx = {
         to: depositAddress,
+        value: amount ? parseEther(amount?.toString()) : undefined,
         gas: estimatedGas,
         data: callData
     }
