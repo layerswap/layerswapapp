@@ -73,13 +73,13 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const { data: sourceRoutes,
         error: sourceRoutesError,
         isLoading: sourceRoutesLoading
-    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${sourceRoutesURL}`, apiClient.fetcher)
+    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${sourceRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
     const {
         data: destinationRoutes,
         error: destRoutesError,
         isLoading: destRoutesLoading
-    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${destinationRoutesURL}`, apiClient.fetcher)
+    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${destinationRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
     const isLoading = sourceRoutesLoading || destRoutesLoading
 

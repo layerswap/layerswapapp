@@ -62,7 +62,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     const routesEndpoint = `/${direction === "from" ? `exchange_source_networks?destination_token_group=${currencyGroup?.symbol}` : `exchange_destination_networks?source_asset_group=${currencyGroup?.symbol}`}&${destinationRouteParams.toString()}`
 
-    const { data: routes, isLoading } = useSWR<ApiResponse<CryptoNetwork[]>>(`${routesEndpoint}`, apiClient.fetcher)
+    const { data: routes, isLoading } = useSWR<ApiResponse<CryptoNetwork[]>>(`${routesEndpoint}`, apiClient.fetcher, { keepPreviousData: true })
     const routesData = routes?.data
 
     const exchangeNetworksEndpoint =
@@ -71,7 +71,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             `exchange_withdrawal_networks?source_exchange=${fromExchange?.name}&&source_token_group=${currencyGroup?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}`
             : `exchange_deposit_networks?destination_exchange=${toExchange?.name}&destination_token_group=${currencyGroup?.symbol}&source_network=${from?.name}&source_token=${fromCurrency?.symbol}`}`)
 
-    const { data: historicalNetworks } = useSWR<ApiResponse<ExchangeNetwork[]>>(exchangeNetworksEndpoint, apiClient.fetcher)
+    const { data: historicalNetworks } = useSWR<ApiResponse<ExchangeNetwork[]>>(exchangeNetworksEndpoint, apiClient.fetcher, { keepPreviousData: true })
 
     const network = (direction === 'from' ? from : to)
     const currency = (direction === 'from' ? fromCurrency : toCurrency)

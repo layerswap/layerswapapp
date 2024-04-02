@@ -48,7 +48,7 @@ export default class LayerSwapApiClient {
     }
 
     async GetQuote({ params }: { params: GetQuoteParams }): Promise<ApiResponse<Quote>> {
-        const { source_network, source_token, source_address, destination_address, destination_token, destination_network, amount, deposit_mode, include_gas, refuel } = params
+        const { source_network, source_token, source_address, destination_token, destination_network, amount, deposit_mode, include_gas, refuel } = params
         return await this.AuthenticatedRequest<ApiResponse<Quote>>("GET", `/quote?source_network=${source_network}&source_token=${source_token}&source_address=${source_address}&destination_network=${destination_network}&destination_token=${destination_token}&deposit_mode=${deposit_mode}&include_gas=${include_gas}&amount=${amount}&refuel=${refuel}`);
     }
 

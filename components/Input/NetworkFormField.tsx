@@ -110,7 +110,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         data: routes,
         isLoading,
         error
-    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${routesEndpoint}`, apiClient.fetcher)
+    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${routesEndpoint}`, apiClient.fetcher, { keepPreviousData: true })
 
     const [routesData, setRoutesData] = useState<CryptoNetwork[] | undefined>(direction === 'from' ? sourceRoutes : destinationRoutes)
 

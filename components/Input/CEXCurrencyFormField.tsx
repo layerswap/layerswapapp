@@ -70,12 +70,12 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
         data: sourceRoutes,
         isLoading: sourceRoutesLoading,
-    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${sourceRoutesURL}`, apiClient.fetcher)
+    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${sourceRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
     const {
         data: destinationRoutes,
         isLoading: destRoutesLoading,
-    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${destinationRoutesURL}`, apiClient.fetcher)
+    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${destinationRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : availableAssetGroups
 

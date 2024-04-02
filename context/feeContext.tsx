@@ -49,7 +49,7 @@ export function FeeProvider({ children }) {
         refreshInterval: 10000
     })
 
-    const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<Quote>>((from && fromCurrency && to && toCurrency && debouncedAmount && depositMethod && destination_address) ?
+    const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<Quote>>((from && fromCurrency && to && toCurrency && debouncedAmount && depositMethod) ?
         `/quote?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&amount=${debouncedAmount}&refuel=${!!refuel}&deposit_mode=${depositMethod}` : null, apiClient.fetcher, {
         refreshInterval: 10000,
         fallbackData: { data: cachedRateData }
