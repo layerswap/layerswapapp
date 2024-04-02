@@ -11,10 +11,10 @@ import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
     const withdrawalSupportedNetworks = [
-        ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),
-        KnownInternalNames.Networks.EthereumSepolia,
-
-        KnownInternalNames.Networks.ZksyncMainnet
+        ...networks.filter(layer => layer.type === NetworkType.EVM && layer.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
+        KnownInternalNames.Networks.ZksyncMainnet,
+        KnownInternalNames.Networks.LoopringGoerli,
+        KnownInternalNames.Networks.LoopringMainnet
     ]
 
     const autofillSupportedNetworks = [

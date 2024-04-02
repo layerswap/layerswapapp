@@ -14,7 +14,7 @@ type CampaignProps = {
     fee: number | undefined,
     selected_currency: Token,
 }
-const Campaign: FC<CampaignProps> = ({
+const Comp: FC<CampaignProps> = ({
     destination,
     fee,
     selected_currency
@@ -88,4 +88,4 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_cur
     </motion.div>
 }
 
-export default Campaign
+export default Comp

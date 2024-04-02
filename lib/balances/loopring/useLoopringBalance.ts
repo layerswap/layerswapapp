@@ -2,6 +2,8 @@ import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
 import axios from "axios";
 import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../Models/Balance";
+import { LoopringAPI } from "../../loopring/LoopringAPI";
+import { LOOPRING_URLs, LpFee } from "../../loopring/defs";
 
 export default function useLoopringBalance(): BalanceProvider {
     const supportedNetworks = [
@@ -12,15 +14,13 @@ export default function useLoopringBalance(): BalanceProvider {
     const getBalance = async ({ network: layer, address }: BalanceProps) => {
         let balances: Balance[] = [];
 
-        const uri = 'https://api3.loopring.io/api/v3'
-
         if (!layer.tokens) return
         try {
 
-            const account: { data: AccountInfo } = await axios.get(`${uri}/account?owner=${address}`)
+            const account: { data: AccountInfo } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`)
             const accInfo = account.data
             const tokens = layer?.tokens?.map(obj => obj.contract).join(',');
-            const result: { data: LpBalance[] } = await axios.get(`${uri}/user/balances?accountId=${accInfo.accountId}&tokens=${tokens}`)
+            const result: { data: LpBalance[] } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_USER_EXCHANGE_BALANCES}?accountId=${accInfo.accountId}&tokens=${tokens}`)
 
             const loopringBalances = layer?.tokens?.map(asset => {
                 const amount = result.data.find(d => d.tokenId == Number(asset.contract))?.total;
@@ -49,14 +49,12 @@ export default function useLoopringBalance(): BalanceProvider {
         let gas: Gas[] = [];
         if (!layer.tokens) return
 
-        const uri = 'https://api3.loopring.io/api/v3'
-
         try {
 
-            const account: { data: AccountInfo } = await axios.get(`${uri}/account?owner=${address}`)
+            const account: { data: AccountInfo } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`)
             const accInfo = account.data
 
-            const result: { data: LpFee } = await axios.get(`${uri}/user/offchainFee?accountId=${accInfo.accountId}&requestType=3`)
+            const result: { data: LpFee } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_OFFCHAIN_FEE_AMT}?accountId=${accInfo.accountId}&requestType=3`)
             const currencyDec = layer?.tokens?.find(c => c?.symbol == currency.symbol)?.decimals;
             const formatedGas = formatAmount(result.data.fees.find(f => f?.token === currency.symbol)?.fee, Number(currencyDec));
 
@@ -97,12 +95,3 @@ type LpBalance = {
     pending: PendingBalances;
 }
 
-type LpFee = {
-    fees: {
-        token: string,
-        tokenId: number,
-        fee: string,
-        discount: number
-    }[],
-    gasPrice: string
-}

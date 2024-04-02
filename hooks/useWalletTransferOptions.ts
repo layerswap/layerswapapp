@@ -36,9 +36,8 @@ export default function useWalletTransferOptions() {
 
     const canDoSweepless = source_network && ((source_network.type == NetworkType.EVM
         && (walletAddressType?.ready && !walletAddressType?.isContract))
-        || source_network.type == NetworkType.Starknet)
+        || source_network.type == NetworkType.Starknet || source_network.type == NetworkType.ZkSyncLite)
         || wallet?.address?.toLowerCase() === swap?.destination_address.toLowerCase()
-
     return { canDoSweepless, isContractWallet: walletAddressType }
 }
 

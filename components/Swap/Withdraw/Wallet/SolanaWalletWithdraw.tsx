@@ -12,7 +12,7 @@ import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore
 import WalletIcon from '../../../icons/WalletIcon';
 
 type Props = {
-    depositAddress: string,
+    depositAddress?: string,
     amount: number
 }
 
@@ -45,7 +45,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const handleTransfer = useCallback(async () => {
 
-        if (!swap || !walletPublicKey || !signTransaction) return
+        if (!swap || !walletPublicKey || !signTransaction || !depositAddress) return
 
         setLoading(true)
         try {
