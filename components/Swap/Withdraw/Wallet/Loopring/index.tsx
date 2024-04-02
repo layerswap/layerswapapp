@@ -26,13 +26,15 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const [activationPubKey, setActivationPubKey] = useState<{ x: string; y: string }>()
     const [selectedActivationAsset, setSelectedActivationAsset] = useState<string>()
     const { chain } = useNetwork()
-    const { swap } = useSwapDataState();
-    const { layers } = useSettingsState();
+    const { networks } = useSettingsState();
+    const { swapPrepareData, swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {};
+
+    const callData = swapPrepareData?.deposit_actions?.find(da => da.type == 'transfer')?.call_data as `0x${string}` | undefined
     const { setSwapTransaction } = useSwapTransactionStore();
     const { isConnected, address: fromAddress, connector } = useAccount();
-    const { source_network: source_network_internal_name } = swap || {}
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name);
-    const token = layers?.find(n => swap?.source_network == n?.internal_name)?.assets.find(c => c.asset == swap?.source_network_asset);
+    const source_network = swap?.source_network
+    const token = swap?.source_token
     const { account: accInfo, isLoading: loadingAccount, noAccount, mutate: refetchAccount } = useLoopringAccount({ address: fromAddress })
     const { availableBalances, defaultValue, loading: activationDataIsLoading, feeData } = useActivationData(accInfo?.accountId)
     const [unlockedAccount, setUnlockedAccount] = useState<UnlockedAccount | undefined>()
@@ -83,14 +85,14 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         setLoading(true)
         try {
 
-            if (!swap || !accInfo || !unlockedAccount || !token)
+            if (!swap || !accInfo || !unlockedAccount || !token || !callData)
                 return
 
             const transferResult = await LoopringAPI.userAPI.transfer({
                 accInfo,
                 amount: swap.requested_amount.toString(),
                 depositAddress: depositAddress as `0x${string}`,
-                sequence_number: swap?.sequence_number.toString(),
+                call_data: callData,
                 token,
                 unlockedAccount
             })
