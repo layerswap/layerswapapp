@@ -183,7 +183,7 @@ export async function activateAccount
         token,
         accInfo
     }: ActivateAccountProps)
-    : Promise<void> {
+    : Promise<{ x: string; y: string }> {
 
     const exchangeInfo = await getExchangeInfo();
 
@@ -227,4 +227,6 @@ export async function activateAccount
             'X-Api-Sig': ecdsaSignature
         }
     })).json()
+
+    return publicKey
 }

@@ -13,15 +13,15 @@ export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChang
     const activationCurrencyValues: ISelectMenuItem[]
         = tokens && availableBalances?.map(b => {
             const loopringToken = tokens?.find(t => t.tokenId === b.tokenId)
-            const asset: string = loopringToken?.name || "-"
+            const symbol: string = loopringToken?.symbol || "-"
             const decimals = loopringToken?.decimals
             return {
-                id: asset,
-                name: asset,
+                id: symbol,
+                name: symbol,
                 isAvailable: { value: true },
                 type: 'currency',
-                imgSrc: `${resource_storage_url}layerswap/currencies/${asset.toLowerCase()}.png`,
-                baseObject: asset,
+                imgSrc: `${resource_storage_url}layerswap/currencies/${symbol.toLowerCase()}.png`,
+                baseObject: symbol,
                 details: decimals ? `${formatAmount(b.total, decimals)}` : '',
                 order: 0,
             }
@@ -39,10 +39,11 @@ export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChang
         if (!selectedValue && defaultValue && tokens) {
             const loopringToken = tokens?.find(t => t.tokenId === defaultValue.tokenId)
             if (loopringToken)
-                handleChange(loopringToken?.name)
+                handleChange(loopringToken?.symbol)
         }
     }, [defaultValue, tokens])
-    const loopringToken = tokens?.find(t => t.name === selectedValue)
+
+    const loopringToken = tokens?.find(t => t.symbol === selectedValue)
 
     const decimals = loopringToken?.decimals
     const selectedTokenFee = feeData?.fees?.find(f => f.token === selectedValue)?.fee
