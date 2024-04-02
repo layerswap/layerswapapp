@@ -39,7 +39,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const { availableBalances, defaultValue, loading: activationDataIsLoading, feeData } = useActivationData(accInfo?.accountId)
     const [unlockedAccount, setUnlockedAccount] = useState<UnlockedAccount | undefined>()
     const { tokens } = useLoopringTokens()
-    const loopringToken = tokens?.find(t => t.name === selectedActivationAsset)
+    const loopringToken = tokens?.find(t => t.symbol === selectedActivationAsset)
 
     useEffect(() => {
         if (fromAddress) {
@@ -65,12 +65,12 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
 
     const activateAccout = useCallback(async () => {
         setLoading(true)
-
         try {
             if (!accInfo || !selectedActivationAsset || !loopringToken)
                 return
 
-            await LoopringAPI.userAPI.activateAccount({ accInfo, token: { id: loopringToken?.tokenId, symbol: loopringToken?.name } })
+            const publicKey = await LoopringAPI.userAPI.activateAccount({ accInfo, token: { id: loopringToken?.tokenId, symbol: loopringToken?.symbol } })
+            setActivationPubKey(publicKey)
             await refetchAccount()
         }
         catch (e) {
