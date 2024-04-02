@@ -85,7 +85,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             }
 
             try {
-                const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.account?.execute(callData) || {});
+                const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.account?.execute(JSON.parse(callData || "")) || {});
                 if (transferTxHash) {
                     setSwapTransaction(swap.id, BackendTransactionStatus.Completed, transferTxHash);
                     setTransferDone(true)
