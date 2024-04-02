@@ -5,7 +5,7 @@ import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Check, FilePlus2, History, Info, X } from "lucide-react";
 import KnownInternalNames from "../../../lib/knownIds";
 import { useSettingsState } from "../../../context/settings";
-import { isValidAddress } from "../../../lib/addressValidator";
+import { isValidAddress } from "../../../lib/address/validator";
 import Image from 'next/image';
 import { Partner } from "../../../Models/Partner";
 import shortenAddress from "../../utils/ShortenAddress";
@@ -16,6 +16,7 @@ import { groupBy } from "../../utils/groupBy";
 import { CommandGroup, CommandItem, CommandList, CommandWrapper } from "../../shadcn/command";
 import SubmitButton from "../../buttons/submitButton";
 import AddressIcon from "../../AddressIcon";
+import { addressFormat } from "../../../lib/address/formatter";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -63,9 +64,9 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
         let addresses: Address[] = []
 
-        if (recentlyUsedAddresses && values.to) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: values.to?.type }))]
-        if (connectedWalletAddress && values.to) addresses = [...addresses.filter(a => connectedWalletAddress !== a.address), { address: connectedWalletAddress, group: AddressGroup.ConnectedWallet, networkType: values.to.type }]
-        if (newAddress && values.to) addresses = [...addresses.filter(a => newAddress !== a.address), { address: newAddress, group: AddressGroup.ManualAdded, networkType: values.to.type }]
+        if (recentlyUsedAddresses && destination) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => addressFormat(ra.address, destination) === addressFormat(a.address, destination))), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: destination.type }))]
+        if (connectedWalletAddress && destination) addresses = [...addresses.filter(a => addressFormat(connectedWalletAddress, destination) !== addressFormat(a.address, destination)), { address: connectedWalletAddress, group: AddressGroup.ConnectedWallet, networkType: destination.type }]
+        if (newAddress && destination) addresses = [...addresses.filter(a => addressFormat(newAddress, destination) !== addressFormat(a.address, destination)), { address: newAddress, group: AddressGroup.ManualAdded, networkType: destination.type }]
 
         addAddresses(addresses.filter(a => a.networkType === values.to?.type))
 
@@ -78,7 +79,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [canFocus])
 
     useEffect(() => {
-        if (values.destination_address && addresses.find(a => a.address === values.destination_address)?.group === AddressGroup.ManualAdded) {
+        if (values.destination_address && destination && addresses.find(a => addressFormat(a.address, destination) === addressFormat(values.destination_address!, destination))?.group === AddressGroup.ManualAdded) {
             setManualAddress(values.destination_address)
         }
     }, [])
@@ -88,7 +89,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [setManualAddress])
 
     const handleSelectAddress = useCallback((value: string) => {
-        const address = addresses.find(a => a.address.toLowerCase() === value)?.address
+        const address = destination && addresses.find(a => addressFormat(a.address, destination) === addressFormat(value, destination))?.address
         setFieldValue("destination_address", address)
         close()
     }, [close, setFieldValue])
@@ -104,7 +105,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const handleSaveNewAddress = () => {
         if (isValidAddress(manualAddress, values.to)) {
-            if (!addresses.some(a => a.address.toLowerCase() === manualAddress.toLowerCase())) {
+            if (destination && !addresses.some(a => addressFormat(a.address, destination) === addressFormat(manualAddress, destination))) {
                 setNewAddress(manualAddress)
             }
             setFieldValue(name, manualAddress)
@@ -179,7 +180,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                                                     </div>
                                                                     <div className="flex h-6 items-center px-1">
                                                                         {
-                                                                            item.address === destination_address &&
+                                                                            addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!) &&
                                                                             <Check />
                                                                         }
                                                                     </div>
@@ -305,7 +306,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                     </div>
                                     <div className='flex text-primary-text flex-row items-left h-6 rounded-md px-1'>
                                         {
-                                            manualAddress === destination_address &&
+                                            addressFormat(manualAddress, destination!) === addressFormat(destination_address!, destination!) &&
                                             <Check />
                                         }
                                     </div>

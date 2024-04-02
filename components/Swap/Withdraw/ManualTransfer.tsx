@@ -10,7 +10,7 @@ import BackgroundField from "../../backgroundField";
 import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../../lib/layerSwapApiClient";
 import SubmitButton from "../../buttons/submitButton";
 import shortenAddress from "../../utils/ShortenAddress";
-import { isValidAddress } from "../../../lib/addressValidator";
+import { isValidAddress } from "../../../lib/address/validator";
 import { useSwapDepositHintClicked } from "../../../stores/swapTransactionStore";
 import { useFee } from "../../../context/feeContext";
 import { Exchange } from "../../../Models/Exchange";

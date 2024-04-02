@@ -8,7 +8,7 @@ import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import Image from "next/image";
 import { AssetGroup } from "./CEXCurrencyFormField";
-import { isValidAddress } from "../../lib/addressValidator";
+import { isValidAddress } from "../../lib/address/validator";
 import shortenAddress from "../utils/ShortenAddress";
 import Link from "next/link";
 import { SortingByOrder } from "../../lib/sorting";

@@ -6,7 +6,7 @@ import NetworkFormField from "../../Input/NetworkFormField";
 import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
-import { isValidAddress } from "../../../lib/addressValidator";
+import { isValidAddress } from "../../../lib/address/validator";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
