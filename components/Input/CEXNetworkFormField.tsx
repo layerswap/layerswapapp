@@ -15,6 +15,8 @@ import { SortingByOrder } from "../../lib/sorting";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import { Layer } from "../../Models/Layer";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
+import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
+import { Info } from "lucide-react";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -39,7 +41,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         currencyGroup
     } = values
 
-    const { layers, resolveImgSrc } = useSettingsState();
+    const { layers } = useSettingsState();
     const filterWith = direction === "from" ? to : from
     const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
 
@@ -85,8 +87,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     const network = (direction === 'from' ? from : to)
     const currency = (direction === 'from' ? fromCurrency : toCurrency)
 
-    const networkImgSrc = resolveImgSrc(network);
-
     const menuItems = routesData
         && historicalNetworks
         && GenerateMenuItems(routesData, historicalNetworks?.data, currencyGroup, layers)
@@ -131,6 +131,27 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         else if (value) return
     }, [currencyGroup])
 
+    const valueDetails = <>
+        <div className="flex">{network?.display_name}</div>
+        <div className="text-primary-text-placeholder inline-flex items-center justify-self-end gap-1">
+            ({currency?.asset})
+        </div>
+    </>
+
+    const networkDetails = <div>
+        {
+            value?.isAvailable.disabledReason === LayerDisabledReason.LockNetworkIsTrue &&
+            <div className='text-xs text-left text-secondary-text mb-2'>
+                <Info className='h-3 w-3 inline-block mb-0.5' /><span>&nbsp;You&apos;re accessing Layerswap from a partner&apos;s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.</span>
+            </div>
+        }
+        <div className="relative z-20 mb-3 ml-3 text-primary-buttonTextColor text-sm">
+            <p className="text-sm mt-2 flex space-x-1">
+                <span>Please make sure that the exchange supports the token and network you select here.</span>
+            </p>
+        </div>
+    </div>
+
     return (<div className={`p-2 rounded-lg bg-secondary-700 border border-secondary-500`}>
         <label htmlFor={name} className="font-semibold flex justify-between text-secondary-text text-xs mb-1.5">
             <div className="flex space-x-1">
@@ -155,11 +176,9 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             values={menuItems!}
             searchHint=''
             isLoading={isLoading}
-            isExchange={true}
-            network={network}
-            currency={currency}
-            networkImgSrc={networkImgSrc}
             modalHeight="80%"
+            valueDetails={valueDetails}
+            modalContent={networkDetails}
         />
     </div>)
 })
@@ -184,13 +203,12 @@ function GenerateMenuItems(
                 baseObject: e,
                 id: index.toString(),
                 name: `${e.network}_${e.asset}`,
-                asset: e.asset,
                 displayName: network?.display_name,
                 order: indexOf > -1 ? indexOf : 100,
                 imgSrc: network?.img_url || '',
                 isAvailable: { value: true, disabledReason: null },
-                type: 'cex',
-                group: ''
+                group: '',
+                details: e.asset
             }
             return item;
         }).sort(SortingByOrder)

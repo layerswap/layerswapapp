@@ -97,6 +97,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/swaps/quote?version=${LayerSwapApiClient.apiVersion}`, params);
     }
 
+    async GetTransactionStatus(network: string, tx_id: string): Promise<ApiResponse<any>> {
+        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/networks/${network}/transaction_status?version=${LayerSwapApiClient.apiVersion}`, { transaction_id: tx_id });
+    }
+
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
@@ -199,7 +203,7 @@ export type Transaction = {
     max_confirmations: number,
     usd_value: number,
     usd_price: number,
-    status: TransactionStatus,
+    status: BackendTransactionStatus,
     timestamp?: string,
 }
 
@@ -209,9 +213,16 @@ export enum TransactionType {
     Refuel = 'refuel'
 }
 
+export enum BackendTransactionStatus {
+    Completed = 'completed',
+    Failed = 'failed',
+    Initiated = 'initiated',
+    Pending = 'pending'
+}
+
 export enum TransactionStatus {
     Completed = 'completed',
-    Initiated = 'initiated',
+    Failed = 'failed',
     Pending = 'pending'
 }
 
@@ -234,12 +245,6 @@ type GetFeeParams = {
     refuel?: boolean
 }
 
-export enum PublishedSwapTransactionStatus {
-    Pending,
-    Error,
-    Completed
-}
-
 export type PublishedSwapTransactions = {
     [key: string]: SwapTransaction
 }
@@ -247,7 +252,7 @@ export type PublishedSwapTransactions = {
 
 export type SwapTransaction = {
     hash: string,
-    status: PublishedSwapTransactionStatus
+    status: BackendTransactionStatus
 }
 
 export enum SwapType {
