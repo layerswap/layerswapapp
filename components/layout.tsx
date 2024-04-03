@@ -52,7 +52,8 @@ export default function Layout({ children, settings, themeData }: Props) {
         'to',
         'appName',
         'asset',
-        'amount'
+        'amount',
+        'destAddress'
       ])
     })
   }, [])
