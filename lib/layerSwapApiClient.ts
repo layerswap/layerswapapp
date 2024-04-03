@@ -271,13 +271,6 @@ export type Fee = {
     deposit_type: DepositType
 }
 
-type GetFeeParams = {
-    source: string,
-    destination: string,
-    asset: string,
-    refuel?: boolean
-}
-
 export type PublishedSwapTransactions = {
     [key: string]: SwapTransaction
 }

@@ -15,6 +15,7 @@ import { NetworkType } from "../Models/Network";
 import resolveChain from "../lib/resolveChain";
 import React from "react";
 import AddressIcon from "./AddressIcon";
+import NetworkSettings from "../lib/NetworkSettings";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -24,7 +25,7 @@ function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
     const settingsChains = settings?.networks
-        .sort((a, b) => Number(a.chain_id) - Number(b.chain_id))
+        .sort((a, b) => (NetworkSettings.KnownSettings[a.name]?.ChainOrder || Number(a.chain_id)) - (NetworkSettings.KnownSettings[b.name]?.ChainOrder || Number(b.chain_id)))
         .filter(net => net.type === NetworkType.EVM
             && net.node_url
             && net.tokens.some(a => a.is_native))
@@ -33,6 +34,7 @@ function RainbowKitComponent({ children }: Props) {
         settingsChains?.length > 0 ? settingsChains : [mainnet],
         [publicProvider()]
     );
+
     let chainExceptZkSyncEra = chains.filter(x => x.id != 324);
     const projectId = WALLETCONNECT_PROJECT_ID;
     const connectors = connectorsForWallets([

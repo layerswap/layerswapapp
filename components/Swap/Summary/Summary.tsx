@@ -42,10 +42,8 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = partnerData?.data
 
-    // const source = hideFrom ? partner : from
-    // const destination = hideTo ? partner : to
-    const source = from
-    const destination = to
+    const source = hideFrom ? partner : from
+    const destination = hideTo ? partner : to
 
     const requestedAmountInUsd = requestedAmount && (sourceCurrency?.price_in_usd * requestedAmount).toFixed(2)
     const receiveAmountInUsd = receiveAmount ? (destinationCurrency?.price_in_usd * receiveAmount).toFixed(2) : undefined
