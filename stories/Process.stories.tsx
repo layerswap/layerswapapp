@@ -29,8 +29,6 @@ import { useQueryState } from '../context/query';
 import MainStepValidation from '../lib/mainStepValidator';
 import { FeeProvider, useFee } from '../context/feeContext';
 import { useArgs } from '@storybook/preview-api';
-import useSWR from 'swr';
-import { ApiResponse } from '../Models/ApiResponse';
 
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 const settingsChains = SettingChains;
