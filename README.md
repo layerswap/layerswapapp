@@ -4,7 +4,7 @@
   <h1 align="left">UI for Layerswap web application</h1>
 </div>
  
-This repository contains UI implementation of Layerswap UI
+This repository contains UI implementation of Layerswap
 
  
 
