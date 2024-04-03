@@ -5,23 +5,23 @@ import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { SwapResponse } from "./layerSwapApiClient";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
-    const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, addressSource } = queryParams
-    const { networks: layers, exchanges, sourceRoutes, destinationRoutes } = settings || {}
+    const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset } = queryParams
+    const { networks, exchanges, sourceRoutes, destinationRoutes } = settings || {}
 
     const lockedSourceCurrency = lockFromAsset ?
-        layers.find(l => l.name === to)
+        networks.find(l => l.name === to)
             ?.tokens?.find(c => c?.symbol?.toUpperCase() === fromAsset?.toUpperCase())
         : undefined
     const lockedDestinationCurrency = lockToAsset ?
-        layers.find(l => l.name === to)
+        networks.find(l => l.name === to)
             ?.tokens?.find(c => c?.symbol?.toUpperCase() === toAsset?.toUpperCase())
         : undefined
 
-    const sourceLayer = layers.find(l => l.name.toUpperCase() === from?.toUpperCase())
-    const destinationLayer = layers.find(l => l.name.toUpperCase() === to?.toUpperCase())
+    const sourceLayer = networks.find(l => l.name.toUpperCase() === from?.toUpperCase())
+    const destinationLayer = networks.find(l => l.name.toUpperCase() === to?.toUpperCase())
 
-    const sourceItems = layers.filter(l => sourceRoutes?.some(r => r.name === l.name))
-    const destinationItems = layers.filter(l => destinationRoutes?.some(r => r.name === l.name))
+    const sourceItems = networks.filter(l => sourceRoutes?.some(r => r.name === l.name))
+    const destinationItems = networks.filter(l => destinationRoutes?.some(r => r.name === l.name))
 
     const initialSourceExchange = exchanges.find(e => e.name.toLowerCase() === from?.toLowerCase())
     const initialDestinationExchange = exchanges.find(e => e.name.toLowerCase() === to?.toLowerCase())
@@ -35,11 +35,11 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
 
     const filteredSourceCurrencies = lockedSourceCurrency ?
         [lockedSourceCurrency]
-        : layers.find(l => l.name === from)?.tokens
+        : networks.find(l => l.name === from)?.tokens
 
     const filteredDestinationCurrencies = lockedDestinationCurrency ?
         [lockedDestinationCurrency]
-        : layers.find(l => l.name === to)?.tokens
+        : networks.find(l => l.name === to)?.tokens
 
     let initialAddress =
         destAddress && initialDestination && isValidAddress(destAddress, destinationLayer) ? destAddress : "";

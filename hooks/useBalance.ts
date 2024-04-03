@@ -99,15 +99,6 @@ export default function useBalanceProvider() {
 
                 const response = await apiClient.GetQuote({ params })
 
-                // const provider = getBalanceProvider(source_network)
-                // const gas = provider?.getGas && await provider?.getGas({
-                //     network: source_network,
-                //     address: wallet?.address as `0x${string}`,
-                //     currency: source_token,
-                //     userDestinationAddress,
-                //     wallet
-                // }) || []
-
                 const gas = {
                     token: source_token.symbol,
                     gas: Number(response?.data?.quote?.deposit_gas_fee),

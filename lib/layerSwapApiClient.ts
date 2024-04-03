@@ -53,7 +53,7 @@ export default class LayerSwapApiClient {
     }
 
     async DisconnectExchangeAsync(swapid: string, exchangeName: string): Promise<ApiResponse<void>> {
-        return await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/swaps/${swapid}/exchange/${exchangeName}/disconnect`);
+        return await this.AuthenticatedRequest<ApiResponse<void>>("DELETE", `/internal/swaps/${swapid}/exchange/${exchangeName}/disconnect`);
     }
 
     async GetSwapDetailsAsync(id: string): Promise<ApiResponse<SwapResponse>> {
@@ -61,23 +61,19 @@ export default class LayerSwapApiClient {
     }
 
     async GetDepositAddress(network: string, source: DepositAddressSource): Promise<ApiResponse<DepositAddress>> {
-        return await this.AuthenticatedRequest<ApiResponse<DepositAddress>>("GET", `/swaps?network=${network}&source=${source}`);
+        return await this.AuthenticatedRequest<ApiResponse<DepositAddress>>("GET", `/internal/swaps?network=${network}&source=${source}`);
     }
 
     async WithdrawFromExchange(swapId: string, exchange: string, twoFactorCode?: string): Promise<ApiResponse<void>> {
-        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/${swapId}/exchange/${exchange}/withdraw${twoFactorCode ? `?twoFactorCode=${twoFactorCode}` : ''}`);
+        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/internal/swaps/${swapId}/exchange/${exchange}/withdraw${twoFactorCode ? `?twoFactorCode=${twoFactorCode}` : ''}`);
     }
 
     async SwapsMigration(GuestAuthorization: string): Promise<ApiResponse<void>> {
-        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/swaps/migrate`, null, { GuestAuthorization });
-    }
-
-    async RewardLeaderboard(campaign: string): Promise<ApiResponse<any>> {
-        return await this.AuthenticatedRequest<ApiResponse<any>>("PUT", `/campaigns/${campaign}/leaderboard`);
+        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/internal/swaps/migrate`, null, { GuestAuthorization });
     }
 
     async GetTransactionStatus(network: string, tx_id: string): Promise<ApiResponse<any>> {
-        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/networks/${network}/transaction_status`, { transaction_id: tx_id });
+        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/internal/networks/${network}/transaction_status`, { transaction_id: tx_id });
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
