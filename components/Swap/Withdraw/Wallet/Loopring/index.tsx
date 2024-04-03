@@ -38,22 +38,22 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const { tokens } = useLoopringTokens()
     const loopringToken = tokens?.find(t => t.name === selectedActivationAsset)
 
-    const unlockedAccount = useLoopringUnlockedAccount((state) => state.unlockedAccount)
-    const setUnlockedAccount = useLoopringUnlockedAccount((state) => state.setUnlockedAccount)
+    const loopringAccount = useLoopringUnlockedAccount((state) => state.account)
+    const setLoopringAccount = useLoopringUnlockedAccount((state) => state.setAccount)
 
     useEffect(() => {
-        if (fromAddress) {
-            setUnlockedAccount(undefined)
+        if (fromAddress !== loopringAccount?.address) {
+            setLoopringAccount(undefined)
         }
     }, [fromAddress])
 
     const handleUnlockAccount = useCallback(async () => {
         setLoading(true)
         try {
-            if (!accInfo)
+            if (!accInfo || !fromAddress)
                 return
             const res = await LoopringAPI.userAPI.unlockAccount(accInfo)
-            setUnlockedAccount(res)
+            setLoopringAccount({ unlockedAccount: res, address: fromAddress })
         }
         catch (e) {
             toast(e.message)
@@ -85,7 +85,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         setLoading(true)
         try {
 
-            if (!swap || !accInfo || !unlockedAccount || !token)
+            if (!swap || !accInfo || !loopringAccount || !token)
                 return
 
             const transferResult = await LoopringAPI.userAPI.transfer({
@@ -94,7 +94,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 depositAddress: depositAddress as `0x${string}`,
                 sequence_number: swap?.sequence_number.toString(),
                 token,
-                unlockedAccount
+                unlockedAccount: loopringAccount.unlockedAccount
             })
             if (transferResult.hash) {
                 setSwapTransaction(swap.id, BackendTransactionStatus.Pending, transferResult.hash);
@@ -109,7 +109,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [swap, source_network, depositAddress, accInfo, unlockedAccount, token])
+    }, [swap, source_network, depositAddress, accInfo, loopringAccount, token])
 
     if (noAccount) {
         //TODO fix text
@@ -162,7 +162,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
                 <div className='space-y-4'>
                     {
-                        (accInfo && unlockedAccount) ?
+                        (accInfo && loopringAccount) ?
                             <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                                 Send from wallet
                             </SubmitButton>
