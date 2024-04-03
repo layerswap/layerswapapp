@@ -14,7 +14,9 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
     useEffect(() => {
         const timer = setInterval(() => {
             const currentTime = new Date();
-            const remainingTime = Math.max(currentTime.getTime() - new Date(swapInputTransaction?.timestamp!).getTime(), 0);
+            const elapsedTime = currentTime.getTime() - new Date(swapInputTransaction?.timestamp!).getTime();
+
+            const remainingTime = Math.max(timeStringToMilliseconds(initialTime) - Math.abs(elapsedTime), 0)
             const formattedTime = formatTime(remainingTime);
             setCountdown(formattedTime);
         }, 1000);
@@ -36,7 +38,7 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
         const seconds = totalSeconds % 60;
         return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     };
-console.log(999999)
+
     if (countdown === "00:00:00" && swap.status !== SwapStatus.Completed) {
         const renderingError = new Error("Transaction is taking longer than expected");
         renderingError.name = `LongTransactionError`;
@@ -54,7 +56,7 @@ console.log(999999)
                 swap.status === SwapStatus.Completed && (!countdown || countdown === "00:00:00") ?
                     ""
                     :
-                    <div className='text-secondary-text'><span>Time remaining:</span> <span className='text-primary-text'>{countdown}</span></div>
+                    <div className='text-secondary-text flex items-center'><span>Time remaining:</span> <span className='text-primary-text ml-0.5'>{countdown ? countdown : <div className="h-[10px] mt-1 w-16 ml-1 animate-pulse rounded bg-gray-500" />}</span></div>
             }
         </div>
 
@@ -62,3 +64,11 @@ console.log(999999)
 };
 
 export default CountdownTimer;
+
+function timeStringToMilliseconds(timeString) {
+    const parts = timeString.split('.');
+    const time = parts[0];
+    const [hours, minutes, seconds] = time.split(':').map(parseFloat);
+    const milliseconds = ((hours * 3600) + (minutes * 60) + seconds) * 1000;
+    return milliseconds;
+}
