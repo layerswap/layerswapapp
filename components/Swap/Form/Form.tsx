@@ -16,9 +16,7 @@ import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
 import { ArrowUpDown, Loader2 } from 'lucide-react'
 import { useAuthState } from "../../../context/authContext";
-import WarningMessage from "../../WarningMessage";
 import { GetDefaultAsset } from "../../../helpers/settingsHelper";
-import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
@@ -64,6 +62,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
     const { minAllowedAmount, valuesChanger, fee } = useFee()
     const toAsset = values.toCurrency?.asset
+    const fromAsset = values.fromCurrency?.asset
+
     const { authData } = useAuthState()
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -83,9 +83,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
     const actionDisplayName = query?.actionButtonText || "Swap now"
 
-    const handleConfirmToggleChange = (value: boolean) => {
-        setFieldValue('refuel', value)
-    }
     const depositeAddressIsfromAccountRef = useRef<boolean | null>(depositeAddressIsfromAccount);
 
     useEffect(() => {
@@ -99,9 +96,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
     useEffect(() => {
         if (!source || !toAsset || !GetDefaultAsset(source, toAsset)?.refuel_amount_in_usd) {
-            handleConfirmToggleChange(false)
+            setFieldValue('refuel', false, true)
         }
-    }, [toAsset, destination, source])
+    }, [toAsset, destination, source, fromAsset, currencyGroup])
 
     useEffect(() => {
         setAddressConfirmed(false)
@@ -166,7 +163,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         valuesSwapperDisabled = true;
     }
     const seconds = fee?.avgCompletionTime && calculateSeconds(fee.avgCompletionTime)
-    const averageTimeInMinutes = seconds && (seconds / 60) || 0
 
     const hideAddress = query?.hideAddress
         && query?.to
@@ -258,13 +254,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                     <div className="w-full">
                         <FeeDetailsComponent values={values} />
                         {
-                            //TODO refactor 
-                            destination && toAsset && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal"><span>{destination?.display_name}</span> <span>network congestion. Transactions can take up to 1 hour.</span></span>
-                            </WarningMessage>
-                        }
-                        {
                             values.amount &&
                             <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
                         }
@@ -315,7 +304,7 @@ type AddressButtonProps = {
 }
 const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, partnerImage, disabled }) => {
     return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-buttonTextColor bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full px-3.5 py-3">
-        {isPartnerWallet &&
+        {isPartnerWallet && values.destination_address &&
             <div className="shrink-0 flex items-center pointer-events-none">
                 {
                     partnerImage &&

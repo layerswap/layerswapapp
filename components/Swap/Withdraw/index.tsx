@@ -30,6 +30,8 @@ const Withdraw: FC = () => {
     const sourceIsZkSync = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase()
     const sourceIsArbitrumOne = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
         || swap?.source_network === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
+    const sourceIsLoopring = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.LoopringMainnet?.toUpperCase()
+        || swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.LoopringGoerli?.toUpperCase()
     const sourceIsCoinbase =
         swap?.source_exchange?.toUpperCase() === KnownInternalNames.Exchanges.Coinbase?.toUpperCase()
     const sourceIsSolana = swap?.source_network?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
@@ -41,7 +43,7 @@ const Withdraw: FC = () => {
     const walletIsAvailable = !swap?.source_exchange
         && (sourceNetworkType === NetworkType.EVM
             || sourceNetworkType === NetworkType.Starknet
-            || sourceIsImmutableX || sourceIsZkSync || sourceIsSolana)
+            || sourceIsImmutableX || sourceIsZkSync || sourceIsSolana || sourceIsLoopring)
 
     const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
     const sourceIsSynquote = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne

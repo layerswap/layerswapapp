@@ -61,14 +61,6 @@ export default function Form() {
     const { swap } = useSwapDataState()
     const { minAllowedAmount, maxAllowedAmount } = useFee()
 
-    useEffect(() => {
-        if (swap) {
-            const initialValues = generateSwapInitialValuesFromSwap(swap, settings)
-            formikRef?.current?.resetForm({ values: initialValues })
-            formikRef?.current?.validateForm(initialValues)
-        }
-    }, [swap])
-
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
             const accessToken = TokenService.getAuthData()?.access_token
@@ -104,9 +96,11 @@ export default function Form() {
                 })
                 setShowConnectNetworkModal(true);
             } else if (data.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
-                const remainingTimeInHours = getSecondsToTomorrow() / 3600
-                const remainingTimeInMinutes = getSecondsToTomorrow() / 60
-                const remainingTime = remainingTimeInHours >= 1 ? `${remainingTimeInHours.toFixed()} hours` : `${remainingTimeInMinutes.toFixed()} minutes`
+                const time = data.metadata.RemainingLimitPeriod?.split(':');
+                const hours = Number(time[0])
+                const minutes = Number(time[1])
+                const remainingTime = `${hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''} ${minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}`
+
                 if (minAllowedAmount && data.metadata.AvailableTransactionAmount > minAllowedAmount) {
                     toast.error(`Daily limit of ${values.fromCurrency?.asset} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromCurrency?.asset} or retry in ${remainingTime}.`)
                 } else {
@@ -127,9 +121,6 @@ export default function Form() {
 
     const initialValues: SwapFormValues = swap ? generateSwapInitialValuesFromSwap(swap, settings)
         : generateSwapInitialValues(settings, query)
-
-    const initiallyValidation = MainStepValidation({ minAllowedAmount, maxAllowedAmount })(initialValues)
-    const initiallyIsValid = !(Object.values(initiallyValidation)?.filter(v => v).length > 0)
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         setShowSwapModal(value)
@@ -180,7 +171,6 @@ export default function Form() {
             validateOnMount={true}
             validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
-            isInitialValid={initiallyIsValid}
         >
             <SwapForm isPartnerWallet={!!isPartnerWallet} partner={partner} />
         </Formik>
