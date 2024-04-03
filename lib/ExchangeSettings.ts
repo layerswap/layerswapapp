@@ -40,7 +40,6 @@ export default class ExchangeSettings {
     EnableDepositAddressConnect?: boolean;
 
     public static KnownSettings: { [key: string]: ExchangeSettings } = {};
-    public static ForceDisable?: { [exchange: string]: { offramp: boolean, onramp: boolean } }
 
     private static _isInitialized = false;
     public static Initialize() {
@@ -49,7 +48,6 @@ export default class ExchangeSettings {
         }
 
         ExchangeSettings._isInitialized = true;
-        ExchangeSettings.ForceDisable = JSON.parse(process.env.NEXT_PUBLIC_EXCHANGE_FORCE_SETTINGS || "{}")
         ExchangeSettings.KnownSettings[KnownInternalNames.Exchanges.Binance] = {
             EnableDepositAddressConnect: true,
             UserApiKeyGuideUrl: "https://docs.layerswap.io/user-docs/using-layerswap/getting-api-keys/binance",
