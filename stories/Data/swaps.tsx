@@ -95,7 +95,43 @@ export const failedSwap: SwapItem = {
             "usd_price": 1718.42,
             "type": TransactionType.Input,
             "status": BackendTransactionStatus.Pending,
-            "usd_value": 3.093156,
+            "usd_value": 3.093156
+        },
+    ]
+}
+
+export const failedInputSwap: SwapItem = {
+    "id": "d8a32946-1250-46d3-999f-cd195304c55e",
+    "sequence_number": 4355,
+    "requested_amount": 0.0018,
+    "fee": 0.00057,
+    "message": undefined,
+    "reference_id": undefined,
+    "exchange_account_connected": false,
+    "app_name": "Layerswap",
+    "has_pending_deposit": false,
+    "created_date": "2024-02-23T12:41:48.389955+00:00",
+    "status": SwapStatus.Failed,
+    "destination_address": "0xf51c208e2c37a99b13dcf01a3434cc71be8b2bdd",
+    "source_network_asset": "ETH",
+    "source_network": "ETHEREUM_SEPOLIA",
+    "destination_network_asset": "ETH",
+    "destination_network": "ARBITRUM_SEPOLIA",
+    "has_refuel": false,
+    "fail_reason": "",
+    "transactions": [
+        {
+            "from": "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
+            "to": "0xf51c208e2c37a99b13dcf01a3434cc71be8b2bdd",
+            "created_date": "2023-08-30T09:07:34.213877+00:00",
+            "transaction_id": "0x529ab89f4ed2ece53ca51f52d11e5123f5e5c43c09a9d054d243de0e0829d15f",
+            "confirmations": 3,
+            "max_confirmations": 3,
+            "amount": 0.0018,
+            "usd_price": 1718.42,
+            "type": TransactionType.Input,
+            "status": BackendTransactionStatus.Failed,
+            "usd_value": 3.093156
         },
     ]
 }
