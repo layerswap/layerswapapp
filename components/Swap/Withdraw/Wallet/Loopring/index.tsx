@@ -3,7 +3,6 @@ import { FC, useCallback, useEffect, useState } from 'react'
 import SubmitButton from '../../../../buttons/submitButton';
 import { useSwapDataState } from '../../../../../context/swap';
 import toast from 'react-hot-toast';
-import { useSettingsState } from '../../../../../context/settings';
 import { useAccount, useNetwork } from 'wagmi';
 import { ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
 import WalletMessage from '../WalletTransfer/message';
@@ -26,13 +25,12 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const [activationPubKey, setActivationPubKey] = useState<{ x: string; y: string }>()
     const [selectedActivationAsset, setSelectedActivationAsset] = useState<string>()
     const { chain } = useNetwork()
-    const { networks } = useSettingsState();
     const { swapPrepareData, swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {};
 
     const callData = swapPrepareData?.deposit_actions?.find(da => da.type == 'transfer')?.call_data as `0x${string}` | undefined
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { isConnected, address: fromAddress, connector } = useAccount();
+    const { isConnected, address: fromAddress } = useAccount();
     const source_network = swap?.source_network
     const token = swap?.source_token
     const { account: accInfo, isLoading: loadingAccount, noAccount, mutate: refetchAccount } = useLoopringAccount({ address: fromAddress })
