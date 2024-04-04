@@ -47,7 +47,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
 
     const apiClient = new LayerSwapApiClient()
     const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_layer?.internal_name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
-    
+
     const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
 
     useEffect(() => {
@@ -277,10 +277,12 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     )
 }
 
-
 const resolveSwapInputTxStatus = (swapInputTransaction: Transaction | undefined, inputTxStatusFromApi: TransactionStatus) => {
-    if (swapInputTransaction)
+    if (swapInputTransaction) {
+        if (swapInputTransaction.status === BackendTransactionStatus.Completed && swapInputTransaction.confirmations < swapInputTransaction.max_confirmations)
+            return TransactionStatus.Pending
         return swapInputTransaction?.status
+    }
     if (inputTxStatusFromApi === TransactionStatus.Failed)
         return inputTxStatusFromApi
     else
