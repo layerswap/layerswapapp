@@ -1,3 +1,5 @@
+import { Refuel } from "../lib/layerSwapApiClient";
+
 export enum NetworkType {
     EVM = "evm",
     Starknet = "starknet",
@@ -25,6 +27,10 @@ export class CryptoNetwork extends Network {
     tokens: Token[];
 }
 
+export class RouteNetwork extends Network {
+    tokens: RouteToken[]
+}
+
 export class Token {
     symbol: string;
     logo: string;
@@ -38,8 +44,10 @@ export class Token {
     available_in_source?: boolean;
     available_in_destination?: boolean;
     status?: string;
-    //remove
-    refuel_amount_in_usd?: number
+}
+
+export class RouteToken extends Token {
+    refuel: Refuel
 }
 
 export class Metadata {

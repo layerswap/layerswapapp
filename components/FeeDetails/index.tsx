@@ -19,7 +19,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
     const { toCurrency, to, refuel, fromExchange, toExchange, from, fromCurrency } = values || {};
     const { fee } = useFee()
     const query = useQueryState();
-    const [openModal, setOpenModal] = useState<boolean>(false)
+    const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false)
     const nativeAsset = to?.tokens.find(a => a.is_native)
 
     return (
@@ -35,9 +35,9 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                     }
 
                     {
-                        toCurrency?.refuel_amount_in_usd && !query.hideRefuel && nativeAsset && !toExchange &&
+                        toCurrency?.refuel && !query.hideRefuel && nativeAsset && !toExchange &&
                         <FeeDetails.Item>
-                            <RefuelToggle onButtonClick={() => setOpenModal(true)} />
+                            <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
                         </FeeDetails.Item>
                     }
 
@@ -54,7 +54,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                             to={to}
                             refuel={!!refuel}
                             fee={fee}
-                            onButtonClick={() => setOpenModal(true)}
+                            onButtonClick={() => setOpenRefuelModal(true)}
                         />
                     </FeeDetails.Item>
 
@@ -71,7 +71,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                 />
             } */}
 
-            <RefuelModal values={values} openModal={openModal} setOpenModal={setOpenModal} fee={fee} />
+            <RefuelModal values={values} openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} fee={fee} />
 
         </>
     )

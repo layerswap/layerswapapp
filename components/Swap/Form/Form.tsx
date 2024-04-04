@@ -27,7 +27,7 @@ import dynamic from "next/dynamic";
 import { Balance, Gas } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
-import { CryptoNetwork } from "../../../Models/Network";
+import { RouteNetwork } from "../../../Models/Network";
 
 type Props = {
     isPartnerWallet?: boolean,
@@ -94,7 +94,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     }, [depositeAddressIsfromAccount])
 
     useEffect(() => {
-        if (!source || !toAsset || !toAsset.refuel_amount_in_usd) {
+        if (!source || !toAsset || !toAsset.refuel) {
             setFieldValue('refuel', false, true)
         }
     }, [toAsset, destination, source, fromAsset, currencyGroup])
@@ -138,10 +138,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
 
     const sourceRoutesEndpoint = `/sources?include_unmatched=true&destination_network=${source?.name}&destination_token=${fromCurrency?.symbol}`
     const destinationRoutesEndpoint = `/destinations?include_unmatched=true&source_network=${destination?.name}&source_token=${toCurrency?.symbol}`
-    const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<CryptoNetwork[]>>((source && fromCurrency) ?
+    const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<RouteNetwork[]>>((source && fromCurrency) ?
         sourceRoutesEndpoint : `/v2-alpha/sources?include_unmatched=true`, layerswapApiClient.fetcher, { keepPreviousData: true })
 
-    const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<CryptoNetwork[]>>((destination && toCurrency) ?
+    const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<RouteNetwork[]>>((destination && toCurrency) ?
         destinationRoutesEndpoint : `/v2-alpha/destinations?include_unmatched=true`, layerswapApiClient.fetcher, { keepPreviousData: true })
 
     const sourceCanBeSwapped = destinationRoutes?.data?.some(l => l.name === source?.name)
