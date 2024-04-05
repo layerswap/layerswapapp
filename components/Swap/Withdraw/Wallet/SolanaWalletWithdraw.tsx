@@ -2,7 +2,6 @@ import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { useSwapDataState } from '../../../../context/swap';
 import { Transaction, Connection, PublicKey, TransactionInstruction } from '@solana/web3.js';
 import useWallet from '../../../../hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
@@ -10,21 +9,26 @@ import { createAssociatedTokenAccountInstruction, createTransferInstruction, get
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
+import { Network, Token } from '../../../../Models/Network';
 
 type Props = {
     depositAddress?: string,
-    amount: number
+    amount: number;
+    source_network: Network;
+    source_token: Token;
+    swapId: string;
 }
 
-const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
+const SolanaWalletWithdrawStep: FC<Props> = ({
+    depositAddress,
+    amount,
+    source_network,
+    source_token,
+    swapId
+}) => {
     const [loading, setLoading] = useState(false);
     const { getWithdrawalProvider } = useWallet()
-
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
-    const { source_network, source_token } = swap || {}
-
     const provider = getWithdrawalProvider(source_network!);
     const wallet = provider?.getConnectedWallet();
     const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
@@ -45,7 +49,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const handleTransfer = useCallback(async () => {
 
-        if (!swap || !walletPublicKey || !signTransaction || !depositAddress) return
+        if (!walletPublicKey || !signTransaction || !depositAddress) return
 
         setLoading(true)
         try {
@@ -96,7 +100,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             );
 
             if (signature) {
-                setSwapTransaction(swap?.id, BackendTransactionStatus.Pending, signature);
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, signature);
             }
 
         }
@@ -109,7 +113,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         finally {
             setLoading(false)
         }
-    }, [swap, depositAddress, source_token, walletPublicKey, amount, signTransaction])
+    }, [swapId, depositAddress, source_network, source_token, walletPublicKey, amount, signTransaction])
 
     return (
         <>

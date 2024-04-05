@@ -45,7 +45,14 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
     const contract_address = values?.from?.tokens.find(a => a.symbol === values?.fromCurrency?.symbol)?.contract
 
     useEffect(() => {
-        direction === 'from' && sourceNetworkWallet?.address && values.from && values.fromCurrency && values.to && values.toCurrency && values.amount && fetchGas(values.from, values.fromCurrency, values.to, values.toCurrency, values.destination_address || sourceNetworkWallet.address, values.amount)
+        direction === 'from'
+            && sourceNetworkWallet?.address
+            && values.from
+            && values.fromCurrency
+            && values.to
+            && values.toCurrency
+            && values.amount
+            && fetchGas(values.from, values.fromCurrency, values.destination_address || sourceNetworkWallet.address)
     }, [contract_address, values.from, values.fromCurrency, sourceNetworkWallet?.address])
 
     return (

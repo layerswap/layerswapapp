@@ -44,7 +44,7 @@ const WalletTransferContent: FC = () => {
     }, [source_network, sourceNetworkWallet?.address])
 
     useEffect(() => {
-        sourceNetworkWallet?.address && source_network && source_token && destination_token && destination_network && requested_amount && depositAddress && fetchGas(source_network, source_token, destination_network, destination_token, destination_address || sourceNetworkWallet.address, requested_amount?.toString())
+        sourceNetworkWallet?.address && source_network && source_token && destination_token && destination_network && requested_amount && depositAddress && fetchGas(source_network, source_token, destination_address || sourceNetworkWallet.address)
     }, [source_network, source_token, sourceNetworkWallet?.address])
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {

@@ -1,5 +1,5 @@
 import { useSettingsState } from "../../../context/settings"
-import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../Models/Balance"
+import { Balance, GetNetworkBalancesProps, BalanceProvider, GasProps } from "../../../Models/Balance"
 import { NetworkType } from "../../../Models/Network"
 import NetworkSettings, { GasCalculation } from "../../NetworkSettings"
 
@@ -13,7 +13,7 @@ export default function useEVMBalance(): BalanceProvider {
             && l.tokens.some(a => a.is_native))
         .map(l => l.name)
 
-    const getBalance = async ({ network: layer, address }: BalanceProps) => {
+    const getBalance = async ({ network: layer, address }: GetNetworkBalancesProps) => {
         try {
             const resolveChain = (await import("../../resolveChain")).default
             const chain = resolveChain(layer)
@@ -59,53 +59,53 @@ export default function useEVMBalance(): BalanceProvider {
 
     }
 
-    // const getGas = async ({ layer, address, currency, userDestinationAddress }: GasProps) => {
+    const getGas = async ({ network, address, token, userDestinationAddress }: GasProps) => {
 
-    //     if (!layer || !address) {
-    //         return
-    //     }
-    //     const chainId = Number(layer?.chain_id)
-    //     const nativeToken = layer?.tokens
-    //         .find(a => a.is_native)
+        if (!network || !address) {
+            return
+        }
+        const chainId = Number(network?.chain_id)
+        const nativeToken = network?.tokens
+            .find(a => a.is_native)
 
-    //     if (!nativeToken || !chainId || !layer)
-    //         return
+        if (!nativeToken || !chainId || !layer)
+            return
 
-    //     const contract_address = layer?.tokens?.find(a => a?.symbol === currency?.symbol)?.contract as `0x${string}`
-    //     const destination_address = layer?.managed_accounts?.[0]?.address as `0x${string}`
+        const contract_address = layer?.tokens?.find(a => a?.symbol === currency?.symbol)?.contract as `0x${string}`
+        const destination_address = layer?.managed_accounts?.[0]?.address as `0x${string}`
 
-    //     try {
+        try {
 
-    //         const { createPublicClient, http } = await import("viem")
-    //         const resolveChain = (await import("../../resolveChain")).default
-    //         const publicClient = createPublicClient({
-    //             chain: resolveChain(layer),
-    //             transport: http(),
-    //         })
+            const { createPublicClient, http } = await import("viem")
+            const resolveChain = (await import("../../resolveChain")).default
+            const publicClient = createPublicClient({
+                chain: resolveChain(layer),
+                transport: http(),
+            })
 
-    //         const getEthereumGas = (await import("./ethereum/getGas")).default
-    //         const gasProvider = new getEthereumGas(
-    //             publicClient,
-    //             chainId,
-    //             contract_address,
-    //             address,
-    //             layer,
-    //             currency,
-    //             destination_address,
-    //             nativeToken,
-    //             address !== userDestinationAddress,
-    //         )
+            const getEthereumGas = (await import("./ethereum/getGas")).default
+            const gasProvider = new getEthereumGas(
+                publicClient,
+                chainId,
+                contract_address,
+                address,
+                layer,
+                currency,
+                destination_address,
+                nativeToken,
+                address !== userDestinationAddress,
+            )
 
-    //         const gas = await gasProvider.resolveGas()
+            const gas = await gasProvider.resolveGas()
 
-    //         return [gas!]
+            return [gas!]
 
-    //     }
-    //     catch (e) {
-    //         console.log(e)
-    //     }
+        }
+        catch (e) {
+            console.log(e)
+        }
 
-    // }
+    }
 
     return {
         getBalance,

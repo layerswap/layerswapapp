@@ -7,6 +7,53 @@ export default function useOptimismBalance(): BalanceProvider {
     const { networks } = useSettingsState()
     const supportedNetworks = networks.filter(l => l.type === NetworkType.EVM && NetworkSettings.KnownSettings[l.name]?.GasCalculationType === GasCalculation.OptimismType).map(l => l.name)
 
+    const getNetworkBalances = async ({ network: layer, address }: BalanceProps) => {
+
+        try {
+            const resolveChain = (await import("../../../resolveChain")).default
+            const chain = resolveChain(layer)
+            if (!chain) return
+
+            const { createPublicClient, http } = await import("viem")
+            const publicClient = createPublicClient({
+                chain,
+                transport: http()
+            })
+
+            const {
+                getErc20Balances,
+                getNativeBalance,
+                resolveERC20Balances,
+                resolveNativeBalance
+            } = await import("../getBalance")
+
+            const erc20BalancesContractRes = await getErc20Balances({
+                address: address,
+                chainId: Number(layer?.chain_id),
+                assets: layer.tokens,
+                publicClient,
+                hasMulticall: !!layer.metadata?.evm_multi_call_contract
+            });
+
+            const erc20Balances = (erc20BalancesContractRes && await resolveERC20Balances(
+                erc20BalancesContractRes,
+                layer
+            )) || [];
+
+            const nativeBalanceContractRes = await getNativeBalance(address as `0x${string}`, Number(layer.chain_id))
+            const nativeBalance = (nativeBalanceContractRes
+                && await resolveNativeBalance(layer, nativeBalanceContractRes)) || []
+
+            let balances: Balance[] = []
+
+            return balances.concat(erc20Balances, nativeBalance)
+        }
+        catch (e) {
+            console.log(e)
+        }
+
+    }
+
     const getBalance = async ({ network: layer, address }: BalanceProps) => {
 
         try {

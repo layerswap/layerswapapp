@@ -55,8 +55,11 @@ export const WalletTransferContent: FC = () => {
             depositAddress={depositAddress} />;
     else if (sourceIsSolana)
         return <>
-            {requested_amount &&
+            {swap &&
                 <SolanaWalletWithdrawStep
+                    source_network={swap.source_network}
+                    source_token={swap.source_token}
+                    swapId={swap.id}
                     depositAddress={depositAddress}
                     amount={requested_amount} />}
         </>;

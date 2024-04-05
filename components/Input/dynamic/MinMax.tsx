@@ -60,8 +60,12 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
     const handleSetMaxAmount = useCallback(async () => {
         setFieldValue('amount', maxAllowedAmount);
         from && fetchBalance(from);
-        from && fromCurrency && to && toCurrency && amount && fetchGas(from, fromCurrency, to, toCurrency, destination_address || "", amount);
-    }, [from, to, fromCurrency, destination_address, maxAllowedAmount])
+
+        from &&
+            fromCurrency &&
+            amount && fetchGas(from, fromCurrency, destination_address || "");
+
+    }, [from, fromCurrency, destination_address, maxAllowedAmount])
 
     useEffect(() => {
         wallet?.address && onAddressGet(wallet.address)
