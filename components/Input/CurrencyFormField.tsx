@@ -8,7 +8,7 @@ import { SortingByAvailability } from "../../lib/sorting";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useQueryState } from "../../context/query";
-import { CryptoNetwork, Token } from "../../Models/Network";
+import { RouteNetwork, RouteToken } from "../../Models/Network";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import useSWR from "swr";
 import { ApiResponse } from "../../Models/ApiResponse";
@@ -73,13 +73,13 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const { data: sourceRoutes,
         error: sourceRoutesError,
         isLoading: sourceRoutesLoading
-    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${sourceRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<RouteNetwork[]>>(`${sourceRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
     const {
         data: destinationRoutes,
         error: destRoutesError,
         isLoading: destRoutesLoading
-    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${destinationRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<RouteNetwork[]>>(`${destinationRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
     const isLoading = sourceRoutesLoading || destRoutesLoading
 
@@ -167,7 +167,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const value = currencyMenuItems?.find(x => x.id == currencyAsset);
 
-    const handleSelect = useCallback((item: SelectMenuItem<Token>) => {
+    const handleSelect = useCallback((item: SelectMenuItem<RouteToken>) => {
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
@@ -186,18 +186,18 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 };
 
 function GenerateCurrencyMenuItems(
-    currencies: Token[],
+    currencies: RouteToken[],
     values: SwapFormValues,
     direction?: string,
     balances?: Balance[],
     query?: QueryParams,
     error?: ApiError
-): SelectMenuItem<Token>[] {
+): SelectMenuItem<RouteToken>[] {
     const { to, from } = values
     const lockAsset = direction === 'from' ? query?.lockFromAsset
         : query?.lockToAsset
 
-    let currencyIsAvailable = (currency: Token) => {
+    let currencyIsAvailable = (currency: RouteToken) => {
         if (lockAsset) {
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
@@ -218,7 +218,7 @@ function GenerateCurrencyMenuItems(
         const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
 
-        const res: SelectMenuItem<Token> = {
+        const res: SelectMenuItem<RouteToken> = {
             baseObject: c,
             id: c.symbol,
             name: displayName || "-",

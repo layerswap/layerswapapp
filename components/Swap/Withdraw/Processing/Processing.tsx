@@ -5,7 +5,7 @@ import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
 import AverageCompletionTime from '../../../Common/AverageCompletionTime';
-import LayerSwapApiClient, { SwapItem, BackendTransactionStatus, TransactionType, TransactionStatus, Refuel, SwapResponse, Transaction } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapResponse, Transaction } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
@@ -20,22 +20,23 @@ import { ApiResponse } from '../../../../Models/ApiResponse';
 import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
-    settings: LayerSwapAppSettings;
     swapResponse: SwapResponse;
 }
 
-const Processing: FC<Props> = ({ settings, swapResponse }) => {
+const Processing: FC<Props> = ({ swapResponse }) => {
 
-    const { swap } = swapResponse
+    const { swap, refuel } = swapResponse
 
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
     const { fee } = useFee()
 
-    const source_layer = settings.networks?.find(e => e.name === swap.source_network.name)
-    const destination_layer = settings.networks?.find(e => e.name === swap.destination_network.name)
+    const {
+        source_network,
+        destination_network
+    } = swap
 
-    const input_tx_explorer = source_layer?.transaction_explorer_template
-    const output_tx_explorer = destination_layer?.transaction_explorer_template
+    const input_tx_explorer = source_network?.transaction_explorer_template
+    const output_tx_explorer = destination_network?.transaction_explorer_template
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const storedWalletTransaction = swapTransactions?.[swap?.id]
@@ -45,7 +46,7 @@ const Processing: FC<Props> = ({ settings, swapResponse }) => {
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
     const apiClient = new LayerSwapApiClient()
-    const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_layer?.name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
+    const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_network?.name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
 
     const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
 
@@ -63,8 +64,7 @@ const Processing: FC<Props> = ({ settings, swapResponse }) => {
         }
     }, [inputTxStatus])
 
-    const nativeCurrency = destination_layer?.tokens?.find(c => c.symbol === destination_layer?.tokens.find(a => a.is_native)?.symbol)
-    const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
+    const truncatedRefuelAmount = truncateDecimals(refuel.amount, refuel.token?.precision)
 
     const progressStatuses = getProgressStatuses(swapResponse, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
@@ -181,15 +181,15 @@ const Processing: FC<Props> = ({ settings, swapResponse }) => {
         },
         "refuel": {
             upcoming: {
-                name: `Sending ${nativeCurrency?.symbol} to your address`,
+                name: `Sending ${refuel.token?.symbol} to your address`,
                 description: null
             },
             current: {
-                name: `Sending ${nativeCurrency?.symbol} to your address`,
+                name: `Sending ${refuel.token?.symbol} to your address`,
                 description: null
             },
             complete: {
-                name: `${truncatedRefuelAmount} ${nativeCurrency?.symbol} was sent to your address`,
+                name: `${truncatedRefuelAmount} ${refuel.token?.symbol} was sent to your address`,
                 description: <div className='flex items-center space-x-1'>
                     <span>Transaction: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
@@ -276,10 +276,12 @@ const Processing: FC<Props> = ({ settings, swapResponse }) => {
     )
 }
 
-
 const resolveSwapInputTxStatus = (swapInputTransaction: Transaction | undefined, inputTxStatusFromApi: TransactionStatus) => {
-    if (swapInputTransaction)
+    if (swapInputTransaction) {
+        if (swapInputTransaction.status === BackendTransactionStatus.Completed && swapInputTransaction.confirmations < swapInputTransaction.max_confirmations)
+            return TransactionStatus.Pending
         return swapInputTransaction?.status
+    }
     if (inputTxStatusFromApi === TransactionStatus.Failed)
         return inputTxStatusFromApi
     else

@@ -11,21 +11,21 @@ export default function useLoopringBalance(): BalanceProvider {
         KnownInternalNames.Networks.LoopringGoerli
     ]
 
-    const getBalance = async ({ network: layer, address }: BalanceProps) => {
+    const getBalance = async ({ network, address }: BalanceProps) => {
         let balances: Balance[] = [];
 
-        if (!layer.tokens) return
+        if (!network.tokens) return
         try {
 
             const account: { data: AccountInfo } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`)
             const accInfo = account.data
-            const tokens = layer?.tokens?.map(obj => obj.contract).join(',');
+            const tokens = network?.tokens?.map(obj => obj.contract).join(',');
             const result: { data: LpBalance[] } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_USER_EXCHANGE_BALANCES}?accountId=${accInfo.accountId}&tokens=${tokens}`)
 
-            const loopringBalances = layer?.tokens?.map(asset => {
+            const loopringBalances = network?.tokens?.map(asset => {
                 const amount = result.data.find(d => d.tokenId == Number(asset.contract))?.total;
                 return ({
-                    network: layer.name,
+                    network: network.name,
                     token: asset?.symbol,
                     amount: amount ? formatAmount(amount, Number(asset?.decimals)) : 0,
                     request_time: new Date().toJSON(),

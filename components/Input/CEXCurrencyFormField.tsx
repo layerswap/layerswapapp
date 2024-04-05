@@ -1,6 +1,5 @@
 import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect } from "react";
-import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
@@ -10,7 +9,7 @@ import { useQueryState } from "../../context/query";
 import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { CryptoNetwork } from "../../Models/Network";
+import { RouteNetwork } from "../../Models/Network";
 import { ExchangeToken } from "../../Models/Exchange";
 
 const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
@@ -70,12 +69,12 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
         data: sourceRoutes,
         isLoading: sourceRoutesLoading,
-    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${sourceRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<RouteNetwork[]>>(`${sourceRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
     const {
         data: destinationRoutes,
         isLoading: destRoutesLoading,
-    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${destinationRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<RouteNetwork[]>>(`${destinationRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : availableAssetGroups
 
@@ -109,7 +108,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 export function GenerateCurrencyMenuItems(
     currencies: ExchangeToken[],
     values: SwapFormValues,
-    routes?: CryptoNetwork[],
+    routes?: RouteNetwork[],
     lockedCurrency?: ExchangeToken | undefined
 ): SelectMenuItem<ExchangeToken>[] {
     const { fromExchange, toExchange } = values

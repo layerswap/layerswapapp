@@ -67,7 +67,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ values, openModal, setOpenModal, fe
                                         You will receive
                                     </div>
                                     <p>
-                                        <span>{fee?.refuel.amount} {nativeAsset?.symbol}</span> <span className="text-secondary-text">(${fee?.refuel.amount_in_usd})</span>
+                                        <span>{fee?.refuel?.amount} {nativeAsset?.symbol}</span> <span className="text-secondary-text">(${fee?.refuel?.amount_in_usd})</span>
                                     </p>
                                 </div>
                             </div>

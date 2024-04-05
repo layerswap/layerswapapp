@@ -14,7 +14,7 @@ import CurrencyFormField from "./CurrencyFormField";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { CryptoNetwork } from "../../Models/Network";
+import { RouteNetwork } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
@@ -34,7 +34,7 @@ type LayerIsAvailable = {
     disabledReason: null;
 }
 const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
-const getGroupName = (value: CryptoNetwork | Exchange, type: 'cex' | 'network', layerIsAvailable?: LayerIsAvailable) => {
+const getGroupName = (value: RouteNetwork | Exchange, type: 'cex' | 'network', layerIsAvailable?: LayerIsAvailable) => {
     if (NetworkSettings.KnownSettings[value.name]?.isFeatured && layerIsAvailable?.disabledReason !== LayerDisabledReason.InvalidRoute) {
         return "Popular";
     }
@@ -66,7 +66,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const { exchanges, destinationRoutes, sourceRoutes } = useSettingsState();
     let placeholder = "";
     let searchHint = "";
-    let menuItems: (SelectMenuItem<CryptoNetwork | Exchange> & { isExchange: boolean })[];
+    let menuItems: (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[];
 
     const filterWith = direction === "from" ? to : from
     const filterWithAsset = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
@@ -110,9 +110,9 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         data: routes,
         isLoading,
         error
-    } = useSWR<ApiResponse<CryptoNetwork[]>>(`${routesEndpoint}`, apiClient.fetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<RouteNetwork[]>>(`${routesEndpoint}`, apiClient.fetcher, { keepPreviousData: true })
 
-    const [routesData, setRoutesData] = useState<CryptoNetwork[] | undefined>(direction === 'from' ? sourceRoutes : destinationRoutes)
+    const [routesData, setRoutesData] = useState<RouteNetwork[] | undefined>(direction === 'from' ? sourceRoutes : destinationRoutes)
 
     useEffect(() => {
         if (!isLoading && routes?.data) setRoutesData(routes.data)
@@ -134,7 +134,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         x.id == (direction === "from" ? from : to)?.name :
         x.id == (direction === 'from' ? fromExchange : toExchange)?.name);
 
-    const handleSelect = useCallback((item: SelectMenuItem<CryptoNetwork | Exchange> & { isExchange: boolean }) => {
+    const handleSelect = useCallback((item: SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean }) => {
         if (item.baseObject.name === value?.baseObject.name)
             return
         if (!item.isAvailable.value && item.isAvailable.disabledReason == LayerDisabledReason.InvalidRoute) {
@@ -148,7 +148,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             setFieldValue(`${name}Exchange`, null, true)
             setFieldValue(name, item.baseObject, true)
             const currency = name == "from" ? fromCurrency : toCurrency
-            const assetSubstitute = (item.baseObject as CryptoNetwork)?.tokens?.find(a => a.symbol === currency?.symbol)
+            const assetSubstitute = (item.baseObject as RouteNetwork)?.tokens?.find(a => a.symbol === currency?.symbol)
             if (assetSubstitute) {
                 setFieldValue(`${name}Currency`, assetSubstitute, true)
             }
@@ -212,9 +212,9 @@ function groupByType(values: ISelectMenuItem[]) {
     return groups;
 }
 
-function GenerateMenuItems(routes: CryptoNetwork[] | undefined, exchanges: Exchange[], direction: SwapDirection, lock: boolean, query: QueryParams): (SelectMenuItem<CryptoNetwork | Exchange> & { isExchange: boolean })[] {
+function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchange[], direction: SwapDirection, lock: boolean, query: QueryParams): (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[] {
 
-    let layerIsAvailable = (route: CryptoNetwork) => {
+    let layerIsAvailable = (route: RouteNetwork) => {
         if (lock) {
             return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
         }
@@ -242,7 +242,7 @@ function GenerateMenuItems(routes: CryptoNetwork[] | undefined, exchanges: Excha
     const mappedLayers = routes?.map(l => {
         let orderProp: keyof NetworkSettings | keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
         const order = NetworkSettings.KnownSettings[l.name]?.[orderProp]
-        const res: SelectMenuItem<CryptoNetwork> & { isExchange: boolean } = {
+        const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
             baseObject: l,
             id: l.name,
             name: l.display_name,
