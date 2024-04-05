@@ -49,10 +49,16 @@ function resolveRedirectUrl(pathname: string | undefined, query: ParsedUrlQuery)
 
     const pathnameArray = pathname && pathname.split('/') || []
 
-    if (pathname?.startsWith('swap')) return {
-        pathname: '/swap/[swapId]',
-        query: { ...resolvePersistantQueryParams(query), swapId: encodeURIComponent(pathnameArray[1]) }
-    }
+    if (pathname?.startsWith('swap'))
+        return {
+            pathname: '/swap/[swapId]',
+            query: { ...resolvePersistantQueryParams(query), swapId: encodeURIComponent(pathnameArray[1]) }
+        }
+    if (pathname?.startsWith('campaigns'))
+        return {
+            pathname: '/campaigns/[campaign]',
+            query: { ...resolvePersistantQueryParams(query), campaign: encodeURIComponent(pathnameArray[1]) }
+        }
     else return { pathname: encodeURIComponent(pathname), query: { ...resolvePersistantQueryParams(query) } }
 }
 
