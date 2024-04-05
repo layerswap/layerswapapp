@@ -20,6 +20,18 @@ const Withdraw: FC = () => {
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
     const { setWithdrawType } = useSwapDataUpdate()
+    const { appName, signature } = useQueryState()
+
+    const sourceIsImmutableX = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
+        || swap?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+
+    const sourceIsArbitrumOne = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
+        || swap?.source_network.name === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
+
+    const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
+    const sourceIsSynquote = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
+
+
 
     let tabs: Tab[] = []
     if (swap?.deposit_mode === "wallet") {
@@ -44,17 +56,15 @@ const Withdraw: FC = () => {
             }]
     }
 
-
-    // TODO implement this
-    // if (isImtblMarketplace || sourceIsSynquote) {
-    //     tabs = [{
-    //         id: WithdrawType.External,
-    //         label: "Withdrawal pending",
-    //         enabled: true,
-    //         icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
-    //         content: <External />
-    //     }]
-    // }
+    if (isImtblMarketplace || sourceIsSynquote) {
+        tabs = [{
+            id: WithdrawType.External,
+            label: "Withdrawal pending",
+            enabled: true,
+            icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
+            content: <External />
+        }]
+    }
 
 
 

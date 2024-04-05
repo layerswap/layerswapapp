@@ -301,6 +301,10 @@ export default class NetworkSettings {
                 apiUri: "https://api.sandbox.x.immutable.com/v1",
                 linkUri: "https://link.sandbox.x.immutable.com"
             },
+            [KnownInternalNames.Networks.ImmutableXSepolia]: {
+                apiUri: "https://api.sandbox.x.immutable.com/v1",
+                linkUri: "https://link.sandbox.x.immutable.com"
+            },
         }
 
         for (var k in NetworkSettings.KnownSettings) {

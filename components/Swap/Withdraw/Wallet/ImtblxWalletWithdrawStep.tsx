@@ -1,27 +1,32 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
-import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
+import { Network, Token } from '../../../../Models/Network';
 
 type Props = {
+    source_network: Network;
+    source_token: Token;
+    swapId: string;
+    amount: string;
     depositAddress?: string
 }
 
-const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
+const ImtblxWalletWithdrawStep: FC<Props> = ({
+    depositAddress,
+    source_network,
+    source_token,
+    swapId,
+    amount,
+}) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
     const { setSwapTransaction } = useSwapTransactionStore();
-
-    const {source_network, source_token} = swap || {}
 
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -40,7 +45,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
     }, [provider, source_network])
 
     const handleTransfer = useCallback(async () => {
-        if (!source_network || !swap || !depositAddress)
+        if (!source_network || !depositAddress)
             return
         setLoading(true)
         try {
@@ -50,7 +55,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
             if (!source_token) {
                 throw new Error("No source currency could be found");
             }
-            const res = await imtblClient.Transfer(swap, source_token, depositAddress)
+            const res = await imtblClient.Transfer(amount, source_token, depositAddress)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
                 toast('Transfer failed or terminated')
@@ -58,7 +63,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                 toast(transactionRes.message)
             }
             else if (transactionRes) {
-                setSwapTransaction(swap.id, BackendTransactionStatus.Pending, transactionRes.txId.toString());
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, transactionRes.txId.toString());
                 setTransferDone(true)
             }
         }
@@ -67,7 +72,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [imxAccount, swap, source_network, depositAddress])
+    }, [imxAccount, swapId, source_network, depositAddress, source_token, amount])
 
     return (
         <>
