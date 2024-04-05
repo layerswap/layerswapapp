@@ -49,9 +49,9 @@ function resolveRedirectUrl(pathname: string | undefined, query: ParsedUrlQuery)
 
     const pathnameArray = pathname && pathname.split('/') || []
 
-    if (pathname?.startsWith('/swap')) return {
+    if (pathname?.startsWith('swap')) return {
         pathname: '/swap/[swapId]',
-        query: { ...resolvePersistantQueryParams(query), organization: encodeURIComponent(pathnameArray[1]) }
+        query: { ...resolvePersistantQueryParams(query), swapId: encodeURIComponent(pathnameArray[1]) }
     }
     else return { pathname: encodeURIComponent(pathname), query: { ...resolvePersistantQueryParams(query) } }
 }
