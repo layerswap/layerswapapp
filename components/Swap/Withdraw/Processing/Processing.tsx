@@ -6,7 +6,7 @@ import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
 import { GetDefaultAsset } from '../../../../helpers/settingsHelper';
 import AverageCompletionTime from '../../../Common/AverageCompletionTime';
-import LayerSwapApiClient, { SwapItem, BackendTransactionStatus, TransactionType, TransactionStatus } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { SwapItem, BackendTransactionStatus, TransactionType, TransactionStatus, Transaction } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
@@ -27,7 +27,6 @@ type Props = {
 
 const Processing: FC<Props> = ({ settings, swap }) => {
 
-    const swapStatus = swap.status;
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
     const { fee } = useFee()
 
@@ -68,7 +67,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     const nativeCurrency = destination_layer?.assets?.find(c => c.asset === destination_layer?.assets.find(a => a.is_native)?.asset)
     const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
 
-    const progressStatuses = getProgressStatuses(swap, swapStatus, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
+    const progressStatuses = getProgressStatuses(swap, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
     const outputPendingDetails = <div className='flex items-center space-x-1'>
@@ -278,21 +277,37 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     )
 }
 
-const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus, inputTxStatus: TransactionStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
+const resolveSwapInputTxStatus = (swapInputTransaction: Transaction | undefined, inputTxStatusFromApi: TransactionStatus) => {
+    if (swapInputTransaction) {
+        if (swapInputTransaction.status === BackendTransactionStatus.Completed && swapInputTransaction.confirmations < swapInputTransaction.max_confirmations)
+            return TransactionStatus.Pending
+        return swapInputTransaction?.status
+    }
+    if (inputTxStatusFromApi === TransactionStatus.Failed)
+        return inputTxStatusFromApi
+    else
+        ///For cases when transaction is completed but not detected by bridge API
+        return TransactionStatus.Pending
+}
+
+const getProgressStatuses = (swap: SwapItem, inputTxStatusFromApi: TransactionStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
+    const swapStatus = swap.status;
     let generalTitle = "Transfer in progress";
     let subtitle: string | null = "";
-    //TODO might need to check stored wallet transaction statuses
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
+    const swapInputTxStatus = resolveSwapInputTxStatus(swapInputTransaction, inputTxStatusFromApi)
 
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output);
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel);
 
-    let inputIsCompleted = swapInputTransaction && inputTxStatus == TransactionStatus.Completed && swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations;
+    let inputIsCompleted = swapInputTransaction && swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations;
+
     if (!inputIsCompleted) {
         // Magic case, shows estimated time
         subtitle = null
     }
-    let input_transfer = transactionStatusToProgressStatus(swapInputTransaction?.status) || ''
+
+    let input_transfer = transactionStatusToProgressStatus(swapInputTxStatus) || ''
 
     let output_transfer =
         (!swapOutputTransaction && inputIsCompleted) || swapOutputTransaction?.status == BackendTransactionStatus.Pending ? ProgressStatus.Current
@@ -305,6 +320,7 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus, inputTxStat
                 : swapRefuelTransaction?.status == BackendTransactionStatus.Initiated || swapRefuelTransaction?.status == BackendTransactionStatus.Completed ? ProgressStatus.Complete
                     : ProgressStatus.Removed;
 
+
     if (swapStatus === SwapStatus.Failed) {
         output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed;
         refuel_transfer = refuel_transfer !== ProgressStatus.Complete ? ProgressStatus.Removed : refuel_transfer;
@@ -312,7 +328,7 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus, inputTxStat
         subtitle = "View instructions below"
     }
 
-    if (swapInputTransaction?.status == BackendTransactionStatus.Failed || inputTxStatus == TransactionStatus.Failed) {
+    if (swapInputTxStatus == TransactionStatus.Failed) {
         input_transfer = ProgressStatus.Failed;
         generalTitle = swap?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? "Transfer on hold" : "Transfer failed";
         subtitle = "View instructions below"
@@ -352,13 +368,14 @@ const getProgressStatuses = (swap: SwapItem, swapStatus: SwapStatus, inputTxStat
 
 }
 
-const transactionStatusToProgressStatus = (transactionStatus: BackendTransactionStatus | undefined): ProgressStatus => {
+const transactionStatusToProgressStatus = (transactionStatus: BackendTransactionStatus | TransactionStatus | undefined): ProgressStatus => {
     switch (transactionStatus) {
         case BackendTransactionStatus.Completed:
             return ProgressStatus.Complete;
         case BackendTransactionStatus.Failed:
             return ProgressStatus.Failed;
         case BackendTransactionStatus.Initiated:
+        case BackendTransactionStatus.Pending:
             return ProgressStatus.Current;
         default:
             return ProgressStatus.Upcoming;

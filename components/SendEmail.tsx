@@ -20,7 +20,7 @@ type Props = {
 }
 
 const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
-    const { codeRequested, tempEmail, userType } = useAuthState()
+    const { codeRequested, tempEmail } = useAuthState()
     const { setCodeRequested, updateTempEmail } = useAuthDataUpdate();
     const initialValues: EmailFormValues = { email: tempEmail ?? "" };
     const { start: startTimer } = useTimerState()
