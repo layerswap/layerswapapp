@@ -1,3 +1,5 @@
+import { Address } from "@ton/core";
+
 export function addressFormat(address: string, network: { internal_name: string } | null): string {
 
     if (network?.internal_name.toLowerCase().startsWith("STARKNET".toLowerCase())) {
@@ -14,9 +16,9 @@ export function addressFormat(address: string, network: { internal_name: string 
         return addAddressPadding(address)
 
     }
-    // else if (network?.internal_name.toLowerCase().startsWith("TON".toLowerCase())) {
-
-    // }
+    else if (network?.internal_name.toLowerCase().startsWith("TON".toLowerCase())) {
+        return Address.parse(address).toString({ bounceable: false, testOnly: false })
+    }
     else if (network?.internal_name.toLowerCase().startsWith("SOLANA".toLowerCase())) {
         return address
     }
