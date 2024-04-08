@@ -139,10 +139,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const sourceRoutesEndpoint = `/sources?include_unmatched=true&destination_network=${source?.name}&destination_token=${fromCurrency?.symbol}`
     const destinationRoutesEndpoint = `/destinations?include_unmatched=true&source_network=${destination?.name}&source_token=${toCurrency?.symbol}`
     const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<RouteNetwork[]>>((source && fromCurrency) ?
-        sourceRoutesEndpoint : `/v2-alpha/sources?include_unmatched=true`, layerswapApiClient.fetcher, { keepPreviousData: true })
+        sourceRoutesEndpoint : `/sources?include_unmatched=true`, layerswapApiClient.fetcher, { keepPreviousData: true })
 
     const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<RouteNetwork[]>>((destination && toCurrency) ?
-        destinationRoutesEndpoint : `/v2-alpha/destinations?include_unmatched=true`, layerswapApiClient.fetcher, { keepPreviousData: true })
+        destinationRoutesEndpoint : `/destinations?include_unmatched=true`, layerswapApiClient.fetcher, { keepPreviousData: true })
 
     const sourceCanBeSwapped = destinationRoutes?.data?.some(l => l.name === source?.name)
     const destinationCanBeSwapped = sourceRoutes?.data?.some(l => l.name === destination?.name)
