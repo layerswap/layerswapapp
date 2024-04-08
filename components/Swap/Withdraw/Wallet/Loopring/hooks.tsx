@@ -68,7 +68,6 @@ export const useActivationData = (accountId?: number) => {
     })
 
     const defaultValue = availableBalances?.[0]
-
     return {
         availableBalances,
         defaultValue,

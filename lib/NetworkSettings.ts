@@ -71,7 +71,6 @@ export default class NetworkSettings {
     GasCalculationType?: GasCalculation
     isFeatured?: boolean
 
-    public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean, crossChain: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
 
     public static ImmutableXSettings: NetworkItemSettings
@@ -83,7 +82,6 @@ export default class NetworkSettings {
         }
 
         NetworkSettings._isInitialized = true;
-        NetworkSettings.ForceDisable = JSON.parse(process.env.NEXT_PUBLIC_NETWORK_FORCE_SETTINGS || "{}")
 
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.LoopringMainnet] = {
             AccountExplorerTemplate: 'https://explorer.loopring.io/account/{0}',
