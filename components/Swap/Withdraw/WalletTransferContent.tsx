@@ -16,8 +16,8 @@ import { useSettingsState } from '../../../context/settings';
 const WalletTransferContent: FC = () => {
     const { openAccountModal } = useAccountModal();
     const { getWithdrawalProvider: getProvider, disconnectWallet } = useWallet()
-    const { swapResponse, swapPrepareData } = useSwapDataState()
-    const { swap } = swapResponse || {}
+    const { swapResponse } = useSwapDataState()
+    const { swap, deposit_actions } = swapResponse || {}
     const { source_exchange, source_token, destination_token, destination_address, requested_amount } = swap || {}
     const [isLoading, setIsloading] = useState(false);
     const { mutateSwap } = useSwapDataUpdate()
@@ -30,7 +30,7 @@ const WalletTransferContent: FC = () => {
     }, [source_network, getProvider])
 
     const wallet = provider?.getConnectedWallet()
-    const depositAddress = swapPrepareData?.deposit_actions?.find(da => da.type == 'transfer')?.to_address
+    const depositAddress = deposit_actions?.find(da => da.type == 'transfer')?.to_address
 
     const { balances, isBalanceLoading } = useBalancesState()
     const { fetchBalance, fetchGas } = useBalance()

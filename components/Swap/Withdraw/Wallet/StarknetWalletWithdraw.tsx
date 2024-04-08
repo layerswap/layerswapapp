@@ -3,7 +3,6 @@ import SubmitButton from '../../../buttons/submitButton';
 import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import { useAuthState } from '../../../../context/authContext';
 import KnownInternalNames from '../../../../lib/knownIds';
@@ -11,12 +10,8 @@ import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
 
-type Props = {
-    depositAddress?: string;
-    amount?: number
-}
 
-const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
+const StarknetWalletWithdrawStep: FC = () => {
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
@@ -24,8 +19,8 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
 
     const { userId } = useAuthState()
-    const { swapResponse, swapPrepareData } = useSwapDataState()
-    const { swap } = swapResponse || {}
+    const { swapResponse } = useSwapDataState()
+    const { swap, deposit_actions } = swapResponse || {}
     const { source_network, source_token } = swap || {}
 
     const { setSwapTransaction } = useSwapTransactionStore();
@@ -37,7 +32,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
     }, [source_network, getProvider])
 
     const wallet = provider?.getConnectedWallet()
-    const callData = swapPrepareData?.deposit_actions?.find(da => da.type == 'transfer')?.call_data
+    const callData = deposit_actions?.find(da => da.type == 'transfer')?.call_data
 
     const handleConnect = useCallback(async () => {
         if (!provider)
@@ -77,12 +72,6 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             if (!source_token.contract) {
                 throw Error("starknet contract_address is not defined")
             }
-            if (!amount) {
-                throw Error("amount is not defined for starknet transfer")
-            }
-            if (!depositAddress) {
-                throw Error("depositAddress is not defined for starknet transfer")
-            }
 
             try {
                 const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.account?.execute(JSON.parse(callData || "")) || {});
@@ -103,7 +92,7 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [wallet, swap, source_network, depositAddress, userId, source_token])
+    }, [wallet, swap, source_network, userId, source_token])
 
     return (
         <>
@@ -142,7 +131,6 @@ const StarknetWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     }
                     {
                         wallet
-                        && depositAddress
                         && !isWrongNetwork
                         && <div className="flex flex-row
                         text-primary-text text-base space-x-2">

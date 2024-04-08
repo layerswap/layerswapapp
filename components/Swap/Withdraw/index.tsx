@@ -5,7 +5,6 @@ import ManualTransfer from './ManualTransfer';
 import { useSettingsState } from '../../../context/settings';
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import KnownInternalNames from '../../../lib/knownIds';
-import { Tab, TabHeader } from '../../Tabs/Index';
 import SwapSummary from '../Summary';
 import Coinbase from './Coinbase';
 import External from './External';
@@ -24,97 +23,43 @@ const Withdraw: FC = () => {
 
     const sourceIsImmutableX = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swap?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-
+    const sourceIsStarknet = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase()
+        || swap?.source_network.name === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
+        || swap?.source_network.name === KnownInternalNames.Networks.StarkNetSepolia?.toUpperCase()
     const sourceIsArbitrumOne = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
         || swap?.source_network.name === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
 
     const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
     const sourceIsSynquote = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
 
-
-
-    let tabs: Tab[] = []
+    let withdraw: {
+        content?: JSX.Element | JSX.Element[],
+        footer?: JSX.Element | JSX.Element[],
+    } = {}
     if (swap?.deposit_mode === "wallet") {
-        tabs = [
-            {
-                id: WithdrawType.Wallet,
-                label: "Via wallet",
-                enabled: true,
-                icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
-                content: <WalletTransferContent />,
-                footer: <WalletTransfer />
-            }]
+        withdraw = {
+            content: <WalletTransferContent />,
+            footer: <WalletTransfer />
+        }
     } else if (swap?.deposit_mode === "deposit_address") {
-        tabs = [
-            {
-                id: WithdrawType.Manually,
-                label: "Manually",
-                enabled: true,
-                icon: <AlignLeft />,
-                footer: <ManualTransfer />,
-                content: <></>
-            }]
+        withdraw = {
+            footer: <ManualTransfer />,
+            content: <></>
+        }
     }
 
     if (isImtblMarketplace || sourceIsSynquote) {
-        tabs = [{
-            id: WithdrawType.External,
-            label: "Withdrawal pending",
-            enabled: true,
-            icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
+        withdraw = {
             content: <External />
-        }]
+        }
     }
 
-
-
-    // if (sourceIsStarknet || sourceIsImmutableX) {
-    //     tabs = [
-    //         {
-    //             id: WithdrawType.Wallet,
-    //             label: "Via wallet",
-    //             enabled: true,
-    //             icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
-    //             content: <WalletTransferContent />,
-    //             footer: <WalletTransfer />
-    //         }]
-    // }
-    // else {
-    //     tabs = [
-    //         {
-    //             id: WithdrawType.Wallet,
-    //             label: "Via wallet",
-    //             enabled: walletIsAvailable,
-    //             icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
-    //             content: <WalletTransferContent />,
-    //             footer: <WalletTransfer />
-    //         },
-    //         {
-    //             id: WithdrawType.Coinbase,
-    //             label: "Automatically",
-    //             enabled: sourceIsCoinbase && sourceLayerIsEthereum,
-    //             icon: <WalletIcon className='stroke-2 w-6 h-6 -ml-0.5' />,
-    //             content: <WalletTransferContent />,
-    //             footer: <Coinbase />
-    //         },
-    //         {
-    //             id: WithdrawType.Manually,
-    //             label: "Manually",
-    //             enabled: manualIsAvailable,
-    //             icon: <AlignLeft />,
-    //             footer: <ManualTransfer />,
-    //             content: <></>
-    //         }
-    //     ];
-    // }
-    const [activeTabId, setActiveTabId] = useState(tabs.find(t => t.enabled)?.id);
-
-    const activeTab = tabs.find(t => t.id === activeTabId)
-    const showTabsHeader = tabs?.filter(t => t.enabled)?.length > 1
-
-    useEffect(() => {
-        activeTab && setWithdrawType(activeTab.id)
-    }, [activeTab])
+    if (sourceIsStarknet || sourceIsImmutableX) {
+        withdraw = {
+            content: <WalletTransferContent />,
+            footer: <WalletTransfer />
+        }
+    }
 
     return (
         <>
@@ -125,34 +70,15 @@ const Withdraw: FC = () => {
                             <SwapSummary />
                         </div>
                         <span>
-
-                            {
-                                showTabsHeader &&
-                                <>
-                                    <div className="mb-4 ml-1 text-base">Choose how you&apos;d like to complete the swap</div>
-                                    <div className="flex space-x-3 w-full">
-                                        {activeTabId && tabs.filter(t => t.enabled).map((tab) => (
-                                            <TabHeader
-                                                activeTabId={activeTabId}
-                                                onCLick={setActiveTabId}
-                                                tab={tab}
-                                                key={tab.id}
-                                            />
-                                        ))}
-                                    </div>
-                                </>
-                            }
-                        </span>
-                        <span>
-                            {activeTab?.content}
+                            {withdraw?.content}
                         </span>
                     </div>
                 </div>
             </Widget.Content>
             {
-                activeTab?.footer &&
-                <Widget.Footer sticky={true} key={activeTabId}>
-                    {activeTab?.footer}
+                withdraw?.footer &&
+                <Widget.Footer sticky={true}>
+                    {withdraw?.footer}
                 </Widget.Footer>
             }
         </>

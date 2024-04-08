@@ -10,8 +10,8 @@ import LoopringWalletWithdraw from "./Loopring";
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
-    const { swapResponse, swapPrepareData } = useSwapDataState();
-    const { swap } = swapResponse || {};
+    const { swapResponse } = useSwapDataState();
+    const { swap, deposit_actions } = swapResponse || {};
 
     const { source_network } = swap || {};
     const source_network_internal_name = source_network?.name;
@@ -21,57 +21,71 @@ export const WalletTransferContent: FC = () => {
         || swap?.source_network.name === KnownInternalNames.Networks.ImmutableXSepolia?.toUpperCase();
 
     const sourceIsZkSync = swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.ZksyncMainnet?.toUpperCase();
-    const sourceIsStarknet = swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase()
-        || swap?.source_network.name === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase();
-    const sourceIsLoopring = swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.LoopringMainnet?.toUpperCase() ||
-        swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.LoopringGoerli?.toUpperCase();
-    const sourceIsSolana = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase();
 
-    const depositAddress = swapPrepareData?.deposit_actions?.find(da => da.type == 'transfer')?.to_address;
-    const requested_amount = swapPrepareData?.deposit_actions.find(da => da.type == 'transfer')?.amount || 0;
+    const sourceIsStarknet = swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase()
+        || swap?.source_network.name === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
+        || swap?.source_network.name === KnownInternalNames.Networks.StarkNetSepolia?.toUpperCase();
+
+    const sourceIsLoopring = swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.LoopringMainnet?.toUpperCase()
+        || swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.LoopringGoerli?.toUpperCase();
+        
+    const sourceIsSolana = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
+        || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaDevnet?.toUpperCase();
+
+    const depositAddress = deposit_actions?.find(da => da.type == 'transfer')?.to_address;
+    const amount = deposit_actions?.find(da => da.type == 'transfer')?.amount || 0;
 
     if (sourceIsImmutableX)
         return <ImtblxWalletWithdrawStep
             depositAddress={depositAddress}
-            amount={requested_amount.toString()}
+            amount={amount.toString()}
             source_network={swap.source_network}
             source_token={swap.source_token}
             swapId={swap.id}
         />;
     else if (sourceIsStarknet)
-        return <StarknetWalletWithdrawStep
-            amount={requested_amount}
-            depositAddress={depositAddress} />;
+        return <StarknetWalletWithdrawStep />;
     else if (sourceIsZkSync)
         return <>
-            {requested_amount
-                && <ZkSyncWalletWithdrawStep
+            {
+                amount &&
+                <ZkSyncWalletWithdrawStep
                     depositAddress={depositAddress}
-                    amount={requested_amount} />}
+                    amount={amount}
+                />
+            }
         </>;
     else if (sourceIsLoopring)
         return <LoopringWalletWithdraw
-            amount={requested_amount}
-            depositAddress={depositAddress} />;
+            amount={amount}
+            depositAddress={depositAddress}
+        />;
     else if (sourceIsSolana)
         return <>
-            {requested_amount &&
+            {
+                amount &&
                 <SolanaWalletWithdrawStep
                     depositAddress={depositAddress}
-                    amount={requested_amount} />}
+                    amount={amount}
+                />
+            }
         </>;
     else
         return <>
-            {swap && <TransferFromWallet
-                sequenceNumber={swap?.metadata.sequence_number}
-                swapId={swap.id}
-                networkDisplayName={swap.source_network?.display_name}
-                tokenDecimals={swap.source_token?.decimals}
-                tokenContractAddress={swap.source_token.contract as `0x${string}`}
-                chainId={Number(swap.source_network.chain_id)}
-                depositAddress={depositAddress}
-                userDestinationAddress={swap.destination_address}
-                amount={requested_amount} />}
+            {
+                swap &&
+                <TransferFromWallet
+                    sequenceNumber={swap?.metadata.sequence_number}
+                    swapId={swap.id}
+                    networkDisplayName={swap.source_network?.display_name}
+                    tokenDecimals={swap.source_token?.decimals}
+                    tokenContractAddress={swap.source_token.contract as `0x${string}`}
+                    chainId={Number(swap.source_network.chain_id)}
+                    depositAddress={depositAddress}
+                    userDestinationAddress={swap.destination_address}
+                    amount={amount}
+                />
+            }
         </>;
 };
 
