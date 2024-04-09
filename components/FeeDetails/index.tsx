@@ -17,7 +17,7 @@ const RefuelModal = dynamic(() => import("./RefuelModal"), {
 
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
     const { toCurrency, to, refuel, fromExchange, toExchange, from, fromCurrency } = values || {};
-    const { fee } = useFee()
+    const { fee, isFeeLoading } = useFee()
     const query = useQueryState();
     const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false)
 
@@ -52,6 +52,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                             refuel={!!refuel}
                             fee={fee}
                             onButtonClick={() => setOpenRefuelModal(true)}
+                            isFeeLoading={isFeeLoading}
                         />
                     </FeeDetails.Item>
 
