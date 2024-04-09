@@ -1,10 +1,9 @@
 import { create } from 'zustand'
 import { NetworkType } from '../Models/CryptoNetwork';
-import { ReactNode } from 'react';
 
 interface AddressBookState {
-    addresses: Address[];
-    addAddresses: (newAddresses: Address[]) => void;
+    addresses: AddressItem[];
+    addAddresses: (newAddresses: AddressItem[]) => void;
 }
 
 export enum AddressGroup {
@@ -13,7 +12,7 @@ export enum AddressGroup {
     RecentlyUsed = "Recently used"
 }
 
-export type Address = {
+export type AddressItem = {
     address: string,
     group: AddressGroup,
     networkType?: NetworkType
@@ -22,7 +21,7 @@ export type Address = {
 
 export const useAddressBookStore = create<AddressBookState>()((set) => ({
     addresses: [],
-    addAddresses: (newAddresses: Address[]) => set((state) => {
+    addAddresses: (newAddresses: AddressItem[]) => set((state) => {
         return ({
             addresses: [
                 ...state.addresses.filter(a => !newAddresses.find(na => na.address === a.address) && !(a.group === AddressGroup.ConnectedWallet && a.address !== newAddresses.find(na => na.group === AddressGroup.ConnectedWallet)?.address)),

@@ -15,7 +15,7 @@ import { isValidAddress } from "../../../lib/address/validator"
 import { useQueryState } from "../../../context/query"
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap"
 import useWallet from "../../../hooks/useWallet"
-import { Address, AddressGroup, useAddressBookStore } from "../../../stores/addressBookStore"
+import { AddressItem, AddressGroup, useAddressBookStore } from "../../../stores/addressBookStore"
 import { ChevronRight } from "lucide-react"
 import AddressIcon from "../../AddressIcon"
 
@@ -148,7 +148,7 @@ type AddressButtonProps = {
     openAddressModal: () => void;
     isPartnerWallet: boolean;
     values: SwapFormValues;
-    address?: Address;
+    address?: AddressItem;
     partnerImage?: string;
     disabled: boolean;
 }

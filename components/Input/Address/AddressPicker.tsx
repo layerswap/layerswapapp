@@ -11,7 +11,7 @@ import { Partner } from "../../../Models/Partner";
 import shortenAddress from "../../utils/ShortenAddress";
 import WalletIcon from "../../icons/WalletIcon";
 import useWallet from "../../../hooks/useWallet";
-import { Address, AddressGroup, useAddressBookStore } from "../../../stores/addressBookStore";
+import { AddressItem, AddressGroup, useAddressBookStore } from "../../../stores/addressBookStore";
 import { groupBy } from "../../utils/groupBy";
 import { CommandGroup, CommandItem, CommandList, CommandWrapper } from "../../shadcn/command";
 import SubmitButton from "../../buttons/submitButton";
@@ -62,7 +62,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     useEffect(() => {
         const recentlyUsedAddresses = address_book?.filter(a => destinationExchange ? a.exchanges.some(e => destinationExchange.internal_name === e) : a.networks?.some(n => destination?.internal_name === n) && isValidAddress(a.address, destination)) || []
 
-        let addresses: Address[] = []
+        let addresses: AddressItem[] = []
 
         if (recentlyUsedAddresses && destination) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => addressFormat(ra.address, destination) === addressFormat(a.address, destination))), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: destination.type }))]
         if (connectedWalletAddress && destination) addresses = [...addresses.filter(a => addressFormat(connectedWalletAddress, destination) !== addressFormat(a.address, destination)), { address: connectedWalletAddress, group: AddressGroup.ConnectedWallet, networkType: destination.type }]
@@ -116,7 +116,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const destinationAsset = values.toCurrency
     const groupedAddresses = groupBy(addresses, ({ group }) => group)
-    const groupedAddressesArray = Object.keys(groupedAddresses).map(g => { const items: Address[] = groupedAddresses[g]; return ({ name: g, items: items, order: (g === AddressGroup.ManualAdded && 3 || g === AddressGroup.RecentlyUsed && 2 || g === AddressGroup.ConnectedWallet && 1) || 10 }) })
+    const groupedAddressesArray = Object.keys(groupedAddresses).map(g => { const items: AddressItem[] = groupedAddresses[g]; return ({ name: g, items: items, order: (g === AddressGroup.ManualAdded && 3 || g === AddressGroup.RecentlyUsed && 2 || g === AddressGroup.ConnectedWallet && 1) || 10 }) })
 
     return (<>
         <div className='w-full flex flex-col justify-between h-full text-primary-text pt-2'>

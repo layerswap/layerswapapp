@@ -23,6 +23,6 @@ export function addressFormat(address: string, network: { internal_name: string 
         return address
     }
     else {
-        return address.toLowerCase();
+        return address?.toLowerCase();
     }
 }
