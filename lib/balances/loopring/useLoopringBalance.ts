@@ -1,7 +1,7 @@
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
 import axios from "axios";
-import { Balance, BalanceProps, BalanceProvider, Gas, GasProps } from "../../../Models/Balance";
+import { Balance, BalanceProps, BalanceProvider, Gas, GasProps, NetworkBalancesProps } from "../../../Models/Balance";
 import { LoopringAPI } from "../../loopring/LoopringAPI";
 import { LOOPRING_URLs, LpFee } from "../../loopring/defs";
 
@@ -11,7 +11,9 @@ export default function useLoopringBalance(): BalanceProvider {
         KnownInternalNames.Networks.LoopringGoerli
     ]
 
-    const getBalance = async ({ network, address }: BalanceProps) => {
+
+
+    const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
         let balances: Balance[] = [];
 
         if (!network.tokens) return
@@ -45,6 +47,30 @@ export default function useLoopringBalance(): BalanceProvider {
         return balances
     }
 
+
+    const getBalance = async ({ network, token, address }: BalanceProps) => {
+        try {
+            const account: { data: AccountInfo } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`)
+            const accInfo = account.data
+            //:TODO set token in query params
+            const result: { data: LpBalance[] } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_USER_EXCHANGE_BALANCES}?accountId=${accInfo.accountId}&tokens=`)
+
+            const amount = result.data.find(d => d.tokenId == Number(token.contract))?.total;
+
+            return ({
+                network: network.name,
+                token: token?.symbol,
+                amount: amount ? formatAmount(amount, Number(token?.decimals)) : 0,
+                request_time: new Date().toJSON(),
+                decimals: Number(token?.decimals),
+                isNativeCurrency: false
+            })
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
     const getGas = async ({ network: layer, token, address }: GasProps) => {
         let gas: Gas[] = [];
         try {
@@ -70,6 +96,7 @@ export default function useLoopringBalance(): BalanceProvider {
     }
 
     return {
+        getNetworkBalances,
         getBalance,
         getGas,
         supportedNetworks

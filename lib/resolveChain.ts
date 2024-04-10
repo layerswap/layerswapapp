@@ -1,10 +1,10 @@
-import { CryptoNetwork } from "../Models/Network";
+import { Network } from "../Models/Network";
 import NetworkSettings from "./NetworkSettings";
 import { SendErrorMessage } from "./telegram";
 
-export default function resolveChain(network: CryptoNetwork): (Chain & RainbowKitChain) | undefined {
+export default function resolveChain(network: Network): (Chain & RainbowKitChain) | undefined {
 
-    const nativeCurrency = network.tokens.find(c => c.is_native);
+    const nativeCurrency = network.metadata.native_token;
     const blockExplorersBaseURL =
         network.transaction_explorer_template ?
             new URL(network.transaction_explorer_template).origin

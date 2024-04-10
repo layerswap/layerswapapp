@@ -8,7 +8,7 @@ import useImxBalance from "../lib/balances/immutableX/useIMXBalances"
 import { BalanceProvider } from "../Models/Balance"
 import useWallet from "./useWallet"
 import { useBalancesState, useBalancesUpdate } from "../context/balances"
-import { CryptoNetwork, Network, Token } from "../Models/Network"
+import { Network, NetworkWithTokens, Token } from "../Models/Network"
 import useQueryBalances from "../lib/balances/query/useQueryBalances"
 import { useQueryState } from "../context/query"
 
@@ -37,7 +37,7 @@ export default function useBalanceProvider() {
 
     const { getAutofillProvider } = useWallet()
 
-    const fetchBalance = async (network: CryptoNetwork) => {
+    const fetchNetworkBalances = async (network: NetworkWithTokens) => {
         const provider = getAutofillProvider(network)
         const wallet = provider?.getConnectedWallet()
         const address = query.account || wallet?.address
@@ -54,12 +54,40 @@ export default function useBalanceProvider() {
             const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
 
             const provider = getBalanceProvider(network)
-            const ercAndNativeBalances = await provider?.getBalance({
+            const networkBalances = await provider?.getNetworkBalances({
                 network: network,
-                address: address
+                address: address,
             }) || []
 
-            setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(ercAndNativeBalances) }))
+            setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(networkBalances) }))
+            setIsBalanceLoading(false)
+        }
+    }
+
+    const fetchBalance = async (network: Network, token: Token) => {
+        const provider = getAutofillProvider(network)
+        const wallet = provider?.getConnectedWallet()
+        const address = query.account || wallet?.address
+
+        const balance = balances[address || '']?.find(b => b?.network === network?.name)
+        const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
+
+        if (network
+            && isBalanceOutDated
+            && address) {
+            setIsBalanceLoading(true)
+
+            const walletBalances = balances[address]
+            const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
+
+            const provider = getBalanceProvider(network)
+            const balance = await provider?.getBalance({
+                network: network,
+                address: address,
+                token
+            }) || []
+
+            setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(balance) }))
             setIsBalanceLoading(false)
         }
     }
@@ -102,6 +130,8 @@ export default function useBalanceProvider() {
         }
     }
 
+
+
     const getBalanceProvider = (network: Network) => {
         const provider = BalanceProviders.find(provider => provider.supportedNetworks.includes(network.name))
         return provider
@@ -109,6 +139,7 @@ export default function useBalanceProvider() {
 
     return {
         fetchGas,
+        fetchNetworkBalances,
         fetchBalance
     }
 }

@@ -1,6 +1,5 @@
 import { Gift } from "lucide-react";
-import { useRouter } from "next/router";
-import { FC, useCallback } from "react";
+import { FC } from "react";
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient, { Campaign } from "../../lib/layerSwapApiClient";
 import SpinIcon from "../icons/spinIcon";
@@ -9,7 +8,6 @@ import { useSettingsState } from "../../context/settings";
 import Image from "next/image";
 import LinkWrapper from "../LinkWraapper";
 import { Widget } from "../Widget/Index";
-import { CryptoNetwork } from "../../Models/Network";
 
 const Rewards = () => {
 
@@ -35,7 +33,6 @@ const Rewards = () => {
                                             activeCampaigns.map(c =>
                                                 <CampaignItem
                                                     campaign={c}
-                                                    layers={networks}
                                                     key={c.id}
                                                 />)
                                             :
@@ -56,7 +53,6 @@ const Rewards = () => {
                                         {inactiveCampaigns.map(c =>
                                             <CampaignItem
                                                 campaign={c}
-                                                layers={networks}
                                                 key={c.id}
                                             />)}
                                     </div >
@@ -75,11 +71,9 @@ const Rewards = () => {
 }
 type CampaignProps = {
     campaign: Campaign,
-    layers: CryptoNetwork[],
 }
-const CampaignItem: FC<CampaignProps> = ({ campaign, layers }) => {
+const CampaignItem: FC<CampaignProps> = ({ campaign }) => {
 
-    const campaignNetwork = layers.find(l => l.name === campaign.network)
     const campaignDaysLeft = ((new Date(campaign.end_date).getTime() - new Date().getTime()) / 86400000).toFixed()
     const campaignIsActive = IsCampaignActive(campaign)
 
@@ -87,13 +81,13 @@ const CampaignItem: FC<CampaignProps> = ({ campaign, layers }) => {
         className="flex justify-between items-center">
         <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
             <span className="h-5 w-5 relative">
-                {campaignNetwork && <Image
-                    src={campaignNetwork.logo}
+                <Image
+                    src={campaign.network.logo}
                     alt="Project Logo"
                     height="40"
                     width="40"
                     loading="eager"
-                    className="rounded-md object-contain" />}
+                    className="rounded-md object-contain" />
             </span>
             <span className="font-semibold text-base text-left flex items-center">{campaign?.display_name} </span>
         </span>

@@ -25,10 +25,10 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const [activationPubKey, setActivationPubKey] = useState<{ x: string; y: string }>()
     const [selectedActivationAsset, setSelectedActivationAsset] = useState<string>()
     const { chain } = useNetwork()
-    const { swapPrepareData, swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {};
+    const { swapResponse } = useSwapDataState()
+    const { swap, deposit_actions } = swapResponse || {};
 
-    const callData = swapPrepareData?.deposit_actions?.find(da => da.type == 'transfer')?.call_data as `0x${string}` | undefined
+    const callData = deposit_actions?.find(da => da.type == 'transfer')?.call_data as `0x${string}` | undefined
     const { setSwapTransaction } = useSwapTransactionStore();
     const { isConnected, address: fromAddress } = useAccount();
     const source_network = swap?.source_network

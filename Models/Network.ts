@@ -23,7 +23,7 @@ export class Network {
     deposit_methods: string[]
 }
 
-export class CryptoNetwork extends Network {
+export class NetworkWithTokens extends Network {
     tokens: Token[];
 }
 
@@ -51,6 +51,10 @@ export class RouteToken extends Token {
 }
 
 export class Metadata {
+    native_token?: {
+        symbol: string;
+        decimals: number;
+    }
     evm_oracle_contract?: string | null
     evm_multi_call_contract?: string | null
     listing_date: string

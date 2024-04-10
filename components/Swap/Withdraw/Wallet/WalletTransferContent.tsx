@@ -10,8 +10,8 @@ import LoopringWalletWithdraw from "./Loopring";
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
-    const { swapResponse, swapPrepareData } = useSwapDataState();
-    const { swap } = swapResponse || {};
+    const { swapResponse } = useSwapDataState();
+    const { swap, deposit_actions } = swapResponse || {};
 
     const { source_network } = swap || {};
     const source_network_internal_name = source_network?.name;
@@ -27,8 +27,8 @@ export const WalletTransferContent: FC = () => {
         swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.LoopringGoerli?.toUpperCase();
     const sourceIsSolana = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase();
 
-    const depositAddress = swapPrepareData?.deposit_actions?.find(da => da.type == 'transfer')?.to_address;
-    const requested_amount = swapPrepareData?.deposit_actions.find(da => da.type == 'transfer')?.amount || 0;
+    const depositAddress = deposit_actions?.find(da => da.type == 'transfer')?.to_address;
+    const requested_amount = deposit_actions?.find(da => da.type == 'transfer')?.amount || 0;
 
     if (sourceIsImmutableX)
         return <ImtblxWalletWithdrawStep

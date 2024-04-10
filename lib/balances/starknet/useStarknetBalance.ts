@@ -1,7 +1,7 @@
 import KnownInternalNames from "../../knownIds"
 import Erc20Abi from '../../abis/ERC20.json'
 import formatAmount from "../../formatAmount";
-import { Balance, BalanceProps, BalanceProvider } from "../../../Models/Balance";
+import { Balance, BalanceProps, BalanceProvider, NetworkBalancesProps } from "../../../Models/Balance";
 import { useRouter } from "next/router";
 
 export default function useStarknetBalance(): BalanceProvider {
@@ -13,7 +13,7 @@ export default function useStarknetBalance(): BalanceProvider {
     ]
     const router = useRouter()
 
-    const getBalance = async ({ network: layer, address }: BalanceProps) => {
+    const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
         const {
             Contract,
             RpcProvider,
@@ -23,22 +23,22 @@ export default function useStarknetBalance(): BalanceProvider {
 
         let balances: Balance[] = []
 
-        if (!layer.tokens) return
+        if (!network.tokens) return
 
         const provider = new RpcProvider({
-            nodeUrl: layer.node_url,
+            nodeUrl: network.node_url,
         });
 
-        for (let i = 0; i < layer.tokens.length; i++) {
+        for (let i = 0; i < network.tokens.length; i++) {
             try {
-                const asset = layer.tokens[i]
+                const asset = network.tokens[i]
 
                 const erc20 = new Contract(Erc20Abi, asset.contract!, provider);
                 const balanceResult = await erc20.balanceOf(address);
                 const balanceInWei = BigNumber.from(uint256.uint256ToBN(balanceResult.balance).toString()).toString();
 
                 const balance = {
-                    network: layer.name,
+                    network: network.name,
                     token: asset.symbol,
                     amount: formatAmount(balanceInWei, asset.decimals),
                     request_time: new Date().toJSON(),
@@ -57,6 +57,44 @@ export default function useStarknetBalance(): BalanceProvider {
         }
 
         return balances
+
+    }
+
+
+    const getBalance = async ({ network, token, address }: BalanceProps) => {
+        const {
+            Contract,
+            RpcProvider,
+            uint256,
+        } = await import("starknet");
+        const { BigNumber } = await import("ethers");
+
+        let balances: Balance[] = []
+
+
+        const provider = new RpcProvider({
+            nodeUrl: network.node_url,
+        });
+
+        try {
+
+            const erc20 = new Contract(Erc20Abi, token.contract!, provider);
+            const balanceResult = await erc20.balanceOf(address);
+            const balanceInWei = BigNumber.from(uint256.uint256ToBN(balanceResult.balance).toString()).toString();
+
+            return {
+                network: network.name,
+                token: token.symbol,
+                amount: formatAmount(balanceInWei, token.decimals),
+                request_time: new Date().toJSON(),
+                decimals: token.decimals,
+                isNativeCurrency: false,
+            }
+            
+        }
+        catch (e) {
+            console.log(e)
+        }
 
     }
 
@@ -91,6 +129,7 @@ export default function useStarknetBalance(): BalanceProvider {
     // }
 
     return {
+        getNetworkBalances,
         getBalance,
         // getGas,
         supportedNetworks

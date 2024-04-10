@@ -1,6 +1,5 @@
 import { useRouter } from "next/router"
 import { FC } from "react"
-import { useSettingsState } from "../../../context/settings"
 import Image from 'next/image'
 import { Gift } from "lucide-react"
 import LayerSwapApiClient, { Campaign } from "../../../lib/layerSwapApiClient"
@@ -16,13 +15,10 @@ import { Widget } from "../../Widget/Index";
 import Leaderboard from "./Leaderboard"
 import Rewards from "./Rewards";
 import SpinIcon from "../../icons/spinIcon"
-import { CryptoNetwork } from "../../../Models/Network"
 
 function CampaignDetails() {
 
-    const settings = useSettingsState()
     const router = useRouter();
-    const { networks } = settings
     const camapaignName = router.query.campaign?.toString()
 
     const { isConnected } = useAccount();
@@ -30,8 +26,7 @@ function CampaignDetails() {
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
     const campaign = campaignsData?.data?.find(c => c.name === camapaignName)
-
-    const network = networks.find(n => n.name === campaign?.network)
+    const network = campaign?.network
 
     if (isLoading) {
         return <Loading />
@@ -61,14 +56,9 @@ function CampaignDetails() {
                     </div>
                     {
                         isConnected ?
-                            <Rewards
-                                campaign={campaign}
-                            />
+                            <Rewards campaign={campaign} />
                             :
-                            <BriefInformation
-                                network={network}
-                                campaign={campaign}
-                            />
+                            <BriefInformation campaign={campaign} />
                     }
                     <Leaderboard campaign={campaign} />
                 </div>
@@ -91,14 +81,13 @@ function CampaignDetails() {
 
 type BriefInformationProps = {
     campaign: Campaign,
-    network?: CryptoNetwork
 }
-const BriefInformation: FC<BriefInformationProps> = ({ campaign, network }) =>
+const BriefInformation: FC<BriefInformationProps> = ({ campaign }) =>
     <p className="text-secondary-text text-base">
         <span>You can earn $</span>
-        <span>{campaign?.asset}</span>
+        <span>{campaign?.token.symbol}</span>
         <span>&nbsp;tokens by transferring assets to&nbsp;</span>
-        <span>{network?.display_name || campaign.network}</span>
+        <span>{campaign.network.display_name}</span>
         <span>. For each transaction, you&amp;ll receive&nbsp;</span>
         <span>{campaign?.percentage}</span>
         <span>% of Layerswap fee back.&nbsp;</span>

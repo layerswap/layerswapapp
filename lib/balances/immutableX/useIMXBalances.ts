@@ -1,6 +1,6 @@
 import KnownInternalNames from "../../knownIds"
 import formatAmount from "../../formatAmount";
-import { BalanceProps, BalanceProvider, GasProps } from "../../../Models/Balance";
+import { BalanceProps, BalanceProvider, GasProps, NetworkBalancesProps } from "../../../Models/Balance";
 
 export default function useImxBalance(): BalanceProvider {
 
@@ -9,7 +9,7 @@ export default function useImxBalance(): BalanceProvider {
         KnownInternalNames.Networks.ImmutableXGoerli
     ]
 
-    const getBalance = async ({ network: layer, address }: BalanceProps) => {
+    const getNetworkBalances = async ({ network: layer, address }: NetworkBalancesProps) => {
 
         const axios = (await import("axios")).default
 
@@ -34,7 +34,27 @@ export default function useImxBalance(): BalanceProvider {
 
     }
 
+    const getBalance = async ({ network, token, address }: BalanceProps) => {
+
+        const axios = (await import("axios")).default
+
+        const res: BalancesResponse = await axios.get(`${network?.node_url}/v2/balances/${address}`).then(r => r.data)
+
+        const balance = res.result.find(r => r.symbol === token.symbol)
+
+        return {
+            network: network.name,
+            amount: formatAmount(balance?.balance, token.decimals),
+            decimals: token.decimals,
+            isNativeCurrency: false,
+            token: token.symbol,
+            request_time: new Date().toJSON(),
+        }
+
+    }
+
     return {
+        getNetworkBalances,
         getBalance,
         supportedNetworks
     }

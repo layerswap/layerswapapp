@@ -41,10 +41,12 @@ const Component: FC<Props> = ({ campaign }) => {
     }
 
     const rewards = rewardsData?.data
-    const { networks } = settings
-    const network = networks.find(n => n.name === campaign?.network)
+
+
+    const network = campaign.network
     const position = rewards?.user_reward.position || NaN
-    const campaignAsset = network?.tokens.find(c => c?.symbol === campaign?.asset)
+
+    const token = campaign.token
 
     const leaderboardRewards = [
         leaderboard.leaderboard_budget * 0.6,
@@ -77,7 +79,7 @@ const Component: FC<Props> = ({ campaign }) => {
                                                     {user?.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user?.address)}
                                                 </Link>}
                                             </div>
-                                            <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, campaignAsset?.precision)} {campaign?.asset}</p>
+                                            <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, token?.precision)} {token.symbol}</p>
                                         </div>
                                     </div >
                                 </div >
@@ -96,7 +98,7 @@ const Component: FC<Props> = ({ campaign }) => {
                                                         className="rounded-full object-contain" />
                                                 </div>
                                                 <p>
-                                                    <span>{leaderboardRewards[user.position - 1]} {campaign?.asset}</span>
+                                                    <span>{leaderboardRewards[user.position - 1]} {token?.symbol}</span>
                                                 </p>
                                             </div>}>
                                             <div className='text-primary-text hover:cursor-pointer hover:text-primary-text ml-0.5 hover:bg-secondary-200 active:ring-2 active:ring-gray-200 active:bg-secondary-400 focus:outline-none cursor-default p-1 rounded'>
@@ -126,7 +128,7 @@ const Component: FC<Props> = ({ campaign }) => {
                                                     <span className="text-primary">You</span>
                                                 </Link>}
                                             </div>
-                                            <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, campaignAsset?.precision)} {campaign?.asset}</p>
+                                            <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, token?.precision)} {token?.symbol}</p>
                                         </div>
                                     </div >
                                 </div >
@@ -158,7 +160,7 @@ const Component: FC<Props> = ({ campaign }) => {
                                                         {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}
                                                     </Link>}
                                                 </div>
-                                                <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, campaignAsset?.precision)} {campaign?.asset}</p>
+                                                <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, token?.precision)} {token?.symbol}</p>
                                             </div>
                                         </div >
                                     </div >
@@ -178,7 +180,7 @@ const Component: FC<Props> = ({ campaign }) => {
                                                             className="rounded-full object-contain" />
                                                     </div>
                                                     <p>
-                                                        <span>{leaderboardRewards[user.position - 1]} {campaign?.asset}</span>
+                                                        <span>{leaderboardRewards[user.position - 1]} {token?.symbol}</span>
                                                     </p>
                                                 </div>
                                             }>

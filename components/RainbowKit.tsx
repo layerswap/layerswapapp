@@ -28,8 +28,9 @@ function RainbowKitComponent({ children }: Props) {
         .sort((a, b) => (NetworkSettings.KnownSettings[a.name]?.ChainOrder || Number(a.chain_id)) - (NetworkSettings.KnownSettings[b.name]?.ChainOrder || Number(b.chain_id)))
         .filter(net => net.type === NetworkType.EVM
             && net.node_url
-            && net.tokens.some(a => a.is_native))
+            && net.metadata.native_token)
         .map(resolveChain).filter(isChain)
+
     const { chains, publicClient } = configureChains(
         settingsChains?.length > 0 ? settingsChains : [mainnet],
         [publicProvider()]

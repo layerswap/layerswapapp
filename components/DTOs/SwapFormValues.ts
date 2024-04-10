@@ -1,4 +1,4 @@
-import { CryptoNetwork, RouteNetwork, RouteToken } from "../../Models/Network";
+import { RouteNetwork, RouteToken } from "../../Models/Network";
 import { Exchange, ExchangeToken } from "../../Models/Exchange";
 
 export type SwapFormValues = {

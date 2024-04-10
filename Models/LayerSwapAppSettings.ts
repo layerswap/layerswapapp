@@ -1,4 +1,4 @@
-import { CryptoNetwork, RouteNetwork } from "./Network";
+import { NetworkWithTokens, RouteNetwork } from "./Network";
 import { Exchange } from "./Exchange";
 import { LayerSwapSettings } from "./LayerSwapSettings";
 
@@ -11,7 +11,7 @@ export class LayerSwapAppSettings {
     }
 
     exchanges: Exchange[]
-    networks: CryptoNetwork[]
+    networks: NetworkWithTokens[]
     sourceRoutes: RouteNetwork[]
     destinationRoutes: RouteNetwork[]
 

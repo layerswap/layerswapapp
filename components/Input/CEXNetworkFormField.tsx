@@ -13,7 +13,7 @@ import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import { Info } from "lucide-react";
-import { CryptoNetwork, RouteNetwork } from "../../Models/Network";
+import { NetworkWithTokens, RouteNetwork } from "../../Models/Network";
 import { ExchangeNetwork } from "../../Models/Exchange";
 
 type SwapDirection = "from" | "to";
@@ -173,7 +173,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
 function GenerateMenuItems(
     historicalNetworks: ExchangeNetwork[],
-    routes: CryptoNetwork[] | undefined,
+    routes: NetworkWithTokens[] | undefined,
 ): SelectMenuItem<ExchangeNetwork>[] {
     const menuItems = historicalNetworks.map((e, index) => {
         // const indexOf = Number(historicalNetworks
@@ -201,7 +201,7 @@ function GenerateMenuItems(
 
 export default CEXNetworkFormField
 
-export function groupByType(values: SelectMenuItem<CryptoNetwork>[]) {
+export function groupByType(values: SelectMenuItem<NetworkWithTokens>[]) {
     let groups: SelectMenuItemGroup[] = [];
     values?.forEach((v) => {
         let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: "All networks", items: [] });

@@ -1,18 +1,15 @@
 import { Connection, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
-import { CryptoNetwork, Token } from "../../../Models/Network";
+import { Network, Token } from "../../../Models/Network";
 
-const transactionBuilder = async (network: CryptoNetwork, currency: Token, walletPublicKey: PublicKey) => {
-    if (!network.tokens) return
+const transactionBuilder = async (network: Network, token: Token, walletPublicKey: PublicKey) => {
 
     const connection = new Connection(
         `${network.node_url}`,
         "confirmed"
     );
 
-    const asset = network?.tokens?.find(a => currency.symbol === a.symbol)
-
-    const sourceToken = new PublicKey(asset?.contract!);
+    const sourceToken = new PublicKey(token?.contract!);
     const recipientAddress = new PublicKey('');
 
     const transactionInstructions: TransactionInstruction[] = [];
@@ -41,7 +38,7 @@ const transactionBuilder = async (network: CryptoNetwork, currency: Token, walle
             fromAccount.address,
             associatedTokenTo,
             walletPublicKey,
-            20000 * Math.pow(10, Number(asset?.decimals))
+            20000 * Math.pow(10, Number(token?.decimals))
         )
     );
     const result = await connection.getLatestBlockhash()

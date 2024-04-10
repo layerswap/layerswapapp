@@ -1,6 +1,6 @@
 import { PublicClient, encodeFunctionData } from "viem";
 import { erc20ABI } from "wagmi";
-import { CryptoNetwork, Token } from "../../../Models/Network";
+import { Network, Token } from "../../../Models/Network";
 import { Gas } from "../../../Models/Balance";
 
 export default abstract class getEVMGas {
@@ -9,7 +9,7 @@ export default abstract class getEVMGas {
     protected chainId: number
     protected contract_address: `0x${string}`
     protected account: `0x${string}`
-    protected from: CryptoNetwork
+    protected from: Network
     protected currency: Token
     protected destination: `0x${string}`
     protected nativeToken: Token
@@ -19,7 +19,7 @@ export default abstract class getEVMGas {
         chainId: number,
         contract_address: `0x${string}`,
         account: `0x${string}`,
-        from: CryptoNetwork,
+        from: Network,
         currency: Token,
         destination: `0x${string}`,
         nativeToken: Token,

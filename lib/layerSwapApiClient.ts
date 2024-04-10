@@ -6,7 +6,7 @@ import axios, { AxiosInstance, Method } from "axios";
 import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
-import { CryptoNetwork, Network, Token } from "../Models/Network";
+import { NetworkWithTokens, Network, Token } from "../Models/Network";
 import { Exchange } from "../Models/Exchange";
 
 export default class LayerSwapApiClient {
@@ -22,16 +22,16 @@ export default class LayerSwapApiClient {
 
     fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
 
-    async GetRoutesAsync(direction: 'sources' | 'destinations'): Promise<ApiResponse<CryptoNetwork[]>> {
-        return await this.UnauthenticatedRequest<ApiResponse<CryptoNetwork[]>>("GET", `/${direction}`)
+    async GetRoutesAsync(direction: 'sources' | 'destinations'): Promise<ApiResponse<NetworkWithTokens[]>> {
+        return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/${direction}`)
     }
 
     async GetExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
         return await this.UnauthenticatedRequest<ApiResponse<Exchange[]>>("GET", `/exchanges`);
     }
 
-    async GetLSNetworksAsync(): Promise<ApiResponse<CryptoNetwork[]>> {
-        return await this.UnauthenticatedRequest<ApiResponse<CryptoNetwork[]>>("GET", `/networks`);
+    async GetLSNetworksAsync(): Promise<ApiResponse<NetworkWithTokens[]>> {
+        return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/networks`);
     }
 
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<SwapResponse>> {
@@ -137,13 +137,10 @@ export type CreateSwapParams = {
 }
 
 export type SwapResponse = {
+    deposit_actions: DepositAction[]
     swap: SwapItem;
     quote: SwapQuote
     refuel: Refuel,
-}
-
-export type SwapPrepareData = {
-    deposit_actions: DepositAction[]
 }
 
 export type Refuel = {
@@ -187,6 +184,7 @@ export type DepositAction = {
     order: number,
     to_address?: `0x${string}`,
     token: Token,
+    gas_token: Token,
     type: 'transfer',
 }
 
@@ -214,7 +212,6 @@ export type SwapQuote = {
     total_fee: number,
     total_fee_in_usd: number,
     blockchain_fee: number,
-    deposit_gas_fee: number,
     service_fee: number,
     avg_completion_time: string
 }
@@ -309,8 +306,8 @@ export type Campaign = {
     id: number,
     name: string,
     display_name: string,
-    asset: string,
-    network: string,
+    token: Token,
+    network: Network,
     percentage: number,
     start_date: string,
     end_date: string,

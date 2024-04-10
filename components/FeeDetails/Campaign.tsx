@@ -7,10 +7,10 @@ import { truncateDecimals } from "../utils/RoundDecimals"
 import { motion } from "framer-motion"
 import ClickTooltip from "../Tooltips/ClickTooltip"
 import Image from 'next/image';
-import { CryptoNetwork, Token } from "../../Models/Network"
+import { Network, Token } from "../../Models/Network"
 
 type CampaignProps = {
-    destination: CryptoNetwork,
+    destination: Network,
     fee: number | undefined,
     selected_currency: Token,
 }
@@ -27,7 +27,7 @@ const Comp: FC<CampaignProps> = ({
     const campaign = campaignsData
         ?.data
         ?.find(c =>
-            c?.network === destination?.name
+            c?.network.name === destination?.name
             && c.status == 'active'
             && new Date(c?.end_date).getTime() - now > 0)
 
@@ -46,11 +46,11 @@ type CampaignDisplayProps = {
     selected_currency: Token,
 }
 const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_currency }) => {
-    const { networks } = useSettingsState()
-    const network = networks.find(l => l.name === campaign.network)
-    const campaignAsset = network?.tokens.find(c => c?.symbol === campaign?.asset)
+
+    const network = campaign.network
+    const token = campaign.token
     const feeinUsd = fee * selected_currency.price_in_usd
-    const reward = truncateDecimals(((feeinUsd * (campaign?.percentage || 0) / 100) / (campaignAsset?.price_in_usd || 1)), (campaignAsset?.precision || 0))
+    const reward = truncateDecimals(((feeinUsd * (campaign?.percentage || 0) / 100) / (token?.price_in_usd || 1)), (token?.precision || 0))
 
     return <motion.div
         initial={{ y: "-100%" }}
@@ -64,7 +64,7 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_cur
         }}
         className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700  relative bottom-2 z-0 pt-4 pb-2 px-3.5 text-right'>
         <div className='flex items-center'>
-            <p>Est. {campaignAsset?.symbol} Reward</p>
+            <p>Est. {token?.symbol} Reward</p>
             <ClickTooltip text={<span><span>The amount of onboarding reward that you’ll earn.&nbsp;</span><a target='_blank' href='/campaigns' className='text-primary underline hover:no-underline decoration-primary cursor-pointer'>Learn more</a></span>} />
         </div>
         {
@@ -81,7 +81,7 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_cur
                         className="rounded-md object-contain" />
                 </div>
                 <p>
-                    {reward} {campaignAsset?.symbol}
+                    {reward} {token?.symbol}
                 </p>
             </div>
         }

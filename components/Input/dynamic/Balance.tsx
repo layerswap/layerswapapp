@@ -18,7 +18,7 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
     const destinationWalletProvider = useMemo(() => {
         return to && getProvider(to)
     }, [to, getProvider])
-    const { fetchBalance, fetchGas } = useBalance()
+    const { fetchNetworkBalances, fetchGas } = useBalance()
 
     const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet()
     const destinationNetworkWallet = destinationWalletProvider?.getConnectedWallet()
@@ -35,11 +35,11 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
     }, [sourceNetworkWallet])
 
     useEffect(() => {
-        direction === 'from' && values.from && fetchBalance(values.from);
+        direction === 'from' && values.from && fetchNetworkBalances(values.from);
     }, [values.from, values.destination_address, sourceNetworkWallet?.address])
 
     useEffect(() => {
-        direction === 'to' && values.to && fetchBalance(values.to);
+        direction === 'to' && values.to && fetchNetworkBalances(values.to);
     }, [values.to, values.destination_address, sourceNetworkWallet?.address])
 
     const contract_address = values?.from?.tokens.find(a => a.symbol === values?.fromCurrency?.symbol)?.contract

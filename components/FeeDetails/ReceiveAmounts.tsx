@@ -1,21 +1,19 @@
 import { FC } from "react";
-import { CryptoNetwork, Token } from "../../Models/Network";
+import { Network, Token } from "../../Models/Network";
 import { Fuel } from "lucide-react";
 import { Quote } from "../../lib/layerSwapApiClient";
 
 type WillReceiveProps = {
-    currency?: Token | null;
-    to: CryptoNetwork | undefined | null;
+    destination_token: Token | undefined;
     refuel: boolean;
     fee: Quote | undefined
     onButtonClick: () => void
 }
-export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee, onButtonClick }) => {
+export const ReceiveAmounts: FC<WillReceiveProps> = ({ destination_token,  refuel, fee, onButtonClick }) => {
     const receive_amount = fee?.quote.receive_amount
-    const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(currency?.precision) || "")
+    const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(destination_token?.precision) || "")
 
-    const destinationAsset = to?.tokens?.find(c => c?.symbol === currency?.symbol)
-    const receiveAmountInUsd = receive_amount && destinationAsset ? (destinationAsset?.price_in_usd * receive_amount).toFixed(2) : undefined
+    const receiveAmountInUsd = receive_amount && destination_token ? (destination_token?.price_in_usd * receive_amount).toFixed(2) : undefined
 
     return <div className="flex items-start justify-between w-full">
         <span className="md:font-semibold text-sm md:text-base text-primary-buttonTextColor leading-8 md:leading-8 flex-1">
@@ -33,7 +31,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ currency, to, refuel, fee
                                     <>{parsedReceiveAmount}</>
                                     &nbsp;
                                     <span>
-                                        {currency?.symbol}
+                                        {destination_token?.symbol}
                                     </span>
                                     {
                                         receiveAmountInUsd !== undefined && Number(receiveAmountInUsd) > 0 &&
