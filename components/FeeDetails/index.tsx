@@ -17,10 +17,9 @@ const RefuelModal = dynamic(() => import("./RefuelModal"), {
 
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
     const { toCurrency, to, refuel, fromExchange, toExchange, from, fromCurrency } = values || {};
-    const { fee } = useFee()
+    const { fee, isFeeLoading } = useFee()
     const query = useQueryState();
     const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false)
-    const nativeAsset = to?.tokens.find(a => a.is_native)
 
     return (
         <>
@@ -28,14 +27,12 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                 <FeeDetails>
 
                     {
-                        from && to && toCurrency && fromCurrency && !fromExchange &&
-                        <FeeDetails.Item>
-                            <DepositMethod />
-                        </FeeDetails.Item>
+                        from && to && toCurrency && fromCurrency &&
+                        <DepositMethod />
                     }
 
                     {
-                        toCurrency?.refuel && !query.hideRefuel && nativeAsset && !toExchange &&
+                        toCurrency?.refuel && !query.hideRefuel && !toExchange &&
                         <FeeDetails.Item>
                             <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
                         </FeeDetails.Item>
@@ -54,6 +51,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                             refuel={!!refuel}
                             fee={fee}
                             onButtonClick={() => setOpenRefuelModal(true)}
+                            isFeeLoading={isFeeLoading}
                         />
                     </FeeDetails.Item>
 

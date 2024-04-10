@@ -3,8 +3,9 @@ import { FC, useCallback, useEffect } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../../shadcn/select";
 import { Network } from "../../../Models/Network";
+import FeeDetails from "../FeeDetailsComponent";
 
-const DepositMethod: FC = () => {
+const DepositMethodComponent: FC = () => {
     const {
         values,
         setFieldValue,
@@ -27,7 +28,7 @@ const DepositMethod: FC = () => {
     const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods)
 
     useEffect(() => {
-        if (!depositMethod) setFieldValue(name, menuItems?.[0].id, true)
+        if (!depositMethod || !menuItems?.find(i => i.id === depositMethod)) setFieldValue(name, menuItems?.[0]?.id, true)
     }, [menuItems])
 
     const handleSelect = useCallback((item: string) => {
@@ -43,7 +44,7 @@ const DepositMethod: FC = () => {
                 <div>
                     {
                         menuItems && (menuItems?.length > 1 ?
-                            <Select onValueChange={handleSelect} value={depositMethod} defaultValue={menuItems[0].id}>
+                            <Select onValueChange={handleSelect} value={depositMethod}>
                                 <SelectTrigger className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
                                     <SelectValue />
                                 </SelectTrigger>
@@ -68,8 +69,32 @@ const DepositMethod: FC = () => {
                 </div>
             </div>
         </div>
+
     )
 };
+
+const DepositMethod = () => {
+
+    const {
+        values,
+        setFieldValue,
+    } = useFormikContext<SwapFormValues>();
+    const { fromExchange } = values
+    const name = 'depositMethod'
+
+    useEffect(() => {
+        if (fromExchange) setFieldValue(name, 'deposit_address', true)
+    }, [fromExchange])
+
+    return (
+        !fromExchange ?
+            <FeeDetails.Item>
+                <DepositMethodComponent />
+            </FeeDetails.Item>
+            :
+            <></>
+    )
+}
 
 type DepositMethod = {
     id: string,

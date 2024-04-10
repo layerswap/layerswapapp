@@ -127,10 +127,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         }
     }, [values.refuel, destination, minAllowedAmount])
 
-    const valuesSwapper = useCallback(() => {
-        setValues({ ...values, from: values.to, to: values.from, fromCurrency: values.toCurrency, toCurrency: values.fromCurrency, toExchange: values.fromExchange, fromExchange: values.toExchange }, true)
-    }, [values])
-
     const [animate, cycle] = useCycle(
         { rotate: 0 },
         { rotate: 180 }
@@ -139,10 +135,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const sourceRoutesEndpoint = `/sources?include_unmatched=true&destination_network=${source?.name}&destination_token=${fromCurrency?.symbol}`
     const destinationRoutesEndpoint = `/destinations?include_unmatched=true&source_network=${destination?.name}&source_token=${toCurrency?.symbol}`
     const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<RouteNetwork[]>>((source && fromCurrency) ?
-        sourceRoutesEndpoint : `/v2-alpha/sources?include_unmatched=true`, layerswapApiClient.fetcher, { keepPreviousData: true })
+        sourceRoutesEndpoint : `/sources?include_unmatched=true`, layerswapApiClient.fetcher, { keepPreviousData: true })
 
     const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<RouteNetwork[]>>((destination && toCurrency) ?
-        destinationRoutesEndpoint : `/v2-alpha/destinations?include_unmatched=true`, layerswapApiClient.fetcher, { keepPreviousData: true })
+        destinationRoutesEndpoint : `/destinations?include_unmatched=true`, layerswapApiClient.fetcher, { keepPreviousData: true })
 
     const sourceCanBeSwapped = destinationRoutes?.data?.some(l => l.name === source?.name)
     const destinationCanBeSwapped = sourceRoutes?.data?.some(l => l.name === destination?.name)
@@ -150,9 +146,17 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     if (query.lockTo || query.lockFrom || query.hideTo || query.hideFrom) {
         valuesSwapperDisabled = true;
     }
-    if (!(sourceCanBeSwapped || destinationCanBeSwapped)) {
+    if (!sourceCanBeSwapped || !destinationCanBeSwapped) {
         valuesSwapperDisabled = true;
     }
+
+    const valuesSwapper = useCallback(() => {
+        const newFrom = sourceRoutes?.data?.find(l => l.name === destination?.name)
+        const newTo = destinationRoutes?.data?.find(l => l.name === source?.name)
+        const newFromToken = newFrom?.tokens.find(t => t.symbol === toCurrency?.symbol)
+        const newToToken = newTo?.tokens.find(t => t.symbol === fromCurrency?.symbol)
+        setValues({ ...values, from: newFrom, to: newTo, fromCurrency: newFromToken, toCurrency: newToToken, toExchange: values.fromExchange, fromExchange: values.toExchange }, true)
+    }, [values, sourceRoutes, destinationRoutes])
 
     const hideAddress = query?.hideAddress
         && query?.to

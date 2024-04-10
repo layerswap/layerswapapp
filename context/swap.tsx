@@ -60,7 +60,6 @@ export function SwapDataProvider({ children }) {
     const [interval, setInterval] = useState(0)
     const { data: swapData, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
-
     const swapResponse = swapData?.data
 
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()

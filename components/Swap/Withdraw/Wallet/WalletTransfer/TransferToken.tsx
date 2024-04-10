@@ -30,8 +30,9 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     const { address } = useAccount();
     const { setSwapTransaction } = useSwapTransactionStore();
     const { swapResponse } = useSwapDataState()
+    const { deposit_actions } = swapResponse || {}
 
-    const callData = swapResponse?.deposit_actions?.find(da => da.type == 'transfer')?.call_data as `0x${string}` | undefined
+    const callData = deposit_actions?.find(da => da.type == 'transfer')?.call_data as `0x${string}` | undefined
 
     const tx = {
         to: depositAddress,

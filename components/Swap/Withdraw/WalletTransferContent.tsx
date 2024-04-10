@@ -18,17 +18,7 @@ const WalletTransferContent: FC = () => {
     const { getWithdrawalProvider: getProvider, disconnectWallet } = useWallet()
     const { swapResponse } = useSwapDataState()
     const { swap, deposit_actions } = swapResponse || {}
-    
-    const {
-        source_exchange,
-        source_network,
-        source_token,
-        destination_network,
-        destination_token,
-        destination_address,
-        requested_amount
-    } = swap || {}
-
+    const { source_exchange, source_token, destination_token, destination_address, requested_amount } = swap || {}
     const [isLoading, setIsloading] = useState(false);
     const { mutateSwap } = useSwapDataUpdate()
     const provider = useMemo(() => {
