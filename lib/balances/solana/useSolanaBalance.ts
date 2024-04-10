@@ -127,12 +127,12 @@ export default function useSolanaBalance(): BalanceProvider {
 
             const transaction = await transactionBuilder(network, token, walletPublicKey)
 
-            if (!transaction || !network.metadata?.native_token) return
+            if (!transaction || !network.token) return
 
             const message = transaction.compileMessage();
             const result = await connection.getFeeForMessage(message)
 
-            const formatedGas = formatAmount(result.value, network.metadata?.native_token?.decimals)
+            const formatedGas = formatAmount(result.value, network.token?.decimals)
 
             gas = [{
                 token: token.symbol,

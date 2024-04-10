@@ -65,9 +65,6 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
             if (!wallet) {
                 throw Error("starknet wallet not connected")
             }
-            if (!token.contract) {
-                throw Error("starknet contract_address is not defined")
-            }
 
             try {
                 const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.account?.execute(JSON.parse(callData || "")) || {});

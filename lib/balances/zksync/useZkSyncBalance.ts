@@ -62,33 +62,33 @@ export default function useZkSyncBalance(): BalanceProvider {
         }
     }
 
-    // const getGas = async ({ network: layer, currency, address }: GasProps) => {
+    const getGas = async ({ network, token, address }: GasProps) => {
 
-    //     let gas: Gas[] = [];
-    //     if (!layer.tokens || !address) return
+        let gas: Gas[] = [];
+        if (!address) return
 
-    //     try {
-    //         const result = await client.getTransferFee(layer.node_url, address, currency.symbol);
-    //         const currencyDec = layer?.tokens?.find(c => c?.symbol == currency.symbol)?.decimals;
-    //         const formatedGas = formatAmount(result.totalFee, Number(currencyDec))
+        try {
+            const result = await client.getTransferFee(network.node_url, address, token.symbol);
+            const currencyDec = token.decimals;
+            const formatedGas = formatAmount(result.totalFee, Number(currencyDec))
 
-    //         gas = [{
-    //             token: currency.symbol,
-    //             gas: formatedGas,
-    //             request_time: new Date().toJSON()
-    //         }]
-    //     }
-    //     catch (e) {
-    //         console.log(e)
-    //     }
+            gas = [{
+                token: token.symbol,
+                gas: formatedGas,
+                request_time: new Date().toJSON()
+            }]
+        }
+        catch (e) {
+            console.log(e)
+        }
 
-    //     return gas
-    // }
+        return gas
+    }
 
     return {
         getNetworkBalances,
         getBalance,
-        // getGas,
+        getGas,
         supportedNetworks
     }
 }

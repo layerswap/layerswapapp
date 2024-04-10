@@ -112,7 +112,7 @@ export function SwapDataProvider({ children }) {
             destination_address: destination_address,
             reference_id: query.externalId,
             refuel: !!refuel,
-            deposit_mode: depositMethod!,
+            use_deposit_address: depositMethod === 'wallet' ? false : true,
             source_address
         }
 

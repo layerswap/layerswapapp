@@ -4,7 +4,7 @@ import { SendErrorMessage } from "./telegram";
 
 export default function resolveChain(network: Network): (Chain & RainbowKitChain) | undefined {
 
-    const nativeCurrency = network.metadata.native_token;
+    const nativeCurrency = network.token;
     const blockExplorersBaseURL =
         network.transaction_explorer_template ?
             new URL(network.transaction_explorer_template).origin

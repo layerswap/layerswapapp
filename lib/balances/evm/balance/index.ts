@@ -1,9 +1,9 @@
 import { PublicClient } from "viem"
-import formatAmount from "../../formatAmount"
+import formatAmount from "../../../formatAmount"
 import { erc20ABI } from "wagmi"
 import { multicall, fetchBalance, FetchBalanceResult } from '@wagmi/core'
-import { Network, NetworkWithTokens, Token } from "../../../Models/Network"
-import { Balance } from "../../../Models/Balance"
+import { Network, NetworkWithTokens, Token } from "../../../../Models/Network"
+import { Balance } from "../../../../Models/Balance"
 
 export type ERC20ContractRes = ({
     error: Error;

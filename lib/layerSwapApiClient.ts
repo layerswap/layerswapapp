@@ -132,7 +132,7 @@ export type CreateSwapParams = {
     reference_id?: string,
     source_exchange?: string
     destination_exchange?: string
-    deposit_mode: string
+    use_deposit_address: boolean
     app_name?: string,
 }
 

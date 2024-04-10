@@ -8,8 +8,6 @@ export default function useEVMBalance(): BalanceProvider {
     const supportedNetworks = layers
         .filter(l =>
             l.type === NetworkType.EVM
-            && NetworkSettings.KnownSettings[l.name]
-                ?.GasCalculationType !== GasCalculation.OptimismType
             && l.tokens.some(a => a.is_native))
         .map(l => l.name)
 
@@ -30,7 +28,7 @@ export default function useEVMBalance(): BalanceProvider {
                 getTokenBalance,
                 resolveERC20Balances,
                 resolveBalance
-            } = await import("./getBalance")
+            } = await import("./balance")
 
             const erc20BalancesContractRes = await getErc20Balances({
                 address: address,
@@ -72,16 +70,10 @@ export default function useEVMBalance(): BalanceProvider {
             const chain = resolveChain(network)
             if (!chain) return
 
-            const { createPublicClient, http } = await import("viem")
-            const publicClient = createPublicClient({
-                chain,
-                transport: http()
-            })
-
             const {
                 getTokenBalance,
                 resolveBalance,
-            } = await import("./getBalance")
+            } = await import("./balance")
 
             const balanceData = await getTokenBalance(address as `0x${string}`, Number(network.chain_id))
             const balance = (balanceData
@@ -116,8 +108,12 @@ export default function useEVMBalance(): BalanceProvider {
                 transport: http(),
             })
 
-            const getEthereumGas = (await import("./ethereum/getGas")).default
-            const gasProvider = new getEthereumGas(
+            const getEthereumGas = (await import("./gas/ethereum")).default
+            const getOptimismGas = (await import("./gas/optimism")).default
+
+            const getGas = NetworkSettings.KnownSettings[network.name]?.GasCalculationType !== GasCalculation.OptimismType ? getEthereumGas : getOptimismGas
+
+            const gasProvider = new getGas(
                 publicClient,
                 chainId,
                 contract_address,
