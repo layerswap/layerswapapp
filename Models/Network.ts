@@ -40,7 +40,6 @@ export class Token {
     decimals: number;
     price_in_usd: number;
     precision: number;
-    is_native: boolean
     status?: string;
 }
 

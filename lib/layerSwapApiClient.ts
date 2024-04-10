@@ -48,8 +48,8 @@ export default class LayerSwapApiClient {
     }
 
     async GetQuote({ params }: { params: GetQuoteParams }): Promise<ApiResponse<Quote>> {
-        const { source_network, source_token, source_address, destination_token, destination_network, amount, deposit_mode, include_gas, refuel } = params
-        return await this.AuthenticatedRequest<ApiResponse<Quote>>("GET", `/quote?source_network=${source_network}&source_token=${source_token}&source_address=${source_address}&destination_network=${destination_network}&destination_token=${destination_token}&deposit_mode=${deposit_mode}&include_gas=${include_gas}&amount=${amount}&refuel=${refuel}`);
+        const { source_network, source_token, source_address, destination_token, destination_network, amount, use_deposit_address, include_gas, refuel } = params
+        return await this.AuthenticatedRequest<ApiResponse<Quote>>("GET", `/quote?source_network=${source_network}&source_token=${source_token}&source_address=${source_address}&destination_network=${destination_network}&destination_token=${destination_token}&use_deposit_address=${use_deposit_address}&include_gas=${include_gas}&amount=${amount}&refuel=${refuel}`);
     }
 
     async DisconnectExchangeAsync(swapid: string, exchangeName: string): Promise<ApiResponse<void>> {
@@ -163,7 +163,7 @@ export type SwapItem = {
     source_address: `0x${string}`,
     destination_address: `0x${string}`,
     requested_amount: number,
-    deposit_mode: "deposit_address" | "wallet"
+    use_deposit_address: boolean
     transactions: Transaction[]
     exchange_account_connected: boolean;
     exchange_account_name?: string;
@@ -200,7 +200,7 @@ export type GetQuoteParams = {
     destination_network: string,
     destination_token: string,
     destination_address: string,
-    deposit_mode: string,
+    use_deposit_address: boolean,
     include_gas?: boolean,
     amount: number,
     refuel?: boolean

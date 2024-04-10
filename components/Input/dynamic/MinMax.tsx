@@ -32,7 +32,7 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
 
     const gasAmount = gases[from?.name || '']?.find(g => g?.token === fromCurrency?.symbol)?.gas || 0
     const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
-    const native_currency = from?.tokens.find(a => a.is_native)
+    const native_currency = from?.token
 
     let maxAllowedAmount: number | null = maxAmountFromApi || 0
     if (query.balances && fromCurrency) {

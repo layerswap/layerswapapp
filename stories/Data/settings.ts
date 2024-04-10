@@ -12,7 +12,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-                    "is_native": false
+
                 },
                 {
                     "symbol": "ETH",
@@ -21,7 +21,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-                    "is_native": true
+
                 },
                 {
                     "symbol": "USDC",
@@ -30,7 +30,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-                    "is_native": false
+
                 }
             ],
             "name": "ARBITRUM_SEPOLIA",
@@ -60,7 +60,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 9071,
                     "precision": 6,
-                    "is_native": false
+
                 },
                 {
                     "symbol": "WETH",
@@ -69,7 +69,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3452.25,
                     "precision": 6,
-                    "is_native": false
+
                 },
                 {
                     "symbol": "ETH",
@@ -78,7 +78,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-                    "is_native": true
+
                 },
                 {
                     "symbol": "USDC",
@@ -87,7 +87,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-                    "is_native": false
+
                 }
             ],
             "name": "ETHEREUM_SEPOLIA",
@@ -117,7 +117,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-                    "is_native": false
+
                 }
             ],
             "name": "IMMUTABLEX_SEPOLIA",
@@ -147,7 +147,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-                    "is_native": true
+
                 }
             ],
             "name": "LINEA_GOERLI",
@@ -177,7 +177,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-                    "is_native": false
+
                 },
                 {
                     "symbol": "ETH",
@@ -186,7 +186,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-                    "is_native": true
+
                 }
             ],
             "name": "OPTIMISM_SEPOLIA",
@@ -216,7 +216,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-                    "is_native": true
+
                 }
             ],
             "name": "BASE_SEPOLIA",
@@ -246,7 +246,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 0.095483,
                     "precision": 6,
-                    "is_native": true
+
                 }
             ],
             "name": "EVMOS_TESTNET",
@@ -276,7 +276,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-                    "is_native": false
+
                 },
                 {
                     "symbol": "SOL",
@@ -285,7 +285,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 9,
                     "price_in_usd": 189.46,
                     "precision": 6,
-                    "is_native": true
+
                 }
             ],
             "name": "SOLANA_DEVNET",
@@ -315,7 +315,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-                    "is_native": false
+
                 }
             ],
             "name": "BRINE_TESTNET",
@@ -345,7 +345,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3,
                     "precision": 6,
-                    "is_native": true
+
                 },
                 {
                     "symbol": "ETH",
@@ -354,7 +354,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-                    "is_native": false
+
                 }
             ],
             "name": "IMMUTABLEZK_TESTNET",
@@ -384,7 +384,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-                    "is_native": false
+
                 },
                 {
                     "symbol": "ARUSDC",
@@ -393,7 +393,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-                    "is_native": false
+
                 },
                 {
                     "symbol": "DAI1",
@@ -402,7 +402,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 0.999083,
                     "precision": 6,
-                    "is_native": false
+
                 },
                 {
                     "symbol": "DAI2",
@@ -411,7 +411,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 0.999083,
                     "precision": 6,
-                    "is_native": false
+
                 }
             ],
             "name": "STARKNET_SEPOLIA",
@@ -440,7 +440,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 100.98,
                     "precision": 6,
-                    "is_native": true
+
                 }
             ],
             "name": "METIS_SEPOLIA",
@@ -470,7 +470,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-                    "is_native": true
+
                 }
             ],
             "name": "NAHMII_TESTNET",
@@ -500,7 +500,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-                    "is_native": true
+
                 }
             ],
             "name": "MODE_TESTNET",
@@ -530,7 +530,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-                    "is_native": true
+
                 }
             ],
             "name": "BLAST_SEPOLIA",
@@ -560,7 +560,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-                    "is_native": false
+
                 }
             ],
             "name": "LOOPRING_GOERLI",
@@ -590,7 +590,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-                    "is_native": true
+
                 },
                 {
                     "symbol": "USDC",
@@ -599,7 +599,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-                    "is_native": false
+
                 }
             ],
             "name": "ZKSYNCERA_SEPOLIA",
@@ -629,7 +629,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-                    "is_native": false
+
                 },
                 {
                     "symbol": "ZETA",
@@ -638,7 +638,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 2,
                     "precision": 6,
-                    "is_native": true
+
                 }
             ],
             "name": "ZETACHAIN_TESTNET",
@@ -668,7 +668,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-                    "is_native": true
+
                 }
             ],
             "name": "KROMA_SEPOLIA",

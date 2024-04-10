@@ -4,11 +4,11 @@ import { NetworkType } from "../../../Models/Network"
 import NetworkSettings, { GasCalculation } from "../../NetworkSettings"
 
 export default function useEVMBalance(): BalanceProvider {
-    const { networks: layers } = useSettingsState()
-    const supportedNetworks = layers
+    const { networks } = useSettingsState()
+    const supportedNetworks = networks
         .filter(l =>
             l.type === NetworkType.EVM
-            && l.tokens.some(a => a.is_native))
+            && l.token)
         .map(l => l.name)
 
     const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {

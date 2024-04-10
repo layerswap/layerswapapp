@@ -21,7 +21,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const [isFocused, setIsFocused] = useState(false);
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const [walletAddress, setWalletAddress] = useState<string>()
-    const native_currency = from?.tokens.find(a => a.is_native)
+    const native_currency = from?.token
     const query = useQueryState()
 
     const gasAmount = gases[from?.name || '']?.find(g => g?.token === fromCurrency?.symbol)?.gas || 0

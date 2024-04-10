@@ -28,7 +28,7 @@ const DepositMethodComponent: FC = () => {
     const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods)
 
     useEffect(() => {
-        if (!depositMethod || !menuItems?.find(i => i.id === depositMethod)) setFieldValue(name, menuItems?.[0]?.id, true)
+        if (!depositMethod || !menuItems?.find(i => i.id === depositMethod)) setFieldValue(name, (menuItems?.find(i => i.id === 'wallet')?.id || menuItems?.[0]?.id), true)
     }, [menuItems])
 
     const handleSelect = useCallback((item: string) => {

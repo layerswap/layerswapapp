@@ -1,16 +1,10 @@
-import { AlignLeft } from 'lucide-react';
-import { FC, useEffect, useState } from 'react'
+import { FC } from 'react'
 import WalletTransfer from './Wallet';
 import ManualTransfer from './ManualTransfer';
-import { useSettingsState } from '../../../context/settings';
-import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
+import { useSwapDataState } from '../../../context/swap';
 import KnownInternalNames from '../../../lib/knownIds';
 import SwapSummary from '../Summary';
-import Coinbase from './Coinbase';
 import External from './External';
-import { WithdrawType } from '../../../lib/layerSwapApiClient';
-import WalletIcon from '../../icons/WalletIcon';
-import { NetworkType } from '../../../Models/Network';
 import { useQueryState } from '../../../context/query';
 import { Widget } from '../../Widget/Index';
 import WalletTransferContent from './WalletTransferContent';
@@ -18,7 +12,6 @@ import WalletTransferContent from './WalletTransferContent';
 const Withdraw: FC = () => {
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
-    const { setWithdrawType } = useSwapDataUpdate()
     const { appName, signature } = useQueryState()
 
     const sourceIsImmutableX = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
@@ -36,12 +29,12 @@ const Withdraw: FC = () => {
         content?: JSX.Element | JSX.Element[],
         footer?: JSX.Element | JSX.Element[],
     } = {}
-    if (swap?.deposit_mode === "wallet") {
+    if (swap?.use_deposit_address === false) {
         withdraw = {
             content: <WalletTransferContent />,
             footer: <WalletTransfer />
         }
-    } else if (swap?.deposit_mode === "deposit_address") {
+    } else if (swap?.use_deposit_address === true) {
         withdraw = {
             footer: <ManualTransfer />,
             content: <></>

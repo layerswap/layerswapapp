@@ -109,8 +109,8 @@ export default function useBalanceProvider() {
             && destination_address) {
             setIsGasLoading(true)
             try {
-                const provider = getBalanceProvider(network)
-                const gas = provider?.getGas && await provider?.getGas({
+                const gasProvider = getBalanceProvider(network)
+                const gas = gasProvider?.getGas && await gasProvider?.getGas({
                     address: wallet?.address as `0x${string}`,
                     network,
                     token,

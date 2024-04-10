@@ -5,8 +5,8 @@ import { useSettingsState } from "../../../context/settings"
 export default function useQueryBalances(): BalanceProvider {
 
     const query = useQueryState()
-    const { networks: layers } = useSettingsState()
-    const supportedNetworks = [(layers.find(l => l.name.toLowerCase() === query.from?.toLowerCase())?.name || ''), (layers.find(l => l.name.toLowerCase() === query.to?.toLowerCase())?.name || '')]
+    const { networks } = useSettingsState()
+    const supportedNetworks = [(networks.find(l => l.name.toLowerCase() === query.from?.toLowerCase())?.name || ''), (networks.find(l => l.name.toLowerCase() === query.to?.toLowerCase())?.name || '')]
 
     const getNetworkBalances = ({ network }: NetworkBalancesProps) => {
         const asset = network.tokens.find(a => a.symbol === query.fromAsset)
@@ -20,7 +20,7 @@ export default function useQueryBalances(): BalanceProvider {
             network: network.name,
             amount: parsedBalances[asset.symbol],
             decimals: asset.decimals,
-            isNativeCurrency: asset.is_native,
+            isNativeCurrency: network.token?.symbol === asset.symbol,
             token: asset.symbol,
             request_time: new Date().toJSON(),
         }]
@@ -41,7 +41,7 @@ export default function useQueryBalances(): BalanceProvider {
             network: network.name,
             amount: parsedBalances[token.symbol],
             decimals: token.decimals,
-            isNativeCurrency: token.is_native,
+            isNativeCurrency: network.token?.symbol === token.symbol,
             token: token.symbol,
             request_time: new Date().toJSON(),
         }
