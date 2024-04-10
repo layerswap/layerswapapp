@@ -9,30 +9,17 @@ import { createAssociatedTokenAccountInstruction, createTransferInstruction, get
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
-import { Network, Token } from '../../../../Models/Network';
+import { WithdrawPageProps } from './WalletTransferContent';
 
-type Props = {
-    depositAddress?: string,
-    amount: number;
-    source_network: Network;
-    source_token: Token;
-    swapId: string;
-}
-
-const SolanaWalletWithdrawStep: FC<Props> = ({
-    depositAddress,
-    amount,
-    source_network,
-    source_token,
-    swapId
-}) => {
+const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId }) => {
     const [loading, setLoading] = useState(false);
     const { getWithdrawalProvider } = useWallet()
     const { setSwapTransaction } = useSwapTransactionStore();
-    const provider = getWithdrawalProvider(source_network!);
+
+    const provider = getWithdrawalProvider(network!);
     const wallet = provider?.getConnectedWallet();
     const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
-    const solanaNode = source_network?.node_url
+    const solanaNode = network?.node_url
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
@@ -49,7 +36,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({
 
     const handleTransfer = useCallback(async () => {
 
-        if (!walletPublicKey || !signTransaction || !depositAddress) return
+        if (!swapId || !walletPublicKey || !signTransaction || !depositAddress || !amount) return
 
         setLoading(true)
         try {
@@ -58,7 +45,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({
                 "confirmed"
             );
 
-            const sourceToken = new PublicKey(source_token?.contract!);
+            const sourceToken = new PublicKey(token?.contract!);
             const recipientAddress = new PublicKey(depositAddress);
 
             const transactionInstructions: TransactionInstruction[] = [];
@@ -87,7 +74,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({
                     fromAccount.address,
                     associatedTokenTo,
                     walletPublicKey,
-                    amount * Math.pow(10, Number(source_token?.decimals))
+                    amount * Math.pow(10, Number(token?.decimals))
                 )
             );
 
@@ -113,7 +100,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({
         finally {
             setLoading(false)
         }
-    }, [swapId, depositAddress, source_network, source_token, walletPublicKey, amount, signTransaction])
+    }, [swapId, depositAddress, network, token, walletPublicKey, amount, signTransaction])
 
     return (
         <>

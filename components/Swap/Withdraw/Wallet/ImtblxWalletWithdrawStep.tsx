@@ -7,62 +7,48 @@ import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import { Network, Token } from '../../../../Models/Network';
+import { WithdrawPageProps } from './WalletTransferContent';
 
-type Props = {
-    source_network: Network;
-    source_token: Token;
-    swapId: string;
-    amount: string;
-    depositAddress?: string
-}
-
-const ImtblxWalletWithdrawStep: FC<Props> = ({
-    depositAddress,
-    source_network,
-    source_token,
-    swapId,
-    amount,
-}) => {
+const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
     const { setSwapTransaction } = useSwapTransactionStore();
 
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
-        return source_network && getProvider(source_network)
-    }, [source_network, getProvider])
+        return network && getProvider(network)
+    }, [network, getProvider])
 
     const imxAccount = provider?.getConnectedWallet()
 
     const handleConnect = useCallback(async () => {
         if (!provider)
-            throw new Error(`No provider from ${source_network?.name}`)
+            throw new Error(`No provider from ${network?.name}`)
 
         setLoading(true)
-        await provider?.connectWallet(source_network?.chain_id)
+        await provider?.connectWallet(network?.chain_id)
         setLoading(false)
-    }, [provider, source_network])
+    }, [provider, network])
 
     const handleTransfer = useCallback(async () => {
-        if (!source_network || !depositAddress)
+        if (!network || !depositAddress || !amount)
             return
         setLoading(true)
         try {
             const ImtblClient = (await import('../../../../lib/imtbl')).default;
-            const imtblClient = new ImtblClient(source_network?.name)
+            const imtblClient = new ImtblClient(network?.name)
 
-            if (!source_token) {
+            if (!token) {
                 throw new Error("No source currency could be found");
             }
-            const res = await imtblClient.Transfer(amount, source_token, depositAddress)
+            const res = await imtblClient.Transfer(amount.toString(), token, depositAddress)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
                 toast('Transfer failed or terminated')
             else if (transactionRes.status == "error") {
                 toast(transactionRes.message)
             }
-            else if (transactionRes) {
+            else if (transactionRes && swapId) {
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, transactionRes.txId.toString());
                 setTransferDone(true)
             }
@@ -72,7 +58,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({
                 toast(e.message)
         }
         setLoading(false)
-    }, [imxAccount, swapId, source_network, depositAddress, source_token, amount])
+    }, [imxAccount, swapId, network, depositAddress, token, amount])
 
     return (
         <>
@@ -82,7 +68,7 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({
                         <span className='flex-none'>
                             Learn how to send from
                         </span>
-                        <GuideLink text={source_network?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex' />
+                        <GuideLink text={network?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex' />
                     </WarningMessage>
                     {
                         !imxAccount &&

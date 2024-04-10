@@ -1,6 +1,5 @@
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
-import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import WarningMessage from '../../../WarningMessage';
@@ -9,9 +8,10 @@ import KnownInternalNames from '../../../../lib/knownIds';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
+import { WithdrawPageProps } from './WalletTransferContent';
 
 
-const StarknetWalletWithdrawStep: FC = () => {
+const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, callData, swapId }) => {
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
@@ -19,49 +19,45 @@ const StarknetWalletWithdrawStep: FC = () => {
     const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
 
     const { userId } = useAuthState()
-    const { swapResponse } = useSwapDataState()
-    const { swap, deposit_actions } = swapResponse || {}
-    const { source_network, source_token } = swap || {}
 
     const { setSwapTransaction } = useSwapTransactionStore();
-    const source_network_internal_name = source_network?.name
-    const sourceChainId = source_network?.chain_id
+    const source_network_internal_name = network?.name
+    const sourceChainId = network?.chain_id
 
     const provider = useMemo(() => {
-        return source_network && getProvider(source_network)
-    }, [source_network, getProvider])
+        return network && getProvider(network)
+    }, [network, getProvider])
 
     const wallet = provider?.getConnectedWallet()
-    const callData = deposit_actions?.find(da => da.type == 'transfer')?.call_data
 
     const handleConnect = useCallback(async () => {
         if (!provider)
-            throw new Error(`No provider from ${source_network?.name}`)
+            throw new Error(`No provider from ${network?.name}`)
 
         setLoading(true)
         try {
-            await provider.connectWallet(source_network?.chain_id)
+            await provider.connectWallet(network?.chain_id)
         }
         catch (e) {
             toast(e.message)
         }
         setLoading(false)
-    }, [source_network, provider])
+    }, [network, provider])
 
     useEffect(() => {
         const connectedChainId = wallet?.chainId
-        if (source_network && connectedChainId && connectedChainId !== sourceChainId && provider) {
+        if (network && connectedChainId && connectedChainId !== sourceChainId && provider) {
             (async () => {
                 setIsWrongNetwork(true)
                 await provider.disconnectWallet()
             })()
-        } else if (source_network && connectedChainId && connectedChainId === sourceChainId) {
+        } else if (network && connectedChainId && connectedChainId === sourceChainId) {
             setIsWrongNetwork(false)
         }
-    }, [wallet, source_network, sourceChainId, provider])
+    }, [wallet, network, sourceChainId, provider])
 
     const handleTransfer = useCallback(async () => {
-        if (!swap || !source_token) {
+        if (!swapId || !token) {
             return
         }
         setLoading(true)
@@ -69,14 +65,14 @@ const StarknetWalletWithdrawStep: FC = () => {
             if (!wallet) {
                 throw Error("starknet wallet not connected")
             }
-            if (!source_token.contract) {
+            if (!token.contract) {
                 throw Error("starknet contract_address is not defined")
             }
 
             try {
                 const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.account?.execute(JSON.parse(callData || "")) || {});
                 if (transferTxHash) {
-                    setSwapTransaction(swap.id, BackendTransactionStatus.Completed, transferTxHash);
+                    setSwapTransaction(swapId, BackendTransactionStatus.Completed, transferTxHash);
                     setTransferDone(true)
                 }
                 else {
@@ -92,7 +88,7 @@ const StarknetWalletWithdrawStep: FC = () => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [wallet, swap, source_network, userId, source_token])
+    }, [wallet, swapId, network, userId, token])
 
     return (
         <>
@@ -106,7 +102,7 @@ const StarknetWalletWithdrawStep: FC = () => {
                                 {
                                     source_network_internal_name === KnownInternalNames.Networks.StarkNetMainnet
                                         ? <span>Please switch to Starknet Mainnet with your wallet and click Connect again</span>
-                                        : <span>Please switch to {source_network?.display_name} with your wallet and click Connect again</span>
+                                        : <span>Please switch to {network?.display_name} with your wallet and click Connect again</span>
                                 }
                             </span>
                         </WarningMessage>

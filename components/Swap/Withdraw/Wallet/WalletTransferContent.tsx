@@ -7,6 +7,7 @@ import TransferFromWallet from "./WalletTransfer";
 import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw";
 import SolanaWalletWithdrawStep from "./SolanaWalletWithdraw";
 import LoopringWalletWithdraw from "./Loopring";
+import { Network, Token } from "../../../../Models/Network";
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
@@ -34,45 +35,49 @@ export const WalletTransferContent: FC = () => {
 
     const depositAddress = deposit_actions?.find(da => da.type == 'transfer')?.to_address;
     const amount = deposit_actions?.find(da => da.type == 'transfer')?.amount || 0;
+    const callData = deposit_actions?.find(da => da.type == 'transfer')?.call_data;
 
     if (sourceIsImmutableX)
         return <ImtblxWalletWithdrawStep
+            amount={amount}
             depositAddress={depositAddress}
-            amount={amount.toString()}
-            source_network={swap.source_network}
-            source_token={swap.source_token}
-            swapId={swap.id}
+            network={swap?.source_network}
+            token={swap?.source_token}
+            swapId={swap?.id}
         />;
     else if (sourceIsStarknet)
-        return <StarknetWalletWithdrawStep />;
+        return <StarknetWalletWithdrawStep
+            network={swap?.source_network}
+            token={swap?.source_token}
+            swapId={swap?.id}
+            callData={callData}
+        />;
     else if (sourceIsZkSync)
-        return <>
-            {
-                amount &&
-                <ZkSyncWalletWithdrawStep
-                    depositAddress={depositAddress}
-                    amount={amount}
-                />
-            }
-        </>;
+        return <ZkSyncWalletWithdrawStep
+            amount={amount}
+            depositAddress={depositAddress}
+            network={swap?.source_network}
+            token={swap?.source_token}
+            swapId={swap?.id}
+            sequenceNumber={swap.metadata.sequence_number}
+        />;
     else if (sourceIsLoopring)
         return <LoopringWalletWithdraw
             amount={amount}
             depositAddress={depositAddress}
+            network={swap?.source_network}
+            token={swap?.source_token}
+            swapId={swap?.id}
+            callData={callData}
         />;
     else if (sourceIsSolana)
-        return <>
-            {
-                amount && swap &&
-                <SolanaWalletWithdrawStep
-                    source_network={swap.source_network}
-                    source_token={swap.source_token}
-                    swapId={swap.id}
-                    depositAddress={depositAddress}
-                    amount={amount}
-                />
-            }
-        </>;
+        return <SolanaWalletWithdrawStep
+            amount={amount}
+            depositAddress={depositAddress}
+            network={swap?.source_network}
+            token={swap?.source_token}
+            swapId={swap?.id}
+        />;
     else
         return <>
             {
@@ -80,10 +85,8 @@ export const WalletTransferContent: FC = () => {
                 <TransferFromWallet
                     sequenceNumber={swap?.metadata.sequence_number}
                     swapId={swap.id}
-                    networkDisplayName={swap.source_network?.display_name}
-                    tokenDecimals={swap.source_token?.decimals}
-                    tokenContractAddress={swap.source_token.contract as `0x${string}`}
-                    chainId={Number(swap.source_network.chain_id)}
+                    network={swap.source_network}
+                    token={swap.source_token}
                     depositAddress={depositAddress}
                     userDestinationAddress={swap.destination_address}
                     amount={amount}
@@ -93,4 +96,13 @@ export const WalletTransferContent: FC = () => {
 };
 
 
-
+export type WithdrawPageProps = {
+    depositAddress?: `0x${string}`
+    amount?: number
+    swapId?: string
+    userDestinationAddress?: string
+    sequenceNumber?: number
+    network?: Network
+    token?: Token
+    callData?: string
+}

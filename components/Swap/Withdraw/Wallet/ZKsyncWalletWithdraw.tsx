@@ -7,7 +7,6 @@ import { utils } from 'ethers';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { useSwapDataState } from '../../../../context/swap';
 import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
 import { useNetwork } from 'wagmi';
@@ -17,39 +16,31 @@ import formatAmount from '../../../../lib/formatAmount';
 import useWallet from '../../../../hooks/useWallet';
 import Link from 'next/link';
 import KnownInternalNames from '../../../../lib/knownIds';
+import { WithdrawPageProps } from './WalletTransferContent';
 
-type Props = {
-    depositAddress?: string,
-    amount: number
-}
-
-const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
+const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, sequenceNumber, swapId }) => {
     const [loading, setLoading] = useState(false);
     const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>();
     const [accountIsActivated, setAccountIsActivated] = useState(false);
     const [activationFee, setActivationFee] = useState<({ feeInAsset: number, feeInUsd: number } | undefined)>(undefined);
 
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
-    const { source_network, source_token } = swap || {}
     const { chain } = useNetwork();
     const signer = useEthersSigner();
 
     const { networks: layers } = useSettingsState();
-    const source_network_internal_name = swap?.source_network.name
-    const defaultProvider = source_network_internal_name?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "goerli";
+    const defaultProvider = network?.name?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "goerli";
     const l1Network = layers.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
 
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
-        return source_network && getProvider(source_network)
-    }, [source_network, getProvider])
+        return network && getProvider(network)
+    }, [network, getProvider])
 
     const wallet = provider?.getConnectedWallet()
 
     useEffect(() => {
-        if (signer?._address !== syncWallet?.cachedAddress && source_network) {
+        if (signer?._address !== syncWallet?.cachedAddress && network) {
             setSyncWallet(null)
         }
     }, [signer?._address]);
@@ -65,9 +56,9 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             if (!accountIsActivated) {
                 let activationFee = await syncProvider.getTransactionFee({
                     ChangePubKey: 'ECDSA'
-                }, wallet.address(), Number(source_token?.contract));
-                const formatedGas = formatAmount(activationFee.totalFee, Number(source_token?.decimals))
-                let assetUsdPrice = source_token?.price_in_usd;
+                }, wallet.address(), Number(token?.contract));
+                const formatedGas = formatAmount(activationFee.totalFee, Number(token?.decimals))
+                let assetUsdPrice = token?.price_in_usd;
                 setActivationFee({ feeInAsset: formatedGas, feeInUsd: formatedGas * (assetUsdPrice ?? 0) })
             }
             setSyncWallet(wallet)
@@ -78,7 +69,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         finally {
             setLoading(false)
         }
-    }, [signer, defaultProvider, source_token])
+    }, [signer, defaultProvider, token])
 
     const activateAccout = useCallback(async () => {
         if (!syncWallet)
@@ -90,7 +81,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 setLoading(false);
                 return
             }
-            const changePubkeyHandle = await syncWallet.setSigningKey({ ethAuthType: "ECDSA", feeToken: Number(source_token?.contract) });
+            const changePubkeyHandle = await syncWallet.setSigningKey({ ethAuthType: "ECDSA", feeToken: Number(token?.contract) });
             const receipt = await changePubkeyHandle.awaitReceipt()
             if (receipt.success)
                 setAccountIsActivated(true)
@@ -106,23 +97,23 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         finally {
             setLoading(false)
         }
-    }, [syncWallet, source_token])
+    }, [syncWallet, token])
 
     const handleTransfer = useCallback(async () => {
 
-        if (!swap || !syncWallet || !depositAddress) return
+        if (!swapId || !syncWallet || !depositAddress || !token || !sequenceNumber || !amount) return
 
         setLoading(true)
         try {
             const tf = await syncWallet?.syncTransfer({
                 to: depositAddress,
-                token: swap?.source_token.symbol,
-                amount: zksync.closestPackableTransactionAmount(utils.parseUnits(amount.toString(), source_token?.decimals)),
-                validUntil: zksync.utils.MAX_TIMESTAMP - swap?.metadata?.sequence_number,
+                token: token.symbol,
+                amount: zksync.closestPackableTransactionAmount(utils.parseUnits(amount.toString(), token?.decimals)),
+                validUntil: zksync.utils.MAX_TIMESTAMP - sequenceNumber,
             });
 
             if (tf?.txHash) {
-                setSwapTransaction(swap?.id, BackendTransactionStatus.Pending, tf?.txHash?.replace('sync-tx:', ''));
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, tf?.txHash?.replace('sync-tx:', ''));
             }
         }
         catch (e) {
@@ -134,7 +125,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         finally {
             setLoading(false)
         }
-    }, [syncWallet, swap, depositAddress, source_token, amount])
+    }, [syncWallet, swapId, depositAddress, token, amount])
 
     if (wallet && wallet?.connector?.toLowerCase() === 'argent') return (
         <div className="rounded-md bg-secondary-800 p-4">
@@ -199,7 +190,7 @@ const ZkSyncWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                                 <p className="text-sm text-primary-text break-normal">
                                     Sign a message to activate your zkSync Lite account.
                                 </p>
-                                <p className='flex mt-4 w-full justify-between items-center text-sm text-secondary-text'><span className='font-bold sm:inline hidden'>One time activation fee</span> <span className='font-bold sm:hidden'>Fee</span> <span className='text-primary-text text-sm sm:text-base flex items-center'>{activationFee?.feeInAsset}{source_token?.symbol}<span className='text-secondary-text text-sm'>({activationFee?.feeInUsd.toFixed(2)}$)</span></span></p>
+                                <p className='flex mt-4 w-full justify-between items-center text-sm text-secondary-text'><span className='font-bold sm:inline hidden'>One time activation fee</span> <span className='font-bold sm:hidden'>Fee</span> <span className='text-primary-text text-sm sm:text-base flex items-center'>{activationFee?.feeInAsset}{token?.symbol}<span className='text-secondary-text text-sm'>({activationFee?.feeInUsd.toFixed(2)}$)</span></span></p>
                             </div>
                             <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={activateAccout} icon={<SignatureIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
                                 Sign to activate
