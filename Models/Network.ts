@@ -21,7 +21,7 @@ export class Network {
     account_explorer_template: string;
     metadata: Metadata;
     deposit_methods: string[]
-    token: Token
+    token?: Token
 }
 
 export class NetworkWithTokens extends Network {
