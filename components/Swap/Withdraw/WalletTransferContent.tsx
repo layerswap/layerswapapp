@@ -11,14 +11,13 @@ import useWallet from '../../../hooks/useWallet';
 import { useBalancesState } from '../../../context/balances';
 import { truncateDecimals } from '../../utils/RoundDecimals';
 import useBalance from '../../../hooks/useBalance';
-import { useSettingsState } from '../../../context/settings';
 
 const WalletTransferContent: FC = () => {
     const { openAccountModal } = useAccountModal();
     const { getWithdrawalProvider: getProvider, disconnectWallet } = useWallet()
     const { swapResponse } = useSwapDataState()
     const { swap, deposit_actions } = swapResponse || {}
-    const { source_exchange, source_token, destination_token, destination_address, requested_amount } = swap || {}
+    const { source_exchange, source_token, destination_token, destination_address, requested_amount, source_network, destination_network } = swap || {}
     const [isLoading, setIsloading] = useState(false);
     const { mutateSwap } = useSwapDataUpdate()
     const provider = useMemo(() => {
