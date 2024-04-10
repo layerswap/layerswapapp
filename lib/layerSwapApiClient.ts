@@ -184,7 +184,7 @@ export type DepositAction = {
     order: number,
     to_address?: `0x${string}`,
     token: Token,
-    gas_token: Token,
+    fee_token: Token,
     type: 'transfer',
 }
 
