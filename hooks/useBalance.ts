@@ -128,8 +128,6 @@ export default function useBalanceProvider() {
         }
     }
 
-
-
     const getBalanceProvider = (network: Network) => {
         const provider = BalanceProviders.find(provider => provider.supportedNetworks.includes(network.name))
         return provider
