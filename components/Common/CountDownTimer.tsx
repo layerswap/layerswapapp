@@ -24,7 +24,7 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
         return () => clearInterval(timer);
     }, [initialTime, swap.status, swapInputTransaction]);
 
-    const updateWithProps = () => update({ email: email, userId: userId, customAttributes: { swapId: swap?.id } });
+    const updateWithProps = () => update({customAttributes: { swapId: swap.id, email: email, userId: userId, } });
     const startIntercom = useCallback(() => {
         boot();
         show();
