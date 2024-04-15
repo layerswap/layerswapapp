@@ -88,6 +88,7 @@ export const swap: SwapItem = {
             "type": TransactionType.Input,
             "usd_value": 2.728530,
             "status": BackendTransactionStatus.Pending,
+            "timestamp": ""
         },
         {
             "from": "0x5da5c2a98e26fd28914b91212b1232d58eb9bbab",

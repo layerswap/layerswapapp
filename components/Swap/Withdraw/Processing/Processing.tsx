@@ -15,6 +15,8 @@ import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
 import { useFee } from '../../../../context/feeContext';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
+import FormattedAverageCompletionTime from '../../../Common/FormattedAverageCompletionTime';
+import CountdownTimer from '../../../Common/CountDownTimer';
 import useSWR from 'swr';
 import { ApiResponse } from '../../../../Models/ApiResponse';
 import { datadogRum } from '@datadog/browser-rum';
@@ -69,10 +71,21 @@ const Processing: FC<Props> = ({ swapResponse }) => {
     const progressStatuses = getProgressStatuses(swapResponse, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
+    const renderingError = new Error("Transaction is taking longer than expected");
+    renderingError.name = `LongTransactionError`;
+    renderingError.cause = renderingError;
+    datadogRum.addError(renderingError);
+
     const outputPendingDetails = <div className='flex items-center space-x-1'>
         <span>Estimated arrival after confirmation:</span>
         <div className='text-primary-text'>
-            <AverageCompletionTime avgCompletionTime={fee?.quote.avg_completion_time} />
+            <FormattedAverageCompletionTime avgCompletionTime={fee?.quote.avg_completion_time} />
+        </div>
+    </div>
+
+    const countDownTimer = <div className='flex items-center space-x-1'>
+        <div className='text-primary-text'>
+            <CountdownTimer initialTime={String(fee?.quote.avg_completion_time)} swap={swap} />
         </div>
     </div>
 
@@ -252,9 +265,11 @@ const Processing: FC<Props> = ({ swapResponse }) => {
                                     <span className="font-medium text-primary-text">
                                         {progressStatuses.generalStatus.title}
                                     </span>
-                                    <span className='text-sm block space-x-1 text-secondary-text'>
-                                        <span>{progressStatuses.generalStatus.subTitle ?? outputPendingDetails}</span>
-                                    </span>
+                                    {(swapOutputTransaction?.status == BackendTransactionStatus.Pending || swapRefuelTransaction?.status == BackendTransactionStatus.Pending) &&
+                                        <span className='text-sm block space-x-1 text-secondary-text'>
+                                            <span>{swapInputTransaction?.timestamp ? countDownTimer : outputPendingDetails}</span>
+                                        </span>
+                                    }
                                 </div>
                             </div></div>
                         <div className='pt-4'>
