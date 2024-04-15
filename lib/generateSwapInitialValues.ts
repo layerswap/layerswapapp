@@ -82,19 +82,19 @@ export function generateSwapInitialValuesFromSwap(swap: SwapItem, settings: Laye
 
     const { layers, exchanges, destinationRoutes, sourceRoutes, assetGroups } = settings || {}
 
-    const from = layers.find(l => l.internal_name === source_network);
-    const to = layers.find(l => l.internal_name === destination_network);
+    const from = layers?.find(l => l.internal_name === source_network);
+    const to = layers?.find(l => l.internal_name === destination_network);
 
-    const fromExchange = exchanges.find(e => e.internal_name === source_exchange);
-    const toExchange = exchanges.find(e => e.internal_name === destination_exchange);
+    const fromExchange = exchanges?.find(e => e.internal_name === source_exchange);
+    const toExchange = exchanges?.find(e => e.internal_name === destination_exchange);
 
     const direction = fromExchange ? 'from' : 'to';
     const routes = direction === 'from' ? sourceRoutes : destinationRoutes;
-    const availableAssetGroups = assetGroups.filter(g => g.values.some(v => routes.some(r => r.asset === v.asset && r.network === v.network)))
-    const currencyGroup = availableAssetGroups.find(a => a.name === (direction === 'from' ? source_network_asset : destination_network_asset))
+    const availableAssetGroups = assetGroups?.filter(g => g.values.some(v => routes.some(r => r.asset === v.asset && r.network === v.network)))
+    const currencyGroup = availableAssetGroups?.find(a => a.name === (direction === 'from' ? source_network_asset : destination_network_asset))
 
-    const fromCurrency = from?.assets.find(c => c.asset === source_network_asset);
-    const toCurrency = to?.assets.find(c => c.asset === destination_network_asset);
+    const fromCurrency = from?.assets?.find(c => c.asset === source_network_asset);
+    const toCurrency = to?.assets?.find(c => c.asset === destination_network_asset);
 
     const result: SwapFormValues = {
         from,

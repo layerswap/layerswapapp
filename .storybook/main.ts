@@ -2,8 +2,8 @@ import type { StorybookConfig } from "@storybook/nextjs";
 
 const config: StorybookConfig = {
   env: () => ({
-    NEXT_PUBLIC_LS_BRIDGE_API: "https://bridge-api-dev.layerswap.cloud",
-    NEXT_PUBLIC_API_VERSION: "sandbox",
+    NEXT_PUBLIC_LS_BRIDGE_API: "https://bridge-api.layerswap.io",
+    NEXT_PUBLIC_API_VERSION: "prod",
     NEXT_PUBLIC_IDENTITY_API: "/",
     NEXT_PUBLIC_RESOURCE_STORAGE_URL: "https://devlslayerswapbridgesa.blob.core.windows.net",
   }),

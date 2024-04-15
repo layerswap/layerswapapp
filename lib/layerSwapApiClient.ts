@@ -204,6 +204,7 @@ export type Transaction = {
     usd_value: number,
     usd_price: number,
     status: BackendTransactionStatus,
+    timestamp?: string,
 }
 
 export enum TransactionType {
