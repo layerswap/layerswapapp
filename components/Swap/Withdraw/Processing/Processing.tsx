@@ -267,9 +267,14 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                                     <span className="font-medium text-primary-text">
                                         {progressStatuses.generalStatus.title}
                                     </span>
-                                    {(swapOutputTransaction?.status == BackendTransactionStatus.Pending || swapRefuelTransaction?.status == BackendTransactionStatus.Pending) &&
+                                    {!inputIsCompleted && 
                                         <span className='text-sm block space-x-1 text-secondary-text'>
-                                            <span>{swapInputTransaction?.timestamp ? countDownTimer : outputPendingDetails}</span>
+                                            <span>{outputPendingDetails}</span>
+                                        </span>
+                                    }
+                                    {inputIsCompleted && swapOutputTransaction?.status != BackendTransactionStatus.Completed &&
+                                        <span className='text-sm block space-x-1 text-secondary-text'>
+                                            <span>{swapInputTransaction?.timestamp && countDownTimer}</span>
                                         </span>
                                     }
                                 </div>

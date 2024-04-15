@@ -6,6 +6,7 @@ import { SwapItem, TransactionType } from "../../lib/layerSwapApiClient";
 import { datadogRum } from "@datadog/browser-rum";
 
 const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTime, swap }) => {
+    
     const { email, userId } = useAuthState();
     const { boot, show, update } = useIntercom();
     const [countdown, setCountdown] = useState<string>("");
