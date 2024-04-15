@@ -73,11 +73,12 @@ export default function useEVMBalance(): BalanceProvider {
             const {
                 getTokenBalance,
                 resolveBalance,
+                resolveERC20Balance
             } = await import("./balance")
 
-            const balanceData = await getTokenBalance(address as `0x${string}`, Number(network.chain_id))
+            const balanceData = await getTokenBalance(address as `0x${string}`, Number(network.chain_id), token.contract as `0x${string}`)
             const balance = (balanceData
-                && await resolveBalance(network, token, balanceData))
+                && (network.token?.symbol === token.symbol ? await resolveBalance(network, token, balanceData) : await resolveERC20Balance(network, token, balanceData)))
 
             return balance
         }

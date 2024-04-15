@@ -9,6 +9,6 @@ export type BaseTransferButtonProps = {
     sequenceNumber: string,
     depositAddress?: `0x${string}`,
     userDestinationAddress: `0x${string}`,
-    amount: number,
+    amount?: number,
     savedTransactionHash: `0x${string}`,
 }
