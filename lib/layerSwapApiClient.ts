@@ -187,6 +187,7 @@ export type DepositAction = {
 export type Quote = {
     quote: SwapQuote,
     refuel: Refuel,
+    reward: number
 }
 
 export type GetQuoteParams = {
@@ -311,7 +312,7 @@ export type Campaign = {
     min_payout_amount: number,
     total_budget: number,
     distributed_amount: number,
-    status: 'active' | 'inactive'
+    reward_limit_period: number,
 }
 
 export type Reward = {

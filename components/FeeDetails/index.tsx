@@ -10,6 +10,7 @@ import ResizablePanel from '../ResizablePanel';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import DepositMethod from './DepositMethod';
+import Campaign from './Campaign';
 
 const RefuelModal = dynamic(() => import("./RefuelModal"), {
     loading: () => <></>,
@@ -58,15 +59,14 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                 </FeeDetails>
             </ResizablePanel>
 
-            {/* {
+            {
                 values.to &&
                 values.toCurrency &&
                 <Campaign
                     destination={values.to}
-                    selected_currency={values.toCurrency}
-                    fee={fee.walletFee}
+                    reward={fee?.reward}
                 />
-            } */}
+            }
 
             <RefuelModal values={values} openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} fee={fee} />
 

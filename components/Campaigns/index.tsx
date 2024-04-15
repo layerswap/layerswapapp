@@ -102,7 +102,7 @@ const CampaignItem: FC<CampaignProps> = ({ campaign }) => {
 
 function IsCampaignActive(campaign: Campaign) {
     const now = new Date()
-    return campaign.status == 'active' && (new Date(campaign?.end_date).getTime() > now.getTime())
+    return (new Date(campaign?.end_date).getTime() > now.getTime())
 }
 
 export default Rewards

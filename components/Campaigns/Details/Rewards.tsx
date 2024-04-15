@@ -1,6 +1,5 @@
 
 import { FC } from "react"
-import { useSettingsState } from "../../../context/settings"
 import Image from 'next/image'
 import BackgroundField from "../../backgroundField";
 import { Clock } from "lucide-react"
@@ -45,7 +44,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
         Math.round(Math.abs(((next.getTime() - now.getTime())) / (1000 * 3600) - (difference_in_days * 24)))
         : null
 
-    const campaignIsEnded = (campaignEndDate.getTime() - now.getTime()) < 0 || campaign.status !== 'active'
+    const campaignIsEnded = (campaignEndDate.getTime() - now.getTime()) < 0
 
     const DistributedAmount = ((campaign.distributed_amount / campaign.total_budget) * 100)
     const usdc_price = campaign.token.price_in_usd
@@ -55,7 +54,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
 
     return <>
         <div className="space-y-4">
-            <p className="text-primary-text">
+            <p className="text-secondary-text">
                 <span>
                     <span>Onboarding incentives that are earned by transferring to&nbsp;</span>{network?.display_name}<span>.&nbsp;</span>
                     <a

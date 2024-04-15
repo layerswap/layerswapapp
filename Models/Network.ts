@@ -44,7 +44,7 @@ export class Token {
 }
 
 export class RouteToken extends Token {
-    refuel: Refuel
+    refuel?: Refuel
 }
 
 export class Metadata {

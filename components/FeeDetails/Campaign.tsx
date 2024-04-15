@@ -11,13 +11,11 @@ import { Network, Token } from "../../Models/Network"
 
 type CampaignProps = {
     destination: Network,
-    fee: number | undefined,
-    selected_currency: Token,
+    reward: number | undefined,
 }
 const Comp: FC<CampaignProps> = ({
     destination,
-    fee,
-    selected_currency
+    reward: fee,
 }) => {
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
@@ -28,7 +26,6 @@ const Comp: FC<CampaignProps> = ({
         ?.data
         ?.find(c =>
             c?.network.name === destination?.name
-            && c.status == 'active'
             && new Date(c?.end_date).getTime() - now > 0)
 
     if (!campaign || !fee)
@@ -36,21 +33,17 @@ const Comp: FC<CampaignProps> = ({
 
     return <CampaignDisplay
         campaign={campaign}
-        fee={fee}
-        selected_currency={selected_currency}
+        reward={fee}
     />
 }
 type CampaignDisplayProps = {
     campaign: Campaign,
-    fee: number,
-    selected_currency: Token,
+    reward: number,
 }
-const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_currency }) => {
+const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward }) => {
 
     const network = campaign.network
     const token = campaign.token
-    const feeinUsd = fee * selected_currency.price_in_usd
-    const reward = truncateDecimals(((feeinUsd * (campaign?.percentage || 0) / 100) / (token?.price_in_usd || 1)), (token?.precision || 0))
 
     return <motion.div
         initial={{ y: "-100%" }}
