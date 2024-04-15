@@ -73,7 +73,7 @@ export default class LayerSwapApiClient {
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
-        let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2-alpha" + endpoint;
+        let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
             .then(res => {
                 return res?.data;
@@ -89,7 +89,7 @@ export default class LayerSwapApiClient {
     }
 
     private async UnauthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
-        let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2-alpha" + endpoint;
+        let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2" + endpoint;
         return await this._unauthInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
             .then(res => {
                 return res?.data;
