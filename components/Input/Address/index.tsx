@@ -43,7 +43,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
     const [showAddressModal, setShowAddressModal] = useState(false);
-    const partnerImage = partner?.logo_url
+    const partnerImage = partner?.logo
     const lockAddress =
         (values.destination_address && values.to)
         && isValidAddress(values.destination_address, values.to)

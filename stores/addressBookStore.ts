@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { NetworkType } from '../Models/CryptoNetwork';
+import { NetworkType } from '../Models/Network';
 
 interface AddressBookState {
     addresses: AddressItem[];

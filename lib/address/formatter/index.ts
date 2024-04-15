@@ -1,8 +1,8 @@
 import { Address } from "@ton/core";
 
-export function addressFormat(address: string, network: { internal_name: string } | null): string {
+export function addressFormat(address: string, network: { name: string } | null): string {
 
-    if (network?.internal_name.toLowerCase().startsWith("STARKNET".toLowerCase())) {
+    if (network?.name.toLowerCase().startsWith("STARKNET".toLowerCase())) {
         const removeHexPrefix = (hex: string) => {
             return hex.replace("0x", "");
         }
@@ -16,10 +16,10 @@ export function addressFormat(address: string, network: { internal_name: string 
         return addAddressPadding(address)
 
     }
-    else if (network?.internal_name.toLowerCase().startsWith("TON".toLowerCase())) {
+    else if (network?.name.toLowerCase().startsWith("TON".toLowerCase())) {
         return Address.parse(address).toString({ bounceable: false, testOnly: false })
     }
-    else if (network?.internal_name.toLowerCase().startsWith("SOLANA".toLowerCase())) {
+    else if (network?.name.toLowerCase().startsWith("SOLANA".toLowerCase())) {
         return address
     }
     else {

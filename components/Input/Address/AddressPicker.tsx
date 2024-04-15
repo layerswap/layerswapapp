@@ -60,7 +60,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const settings = useSettingsState()
 
     useEffect(() => {
-        const recentlyUsedAddresses = address_book?.filter(a => destinationExchange ? a.exchanges.some(e => destinationExchange.internal_name === e) : a.networks?.some(n => destination?.internal_name === n) && isValidAddress(a.address, destination)) || []
+        const recentlyUsedAddresses = address_book?.filter(a => destinationExchange ? a.exchanges.some(e => destinationExchange.name === e) : a.networks?.some(n => destination?.name === n) && isValidAddress(a.address, destination)) || []
 
         let addresses: AddressItem[] = []
 
@@ -136,7 +136,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         wrongNetwork && !destination_address &&
                         <div className="basis-full text-xs text-primary">
                             {
-                                destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
+                                destination?.name === KnownInternalNames.Networks.StarkNetMainnet
                                     ? <span>Please switch to Starknet Mainnet with your wallet and click Autofill again</span>
                                     : <span>Please switch to Starknet Sepolia with your wallet and click Autofill again</span>
                             }
@@ -264,13 +264,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                             <span>Select</span>
                                             <span className="inline-block mx-1">
                                                 <span className='flex gap-1 items-baseline text-sm '>
-                                                    <Image src={settings.resolveImgSrc(destinationAsset)}
+                                                    <Image src={destinationAsset.logo}
                                                         alt="Project Logo"
                                                         height="15"
                                                         width="15"
                                                         className='rounded-sm'
                                                     />
-                                                    <span className="text-primary-text">{destinationAsset.asset}</span>
+                                                    <span className="text-primary-text">{destinationAsset.symbol}</span>
                                                 </span>
                                             </span>
                                             <span>as asset</span>
@@ -279,7 +279,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                             <span>Select</span>
                                             <span className="inline-block mx-1">
                                                 <span className='flex gap-1 items-baseline text-sm '>
-                                                    <Image src={settings.resolveImgSrc(values.to)}
+                                                    <Image src={values.to?.logo || ''}
                                                         alt="Project Logo"
                                                         height="15"
                                                         width="15"
