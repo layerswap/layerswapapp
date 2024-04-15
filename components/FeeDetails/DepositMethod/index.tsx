@@ -88,9 +88,7 @@ const DepositMethod = () => {
 
     return (
         !fromExchange ?
-            <FeeDetails.Item>
-                <DepositMethodComponent />
-            </FeeDetails.Item>
+            <DepositMethodComponent />
             :
             <></>
     )

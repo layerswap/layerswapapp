@@ -28,6 +28,7 @@ import { Balance, Gas } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
+import DepositMethod from "../../FeeDetails/DepositMethod";
 
 type Props = {
     isPartnerWallet?: boolean,
@@ -245,6 +246,10 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                             : <></>
                     }
                     <div className="w-full">
+                    {
+                        source && destination && toCurrency && fromCurrency &&
+                        <DepositMethod />
+                    }
                         <FeeDetailsComponent values={values} />
                         {
                             values.amount &&
