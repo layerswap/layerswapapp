@@ -140,8 +140,8 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<RouteNetwork[]>>((destination && toCurrency) ?
         destinationRoutesEndpoint : `/destinations?include_unmatched=true`, layerswapApiClient.fetcher, { keepPreviousData: true })
 
-    const sourceCanBeSwapped = destinationRoutes?.data?.some(l => l.name === source?.name)
-    const destinationCanBeSwapped = sourceRoutes?.data?.some(l => l.name === destination?.name)
+    const sourceCanBeSwapped = destinationRoutes?.data?.some(l => l.name === source?.name && source.tokens.some(t => t.symbol === fromCurrency?.symbol))
+    const destinationCanBeSwapped = sourceRoutes?.data?.some(l => l.name === destination?.name && destination.tokens.some(t => t.symbol === toCurrency?.symbol))
 
     if (query.lockTo || query.lockFrom || query.hideTo || query.hideFrom) {
         valuesSwapperDisabled = true;

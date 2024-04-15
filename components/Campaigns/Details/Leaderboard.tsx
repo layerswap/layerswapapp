@@ -99,11 +99,7 @@ const Component: FC<Props> = ({ campaign }) => {
                                                 <p>
                                                     <span>{leaderboardRewards[user.position - 1]} {token?.symbol}</span>
                                                 </p>
-                                            </div>}>
-                                            <div className='text-primary-text hover:cursor-pointer hover:text-primary-text ml-0.5 hover:bg-secondary-200 active:ring-2 active:ring-gray-200 active:bg-secondary-400 focus:outline-none cursor-default p-1 rounded'>
-                                                <Trophy className="h-4 w-4" aria-hidden="true" />
-                                            </div>
-                                        </ClickTooltip>
+                                            </div>} />
                                     </div>
                                 }
                             </div >
@@ -182,11 +178,7 @@ const Component: FC<Props> = ({ campaign }) => {
                                                         <span>{leaderboardRewards[user.position - 1]} {token?.symbol}</span>
                                                     </p>
                                                 </div>
-                                            }>
-                                                <div className='text-secondary-text hover:cursor-pointer hover:text-primary-text ml-0.5 hover:bg-secondary-200 active:ring-2 active:ring-gray-200 active:bg-secondary-400 focus:outline-none cursor-default p-1 rounded'>
-                                                    <Trophy className="h-4 w-4" aria-hidden="true" />
-                                                </div>
-                                            </ClickTooltip>
+                                            } />
                                         </div>
                                     }
                                 </div >

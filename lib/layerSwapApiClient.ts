@@ -187,7 +187,14 @@ export type DepositAction = {
 export type Quote = {
     quote: SwapQuote,
     refuel: Refuel,
-    reward: number
+    reward: QuoteReward
+}
+
+export type QuoteReward = {
+    amount: number,
+    amount_in_usd: number,
+    token: Token,
+    network: Network
 }
 
 export type GetQuoteParams = {

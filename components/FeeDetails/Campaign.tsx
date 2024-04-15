@@ -1,5 +1,5 @@
 import { FC } from "react"
-import LayerSwapApiClient, { Campaign } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { Campaign, QuoteReward } from "../../lib/layerSwapApiClient"
 import useSWR from "swr"
 import { ApiResponse } from "../../Models/ApiResponse"
 import { useSettingsState } from "../../context/settings"
@@ -11,7 +11,7 @@ import { Network, Token } from "../../Models/Network"
 
 type CampaignProps = {
     destination: Network,
-    reward: number | undefined,
+    reward: QuoteReward | undefined,
 }
 const Comp: FC<CampaignProps> = ({
     destination,
@@ -38,7 +38,7 @@ const Comp: FC<CampaignProps> = ({
 }
 type CampaignDisplayProps = {
     campaign: Campaign,
-    reward: number,
+    reward: QuoteReward,
 }
 const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward }) => {
 
@@ -61,12 +61,12 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward }) => {
             <ClickTooltip text={<span><span>The amount of onboarding reward that you’ll earn.&nbsp;</span><a target='_blank' href='/campaigns' className='text-primary underline hover:no-underline decoration-primary cursor-pointer'>Learn more</a></span>} />
         </div>
         {
-            Number(reward) > 0 &&
+            Number(reward.amount) > 0 &&
             <div className="flex items-center space-x-1">
                 <span>+</span>
                 <div className="h-5 w-5 relative">
                     <Image
-                        src={network?.logo || ''}
+                        src={token?.logo || ''}
                         alt="Project Logo"
                         height="40"
                         width="40"
@@ -74,7 +74,7 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward }) => {
                         className="rounded-md object-contain" />
                 </div>
                 <p>
-                    {reward} {token?.symbol}
+                    {reward.amount} {token?.symbol}
                 </p>
             </div>
         }
