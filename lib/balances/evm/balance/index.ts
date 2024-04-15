@@ -103,7 +103,7 @@ export const getErc20Balances = async ({
 
 }
 
-export const getTokenBalance = async (address: `0x${string}`, chainId: number, contract?: `0x${string}`): Promise<FetchBalanceResult | null> => {
+export const getTokenBalance = async (address: `0x${string}`, chainId: number, contract?: `0x${string}` | null): Promise<FetchBalanceResult | null> => {
 
     try {
         const res = await fetchBalance({
@@ -133,6 +133,24 @@ export const resolveBalance = async (
         request_time: new Date().toJSON(),
         decimals: token.decimals,
         isNativeCurrency: true,
+    }
+
+    return nativeBalance
+}
+
+export const resolveERC20Balance = async (
+    network: Network,
+    token: Token,
+    balanceData: FetchBalanceResult
+) => {
+
+    const nativeBalance: Balance = {
+        network: network.name,
+        token: token.symbol,
+        amount: formatAmount(balanceData?.value, token.decimals),
+        request_time: new Date().toJSON(),
+        decimals: token.decimals,
+        isNativeCurrency: false,
     }
 
     return nativeBalance

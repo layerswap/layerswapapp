@@ -67,7 +67,8 @@ const Processing: FC<Props> = ({ swapResponse }) => {
     }, [inputTxStatus])
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
-
+    let inputIsCompleted = swapInputTransaction && swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations;
+    
     const progressStatuses = getProgressStatuses(swapResponse, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
@@ -265,9 +266,14 @@ const Processing: FC<Props> = ({ swapResponse }) => {
                                     <span className="font-medium text-primary-text">
                                         {progressStatuses.generalStatus.title}
                                     </span>
-                                    {(swapOutputTransaction?.status == BackendTransactionStatus.Pending || swapRefuelTransaction?.status == BackendTransactionStatus.Pending) &&
+                                    {!inputIsCompleted && 
                                         <span className='text-sm block space-x-1 text-secondary-text'>
-                                            <span>{swapInputTransaction?.timestamp ? countDownTimer : outputPendingDetails}</span>
+                                            <span>{outputPendingDetails}</span>
+                                        </span>
+                                    }
+                                    {inputIsCompleted && swapOutputTransaction?.status != BackendTransactionStatus.Completed &&
+                                        <span className='text-sm block space-x-1 text-secondary-text'>
+                                            <span>{swapInputTransaction?.timestamp && countDownTimer}</span>
                                         </span>
                                     }
                                 </div>

@@ -1,5 +1,5 @@
 import { FC } from "react"
-import LayerSwapApiClient, { Campaign } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { Campaign, QuoteReward } from "../../lib/layerSwapApiClient"
 import useSWR from "swr"
 import { ApiResponse } from "../../Models/ApiResponse"
 import { useSettingsState } from "../../context/settings"
@@ -11,13 +11,11 @@ import { Network, Token } from "../../Models/Network"
 
 type CampaignProps = {
     destination: Network,
-    fee: number | undefined,
-    selected_currency: Token,
+    reward: QuoteReward | undefined,
 }
 const Comp: FC<CampaignProps> = ({
     destination,
-    fee,
-    selected_currency
+    reward: fee,
 }) => {
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
@@ -28,7 +26,6 @@ const Comp: FC<CampaignProps> = ({
         ?.data
         ?.find(c =>
             c?.network.name === destination?.name
-            && c.status == 'active'
             && new Date(c?.end_date).getTime() - now > 0)
 
     if (!campaign || !fee)
@@ -36,21 +33,17 @@ const Comp: FC<CampaignProps> = ({
 
     return <CampaignDisplay
         campaign={campaign}
-        fee={fee}
-        selected_currency={selected_currency}
+        reward={fee}
     />
 }
 type CampaignDisplayProps = {
     campaign: Campaign,
-    fee: number,
-    selected_currency: Token,
+    reward: QuoteReward,
 }
-const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_currency }) => {
+const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward }) => {
 
     const network = campaign.network
     const token = campaign.token
-    const feeinUsd = fee * selected_currency.price_in_usd
-    const reward = truncateDecimals(((feeinUsd * (campaign?.percentage || 0) / 100) / (token?.price_in_usd || 1)), (token?.precision || 0))
 
     return <motion.div
         initial={{ y: "-100%" }}
@@ -68,12 +61,12 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_cur
             <ClickTooltip text={<span><span>The amount of onboarding reward that you’ll earn.&nbsp;</span><a target='_blank' href='/campaigns' className='text-primary underline hover:no-underline decoration-primary cursor-pointer'>Learn more</a></span>} />
         </div>
         {
-            Number(reward) > 0 &&
+            Number(reward.amount) > 0 &&
             <div className="flex items-center space-x-1">
                 <span>+</span>
                 <div className="h-5 w-5 relative">
                     <Image
-                        src={network?.logo || ''}
+                        src={token?.logo || ''}
                         alt="Project Logo"
                         height="40"
                         width="40"
@@ -81,7 +74,7 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_cur
                         className="rounded-md object-contain" />
                 </div>
                 <p>
-                    {reward} {token?.symbol}
+                    {reward.amount} {token?.symbol}
                 </p>
             </div>
         }

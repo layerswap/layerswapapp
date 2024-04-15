@@ -50,7 +50,7 @@ function CampaignDetails() {
                                 loading="eager"
                                 className="rounded-md object-contain" />}
                         </div>
-                        <p className="font-bold text-xl text-left flex items-center">
+                        <p className="font-bold text-xl text-left flex items-center text-primary-text">
                             {network?.display_name} Rewards
                         </p>
                     </div>
