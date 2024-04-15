@@ -67,7 +67,8 @@ const Processing: FC<Props> = ({ swapResponse }) => {
     }, [inputTxStatus])
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
-
+    let inputIsCompleted = swapInputTransaction && swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations;
+    
     const progressStatuses = getProgressStatuses(swapResponse, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
