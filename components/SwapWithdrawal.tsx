@@ -6,7 +6,7 @@ import NotFound from "./Swap/NotFound";
 import { BalancesDataProvider } from "../context/balances";
 
 const SwapWithdrawal: FC = () => {
-    const { swap, swapApiError } = useSwapDataState()
+    const { swapResponse: swap, swapApiError } = useSwapDataState()
     const { mutateSwap } = useSwapDataUpdate()
 
     useEffect(() => {

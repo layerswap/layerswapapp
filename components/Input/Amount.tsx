@@ -16,31 +16,31 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
-    const { fromCurrency, from, to, amount, toCurrency } = values || {};
+    const { fromCurrency, from, to, amount, toCurrency, fromExchange, toExchange } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
     const [isFocused, setIsFocused] = useState(false);
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const [walletAddress, setWalletAddress] = useState<string>()
-    const native_currency = from?.assets.find(a => a.is_native)
+    const native_currency = from?.token
     const query = useQueryState()
 
-    const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.asset)?.gas || 0
+    const gasAmount = gases[from?.name || '']?.find(g => g?.token === fromCurrency?.symbol)?.gas || 0
     const name = "amount"
-    const walletBalance = walletAddress && balances[walletAddress]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
+    const walletBalance = walletAddress && balances[walletAddress]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     let maxAllowedAmount: number | null = maxAmountFromApi || 0
     if (query.balances && fromCurrency) {
         try {
             const balancesFromQueries = new URL(window.location.href.replaceAll('&quot;', '"')).searchParams.get('balances');
             const parsedBalances = balancesFromQueries && JSON.parse(balancesFromQueries)
             let balancesTyped = parsedBalances
-            if (balancesTyped && balancesTyped[fromCurrency.asset] && balancesTyped[fromCurrency.asset] > Number(minAllowedAmount)) {
-                maxAllowedAmount = Math.min(maxAllowedAmount, balancesTyped[fromCurrency.asset]);
+            if (balancesTyped && balancesTyped[fromCurrency.symbol] && balancesTyped[fromCurrency.symbol] > Number(minAllowedAmount)) {
+                maxAllowedAmount = Math.min(maxAllowedAmount, balancesTyped[fromCurrency.symbol]);
             }
         }
         // in case the query parameter had bad formatting just ignoe
         catch { }
     } else if (walletBalance && (walletBalance.amount >= Number(minAllowedAmount) && walletBalance.amount <= Number(maxAmountFromApi))) {
-        if (((native_currency?.asset === fromCurrency?.asset) || !native_currency) && ((walletBalance.amount - gasAmount) >= Number(minAllowedAmount) && (walletBalance.amount - gasAmount) <= Number(maxAmountFromApi))) {
+        if (((native_currency?.symbol === fromCurrency?.symbol) || !native_currency) && ((walletBalance.amount - gasAmount) >= Number(minAllowedAmount) && (walletBalance.amount - gasAmount) <= Number(maxAmountFromApi))) {
             maxAllowedAmount = walletBalance.amount - gasAmount
         }
         else maxAllowedAmount = walletBalance.amount
@@ -55,9 +55,11 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
     const amountRef = useRef(ref)
 
+    const diasbled = Boolean((fromExchange && !toCurrency) || (toExchange && !fromCurrency))
+
     const updateRequestedAmountInUsd = useCallback((requestedAmount: number) => {
-        if (fromCurrency?.usd_price && !isNaN(requestedAmount)) {
-            setRequestedAmountInUsd((fromCurrency?.usd_price * requestedAmount).toFixed(2));
+        if (fromCurrency?.price_in_usd && !isNaN(requestedAmount)) {
+            setRequestedAmountInUsd((fromCurrency?.price_in_usd * requestedAmount).toFixed(2));
         } else {
             setRequestedAmountInUsd(undefined);
         }
@@ -72,7 +74,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         <div className="flex w-full justify-between bg-secondary-700 rounded-lg">
             <div className="relative w-full">
                 <NumericInput
-                    disabled={!fromCurrency || !toCurrency}
+                    disabled={diasbled}
                     placeholder={placeholder}
                     min={minAllowedAmount}
                     max={maxAllowedAmount || 0}

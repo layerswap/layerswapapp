@@ -8,20 +8,20 @@ import { ActionData } from "./sharedTypes";
 import SubmitButton from "../../../../buttons/submitButton";
 import useWallet from "../../../../../hooks/useWallet";
 import { useSwapDataState } from "../../../../../context/swap";
-import { useSettingsState } from "../../../../../context/settings";
 
 export const ConnectWalletButton: FC = () => {
-    const { swap } = useSwapDataState()
-    const { layers } = useSettingsState()
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
+    const { source_network } = swap || {}
+
     const { getWithdrawalProvider: getProvider } = useWallet()
-    const source_layer = layers.find(l => l.internal_name === swap?.source_network)
     const provider = useMemo(() => {
-        return source_layer && getProvider(source_layer)
-    }, [source_layer, getProvider])
+        return source_network && getProvider(source_network)
+    }, [source_network, getProvider])
 
     const clickHandler = useCallback(() => {
         if (!provider)
-            throw new Error(`No provider from ${source_layer?.internal_name}`)
+            throw new Error(`No provider from ${source_network?.name}`)
 
         return provider.connectWallet(provider?.name)
     }, [provider])

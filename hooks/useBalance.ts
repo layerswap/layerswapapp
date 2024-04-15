@@ -1,7 +1,5 @@
-import { Layer } from "../Models/Layer"
 import useEVMBalance from "../lib/balances/evm/useEVMBalance"
 import useLoopringBalance from "../lib/balances/loopring/useLoopringBalance"
-import useOptimismBalance from "../lib/balances/evm/optimism/useOptimismBalance"
 import useStarknetBalance from "../lib/balances/starknet/useStarknetBalance"
 import useZkSyncBalance from "../lib/balances/zksync/useZkSyncBalance"
 import useSolanaBalance from "../lib/balances/solana/useSolanaBalance"
@@ -9,17 +7,15 @@ import useImxBalance from "../lib/balances/immutableX/useIMXBalances"
 import { BalanceProvider } from "../Models/Balance"
 import useWallet from "./useWallet"
 import { useBalancesState, useBalancesUpdate } from "../context/balances"
-import { NetworkCurrency } from "../Models/CryptoNetwork"
+import { Network, NetworkWithTokens, Token } from "../Models/Network"
 import useQueryBalances from "../lib/balances/query/useQueryBalances"
 import { useQueryState } from "../context/query"
-
 
 export default function useBalanceProvider() {
 
     const BalanceProviders: BalanceProvider[] = [
         useQueryBalances(),
         useEVMBalance(),
-        useOptimismBalance(),
         useStarknetBalance(),
         useLoopringBalance(),
         useZkSyncBalance(),
@@ -39,12 +35,12 @@ export default function useBalanceProvider() {
 
     const { getAutofillProvider } = useWallet()
 
-    const fetchBalance = async (network: Layer) => {
+    const fetchNetworkBalances = async (network: NetworkWithTokens) => {
         const provider = getAutofillProvider(network)
         const wallet = provider?.getConnectedWallet()
         const address = query.account || wallet?.address
 
-        const balance = balances[address || '']?.find(b => b?.network === network?.internal_name)
+        const balance = balances[address || '']?.find(b => b?.network === network?.name)
         const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
 
         if (network
@@ -53,51 +49,78 @@ export default function useBalanceProvider() {
             setIsBalanceLoading(true)
 
             const walletBalances = balances[address]
-            const filteredBalances = walletBalances?.some(b => b?.network === network?.internal_name) ? walletBalances?.filter(b => b?.network !== network.internal_name) : walletBalances || []
+            const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
 
             const provider = getBalanceProvider(network)
-            const ercAndNativeBalances = await provider?.getBalance({
-                layer: network,
-                address: address
+            const networkBalances = await provider?.getNetworkBalances({
+                network: network,
+                address: address,
             }) || []
 
-            setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(ercAndNativeBalances) }))
+            setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(networkBalances) }))
             setIsBalanceLoading(false)
         }
     }
 
-    const fetchGas = async (network: Layer, currency: NetworkCurrency, userDestinationAddress: string) => {
+    const fetchBalance = async (network: Network, token: Token) => {
+        const provider = getAutofillProvider(network)
+        const wallet = provider?.getConnectedWallet()
+        const address = query.account || wallet?.address
+
+        const balance = balances[address || '']?.find(b => b?.network === network?.name)
+        const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
+
+        if (network
+            && isBalanceOutDated
+            && address) {
+            setIsBalanceLoading(true)
+
+            const walletBalances = balances[address]
+            const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
+
+            const provider = getBalanceProvider(network)
+            const balance = await provider?.getBalance({
+                network: network,
+                address: address,
+                token
+            }) || []
+
+            setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(balance) }))
+            setIsBalanceLoading(false)
+        }
+    }
+
+    const fetchGas = async (network: Network, token: Token, userDestinationAddress: string) => {
 
         if (!network) {
             return
         }
 
-
-        const destination_address = network?.managed_accounts?.[0]?.address as `0x${string}`
-        const gas = gases[network.internal_name]?.find(g => g?.token === currency?.asset)
+        const destination_address = userDestinationAddress as `0x${string}`
+        const gas = gases[network.name]?.find(g => g?.token === token?.symbol)
         const isGasOutDated = !gas || new Date().getTime() - (new Date(gas.request_time).getTime() || 0) > 10000
 
         const provider = getAutofillProvider(network)
         const wallet = provider?.getConnectedWallet()
 
         if (isGasOutDated
-            && currency
+            && token
             && wallet?.address
             && destination_address) {
             setIsGasLoading(true)
             try {
-                const provider = getBalanceProvider(network)
-                const gas = provider?.getGas && await provider?.getGas({
-                    layer: network,
+                const gasProvider = getBalanceProvider(network)
+                const gas = gasProvider?.getGas && await gasProvider?.getGas({
                     address: wallet?.address as `0x${string}`,
-                    currency,
+                    network,
+                    token,
                     userDestinationAddress,
                     wallet
                 }) || []
 
                 if (gas) {
-                    const filteredGases = gases[network.internal_name]?.some(b => b?.token === currency?.asset) ? gases[network.internal_name].filter(g => g.token !== currency.asset) : gases[network.internal_name] || []
-                    setAllGases((data) => ({ ...data, [network.internal_name]: filteredGases.concat(gas) }))
+                    const filteredGases = gases[network.name]?.some(b => b?.token === token?.symbol) ? gases[network.name].filter(g => g.token !== token.symbol) : gases[network.name] || []
+                    setAllGases((data) => ({ ...data, [network.name]: filteredGases.concat(gas) }))
                 }
             }
             catch (e) { console.log(e) }
@@ -105,13 +128,14 @@ export default function useBalanceProvider() {
         }
     }
 
-    const getBalanceProvider = (network: Layer) => {
-        const provider = BalanceProviders.find(provider => provider.supportedNetworks.includes(network.internal_name))
+    const getBalanceProvider = (network: Network) => {
+        const provider = BalanceProviders.find(provider => provider.supportedNetworks.includes(network.name))
         return provider
     }
 
     return {
         fetchGas,
+        fetchNetworkBalances,
         fetchBalance
     }
 }

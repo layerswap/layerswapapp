@@ -1,7 +1,7 @@
 import { ReactNode, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import useWallet from "../../hooks/useWallet";
-import { NetworkType } from "../../Models/CryptoNetwork";
+import { NetworkType } from "../../Models/Network";
 import RainbowIcon from "../icons/Wallets/Rainbow";
 import TON from "../icons/Wallets/TON";
 import {
@@ -20,7 +20,6 @@ import Argent from "../icons/Wallets/Argent";
 import TonKeeper from "../icons/Wallets/TonKeeper";
 import OpenMask from "../icons/Wallets/OpenMask";
 import Phantom from "../icons/Wallets/Phantom";
-import Solflare from "../icons/Wallets/Solflare";
 import CoinbaseIcon from "../icons/Wallets/Coinbase";
 import GlowIcon from "../icons/Wallets/Glow";
 

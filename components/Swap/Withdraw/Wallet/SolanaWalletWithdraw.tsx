@@ -2,8 +2,6 @@ import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { useSwapDataState } from '../../../../context/swap';
-import { useSettingsState } from '../../../../context/settings';
 import { Transaction, Connection, PublicKey, TransactionInstruction } from '@solana/web3.js';
 import useWallet from '../../../../hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
@@ -11,29 +9,17 @@ import { createAssociatedTokenAccountInstruction, createTransferInstruction, get
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
+import { WithdrawPageProps } from './WalletTransferContent';
 
-type Props = {
-    depositAddress?: string,
-    amount: number
-}
-
-const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
+const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId }) => {
     const [loading, setLoading] = useState(false);
     const { getWithdrawalProvider } = useWallet()
-
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { swap } = useSwapDataState();
 
-    const { layers } = useSettingsState();
-    const { source_network: source_network_internal_name } = swap || {};
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name);
-    const source_layer = layers.find(l => l.internal_name === source_network_internal_name)
-    const source_currency = source_network?.assets?.find(c => c.asset.toUpperCase() === swap?.source_network_asset.toUpperCase());
-
-    const provider = getWithdrawalProvider(source_layer!);
+    const provider = getWithdrawalProvider(network!);
     const wallet = provider?.getConnectedWallet();
     const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
-    const solanaNode = source_network?.nodes[0].url;
+    const solanaNode = network?.node_url
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
@@ -50,7 +36,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
 
     const handleTransfer = useCallback(async () => {
 
-        if (!swap || !walletPublicKey || !signTransaction || !depositAddress) return
+        if (!swapId || !walletPublicKey || !signTransaction || !depositAddress || !amount) return
 
         setLoading(true)
         try {
@@ -59,7 +45,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                 "confirmed"
             );
 
-            const sourceToken = new PublicKey(source_currency?.contract_address!);
+            const sourceToken = new PublicKey(token?.contract!);
             const recipientAddress = new PublicKey(depositAddress);
 
             const transactionInstructions: TransactionInstruction[] = [];
@@ -88,7 +74,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
                     fromAccount.address,
                     associatedTokenTo,
                     walletPublicKey,
-                    amount * Math.pow(10, Number(source_currency?.decimals))
+                    amount * Math.pow(10, Number(token?.decimals))
                 )
             );
 
@@ -101,7 +87,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
             );
 
             if (signature) {
-                setSwapTransaction(swap?.id, BackendTransactionStatus.Pending, signature);
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, signature);
             }
 
         }
@@ -114,7 +100,7 @@ const SolanaWalletWithdrawStep: FC<Props> = ({ depositAddress, amount }) => {
         finally {
             setLoading(false)
         }
-    }, [swap, depositAddress, source_currency, walletPublicKey, amount, signTransaction])
+    }, [swapId, depositAddress, network, token, walletPublicKey, amount, signTransaction])
 
     return (
         <>
