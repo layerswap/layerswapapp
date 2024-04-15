@@ -1,10 +1,9 @@
 import { PublicClient } from "viem"
-import { Layer } from "../../../Models/Layer"
-import formatAmount from "../../formatAmount"
+import formatAmount from "../../../formatAmount"
 import { erc20ABI } from "wagmi"
 import { multicall, fetchBalance, FetchBalanceResult } from '@wagmi/core'
-import { NetworkCurrency } from "../../../Models/CryptoNetwork"
-import { Balance } from "../../../Models/Balance"
+import { Network, NetworkWithTokens, Token } from "../../../../Models/Network"
+import { Balance } from "../../../../Models/Balance"
 
 export type ERC20ContractRes = ({
     error: Error;
@@ -18,16 +17,16 @@ export type ERC20ContractRes = ({
 
 export const resolveERC20Balances = async (
     multicallRes: ERC20ContractRes[],
-    from: Layer,
+    from: NetworkWithTokens,
 ) => {
-    const assets = from?.assets?.filter(a => a.contract_address)
+    const assets = from?.tokens?.filter(a => a.contract)
     if (!assets)
         return null
     const contractBalances = multicallRes?.map((d, index) => {
         const currency = assets[index]
         return {
-            network: from.internal_name,
-            token: currency.asset,
+            network: from.name,
+            token: currency.symbol,
             amount: formatAmount(d.result, currency.decimals),
             request_time: new Date().toJSON(),
             decimals: currency.decimals,
@@ -36,13 +35,15 @@ export const resolveERC20Balances = async (
     })
     return contractBalances
 }
+
 type GetBalanceArgs = {
     address: string,
     chainId: number,
-    assets: NetworkCurrency[],
+    assets: Token[],
     publicClient: PublicClient,
     hasMulticall: boolean
 }
+
 export const getErc20Balances = async ({
     address,
     chainId,
@@ -51,8 +52,8 @@ export const getErc20Balances = async ({
     hasMulticall = false
 }: GetBalanceArgs): Promise<ERC20ContractRes[] | null> => {
 
-    const contracts = assets?.filter(a => a.contract_address).map(a => ({
-        address: a?.contract_address as `0x${string}`,
+    const contracts = assets?.filter(a => a.contract).map(a => ({
+        address: a?.contract as `0x${string}`,
         abi: erc20ABI,
         functionName: 'balanceOf',
         args: [address],
@@ -102,14 +103,15 @@ export const getErc20Balances = async ({
 
 }
 
-export const getNativeBalance = async (address: `0x${string}`, chainId: number): Promise<FetchBalanceResult | null> => {
+export const getTokenBalance = async (address: `0x${string}`, chainId: number, contract?: `0x${string}`): Promise<FetchBalanceResult | null> => {
 
     try {
-        const nativeTokenRes = await fetchBalance({
+        const res = await fetchBalance({
             address,
-            chainId
+            chainId,
+            ...(contract ? { token: contract } : {})
         })
-        return nativeTokenRes
+        return res
     } catch (e) {
         //TODO: log the error to our logging service
         console.log(e)
@@ -118,21 +120,18 @@ export const getNativeBalance = async (address: `0x${string}`, chainId: number):
 
 }
 
-export const resolveNativeBalance = async (
-    from: Layer,
-    nativeTokenRes: FetchBalanceResult
+export const resolveBalance = async (
+    network: Network,
+    token: Token,
+    balanceData: FetchBalanceResult
 ) => {
-    const native_currency = from.assets.find(a => a.is_native)
-    if (!native_currency) {
-        return null
-    }
 
     const nativeBalance: Balance = {
-        network: from.internal_name,
-        token: native_currency.asset,
-        amount: formatAmount(nativeTokenRes?.value, native_currency.decimals),
+        network: network.name,
+        token: token.symbol,
+        amount: formatAmount(balanceData?.value, token.decimals),
         request_time: new Date().toJSON(),
-        decimals: native_currency.decimals,
+        decimals: token.decimals,
         isNativeCurrency: true,
     }
 

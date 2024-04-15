@@ -1,7 +1,6 @@
 import axios from "axios";
 import { parseJwt } from "./jwtParser";
 import TokenService from "./TokenService";
-import LayerSwapAuthApiClient from "./userAuthApiClient";
 import { AuthRefreshFailedError } from './Errors/AuthRefreshFailedError';
 
 type TokenStates = {
@@ -16,7 +15,7 @@ const refreshTokenState: TokenStates = {
     RefreshingToken: false,
 }
 
-export const InitializeInstance = (baseURL?: string) => {
+export const InitializeAuthInstance = (baseURL?: string) => {
 
     const instance = axios.create({
         baseURL: baseURL || "",
@@ -70,8 +69,17 @@ export const InitializeInstance = (baseURL?: string) => {
             }
 
             let token = TokenService.getAuthData()?.access_token;
+            const apiKey = process.env.NEXT_PUBLIC_API_KEY
+
+            if (apiKey) {
+                config.headers["X-LS-APIKEY"] = apiKey
+            } else {
+                throw new Error("NEXT_PUBLIC_API_KEY is not set up in env vars")
+            }
+
             if (token) {
                 config.headers["Authorization"] = 'Bearer ' + token;
+
             }
             return config;
         },
@@ -116,5 +124,33 @@ export const InitializeInstance = (baseURL?: string) => {
     return instance;
 }
 
+export const InitializeUnauthInstance = (baseURL?: string) => {
 
-export default InitializeInstance;
+    const instance = axios.create({
+        baseURL: baseURL || "",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+
+    instance.interceptors.request.use(
+        async (config) => {
+            const apiKey = process.env.NEXT_PUBLIC_API_KEY
+
+            if (apiKey) {
+                config.headers["X-LS-APIKEY"] = apiKey
+            } else {
+                throw new Error("NEXT_PUBLIC_API_KEY is not set up in env vars")
+            }
+            return config;
+        },
+        (error) => {
+            return Promise.reject(error);
+        }
+    );
+
+    return instance;
+}
+
+
+export default InitializeAuthInstance;

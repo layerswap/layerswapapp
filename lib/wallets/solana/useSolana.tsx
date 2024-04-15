@@ -5,8 +5,8 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 
 export default function useSolana(): WalletProvider {
-    const withdrawalSupportedNetworks = [KnownInternalNames.Networks.SolanaMainnet]
-    const autofillSupportedNetworks = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet]
+    const withdrawalSupportedNetworks = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet]
+    const autofillSupportedNetworks = [...withdrawalSupportedNetworks]
     const name = 'solana'
     const { publicKey, disconnect, wallet } = useWallet();
     const { setVisible } = useWalletModal();

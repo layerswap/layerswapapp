@@ -12,7 +12,7 @@ import upperCaseKeys from "../../utils/upperCaseKeys";
 const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) => {
 
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
-    const { fromCurrency, from, to, destination_address } = values || {};
+    const { fromCurrency, from, to, toCurrency, destination_address, amount } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
     const { balances, gases } = useBalancesState()
     const query = useQueryState()
@@ -22,7 +22,7 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
         return from && getProvider(from)
     }, [from, getProvider])
 
-    const { fetchBalance, fetchGas } = useBalance()
+    const { fetchNetworkBalances, fetchGas } = useBalance()
 
     const wallet = provider?.getConnectedWallet()
 
@@ -30,9 +30,9 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
         setFieldValue('amount', minAllowedAmount);
     }
 
-    const gasAmount = gases[from?.internal_name || '']?.find(g => g?.token === fromCurrency?.asset)?.gas || 0
-    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.internal_name && b?.token === fromCurrency?.asset)
-    const native_currency = from?.assets.find(a => a.is_native)
+    const gasAmount = gases[from?.name || '']?.find(g => g?.token === fromCurrency?.symbol)?.gas || 0
+    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+    const native_currency = from?.token
 
     let maxAllowedAmount: number | null = maxAmountFromApi || 0
     if (query.balances && fromCurrency) {
@@ -40,14 +40,14 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
             const balancesFromQueries = new URL(window.location.href.replaceAll('&quot;', '"')).searchParams.get('balances');
             const parsedBalances = balancesFromQueries && JSON.parse(balancesFromQueries)
             let balancesTyped = parsedBalances
-            if (balancesTyped && balancesTyped[fromCurrency.asset] && balancesTyped[fromCurrency.asset] > Number(minAllowedAmount)) {
-                maxAllowedAmount = Math.min(maxAllowedAmount, balancesTyped[fromCurrency.asset]);
+            if (balancesTyped && balancesTyped[fromCurrency.symbol] && balancesTyped[fromCurrency.symbol] > Number(minAllowedAmount)) {
+                maxAllowedAmount = Math.min(maxAllowedAmount, balancesTyped[fromCurrency.symbol]);
             }
         }
         // in case the query parameter had bad formatting just ignoe
         catch { }
     } else if (walletBalance && (walletBalance.amount >= Number(minAllowedAmount) && walletBalance.amount <= Number(maxAmountFromApi))) {
-        if (((native_currency?.asset === fromCurrency?.asset) || !native_currency) && ((walletBalance.amount - gasAmount) >= Number(minAllowedAmount) && (walletBalance.amount - gasAmount) <= Number(maxAmountFromApi))) {
+        if (((native_currency?.symbol === fromCurrency?.symbol) || !native_currency) && ((walletBalance.amount - gasAmount) >= Number(minAllowedAmount) && (walletBalance.amount - gasAmount) <= Number(maxAmountFromApi))) {
             maxAllowedAmount = walletBalance.amount - gasAmount
         }
         else maxAllowedAmount = walletBalance.amount
@@ -59,9 +59,13 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
 
     const handleSetMaxAmount = useCallback(async () => {
         setFieldValue('amount', maxAllowedAmount);
-        from && fetchBalance(from);
-        from && fromCurrency && fetchGas(from, fromCurrency, destination_address || "");
-    }, [from, to, fromCurrency, destination_address, maxAllowedAmount])
+        from && fetchNetworkBalances(from);
+
+        from &&
+            fromCurrency &&
+            amount && fetchGas(from, fromCurrency, destination_address || "");
+
+    }, [from, fromCurrency, destination_address, maxAllowedAmount])
 
     useEffect(() => {
         wallet?.address && onAddressGet(wallet.address)

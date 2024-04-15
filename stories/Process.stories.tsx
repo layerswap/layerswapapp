@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import LayerSwapApiClient, { SwapItem, BackendTransactionStatus, TransactionType } from '../lib/layerSwapApiClient';
+import { SwapItem, BackendTransactionStatus, TransactionType, SwapResponse } from '../lib/layerSwapApiClient';
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapData, SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
@@ -69,8 +69,7 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
 
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const appSettings = new LayerSwapAppSettings(Settings)
-
-    const swapContextInitialValues: SwapData = { codeRequested: false, swap, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
+    const swapContextInitialValues: SwapData = { codeRequested: false, swapResponse: undefined, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined, selectedAssetNetwork: undefined }
 
     if (!appSettings) {
         return <div>Loading...</div>
@@ -126,7 +125,7 @@ const DUMMY_TRANSACTION = {
     from: "0x5da5c2a98e26fd28914b91212b1232d58eb9bbab",
     to: "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
     created_date: "2023-08-16T16:33:23.4937+00:00",
-    transaction_id: "0xae9231b805139bee7e92ddae631b13bb2d13a09e106826b4f08e8efa965d1c27",
+    transaction_hash: "0xae9231b805139bee7e92ddae631b13bb2d13a09e106826b4f08e8efa965d1c27",
     confirmations: 28,
     max_confirmations: 12,
     amount: 0.00093,

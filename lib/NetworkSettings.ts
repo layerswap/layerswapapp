@@ -70,6 +70,7 @@ export default class NetworkSettings {
     AccountExplorerTemplate?: string;
     GasCalculationType?: GasCalculation
     isFeatured?: boolean
+    ChainOrder?: number
 
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
 
@@ -169,6 +170,9 @@ export default class NetworkSettings {
             AccountExplorerTemplate: 'https://etherscan.io/address/{0}',
             DefaultPriorityFee: 0.3,
             BaseFeeMultiplier: 1.7
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumSepolia] = {
+            ChainOrder: 1
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BobaMainnet] = {
             ChainId: 288,
@@ -292,6 +296,10 @@ export default class NetworkSettings {
                 linkUri: "https://link.x.immutable.com",
             },
             [KnownInternalNames.Networks.ImmutableXGoerli]: {
+                apiUri: "https://api.sandbox.x.immutable.com/v1",
+                linkUri: "https://link.sandbox.x.immutable.com"
+            },
+            [KnownInternalNames.Networks.ImmutableXSepolia]: {
                 apiUri: "https://api.sandbox.x.immutable.com/v1",
                 linkUri: "https://link.sandbox.x.immutable.com"
             },

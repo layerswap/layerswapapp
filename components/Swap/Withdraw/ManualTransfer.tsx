@@ -1,40 +1,24 @@
-import { FC, useCallback, useEffect } from "react"
-import useSWR from "swr"
+import { FC, useCallback } from "react"
 import { ArrowLeftRight } from "lucide-react"
 import Image from 'next/image';
-import { ApiResponse } from "../../../Models/ApiResponse";
-import { useSettingsState } from "../../../context/settings";
 import { useSwapDataState } from "../../../context/swap";
 import KnownInternalNames from "../../../lib/knownIds";
 import BackgroundField from "../../backgroundField";
-import LayerSwapApiClient, { DepositAddress, DepositAddressSource } from "../../../lib/layerSwapApiClient";
 import SubmitButton from "../../buttons/submitButton";
 import shortenAddress from "../../utils/ShortenAddress";
 import { isValidAddress } from "../../../lib/addressValidator";
 import { useSwapDepositHintClicked } from "../../../stores/swapTransactionStore";
-import { useFee } from "../../../context/feeContext";
 import { Exchange } from "../../../Models/Exchange";
 import Link from "next/link";
 
 const ManualTransfer: FC = () => {
-    const { swap } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
+    const { swap, deposit_actions } = swapResponse || {}
     const hintsStore = useSwapDepositHintClicked()
     const hintClicked = hintsStore.swapTransactions[swap?.id || ""]
-    const { source_network: source_network_internal_name } = swap || {}
+    const trasnsferACtionData = deposit_actions?.find(a => a.type=='transfer')
 
-    const layerswapApiClient = new LayerSwapApiClient()
-    const {
-        data: generatedDeposit,
-    } = useSWR<ApiResponse<DepositAddress>>(`/networks/${source_network_internal_name}/deposit_addresses`,
-        layerswapApiClient.fetcher,
-        {
-            dedupingInterval: 60000,
-            shouldRetryOnError: false
-        }
-    )
-
-    let generatedDepositAddress = generatedDeposit?.data?.address
-    let shouldGenerateAddress = !generatedDepositAddress && hintClicked
+    let generatedDepositAddress = trasnsferACtionData?.to_address
 
     const handleCloseNote = useCallback(async () => {
         if (swap)
@@ -59,56 +43,28 @@ const ManualTransfer: FC = () => {
                 </SubmitButton>
             </div>
             <div className={hintClicked ? "" : "invisible"}>
-                <TransferInvoice address={generatedDepositAddress} shouldGenerateAddress={shouldGenerateAddress} />
+                <TransferInvoice deposit_address={generatedDepositAddress} />
             </div>
         </div>
     )
-
 }
 
-const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> = ({ address: existingDepositAddress, shouldGenerateAddress }) => {
+const TransferInvoice: FC<{ deposit_address?: string }> = ({ deposit_address }) => {
 
-    const { layers, resolveImgSrc } = useSettingsState()
-    const { swap } = useSwapDataState()
-    const { valuesChanger, minAllowedAmount } = useFee()
+    const { swapResponse: swapResponse } = useSwapDataState()
+    const { swap, quote: swapQuote } = swapResponse || {}
+
+    const minAllowedAmount = swapQuote?.min_receive_amount
 
     const {
-        source_network: source_network_internal_name,
-        destination_network: destination_network_internal_name,
-        source_network_asset,
-        destination_network_asset,
-        source_exchange
+        source_exchange,
+        source_network,
+        source_token,
     } = swap || {}
-
-    const source = layers.find(n => n.internal_name === source_network_internal_name)
-    const sourceAsset = source?.assets.find(c => c.asset == source_network_asset)
-    const destination = layers.find(n => n.internal_name === destination_network_internal_name)
-    const destinationAsset = destination?.assets.find(c => c.asset == destination_network_asset)
-
-    useEffect(() => {
-        if (swap) {
-            valuesChanger({
-                amount: swap.requested_amount.toString(),
-                destination_address: swap.destination_address,
-                from: source,
-                fromCurrency: sourceAsset,
-                to: destination,
-                toCurrency: destinationAsset,
-                refuel: swap.has_refuel,
-            })
-        }
-    }, [swap])
-
-    const layerswapApiClient = new LayerSwapApiClient()
-    const generateDepositParams = shouldGenerateAddress ? [source?.internal_name ?? null] : null
-
-    const {
-        data: generatedDeposit
-    } = useSWR<ApiResponse<DepositAddress>>(generateDepositParams, ([network]) => layerswapApiClient.GenerateDepositAddress(network), { dedupingInterval: 60000 })
+    const source_network_internal_name = swap?.source_network.name
 
     //TODO pick manual transfer minAllowedAmount when its available
     const requested_amount = Number(minAllowedAmount) > Number(swap?.requested_amount) ? minAllowedAmount : swap?.requested_amount
-    const depositAddress = existingDepositAddress || generatedDeposit?.data?.address
 
     // const handleChangeSelectedNetwork = useCallback((n: NetworkCurrency) => {
     //     setSelectedAssetNetwork(n)
@@ -120,12 +76,12 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
         </div>
         }
         <div className="flex divide-x divide-secondary-500">
-            <BackgroundField Copiable={true} QRable={true} header={"Deposit address"} toCopy={depositAddress} withoutBorder>
+            <BackgroundField Copiable={true} QRable={true} header={"Deposit address"} toCopy={deposit_address} withoutBorder>
                 <div>
                     {
-                        depositAddress ?
+                        deposit_address ?
                             <p className='break-all'>
-                                {depositAddress}
+                                {deposit_address}
                             </p>
                             :
                             <div className='bg-gray-500 w-56 h-5 animate-pulse rounded-md' />
@@ -168,13 +124,13 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                     {requested_amount}
                 </p>
             </BackgroundField>
-            <BackgroundField header={'Asset'} withoutBorder Explorable={sourceAsset?.contract_address != null && isValidAddress(sourceAsset?.contract_address, source)} toExplore={sourceAsset?.contract_address != null ? source?.account_explorer_template?.replace("{0}", sourceAsset?.contract_address) : undefined}>
+            <BackgroundField header={'Asset'} withoutBorder Explorable={source_token?.contract != null && isValidAddress(source_token?.contract, source_network)} toExplore={source_token?.contract != null ? source_network?.account_explorer_template?.replace("{0}", source_token?.contract) : undefined}>
                 <div className="flex items-center gap-2">
                     <div className="flex-shrink-0 h-7 w-7 relative">
                         {
-                            sourceAsset &&
+                            source_token &&
                             <Image
-                                src={resolveImgSrc({ asset: sourceAsset?.asset })}
+                                src={source_token.logo}
                                 alt="From Logo"
                                 height="60"
                                 width="60"
@@ -184,11 +140,11 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
                     </div>
                     <div className="flex flex-col">
                         <span className="font-semibold leading-4">
-                            {sourceAsset?.asset}
+                            {source_token?.symbol}
                         </span>
-                        {sourceAsset?.contract_address && isValidAddress(sourceAsset.contract_address, source) &&
+                        {source_token?.contract && isValidAddress(source_token.contract, source_network) &&
                             <span className="text-xs text-secondary-text flex items-center leading-3">
-                                {shortenAddress(sourceAsset?.contract_address)}
+                                {shortenAddress(source_token?.contract)}
                             </span>
                         }
                     </div>
@@ -199,15 +155,7 @@ const TransferInvoice: FC<{ address?: string, shouldGenerateAddress: boolean }> 
 }
 
 const ExchangeNetworkPicker: FC<{ onChange?: (exchnage: Exchange) => void }> = ({ onChange }) => {
-    const { layers, resolveImgSrc } = useSettingsState()
-    const { swap } = useSwapDataState()
-    const {
-        source_exchange: source_exchange_internal_name,
-        destination_network,
-        source_network_asset,
-        source_network
-    } = swap || {}
-    const source_layer = layers.find(n => n.internal_name === source_network)
+    const { swapResponse: swap } = useSwapDataState()
 
     //const exchangeAssets = source_exchange?.assets?.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network?.status !== "inactive")
     //const defaultSourceNetwork = exchangeAssets?.find(sn => sn.is_default) || exchangeAssets?.[0]
@@ -222,8 +170,8 @@ const ExchangeNetworkPicker: FC<{ onChange?: (exchnage: Exchange) => void }> = (
         <span>Network:</span>
         {/* {exchangeAssets?.length === 1 ? */}
         <div className='flex space-x-1 items-center w-fit font-semibold text-primary-text'>
-            <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={resolveImgSrc(source_layer)}></Image>
-            <span>{source_layer?.display_name}</span>
+            <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={swap?.swap.source_network.logo || ''}></Image>
+            <span>{swap?.swap.source_network.display_name}</span>
         </div>
         {/* :
             <Select onValueChange={handleChangeSelectedNetwork} defaultValue={defaultSourceNetwork?.network_internal_name}>
