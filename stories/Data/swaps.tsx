@@ -1,31 +1,86 @@
+import { NetworkType } from "../../Models/Network"
 import { SwapStatus } from "../../Models/SwapStatus"
 import { SwapItem, BackendTransactionStatus, TransactionType } from "../../lib/layerSwapApiClient"
 
 export const swap: SwapItem = {
     "id": "39dbe478-5a7d-427c-b316-cc8c362ec010",
-    "sequence_number": 2308,
+    "metadata": {
+        "reference_id": null,
+        "app": null,
+        "sequence_number": 2308
+    },
     "requested_amount": 0.0015,
-    "fee": 0.00057,
-    "message": undefined,
-    "reference_id": undefined,
-    "app_name": "Layerswap",
-    "has_pending_deposit": false,
+    "use_deposit_address": false,
+    "source_address": "0xisjvievhi83r7837r883h83hd838dd8h38",
     "exchange_account_connected": false,
     "created_date": "2023-08-16T16:31:11.934618+00:00",
     "status": SwapStatus.Created,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
-    "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_SEPOLIA",
-    "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_SEPOLIA",
-    "has_refuel": true,
+    "source_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+
+        "status": "active"
+    },
+    "source_network": {
+        "name": "ARBITRUM_SEPOLIA",
+        "display_name": "Arbitrum One Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_sepolia.png",
+        "chain_id": "421614",
+        "node_url": "https://arbitrum-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.arbiscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.arbiscan.io/address/{0}",
+        "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": "0x420000000000000000000000000000000000000F",
+            "evm_multi_call_contract": ""
+        },
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
+    },
+    "destination_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+
+        "status": "active"
+    },
+    "destination_network": {
+        "name": "ETHEREUM_SEPOLIA",
+        "display_name": "Ethereum Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_sepolia.png",
+        "chain_id": "11155111",
+        "node_url": "https://eth-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.etherscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
+        "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": null,
+            "evm_multi_call_contract": null
+        },
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
+    },
     "fail_reason": "",
     "transactions": [
         {
             "from": "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
             "to": "0x5da5c2a98e26fd28914b91212b1232d58eb9bbab",
             "created_date": "2023-08-16T16:31:50.028165+00:00",
-            "transaction_id": "0x40eb981625e69775664049fb930d489ff766a906c0528ffdb32715636d145962",
+            "transaction_hash": "0x40eb981625e69775664049fb930d489ff766a906c0528ffdb32715636d145962",
             "confirmations": 3,
             "max_confirmations": 3,
             "amount": 0.0015,
@@ -33,12 +88,13 @@ export const swap: SwapItem = {
             "type": TransactionType.Input,
             "usd_value": 2.728530,
             "status": BackendTransactionStatus.Pending,
+            "timestamp": ""
         },
         {
             "from": "0x5da5c2a98e26fd28914b91212b1232d58eb9bbab",
             "to": "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
             "created_date": "2023-08-16T16:33:23.4937+00:00",
-            "transaction_id": "0xae9231b805139bee7e92ddae631b13bb2d13a09e106826b4f08e8efa965d1c27",
+            "transaction_hash": "0xae9231b805139bee7e92ddae631b13bb2d13a09e106826b4f08e8efa965d1c27",
             "confirmations": 28,
             "max_confirmations": 12,
             "amount": 0.00093,
@@ -54,40 +110,94 @@ export const swap: SwapItem = {
             "from": "0xe66aa98b55c5a55c9af9da12fe39b8868af9a346",
             "max_confirmations": 12,
             "to": "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
-            "transaction_id": "0x673d993640252bc40e7f69291a341deea2bb5250e8b13531b9e1412e326c5c42",
+            "transaction_hash": "0x673d993640252bc40e7f69291a341deea2bb5250e8b13531b9e1412e326c5c42",
             "type": TransactionType.Refuel,
             "usd_price": 1840.02,
             "usd_value": 0.49864542,
             "status": BackendTransactionStatus.Pending,
         }
-    ]
+    ],
 }
 
 export const failedSwap: SwapItem = {
     "id": "9c68c265-c9d0-4b52-8e2a-bd309e565451",
-    "sequence_number": 2571,
+    "metadata": {
+        "reference_id": null,
+        "app": null,
+        "sequence_number": 2571
+    },
+    "use_deposit_address": false,
+    "source_address": "0xlskcsvknskvkscnkjcnskncskncksvsv",
     "requested_amount": 0.0018,
-    "fee": 0.00057,
-    "message": undefined,
-    "reference_id": undefined,
     "exchange_account_connected": false,
-    "app_name": "Layerswap",
-    "has_pending_deposit": false,
     "created_date": "2023-08-30T09:04:41.673486+00:00",
     "status": SwapStatus.Failed,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
-    "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_SEPOLIA",
-    "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_SEPOLIA",
-    "has_refuel": false,
+    "source_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+
+        "status": "active"
+    },
+    "source_network": {
+        "name": "ARBITRUM_SEPOLIA",
+        "display_name": "Arbitrum One Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_sepolia.png",
+        "chain_id": "421614",
+        "node_url": "https://arbitrum-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.arbiscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.arbiscan.io/address/{0}",
+        "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": "0x420000000000000000000000000000000000000F",
+            "evm_multi_call_contract": ""
+        },
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
+    },
+    "destination_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+
+        "status": "active"
+    },
+    "destination_network": {
+        "name": "ETHEREUM_SEPOLIA",
+        "display_name": "Ethereum Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_sepolia.png",
+        "chain_id": "11155111",
+        "node_url": "https://eth-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.etherscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
+        "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": null,
+            "evm_multi_call_contract": null
+        },
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
+    },
     "fail_reason": "",
     "transactions": [
         {
             "from": "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
             "to": "0x5da5c2a98e26fd28914b91212b1232d58eb9bbab",
             "created_date": "2023-08-30T09:07:34.213877+00:00",
-            "transaction_id": "0x43b595400b4e61560846f87115f5b0273ae5f6f1a390f107dca722115a0cd2bf",
+            "transaction_hash": "0x43b595400b4e61560846f87115f5b0273ae5f6f1a390f107dca722115a0cd2bf",
             "confirmations": 3,
             "max_confirmations": 3,
             "amount": 0.0018,
@@ -101,29 +211,83 @@ export const failedSwap: SwapItem = {
 
 export const failedInputSwap: SwapItem = {
     "id": "d8a32946-1250-46d3-999f-cd195304c55e",
-    "sequence_number": 4355,
     "requested_amount": 0.0018,
-    "fee": 0.00057,
-    "message": undefined,
-    "reference_id": undefined,
     "exchange_account_connected": false,
-    "app_name": "Layerswap",
-    "has_pending_deposit": false,
     "created_date": "2024-02-23T12:41:48.389955+00:00",
     "status": SwapStatus.Failed,
+    "use_deposit_address": false,
+    "metadata": {
+        "reference_id": null,
+        "app": null,
+        "sequence_number": 2570
+    },
+    "source_address": "0xf51c208e2c37a99b13dcf01a3434ccsvsvsvsvs",
     "destination_address": "0xf51c208e2c37a99b13dcf01a3434cc71be8b2bdd",
-    "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_SEPOLIA",
-    "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_SEPOLIA",
-    "has_refuel": false,
+    "source_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+
+        "status": "active"
+    },
+    "source_network": {
+        "name": "ARBITRUM_SEPOLIA",
+        "display_name": "Arbitrum One Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_sepolia.png",
+        "chain_id": "421614",
+        "node_url": "https://arbitrum-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.arbiscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.arbiscan.io/address/{0}",
+        "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": "0x420000000000000000000000000000000000000F",
+            "evm_multi_call_contract": ""
+        },
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
+    },
+    "destination_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+
+        "status": "active"
+    },
+    "destination_network": {
+        "name": "ETHEREUM_SEPOLIA",
+        "display_name": "Ethereum Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_sepolia.png",
+        "chain_id": "11155111",
+        "node_url": "https://eth-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.etherscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
+        "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": null,
+            "evm_multi_call_contract": null
+        },
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
+    },
     "fail_reason": "",
     "transactions": [
         {
             "from": "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
             "to": "0xf51c208e2c37a99b13dcf01a3434cc71be8b2bdd",
             "created_date": "2023-08-30T09:07:34.213877+00:00",
-            "transaction_id": "0x529ab89f4ed2ece53ca51f52d11e5123f5e5c43c09a9d054d243de0e0829d15f",
+            "transaction_hash": "0x529ab89f4ed2ece53ca51f52d11e5123f5e5c43c09a9d054d243de0e0829d15f",
             "confirmations": 3,
             "max_confirmations": 3,
             "amount": 0.0018,
@@ -137,29 +301,83 @@ export const failedInputSwap: SwapItem = {
 
 export const failedSwapOutOfRange: SwapItem = {
     "id": "343a77b7-6a38-4918-9e10-866784b77d9f",
-    "sequence_number": 2570,
+    "metadata": {
+        "reference_id": null,
+        "app": null,
+        "sequence_number": 2570
+    },
     "requested_amount": 0.0015,
     "exchange_account_connected": false,
-    "fee": 0.000633,
-    "message": "Received amount 0.11 is higher of valid range 0.000633-0.1 swap Id 343a77b7-6a38-4918-9e10-866784b77d9f.",
-    "reference_id": undefined,
-    "app_name": "Layerswap",
-    "has_pending_deposit": false,
+    "use_deposit_address": false,
+    "source_address": "0xd11Ed17eF0F48a9941fD4A66",
     "created_date": "2023-08-29T14:16:02.389108+00:00",
     "status": SwapStatus.Failed,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
-    "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_SEPOLIA",
-    "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_SEPOLIA",
-    "has_refuel": true,
+    "source_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+
+        "status": "active"
+    },
+    "source_network": {
+        "name": "ARBITRUM_SEPOLIA",
+        "display_name": "Arbitrum One Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_sepolia.png",
+        "chain_id": "421614",
+        "node_url": "https://arbitrum-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.arbiscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.arbiscan.io/address/{0}",
+        "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": "0x420000000000000000000000000000000000000F",
+            "evm_multi_call_contract": ""
+        },
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
+    },
+    "destination_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+
+        "status": "active"
+    },
+    "destination_network": {
+        "name": "ETHEREUM_SEPOLIA",
+        "display_name": "Ethereum Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_sepolia.png",
+        "chain_id": "11155111",
+        "node_url": "https://eth-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.etherscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
+        "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": null,
+            "evm_multi_call_contract": null
+        },
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
+    },
     "fail_reason": "received_more_than_valid_range",
     "transactions": [
         {
             "from": "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
             "to": "0x21d35f8d47a20a9e652a8eb35ebcbffffa50059c",
             "created_date": "2023-08-29T14:17:14.689017+00:00",
-            "transaction_id": "0x81677f514f897fd49f5d3fab1c6e09c13aa4613cd1a98749e0f3899cd331cd7a",
+            "transaction_hash": "0x81677f514f897fd49f5d3fab1c6e09c13aa4613cd1a98749e0f3899cd331cd7a",
             "confirmations": 0,
             "max_confirmations": 3,
             "amount": 0.11,
@@ -175,7 +393,7 @@ export const failedSwapOutOfRange: SwapItem = {
             "from": "0xe66aa98b55c5a55c9af9da12fe39b8868af9a346",
             "max_confirmations": 12,
             "to": "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
-            "transaction_id": "0x673d993640252bc40e7f69291a341deea2bb5250e8b13531b9e1412e326c5c42",
+            "transaction_hash": "0x673d993640252bc40e7f69291a341deea2bb5250e8b13531b9e1412e326c5c42",
             "type": TransactionType.Refuel,
             "status": BackendTransactionStatus.Pending,
             "usd_price": 1840.02,
@@ -186,22 +404,76 @@ export const failedSwapOutOfRange: SwapItem = {
 
 export const cancelled: SwapItem = {
     "id": "343a77b7-6a38-4918-9e10-866784b77d9f",
-    "sequence_number": 2570,
+    "metadata": {
+        "reference_id": null,
+        "app": null,
+        "sequence_number": 2570
+    },
+    "use_deposit_address": false,
+    "source_address": "0xd11Ed17eF0F48a9941fD4A66",
     "requested_amount": 0.0015,
     "exchange_account_connected": false,
-    "fee": 0.000633,
-    "message": "",
-    "reference_id": undefined,
-    "app_name": "Layerswap",
-    "has_pending_deposit": false,
     "created_date": "2023-08-29T14:16:02.389108+00:00",
     "status": SwapStatus.Cancelled,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
-    "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_SEPOLIA",
-    "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_SEPOLIA",
-    "has_refuel": true,
+    "source_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+
+        "status": "active"
+    },
+    "source_network": {
+        "name": "ARBITRUM_SEPOLIA",
+        "display_name": "Arbitrum One Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_sepolia.png",
+        "chain_id": "421614",
+        "node_url": "https://arbitrum-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.arbiscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.arbiscan.io/address/{0}",
+        "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": "0x420000000000000000000000000000000000000F",
+            "evm_multi_call_contract": ""
+        },
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
+    },
+    "destination_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+
+        "status": "active"
+    },
+    "destination_network": {
+        "name": "ETHEREUM_SEPOLIA",
+        "display_name": "Ethereum Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_sepolia.png",
+        "chain_id": "11155111",
+        "node_url": "https://eth-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.etherscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
+        "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": null,
+            "evm_multi_call_contract": null
+        },
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
+    },
     "fail_reason": "",
     "transactions": [
 
@@ -210,22 +482,76 @@ export const cancelled: SwapItem = {
 
 export const expired: SwapItem = {
     "id": "343a77b7-6a38-4918-9e10-866784b77d9f",
-    "sequence_number": 2570,
+    "metadata": {
+        "reference_id": null,
+        "app": null,
+        "sequence_number": 2570
+    },
+    "source_address": "0x42c03fC8fd30d11Ed17eF0F48a9941fD4A66svsv",
     "requested_amount": 0.0015,
+    "use_deposit_address": false,
     "exchange_account_connected": false,
-    "fee": 0.000633,
-    "message": "",
-    "reference_id": undefined,
-    "app_name": "Layerswap",
-    "has_pending_deposit": false,
     "created_date": "2023-08-29T14:16:02.389108+00:00",
     "status": SwapStatus.Expired,
     "destination_address": "0x142c03fC8fd30d11Ed17eF0F48a9941fD4A66953",
-    "source_network_asset": "ETH",
-    "source_network": "ETHEREUM_SEPOLIA",
-    "destination_network_asset": "ETH",
-    "destination_network": "ARBITRUM_SEPOLIA",
-    "has_refuel": true,
+    "source_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+
+        "status": "active"
+    },
+    "source_network": {
+        "name": "ARBITRUM_SEPOLIA",
+        "display_name": "Arbitrum One Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/arbitrum_sepolia.png",
+        "chain_id": "421614",
+        "node_url": "https://arbitrum-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.arbiscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.arbiscan.io/address/{0}",
+        "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": "0x420000000000000000000000000000000000000F",
+            "evm_multi_call_contract": ""
+        },
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
+    },
+    "destination_token": {
+        "symbol": "",
+        "logo": "",
+        "contract": "",
+        "decimals": 18,
+        "price_in_usd": 2,
+        "precision": 6,
+
+        "status": "active"
+    },
+    "destination_network": {
+        "name": "ETHEREUM_SEPOLIA",
+        "display_name": "Ethereum Sepolia",
+        "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/ethereum_sepolia.png",
+        "chain_id": "11155111",
+        "node_url": "https://eth-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
+        "type": NetworkType.EVM,
+        "transaction_explorer_template": "https://sepolia.etherscan.io/tx/{0}",
+        "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
+        "metadata": {
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+            "evm_oracle_contract": null,
+            "evm_multi_call_contract": null
+        },
+        "deposit_methods": [
+            "Wallet",
+            "DepositAddress"
+        ]
+    },
     "fail_reason": "",
     "transactions": [
 

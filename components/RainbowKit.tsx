@@ -11,10 +11,11 @@ import { publicProvider } from 'wagmi/providers/public';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitgetWallet, argentWallet, phantomWallet } from '@rainbow-me/rainbowkit/wallets';
 import { useSettingsState } from "../context/settings";
 import { Chain, WagmiConfig, configureChains, createConfig, mainnet } from "wagmi";
-import { NetworkType } from "../Models/CryptoNetwork";
+import { NetworkType } from "../Models/Network";
 import resolveChain from "../lib/resolveChain";
 import React from "react";
 import AddressIcon from "./AddressIcon";
+import NetworkSettings from "../lib/NetworkSettings";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -23,17 +24,18 @@ type Props = {
 function RainbowKitComponent({ children }: Props) {
     const settings = useSettingsState();
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
-    const settingsChains = settings?.layers
-        .sort((a, b) => Number(a.chain_id) - Number(b.chain_id))
+    const settingsChains = settings?.networks
+        .sort((a, b) => (NetworkSettings.KnownSettings[a.name]?.ChainOrder || Number(a.chain_id)) - (NetworkSettings.KnownSettings[b.name]?.ChainOrder || Number(b.chain_id)))
         .filter(net => net.type === NetworkType.EVM
-            && net.nodes?.some(n => n.url?.length > 0)
-            && net.assets.some(a=>a.is_native))
+            && net.node_url
+            && net.token)
         .map(resolveChain).filter(isChain)
 
     const { chains, publicClient } = configureChains(
         settingsChains?.length > 0 ? settingsChains : [mainnet],
         [publicProvider()]
     );
+
     let chainExceptZkSyncEra = chains.filter(x => x.id != 324);
     const projectId = WALLETCONNECT_PROJECT_ID;
     const connectors = connectorsForWallets([
