@@ -66,7 +66,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
         }
     }, [inputTxStatus])
 
-    const truncatedRefuelAmount = truncateDecimals(refuel.amount, refuel.token?.precision)
+    const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 
     const progressStatuses = getProgressStatuses(swapResponse, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
@@ -194,15 +194,15 @@ const Processing: FC<Props> = ({ swapResponse }) => {
         },
         "refuel": {
             upcoming: {
-                name: `Sending ${refuel.token?.symbol} to your address`,
+                name: `Sending ${refuel?.token?.symbol} to your address`,
                 description: null
             },
             current: {
-                name: `Sending ${refuel.token?.symbol} to your address`,
+                name: `Sending ${refuel?.token?.symbol} to your address`,
                 description: null
             },
             complete: {
-                name: `${truncatedRefuelAmount} ${refuel.token?.symbol} was sent to your address`,
+                name: `${truncatedRefuelAmount} ${refuel?.token?.symbol} was sent to your address`,
                 description: <div className='flex items-center space-x-1'>
                     <span>Transaction: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
