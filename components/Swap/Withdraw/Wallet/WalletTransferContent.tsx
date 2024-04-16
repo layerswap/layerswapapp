@@ -33,9 +33,9 @@ export const WalletTransferContent: FC = () => {
     const sourceIsSolana = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
         || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaDevnet?.toUpperCase();
 
-    const depositAddress = deposit_actions?.find(da => da.type == 'transfer')?.to_address;
-    const amount = deposit_actions?.find(da => da.type == 'transfer')?.amount || 0;
-    const callData = deposit_actions?.find(da => da.type == 'transfer')?.call_data;
+    const depositAddress = deposit_actions?.find(da => true)?.to_address;
+    const amount = deposit_actions?.find(da => true)?.amount || 0;
+    const callData = deposit_actions?.find(da => true)?.call_data;
 
     if (sourceIsImmutableX)
         return <ImtblxWalletWithdrawStep

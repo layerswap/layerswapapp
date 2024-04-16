@@ -89,7 +89,7 @@ type TransferProps = {
     token: Token,
     depositAddress: `0x${string}`,
     amount: string,
-    call_data: string
+    call_data: string | undefined
 }
 
 type TransferApiRes = {
@@ -144,7 +144,7 @@ export async function transfer
             volume: fee,
         },
         validUntil: Math.round(Date.now() / 1000) + 30 * 86400,
-        memo: call_data,
+        ...(call_data ? { memo: call_data } : {}),
     }
 
     return await submitInternalTransfer(req, apiKey, eddsaKey.sk)

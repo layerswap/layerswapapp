@@ -25,7 +25,7 @@ const WalletTransferContent: FC = () => {
     }, [source_network, getProvider])
 
     const wallet = provider?.getConnectedWallet()
-    const depositAddress = deposit_actions?.find(da => da.type == 'transfer')?.to_address
+    const depositAddress = deposit_actions?.find(da => true)?.to_address
 
     const { balances, isBalanceLoading } = useBalancesState()
     const { fetchBalance, fetchGas } = useBalance()

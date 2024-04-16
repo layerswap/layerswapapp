@@ -17,7 +17,7 @@ const ManualTransfer: FC = () => {
     const { swap, deposit_actions } = swapResponse || {}
     const hintsStore = useSwapDepositHintClicked()
     const hintClicked = hintsStore.swapTransactions[swap?.id || ""]
-    const trasnsferACtionData = deposit_actions?.find(a => a.type=='manual_transfer')
+    const trasnsferACtionData = deposit_actions?.find(a => true)
 
     let generatedDepositAddress = trasnsferACtionData?.to_address
 
