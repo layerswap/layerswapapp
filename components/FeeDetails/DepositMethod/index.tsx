@@ -1,9 +1,11 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect } from "react";
+import React, { FC, useCallback, useEffect } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../../shadcn/select";
 import { Network } from "../../../Models/Network";
 import FeeDetails from "../FeeDetailsComponent";
+import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
+import WalletIcon from "../../icons/WalletIcon";
 
 const DepositMethodComponent: FC = () => {
     const {
@@ -35,64 +37,68 @@ const DepositMethodComponent: FC = () => {
         setFieldValue(name, item, true)
     }, [name, depositMethod, menuItems])
 
+    const selectedMethod = menuItems?.find(i => i.id === depositMethod)?.display_name
+
     return (
-        <div className="relative w-full">
-            <div className="flex items-center justify-between w-full">
-                <div className="text-secondary-text">
-                    Deposit method
-                </div>
-                <div>
-                    {
-                        menuItems && (menuItems?.length > 1 ?
-                            <Select onValueChange={handleSelect} value={depositMethod}>
-                                <SelectTrigger className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        {depositMethods?.map(item => (
-                                            <SelectItem key={item.id} value={item.id}>
-                                                <div className="flex items-center !text-primary-text !font-semibold">
-                                                    <div className="mx-1 block">{item.display_name}</div>
-                                                </div>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
-                            :
-                            <div className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
-                                {depositMethods.find(m => m.id === depositMethod)?.display_name}
-                            </div>
-                        )
-                    }
-                </div>
-            </div>
+
+        <div className="relative w-full mb-1.5">
+            <Popover>
+                <PopoverTrigger className="block font-semibold text-secondary-text text-xs">
+                    Deposit method <span>{selectedMethod}</span>
+                </PopoverTrigger>
+                <PopoverContent className='text-sm p-2 bg-secondary-900' align="start">
+                    <DepositMethod 
+                        icon={<WalletIcon 
+                        strokeWidth={2} className="w-4" />} description="Lorem ipsum" title="Wallet" selected={true} 
+                    />
+                    <DepositMethod icon description="Lorem ipsum " title="Deposit mode" selected={false} />
+                </PopoverContent>
+            </Popover>
         </div>
 
     )
 };
 
-const DepositMethod = () => {
+type DespositMethodItemProps = {
+    icon: React.ReactNode;
+    title: string;
+    description: string;
+    selected: boolean;
+}
 
-    const {
-        values,
-        setFieldValue,
-    } = useFormikContext<SwapFormValues>();
-    const { fromExchange } = values
-    const name = 'depositMethod'
-
-    useEffect(() => {
-        if (fromExchange) setFieldValue(name, 'deposit_address', true)
-    }, [fromExchange])
-
+const DepositMethod: FC<DespositMethodItemProps> = ({
+    icon,
+    title,
+    description,
+    selected
+}) => {
     return (
-        !fromExchange ?
-            <DepositMethodComponent />
-            :
-            <></>
+        <div className="p-2 bg-secondary-700 flex">
+            <div className="grid grid-cols-8">
+                <div className="">
+                    {icon}
+                </div>
+                <div className=" col-span-7 ">
+                    <div className="font-semibold text-secondary-text text-xs">
+                        {title}
+                    </div>
+                    <div className="text-secondary-text text-xs">
+                        {description}
+                    </div>
+                </div>
+            </div>
+            {
+                selected &&
+                <div className="flex items-center justify-center">
+                    <svg className="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+            }
+        </div>
     )
 }
+
 
 type DepositMethod = {
     id: string,
@@ -105,6 +111,7 @@ function GenerateDepositMethodMenuItems(network: Network, depositMethods: Deposi
         id: m,
         display_name: depositMethods.find(dp => dp.id === m)?.display_name!
     }));
+
 }
 
-export default DepositMethod
+export default DepositMethodComponent

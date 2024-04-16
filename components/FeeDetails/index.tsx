@@ -10,14 +10,17 @@ import ResizablePanel from '../ResizablePanel';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import DepositMethod from './DepositMethod';
+<<<<<<< Updated upstream
 import Campaign from './Campaign';
+=======
+>>>>>>> Stashed changes
 
 const RefuelModal = dynamic(() => import("./RefuelModal"), {
     loading: () => <></>,
 });
 
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
-    const { toCurrency, refuel, toExchange } = values || {};
+    const { toCurrency, refuel, toExchange, from, to, fromCurrency, fromExchange } = values || {};
     const { fee, isFeeLoading } = useFee()
     const query = useQueryState();
     const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false)
@@ -25,8 +28,13 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
     return (
         <>
             <ResizablePanel>
-                <FeeDetails>
 
+                {
+                    from && to && toCurrency && fromCurrency && !fromExchange &&
+                    <DepositMethod />
+                }
+                
+                <FeeDetails>
                     {
                         toCurrency?.refuel && !query.hideRefuel && !toExchange &&
                         <FeeDetails.Item>

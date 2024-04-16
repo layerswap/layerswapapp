@@ -246,10 +246,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                             : <></>
                     }
                     <div className="w-full">
-                    {
-                        source && destination && toCurrency && fromCurrency &&
-                        <DepositMethod />
-                    }
                         <FeeDetailsComponent values={values} />
                         {
                             values.amount &&
