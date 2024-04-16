@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Network, Token } from "../../Models/Network";
+import { Token } from "../../Models/Network";
 import { Fuel } from "lucide-react";
 import { Quote } from "../../lib/layerSwapApiClient";
 
