@@ -264,12 +264,12 @@ const Processing: FC<Props> = ({ swapResponse }) => {
                                     <span className="font-medium text-primary-text">
                                         {progressStatuses.generalStatus.title}
                                     </span>
-                                    {!swapInputTransaction && 
+                                    {!swapInputTransaction && (swap?.status !== SwapStatus.Cancelled && swap?.status !== SwapStatus.Expired && swap?.status !== SwapStatus.Failed) &&
                                         <span className='text-sm block space-x-1 text-secondary-text'>
                                             <span>{outputPendingDetails}</span>
                                         </span>
                                     }
-                                    {swapInputTransaction?.timestamp && swapOutputTransaction?.status != BackendTransactionStatus.Completed &&
+                                    {swapInputTransaction?.timestamp && swapOutputTransaction?.status != BackendTransactionStatus.Completed && (swap?.status !== SwapStatus.Cancelled && swap?.status !== SwapStatus.Expired && swap?.status !== SwapStatus.Failed) &&
                                         <span className='text-sm block space-x-1 text-secondary-text'>
                                             <span>{swapInputTransaction?.timestamp && countDownTimer}</span>
                                         </span>
