@@ -26,7 +26,7 @@ function MaintananceContent(props) {
                         <p className="mb-4 text-primary-text">
                             We&apos;re upgrading our systems and infrastructure to give you the best experience yet. 
                         </p>
-                        <span className="block font-bold text-3xl xl:inline">We&apos;ll be back at 18:00 UTC</span>
+                        <span className="block font-bold text-3xl xl:inline">We&apos;ll be back at 15:00 UTC</span>
                         <p className="mt-4 text-primary-text">
                             Any pending swaps will be completed after maintenance.
                         </p>
