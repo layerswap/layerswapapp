@@ -15,7 +15,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ destination_token, refuel
     const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(destination_token?.precision) || "")
 
     const receiveAmountInUsd = receive_amount && destination_token ? (destination_token?.price_in_usd * receive_amount).toFixed(2) : undefined
-debugger
+
     return <div className="flex items-start justify-between w-full">
         <span className="md:font-semibold text-sm md:text-base text-primary-buttonTextColor leading-8 md:leading-8 flex-1">
             <span>

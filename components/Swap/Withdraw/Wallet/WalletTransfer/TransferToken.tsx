@@ -118,7 +118,6 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
             <>
                 <ButtonWrapper
                     clcikHandler={clickHandler}
-                    // disabled={sendTransactionPrepare?.isLoading || !isContractWallet?.ready}
                     icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 >
                     {(isError && buttonClicked) ? <span>Try again</span>

@@ -25,13 +25,13 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
     return (
         <>
             <ResizablePanel>
+
+                {
+                    from && to && toCurrency && fromCurrency &&
+                    <DepositMethod />
+                }
+                
                 <FeeDetails>
-
-                    {
-                        from && to && toCurrency && fromCurrency &&
-                        <DepositMethod />
-                    }
-
                     {
                         toCurrency?.refuel && !query.hideRefuel && !toExchange &&
                         <FeeDetails.Item>

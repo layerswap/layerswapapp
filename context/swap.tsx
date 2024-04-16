@@ -18,7 +18,6 @@ export const SwapDataStateContext = createContext<SwapData>({
     depositeAddressIsfromAccount: false,
     withdrawType: undefined,
     swapTransaction: undefined,
-    selectedAssetNetwork: undefined,
 });
 
 export const SwapDataUpdateContext = createContext<UpdateInterface | null>(null);
@@ -31,7 +30,6 @@ export type UpdateInterface = {
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
     setDepositeAddressIsfromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
-    setSelectedAssetNetwork: (assetNetwork: Token) => void
     setSwapId: (value: string) => void
 }
 
@@ -43,7 +41,6 @@ export type SwapData = {
     depositeAddressIsfromAccount: boolean,
     withdrawType: WithdrawType | undefined,
     swapTransaction: SwapTransaction | undefined,
-    selectedAssetNetwork: Token | undefined,
 }
 
 export function SwapDataProvider({ children }) {
@@ -53,7 +50,6 @@ export function SwapDataProvider({ children }) {
     const [depositeAddressIsfromAccount, setDepositeAddressIsfromAccount] = useState<boolean>()
     const router = useRouter();
     const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
-    const { networks: layers } = useSettingsState()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}`
@@ -63,12 +59,6 @@ export function SwapDataProvider({ children }) {
     const swapResponse = swapData?.data
 
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
-    const source_exchange = layers.find(n => n?.name?.toLowerCase() === swapResponse?.swap.source_exchange?.name.toLowerCase())
-
-    const exchangeAssets = source_exchange?.tokens?.filter(a => a?.symbol === swapResponse?.swap.source_token.symbol)
-    const source_network = layers.find(n => n.name?.toLowerCase() === swapResponse?.swap.source_network?.name.toLowerCase())
-    const defaultSourceNetwork = exchangeAssets?.[0] || source_network?.tokens?.[0]
-    const [selectedAssetNetwork, setSelectedAssetNetwork] = useState<Token | undefined>(defaultSourceNetwork)
 
     const swapStatus = swapResponse?.swap.status;
     useEffect(() => {
@@ -76,10 +66,6 @@ export function SwapDataProvider({ children }) {
             setInterval(ResolvePollingInterval(swapStatus))
         return () => setInterval(0)
     }, [swapStatus])
-
-    useEffect(() => {
-        setSelectedAssetNetwork(defaultSourceNetwork)
-    }, [defaultSourceNetwork])
 
     useEffect(() => {
         if (!swapId)
@@ -136,7 +122,6 @@ export function SwapDataProvider({ children }) {
         mutateSwap: mutate,
         setDepositeAddressIsfromAccount,
         setWithdrawType,
-        setSelectedAssetNetwork,
         setSwapId
     };
     return (
@@ -145,7 +130,6 @@ export function SwapDataProvider({ children }) {
             codeRequested,
             addressConfirmed,
             swapTransaction,
-            selectedAssetNetwork,
             depositeAddressIsfromAccount: !!depositeAddressIsfromAccount,
             swapResponse: swapResponse,
             swapApiError: error,

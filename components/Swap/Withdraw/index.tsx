@@ -29,6 +29,7 @@ const Withdraw: FC = () => {
         content?: JSX.Element | JSX.Element[],
         footer?: JSX.Element | JSX.Element[],
     } = {}
+
     if (swap?.use_deposit_address === false) {
         withdraw = {
             content: <WalletTransferContent />,
@@ -40,17 +41,17 @@ const Withdraw: FC = () => {
             content: <></>
         }
     }
-
-    if (isImtblMarketplace || sourceIsSynquote) {
-        withdraw = {
-            content: <External />
-        }
-    }
-
+    
     if (sourceIsStarknet || sourceIsImmutableX) {
         withdraw = {
             content: <WalletTransferContent />,
             footer: <WalletTransfer />
+        }
+    }
+
+    if (isImtblMarketplace || sourceIsSynquote) {
+        withdraw = {
+            content: <External />
         }
     }
 

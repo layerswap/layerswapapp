@@ -4,16 +4,13 @@ import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
-import AverageCompletionTime from '../../../Common/AverageCompletionTime';
 import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapResponse, Transaction } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
-import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { SwapFailReasons } from '../../../../Models/RangeError';
 import { Gauge } from '../../../gauge';
 import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
-import { useFee } from '../../../../context/feeContext';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import FormattedAverageCompletionTime from '../../../Common/FormattedAverageCompletionTime';
 import CountdownTimer from '../../../Common/CountDownTimer';
@@ -69,11 +66,6 @@ const Processing: FC<Props> = ({ swapResponse }) => {
     
     const progressStatuses = getProgressStatuses(swapResponse, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
-
-    const renderingError = new Error("Transaction is taking longer than expected");
-    renderingError.name = `LongTransactionError`;
-    renderingError.cause = renderingError;
-    datadogRum.addError(renderingError);
 
     const outputPendingDetails = quote?.avg_completion_time && <div className='flex items-center space-x-1'>
         <span>Estimated time:</span>
