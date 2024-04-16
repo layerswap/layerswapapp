@@ -181,7 +181,7 @@ export type DepositAction = {
     to_address?: `0x${string}`,
     token: Token,
     fee_token: Token,
-    type: 'transfer',
+    type: 'transfer' | 'manual_transfer',
 }
 
 export type Quote = {
