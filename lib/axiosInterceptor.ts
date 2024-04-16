@@ -2,6 +2,7 @@ import axios from "axios";
 import { parseJwt } from "./jwtParser";
 import TokenService from "./TokenService";
 import { AuthRefreshFailedError } from './Errors/AuthRefreshFailedError';
+import LayerSwapApiClient from "./layerSwapApiClient";
 
 type TokenStates = {
     AccessTokenExpires: number;
@@ -69,7 +70,7 @@ export const InitializeAuthInstance = (baseURL?: string) => {
             }
 
             let token = TokenService.getAuthData()?.access_token;
-            const apiKey = process.env.NEXT_PUBLIC_API_KEY
+            const apiKey = LayerSwapApiClient.apiKey
 
             if (apiKey) {
                 config.headers["X-LS-APIKEY"] = apiKey
@@ -135,7 +136,7 @@ export const InitializeUnauthInstance = (baseURL?: string) => {
 
     instance.interceptors.request.use(
         async (config) => {
-            const apiKey = process.env.NEXT_PUBLIC_API_KEY
+            const apiKey = LayerSwapApiClient.apiKey
 
             if (apiKey) {
                 config.headers["X-LS-APIKEY"] = apiKey
