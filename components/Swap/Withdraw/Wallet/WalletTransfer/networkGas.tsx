@@ -25,7 +25,7 @@ const NetworkGas: FC<NetworkGasProps> = ({ token, network }) => {
         <Fuel className="h-4 w-4 text-secondary-text" />
         <p className="text-secondary-text">Estimated gas:</p>
         <div className="text-right flex items-center gap-1">
-            {isGasLoading ? <div className='h-[10px] w-10 bg-gray-500 rounded-sm animate-pulse' /> : estimatedGas} <span>{token?.symbol ?? token.symbol}</span>
+            {isGasLoading ? <div className='h-[10px] w-10 bg-gray-500 rounded-sm animate-pulse' /> : estimatedGas} <span>{token?.symbol}</span>
         </div>
     </div>
 }
