@@ -72,8 +72,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
     const handleTransfer = useCallback(async () => {
         setLoading(true)
         try {
-
-            if (!swapId || !accInfo || !unlockedAccount || !token || !callData || !amount)
+            if (!swapId || !accInfo || !unlockedAccount || !token || !amount)
                 return
 
             const transferResult = await LoopringAPI.userAPI.transfer({
@@ -97,7 +96,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
                 toast(e.message)
         }
         setLoading(false)
-    }, [swapId, network, depositAddress, accInfo, unlockedAccount, token])
+    }, [swapId, network, depositAddress, accInfo, unlockedAccount, token, amount])
 
     if (noAccount) {
         //TODO fix text
