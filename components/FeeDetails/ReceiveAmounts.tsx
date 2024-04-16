@@ -15,7 +15,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ destination_token, refuel
     const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(destination_token?.precision) || "")
 
     const receiveAmountInUsd = receive_amount && destination_token ? (destination_token?.price_in_usd * receive_amount).toFixed(2) : undefined
-
+debugger
     return <div className="flex items-start justify-between w-full">
         <span className="md:font-semibold text-sm md:text-base text-primary-buttonTextColor leading-8 md:leading-8 flex-1">
             <span>
@@ -46,7 +46,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ destination_token, refuel
                                     </p>
                                 </div>
                                 {
-                                    refuel ?
+                                    refuel && fee?.refuel?.amount ?
                                         <p onClick={() => onButtonClick()} className='flex cursor-pointer justify-end rounded-md gap-1 items-center text-xs text-primary-buttonTextColor leading-8 md:leading-none font-semibold'>
                                             <span>+</span> <span>{fee?.refuel?.amount} {fee?.refuel?.token?.symbol}</span> <span className="bg-primary/20 p-1 rounded-md"><Fuel className="h-3 w-3 text-primary" /></span>
                                         </p>
