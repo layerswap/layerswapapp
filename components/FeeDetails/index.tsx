@@ -30,7 +30,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                     from && to && toCurrency && fromCurrency &&
                     <DepositMethod />
                 }
-                
+
                 <FeeDetails>
                     {
                         toCurrency?.refuel && !query.hideRefuel && !toExchange &&
@@ -56,17 +56,17 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                         />
                     </FeeDetails.Item>
 
+                    {
+                        values.to &&
+                        values.toCurrency &&
+                        <Campaign
+                            destination={values.to}
+                            reward={fee?.reward}
+                        />
+                    }
+
                 </FeeDetails>
             </ResizablePanel>
-
-            {
-                values.to &&
-                values.toCurrency &&
-                <Campaign
-                    destination={values.to}
-                    reward={fee?.reward}
-                />
-            }
 
             <RefuelModal values={values} openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} fee={fee} />
 
