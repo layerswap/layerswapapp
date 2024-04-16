@@ -31,7 +31,7 @@ export const getServerSideProps = async (ctx) => {
       }
     }
   }
-  const app = ctx.query?.appName
+  const app = ctx.query?.appName || ctx.query?.addressSource
   const apiKey = JSON.parse(process.env.API_KEYS || "{}")?.[app] || process.env.NEXT_PUBLIC_API_KEY
   LayerSwapApiClient.apiKey = apiKey
   const apiClient = new LayerSwapApiClient()

@@ -8,7 +8,7 @@ export async function getServerSideProps(context) {
         's-maxage=60, stale-while-revalidate'
     );
 
-    const app = context.query?.appName
+    const app = context.query?.appName || context.query?.addressSource
     const apiKey = JSON.parse(process.env.API_KEYS || "{}")?.[app] || process.env.NEXT_PUBLIC_API_KEY
     LayerSwapApiClient.apiKey = apiKey
     const apiClient = new LayerSwapApiClient()
