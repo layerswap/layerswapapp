@@ -10,10 +10,7 @@ import ResizablePanel from '../ResizablePanel';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import DepositMethod from './DepositMethod';
-<<<<<<< Updated upstream
 import Campaign from './Campaign';
-=======
->>>>>>> Stashed changes
 
 const RefuelModal = dynamic(() => import("./RefuelModal"), {
     loading: () => <></>,

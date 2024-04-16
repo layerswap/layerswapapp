@@ -1,17 +1,23 @@
 import { useFormikContext } from "formik";
-import React, { FC, useCallback, useEffect } from "react";
+import React, { FC, useCallback, useEffect, useState } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../../shadcn/select";
 import { Network } from "../../../Models/Network";
-import FeeDetails from "../FeeDetailsComponent";
 import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
 import WalletIcon from "../../icons/WalletIcon";
+import { AlignLeft, ChevronDown, ChevronUp } from "lucide-react"
+import { motion } from "framer-motion";
+
+const variants = {
+    open: { rotate: 180 },
+    closed: { rotate: 0 },
+}
 
 const DepositMethodComponent: FC = () => {
     const {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
+    const [open, setOpen] = useState<boolean>();
 
     const { from, depositMethod } = values
     const name = 'depositMethod'
@@ -35,6 +41,7 @@ const DepositMethodComponent: FC = () => {
 
     const handleSelect = useCallback((item: string) => {
         setFieldValue(name, item, true)
+        setOpen(false)
     }, [name, depositMethod, menuItems])
 
     const selectedMethod = menuItems?.find(i => i.id === depositMethod)?.display_name
@@ -42,16 +49,31 @@ const DepositMethodComponent: FC = () => {
     return (
 
         <div className="relative w-full mb-1.5">
-            <Popover>
-                <PopoverTrigger className="block font-semibold text-secondary-text text-xs">
-                    Deposit method <span>{selectedMethod}</span>
+            <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1">
+                    <span> Transfer by </span> <span>{selectedMethod?.toLowerCase()}</span> <motion.div
+                        animate={open ? "open" : "closed"}
+                        variants={variants}
+                    >
+                        <ChevronDown className=" w-4 h-4 " />
+                    </motion.div>
                 </PopoverTrigger>
-                <PopoverContent className='text-sm p-2 bg-secondary-900' align="start">
-                    <DepositMethod 
-                        icon={<WalletIcon 
-                        strokeWidth={2} className="w-4" />} description="Lorem ipsum" title="Wallet" selected={true} 
+                <PopoverContent className=' ml-2 mt-1 text-sm p-2 max-w border-none rounded-xl bg-secondary-800 max-w-72 md:max-w-96' align="start">
+                    <DepositMethod
+                        onselect={handleSelect}
+                        value="wallet"
+                        icon={<WalletIcon
+                            strokeWidth={2} className="w-6 h-6" />}
+                        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+                        title="Wallet"
+                        selectedValue={depositMethod}
                     />
-                    <DepositMethod icon description="Lorem ipsum " title="Deposit mode" selected={false} />
+                    <DepositMethod
+                        onselect={handleSelect}
+                        value="deposit_address"
+                        icon={<AlignLeft strokeWidth={2} className="w-6 h-6" />} description="Lorem ipsum dolor sit amet, consectetur adipiscing elit." title="Deposit address"
+                        selectedValue={depositMethod}
+                    />
                 </PopoverContent>
             </Popover>
         </div>
@@ -63,26 +85,31 @@ type DespositMethodItemProps = {
     icon: React.ReactNode;
     title: string;
     description: string;
-    selected: boolean;
+    selectedValue: string | undefined;
+    value: string;
+    onselect: (value: string) => void;
 }
 
 const DepositMethod: FC<DespositMethodItemProps> = ({
     icon,
     title,
     description,
-    selected
+    selectedValue,
+    value,
+    onselect
 }) => {
+    const selected = selectedValue === value
     return (
-        <div className="p-2 bg-secondary-700 flex">
-            <div className="grid grid-cols-8">
-                <div className="">
+        <div className={`p-3 ${selected ? 'bg-secondary-500 text-secondary-text' : 'text-primary-text-placeholder'} flex rounded-lg cursor-pointer`} onClick={() => onselect(value)}>
+            <div className="grid grid-cols-8 gap-2">
+                <div>
                     {icon}
                 </div>
                 <div className=" col-span-7 ">
-                    <div className="font-semibold text-secondary-text text-xs">
+                    <div className={`font-semibold text-base`}>
                         {title}
                     </div>
-                    <div className="text-secondary-text text-xs">
+                    <div className="text-primary-text-muted text-xs">
                         {description}
                     </div>
                 </div>
@@ -90,7 +117,7 @@ const DepositMethod: FC<DespositMethodItemProps> = ({
             {
                 selected &&
                 <div className="flex items-center justify-center">
-                    <svg className="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                     </svg>
                 </div>
