@@ -21,8 +21,6 @@ const SwapSummary: FC = () => {
 
     const { source_network, destination_network, source_token, destination_token } = swap || {}
 
-    const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
-
     const sourceExchange = exchanges.find(e => e.name === swap?.source_exchange?.name)
     const destExchange = exchanges.find(e => e.name === swap?.destination_exchange?.name)
 
@@ -40,19 +38,7 @@ const SwapSummary: FC = () => {
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
-    let min_amount: number | undefined
-
-    // Discuss with Babken dzyadzya
-    if (isContractWallet?.ready) {
-        if (withdrawType === WithdrawType.Wallet && canDoSweepless) {
-            min_amount = swapQuote?.min_receive_amount;
-        } else {
-            min_amount = swapQuote?.min_receive_amount;
-        }
-    }
-
-    const requested_amount = (swapInputTransaction?.amount ??
-        (Number(min_amount) > Number(swap.requested_amount) ? min_amount : swap.requested_amount)) || undefined
+    const requested_amount = (swapInputTransaction?.amount ?? swap.requested_amount) || undefined
 
     const receiveAmount = swapQuote?.receive_amount
     const calculatedReceiveAmount = swapOutputTransaction?.amount ?? receiveAmount

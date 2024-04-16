@@ -59,7 +59,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         currencyGroup
     } = values
 
-    const { minAllowedAmount, valuesChanger, fee } = useFee()
+    const { minAllowedAmount, valuesChanger } = useFee()
     const toAsset = values.toCurrency
     const fromAsset = values.fromCurrency
 

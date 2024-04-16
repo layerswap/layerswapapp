@@ -57,7 +57,7 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
                 swap.status === SwapStatus.Completed && (!countdown || countdown === "00:00:00") ?
                     ""
                     :
-                    <div className='text-secondary-text flex items-center'><span>Time remaining:</span> <span className='text-primary-text ml-0.5'>{countdown ? countdown : <div className="h-[10px] mt-1 w-16 ml-1 animate-pulse rounded bg-gray-500" />}</span></div>
+                    <div className='text-secondary-text flex items-center'><span>Estimated time:</span> <span className='text-primary-text ml-0.5'>{countdown ? countdown : <div className="h-[10px] mt-1 w-16 ml-1 animate-pulse rounded bg-gray-500" />}</span></div>
             }
         </div>
 
