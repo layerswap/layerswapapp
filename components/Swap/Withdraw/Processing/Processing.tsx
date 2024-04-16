@@ -67,11 +67,6 @@ const Processing: FC<Props> = ({ swapResponse }) => {
     const progressStatuses = getProgressStatuses(swapResponse, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
-    const renderingError = new Error("Transaction is taking longer than expected");
-    renderingError.name = `LongTransactionError`;
-    renderingError.cause = renderingError;
-    datadogRum.addError(renderingError);
-
     const outputPendingDetails = quote?.avg_completion_time && <div className='flex items-center space-x-1'>
         <span>Estimated time:</span>
         <div className='text-primary-text'>
