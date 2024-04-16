@@ -249,18 +249,6 @@ const Processing: FC<Props> = ({ swapResponse }) => {
                     <div className="bg-secondary-700 font-normal px-3 py-6 rounded-lg flex flex-col border border-secondary-500 w-full relative z-10 divide-y-2 divide-secondary-500 divide-dashed">
                         <div className='pb-4'>
                             <div className='flex flex-col gap-2 items-center'>
-
-                                {
-                                    false ?
-                                        <span className='text-sm block space-x-1 text-secondary-text'>
-                                            <span>{outputPendingDetails}</span>
-                                        </span>
-                                        :
-                                        <span className='text-sm block space-x-1 text-secondary-text'>
-                                            <span>{countDownTimer}</span>
-                                        </span>
-                                }
-
                                 <div className='flex items-center'>
                                     <Gauge value={stepsProgressPercentage} size="small" showCheckmark={swap?.status === SwapStatus.Completed} />
                                 </div>
