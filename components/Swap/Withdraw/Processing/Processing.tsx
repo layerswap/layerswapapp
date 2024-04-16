@@ -27,10 +27,9 @@ type Props = {
 
 const Processing: FC<Props> = ({ swapResponse }) => {
 
-    const { swap, refuel } = swapResponse
+    const { swap, refuel, quote } = swapResponse
 
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
-    const { fee } = useFee()
 
     const {
         source_network,
@@ -67,7 +66,6 @@ const Processing: FC<Props> = ({ swapResponse }) => {
     }, [inputTxStatus])
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
-    let inputIsCompleted = swapInputTransaction && swapInputTransaction.confirmations >= swapInputTransaction.max_confirmations;
     
     const progressStatuses = getProgressStatuses(swapResponse, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
@@ -77,16 +75,16 @@ const Processing: FC<Props> = ({ swapResponse }) => {
     renderingError.cause = renderingError;
     datadogRum.addError(renderingError);
 
-    const outputPendingDetails = <div className='flex items-center space-x-1'>
-        <span>Estimated arrival after confirmation:</span>
+    const outputPendingDetails = quote?.avg_completion_time && <div className='flex items-center space-x-1'>
+        <span>Estimated time:</span>
         <div className='text-primary-text'>
-            <FormattedAverageCompletionTime avgCompletionTime={fee?.quote.avg_completion_time} />
+            <FormattedAverageCompletionTime avgCompletionTime={quote?.avg_completion_time} />
         </div>
     </div>
 
-    const countDownTimer = <div className='flex items-center space-x-1'>
+    const countDownTimer = quote?.avg_completion_time && <div className='flex items-center space-x-1'>
         <div className='text-primary-text'>
-            <CountdownTimer initialTime={String(fee?.quote.avg_completion_time)} swap={swap} />
+            <CountdownTimer initialTime={String(quote?.avg_completion_time)} swap={swap} />
         </div>
     </div>
 
@@ -266,12 +264,12 @@ const Processing: FC<Props> = ({ swapResponse }) => {
                                     <span className="font-medium text-primary-text">
                                         {progressStatuses.generalStatus.title}
                                     </span>
-                                    {!inputIsCompleted && 
+                                    {!swapInputTransaction && 
                                         <span className='text-sm block space-x-1 text-secondary-text'>
                                             <span>{outputPendingDetails}</span>
                                         </span>
                                     }
-                                    {inputIsCompleted && swapOutputTransaction?.status != BackendTransactionStatus.Completed &&
+                                    {swapInputTransaction?.timestamp && swapOutputTransaction?.status != BackendTransactionStatus.Completed &&
                                         <span className='text-sm block space-x-1 text-secondary-text'>
                                             <span>{swapInputTransaction?.timestamp && countDownTimer}</span>
                                         </span>
