@@ -263,7 +263,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
                                     }
                                     {swapInputTransaction?.timestamp && swapOutputTransaction?.status != BackendTransactionStatus.Completed && (swap?.status !== SwapStatus.Cancelled && swap?.status !== SwapStatus.Expired && swap?.status !== SwapStatus.Failed) &&
                                         <span className='text-sm block space-x-1 text-secondary-text'>
-                                            <span>{swapInputTransaction?.timestamp && countDownTimer}</span>
+                                            <span>{countDownTimer}</span>
                                         </span>
                                     }
                                 </div>
