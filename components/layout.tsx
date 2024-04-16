@@ -16,7 +16,6 @@ import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
-import { FeeProvider } from "../context/feeContext";
 import RainbowKit from "./RainbowKit";
 import Solana from "./SolanaProvider";
 import { IsExtensionError } from "../helpers/errorHelper";
@@ -138,11 +137,9 @@ export default function Layout({ children, settings, themeData }: Props) {
                 <TonConnectProvider basePath={basePath} themeData={themeData}>
                   <RainbowKit>
                     <Solana>
-                      <FeeProvider>
-                        {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                          <MaintananceContent />
-                          : children}
-                      </FeeProvider>
+                      {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                        <MaintananceContent />
+                        : children}
                     </Solana>
                   </RainbowKit>
                 </TonConnectProvider>
