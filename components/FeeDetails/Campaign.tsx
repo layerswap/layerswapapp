@@ -5,6 +5,7 @@ import { ApiResponse } from "../../Models/ApiResponse"
 import ClickTooltip from "../Tooltips/ClickTooltip"
 import Image from 'next/image';
 import { Network } from "../../Models/Network"
+import FeeDetails from "./FeeDetailsComponent"
 
 type CampaignProps = {
     destination: Network,
@@ -12,7 +13,7 @@ type CampaignProps = {
 }
 const Comp: FC<CampaignProps> = ({
     destination,
-    reward: fee,
+    reward,
 }) => {
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
@@ -25,12 +26,12 @@ const Comp: FC<CampaignProps> = ({
             c?.network.name === destination?.name
             && new Date(c?.end_date).getTime() - now > 0)
 
-    if (!campaign || !fee)
+    if (!campaign || !reward)
         return <></>
 
     return <CampaignDisplay
         campaign={campaign}
-        reward={fee}
+        reward={reward}
     />
 }
 type CampaignDisplayProps = {
@@ -41,14 +42,13 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward }) => {
 
     const token = campaign.token
 
-    return <div className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700 relative bottom-2 pt-4 pb-2 px-3.5 text-right'>
-        <div className='flex items-center'>
-            <p>Est. {token?.symbol} Reward</p>
-            <ClickTooltip text={<span><span>The amount of onboarding reward that you’ll earn.&nbsp;</span><a target='_blank' href='/campaigns' className='text-primary underline hover:no-underline decoration-primary cursor-pointer'>Learn more</a></span>} />
-        </div>
-        {
-            Number(reward.amount) > 0 &&
-            <div className="flex items-center space-x-1">
+    return <FeeDetails.Item>
+        <div className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700 relative text-right'>
+            <div className='flex items-center text text-primary-buttonTextColor'>
+                <p>Est. {token?.symbol} Reward</p>
+                <ClickTooltip text={<span><span>The amount of onboarding reward that you’ll earn.&nbsp;</span><a target='_blank' href='/campaigns' className='text-primary underline hover:no-underline decoration-primary cursor-pointer'>Learn more</a></span>} />
+            </div>
+            <div className="flex items-center space-x-1 text-secondary-text">
                 <span>+</span>
                 <div className="h-5 w-5 relative">
                     <Image
@@ -63,8 +63,8 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward }) => {
                     {reward.amount} {token?.symbol}
                 </p>
             </div>
-        }
-    </div>
+        </div>
+    </FeeDetails.Item>
 }
 
 export default Comp
