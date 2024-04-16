@@ -73,14 +73,16 @@ const DepositMethodComponent: FC = () => {
                         value="wallet"
                         icon={<WalletIcon
                             strokeWidth={2} className="w-6 h-6" />}
-                        description="Transfer instantly via the connected wallet."
+                        description="Connect your wallet and transfer instantly"
                         title="Wallet"
                         selectedValue={depositMethod}
                     />
                     <DepositMethod
                         onselect={handleSelect}
                         value="deposit_address"
-                        icon={<AlignLeft strokeWidth={2} className="w-6 h-6" />} description="Manually transfer to the generated Deposit Address from anywhere when you can not connect it to the app" title="Deposit address"
+                        icon={<AlignLeft strokeWidth={2} className="w-6 h-6" />}
+                        description="Manually transfer to a Deposit Address generated specifically for you"
+                        title="Deposit address"
                         selectedValue={depositMethod}
                     />
                 </PopoverContent>
@@ -108,28 +110,32 @@ const DepositMethod: FC<DespositMethodItemProps> = ({
 }) => {
     const selected = selectedValue === value
     return (
-        <div className={`p-3 ${selected ? 'bg-secondary-500 text-secondary-text' : 'text-primary-text-placeholder'} flex justify-between rounded-lg cursor-pointer`} onClick={() => onselect(value)}>
-            <div className="grid grid-cols-8 gap-2">
+        <div className={`p-3 ${selected ? 'bg-secondary-500 text-primary-text' : 'text-secondary-text'} flex rounded-lg cursor-pointer`} onClick={() => onselect(value)}>
+            <div className="grid grid-cols-9 gap-2 md:gap-0 w-full">
                 <div>
                     {icon}
                 </div>
-                <div className=" col-span-7 ">
-                    <div className={`font-semibold text-base`}>
-                        {title}
+                <div className=" col-span-8   flex">
+                    <div className="w-full">
+                        <div className={`font-semibold text-base`}>
+                            {title}
+                        </div>
+                        <div className="text-secondary-text text-xs">
+                            {description}
+                        </div>
                     </div>
-                    <div className="text-primary-text-muted text-xs">
-                        {description}
-                    </div>
+
+                    {
+                        selected &&
+                        <div className="flex items-center justify-center">
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                    }
                 </div>
             </div>
-            {
-                selected &&
-                <div className="flex items-center justify-center">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                </div>
-            }
+
         </div>
     )
 }
