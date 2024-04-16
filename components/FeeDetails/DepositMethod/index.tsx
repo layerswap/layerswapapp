@@ -60,7 +60,7 @@ const DepositMethodComponent: FC = () => {
         <div className="relative w-full mb-1.5">
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1">
-                    <span> Transfer by </span> <span>{selectedMethod?.toLowerCase()}</span> <motion.div
+                    <span> Transfer via </span> <span>{selectedMethod?.toLowerCase()}</span> <motion.div
                         animate={open ? "open" : "closed"}
                         variants={variants}
                     >
@@ -73,14 +73,14 @@ const DepositMethodComponent: FC = () => {
                         value="wallet"
                         icon={<WalletIcon
                             strokeWidth={2} className="w-6 h-6" />}
-                        description="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+                        description="Transfer instantly via the connected wallet."
                         title="Wallet"
                         selectedValue={depositMethod}
                     />
                     <DepositMethod
                         onselect={handleSelect}
                         value="deposit_address"
-                        icon={<AlignLeft strokeWidth={2} className="w-6 h-6" />} description="Lorem ipsum dolor sit amet, consectetur adipiscing elit." title="Deposit address"
+                        icon={<AlignLeft strokeWidth={2} className="w-6 h-6" />} description="Manually transfer to the generated Deposit Address from anywhere when you can not connect it to the app" title="Deposit address"
                         selectedValue={depositMethod}
                     />
                 </PopoverContent>
@@ -108,7 +108,7 @@ const DepositMethod: FC<DespositMethodItemProps> = ({
 }) => {
     const selected = selectedValue === value
     return (
-        <div className={`p-3 ${selected ? 'bg-secondary-500 text-secondary-text' : 'text-primary-text-placeholder'} flex rounded-lg cursor-pointer`} onClick={() => onselect(value)}>
+        <div className={`p-3 ${selected ? 'bg-secondary-500 text-secondary-text' : 'text-primary-text-placeholder'} flex justify-between rounded-lg cursor-pointer`} onClick={() => onselect(value)}>
             <div className="grid grid-cols-8 gap-2">
                 <div>
                     {icon}
