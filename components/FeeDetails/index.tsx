@@ -9,27 +9,33 @@ import { useQueryState } from '../../context/query';
 import ResizablePanel from '../ResizablePanel';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import DepositMethod from './DepositMethod';
+import Campaign from './Campaign';
 
 const RefuelModal = dynamic(() => import("./RefuelModal"), {
     loading: () => <></>,
 });
 
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
-    const { toCurrency, to, refuel, fromExchange, toExchange } = values || {};
-    const { fee } = useFee()
+    const { toCurrency, to, refuel, toExchange, from, fromCurrency } = values || {};
+    const { fee, isFeeLoading } = useFee()
     const query = useQueryState();
-    const [openModal, setOpenModal] = useState<boolean>(false)
-    const nativeAsset = to?.assets.find(a => a.is_native)
+    const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false)
 
     return (
         <>
             <ResizablePanel>
-                <FeeDetails>
 
+                {
+                    from && to && toCurrency && fromCurrency &&
+                    <DepositMethod />
+                }
+                
+                <FeeDetails>
                     {
-                        toCurrency?.refuel_amount_in_usd && !query.hideRefuel && nativeAsset && !toExchange &&
+                        toCurrency?.refuel && !query.hideRefuel && !toExchange &&
                         <FeeDetails.Item>
-                            <RefuelToggle onButtonClick={() => setOpenModal(true)} />
+                            <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
                         </FeeDetails.Item>
                     }
 
@@ -42,29 +48,27 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
 
                     <FeeDetails.Item>
                         <ReceiveAmounts
-                            sourceIsExchange={!!fromExchange}
-                            currency={toCurrency}
-                            to={to}
+                            destination_token={toCurrency}
                             refuel={!!refuel}
                             fee={fee}
-                            onButtonClick={() => setOpenModal(true)}
+                            onButtonClick={() => setOpenRefuelModal(true)}
+                            isFeeLoading={isFeeLoading}
                         />
                     </FeeDetails.Item>
 
                 </FeeDetails>
             </ResizablePanel>
 
-            {/* {
+            {
                 values.to &&
                 values.toCurrency &&
                 <Campaign
                     destination={values.to}
-                    selected_currency={values.toCurrency}
-                    fee={fee.walletFee}
+                    reward={fee?.reward}
                 />
-            } */}
+            }
 
-            <RefuelModal values={values} openModal={openModal} setOpenModal={setOpenModal} fee={fee} />
+            <RefuelModal values={values} openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} fee={fee} />
 
         </>
     )

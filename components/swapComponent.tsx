@@ -3,6 +3,7 @@ import { SwapDataProvider } from '../context/swap';
 import { TimerProvider } from '../context/timerContext';
 import SwapForm from "./Swap/Form"
 import { BalancesDataProvider } from '../context/balances';
+import { FeeProvider } from '../context/feeContext';
 
 const Swap: FC = () => {
   return (
@@ -10,7 +11,9 @@ const Swap: FC = () => {
       <SwapDataProvider >
         <TimerProvider>
           <BalancesDataProvider>
-            <SwapForm />
+            <FeeProvider>
+              <SwapForm />
+            </FeeProvider>
           </BalancesDataProvider>
         </TimerProvider>
       </SwapDataProvider >

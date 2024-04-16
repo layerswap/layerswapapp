@@ -1,6 +1,5 @@
 import { useRouter } from "next/router"
 import { FC } from "react"
-import { useSettingsState } from "../../../context/settings"
 import Image from 'next/image'
 import { Gift } from "lucide-react"
 import LayerSwapApiClient, { Campaign } from "../../../lib/layerSwapApiClient"
@@ -16,13 +15,10 @@ import { Widget } from "../../Widget/Index";
 import Leaderboard from "./Leaderboard"
 import Rewards from "./Rewards";
 import SpinIcon from "../../icons/spinIcon"
-import { Layer } from "../../../Models/Layer"
 
 function CampaignDetails() {
 
-    const settings = useSettingsState()
     const router = useRouter();
-    const { resolveImgSrc, layers } = settings
     const camapaignName = router.query.campaign?.toString()
 
     const { isConnected } = useAccount();
@@ -30,8 +26,7 @@ function CampaignDetails() {
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
     const campaign = campaignsData?.data?.find(c => c.name === camapaignName)
-
-    const network = layers.find(n => n.internal_name === campaign?.network)
+    const network = campaign?.network
 
     if (isLoading) {
         return <Loading />
@@ -48,27 +43,22 @@ function CampaignDetails() {
                     <div className="flex items-center gap-1">
                         <div className="h-7 w-7 relative">
                             {network && <Image
-                                src={resolveImgSrc(network)}
+                                src={network.logo}
                                 alt="Project Logo"
                                 height="40"
                                 width="40"
                                 loading="eager"
                                 className="rounded-md object-contain" />}
                         </div>
-                        <p className="font-bold text-xl text-left flex items-center">
+                        <p className="font-bold text-xl text-left flex items-center text-primary-text">
                             {network?.display_name} Rewards
                         </p>
                     </div>
                     {
                         isConnected ?
-                            <Rewards
-                                campaign={campaign}
-                            />
+                            <Rewards campaign={campaign} />
                             :
-                            <BriefInformation
-                                network={network}
-                                campaign={campaign}
-                            />
+                            <BriefInformation campaign={campaign} />
                     }
                     <Leaderboard campaign={campaign} />
                 </div>
@@ -91,14 +81,13 @@ function CampaignDetails() {
 
 type BriefInformationProps = {
     campaign: Campaign,
-    network?: Layer
 }
-const BriefInformation: FC<BriefInformationProps> = ({ campaign, network }) =>
+const BriefInformation: FC<BriefInformationProps> = ({ campaign }) =>
     <p className="text-secondary-text text-base">
         <span>You can earn $</span>
-        <span>{campaign?.asset}</span>
+        <span>{campaign?.token.symbol}</span>
         <span>&nbsp;tokens by transferring assets to&nbsp;</span>
-        <span>{network?.display_name || campaign.network}</span>
+        <span>{campaign.network.display_name}</span>
         <span>. For each transaction, you&amp;ll receive&nbsp;</span>
         <span>{campaign?.percentage}</span>
         <span>% of Layerswap fee back.&nbsp;</span>
