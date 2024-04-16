@@ -2,7 +2,7 @@ import { NetworkType } from "../../Models/Network"
 import { SwapStatus } from "../../Models/SwapStatus"
 import { SwapItem, BackendTransactionStatus, TransactionType, SwapResponse } from "../../lib/layerSwapApiClient"
 
-export const swap: SwapResponse = {
+export const swap: any = {
     "deposit_actions": [
         {
             "type": "transfer",
@@ -157,7 +157,7 @@ export const swap: SwapResponse = {
     "refuel": undefined,
 }
 
-export const failedSwap: SwapResponse = {
+export const failedSwap: any = {
     "deposit_actions": [
         {
             "type": "transfer",
@@ -312,7 +312,7 @@ export const failedSwap: SwapResponse = {
     "refuel": undefined,
 }
 
-export const failedInputSwap: SwapResponse = {
+export const failedInputSwap: any = {
     "deposit_actions": [
         {
             "type": "transfer",
@@ -467,7 +467,7 @@ export const failedInputSwap: SwapResponse = {
     "refuel": undefined,
 }
 
-export const failedSwapOutOfRange: SwapResponse = {
+export const failedSwapOutOfRange: any = {
     "deposit_actions": [
         {
             "type": "transfer",
@@ -635,7 +635,7 @@ export const failedSwapOutOfRange: SwapResponse = {
     "refuel": undefined,
 }
 
-export const cancelled: SwapResponse = {
+export const cancelled: any = {
     "deposit_actions": [
         {
             "type": "transfer",
@@ -777,7 +777,7 @@ export const cancelled: SwapResponse = {
     "refuel": undefined,
 }
 
-export const expired: SwapResponse = {
+export const expired: any = {
     "deposit_actions": [
         {
             "type": "transfer",
