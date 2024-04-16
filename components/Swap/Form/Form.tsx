@@ -28,7 +28,6 @@ import { Balance, Gas } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
-import DepositMethod from "../../FeeDetails/DepositMethod";
 
 type Props = {
     isPartnerWallet?: boolean,

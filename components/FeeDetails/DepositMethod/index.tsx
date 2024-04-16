@@ -19,7 +19,7 @@ const DepositMethodComponent: FC = () => {
     } = useFormikContext<SwapFormValues>();
     const [open, setOpen] = useState<boolean>();
 
-    const { from, depositMethod } = values
+    const { from, depositMethod, fromExchange } = values
     const name = 'depositMethod'
 
     const depositMethods = [
@@ -36,8 +36,13 @@ const DepositMethodComponent: FC = () => {
     const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods)
 
     useEffect(() => {
-        if (!depositMethod || !menuItems?.find(i => i.id === depositMethod)) setFieldValue(name, (menuItems?.find(i => i.id === 'wallet')?.id || menuItems?.[0]?.id), true)
+        if (!depositMethod || !menuItems?.find(i => i.id === depositMethod))
+            setFieldValue(name, (menuItems?.find(i => i.id === 'wallet')?.id || menuItems?.[0]?.id), true)
     }, [menuItems])
+
+    useEffect(() => {
+        if (fromExchange) setFieldValue(name, 'deposit_address', true)
+    }, [fromExchange])
 
     const handleSelect = useCallback((item: string) => {
         setFieldValue(name, item, true)
@@ -46,8 +51,12 @@ const DepositMethodComponent: FC = () => {
 
     const selectedMethod = menuItems?.find(i => i.id === depositMethod)?.display_name
 
-    return (
+    const hasOptions = Number(menuItems?.length) > 1 && !fromExchange
 
+    if (!hasOptions)
+        return null
+
+    return (
         <div className="relative w-full mb-1.5">
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1">
@@ -77,7 +86,6 @@ const DepositMethodComponent: FC = () => {
                 </PopoverContent>
             </Popover>
         </div>
-
     )
 };
 
