@@ -152,6 +152,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     }, [to, query])
 
     useEffect(() => {
+
         if (direction !== "from" || !from) return
 
         let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.symbol === currencyAsset)
@@ -208,7 +209,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const valueDetails = <div>
         {value
             ?
-            <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
+            <span className="block font-medium text-primary-text flex-auto items-center">
                 {value?.name}
             </span>
             :

@@ -11,15 +11,12 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     balanceAmount?: number | undefined;
     order: number;
     imgSrc: string;
-    displayName?: string | undefined;
     isAvailable: {
         value: boolean;
         disabledReason?: LayerDisabledReason | CurrencyDisabledReason | null
     };
     group?: string;
     details?: string;
-    network_display_name?: string | undefined;
-    network?: string | undefined;
     baseObject: T;
     constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, group?: string, details?: string) {
         this.baseObject = baseObject;
@@ -44,14 +41,11 @@ export interface ISelectMenuItem {
     menuItemImage?: React.ReactNode;
     balanceAmount?: number | undefined;
     imgSrc: string;
-    displayName?: string | undefined;
     group?: string;
     isAvailable: {
         value: boolean;
         disabledReason?: LayerDisabledReason | CurrencyDisabledReason | null
     };
     details?: string;
-    network_display_name?: string | undefined;
-    network?: string | undefined;
     order?: number;
 }
