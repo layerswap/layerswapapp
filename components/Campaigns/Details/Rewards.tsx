@@ -53,13 +53,13 @@ const Rewards: FC<Props> = ({ campaign }) => {
             <div className="text-secondary-text">
                 <span>
                     <span>Onboarding incentives that are earned by transferring to&nbsp;</span>{network?.display_name}<span>.&nbsp;</span>
-                    <a
+                    {/* <a
                         target='_blank'
                         href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards"
                         className="text-primary-text underline hover:no-underline decoration-wh<Pite cursor-pointer"
                     >
                         Learn more
-                    </a>
+                    </a> */}
                 </span>
             </div>
             <div className="bg-secondary-700 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
@@ -106,7 +106,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
                             </p>
                         </div>
                         <p>
-                            ${rewards?.user_reward?.total_amount_in_usd}
+                            <span>$</span><span>{rewards?.user_reward?.total_amount_in_usd || 0}</span>
                         </p>
                     </div>
                 </BackgroundField>

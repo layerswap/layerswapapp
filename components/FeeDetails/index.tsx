@@ -46,6 +46,15 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                         </FeeDetails.Item>
                     }
 
+                    {
+                        values.to &&
+                        values.toCurrency &&
+                        <Campaign
+                            destination={values.to}
+                            reward={fee?.reward}
+                        />
+                    }
+
                     <FeeDetails.Item>
                         <ReceiveAmounts
                             destination_token={toCurrency}
@@ -55,15 +64,6 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                             isFeeLoading={isFeeLoading}
                         />
                     </FeeDetails.Item>
-
-                    {
-                        values.to &&
-                        values.toCurrency &&
-                        <Campaign
-                            destination={values.to}
-                            reward={fee?.reward}
-                        />
-                    }
 
                 </FeeDetails>
             </ResizablePanel>
