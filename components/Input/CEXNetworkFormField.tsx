@@ -202,17 +202,5 @@ function GenerateMenuItems(
 export default CEXNetworkFormField
 
 export function groupByType(values: SelectMenuItem<NetworkWithTokens>[]) {
-    let groupMap: { [key: string]: SelectMenuItemGroup } = {};
-
-    values?.forEach((v) => {
-        const groupName = v.group || "All networks";
-        if (!groupMap[groupName]) {
-            groupMap[groupName] = new SelectMenuItemGroup({ name: groupName, items: [] });
-        }
-        groupMap[groupName].items.push(v);
-    });
-
-    const groups = Object.values(groupMap);
-
-    return groups;
+    return [{ name: "", items: values }];
 }
