@@ -10,7 +10,6 @@ import shortenAddress from "../utils/ShortenAddress";
 import Link from "next/link";
 import { SortingByOrder } from "../../lib/sorting";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
-import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import { Info } from "lucide-react";
 import { NetworkWithTokens, RouteNetwork } from "../../Models/Network";
@@ -38,29 +37,9 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         currencyGroup
     } = values
 
-    const filterWith = direction === "from" ? to : from
-    const filterWithAsset = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
-
     const apiClient = new LayerSwapApiClient()
-    const include_unmatched = 'true'
 
-    const destinationRouteParams = new URLSearchParams({
-        include_unmatched,
-        ...(filterWith && filterWithAsset
-            ? (
-                {
-                    [direction === 'to'
-                        ? 'source_network'
-                        : 'destination_network']
-                        : filterWith.name,
-                    [direction === 'to'
-                        ? 'source_token'
-                        : 'destination_token']
-                        : filterWithAsset
-                }) : {}),
-    });
-
-    const routesEndpoint = `/${direction === "from" ? `exchange_source_networks?destination_token_group=${currencyGroup?.symbol}` : `exchange_destination_networks?source_asset_group=${currencyGroup?.symbol}`}&${destinationRouteParams.toString()}`
+    const routesEndpoint = `/${direction === "from" ? `exchange_source_networks?destination_token_group=${currencyGroup?.symbol}&include_unmatched=true` : `exchange_destination_networks?source_token_group=${currencyGroup?.symbol}&include_unmatched=true`}`
 
     const { data: routes, isLoading } = useSWR<ApiResponse<RouteNetwork[]>>(`${routesEndpoint}`, apiClient.fetcher, { keepPreviousData: true })
     const routesData = routes?.data

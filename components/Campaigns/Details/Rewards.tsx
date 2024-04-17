@@ -106,7 +106,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
                             </p>
                         </div>
                         <p>
-                            <span>$</span><span>{rewards?.user_reward?.total_amount_in_usd || 0}</span>
+                            <span>$</span><span>{rewards?.user_reward?.total_amount_in_usd.toFixed(rewards?.user_reward?.total_amount_in_usd > 0 ? 2 : 0) || 0}</span>
                         </p>
                     </div>
                 </BackgroundField>
