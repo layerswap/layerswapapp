@@ -39,13 +39,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
             {
                 destination_token_group: currencyGroup?.symbol
             }
-            : {
-                ...(to && toCurrency &&
-                {
-                    destination_network: to.name,
-                    destination_token: toCurrency?.symbol
-                })
-            })
+            : {})
     });
 
     const destinationRouteParams = new URLSearchParams({
@@ -63,11 +57,11 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const {
         data: sourceRoutes,
-    } = useSWR<ApiResponse<RouteNetwork[]>>(`${sourceRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<RouteNetwork[]>>(sourceRoutesURL, apiClient.fetcher, { keepPreviousData: true })
 
     const {
         data: destinationRoutes,
-    } = useSWR<ApiResponse<RouteNetwork[]>>(`${destinationRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<RouteNetwork[]>>(destinationRoutesURL, apiClient.fetcher, { keepPreviousData: true })
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : availableAssetGroups
 

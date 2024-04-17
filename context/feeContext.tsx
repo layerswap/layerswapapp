@@ -20,7 +20,7 @@ export function FeeProvider({ children }) {
 
     const [values, setValues] = useState<SwapFormValues>()
     const [cachedRateData, setCachedRateData] = useState<Quote>()
-    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod, destination_address } = values || {}
+    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = values || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount);
     const [poll, updatePolling] = useState(true)
 
