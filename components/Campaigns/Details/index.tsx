@@ -87,14 +87,14 @@ const BriefInformation: FC<BriefInformationProps> = ({ campaign }) =>
         <span>You can earn $</span>
         <span>{campaign?.token.symbol}</span>
         <span>&nbsp;tokens by transferring assets to&nbsp;</span>
-        <span>{campaign.network.display_name}</span>
-        <span>. For each transaction, you&amp;ll receive&nbsp;</span>
+        <span>{campaign.network.display_name}.</span>
+        <span> For each transaction, you&#39;ll receive&nbsp;</span>
         <span>{campaign?.percentage}</span>
-        <span>% of Layerswap fee back.&nbsp;</span>
-        <Link target='_blank' href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards"
+        <span>% of paid fees back.&nbsp;</span>
+        {/* <Link target='_blank' href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards"
             className="text-primary underline hover:no-underline decoration-primary cursor-pointer">
             Learn more
-        </Link>
+        </Link> */}
     </p>
 
 const Loading = () => <Widget className="min-h-[500px]">
