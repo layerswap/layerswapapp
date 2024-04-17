@@ -41,7 +41,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     const routesEndpoint = `/${direction === "from" ? `exchange_source_networks?destination_token_group=${currencyGroup?.symbol}&include_unmatched=true` : `exchange_destination_networks?source_token_group=${currencyGroup?.symbol}&include_unmatched=true`}`
 
-    const { data: routes, isLoading } = useSWR<ApiResponse<RouteNetwork[]>>(`${routesEndpoint}`, apiClient.fetcher, { keepPreviousData: true })
+    const { data: routes, isLoading: isRoutesLoading } = useSWR<ApiResponse<RouteNetwork[]>>(`${routesEndpoint}`, apiClient.fetcher, { keepPreviousData: true })
     const routesData = routes?.data
 
     const exchangeNetworksEndpoint =
@@ -50,7 +50,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             `exchange_withdrawal_networks?source_exchange=${fromExchange?.name}&&source_token_group=${currencyGroup?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}`
             : `exchange_deposit_networks?destination_exchange=${toExchange?.name}&destination_token_group=${currencyGroup?.symbol}&source_network=${from?.name}&source_token=${fromCurrency?.symbol}`}`)
 
-    const { data: historicalNetworks } = useSWR<ApiResponse<ExchangeNetwork[]>>(exchangeNetworksEndpoint, apiClient.fetcher, { keepPreviousData: true })
+    const { data: historicalNetworks, isLoading: isHistoricalNetworsLoading } = useSWR<ApiResponse<ExchangeNetwork[]>>(exchangeNetworksEndpoint, apiClient.fetcher, { keepPreviousData: true })
 
     const network = (direction === 'from' ? from : to)
     const currency = (direction === 'from' ? fromCurrency : toCurrency)
@@ -134,14 +134,14 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             }
         </label>
         <CommandSelectWrapper
-            disabled={(value && !value?.isAvailable?.value) || isLoading}
+            disabled={(value && !value?.isAvailable?.value) || isRoutesLoading}
             valueGrouper={groupByType}
             placeholder="Network"
             setValue={handleSelect}
             value={value}
             values={menuItems!}
             searchHint=''
-            isLoading={isLoading}
+            isLoading={isRoutesLoading || isHistoricalNetworsLoading}
             modalHeight="80%"
             valueDetails={valueDetails}
             modalContent={networkDetails}
