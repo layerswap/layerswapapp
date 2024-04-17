@@ -13,8 +13,8 @@ import SelectItem from '../Shared/SelectItem';
 import { SelectProps } from '../Shared/Props/SelectProps'
 import Modal from '../../modal/modal';
 import SpinIcon from '../../icons/spinIcon';
-import { Layer } from '../../../Models/Layer';
 import { LeafletHeight } from '../../modal/leaflet';
+import { Network } from '../../../Models/Network';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
@@ -32,7 +32,7 @@ export class SelectMenuItemGroup {
     }
 
     name: string;
-    items: SelectMenuItem<Layer>[];
+    items: SelectMenuItem<Network>[];
 }
 
 export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading, modalHeight = 'full', modalContent }: CommandSelectProps) {
