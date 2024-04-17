@@ -1,24 +1,19 @@
 import { FC } from "react"
-import { Layer } from "../../Models/Layer"
-import LayerSwapApiClient, { Campaign } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { Campaign, QuoteReward } from "../../lib/layerSwapApiClient"
 import useSWR from "swr"
 import { ApiResponse } from "../../Models/ApiResponse"
-import { useSettingsState } from "../../context/settings"
-import { truncateDecimals } from "../utils/RoundDecimals"
-import { motion } from "framer-motion"
 import ClickTooltip from "../Tooltips/ClickTooltip"
 import Image from 'next/image';
-import { NetworkCurrency } from "../../Models/CryptoNetwork"
+import { Network } from "../../Models/Network"
+import FeeDetails from "./FeeDetailsComponent"
 
 type CampaignProps = {
-    destination: Layer,
-    fee: number | undefined,
-    selected_currency: NetworkCurrency,
+    destination: Network,
+    reward: QuoteReward | undefined,
 }
-const Campaign: FC<CampaignProps> = ({
+const Comp: FC<CampaignProps> = ({
     destination,
-    fee,
-    selected_currency
+    reward,
 }) => {
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
@@ -28,53 +23,36 @@ const Campaign: FC<CampaignProps> = ({
     const campaign = campaignsData
         ?.data
         ?.find(c =>
-            c?.network === destination?.internal_name
-            && c.status == 'active'
+            c?.network.name === destination?.name
             && new Date(c?.end_date).getTime() - now > 0)
 
-    if (!campaign || !fee)
+    if (!campaign || !reward)
         return <></>
 
     return <CampaignDisplay
         campaign={campaign}
-        fee={fee}
-        selected_currency={selected_currency}
+        reward={reward}
     />
 }
 type CampaignDisplayProps = {
     campaign: Campaign,
-    fee: number,
-    selected_currency: NetworkCurrency,
+    reward: QuoteReward,
 }
-const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_currency }) => {
-    const { resolveImgSrc, layers } = useSettingsState()
-    const layer = layers.find(l => l.internal_name === campaign.network)
-    const campaignAsset = layer?.assets.find(c => c?.asset === campaign?.asset)
-    const feeinUsd = fee * selected_currency.usd_price
-    const reward = truncateDecimals(((feeinUsd * (campaign?.percentage || 0) / 100) / (campaignAsset?.usd_price || 1)), (campaignAsset?.precision || 0))
+const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward }) => {
 
-    return <motion.div
-        initial={{ y: "-100%" }}
-        animate={{
-            y: 0,
-            transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
-        }}
-        exit={{
-            y: "-100%",
-            transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
-        }}
-        className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700  relative bottom-2 z-0 pt-4 pb-2 px-3.5 text-right'>
-        <div className='flex items-center'>
-            <p>Est. {campaignAsset?.asset} Reward</p>
-            <ClickTooltip text={<span><span>The amount of onboarding reward that you’ll earn.&nbsp;</span><a target='_blank' href='/campaigns' className='text-primary underline hover:no-underline decoration-primary cursor-pointer'>Learn more</a></span>} />
-        </div>
-        {
-            Number(reward) > 0 &&
-            <div className="flex items-center space-x-1">
+    const token = campaign.token
+
+    return <FeeDetails.Item>
+        <div className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700 relative text-right'>
+            <div className='flex items-center text-primary-buttonTextColor'>
+                <p>Est. {token?.symbol} reward</p>
+                <ClickTooltip text={<span className="!text-start">The amount of onboarding reward that you’ll earn.</span>} />
+            </div>
+            <div className="flex items-center space-x-1 text-secondary-text">
                 <span>+</span>
                 <div className="h-5 w-5 relative">
                     <Image
-                        src={resolveImgSrc(campaign)}
+                        src={token?.logo || ''}
                         alt="Project Logo"
                         height="40"
                         width="40"
@@ -82,11 +60,11 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, fee, selected_cur
                         className="rounded-md object-contain" />
                 </div>
                 <p>
-                    {reward} {campaignAsset?.asset}
+                    {reward.amount} {token?.symbol}
                 </p>
             </div>
-        }
-    </motion.div>
+        </div>
+    </FeeDetails.Item>
 }
 
-export default Campaign
+export default Comp

@@ -41,22 +41,20 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const inputReference = useRef<HTMLInputElement>(null);
     const destination = values.to
     const destinationExchange = values.toExchange
-    const valid_addresses = address_book?.filter(a => destinationExchange ? a.exchanges.some(e => destinationExchange.internal_name === e) : a.networks?.some(n => destination?.internal_name === n) && isValidAddress(a.address, destination)) || []
+    const valid_addresses = address_book?.filter(a => destinationExchange ? a.exchanges.some(e => destinationExchange.name === e) : a.networks?.some(n => destination?.name === n) && isValidAddress(a.address, destination)) || []
 
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const placeholder = "Enter your address here"
     const [inputValue, setInputValue] = useState<string | undefined>(values?.destination_address || "")
     const [validInputAddress, setValidInputAddress] = useState<string | undefined>('')
-    const destinationIsStarknet = destination?.internal_name === KnownInternalNames.Networks.StarkNetGoerli
-        || destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
+    const destinationIsStarknet = destination?.name === KnownInternalNames.Networks.StarkNetGoerli
+        || destination?.name === KnownInternalNames.Networks.StarkNetMainnet
 
     const { connectWallet, disconnectWallet, getAutofillProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
         return values?.to && getProvider(values?.to)
     }, [values?.to, getProvider])
-
     const connectedWallet = provider?.getConnectedWallet()
-    const settings = useSettingsState()
 
     useEffect(() => {
         if (destination && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address && !values.toExchange) {
@@ -180,7 +178,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                             {wrongNetwork && !inputValue &&
                                 <div className="basis-full text-xs text-primary">
                                     {
-                                        destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet
+                                        destination?.name === KnownInternalNames.Networks.StarkNetMainnet
                                             ? <span>Please switch to Starknet Mainnet with your wallet and click Autofill again</span>
                                             : <span>Please switch to Starknet Goerli with your wallet and click Autofill again</span>
                                     }
@@ -246,13 +244,13 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     <span>Select</span>
                                     <span className="inline-block mx-1">
                                         <span className='flex gap-1 items-baseline text-sm '>
-                                            <Image src={settings.resolveImgSrc(destinationAsset)}
-                                                alt="Project Logo"
+                                            <Image src={destinationAsset.logo}
+                                                alt="Asset Logo"
                                                 height="15"
                                                 width="15"
                                                 className='rounded-sm'
                                             />
-                                            <span className="text-primary-text">{destinationAsset.asset}</span>
+                                            <span className="text-primary-text">{destinationAsset.symbol}</span>
                                         </span>
                                     </span>
                                     <span>as asset</span>
@@ -261,8 +259,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     <span>Select</span>
                                     <span className="inline-block mx-1">
                                         <span className='flex gap-1 items-baseline text-sm '>
-                                            <Image src={settings.resolveImgSrc(values.to)}
-                                                alt="Project Logo"
+                                            <Image src={values.to?.logo || ''}
+                                                alt="Destination Logo"
                                                 height="15"
                                                 width="15"
                                                 className='rounded-sm'

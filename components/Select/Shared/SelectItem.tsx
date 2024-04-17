@@ -1,4 +1,3 @@
-import { Layer } from "../../../Models/Layer";
 import { CurrencyDisabledReason } from "../../Input/CurrencyFormField";
 import { ISelectMenuItem } from "./Props/selectMenuItem";
 import Image from 'next/image'

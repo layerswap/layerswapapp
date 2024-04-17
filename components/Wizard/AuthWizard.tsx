@@ -9,6 +9,7 @@ import EmailStep from "./Steps/EmailStep";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
+import { ParsedUrlQuery } from "querystring";
 
 
 const AuthWizard: FC = () => {
@@ -17,10 +18,7 @@ const AuthWizard: FC = () => {
     const { redirect } = router.query;
 
     const CodeOnNext = useCallback(async () => {
-        await router.push({
-            pathname: redirect?.toString() || '/',
-            query: resolvePersistantQueryParams(router.query)
-        })
+        await router.push(resolveRedirectUrl(redirect?.toString(), router.query))
         plausible(TrackEvent.SignedIn)
     }, [redirect]);
 
@@ -43,6 +41,25 @@ const AuthWizard: FC = () => {
             </Wizard>
         </TimerProvider>
     )
+}
+
+function resolveRedirectUrl(pathname: string | undefined, query: ParsedUrlQuery) {
+
+    if (!pathname) return '/'
+
+    const pathnameArray = pathname && pathname.split('/') || []
+
+    if (pathname?.startsWith('swap'))
+        return {
+            pathname: '/swap/[swapId]',
+            query: { ...resolvePersistantQueryParams(query), swapId: encodeURIComponent(pathnameArray[1]) }
+        }
+    if (pathname?.startsWith('campaigns'))
+        return {
+            pathname: '/campaigns/[campaign]',
+            query: { ...resolvePersistantQueryParams(query), campaign: encodeURIComponent(pathnameArray[1]) }
+        }
+    else return { pathname: encodeURIComponent(pathname), query: { ...resolvePersistantQueryParams(query) } }
 }
 
 export default AuthWizard;

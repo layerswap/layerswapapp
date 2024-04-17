@@ -31,14 +31,14 @@ const Widget = ({ children, className, hideMenu }: Props) => {
    return <>
       <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
          <div className="relative z-20">
-            {
+            {/* {
                LayerSwapApiClient.apiVersion === 'sandbox' && <div>
                   <div className="h-0.5 bg-[#D95E1B]" />
                   <div className="absolute -top-0.5 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75">
                      TESTNET
                   </div>
                </div>
-            }
+            } */}
          </div>
          {!hideMenu && <HeaderWithMenu goBack={handleBack} />}
          <div className='text-center text-xl text-secondary-100'>

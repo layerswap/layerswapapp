@@ -16,9 +16,6 @@ import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
 import { ArrowUpDown, Loader2 } from 'lucide-react'
 import { useAuthState } from "../../../context/authContext";
-import WarningMessage from "../../WarningMessage";
-import { GetDefaultAsset } from "../../../helpers/settingsHelper";
-import KnownInternalNames from "../../../lib/knownIds";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
@@ -30,7 +27,7 @@ import dynamic from "next/dynamic";
 import { Balance, Gas } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
-import { calculateSeconds } from "../../utils/timeCalculations";
+import { RouteNetwork } from "../../../Models/Network";
 
 type Props = {
     isPartnerWallet?: boolean,
@@ -62,17 +59,17 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         currencyGroup
     } = values
 
-    const { minAllowedAmount, valuesChanger, fee } = useFee()
-    const toAsset = values.toCurrency?.asset
-    const fromAsset = values.fromCurrency?.asset
+    const { minAllowedAmount, valuesChanger } = useFee()
+    const toAsset = values.toCurrency
+    const fromAsset = values.fromCurrency
 
     const { authData } = useAuthState()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const address_book_endpoint = authData?.access_token ? `/swaps/recent_addresses` : null
+    const address_book_endpoint = authData?.access_token ? `/internal/recent_addresses` : null
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
-    const partnerImage = partner?.logo_url
+    const partnerImage = partner?.logo
     const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
     const { depositeAddressIsfromAccount } = useSwapDataState()
     const query = useQueryState();
@@ -97,7 +94,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     }, [depositeAddressIsfromAccount])
 
     useEffect(() => {
-        if (!source || !toAsset || !GetDefaultAsset(source, toAsset)?.refuel_amount_in_usd) {
+        if (!source || !toAsset || !toAsset.refuel) {
             setFieldValue('refuel', false, true)
         }
     }, [toAsset, destination, source, fromAsset, currencyGroup])
@@ -116,7 +113,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     //If destination changed to exchange, remove destination_address
     useEffect(() => {
         if ((previouslySelectedDestination.current &&
-            (destination?.internal_name != previouslySelectedDestination.current?.internal_name)
+            (destination?.name != previouslySelectedDestination.current?.name)
             || destination && !isValidAddress(values.destination_address, destination)) && !lockAddress) {
             setFieldValue("destination_address", '')
             setDepositeAddressIsfromAccount(false)
@@ -130,42 +127,36 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         }
     }, [values.refuel, destination, minAllowedAmount])
 
-    const valuesSwapper = useCallback(() => {
-        setValues({ ...values, from: values.to, to: values.from, fromCurrency: values.toCurrency, toCurrency: values.fromCurrency, toExchange: values.fromExchange, fromExchange: values.toExchange }, true)
-    }, [values])
-
     const [animate, cycle] = useCycle(
         { rotate: 0 },
         { rotate: 180 }
     );
-    //TODO always map to toAsset from query
-    const lockedCurrency = query?.lockAsset ? values.to?.assets?.find(c => c?.asset?.toUpperCase() === toAsset?.toUpperCase()) : null;
-    const apiVersion = LayerSwapApiClient.apiVersion
-    const sourceRoutesEndpoint = `/routes/sources?destination_network=${source?.internal_name}&destination_asset=${fromCurrency?.asset}${apiVersion ? '&version=' : ''}${apiVersion}`
-    const destinationRoutesEndpoint = `/routes/destinations?source_network=${destination?.internal_name}&source_asset=${toCurrency?.asset}${apiVersion ? '&version=' : ''}${apiVersion}`
-    const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<{
-        network: string,
-        asset: string
-    }[]>>((source && fromCurrency) ?
-        sourceRoutesEndpoint : `/routes/sources?${apiVersion ? 'version=' : ''}${apiVersion}`, layerswapApiClient.fetcher)
 
-    const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<{
-        network: string,
-        asset: string
-    }[]>>((destination && toCurrency) ?
-        destinationRoutesEndpoint : `/routes/destinations?${apiVersion ? 'version=' : ''}${apiVersion}`, layerswapApiClient.fetcher)
+    const sourceRoutesEndpoint = `/sources?include_unmatched=true&destination_network=${source?.name}&destination_token=${fromCurrency?.symbol}`
+    const destinationRoutesEndpoint = `/destinations?include_unmatched=true&source_network=${destination?.name}&source_token=${toCurrency?.symbol}`
+    const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<RouteNetwork[]>>((source && fromCurrency) ?
+        sourceRoutesEndpoint : `/sources?include_unmatched=true`, layerswapApiClient.fetcher, { keepPreviousData: true })
 
-    const sourceCanBeSwapped = destinationRoutes?.data?.some(l => l.network === source?.internal_name)
-    const destinationCanBeSwapped = sourceRoutes?.data?.some(l => l.network === destination?.internal_name)
+    const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<RouteNetwork[]>>((destination && toCurrency) ?
+        destinationRoutesEndpoint : `/destinations?include_unmatched=true`, layerswapApiClient.fetcher, { keepPreviousData: true })
+
+    const sourceCanBeSwapped = destinationRoutes?.data?.some(l => l.name === source?.name && source.tokens.some(t => t.symbol === fromCurrency?.symbol))
+    const destinationCanBeSwapped = sourceRoutes?.data?.some(l => l.name === destination?.name && destination.tokens.some(t => t.symbol === toCurrency?.symbol))
 
     if (query.lockTo || query.lockFrom || query.hideTo || query.hideFrom) {
         valuesSwapperDisabled = true;
     }
-    if (!(sourceCanBeSwapped || destinationCanBeSwapped)) {
+    if (!sourceCanBeSwapped || !destinationCanBeSwapped) {
         valuesSwapperDisabled = true;
     }
-    const seconds = fee?.avgCompletionTime && calculateSeconds(fee.avgCompletionTime)
-    const averageTimeInMinutes = seconds && (seconds / 60) || 0
+
+    const valuesSwapper = useCallback(() => {
+        const newFrom = sourceRoutes?.data?.find(l => l.name === destination?.name)
+        const newTo = destinationRoutes?.data?.find(l => l.name === source?.name)
+        const newFromToken = newFrom?.tokens.find(t => t.symbol === toCurrency?.symbol)
+        const newToToken = newTo?.tokens.find(t => t.symbol === fromCurrency?.symbol)
+        setValues({ ...values, from: newFrom, to: newTo, fromCurrency: newFromToken, toCurrency: newToToken, toExchange: values.fromExchange, fromExchange: values.toExchange }, true)
+    }, [values, sourceRoutes, destinationRoutes])
 
     const hideAddress = query?.hideAddress
         && query?.to
@@ -221,7 +212,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                     <div className="mb-6 leading-4">
                         <AmountField />
                     </div>
-
                     {
                         !hideAddress ?
                             <div className="w-full mb-3.5 leading-4">
@@ -257,13 +247,6 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                     <div className="w-full">
                         <FeeDetailsComponent values={values} />
                         {
-                            //TODO refactor 
-                            destination && toAsset && destination?.internal_name === KnownInternalNames.Networks.StarkNetMainnet && averageTimeInMinutes > 30 &&
-                            <WarningMessage messageType="warning" className="mt-4">
-                                <span className="font-normal"><span>{destination?.display_name}</span> <span>network congestion. Transactions can take up to 1 hour.</span></span>
-                            </WarningMessage>
-                        }
-                        {
                             values.amount &&
                             <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
                         }
@@ -284,7 +267,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
             process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
             && values.from
             && values.fromCurrency &&
-            <GasDetails network={values.from} currency={values.fromCurrency} />
+            <GasDetails network={values.from.name} currency={values.fromCurrency.symbol} />
         }
     </>
 }
@@ -314,7 +297,7 @@ type AddressButtonProps = {
 }
 const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, partnerImage, disabled }) => {
     return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-buttonTextColor bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full px-3.5 py-3">
-        {isPartnerWallet &&
+        {isPartnerWallet && values.destination_address &&
             <div className="shrink-0 flex items-center pointer-events-none">
                 {
                     partnerImage &&

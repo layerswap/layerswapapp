@@ -1,9 +1,8 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useEffect, useMemo, useState } from "react";
+import { forwardRef, useCallback, useEffect, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
-import { Layer } from "../../Models/Layer";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import ExchangeSettings from "../../lib/ExchangeSettings";
 import { SortingByAvailability } from "../../lib/sorting"
@@ -15,13 +14,10 @@ import CurrencyFormField from "./CurrencyFormField";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { NetworkCurrency } from "../../Models/CryptoNetwork";
+import { Network, RouteNetwork } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
-import { useBalancesState } from "../../context/balances";
-import useWallet from "../../hooks/useWallet";
-import Image from 'next/image'
 import { Info } from "lucide-react";
 
 type SwapDirection = "from" | "to";
@@ -38,14 +34,14 @@ export type LayerIsAvailable = {
     disabledReason: null;
 }
 const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
-const getGroupName = (value: Layer | Exchange, type: 'cex' | 'layer', layerIsAvailable?: LayerIsAvailable) => {
-    if (value.is_featured && layerIsAvailable?.disabledReason !== LayerDisabledReason.InvalidRoute) {
+const getGroupName = (value: RouteNetwork | Exchange, type: 'cex' | 'network', layerIsAvailable?: LayerIsAvailable) => {
+    if (NetworkSettings.KnownSettings[value.name]?.isFeatured && layerIsAvailable?.disabledReason !== LayerDisabledReason.InvalidRoute) {
         return "Popular";
     }
-    else if (new Date(value.created_date).getTime() >= (new Date().getTime() - 2629800000)) {
+    else if (new Date(value.metadata?.listing_date).getTime() >= (new Date().getTime() - 2629800000)) {
         return "New";
     }
-    else if (type === 'layer') {
+    else if (type === 'network') {
         return "Networks";
     }
     else if (type === 'cex') {
@@ -67,118 +63,97 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const query = useQueryState()
     const { lockFrom, lockTo } = query
 
-    const { getAutofillProvider: getProvider } = useWallet()
-
-    const { balances } = useBalancesState()
-    const sourceWalletProvider = useMemo(() => {
-        return from && getProvider(from)
-    }, [from, getProvider])
-
-    const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet()
-    const allBalances = sourceNetworkWallet && balances[sourceNetworkWallet.address]
-
-    const { resolveImgSrc, layers, exchanges, destinationRoutes, sourceRoutes, assetGroups } = useSettingsState();
+    const { exchanges, destinationRoutes, sourceRoutes } = useSettingsState();
     let placeholder = "";
     let searchHint = "";
-    let filteredLayers: Layer[];
-    let menuItems: SelectMenuItem<Layer | Exchange>[];
+    let menuItems: (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[];
 
     const filterWith = direction === "from" ? to : from
-    const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
+    const filterWithAsset = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
 
     const filterWithExchange = direction === 'from' ? toExchange : fromExchange
 
     const apiClient = new LayerSwapApiClient()
-    const version = LayerSwapApiClient.apiVersion
 
     const exchangeParams = new URLSearchParams({
-        version,
-        ...(currencyGroup?.groupedInBackend ?
+        ...(currencyGroup ?
             (currencyGroup ? {
-                [direction === 'to' ? 'source_asset_group' : 'destination_asset_group']: currencyGroup.name
+                [direction === 'to' ? 'source_asset_group' : 'destination_token_group']: currencyGroup.symbol
             } : {})
             :
-            {
-                [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.internal_name,
-                [direction === 'to' ? 'source_asset' : 'destination_asset']: filterWithAsset,
-            }
+            (filterWithAsset && filterWith ? {
+                [direction === 'to' ? 'source_network' : 'destination_network']: filterWith.name,
+                [direction === 'to' ? 'source_token' : 'destination_token']: filterWithAsset,
+            } : {})
         )
     });
 
+    const include_unmatched = 'true'
+
     const networkParams = new URLSearchParams({
-        version,
+        include_unmatched,
         ...(filterWith && filterWithAsset ?
             {
-                [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.internal_name,
-                [direction === 'to' ? 'source_asset' : 'destination_asset']: filterWithAsset,
+                [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.name,
+                [direction === 'to' ? 'source_token' : 'destination_token']: filterWithAsset,
             }
             : {}
         )
     });
 
     const params = (filterWithExchange && currencyGroup) ? exchangeParams : networkParams
-    const sourceRoutesURL = `/routes/sources?${params.toString()}`
-    const destinationRoutesURL = `/routes/destinations?${params.toString()}`
+    const sourceRoutesURL = `/sources?${params.toString()}`
+    const destinationRoutesURL = `/destinations?${params.toString()}`
     const routesEndpoint = direction === "from" ? sourceRoutesURL : destinationRoutesURL
 
-    const { data: routes, isLoading, error } = useSWR<ApiResponse<Route[]>>(routesEndpoint, apiClient.fetcher)
+    const {
+        data: routes,
+        isLoading,
+        error
+    } = useSWR<ApiResponse<RouteNetwork[]>>(`${routesEndpoint}`, apiClient.fetcher, { keepPreviousData: true })
 
-    const [routesData, setRoutesData] = useState<Route[]>()
+    const [routesData, setRoutesData] = useState<RouteNetwork[] | undefined>(direction === 'from' ? sourceRoutes : destinationRoutes)
 
     useEffect(() => {
         if (!isLoading && routes?.data) setRoutesData(routes.data)
-        else if (!isLoading && !routes?.data) setRoutesData(undefined)
+        // else if (!isLoading && !routes?.data) setRoutesData(undefined)
     }, [routes])
 
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
-        filteredLayers = layers.filter(l => sourceRoutes?.some(r => r.network === l.internal_name))
-        menuItems = GenerateMenuItems(filteredLayers, toExchange ? [] : exchanges.filter(e => e.is_enabled), resolveImgSrc, direction, !!(from && lockFrom), routesData, query);
+        menuItems = GenerateMenuItems(routesData, toExchange ? [] : exchanges, direction, !!(from && lockFrom), query);
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        filteredLayers = layers.filter(l => destinationRoutes?.some(r => r.network === l.internal_name))
-        menuItems = GenerateMenuItems(filteredLayers, fromExchange ? [] : exchanges.filter(e => e.is_enabled), resolveImgSrc, direction, !!(to && lockTo), routesData, query);
+        menuItems = GenerateMenuItems(routesData, fromExchange ? [] : exchanges, direction, !!(to && lockTo), query);
     }
 
-    const value = menuItems.find(x => x.type === 'layer' ?
-        x.id == (direction === "from" ? from : to)?.internal_name :
-        x.id == (direction === 'from' ? fromExchange : toExchange)?.internal_name);
+    const value = menuItems.find(x => !x.isExchange ?
+        x.id == (direction === "from" ? from : to)?.name :
+        x.id == (direction === 'from' ? fromExchange : toExchange)?.name);
 
-    const handleSelect = useCallback((item: SelectMenuItem<Layer | Exchange>) => {
-        if (item.baseObject.internal_name === value?.baseObject.internal_name)
+    const handleSelect = useCallback((item: SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean }) => {
+        if (item.baseObject.name === value?.baseObject.name)
             return
         if (!item.isAvailable.value && item.isAvailable.disabledReason == LayerDisabledReason.InvalidRoute) {
             setFieldValue(name === "from" ? "to" : "from", null)
             setFieldValue(name === "from" ? "toExchange" : "fromExchange", null)
             setFieldValue(name, item.baseObject, true)
-        } else if (item.type === 'cex') {
+        } else if (item.isExchange) {
             setFieldValue(`${name}Exchange`, item.baseObject, true)
             setFieldValue(name, null, true)
         } else {
             setFieldValue(`${name}Exchange`, null, true)
             setFieldValue(name, item.baseObject, true)
             const currency = name == "from" ? fromCurrency : toCurrency
-            const assetSubstitute = (item.baseObject as Layer)?.assets?.find(a => a.asset === currency?.asset)
+            const assetSubstitute = (item.baseObject as RouteNetwork)?.tokens?.find(a => a.symbol === currency?.symbol)
             if (assetSubstitute) {
                 setFieldValue(`${name}Currency`, assetSubstitute, true)
             }
         }
-    }, [name, assetGroups, value])
-
-    const networkValueDetails = <div>
-        {value
-            ?
-            <span className="ml-3 block font-medium text-primary-text flex-auto items-center">
-                {value?.name}
-            </span>
-            :
-            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
-                {placeholder}
-            </span>}
-    </div>
+    }, [name, value])
 
     const pickNetworkDetails = <div>
         {
@@ -204,13 +179,12 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     values={menuItems}
                     searchHint={searchHint}
                     isLoading={isLoading}
-                    valueDetails={networkValueDetails}
-                    lockDetails={pickNetworkDetails}
+                    modalContent={pickNetworkDetails}
                 />
             </div>
             <div className="col-span-3 md:col-span-2 w-full ml-2">
                 {
-                    value?.type === 'cex' ?
+                    value?.isExchange ?
                         <CurrencyGroupFormField direction={name} />
                         :
                         <CurrencyFormField direction={name} />
@@ -220,7 +194,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     </div>)
 });
 
-function groupByType(values: SelectMenuItem<Layer>[]) {
+function groupByType(values: SelectMenuItem<Network>[]) {
     let groups: SelectMenuItemGroup[] = [];
     values.forEach((v) => {
         let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });
@@ -238,13 +212,13 @@ function groupByType(values: SelectMenuItem<Layer>[]) {
     return groups;
 }
 
-function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc: (item: Layer | Exchange | NetworkCurrency) => string, direction: SwapDirection, lock: boolean, routesData: Route[] | undefined, query: QueryParams): SelectMenuItem<Layer | Exchange>[] {
+function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchange[], direction: SwapDirection, lock: boolean, query: QueryParams): (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[] {
 
-    let layerIsAvailable = (layer: Layer) => {
+    let layerIsAvailable = (route: RouteNetwork) => {
         if (lock) {
             return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
         }
-        else if (!routesData?.some(r => r.network === layer.internal_name)) {
+        else if (!route.tokens?.some(r => r.status === 'active')) {
             if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange) {
                 return { value: false, disabledReason: LayerDisabledReason.InvalidRoute }
             }
@@ -265,59 +239,40 @@ function GenerateMenuItems(layers: Layer[], exchanges: Exchange[], resolveImgSrc
         }
     }
 
-    const mappedLayers = layers.map(l => {
+    const mappedLayers = routes?.map(l => {
         let orderProp: keyof NetworkSettings | keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
-        const NetworkImg = <Image
-            src={resolveImgSrc(l)}
-            alt="Project Logo"
-            height="40"
-            width="40"
-            loading="eager"
-            className="rounded-md object-contain" />
-        const order = NetworkSettings.KnownSettings[l.internal_name]?.[orderProp]
-        const res: SelectMenuItem<Layer> = {
+        const order = NetworkSettings.KnownSettings[l.name]?.[orderProp]
+        const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
             baseObject: l,
-            id: l.internal_name,
+            id: l.name,
             name: l.display_name,
             order: order || 100,
-            imgSrc: resolveImgSrc && resolveImgSrc(l),
+            imgSrc: l.logo,
             isAvailable: layerIsAvailable(l),
-            type: 'layer',
-            group: getGroupName(l, 'layer', layerIsAvailable(l))
+            group: getGroupName(l, 'network', layerIsAvailable(l)),
+            isExchange: false,
         }
         return res;
-    }).sort(SortingByAvailability);
+    }).sort(SortingByAvailability) || [];
 
     const mappedExchanges = exchanges.map(e => {
         let orderProp: keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
-        const NetworkImg = <Image
-            src={resolveImgSrc(e)}
-            alt="Project Logo"
-            height="40"
-            width="40"
-            loading="eager"
-            className="rounded-md object-contain" />
-        const order = ExchangeSettings.KnownSettings[e.internal_name]?.[orderProp]
-        const res: SelectMenuItem<Exchange> = {
+        const order = ExchangeSettings.KnownSettings[e.name]?.[orderProp]
+        const res: SelectMenuItem<Exchange> & { isExchange: boolean } = {
             baseObject: e,
-            id: e.internal_name,
+            id: e.name,
             name: e.display_name,
             order: order || 100,
-            imgSrc: resolveImgSrc && resolveImgSrc(e),
+            imgSrc: e.logo,
             isAvailable: exchangeIsAvailable(e),
-            type: 'cex',
-            group: getGroupName(e, 'cex')
+            group: getGroupName(e, 'cex'),
+            isExchange: true,
         }
         return res;
     }).sort(SortingByAvailability);
 
     const items = [...mappedExchanges, ...mappedLayers]
     return items
-}
-
-type Route = {
-    network: string,
-    asset: string
 }
 
 export default NetworkFormField

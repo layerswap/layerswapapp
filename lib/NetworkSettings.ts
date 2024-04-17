@@ -70,8 +70,8 @@ export default class NetworkSettings {
     AccountExplorerTemplate?: string;
     GasCalculationType?: GasCalculation
     isFeatured?: boolean
+    ChainOrder?: number
 
-    public static ForceDisable?: { [network: string]: { offramp: boolean, onramp: boolean, crossChain: boolean } }
     public static KnownSettings: { [network: string]: NetworkSettings } = {};
 
     public static ImmutableXSettings: NetworkItemSettings
@@ -83,7 +83,6 @@ export default class NetworkSettings {
         }
 
         NetworkSettings._isInitialized = true;
-        NetworkSettings.ForceDisable = JSON.parse(process.env.NEXT_PUBLIC_NETWORK_FORCE_SETTINGS || "{}")
 
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.LoopringMainnet] = {
             AccountExplorerTemplate: 'https://explorer.loopring.io/account/{0}',
@@ -171,6 +170,9 @@ export default class NetworkSettings {
             AccountExplorerTemplate: 'https://etherscan.io/address/{0}',
             DefaultPriorityFee: 0.3,
             BaseFeeMultiplier: 1.7
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumSepolia] = {
+            ChainOrder: 1
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BobaMainnet] = {
             ChainId: 288,
@@ -282,15 +284,22 @@ export default class NetworkSettings {
             BaseFeeMultiplier: 1.7,
             DefaultPriorityFee: 1
         };
-        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ScrollMainnet] = {
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.BlastSepolia] = {
+            GasCalculationType: GasCalculation.OptimismType,
         };
-
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.BlastMainnet] = {
+            GasCalculationType: GasCalculation.OptimismType,
+        };
         NetworkSettings.ImmutableXSettings = {
             [KnownInternalNames.Networks.ImmutableXMainnet]: {
                 apiUri: "https://api.x.immutable.com/v1",
                 linkUri: "https://link.x.immutable.com",
             },
             [KnownInternalNames.Networks.ImmutableXGoerli]: {
+                apiUri: "https://api.sandbox.x.immutable.com/v1",
+                linkUri: "https://link.sandbox.x.immutable.com"
+            },
+            [KnownInternalNames.Networks.ImmutableXSepolia]: {
                 apiUri: "https://api.sandbox.x.immutable.com/v1",
                 linkUri: "https://link.sandbox.x.immutable.com"
             },

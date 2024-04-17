@@ -1,15 +1,20 @@
 import { Wallet } from "../stores/walletStore"
-import { NetworkCurrency } from "./CryptoNetwork"
-import { Layer } from "./Layer"
+import { Network, NetworkWithTokens, Token } from "./Network"
 
 export type BalanceProps = {
-    layer: Layer,
+    network: Network,
+    token: Token,
+    address: string
+}
+
+export type NetworkBalancesProps = {
+    network: NetworkWithTokens,
     address: string
 }
 
 export type GasProps = {
-    layer: Layer,
-    currency: NetworkCurrency,
+    network: Network,
+    token: Token,
     address?: `0x${string}`,
     userDestinationAddress?: string,
     wallet?: Wallet
@@ -37,7 +42,8 @@ export type Gas = {
 }
 
 export type BalanceProvider = {
-    getBalance: ({ layer, address }: BalanceProps) => Promise<Balance[] | undefined> | Balance[] | undefined | void,
-    getGas?: ({ layer, address, currency, userDestinationAddress, wallet }: GasProps) => Promise<Gas[] | undefined> | undefined | void,
+    getBalance: ({ network, token, address }: BalanceProps) => Promise<Balance | undefined | null> | Balance | undefined | void,
+    getNetworkBalances: (props: NetworkBalancesProps) => Promise<Balance[] | undefined> | Balance[] | undefined | void,
+    getGas?: (props: GasProps) => Promise<Gas[] | undefined> | undefined | void,
     supportedNetworks: string[],
 }

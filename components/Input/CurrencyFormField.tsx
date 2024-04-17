@@ -1,15 +1,13 @@
 import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useState } from "react";
-import { useSettingsState } from "../../context/settings";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import CurrencySettings from "../../lib/CurrencySettings";
 import { SortingByAvailability } from "../../lib/sorting";
-import { Layer } from "../../Models/Layer";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useQueryState } from "../../context/query";
-import { NetworkCurrency } from "../../Models/CryptoNetwork";
+import { Network, RouteNetwork, RouteToken, Token } from "../../Models/Network";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import useSWR from "swr";
 import { ApiResponse } from "../../Models/ApiResponse";
@@ -21,6 +19,7 @@ import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import useWallet from "../../hooks/useWallet";
 import { Wallet } from "../../stores/walletStore";
 import Image from 'next/image'
+import { LSAPIKnownErrorCode } from "../../Models/ApiError";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -37,7 +36,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     } = useFormikContext<SwapFormValues>();
 
     const { to, fromCurrency, toCurrency, from, currencyGroup, toExchange, fromExchange } = values
-    const { resolveImgSrc, layers } = useSettingsState();
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { balances } = useBalancesState()
@@ -47,127 +45,104 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     const lockAsset = direction === 'from' ? query?.lockFromAsset
         : query?.lockToAsset
     const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
-    const currencies = direction === 'from' ? from?.assets : to?.assets;
-
-    const sourceCurrencies = layers
-        .map(layer =>
-            layer.assets
-                .filter(asset => asset.availableInSource)
-                .map(asset => ({ ...asset, network_display_name: layer.display_name, network: layer.internal_name }))
-        )
-        .flat();
-
-    const destinationCurrencies = layers
-        .map(layer =>
-            layer.assets
-                .filter(asset => asset.availableInDestination)
-                .map(asset => ({ ...asset, network_display_name: layer.display_name, network: layer.internal_name }))
-        )
-        .flat();
-
-    const lockedCurrency = lockAsset
-        ? currencies?.find(c => c?.asset?.toUpperCase() === (asset)?.toUpperCase())
-        : undefined
+    const currencies = direction === 'from' ? from?.tokens : to?.tokens;
 
     const apiClient = new LayerSwapApiClient()
-    const version = LayerSwapApiClient.apiVersion
+    const include_unmatched = 'true'
 
     const sourceRouteParams = new URLSearchParams({
-        version,
-        ...(toExchange && currencyGroup && currencyGroup.groupedInBackend ?
+        include_unmatched,
+        ...(toExchange && currencyGroup && currencyGroup ?
             {
-                destination_asset_group: currencyGroup.name
+                destination_token_group: currencyGroup.symbol
             }
             : {
                 ...(to && toCurrency &&
                 {
-                    destination_network: to.internal_name,
-                    destination_asset: toCurrency?.asset
+                    destination_network: to.name,
+                    destination_token: toCurrency?.symbol
                 })
             })
     });
 
     const destinationRouteParams = new URLSearchParams({
-        version,
-        ...(fromExchange && currencyGroup && currencyGroup.groupedInBackend ?
+        include_unmatched,
+        ...(fromExchange && currencyGroup && currencyGroup ?
             {
-                source_asset_group: currencyGroup.name
+                source_asset_group: currencyGroup.symbol
             }
             : {
                 ...(from && fromCurrency &&
                 {
-                    source_network: from.internal_name,
-                    source_asset: fromCurrency?.asset
+                    source_network: from.name,
+                    source_token: fromCurrency?.symbol
                 }
                 )
             })
     });
 
-    const sourceRoutesURL = `/routes/sources?${sourceRouteParams}`
-    const destinationRoutesURL = `/routes/destinations?${destinationRouteParams}`
+    const sourceRoutesURL = `/sources?${sourceRouteParams}`
+    const destinationRoutesURL = `/destinations?${destinationRouteParams}`
 
     const { data: sourceRoutes,
         error: sourceRoutesError,
         isLoading: sourceRoutesLoading
-    } = useSWR<ApiResponse<{
-        network: string;
-        asset: string;
-    }[]>>(sourceRoutesURL, apiClient.fetcher)
+    } = useSWR<ApiResponse<RouteNetwork[]>>(`${sourceRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
     const {
         data: destinationRoutes,
         error: destRoutesError,
         isLoading: destRoutesLoading
-    } = useSWR<ApiResponse<{
-        network: string;
-        asset: string;
-    }[]>>(destinationRoutesURL, apiClient.fetcher)
+    } = useSWR<ApiResponse<RouteNetwork[]>>(`${destinationRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
+
+    const sourceCurrencies = sourceRoutes?.data
+        ?.map(route =>
+            route.tokens
+                .map(asset => ({ ...asset, network_display_name: route.display_name, network: route.name }))
+        )
+        .flat();
+
+    const destinationCurrencies = destinationRoutes?.data
+        ?.map(route =>
+            route.tokens
+                .map(asset => ({ ...asset, network_display_name: route.display_name, network: route.name }))
+        )
+        .flat();
 
     const isLoading = sourceRoutesLoading || destRoutesLoading
 
-    const filteredCurrencies = currencies?.filter(currency => {
-        if (direction === "from") {
-            return currency.availableInSource;
-        } else {
-            return currency.availableInDestination;
-        }
-    });
-
     const currencyMenuItems = GenerateCurrencyMenuItems(
-        layers,
         direction === "from" ? sourceCurrencies : destinationCurrencies,
-        resolveImgSrc,
         values,
-        direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
         direction,
         balances,
         query,
         wallets
     )
 
-    const currencyAsset = direction === 'from' ? fromCurrency?.asset : toCurrency?.asset;
+    const currencyAsset = direction === 'from' ? fromCurrency?.symbol : toCurrency?.symbol;
     const currencyNetwork = direction === 'from' ?
-        sourceCurrencies?.find(c => c.asset === fromCurrency?.asset && c.network === from?.internal_name)?.network
+        sourceCurrencies?.find(c => c.symbol === fromCurrency?.symbol && c.network === from?.name)?.network
         :
-        destinationCurrencies?.find(c => c.asset === toCurrency?.asset && c.network === to?.internal_name)?.network;
+        destinationCurrencies?.find(c => c.symbol === toCurrency?.symbol && c.network === to?.name)?.network;
 
     useEffect(() => {
         if (direction !== "to" || !to) return
 
-        let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset)
+        let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.symbol === currencyAsset)
 
         if (currencyIsAvailable) return
 
         const default_currency = to && (currencyMenuItems?.find(c =>
-            c.baseObject?.asset?.toUpperCase() === (query?.toAsset)?.toUpperCase())
-            || currencyMenuItems?.filter(c => c.baseObject.network === to?.internal_name)?.[0])
+            c.baseObject?.symbol?.toUpperCase() === (query?.toAsset)?.toUpperCase())
+            || currencyMenuItems?.filter(c => c.baseObject?.network === to?.name)?.[0])
 
         const selected_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.asset?.toUpperCase() === fromCurrency?.asset?.toUpperCase() && c.baseObject.network === fromCurrency.network)
+            c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase() && c.baseObject.network === fromCurrency.network)
 
         if (selected_currency
             && destinationRoutes?.data
-                ?.filter(r => r.network === to?.internal_name)
+                ?.filter(r => r.network === to?.name)
                 ?.some(r => r.asset === selected_currency.name)) {
             setFieldValue(name, selected_currency.baseObject)
         }
@@ -179,21 +154,21 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     useEffect(() => {
         if (direction !== "from" || !from) return
 
-        let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.asset === currencyAsset && c?.baseObject?.network === currencyNetwork)
+        let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.symbol === currencyAsset)
 
         if (currencyIsAvailable) return
 
-        const default_currency = from && (currencyMenuItems?.find(c =>
-            c.baseObject?.asset?.toUpperCase() === (query?.fromAsset)?.toUpperCase())
-            || currencyMenuItems?.filter(c => c.baseObject.network === from?.internal_name)?.[0])
+        const default_currency = currencyMenuItems?.find(c =>
+            c.baseObject?.symbol?.toUpperCase() === (query?.fromAsset)?.toUpperCase())
+            || currencyMenuItems?.[0]
 
         const selected_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.asset?.toUpperCase() === toCurrency?.asset?.toUpperCase() && c.baseObject.network === toCurrency.network)
+            c.baseObject?.symbol?.toUpperCase() === toCurrency?.symbol?.toUpperCase())
 
         if (selected_currency
             && sourceRoutes?.data
-                ?.filter(r => r.network === from?.internal_name)
-                ?.some(r => r.asset === selected_currency.name && r.network === selected_currency?.network)) {
+                ?.find(r => r.name === from?.name)?.tokens
+                ?.some(r => r.symbol === selected_currency.name && r.status === 'active')) {
             setFieldValue(name, selected_currency.baseObject)
         }
         else if (default_currency) {
@@ -204,9 +179,9 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     useEffect(() => {
         if (name === "toCurrency" && toCurrency) {
             if (destinationRoutes?.data
-                && !destinationRoutes?.data
-                    ?.filter(r => r.network === to?.internal_name)
-                    ?.some(r => r.asset === toCurrency?.asset)) {
+                && !!destinationRoutes?.data
+                    ?.find(r => r.name === to?.name)?.tokens
+                    ?.some(r => r.symbol === toCurrency?.symbol && r.status === 'route_not_found')) {
                 setFieldValue(name, null)
             }
         }
@@ -215,20 +190,19 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     useEffect(() => {
         if (name === "fromCurrency" && fromCurrency) {
             if (sourceRoutes?.data
-                && !sourceRoutes?.data
-                    ?.filter(r => r.network === from?.internal_name)
-                    ?.some(r => r.asset === fromCurrency?.asset)) {
+                && !!sourceRoutes?.data
+                    ?.find(r => r.name === from?.name)?.tokens
+                    ?.find(r => r.symbol === fromCurrency?.symbol && r.status === 'route_not_found')) {
                 setFieldValue(name, null)
             }
         }
     }, [toCurrency, currencyGroup, name, from, sourceRoutes, sourceRoutesError])
 
-    const value = currencyMenuItems?.find(x => x.baseObject.asset === currencyAsset && x.baseObject.network === currencyNetwork);
+    const value = currencyMenuItems?.find(x => x.baseObject.symbol === currencyAsset && x.baseObject.symbol === currencyNetwork);
 
-    const handleSelect = useCallback((item: SelectMenuItem<NetworkCurrency>) => {
-        const network = layers.find(l => l.internal_name === item?.baseObject.network)
+    const handleSelect = useCallback((item: SelectMenuItem<RouteToken>) => {
         setFieldValue(name, item.baseObject, true)
-        setFieldValue(direction === 'from' ? 'from' : 'to', network)
+        setFieldValue(direction === 'from' ? 'from' : 'to', item)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
     const valueDetails = <div>
@@ -261,7 +235,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     )
 };
 
-export function groupByType(values: SelectMenuItem<Layer>[]) {
+export function groupByType(values: SelectMenuItem<Network>[]) {
     let groups: SelectMenuItemGroup[] = [];
     values?.forEach((v) => {
         let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });
@@ -276,24 +250,21 @@ export function groupByType(values: SelectMenuItem<Layer>[]) {
 }
 
 export function GenerateCurrencyMenuItems(
-    layers: Layer[],
-    currencies: NetworkCurrency[],
-    resolveImgSrc: (item: Layer | NetworkCurrency) => string,
+    currencies: Token[],
     values: SwapFormValues,
-    routes?: { network: string, asset: string }[],
     direction?: string,
     balances?: { [address: string]: Balance[]; },
     query?: QueryParams,
-    wallets?: Wallet[] | undefined): SelectMenuItem<NetworkCurrency>[] {
+    wallets?: Wallet[] | undefined): SelectMenuItem<Token>[] {
     const { to, from } = values
     const lockAsset = direction === 'from' ? query?.lockFromAsset
         : query?.lockToAsset
 
-    let currencyIsAvailable = (currency: NetworkCurrency) => {
+    let currencyIsAvailable = (currency: RouteToken) => {
         if (lockAsset) {
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
-        else if ((from || to) && !routes?.filter(r => r.network === (direction === 'from' ? from?.internal_name : to?.internal_name)).some(r => r.asset === currency.asset)) {
+        else if (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) {
             if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset) {
                 return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
             }
@@ -306,7 +277,7 @@ export function GenerateCurrencyMenuItems(
 
     return currencies?.map(c => {
         const currency = c
-        const displayName = currency.display_asset ?? currency.asset;
+        const displayName = currency.symbol ?? currency.symbol;
 
         for (const key in balances) {
             if (!wallets?.some(wallet => wallet?.address === key)) {
@@ -315,18 +286,15 @@ export function GenerateCurrencyMenuItems(
         }
 
         const balancesArray = balances && Object.values(balances).flat();
-        const balance = balancesArray?.find(b => b?.token === c?.asset && b?.network === c.network)
+        const balance = balancesArray?.find(b => b?.token === c?.symbol /*&& b?.network === c.network*/)
 
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
-        const balanceAmountInUsd = formatted_balance_amount ? (currency?.usd_price * formatted_balance_amount).toFixed(2) : undefined
-
-        const layer = layers?.find(l => l.internal_name === c.network)
-        const layerImgSrc = layer && resolveImgSrc(layer)
+        const balanceAmountInUsd = formatted_balance_amount ? (currency?.price_in_usd * formatted_balance_amount).toFixed(2) : undefined
 
         const DisplayNameComponent = <div>
             {displayName}
             <span className="text-primary-text-muted text-xs block">
-                {c.network_display_name}
+                {/* {c.network_display_name} */}
             </span>
         </div>
         const details = balance && <p className="text-primary-text-placeholder flex flex-col items-end">
@@ -342,9 +310,9 @@ export function GenerateCurrencyMenuItems(
             }
         </p>
         const NetworkImage = <div>
-            {layerImgSrc && <div className="absolute w-2.5 -right-1 -bottom-1">
+            {c.logo && <div className="absolute w-2.5 -right-1 -bottom-1">
                 <Image
-                    src={layerImgSrc}
+                    src={c.logo}
                     alt="Project Logo"
                     height="40"
                     width="40"
@@ -354,20 +322,20 @@ export function GenerateCurrencyMenuItems(
             }
         </div>
 
-        const res: SelectMenuItem<NetworkCurrency> = {
+        const res: SelectMenuItem<RouteToken> = {
             baseObject: c,
-            id: `${c?.asset?.toLowerCase()}_${c?.network_display_name?.toLowerCase()}`,
+            //id: `${c?.symbol?.toLowerCase()}_${c?.network_display_name?.toLowerCase()}`,
+            id: `${c?.symbol?.toLowerCase()}`,
             name: displayName,
             menuItemLabel: DisplayNameComponent,
             menuItemDetails: details,
             menuItemImage: NetworkImage,
             balanceAmount: Number(formatted_balance_amount),
-            network_display_name: c.network_display_name,
-            order: CurrencySettings.KnownSettings[c.asset]?.Order ?? 5,
-            imgSrc: resolveImgSrc && resolveImgSrc(c),
+            //network_display_name: c.network_display_name,
+            order: CurrencySettings.KnownSettings[c.symbol]?.Order ?? 5,
+            imgSrc: c.logo,
             isAvailable: currencyIsAvailable(c),
-            type: "currency",
-            group: getGroupName(c.network_display_name === (direction === "from" ? from?.display_name : to?.display_name) ? c.network_display_name : "All networks"),
+            //group: getGroupName(c.network_display_name === (direction === "from" ? from?.display_name : to?.display_name) ? c.network_display_name : "All networks"),
         };
 
         return res

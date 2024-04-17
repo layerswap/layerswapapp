@@ -6,18 +6,16 @@ import { BaseError } from 'viem'
 import { datadogRum } from '@datadog/browser-rum';
 
 type TransactionMessageProps = {
-    prepare: ActionData,
     wait: ActionData,
     transaction: ActionData,
-    applyingTransaction: boolean,
+    applyingTransaction: boolean
 }
 
 const TransactionMessage: FC<TransactionMessageProps> = ({
-    prepare, wait, transaction, applyingTransaction
+    wait, transaction, applyingTransaction
 }) => {
-    const prepareResolvedError = resolveError(prepare?.error as BaseError)
     const transactionResolvedError = resolveError(transaction?.error as BaseError)
-    const hasError = prepare?.isError || transaction?.isError || wait?.isError
+    const hasError = transaction?.isError || wait?.isError
 
     if (wait?.isLoading || applyingTransaction) {
         return <TransactionInProgressMessage />
@@ -25,17 +23,10 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     else if (transaction?.isLoading || applyingTransaction) {
         return <ConfirmTransactionMessage />
     }
-    else if (prepare?.isLoading) {
-        return <PreparingTransactionMessage />
-    }
-    else if (prepare?.isError && prepareResolvedError === "insufficient_funds") {
-        return <InsufficientFundsMessage />
-    }
     else if (transaction?.isError && transactionResolvedError) {
         return <TransactionRejectedMessage />
     } else if (hasError) {
-        const unexpectedError = prepare?.error
-            || transaction?.error?.['data']?.message || transaction?.error
+        const unexpectedError = transaction?.error?.['data']?.message || transaction?.error
             || wait?.error
 
         const renderingError = new Error(unexpectedError.message);

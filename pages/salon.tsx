@@ -4,8 +4,10 @@ import { useRouter } from 'next/router';
 import { clearTempData, getTempData } from '../lib/openLink';
 import { InferGetServerSidePropsType } from 'next';
 import { getServerSideProps } from '../helpers/getSettings';
+import LayerSwapApiClient from '../lib/layerSwapApiClient';
 
-export default function Salon({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Salon({ settings, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+    LayerSwapApiClient.apiKey = apiKey
     const router = useRouter();
 
 
