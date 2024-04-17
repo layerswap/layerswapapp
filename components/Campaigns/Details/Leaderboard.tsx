@@ -1,5 +1,4 @@
 import { FC, useState } from "react"
-import { useSettingsState } from "../../../context/settings"
 import Image from 'next/image'
 import { Trophy } from "lucide-react"
 import LayerSwapApiClient, { Campaign, Leaderboard, Reward } from "../../../lib/layerSwapApiClient"
