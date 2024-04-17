@@ -327,6 +327,7 @@ export type Reward = {
     user_reward: {
         period_pending_amount: number,
         total_amount: number,
+        total_amount_in_usd: number
         total_pending_amount: number,
         position: number
     },
