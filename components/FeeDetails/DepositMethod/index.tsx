@@ -41,7 +41,10 @@ const DepositMethodComponent: FC = () => {
     }, [menuItems])
 
     useEffect(() => {
-        if (fromExchange) setFieldValue(name, 'deposit_address', true)
+        if (fromExchange) 
+            setFieldValue(name, 'deposit_address', true)
+        else
+            setFieldValue(name, 'wallet', true)
     }, [fromExchange])
 
     const handleSelect = useCallback((item: string) => {
