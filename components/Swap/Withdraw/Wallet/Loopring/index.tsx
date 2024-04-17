@@ -1,9 +1,7 @@
 import { ArrowLeftRight, Lock } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import SubmitButton from '../../../../buttons/submitButton';
-import { useSwapDataState } from '../../../../../context/swap';
 import toast from 'react-hot-toast';
-import { useSettingsState } from '../../../../../context/settings';
 import { useAccount, useNetwork } from 'wagmi';
 import { ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
 import WalletMessage from '../WalletTransfer/message';
@@ -14,25 +12,17 @@ import { useActivationData, useLoopringAccount, useLoopringTokens } from './hook
 import { LoopringAPI } from '../../../../../lib/loopring/LoopringAPI';
 import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
 import { useLoopringUnlockedAccount } from '../../../../../stores/loopringStore';
+import { WithdrawPageProps } from '../WalletTransferContent';
 
-type Props = {
-    depositAddress?: string,
-    amount?: number
-}
-
-const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
+const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId, callData, depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
     const [activationPubKey, setActivationPubKey] = useState<{ x: string; y: string }>()
     const [selectedActivationAsset, setSelectedActivationAsset] = useState<string>()
     const { chain } = useNetwork()
-    const { swap } = useSwapDataState();
-    const { layers } = useSettingsState();
+
     const { setSwapTransaction } = useSwapTransactionStore();
     const { isConnected, address: fromAddress } = useAccount();
-    const { source_network: source_network_internal_name } = swap || {}
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name);
-    const token = layers?.find(n => swap?.source_network == n?.internal_name)?.assets.find(c => c.asset == swap?.source_network_asset);
     const { account: accInfo, isLoading: loadingAccount, noAccount, mutate: refetchAccount } = useLoopringAccount({ address: fromAddress })
     const { availableBalances, defaultValue, loading: activationDataIsLoading, feeData } = useActivationData(accInfo?.accountId)
     const { tokens } = useLoopringTokens()
@@ -84,20 +74,19 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const handleTransfer = useCallback(async () => {
         setLoading(true)
         try {
-
-            if (!swap || !accInfo || !loopringAccount || !token)
+            if (!swapId || !accInfo || !loopringAccount || !token || !amount)
                 return
 
             const transferResult = await LoopringAPI.userAPI.transfer({
                 accInfo,
-                amount: swap.requested_amount.toString(),
+                amount: amount.toString(),
                 depositAddress: depositAddress as `0x${string}`,
-                sequence_number: swap?.sequence_number.toString(),
+                call_data: callData,
                 token,
                 unlockedAccount: loopringAccount.unlockedAccount
             })
             if (transferResult.hash) {
-                setSwapTransaction(swap.id, BackendTransactionStatus.Pending, transferResult.hash);
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, transferResult.hash);
                 setTransferDone(true)
             }
             else {
@@ -109,7 +98,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [swap, source_network, depositAddress, accInfo, loopringAccount, token])
+    }, [swapId, network, depositAddress, accInfo, loopringAccount, token, amount])
 
     if (noAccount) {
         //TODO fix text
@@ -139,11 +128,11 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         return <ConnectWalletButton />
     }
 
-    if (source_network && chain?.id !== Number(source_network.chain_id)) {
+    if (network && chain?.id !== Number(network.chain_id)) {
         return (
             <ChangeNetworkButton
-                chainId={Number(source_network?.chain_id)}
-                network={source_network?.display_name}
+                chainId={Number(network?.chain_id)}
+                network={network?.display_name}
             />
         )
     }

@@ -1,17 +1,17 @@
-import { NetworkCurrency } from "../../Models/CryptoNetwork";
-import { Exchange } from "../../Models/Exchange";
-import { Layer } from "../../Models/Layer";
-import { AssetGroup } from "../Input/CEXCurrencyFormField";
+import { RouteNetwork, RouteToken } from "../../Models/Network";
+import { Exchange, ExchangeToken } from "../../Models/Exchange";
 
 export type SwapFormValues = {
   amount?: string;
   destination_address?: string;
-  fromCurrency?: NetworkCurrency;
-  toCurrency?: NetworkCurrency;
+  // source_address?: string;
+  fromCurrency?: RouteToken;
+  toCurrency?: RouteToken;
   refuel?: boolean;
-  from?: Layer;
-  to?: Layer;
+  from?: RouteNetwork;
+  to?: RouteNetwork;
   fromExchange?: Exchange,
   toExchange?: Exchange,
-  currencyGroup?: AssetGroup
+  currencyGroup?: ExchangeToken
+  depositMethod?: string,
 }

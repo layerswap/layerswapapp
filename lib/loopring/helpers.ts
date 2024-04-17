@@ -4,8 +4,8 @@ import { signTypedData } from '@wagmi/core'
 import { signMessage } from '@wagmi/core'
 import { parseUnits } from 'viem';
 import { AccountInfo, ExchangeInfo, KEY_MESSAGE, LOOPRING_URLs, LpFee, OffchainFeeReqType, OriginTransferRequestV3, UnlockedAccount } from "./defs";
-import { NetworkCurrency } from "../../Models/CryptoNetwork";
 import { generateKey, getEdDSASig, getTransferTypedData, getUpdateAccountEcdsaTypedData, get_EddsaSig_Transfer } from "./utils";
+import { Token } from "../../Models/Network";
 
 type UnlockApiRes = {
     apiKey: string;
@@ -86,10 +86,10 @@ async function getNextStorageId
 type TransferProps = {
     unlockedAccount: UnlockedAccount,
     accInfo: AccountInfo,
-    token: NetworkCurrency,
+    token: Token,
     depositAddress: `0x${string}`,
     amount: string,
-    sequence_number: string
+    call_data: string | undefined
 }
 
 type TransferApiRes = {
@@ -110,7 +110,7 @@ export async function transfer
         accInfo,
         amount,
         depositAddress,
-        sequence_number,
+        call_data,
         token,
         unlockedAccount
     }: TransferProps): Promise<TransferApiRes> {
@@ -120,13 +120,13 @@ export async function transfer
     const storageId = await getNextStorageId(
         {
             accountId: accInfo.accountId,
-            tokenId: Number(token?.contract_address),
+            tokenId: Number(token?.contract),
         },
         apiKey)
     const feeData = await getOffchainFeeAmt(accInfo.accountId, OffchainFeeReqType.TRANSFER)
-    const fee = feeData.fees.find(f => f.token.toUpperCase() == token.asset.toUpperCase())?.fee
+    const fee = feeData.fees.find(f => f.token.toUpperCase() == token.symbol.toUpperCase())?.fee
     if (!fee) {
-        throw new Error(`Could not get fee for ${token.asset.toUpperCase()}`)
+        throw new Error(`Could not get fee for ${token.symbol.toUpperCase()}`)
     }
     const req = {
         exchange: exchangeInfo.exchangeAddress,
@@ -136,15 +136,15 @@ export async function transfer
         payeeId: 0,
         storageId: storageId.offchainId,
         token: {
-            tokenId: Number(token?.contract_address),
+            tokenId: Number(token?.contract),
             volume: parseUnits(amount, Number(token?.decimals)).toString(),
         },
         maxFee: {
-            tokenId: Number(token?.contract_address),
+            tokenId: Number(token?.contract),
             volume: fee,
         },
         validUntil: Math.round(Date.now() / 1000) + 30 * 86400,
-        memo: sequence_number,
+        ...(call_data ? { memo: call_data } : {}),
     }
 
     return await submitInternalTransfer(req, apiKey, eddsaKey.sk)

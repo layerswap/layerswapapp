@@ -1,22 +1,20 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useEffect, useState } from "react";
-import { useSettingsState } from "../../context/settings";
+import { forwardRef, useCallback, useEffect } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import Image from "next/image";
-import { AssetGroup } from "./CEXCurrencyFormField";
 import { isValidAddress } from "../../lib/addressValidator";
 import shortenAddress from "../utils/ShortenAddress";
 import Link from "next/link";
 import { SortingByOrder } from "../../lib/sorting";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
-import { Layer } from "../../Models/Layer";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import { Info } from "lucide-react";
+import { NetworkWithTokens, RouteNetwork } from "../../Models/Network";
+import { ExchangeNetwork } from "../../Models/Exchange";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -29,7 +27,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = direction
-    const [showModal, setShowModal] = useState(false)
 
     const {
         from,
@@ -41,74 +38,64 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         currencyGroup
     } = values
 
-    const { layers } = useSettingsState();
     const filterWith = direction === "from" ? to : from
-    const filterWithAsset = direction === "from" ? toCurrency?.asset : fromCurrency?.asset
+    const filterWithAsset = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
 
     const apiClient = new LayerSwapApiClient()
-    const version = LayerSwapApiClient.apiVersion
+    const include_unmatched = 'true'
 
     const destinationRouteParams = new URLSearchParams({
-        version,
+        include_unmatched,
         ...(filterWith && filterWithAsset
             ? (
                 {
                     [direction === 'to'
                         ? 'source_network'
                         : 'destination_network']
-                        : filterWith.internal_name,
+                        : filterWith.name,
                     [direction === 'to'
-                        ? 'source_asset'
-                        : 'destination_asset']
+                        ? 'source_token'
+                        : 'destination_token']
                         : filterWithAsset
                 }) : {}),
     });
 
-    const routesEndpoint = `/routes/${direction === "from" ? "sources" : "destinations"}?${destinationRouteParams.toString()}`
+    const routesEndpoint = `/${direction === "from" ? `exchange_source_networks?destination_token_group=${currencyGroup?.symbol}` : `exchange_destination_networks?source_asset_group=${currencyGroup?.symbol}`}&${destinationRouteParams.toString()}`
 
-    const { data: routes, isLoading } = useSWR<ApiResponse<{
-        network: string,
-        asset: string
-    }[]>>(routesEndpoint, apiClient.fetcher)
+    const { data: routes, isLoading } = useSWR<ApiResponse<RouteNetwork[]>>(`${routesEndpoint}`, apiClient.fetcher, { keepPreviousData: true })
     const routesData = routes?.data
 
-    const historicalNetworksEndpoint =
-        (fromExchange || toExchange)
-        && (`/exchanges/${direction === 'from'
-            ? `historical_sources?source_exchange=${fromExchange?.internal_name}`
-            :
-            `historical_destinations?destination_exchange=${toExchange?.internal_name}`}&version=${version}`)
+    const exchangeNetworksEndpoint =
+        ((fromExchange && to && toCurrency) || (toExchange && from && fromCurrency))
+        && (`/${direction === 'from' ?
+            `exchange_withdrawal_networks?source_exchange=${fromExchange?.name}&&source_token_group=${currencyGroup?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}`
+            : `exchange_deposit_networks?destination_exchange=${toExchange?.name}&destination_token_group=${currencyGroup?.symbol}&source_network=${from?.name}&source_token=${fromCurrency?.symbol}`}`)
 
-    const { data: historicalNetworks } = useSWR<ApiResponse<{
-        network: string,
-        asset: string
-    }[]>>(historicalNetworksEndpoint, apiClient.fetcher)
+    const { data: historicalNetworks } = useSWR<ApiResponse<ExchangeNetwork[]>>(exchangeNetworksEndpoint, apiClient.fetcher, { keepPreviousData: true })
 
     const network = (direction === 'from' ? from : to)
     const currency = (direction === 'from' ? fromCurrency : toCurrency)
 
-    const menuItems = routesData
-        && historicalNetworks
-        && GenerateMenuItems(routesData, historicalNetworks?.data, currencyGroup, layers)
-            .filter(item => layers.find(l =>
-                l.internal_name === item.baseObject.network));
+    const menuItems = historicalNetworks?.data && routesData
+        && GenerateMenuItems(historicalNetworks.data, routes?.data)
+            .filter(item => routes?.data?.find(l =>
+                l.name === item.baseObject.network.name));
 
-    const handleSelect = useCallback((item: SelectMenuItem<{ network: string, asset: string }>) => {
+    const handleSelect = useCallback((item: SelectMenuItem<ExchangeNetwork>) => {
         if (!item) return
-        const layer = layers.find(l => l.internal_name === item.baseObject.network)
-        const currency = layer?.assets.find(a => a.asset === item.baseObject.asset)
-        setFieldValue(name, layer, true)
+        const route = routes?.data?.find(l => l.name === item.baseObject.network.name)
+        const currency = route?.tokens.find(a => a.symbol === item.baseObject.token.symbol)
+        setFieldValue(name, route, true)
         setFieldValue(`${name}Currency`, currency, false)
-        setShowModal(false)
-    }, [name])
+    }, [name, routes])
 
     const formValue = (direction === 'from' ? from : to)
 
     //TODO set default currency & reset currency if not available
     const value = menuItems?.find(item =>
-        item.baseObject.asset ===
-        (direction === 'from' ? fromCurrency : toCurrency)?.asset
-        && item.baseObject.network === formValue?.internal_name)
+        item.baseObject.token.symbol ===
+        (direction === 'from' ? fromCurrency : toCurrency)?.symbol
+        && item.baseObject.network.name === formValue?.name)
 
     //Setting default value
     useEffect(() => {
@@ -134,7 +121,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     const valueDetails = <>
         <div className="flex">{network?.display_name}</div>
         <div className="text-primary-text-placeholder inline-flex items-center justify-self-end gap-1">
-            ({currency?.asset})
+            ({currency?.symbol})
         </div>
     </>
 
@@ -158,11 +145,11 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                 <span>{direction === 'from' ? 'Withdrawal network' : 'Deposit network'}</span>
             </div>
             {
-                currency?.contract_address && isValidAddress(currency.contract_address, network) && network &&
+                currency?.contract && isValidAddress(currency.contract, network) && network &&
                 <div className="justify-self-end space-x-1">
                     <span>Contract:</span>
-                    <Link target="_blank" href={network.account_explorer_template?.replace("{0}", currency.contract_address)} className="underline text-primary-buttonTextColor hover:no-underline w-fit">
-                        {shortenAddress(currency?.contract_address)}
+                    <Link target="_blank" href={network.account_explorer_template?.replace("{0}", currency.contract)} className="underline text-primary-buttonTextColor hover:no-underline w-fit">
+                        {shortenAddress(currency?.contract)}
                     </Link>
                 </div>
             }
@@ -179,55 +166,41 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             modalHeight="80%"
             valueDetails={valueDetails}
             modalContent={networkDetails}
+            key={value?.id}
         />
     </div>)
 })
 
 function GenerateMenuItems(
-    items: { network: string, asset: string }[],
-    historicalNetworks: { network: string, asset: string }[] | undefined,
-    currencyGroup: AssetGroup | undefined,
-    layers: Layer[],
-): SelectMenuItem<{ network: string, asset: string }>[] {
-    const menuItems = items
-        .filter(i => currencyGroup?.values?.some(v => v.asset == i.asset && v.network == i.network))
-        .map((e, index) => {
-            const indexOf = Number(historicalNetworks
-                ?.indexOf(historicalNetworks
-                    .find(n => n.asset === e.asset && n.network === e.network)
-                    || { network: '', asset: '' }))
+    historicalNetworks: ExchangeNetwork[],
+    routes: NetworkWithTokens[] | undefined,
+): SelectMenuItem<ExchangeNetwork>[] {
+    const menuItems = historicalNetworks.map((e, index) => {
+        // const indexOf = Number(historicalNetworks
+        //     ?.indexOf(historicalNetworks
+        //         .find(n => n.asset === e.asset && n.network === e.network)
+        //         || { network: '', asset: '' }))
 
-            const network = layers?.find(l => l.internal_name == e.network);
+        const network = routes?.find(l => l.name == e.network.name);
 
-            const item: SelectMenuItem<{ network: string, asset: string }> = {
-                baseObject: e,
-                id: index.toString(),
-                name: `${e.network}_${e.asset}`,
-                displayName: network?.display_name,
-                order: indexOf > -1 ? indexOf : 100,
-                imgSrc: network?.img_url || '',
-                isAvailable: { value: true, disabledReason: null },
-                group: '',
-                details: e.asset
-            }
-            return item;
-        }).sort(SortingByOrder)
+        const item: SelectMenuItem<ExchangeNetwork> = {
+            baseObject: e,
+            id: index.toString(),
+            name: `${e.network.name}_${e.token.symbol}`,
+            displayName: network?.display_name,
+            order: 1,
+            imgSrc: network?.logo || '',
+            isAvailable: { value: true, disabledReason: null },
+            details: e.token.symbol
+        }
+        return item;
+    }).sort(SortingByOrder)
     const res = menuItems
     return res
 }
 
 export default CEXNetworkFormField
 
-export function groupByType(values: SelectMenuItem<Layer>[]) {
-    let groups: SelectMenuItemGroup[] = [];
-    values?.forEach((v) => {
-        let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });
-        group.items.push(v);
-        if (!groups.find(x => x.name == v.group)) {
-            groups.push(group);
-        }
-    });
-
-    groups.sort((a, b) => (a.name === "All networks" ? 1 : b.name === "All networks" ? -1 : a.name.localeCompare(b.name)));
-    return groups;
+export function groupByType(values: SelectMenuItem<NetworkWithTokens>[]) {
+    return [{ name: "", items: values }];
 }

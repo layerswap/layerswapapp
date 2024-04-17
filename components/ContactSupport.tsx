@@ -5,7 +5,7 @@ import { useAuthState } from "../context/authContext"
 const ContactSupport: FC<{ children?: React.ReactNode }> = ({ children }) => {
     const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ email: email, userId: userId })
+    const updateWithProps = () => update({ customAttributes: { email: email, userId: userId, } })
 
     return <span onClick={() => {
         boot();

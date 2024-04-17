@@ -1,12 +1,11 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import {
     useAccount,
-    usePrepareSendTransaction,
     useSendTransaction,
     useWaitForTransaction,
     useNetwork,
 } from "wagmi";
-import { parseEther, createPublicClient, http } from 'viem'
+import { createPublicClient, http, parseEther } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
 import { BackendTransactionStatus } from "../../../../../lib/layerSwapApiClient";
 import WalletIcon from "../../../../icons/WalletIcon";
@@ -16,21 +15,13 @@ import { BaseTransferButtonProps } from "./sharedTypes";
 import TransactionMessage from "./transactionMessage";
 import { ButtonWrapper } from "./buttons";
 import { useSwapTransactionStore } from "../../../../../stores/swapTransactionStore";
-import useWalletTransferOptions from "../../../../../hooks/useWalletTransferOptions";
-import { SendTransactionData } from "../../../../../lib/telegram";
+import { useSwapDataState } from "../../../../../context/swap";
 
-type TransferNativeTokenButtonProps = BaseTransferButtonProps & {
-    chainId: number,
-}
-
-const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
+const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     depositAddress,
-    chainId,
     amount,
     savedTransactionHash,
     swapId,
-    userDestinationAddress,
-    sequenceNumber,
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const [buttonClicked, setButtonClicked] = useState(false)
@@ -38,20 +29,16 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
     const { address } = useAccount();
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { canDoSweepless, isContractWallet } = useWalletTransferOptions()
-    const sendTransactionPrepare = usePrepareSendTransaction({
-        to: isContractWallet?.ready ? depositAddress : undefined,
-        value: amount ? parseEther(amount.toString()) : undefined,
-        chainId: chainId,
-        enabled: isContractWallet?.ready
-    })
-    const encodedData: `0x${string}` = (canDoSweepless && address?.toLowerCase() !== userDestinationAddress?.toLowerCase()) ? `0x${sequenceNumber}` : "0x"
+    const { swapResponse } = useSwapDataState()
+    const { deposit_actions } = swapResponse || {}
+
+    const callData = deposit_actions?.find(da => true)?.call_data as `0x${string}` | undefined
 
     const tx = {
         to: depositAddress,
         value: amount ? parseEther(amount?.toString()) : undefined,
         gas: estimatedGas,
-        data: encodedData
+        data: callData
     }
 
     const transaction = useSendTransaction(tx)
@@ -69,26 +56,24 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
                 const gasEstimate = await publicClient.estimateGas({
                     account: address,
                     to: depositAddress,
-                    data: encodedData,
+                    data: callData,
                 })
                 setEstimatedGas(gasEstimate)
             }
         })()
-    }, [address, encodedData, depositAddress, amount])
+    }, [address, callData, depositAddress, amount])
 
     useEffect(() => {
         try {
             if (transaction?.data?.hash && transaction?.data?.hash as `0x${string}`) {
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, transaction?.data?.hash)
-                if (!!isContractWallet?.isContract)
-                    SendTransactionData(swapId, transaction?.data?.hash)
             }
         }
         catch (e) {
             //TODO log to logger
             console.error(e.message)
         }
-    }, [transaction?.data?.hash, swapId, isContractWallet?.isContract])
+    }, [transaction?.data?.hash, swapId])
 
     const waitForTransaction = useWaitForTransaction({
         hash: transaction?.data?.hash || savedTransactionHash,
@@ -105,14 +90,11 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
 
     const clickHandler = useCallback(async () => {
         setButtonClicked(true)
-        if (sendTransactionPrepare?.status == "idle") {
-            await sendTransactionPrepare.refetch();
-        }
+
         return transaction?.sendTransaction && transaction?.sendTransaction()
     }, [transaction, estimatedGas])
 
     const isError = [
-        sendTransactionPrepare,
         transaction,
         waitForTransaction
     ].find(d => d.isError)
@@ -126,7 +108,6 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
         {
             buttonClicked &&
             <TransactionMessage
-                prepare={sendTransactionPrepare}
                 transaction={transaction}
                 wait={waitForTransaction}
                 applyingTransaction={applyingTransaction}
@@ -137,7 +118,6 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
             <>
                 <ButtonWrapper
                     clcikHandler={clickHandler}
-                    disabled={sendTransactionPrepare?.isLoading || !isContractWallet?.ready}
                     icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 >
                     {(isError && buttonClicked) ? <span>Try again</span>
@@ -182,4 +162,4 @@ const TransferNativeTokenButton: FC<TransferNativeTokenButtonProps> = ({
     </>
 }
 
-export default TransferNativeTokenButton
+export default TransferTokenButton

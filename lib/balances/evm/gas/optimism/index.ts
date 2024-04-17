@@ -1,9 +1,9 @@
 import { TransactionSerializedEIP1559, encodeFunctionData, formatGwei, serializeTransaction } from "viem";
-import formatAmount from "../../../formatAmount";
-import getEVMGas from "../gas";
+import formatAmount from "../../../../formatAmount";
+import getEVMGas from "..";
 import { erc20ABI } from "wagmi";
 import { getL1Fee } from "./estimateFees";
-import { Gas } from "../../../../Models/Balance";
+import { Gas } from "../../../../../Models/Balance";
 
 export default class getOptimismGas extends getEVMGas {
     resolveGas = async (): Promise<Gas | undefined> => {
@@ -23,7 +23,7 @@ export default class getOptimismGas extends getEVMGas {
         const formattedGas = formatAmount(totalGas, this.nativeToken?.decimals)
         return {
             gas: formattedGas,
-            token: this.currency?.asset,
+            token: this.currency?.symbol,
             gasDetails: {
                 gasLimit: Number(estimatedGasLimit),
                 maxFeePerGas: feeData?.maxFeePerGas ? Number(formatGwei(feeData?.maxFeePerGas)) : undefined,
