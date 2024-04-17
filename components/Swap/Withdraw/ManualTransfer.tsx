@@ -13,7 +13,7 @@ import Link from "next/link";
 
 const ManualTransfer: FC = () => {
     const { swapResponse } = useSwapDataState()
-    console.log(swapResponse)
+
     const { swap, deposit_actions } = swapResponse || {}
     const hintsStore = useSwapDepositHintClicked()
     const hintClicked = hintsStore.swapTransactions[swap?.id || ""]

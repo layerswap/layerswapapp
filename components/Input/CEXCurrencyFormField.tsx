@@ -35,7 +35,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const sourceRouteParams = new URLSearchParams({
         include_unmatched,
-        ...(toExchange && currencyGroup && currencyGroup ?
+        ...(toExchange && currencyGroup ?
             {
                 destination_token_group: currencyGroup?.symbol
             }
@@ -50,30 +50,23 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const destinationRouteParams = new URLSearchParams({
         include_unmatched,
-        ...(fromExchange && currencyGroup && currencyGroup ?
+        ...(fromExchange && currencyGroup ?
             {
-                source_asset_group: currencyGroup?.symbol
+                source_token_group: currencyGroup?.symbol
             }
-            : {
-                ...(from && fromCurrency &&
-                {
-                    source_network: from.name,
-                    source_token: fromCurrency?.symbol
-                })
-            })
+            : {}
+        )
     });
 
-    const sourceRoutesURL = `/sources?${sourceRouteParams}`
-    const destinationRoutesURL = `/destinations?${destinationRouteParams}`
+    const sourceRoutesURL = toExchange && currencyGroup ? `/exchange_source_networks?${sourceRouteParams}` : null
+    const destinationRoutesURL = fromExchange && currencyGroup ? `/exchange_destination_networks?${destinationRouteParams}` : null
 
     const {
         data: sourceRoutes,
-        isLoading: sourceRoutesLoading,
     } = useSWR<ApiResponse<RouteNetwork[]>>(`${sourceRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
     const {
         data: destinationRoutes,
-        isLoading: destRoutesLoading,
     } = useSWR<ApiResponse<RouteNetwork[]>>(`${destinationRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : availableAssetGroups
@@ -81,7 +74,7 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
         values,
-        direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
+        direction === "to" ? sourceRoutes?.data : destinationRoutes?.data,
         lockedCurrency,
     )
 
@@ -116,7 +109,7 @@ export function GenerateCurrencyMenuItems(
         if (lockedCurrency) {
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
-        else if ((fromExchange || toExchange) && !routes?.some(r => r?.tokens?.some(t => t?.symbol === currency.symbol))) {
+        else if ((fromExchange || toExchange) && !routes?.some(r => r?.tokens?.some(t => t?.symbol === currency.symbol && t.status !== 'route_not_found'))) {
             return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
         }
         else {
