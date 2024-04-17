@@ -17,7 +17,7 @@ type Props = {
 }
 
 const Rewards: FC<Props> = ({ campaign }) => {
-    
+
     const { address } = useAccount();
     const apiClient = new LayerSwapApiClient()
 
@@ -47,23 +47,21 @@ const Rewards: FC<Props> = ({ campaign }) => {
     const campaignIsEnded = (campaignEndDate.getTime() - now.getTime()) < 0
 
     const DistributedAmount = ((campaign.distributed_amount / campaign.total_budget) * 100)
-    const usdc_price = campaign.token.price_in_usd
-
-    const total_amount = rewards?.user_reward.total_amount
-    const total_in_usd = (total_amount && usdc_price) ? (usdc_price * total_amount).toFixed(2) : null
 
     return <>
         <div className="space-y-4">
-            <p className="text-secondary-text">
+            <div className="text-secondary-text">
                 <span>
                     <span>Onboarding incentives that are earned by transferring to&nbsp;</span>{network?.display_name}<span>.&nbsp;</span>
                     <a
                         target='_blank'
                         href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards"
-                        className="text-primary-text underline hover:no-underline decoration-white cursor-pointer"
-                    >Learn more</a>
+                        className="text-primary-text underline hover:no-underline decoration-wh<Pite cursor-pointer"
+                    >
+                        Learn more
+                    </a>
                 </span>
-            </p>
+            </div>
             <div className="bg-secondary-700 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
                 {!campaignIsEnded &&
                     <BackgroundField header={<span className="flex justify-between"><span className="flex items-center"><span>Pending Earnings&nbsp;</span><ClickTooltip text={`${campaign.token.symbol} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
@@ -108,7 +106,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
                             </p>
                         </div>
                         <p>
-                            ${total_in_usd}
+                            ${rewards?.user_reward?.total_amount_in_usd}
                         </p>
                     </div>
                 </BackgroundField>
@@ -117,9 +115,10 @@ const Rewards: FC<Props> = ({ campaign }) => {
         <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
             <BackgroundField header={
                 <>
-                    <p className="flex items-center"><span>{campaign.token.symbol} pool</span>
+                    <div className="flex items-center">
+                        <span>{campaign.token.symbol} pool</span>
                         <ClickTooltip text={`The amount of ${campaign.token.symbol} to be distributed during this round of the campaign.`} />
-                    </p>
+                    </div>
                 </>
             } withoutBorder>
                 <div className="flex flex-col w-full gap-2">
