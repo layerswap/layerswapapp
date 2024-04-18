@@ -67,7 +67,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     useEffect(() => {
         amount && updateRequestedAmountInUsd(Number(amount))
-    }, [amount])
+    }, [amount, fromCurrency])
 
     return (<>
         <p className="block font-semibold text-secondary-text text-xs mb-1">Amount</p>
