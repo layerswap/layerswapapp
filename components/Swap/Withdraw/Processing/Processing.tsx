@@ -1,5 +1,5 @@
 import { ExternalLink } from 'lucide-react';
-import { FC, useEffect } from 'react'
+import { FC, useCallback, useEffect } from 'react'
 import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
@@ -17,6 +17,8 @@ import CountdownTimer from '../../../Common/CountDownTimer';
 import useSWR from 'swr';
 import { ApiResponse } from '../../../../Models/ApiResponse';
 import { datadogRum } from '@datadog/browser-rum';
+import { useIntercom } from 'react-use-intercom';
+import { useAuthState } from '../../../../context/authContext';
 
 type Props = {
     swapResponse: SwapResponse;
@@ -25,13 +27,21 @@ type Props = {
 const Processing: FC<Props> = ({ swapResponse }) => {
 
     const { swap, refuel, quote } = swapResponse
-
+    const { boot, show, update } = useIntercom();
+    const { email, userId } = useAuthState();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
 
     const {
         source_network,
         destination_network
     } = swap
+
+    const updateWithProps = () => update({customAttributes: { swapId: swap.id, email: email, userId: userId, } });
+    const startIntercom = useCallback(() => {
+        boot();
+        show();
+        updateWithProps();
+    }, [boot, show, updateWithProps]);
 
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
@@ -173,7 +183,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
                             swap?.fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
                                 "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
                                 :
-                                "Something went wrong while processing the transfer. Please contact support"
+                                <div><span>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer' onClick={() => startIntercom()}> please contact our support.</a></div>
                         }
                     </div>
                 </div>
