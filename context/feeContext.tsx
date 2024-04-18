@@ -64,7 +64,7 @@ export function FeeProvider({ children }) {
 
     return (
         <FeeStateContext.Provider value={{
-            minAllowedAmount: amountRange?.data?.min_amount ? amountRange?.data?.min_amount * 1.5 : undefined, // TODO: remove immediately, hotfix before proper min handling in api
+            minAllowedAmount: amountRange?.data?.min_amount,
             maxAllowedAmount: amountRange?.data?.max_amount,
             fee: lsFee?.data,
             mutateFee,
