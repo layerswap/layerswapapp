@@ -1,17 +1,14 @@
-import { FC, useEffect, useMemo } from "react"
-import { useSettingsState } from "../../../context/settings"
+import { FC, useMemo } from "react"
 import { useSwapDataState } from "../../../context/swap"
 import Summary from "./Summary"
-import { TransactionType, WithdrawType } from "../../../lib/layerSwapApiClient"
-import useWalletTransferOptions from "../../../hooks/useWalletTransferOptions"
+import { TransactionType } from "../../../lib/layerSwapApiClient"
 import shortenAddress, { shortenEmail } from "../../utils/ShortenAddress"
 import KnownInternalNames from "../../../lib/knownIds"
 import useWallet from "../../../hooks/useWallet"
 import { useQueryState } from "../../../context/query"
 
 const SwapSummary: FC = () => {
-    const { exchanges } = useSettingsState()
-    const { swapResponse: swapResponse, withdrawType } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
     const { swap, quote: swapQuote, refuel: swapRefuel } = swapResponse || {}
     const { getWithdrawalProvider: getProvider } = useWallet()
     const {
@@ -21,8 +18,8 @@ const SwapSummary: FC = () => {
 
     const { source_network, destination_network, source_token, destination_token } = swap || {}
 
-    const sourceExchange = exchanges.find(e => e.name === swap?.source_exchange?.name)
-    const destExchange = exchanges.find(e => e.name === swap?.destination_exchange?.name)
+    const sourceExchange = swap?.source_exchange
+    const destExchange = swap?.destination_exchange
 
     const provider = useMemo(() => {
         return source_network && getProvider(source_network)
@@ -36,7 +33,6 @@ const SwapSummary: FC = () => {
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
-    const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
     const requested_amount = (swapInputTransaction?.amount ?? swap.requested_amount) || undefined
 
