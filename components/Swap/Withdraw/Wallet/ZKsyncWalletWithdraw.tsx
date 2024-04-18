@@ -113,7 +113,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
             });
 
             if (tf?.txHash) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, tf?.txHash?.replace('sync-tx:', ''));
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, tf?.txHash?.replace('sync-tx:', '0x'));
             }
         }
         catch (e) {
