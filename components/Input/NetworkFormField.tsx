@@ -75,9 +75,13 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     const apiClient = new LayerSwapApiClient()
     const include_unmatched = 'true'
+    const include_unavailable = 'true'
+    const include_swaps = 'true'
 
     const exchangeParams = new URLSearchParams({
         include_unmatched,
+        include_unavailable,
+        include_swaps,
         ...(currencyGroup ?
             (currencyGroup ? {
                 [direction === 'to' ? 'source_token_group' : 'destination_token_group']: currencyGroup.symbol
@@ -93,6 +97,8 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     const networkParams = new URLSearchParams({
         include_unmatched,
+        include_unavailable,
+        include_swaps,
         ...(filterWith && filterWithAsset ?
             {
                 [direction === 'to' ? 'source_network' : 'destination_network']: filterWith?.name,
@@ -220,7 +226,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
         }
         else if (!route.tokens?.some(r => r.status === 'active')) {
-            if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange) {
+            if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange || !route.tokens?.some(r => r.status !== 'daily_limit_reached')) {
                 return { value: false, disabledReason: LayerDisabledReason.InvalidRoute }
             }
             else {
@@ -240,18 +246,22 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
         }
     }
 
-    const mappedLayers = routes?.map(l => {
+    const mappedLayers = routes?.map(r => {
         let orderProp: keyof NetworkSettings | keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
-        const order = NetworkSettings.KnownSettings[l.name]?.[orderProp]
+        const order = NetworkSettings.KnownSettings[r.name]?.[orderProp]
+        const details = !r.tokens?.some(r => r.status !== 'daily_limit_reached') ? <div>
+            Daily limit reached
+        </div> : undefined
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
-            baseObject: l,
-            id: l.name,
-            name: l.display_name,
+            baseObject: r,
+            id: r.name,
+            name: r.display_name,
             order: order || 100,
-            imgSrc: l.logo,
-            isAvailable: layerIsAvailable(l),
-            group: getGroupName(l, 'network', layerIsAvailable(l)),
+            imgSrc: r.logo,
+            isAvailable: layerIsAvailable(r),
+            group: getGroupName(r, 'network', layerIsAvailable(r)),
             isExchange: false,
+            details
         }
         return res;
     }).sort(SortingByAvailability) || [];

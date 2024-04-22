@@ -35,9 +35,13 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const apiClient = new LayerSwapApiClient()
     const include_unmatched = 'true'
+    const include_unavailable = 'true'
+    const include_swaps = 'true'
 
     const sourceRouteParams = new URLSearchParams({
         include_unmatched,
+        include_unavailable,
+        include_swaps,
         ...(toExchange && currencyGroup ?
             {
                 destination_token_group: currencyGroup.symbol
@@ -53,6 +57,8 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const destinationRouteParams = new URLSearchParams({
         include_unmatched,
+        include_unavailable,
+        include_swaps,
         ...(fromExchange && currencyGroup ?
             {
                 source_token_group: currencyGroup.symbol
@@ -202,7 +208,7 @@ function GenerateCurrencyMenuItems(
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
         else if (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) {
-            if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset) {
+            if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset || currency.status === 'daily_limit_reached') {
                 return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
             }
             return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
@@ -217,6 +223,9 @@ function GenerateCurrencyMenuItems(
         const displayName = currency.symbol;
         const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
+        const details = <p className="text-primary-text-muted">
+            {formatted_balance_amount}
+        </p>
 
         const res: SelectMenuItem<RouteToken> = {
             baseObject: c,
@@ -225,7 +234,7 @@ function GenerateCurrencyMenuItems(
             order: CurrencySettings.KnownSettings[c.symbol]?.Order ?? 5,
             imgSrc: c.logo,
             isAvailable: currencyIsAvailable(c),
-            details: `${formatted_balance_amount}`,
+            details: details,
         };
 
         return res

@@ -19,9 +19,9 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
             </p>
             {
                 item.details &&
-                <p className="text-primary-text-muted">
+                <>
                     {item.details}
-                </p>
+                </>
             }
         </div>
     </div>);
