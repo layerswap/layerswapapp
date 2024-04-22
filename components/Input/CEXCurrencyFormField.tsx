@@ -70,7 +70,7 @@ export function GenerateCurrencyMenuItems(
             name: displayName || "-",
             order: CurrencySettings.KnownSettings[c.symbol]?.Order ?? 5,
             imgSrc: c.logo,
-            isAvailable: lockedCurrency ? { value: true, disabledReason: CurrencyDisabledReason.LockAssetIsTrue } : { value: true, disabledReason: null },
+            isAvailable: lockedCurrency ? { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue } : { value: true, disabledReason: null },
         };
         return res
     }).sort(SortingByAvailability);
