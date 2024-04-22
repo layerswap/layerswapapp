@@ -41,6 +41,8 @@ export class Token {
     price_in_usd: number;
     precision: number;
     status?: string;
+    network?: string;
+    network_display_name?: string;
 }
 
 export class RouteToken extends Token {

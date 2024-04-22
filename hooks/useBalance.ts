@@ -63,6 +63,7 @@ export default function useBalanceProvider() {
     }
 
     const fetchBalance = async (network: Network, token: Token) => {
+        debugger
         const provider = getAutofillProvider(network)
         const wallet = provider?.getConnectedWallet()
         const address = query.account || wallet?.address
@@ -87,6 +88,12 @@ export default function useBalanceProvider() {
 
             setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(balance) }))
             setIsBalanceLoading(false)
+        }
+    }
+
+    const fetchAllBalances = async (networks: NetworkWithTokens[]) => {
+        for (const network of networks) {
+            await fetchNetworkBalances(network);
         }
     }
 
@@ -136,6 +143,7 @@ export default function useBalanceProvider() {
     return {
         fetchGas,
         fetchNetworkBalances,
+        fetchAllBalances,
         fetchBalance
     }
 }

@@ -4,6 +4,9 @@ import { LayerDisabledReason } from "../../Popover/PopoverSelect";
 export class SelectMenuItem<T> implements ISelectMenuItem {
     id: string;
     name: string;
+    menuItemLabel?: React.ReactNode;
+    menuItemDetails?: React.ReactNode;
+    menuItemImage?: React.ReactNode;
     order: number;
     imgSrc: string;
     displayName?: string | undefined;
@@ -32,6 +35,9 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
 export interface ISelectMenuItem {
     id: string;
     name: string;
+    menuItemLabel?: React.ReactNode;
+    menuItemDetails?: React.ReactNode;
+    menuItemImage?: React.ReactNode;
     imgSrc: string;
     displayName?: string | undefined;
     group?: string;

@@ -11,6 +11,8 @@ import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import { RouteNetwork } from "../../Models/Network";
 import { ExchangeToken } from "../../Models/Exchange";
+import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
+import { groupByType } from "./CurrencyFormField";
 
 const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
     const {
@@ -57,13 +59,16 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const {
         data: sourceRoutes,
+        isLoading: sourceRoutesLoading,
     } = useSWR<ApiResponse<RouteNetwork[]>>(sourceRoutesURL, apiClient.fetcher, { keepPreviousData: true })
 
     const {
         data: destinationRoutes,
+        isLoading: destRoutesLoading
     } = useSWR<ApiResponse<RouteNetwork[]>>(destinationRoutesURL, apiClient.fetcher, { keepPreviousData: true })
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : availableAssetGroups
+    const isLoading = sourceRoutesLoading || destRoutesLoading
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
@@ -83,12 +88,28 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
-    return <PopoverSelectWrapper
+    const valueDetails = <div>
+        {value
+            ?
+            <span className="block font-medium text-primary-text flex-auto items-center">
+                {value?.name}
+            </span>
+            :
+            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                Asset
+            </span>}
+    </div>
+
+    return <CommandSelectWrapper
+        disabled={!value?.isAvailable?.value || isLoading}
+        valueGrouper={groupByType}
         placeholder="Asset"
-        values={currencyMenuItems}
-        value={value}
         setValue={handleSelect}
-        disabled={!value?.isAvailable?.value}
+        value={value}
+        values={currencyMenuItems}
+        searchHint='Search'
+        isLoading={isLoading}
+        valueDetails={valueDetails}
     />;
 }
 

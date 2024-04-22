@@ -4,6 +4,7 @@ import useWallet from "../../../hooks/useWallet";
 import { useEffect, useMemo } from "react";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import useBalance from "../../../hooks/useBalance";
+import { useSettingsState } from "../../../context/settings";
 
 const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direction: string, onLoad: (address: string) => void }) => {
 
@@ -18,7 +19,14 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
     const destinationWalletProvider = useMemo(() => {
         return to && getProvider(to)
     }, [to, getProvider])
-    const { fetchNetworkBalances, fetchGas } = useBalance()
+    const { fetchNetworkBalances, fetchGas, fetchAllBalances } = useBalance()
+    const { networks, sourceRoutes } = useSettingsState()
+
+    const filteredNetworks = networks.filter(l => sourceRoutes.some(sr => sr.name.includes(l.name) && l.tokens))
+    const activeNetworks = filteredNetworks.map(chain => {
+        chain.tokens = chain.tokens.filter(asset => asset.contract); //TODO check this check
+        return chain;
+    });
 
     const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet()
     const destinationNetworkWallet = destinationWalletProvider?.getConnectedWallet()
@@ -36,6 +44,7 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
 
     useEffect(() => {
         direction === 'from' && values.from && fetchNetworkBalances(values.from);
+        //direction === 'from' && values.from && fetchAllBalances(activeNetworks);
     }, [values.from, values.destination_address, sourceNetworkWallet?.address])
 
     useEffect(() => {
