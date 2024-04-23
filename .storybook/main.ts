@@ -6,7 +6,8 @@ const config: StorybookConfig = {
     NEXT_PUBLIC_IDENTITY_API: "/",
     NEXT_PUBLIC_RESOURCE_STORAGE_URL: "https://devlslayerswapbridgesa.blob.core.windows.net",
     NEXT_PUBLIC_LS_API: "https://api-dev.layerswap.cloud",
-    NEXT_PUBLIC_API_KEY: "sandbox"
+    NEXT_PUBLIC_API_KEY: "sandbox",
+    NEXT_PUBLIC_API_VERSION: "sandbox"
   }),
   stories: [
     "../stories/**/*.mdx",
