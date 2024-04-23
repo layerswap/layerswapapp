@@ -36,34 +36,35 @@ export default function useBalanceProvider() {
     const { getAutofillProvider } = useWallet()
 
     const fetchNetworkBalances = async (network: NetworkWithTokens) => {
-        const provider = getAutofillProvider(network)
-        const wallet = provider?.getConnectedWallet()
-        const address = query.account || wallet?.address
-
-        const balance = balances[address || '']?.find(b => b?.network === network?.name)
-        const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
-
-        if (network
-            && isBalanceOutDated
-            && address) {
-            setIsBalanceLoading(true)
-
-            const walletBalances = balances[address]
-            const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
-
-            const provider = getBalanceProvider(network)
-            const networkBalances = await provider?.getNetworkBalances({
+        const provider = getAutofillProvider(network);
+        const wallet = provider?.getConnectedWallet();
+        const address = query.account || wallet?.address;
+    
+        const balance = balances[address || '']?.find(b => b?.network === network?.name);
+        const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance?.request_time).getTime() || 0) > 10000;
+    
+        if (network && isBalanceOutDated && address) {
+            setIsBalanceLoading(true);
+    
+            const balanceProvider = getBalanceProvider(network); 
+            const networkBalances = await balanceProvider?.getNetworkBalances({ 
                 network: network,
                 address: address,
-            }) || []
-
-            setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(networkBalances) }))
-            setIsBalanceLoading(false)
+            }) || [];
+    
+            setAllBalances((data) => {
+                const walletBalances = { ...data }; 
+                const filteredBalances = walletBalances[address]?.filter(b => b?.network !== network.name) || [];
+    
+                const updatedData = { ...walletBalances, [address]: filteredBalances.concat(networkBalances) };
+    
+                return updatedData;
+            });
+            setIsBalanceLoading(false);
         }
     }
 
     const fetchBalance = async (network: Network, token: Token) => {
-        debugger
         const provider = getAutofillProvider(network)
         const wallet = provider?.getConnectedWallet()
         const address = query.account || wallet?.address

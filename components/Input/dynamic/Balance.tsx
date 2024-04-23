@@ -44,8 +44,11 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
 
     useEffect(() => {
         direction === 'from' && values.from && fetchNetworkBalances(values.from);
-        //direction === 'from' && values.from && fetchAllBalances(activeNetworks);
     }, [values.from, values.destination_address, sourceNetworkWallet?.address])
+
+    useEffect(() => {
+        direction === 'from' && values.from && fetchAllBalances(activeNetworks);
+    }, [values.from, networks])
 
     useEffect(() => {
         direction === 'to' && values.to && fetchNetworkBalances(values.to);

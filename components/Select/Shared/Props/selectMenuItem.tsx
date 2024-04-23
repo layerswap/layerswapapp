@@ -15,7 +15,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
         disabledReason?: LayerDisabledReason | CurrencyDisabledReason | null
     };
     group?: string;
-    details?: string;
+    details?: React.ReactNode;
     baseObject: T;
     constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, group?: string, details?: string) {
         this.baseObject = baseObject;
@@ -45,6 +45,6 @@ export interface ISelectMenuItem {
         value: boolean;
         disabledReason?: LayerDisabledReason | CurrencyDisabledReason | null
     };
-    details?: string;
+    details?: React.ReactNode;
     order?: number;
 }
