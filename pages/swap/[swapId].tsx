@@ -6,6 +6,7 @@ import { SwapDataProvider } from '../../context/swap';
 import { TimerProvider } from '../../context/timerContext';
 import { getThemeData } from '../../helpers/settingsHelper';
 import SwapWithdrawal from '../../components/SwapWithdrawal'
+import { DepositMethodProvider } from '../../context/depositMethodContext';
 
 const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   LayerSwapApiClient.apiKey = apiKey
@@ -13,7 +14,9 @@ const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsTyp
     <Layout settings={settings} themeData={themeData}>
       <SwapDataProvider >
         <TimerProvider>
-          <SwapWithdrawal />
+          <DepositMethodProvider>
+            <SwapWithdrawal />
+          </DepositMethodProvider>
         </TimerProvider>
       </SwapDataProvider >
     </Layout>

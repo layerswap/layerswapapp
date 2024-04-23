@@ -27,7 +27,7 @@ const ManualTransferNote = () => {
                     <div className="mt-5 space-y-5">
                         <p className="text-xs text-secondary-text">To complete the swap manually you should switch the transfer method to deposit address</p>
                         <div>
-                            <object type="image/svg+xml" data="/Bell_Demo_JS.svg">svg-animation</object>
+                            <object type="image/svg+xml" data="/Bell_Demo_CSS_only.svg">svg-animation</object>
                         </div>
                         <div className="space-y-3">
                             {
@@ -43,7 +43,6 @@ const ManualTransferNote = () => {
                                 <span>Close</span>
                             </button>
                         </div>
-
                     </div>
                 </DialogContent>
             </Dialog>
