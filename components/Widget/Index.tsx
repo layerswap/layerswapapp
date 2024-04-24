@@ -4,7 +4,6 @@ import { default as Content } from './Content';
 import { default as Footer } from './Footer';
 import { useCallback, useRef } from "react";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
-import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 
 type Props = {
    children: JSX.Element | JSX.Element[];
