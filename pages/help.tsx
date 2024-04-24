@@ -6,7 +6,7 @@ import { useIntercom } from 'react-use-intercom';
 import Head from "next/head"
 import { useRouter } from 'next/router';
 import GlobalFooter from '../components/globalFooter';
-import Navbar from '../components/navbar';
+import GoHomeButton from '../components/utils/GoHome';
 
 export default function Home() {
     const { boot, showMessages } = useIntercom()
@@ -24,7 +24,6 @@ export default function Home() {
 
     return (
         <>
-
             <Head>
                 <title>Layerswap</title>
                 <link rel="apple-touch-icon" sizes="180x180" href={`${basePath}/favicon/apple-touch-icon.png`} />
@@ -50,9 +49,13 @@ export default function Home() {
                 <meta name="twitter:description" content="Move crypto across exchanges, blockchains, and wallets." />
                 <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
             </Head>
-            <div className='flex flex-col items-center h-screen w-full space-y-8'>
-                <Navbar />
-                <div className={`p-6 bg-secondary-900 border-secondary-700 border-2  md:shadow-card rounded-xl w-full sm:overflow-hidden relative max-w-[500px] space-y-5`}>
+            <div className='flex flex-col items-center h-screen w-full space-y-3 md:space-y-8'>
+                <div className='mt-3 md:mt-12 md:mb-8 mx-auto px-4 overflow-hidden'>
+                    <div className="flex justify-center">
+                        <GoHomeButton className='h-8 md:h-11 w-auto text-primary-logoColor fill-primary-text cursor-pointer' />
+                    </div>
+                </div>
+                <div className={`p-6 bg-secondary-900 border-secondary-700 sm:border-2  md:shadow-card rounded-xl w-full sm:overflow-hidden relative max-w-[500px] space-y-5`}>
                     <div>
                         <h1 className='text-4xl font-medium bg-gradient-to-r from-primary to-indigo-500 inline-block text-transparent bg-clip-text'>
                             Need help?
@@ -63,29 +66,27 @@ export default function Home() {
                     </div>
                     <div className={`w-full flex flex-col gap-4 text-secondary-text h-full`}>
                         <div className='grid grid-cols-2 items-stretch gap-4'>
-                            <div className='p-6 bg-secondary-700 rounded-lg flex flex-col justify-bewteen space-y-6 h-full'>
+                            <div className='p-4 md:p-6 bg-secondary-700 rounded-lg flex flex-col justify-bewteen space-y-6 h-full'>
                                 <p className='text-sm'>
                                     Have any questions? Our support team is just a click away
                                 </p>
-                                <button className='py-2 w-full bg-secondary-800 rounded-md font-medium' onClick={handleSupportWidgetOpen}>
-                                    <div className='bg-gradient-to-r from-primary to-indigo-500 text-transparent bg-clip-text inline-flex items-center gap-1 justify-center'>
-                                        {/* <MessageSquareText  className='stroke-2 w-6 h-6' /> */}
-                                        <span>Contact Us</span>
-                                    </div>
+                                <button className='py-2 w-full bg-secondary-800 rounded-md font-medium inline-flex items-center gap-1 justify-center' onClick={handleSupportWidgetOpen}>
+                                    <MessageSquareText className='h-5 w-5 text-primary' />
+                                    <span className='bg-gradient-to-r from-primary to-indigo-500 text-transparent bg-clip-text leading-6'>Contact Us</span>
                                 </button>
                             </div>
-                            <div className='p-6 bg-secondary-700 rounded-lg flex flex-col justify-between h-full '>
+                            <div className='p-4 md:p-6 bg-secondary-700 rounded-lg flex flex-col justify-between h-full '>
                                 <p className='text-sm'>
                                     See fequetly asked questions
                                 </p>
-                                <button type='button' className='py-2 w-full text-primary-text bg-secondary-800 rounded-md inline-flex items-center gap-1 justify-center font-medium'>
+                                <button onClick={() => router.push('https://intercom.help/layerswap/en/collections/6399693-faq')} type='button' className='py-2 w-full text-primary-text bg-secondary-800 rounded-md inline-flex items-center justify-center font-medium'>
                                     <QuestionIcon className='stroke-2 w-6 h-6' strokeWidth={2} />
                                     <span>FAQ</span>
                                 </button>
                             </div>
                         </div>
 
-                        <div className='col-span-2 p-6 bg-secondary-700 rounded-lg space-y-3'>
+                        <div className='col-span-2 p-4 md:p-6 bg-secondary-700 rounded-lg space-y-3'>
                             <p className='text-secondary-text text-sm'>
                                 You can also check the status of your transactions by searching on the explorer.
                             </p>
@@ -95,15 +96,14 @@ export default function Home() {
                 </div>
             </div>
             <GlobalFooter />
-
         </>
-
     );
 
 }
 
 const Search = () => {
     const [searchParam, setSearchParam] = useState('');
+    const router = useRouter();
 
     const handleKeyDown = (event: any) => {
         if (event.key === 'Enter') {
@@ -118,7 +118,7 @@ const Search = () => {
 
     const handleSearch = () => {
         const url = getLastPart(searchParam)
-        window.open(`https://www.layerswap.io/explorer/${encodeURIComponent(url || '')}`, '_blank')
+        router.push(`https://www.layerswap.io/explorer/${encodeURIComponent(url || '')}`)
     }
 
     return (
@@ -132,7 +132,7 @@ const Search = () => {
                     onChange={(v) => setSearchParam(v.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Search by Address / Source Tx / Destination Tx"
-                    className="block w-full rounded-md py-1 pl-3 pr-4 border-2 border-transparent placeholder:text-sm placeholder:leading-3 focus:border-secondary-500 duration-200 transition-all outline-none text-primary-text bg-secondary-800 shadow-sm placeholder:text-secondary-text "
+                    className="block w-full rounded-md py-1 pl-3 pr-4 border-2 border-transparent placeholder:text-xs placeholder:md:text-sm placeholder:leading-3 focus:border-secondary-500 duration-200 transition-all outline-none text-primary-text bg-secondary-800 shadow-sm placeholder:text-secondary-text "
                 />
                 <div className="flex p-2">
                     <button
