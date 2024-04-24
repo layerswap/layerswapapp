@@ -58,7 +58,7 @@ export default function Home() {
                             Need help?
                         </h1>
                         <p className='text-secondary-text'>
-                            Let's get your experience exceptional
+                            Let&apos;s get your experience exceptional
                         </p>
                     </div>
                     <div className={`w-full flex flex-col gap-4 text-secondary-text h-full`}>
