@@ -79,7 +79,7 @@ export default function Layout({ children, settings, themeData }: Props) {
     ...(router.query.lockFromAsset === 'true' ? { lockFromAsset: true } : {}),
     ...(router.query.lockToAsset === 'true' ? { lockToAsset: true } : {}),
     ...(router.query.hideLogo === 'true' ? { hideLogo: true } : {}),
-
+    ...(router.query.hideDepositMethod === 'true' ? { hideDepositMethod: true } : {}),
   };
 
   function logErrorToService(error, info) {
@@ -134,7 +134,7 @@ export default function Layout({ children, settings, themeData }: Props) {
           <TooltipProvider delayDuration={500}>
             <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
               <ThemeWrapper>
-                <TonConnectProvider basePath={basePath} themeData={themeData}>
+                <TonConnectProvider basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
                   <RainbowKit>
                     <Solana>
                       {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
