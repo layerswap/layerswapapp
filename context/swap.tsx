@@ -2,6 +2,7 @@ import { Context, useCallback, useEffect, useState, createContext, useContext } 
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse } from '../lib/layerSwapApiClient';
 import { useRouter } from 'next/router';
+import { useSettingsState } from './settings';
 import { QueryParams } from '../Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
@@ -12,6 +13,7 @@ import { ResolvePollingInterval } from '../components/utils/SwapStatus';
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
     swapResponse: undefined,
+    depositAddressIsFromAccount: false,
     withdrawType: undefined,
     swapTransaction: undefined,
 });
@@ -23,6 +25,7 @@ export type UpdateInterface = {
     setCodeRequested: (codeSubmitted: boolean) => void;
     setInterval: (value: number) => void,
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
+    setDepositAddressIsFromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
     setSwapId: (value: string) => void
 }
@@ -31,6 +34,7 @@ export type SwapData = {
     codeRequested: boolean,
     swapResponse?: SwapResponse,
     swapApiError?: ApiError,
+    depositAddressIsFromAccount: boolean,
     withdrawType: WithdrawType | undefined,
     swapTransaction: SwapTransaction | undefined,
 }
@@ -110,6 +114,7 @@ export function SwapDataProvider({ children }) {
         setCodeRequested: setCodeRequested,
         setInterval: setInterval,
         mutateSwap: mutate,
+        setDepositAddressIsFromAccount: setDepositAddressIsFromAccount,
         setWithdrawType,
         setSwapId
     };
@@ -118,6 +123,7 @@ export function SwapDataProvider({ children }) {
             withdrawType,
             codeRequested,
             swapTransaction,
+            depositAddressIsFromAccount: !!depositAddressIsFromAccount,
             swapResponse: swapResponse,
             swapApiError: error,
         }}>
