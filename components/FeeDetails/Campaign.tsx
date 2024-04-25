@@ -1,21 +1,19 @@
 import { FC } from "react"
-import LayerSwapApiClient, { Campaign } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { Campaign, QuoteReward } from "../../lib/layerSwapApiClient"
 import useSWR from "swr"
 import { ApiResponse } from "../../Models/ApiResponse"
-import { useSettingsState } from "../../context/settings"
-import { truncateDecimals } from "../utils/RoundDecimals"
-import { motion } from "framer-motion"
 import ClickTooltip from "../Tooltips/ClickTooltip"
 import Image from 'next/image';
-import { Network, Token } from "../../Models/Network"
+import { Network } from "../../Models/Network"
+import FeeDetails from "./FeeDetailsComponent"
 
 type CampaignProps = {
     destination: Network,
-    reward: number | undefined,
+    reward: QuoteReward | undefined,
 }
 const Comp: FC<CampaignProps> = ({
     destination,
-    reward: fee,
+    reward,
 }) => {
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
@@ -28,45 +26,33 @@ const Comp: FC<CampaignProps> = ({
             c?.network.name === destination?.name
             && new Date(c?.end_date).getTime() - now > 0)
 
-    if (!campaign || !fee)
+    if (!campaign || !reward)
         return <></>
 
     return <CampaignDisplay
         campaign={campaign}
-        reward={fee}
+        reward={reward}
     />
 }
 type CampaignDisplayProps = {
     campaign: Campaign,
-    reward: number,
+    reward: QuoteReward,
 }
 const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward }) => {
 
-    const network = campaign.network
     const token = campaign.token
 
-    return <motion.div
-        initial={{ y: "-100%" }}
-        animate={{
-            y: 0,
-            transition: { duration: 0.3, ease: [0.36, 0.66, 0.04, 1] },
-        }}
-        exit={{
-            y: "-100%",
-            transition: { duration: 0.4, ease: [0.36, 0.66, 0.04, 1] },
-        }}
-        className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700  relative bottom-2 z-0 pt-4 pb-2 px-3.5 text-right'>
-        <div className='flex items-center'>
-            <p>Est. {token?.symbol} Reward</p>
-            <ClickTooltip text={<span><span>The amount of onboarding reward that you’ll earn.&nbsp;</span><a target='_blank' href='/campaigns' className='text-primary underline hover:no-underline decoration-primary cursor-pointer'>Learn more</a></span>} />
-        </div>
-        {
-            Number(reward) > 0 &&
-            <div className="flex items-center space-x-1">
+    return <FeeDetails.Item>
+        <div className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700 relative text-right'>
+            <div className='flex items-center text-primary-buttonTextColor'>
+                <p>Est. {token?.symbol} reward</p>
+                <ClickTooltip text={<span className="!text-start">The amount of onboarding reward that you’ll earn.</span>} />
+            </div>
+            <div className="flex items-center space-x-1 text-secondary-text">
                 <span>+</span>
                 <div className="h-5 w-5 relative">
                     <Image
-                        src={network?.logo || ''}
+                        src={token?.logo || ''}
                         alt="Project Logo"
                         height="40"
                         width="40"
@@ -74,11 +60,11 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward }) => {
                         className="rounded-md object-contain" />
                 </div>
                 <p>
-                    {reward} {token?.symbol}
+                    {reward.amount} {token?.symbol}
                 </p>
             </div>
-        }
-    </motion.div>
+        </div>
+    </FeeDetails.Item>
 }
 
 export default Comp

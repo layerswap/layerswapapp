@@ -8,13 +8,15 @@ export const parameters = {
 
 const preview: Preview = {
   loaders: [
-    async () => ({
-      settings: await (await fetch(`https://api-dev.layerswap.cloud/api/v2/networks`, {
+    async () => {
+      const response = await fetch(`https://api-dev.layerswap.cloud/api/v2/networks`, {
         headers: {
-          'X-LS-APIKEY': 'sandbox'
-        },
-      })).json(),
-    }),
+          'X-LS-APIKEY': "sandbox"
+        }
+      });
+      const settings = await response.json();
+      return { settings };
+    },
   ],
   parameters: {
     docs: {

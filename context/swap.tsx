@@ -2,22 +2,18 @@ import { Context, useCallback, useEffect, useState, createContext, useContext } 
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse } from '../lib/layerSwapApiClient';
 import { useRouter } from 'next/router';
-import { useSettingsState } from './settings';
 import { QueryParams } from '../Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 import { Partner } from '../Models/Partner';
 import { ApiError } from '../Models/ApiError';
 import { ResolvePollingInterval } from '../components/utils/SwapStatus';
-import { Token } from '../Models/Network';
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
     swapResponse: undefined,
-    depositAddressIsFromAccount: false,
     withdrawType: undefined,
     swapTransaction: undefined,
-    selectedAssetNetwork: undefined,
 });
 
 export const SwapDataUpdateContext = createContext<UpdateInterface | null>(null);
@@ -27,9 +23,7 @@ export type UpdateInterface = {
     setCodeRequested: (codeSubmitted: boolean) => void;
     setInterval: (value: number) => void,
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
-    setDepositAddressIsFromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
-    setSelectedAssetNetwork: (assetNetwork: Token) => void
     setSwapId: (value: string) => void
 }
 
@@ -37,10 +31,8 @@ export type SwapData = {
     codeRequested: boolean,
     swapResponse?: SwapResponse,
     swapApiError?: ApiError,
-    depositAddressIsFromAccount: boolean,
     withdrawType: WithdrawType | undefined,
     swapTransaction: SwapTransaction | undefined,
-    selectedAssetNetwork: Token | undefined,
 }
 
 export function SwapDataProvider({ children }) {
@@ -49,7 +41,6 @@ export function SwapDataProvider({ children }) {
     const [depositAddressIsFromAccount, setDepositAddressIsFromAccount] = useState<boolean>()
     const router = useRouter();
     const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
-    const { networks: layers } = useSettingsState()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}`
@@ -59,12 +50,6 @@ export function SwapDataProvider({ children }) {
     const swapResponse = swapData?.data
 
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
-    const source_exchange = layers.find(n => n?.name?.toLowerCase() === swapResponse?.swap.source_exchange?.name.toLowerCase())
-
-    const exchangeAssets = source_exchange?.tokens?.filter(a => a?.symbol === swapResponse?.swap.source_token.symbol)
-    const source_network = layers.find(n => n.name?.toLowerCase() === swapResponse?.swap.source_network?.name.toLowerCase())
-    const defaultSourceNetwork = exchangeAssets?.[0] || source_network?.tokens?.[0]
-    const [selectedAssetNetwork, setSelectedAssetNetwork] = useState<Token | undefined>(defaultSourceNetwork)
 
     const swapStatus = swapResponse?.swap.status;
     useEffect(() => {
@@ -72,10 +57,6 @@ export function SwapDataProvider({ children }) {
             setInterval(ResolvePollingInterval(swapStatus))
         return () => setInterval(0)
     }, [swapStatus])
-
-    useEffect(() => {
-        setSelectedAssetNetwork(defaultSourceNetwork)
-    }, [defaultSourceNetwork])
 
     useEffect(() => {
         if (!swapId)
@@ -129,9 +110,7 @@ export function SwapDataProvider({ children }) {
         setCodeRequested: setCodeRequested,
         setInterval: setInterval,
         mutateSwap: mutate,
-        setDepositAddressIsFromAccount: setDepositAddressIsFromAccount,
         setWithdrawType,
-        setSelectedAssetNetwork,
         setSwapId
     };
     return (
@@ -139,8 +118,6 @@ export function SwapDataProvider({ children }) {
             withdrawType,
             codeRequested,
             swapTransaction,
-            selectedAssetNetwork,
-            depositAddressIsFromAccount: !!depositAddressIsFromAccount,
             swapResponse: swapResponse,
             swapApiError: error,
         }}>

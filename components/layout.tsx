@@ -16,7 +16,6 @@ import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
-import { FeeProvider } from "../context/feeContext";
 import RainbowKit from "./RainbowKit";
 import Solana from "./SolanaProvider";
 import { IsExtensionError } from "../helpers/errorHelper";
@@ -80,7 +79,7 @@ export default function Layout({ children, settings, themeData }: Props) {
     ...(router.query.lockFromAsset === 'true' ? { lockFromAsset: true } : {}),
     ...(router.query.lockToAsset === 'true' ? { lockToAsset: true } : {}),
     ...(router.query.hideLogo === 'true' ? { hideLogo: true } : {}),
-
+    ...(router.query.hideDepositMethod === 'true' ? { hideDepositMethod: true } : {}),
   };
 
   function logErrorToService(error, info) {
@@ -135,14 +134,12 @@ export default function Layout({ children, settings, themeData }: Props) {
           <TooltipProvider delayDuration={500}>
             <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
               <ThemeWrapper>
-                <TonConnectProvider basePath={basePath} themeData={themeData}>
+                <TonConnectProvider basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
                   <RainbowKit>
                     <Solana>
-                      <FeeProvider>
-                        {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                          <MaintananceContent />
-                          : children}
-                      </FeeProvider>
+                      {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                        <MaintananceContent />
+                        : children}
                     </Solana>
                   </RainbowKit>
                 </TonConnectProvider>

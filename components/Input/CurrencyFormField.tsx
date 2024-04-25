@@ -38,7 +38,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const sourceRouteParams = new URLSearchParams({
         include_unmatched,
-        ...(toExchange && currencyGroup && currencyGroup ?
+        ...(toExchange && currencyGroup ?
             {
                 destination_token_group: currencyGroup.symbol
             }
@@ -53,9 +53,9 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const destinationRouteParams = new URLSearchParams({
         include_unmatched,
-        ...(fromExchange && currencyGroup && currencyGroup ?
+        ...(fromExchange && currencyGroup ?
             {
-                source_asset_group: currencyGroup.symbol
+                source_token_group: currencyGroup.symbol
             }
             : {
                 ...(from && fromCurrency &&
@@ -67,19 +67,19 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
             })
     });
 
-    const sourceRoutesURL = `/sources?${sourceRouteParams}`
-    const destinationRoutesURL = `/destinations?${destinationRouteParams}`
+    const sourceRoutesURL = toExchange && currencyGroup ? `/exchange_source_networks?${sourceRouteParams}` : `/sources?${sourceRouteParams}`
+    const destinationRoutesURL = fromExchange && currencyGroup ? `/exchange_destination_networks?${destinationRouteParams}` : `/destinations?${destinationRouteParams}`
 
     const { data: sourceRoutes,
         error: sourceRoutesError,
         isLoading: sourceRoutesLoading
-    } = useSWR<ApiResponse<RouteNetwork[]>>(`${sourceRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<RouteNetwork[]>>(sourceRoutesURL, apiClient.fetcher, { keepPreviousData: true })
 
     const {
         data: destinationRoutes,
         error: destRoutesError,
         isLoading: destRoutesLoading
-    } = useSWR<ApiResponse<RouteNetwork[]>>(`${destinationRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<RouteNetwork[]>>(destinationRoutesURL, apiClient.fetcher, { keepPreviousData: true })
 
     const isLoading = sourceRoutesLoading || destRoutesLoading
 

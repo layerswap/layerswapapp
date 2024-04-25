@@ -17,7 +17,7 @@ const RefuelModal = dynamic(() => import("./RefuelModal"), {
 });
 
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
-    const { toCurrency, to, refuel, fromExchange, toExchange, from, fromCurrency } = values || {};
+    const { toCurrency, to, refuel, toExchange, from, fromCurrency } = values || {};
     const { fee, isFeeLoading } = useFee()
     const query = useQueryState();
     const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false)
@@ -25,13 +25,13 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
     return (
         <>
             <ResizablePanel>
+
+                {
+                    from && to && toCurrency && fromCurrency &&
+                    <DepositMethod />
+                }
+
                 <FeeDetails>
-
-                    {
-                        from && to && toCurrency && fromCurrency &&
-                        <DepositMethod />
-                    }
-
                     {
                         toCurrency?.refuel && !query.hideRefuel && !toExchange &&
                         <FeeDetails.Item>
@@ -46,6 +46,15 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                         </FeeDetails.Item>
                     }
 
+                    {
+                        values.to &&
+                        values.toCurrency &&
+                        <Campaign
+                            destination={values.to}
+                            reward={fee?.reward}
+                        />
+                    }
+
                     <FeeDetails.Item>
                         <ReceiveAmounts
                             destination_token={toCurrency}
@@ -58,15 +67,6 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
 
                 </FeeDetails>
             </ResizablePanel>
-
-            {
-                values.to &&
-                values.toCurrency &&
-                <Campaign
-                    destination={values.to}
-                    reward={fee?.reward}
-                />
-            }
 
             <RefuelModal values={values} openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} fee={fee} />
 

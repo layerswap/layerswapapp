@@ -74,11 +74,13 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const filterWithExchange = direction === 'from' ? toExchange : fromExchange
 
     const apiClient = new LayerSwapApiClient()
+    const include_unmatched = 'true'
 
     const exchangeParams = new URLSearchParams({
+        include_unmatched,
         ...(currencyGroup ?
             (currencyGroup ? {
-                [direction === 'to' ? 'source_asset_group' : 'destination_token_group']: currencyGroup.symbol
+                [direction === 'to' ? 'source_token_group' : 'destination_token_group']: currencyGroup.symbol
             } : {})
             :
             (filterWithAsset && filterWith ? {
@@ -88,7 +90,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         )
     });
 
-    const include_unmatched = 'true'
 
     const networkParams = new URLSearchParams({
         include_unmatched,
@@ -102,8 +103,8 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     });
 
     const params = (filterWithExchange && currencyGroup) ? exchangeParams : networkParams
-    const sourceRoutesURL = `/sources?${params.toString()}`
-    const destinationRoutesURL = `/destinations?${params.toString()}`
+    const sourceRoutesURL = filterWithExchange && currencyGroup ? `/exchange_source_networks?${params.toString()}` : `/sources?${params.toString()}`
+    const destinationRoutesURL = filterWithExchange && currencyGroup ? `/exchange_destination_networks?${params.toString()}` : `/destinations?${params.toString()}`
     const routesEndpoint = direction === "from" ? sourceRoutesURL : destinationRoutesURL
 
     const {

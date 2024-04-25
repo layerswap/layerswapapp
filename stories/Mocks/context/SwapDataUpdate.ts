@@ -6,7 +6,6 @@ const MockFunctions: UpdateInterface = {
     mutateSwap: () => { throw new Error("Not implemented") },
     setDepositAddressIsFromAccount: () => { throw new Error("Not implemented") },
     setWithdrawType: () => {  },
-    setSelectedAssetNetwork: () => { throw new Error("Not implemented") },
     setInterval: () => { console.log("set interval called") },
     setSwapId: () => { throw new Error("Not implemented") },
 }

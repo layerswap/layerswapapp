@@ -13,10 +13,11 @@ import Link from "next/link";
 
 const ManualTransfer: FC = () => {
     const { swapResponse } = useSwapDataState()
+
     const { swap, deposit_actions } = swapResponse || {}
     const hintsStore = useSwapDepositHintClicked()
     const hintClicked = hintsStore.swapTransactions[swap?.id || ""]
-    const trasnsferACtionData = deposit_actions?.find(a => a.type=='transfer')
+    const trasnsferACtionData = deposit_actions?.find(a => true)
 
     let generatedDepositAddress = trasnsferACtionData?.to_address
 

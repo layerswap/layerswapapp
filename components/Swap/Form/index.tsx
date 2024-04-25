@@ -65,7 +65,7 @@ export default function Form() {
 
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
-    const { minAllowedAmount, maxAllowedAmount } = useFee()
+    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee } = useFee()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
@@ -87,6 +87,7 @@ export default function Form() {
 
             const swapId = await createSwap(values, wallet?.address, query, partner);
             setSwapId(swapId)
+            pollFee(false)
             setSwapPath(swapId, router)
             setShowSwapModal(true)
         }
@@ -132,6 +133,7 @@ export default function Form() {
         : generateSwapInitialValues(settings, query)
 
     const handleShowSwapModal = useCallback((value: boolean) => {
+        pollFee(!value)
         setShowSwapModal(value)
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
     }, [router, swap])

@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Network, Token } from "../../Models/Network";
+import { Token } from "../../Models/Network";
 import { Fuel } from "lucide-react";
 import { Quote } from "../../lib/layerSwapApiClient";
 
@@ -46,7 +46,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ destination_token, refuel
                                     </p>
                                 </div>
                                 {
-                                    refuel ?
+                                    refuel && fee?.refuel?.amount ?
                                         <p onClick={() => onButtonClick()} className='flex cursor-pointer justify-end rounded-md gap-1 items-center text-xs text-primary-buttonTextColor leading-8 md:leading-none font-semibold'>
                                             <span>+</span> <span>{fee?.refuel?.amount} {fee?.refuel?.token?.symbol}</span> <span className="bg-primary/20 p-1 rounded-md"><Fuel className="h-3 w-3 text-primary" /></span>
                                         </p>

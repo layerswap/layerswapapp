@@ -12,6 +12,7 @@ import { Exchange } from "../Models/Exchange";
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
     static bridgeApiBaseEndpoint?: string = AppSettings.LayerswapBridgeApiUri;
+    static apiKey: string | undefined;
 
     _authInterceptor: AxiosInstance;
     _unauthInterceptor: AxiosInstance
@@ -181,13 +182,20 @@ export type DepositAction = {
     to_address?: `0x${string}`,
     token: Token,
     fee_token: Token,
-    type: 'transfer',
+    type: 'transfer' | 'manual_transfer',
 }
 
 export type Quote = {
     quote: SwapQuote,
     refuel: Refuel,
-    reward: number
+    reward: QuoteReward
+}
+
+export type QuoteReward = {
+    amount: number,
+    amount_in_usd: number,
+    token: Token,
+    network: Network
 }
 
 export type GetQuoteParams = {
@@ -319,6 +327,7 @@ export type Reward = {
     user_reward: {
         period_pending_amount: number,
         total_amount: number,
+        total_amount_in_usd: number
         total_pending_amount: number,
         position: number
     },

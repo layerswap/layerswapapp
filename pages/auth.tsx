@@ -5,9 +5,10 @@ import AuthWizard from '../components/Wizard/AuthWizard'
 import { SwapDataProvider } from '../context/swap'
 import { InferGetServerSidePropsType } from 'next'
 import { getServerSideProps } from '../helpers/getSettings'
+import LayerSwapApiClient from '../lib/layerSwapApiClient'
 
-export default function AuthPage({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-
+export default function AuthPage({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  LayerSwapApiClient.apiKey = apiKey
   return (<>
     <Layout settings={settings} themeData={themeData} >
       <SwapDataProvider>

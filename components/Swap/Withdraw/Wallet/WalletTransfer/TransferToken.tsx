@@ -32,7 +32,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     const { swapResponse } = useSwapDataState()
     const { deposit_actions } = swapResponse || {}
 
-    const callData = deposit_actions?.find(da => da.type == 'transfer')?.call_data as `0x${string}` | undefined
+    const callData = deposit_actions?.find(da => true)?.call_data as `0x${string}` | undefined
 
     const tx = {
         to: depositAddress,
@@ -118,7 +118,6 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
             <>
                 <ButtonWrapper
                     clcikHandler={clickHandler}
-                    // disabled={sendTransactionPrepare?.isLoading || !isContractWallet?.ready}
                     icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 >
                     {(isError && buttonClicked) ? <span>Try again</span>
