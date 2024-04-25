@@ -69,7 +69,7 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
 
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const appSettings = new LayerSwapAppSettings(Settings)
-    const swapContextInitialValues: SwapData = { codeRequested: false, swapResponse: undefined, withdrawType: undefined, swapTransaction: undefined }
+    const swapContextInitialValues: SwapData = { codeRequested: false, swapResponse: undefined, withdrawType: undefined, depositAddressIsFromAccount: false, swapTransaction: undefined }
 
     if (!appSettings) {
         return <div>Loading...</div>
