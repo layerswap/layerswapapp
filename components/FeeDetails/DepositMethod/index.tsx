@@ -7,6 +7,7 @@ import WalletIcon from "../../icons/WalletIcon";
 import { AlignLeft, ChevronDown, ChevronUp } from "lucide-react"
 import { motion } from "framer-motion";
 import { useDepositMethod } from "../../../context/depositMethodContext";
+import { useQueryState } from "../../../context/query";
 
 const variants = {
     open: { rotate: 180 },
@@ -20,6 +21,7 @@ const DepositMethodComponent: FC = () => {
     } = useFormikContext<SwapFormValues>();
     const { setShowModal,showModal} = useDepositMethod()
 
+    const { depositMethod: defaultDepositMethod, hideDepositMethod } = useQueryState()
     const { from, depositMethod, fromExchange } = values
     const name = 'depositMethod'
 
@@ -35,16 +37,21 @@ const DepositMethodComponent: FC = () => {
     ]
 
     const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods)
+    const defaultMethod = menuItems?.find(i => i.id === defaultDepositMethod)
 
     useEffect(() => {
-        if (!depositMethod || !menuItems?.find(i => i.id === depositMethod))
-            setFieldValue(name, (menuItems?.find(i => i.id === 'wallet')?.id || menuItems?.[0]?.id), true)
+        if (defaultMethod && (depositMethod !== defaultMethod?.id))
+            setFieldValue(name, defaultMethod?.id, true)
+        else if (!depositMethod)
+            setFieldValue(name, menuItems?.find(i => i.id === 'wallet')?.id, true)
+        else if (!menuItems?.find(i => i.id === depositMethod))
+            setFieldValue(name, menuItems?.[0]?.id, true)
     }, [menuItems])
 
     useEffect(() => {
         if (fromExchange)
             setFieldValue(name, 'deposit_address', true)
-        else
+        else if (!fromExchange && !defaultMethod)
             setFieldValue(name, 'wallet', true)
     }, [fromExchange])
 
@@ -57,7 +64,7 @@ const DepositMethodComponent: FC = () => {
 
     const hasOptions = Number(menuItems?.length) > 1 && !fromExchange
 
-    if (!hasOptions)
+    if (!hasOptions || (defaultMethod && hideDepositMethod))
         return null
 
     return (

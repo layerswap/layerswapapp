@@ -26,6 +26,8 @@ export class PersistantQueryParams {
     actionButtonText?: string = "";
     theme?: string = "";
     appName?: string = "";
+    depositMethod?: string = "";
+    hideDepositMethod?: boolean = false;
     hideLogo?: boolean = false
 
     // Obsolate
