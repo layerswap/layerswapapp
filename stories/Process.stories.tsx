@@ -117,7 +117,7 @@ const Component = ({ initialValues }: { initialValues: SwapFormValues | undefine
         valuesChanger(initialValues!)
     }, [])
     return (
-        <SwapDetails type='widget' />
+        <SwapDetails type='widget' swapResponse={swap} />
     )
 }
 

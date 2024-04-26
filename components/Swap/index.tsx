@@ -1,24 +1,22 @@
 import { FC, useCallback } from 'react'
 import { Widget } from '../Widget/Index';
-import { useSwapDataState } from '../../context/swap';
 import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
-import { BackendTransactionStatus, TransactionType } from '../../lib/layerSwapApiClient';
+import { BackendTransactionStatus, SwapItem, SwapResponse, TransactionType } from '../../lib/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
 import GasDetails from '../gasDetails';
 
 type Props = {
     type: "widget" | "contained",
+    swapResponse: SwapResponse
 }
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import SubmitButton from '../buttons/submitButton';
 
-const SwapDetails: FC<Props> = ({ type }) => {
-    const { swapResponse } = useSwapDataState()
-    
-    const { swap } = swapResponse || {}
+const SwapDetails: FC<Props> = ({ type, swapResponse }) => {
+    const { swap } = swapResponse;
     const swapStatus = swap?.status;
     const storedWalletTransactions = useSwapTransactionStore()
     const router = useRouter();
@@ -48,14 +46,14 @@ const SwapDetails: FC<Props> = ({ type }) => {
 
     return (
         <>
-            <Container type={type}>
+            <Container type={type} swapResponse={swapResponse}>
                 {
                     ((swapStatus === SwapStatus.UserTransferPending
                         && !(swapInputTransaction || storedWalletTransaction))) ?
                         <Withdraw />
                         :
                         <>
-                            <Processing />
+                            <Processing swapResponse={swapResponse} />
                             {storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
                                 <SubmitButton isDisabled={false} isSubmitting={false} onClick={cancelSwap}>
                                     Try again
