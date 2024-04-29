@@ -2,9 +2,8 @@ import { useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AddressBookItem } from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { Check, FilePlus2, History, Info, X } from "lucide-react";
+import { Check, Info, Plus, X } from "lucide-react";
 import KnownInternalNames from "../../../lib/knownIds";
-import { useSettingsState } from "../../../context/settings";
 import { isValidAddress } from "../../../lib/address/validator";
 import Image from 'next/image';
 import { Partner } from "../../../Models/Partner";
@@ -14,9 +13,12 @@ import useWallet from "../../../hooks/useWallet";
 import { AddressItem, AddressGroup, useAddressBookStore } from "../../../stores/addressBookStore";
 import { groupBy } from "../../utils/groupBy";
 import { CommandGroup, CommandItem, CommandList, CommandWrapper } from "../../shadcn/command";
-import SubmitButton from "../../buttons/submitButton";
 import AddressIcon from "../../AddressIcon";
 import { addressFormat } from "../../../lib/address/formatter";
+import MetaMaskIcon from "../../icons/Wallets/MetaMask";
+import WalletConnectIcon from "../../icons/Wallets/WalletConnect";
+import CoinbaseIcon from "../../icons/Wallets/Coinbase";
+import Phantom from "../../icons/Wallets/Phantom";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -57,14 +59,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const connectedWallet = provider?.getConnectedWallet()
     const connectedWalletAddress = connectedWallet?.address
-    const settings = useSettingsState()
 
     useEffect(() => {
         const recentlyUsedAddresses = address_book?.filter(a => destinationExchange ? a.exchanges.some(e => destinationExchange.name === e) : a.networks?.some(n => destination?.name === n) && isValidAddress(a.address, destination)) || []
 
         let addresses: AddressItem[] = []
 
-        if (recentlyUsedAddresses && destination) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => addressFormat(ra.address, destination) === addressFormat(a.address, destination))), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: destination.type }))]
+        // if (recentlyUsedAddresses && destination) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => addressFormat(ra.address, destination) === addressFormat(a.address, destination))), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: destination.type }))]
         if (connectedWalletAddress && destination) addresses = [...addresses.filter(a => addressFormat(connectedWalletAddress, destination) !== addressFormat(a.address, destination)), { address: connectedWalletAddress, group: AddressGroup.ConnectedWallet, networkType: destination.type }]
         if (newAddress && destination) addresses = [...addresses.filter(a => addressFormat(newAddress, destination) !== addressFormat(a.address, destination)), { address: newAddress, group: AddressGroup.ManualAdded, networkType: destination.type }]
 
@@ -77,12 +78,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             inputReference?.current?.focus()
         }
     }, [canFocus])
-
-    useEffect(() => {
-        if (values.destination_address && destination && addresses.find(a => addressFormat(a.address, destination) === addressFormat(values.destination_address!, destination))?.group === AddressGroup.ManualAdded) {
-            setManualAddress(values.destination_address)
-        }
-    }, [])
 
     const handleRemoveNewDepositeAddress = useCallback(async () => {
         setManualAddress('')
@@ -118,20 +113,21 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const groupedAddresses = groupBy(addresses, ({ group }) => group)
     const groupedAddressesArray = Object.keys(groupedAddresses).map(g => { const items: AddressItem[] = groupedAddresses[g]; return ({ name: g, items: items, order: (g === AddressGroup.ManualAdded && 3 || g === AddressGroup.RecentlyUsed && 2 || g === AddressGroup.ConnectedWallet && 1) || 10 }) })
 
+    //fix this
+    const switchAccount = useCallback(async () => {
+        if (!provider) return
+
+        await provider?.disconnectWallet()
+
+        console.log(provider.getConnectedWallet())
+        if (!connectedWallet && provider) { debugger; await connectWallet(provider.name) }
+    }, [provider, connectWallet, connectedWallet])
+
     return (<>
-        <div className='w-full flex flex-col justify-between h-full text-primary-text pt-2'>
+        <div className='w-full flex flex-col justify-between h-full text-primary-text pt-2 min-h-[250px]'>
             <div className='flex flex-col self-center grow w-full'>
                 <div className='flex flex-col self-center grow w-full space-y-3'>
-                    {
-                        !disabled
-                        && destination
-                        && provider
-                        && !connectedWallet
-                        && !values.toExchange &&
-                        <SubmitButton onClick={() => { connectWallet(provider.name) }} text_align="left" icon={<WalletIcon className='stroke-2 w-6 h-6' strokeWidth={2} />} className="bg-primary/20 border-none !text-primary !px-5 gap-1" type="button" isDisabled={false} isSubmitting={false}>
-                            Connect a wallet
-                        </SubmitButton>
-                    }
+
                     {
                         wrongNetwork && !destination_address &&
                         <div className="basis-full text-xs text-primary">
@@ -147,9 +143,36 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         <div className="text-left">
                             <CommandWrapper>
                                 <CommandList>
-                                    {groupedAddressesArray.filter(a => a.name !== AddressGroup.ManualAdded).sort((a, b) => a.order - b.order).map((group) => {
+                                    {groupedAddressesArray.sort((a, b) => a.order - b.order).map((group) => {
                                         return (
-                                            <CommandGroup key={group.name} heading={group.name} className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-3 [&_[cmdk-group-heading]]:!pt-2 !py-0 !px-0">
+                                            <CommandGroup
+                                                key={group.name}
+                                                heading={
+                                                    group.name === AddressGroup.ConnectedWallet ?
+                                                        <div className="flex items-center justify-between w-full px-3 pb-1">
+                                                            {
+                                                                connectedWallet &&
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <connectedWallet.icon className="rounded flex-shrink-0 h-5 w-5" />
+                                                                    <p>
+                                                                        Connected wallet
+                                                                    </p>
+                                                                </div>
+                                                            }
+                                                            <div>
+                                                                <button
+                                                                    onClick={switchAccount}
+                                                                    className="text-primary-text-muted text-xs"
+                                                                >
+                                                                    Switch Wallet
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        :
+                                                        group.name
+                                                }
+                                                className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-0 !py-0 !px-0"
+                                            >
                                                 <div className="bg-secondary-800 overflow-hidden rounded-lg divide-y divide-secondary-600">
                                                     {group.items.map(item => {
                                                         const difference_in_days = item.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(item.date).getTime()) / (1000 * 3600 * 24))) : undefined
@@ -196,19 +219,22 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                             </CommandWrapper>
                         </div>
                     }
-                    <div className="w-full flex items-center gap-2">
-                        {
-                            !destinationExchange &&
-                            <p className="text-primary-text-muted mb-1">
-                                or
-                            </p>
-                        }
-                        <hr className="border-secondary-500 w-full" />
-                    </div>
+
+                    {
+                        !disabled
+                        && destination
+                        && provider
+                        && !connectedWallet
+                        && !values.toExchange &&
+                        <ConnectWallet onClick={() => { connectWallet(provider.name) }} expanded={addresses.length === 0 && !manualAddress} />
+                    }
+
+                    <hr className="border-secondary-500 w-full" />
+
                     <div className="text-left">
                         {isPartnerWallet && partner && <span className='truncate text-sm text-secondary-text'> ({partner?.display_name})</span>}
                         <div className="flex flex-wrap flex-col md:flex-row items-center">
-                            <div className="relative flex grow rounded-lg shadow-sm bg-secondary-700 border-secondary-500 border focus-within:ring-0 focus-within:ring-primary focus-within:border-primary w-full sm:w-fit">
+                            <div className="relative flex grow rounded-lg shadow-sm bg-secondary-700 focus-within:ring-0 focus-within:ring-primary focus-within:border-primary w-full lg:w-fit">
                                 {isPartnerWallet &&
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         {
@@ -304,12 +330,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                             {shortenAddress(manualAddress)}
                                         </div>
                                     </div>
-                                    <div className='flex text-primary-text flex-row items-left h-6 rounded-md px-1'>
-                                        {
-                                            addressFormat(manualAddress, destination!) === addressFormat(destination_address!, destination!) &&
-                                            <Check />
-                                        }
-                                    </div>
                                 </div>
                             }
                         </div>
@@ -320,5 +340,36 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     </>
     )
 });
+
+const ConnectWallet = ({ expanded, onClick }: { expanded: boolean, onClick: () => void }) => {
+    return (
+        <button onClick={onClick} type="button" className="py-5 px-4 bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl">
+            <div className={expanded ? 'flex items-center gap-8' : ''}>
+                <div className={expanded ? "space-y-3" : 'flex justify-between items-center w-full'}>
+                    <div className="flex items-center gap-1.5">
+                        <WalletIcon className='stroke-2 w-6 h-6' />
+                        <h2 className={expanded ? "text-2xl font-medium" : "text-xl font-medium"}>
+                            Connect to wallet
+                        </h2>
+                    </div>
+                    <div className={expanded ? "flex flex-col gap-1 items-start" : "h-full flex items-start justify-center"}>
+                        <div className="justify-start items-end gap-1.5 inline-flex">
+                            <MetaMaskIcon className="w-6 h-6 rounded bg-gray-100" />
+                            <WalletConnectIcon className="w-6 h-6 rounded bg-gray-100" />
+                            <CoinbaseIcon className="w-6 h-6 rounded bg-gray-100" />
+                            <Phantom className="w-6 h-6 rounded bg-gray-100" />
+                            <div className="w-6 h-6 bg-slate-900 rounded flex-col justify-center items-center inline-flex">
+                                <Plus className="h-4 w-4 text-secondary-text" />
+                            </div>
+                        </div>
+                        <p className={expanded ? "text-xs text-secondary-text" : 'hidden'}>Short description about connecting wallets</p>
+                    </div>
+                </div>
+                <WalletIcon className={expanded ? 'h-20 w-auto' : 'hidden'} />
+            </div>
+        </button>
+    )
+}
+
 
 export default AddressPicker

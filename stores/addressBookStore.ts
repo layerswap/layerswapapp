@@ -8,7 +8,7 @@ interface AddressBookState {
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
-    ManualAdded = "Manual added",
+    ManualAdded = "Added Manually",
     RecentlyUsed = "Recently used"
 }
 
