@@ -5,7 +5,7 @@ import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { SwapResponse } from "./layerSwapApiClient";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
-    const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset } = queryParams
+    const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, depositMethod } = queryParams
     const { exchanges, sourceRoutes, destinationRoutes } = settings || {}
 
     const lockedSourceCurrency = lockFromAsset ?
@@ -54,6 +54,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         fromCurrency: initialSourceCurrency,
         toCurrency: initialDestinationCurrency,
         destination_address: initialAddress ? initialAddress : '',
+        depositMethod: depositMethod ? depositMethod : '',
     }
 
     return result
