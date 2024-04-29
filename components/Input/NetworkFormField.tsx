@@ -19,6 +19,7 @@ import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
 import { Info } from "lucide-react";
+import ClickTooltip from "../Tooltips/ClickTooltip";
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -249,9 +250,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
     const mappedLayers = routes?.map(r => {
         let orderProp: keyof NetworkSettings | keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
         const order = NetworkSettings.KnownSettings[r.name]?.[orderProp]
-        const details = !r.tokens?.some(r => r.status !== 'daily_limit_reached') ? <div>
-            Daily limit reached
-        </div> : undefined
+        const details = !r.tokens?.some(r => r.status !== 'daily_limit_reached') ? <ClickTooltip side="left" text='This network has reached its daily limit. Please try again later.' /> : undefined
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
             baseObject: r,
             id: r.name,
