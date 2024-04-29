@@ -5,6 +5,7 @@ export const initialValues: SwapFormValues = {
     "amount": "0.001803",
     "currencyGroup": {
         "symbol": "ETH",
+        "status": "active",
         'logo': "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png"
     },
     "destination_address": "0xf51c208e2c37a99b13dcf01a3434cc71be8b2bdd",
