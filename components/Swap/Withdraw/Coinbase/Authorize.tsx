@@ -27,7 +27,7 @@ type Props = {
 const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
-    const { exchanges } = useSettingsState()
+    const { source_exchange: exchange } = swap || {}
     const router = useRouter()
     let alreadyFamiliar = useCoinbaseStore((state) => state.alreadyFamiliar);
     let toggleAlreadyFamiliar = useCoinbaseStore((state) => state.toggleAlreadyFamiliar);
@@ -37,9 +37,8 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
     const [firstScreen, setFirstScreen] = useState<boolean>(true)
 
     const carouselRef = useRef<CarouselRef | null>(null)
-    const exchange_internal_name = swap?.source_exchange?.name
+    const exchange_internal_name = exchange?.name
 
-    const exchange = exchanges?.find(e => e.name?.toLowerCase() === exchange_internal_name?.toLowerCase())
     const exchange_name = exchange?.display_name
 
     const currency = swap?.source_token
