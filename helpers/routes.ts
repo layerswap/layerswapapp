@@ -47,12 +47,14 @@ export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFo
     }
 }
 
-const resolveRoutesURLForSelectedToken = (direction: SwapDirection, network: string | undefined, token: string | undefined) => {
+export const resolveRoutesURLForSelectedToken = (direction: SwapDirection, network: string | undefined, token: string | undefined) => {
 
     const include_unmatched = 'true'
+    const include_swaps = 'true'
 
     const params = new URLSearchParams({
         include_unmatched,
+        include_swaps,
         ...(network && token ?
             {
                 [direction === 'to' ? 'source_network' : 'destination_network']: network,
