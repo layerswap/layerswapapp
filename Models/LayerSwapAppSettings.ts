@@ -3,13 +3,14 @@ import { Exchange } from "./Exchange";
 import { LayerSwapSettings } from "./LayerSwapSettings";
 
 export class LayerSwapAppSettings {
-    constructor(settings: LayerSwapSettings ) {
-        this.networks = settings.networks;
-        this.sourceExchanges = settings.sourceExchanges;
-        this.destinationExchanges = settings.destinationExchanges;
+    constructor(settings: LayerSwapSettings) {
 
-        this.sourceRoutes = settings.sourceRoutes
-        this.destinationRoutes = settings.destinationRoutes
+        this.networks = settings.networks;
+        this.sourceExchanges = settings.sourceExchanges || [];
+        this.destinationExchanges = settings.destinationExchanges || [];
+
+        this.sourceRoutes = settings.sourceRoutes || []
+        this.destinationRoutes = settings.destinationRoutes || []
     }
 
     sourceExchanges: Exchange[]

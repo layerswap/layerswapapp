@@ -231,7 +231,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
         return res;
     }).sort(SortingByAvailability) || [];
 
-    const mappedExchanges = exchanges.map(e => {
+    const mappedExchanges = exchanges?.map(e => {
         let orderProp: keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
         const order = ExchangeSettings.KnownSettings[e.name]?.[orderProp]
         const res: SelectMenuItem<Exchange> & { isExchange: boolean } = {
@@ -245,7 +245,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             isExchange: true,
         }
         return res;
-    }).sort(SortingByAvailability);
+    }).sort(SortingByAvailability) || [];
 
     const items = [...mappedExchanges, ...mappedLayers]
     return items

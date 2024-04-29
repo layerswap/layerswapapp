@@ -690,89 +690,89 @@ export const Settings: LayerSwapSettings = {
             ]
         }
     ],
-    "exchanges": [
-        {
-            "token_groups": [
-                {
-                    "symbol": "USDC",
-                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/usdc.png"
-                },
-                {
-                    "symbol": "ETH",
-                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/eth.png"
-                }
-            ],
-            "name": "STRIPE",
-            "display_name": "Stripe (Only US)",
-            "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/exchanges/stripe.png",
-            "metadata": {
-                "o_auth": null,
-                "listing_date": "2023-05-23T16:16:30.241581+00:00"
-            }
-        },
-        {
-            "token_groups": [
-                {
-                    "symbol": "USDC",
-                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/usdc.png"
-                },
-                {
-                    "symbol": "ETH",
-                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/eth.png"
-                }
-            ],
-            "name": "COINBASE",
-            "display_name": "Coinbase",
-            "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/exchanges/coinbase.png",
-            "metadata": {
-                "o_auth": {
-                    "authorize_url": "https://www.coinbase.com/oauth/authorize?client_id=d1794c48e67c2eea97cef6154f42d0e099b13805264e739c96a9175a4acd9308&redirect_uri=https%3A%2F%2Fbridge-api-dev.layerswap.cloud%2Fapi%2Fcallback%2Fcoinbase&response_type=code&account=all&scope=wallet%3Atransactions%3Aread%2Cwallet%3Auser%3Aread%2Cwallet%3Aaccounts%3Aread%2Cwallet%3Atransactions%3Asend%2Cwallet%3Auser%3Aemail&meta[send_limit_amount]=1&meta[send_limit_currency]=USD&meta[send_limit_period]=month&state=",
-                    "connect_url": "https://www.coinbase.com/oauth/authorize?client_id=d1794c48e67c2eea97cef6154f42d0e099b13805264e739c96a9175a4acd9308&redirect_uri=https%3A%2F%2Fbridge-api-dev.layerswap.cloud%2Fapi%2Fcallback%2Fcoinbase&response_type=code&account=all&scope=wallet%3Auser%3Aemail%2Cwallet%3Aaddresses%3Aread%2Cwallet%3Aaddresses%3Acreate&state="
-                },
-                "listing_date": "2021-07-15T20:32:51.223453+00:00"
-            }
-        },
-        {
-            "token_groups": [
-                {
-                    "symbol": "USDC",
-                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/usdc.png"
-                },
-                {
-                    "symbol": "ETH",
-                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/eth.png"
-                }
-            ],
-            "name": "LSCEX",
-            "display_name": "Fake CEX (for testing)",
-            "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/exchanges/lscex.png",
-            "metadata": {
-                "o_auth": null,
-                "listing_date": "2023-01-13T13:23:55.633636+00:00"
-            }
-        },
-        {
-            "token_groups": [
-                {
-                    "symbol": "USDC",
-                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/usdc.png"
-                },
-                {
-                    "symbol": "ETH",
-                    "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/eth.png"
-                }
-            ],
-            "name": "PIPE",
-            "display_name": "Pipe",
-            "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/exchanges/pipe.png",
-            "metadata": {
-                "o_auth": null,
-                "listing_date": "2023-10-26T11:33:05.256894+00:00"
-            }
-        }
-    ],
-    "sources": [],
-    "destinations": []
+    // "exchanges": [
+    //     {
+    //         "token_groups": [
+    //             {
+    //                 "symbol": "USDC",
+    //                 "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/usdc.png"
+    //             },
+    //             {
+    //                 "symbol": "ETH",
+    //                 "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/eth.png"
+    //             }
+    //         ],
+    //         "name": "STRIPE",
+    //         "display_name": "Stripe (Only US)",
+    //         "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/exchanges/stripe.png",
+    //         "metadata": {
+    //             "o_auth": null,
+    //             "listing_date": "2023-05-23T16:16:30.241581+00:00"
+    //         }
+    //     },
+    //     {
+    //         "token_groups": [
+    //             {
+    //                 "symbol": "USDC",
+    //                 "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/usdc.png"
+    //             },
+    //             {
+    //                 "symbol": "ETH",
+    //                 "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/eth.png"
+    //             }
+    //         ],
+    //         "name": "COINBASE",
+    //         "display_name": "Coinbase",
+    //         "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/exchanges/coinbase.png",
+    //         "metadata": {
+    //             "o_auth": {
+    //                 "authorize_url": "https://www.coinbase.com/oauth/authorize?client_id=d1794c48e67c2eea97cef6154f42d0e099b13805264e739c96a9175a4acd9308&redirect_uri=https%3A%2F%2Fbridge-api-dev.layerswap.cloud%2Fapi%2Fcallback%2Fcoinbase&response_type=code&account=all&scope=wallet%3Atransactions%3Aread%2Cwallet%3Auser%3Aread%2Cwallet%3Aaccounts%3Aread%2Cwallet%3Atransactions%3Asend%2Cwallet%3Auser%3Aemail&meta[send_limit_amount]=1&meta[send_limit_currency]=USD&meta[send_limit_period]=month&state=",
+    //                 "connect_url": "https://www.coinbase.com/oauth/authorize?client_id=d1794c48e67c2eea97cef6154f42d0e099b13805264e739c96a9175a4acd9308&redirect_uri=https%3A%2F%2Fbridge-api-dev.layerswap.cloud%2Fapi%2Fcallback%2Fcoinbase&response_type=code&account=all&scope=wallet%3Auser%3Aemail%2Cwallet%3Aaddresses%3Aread%2Cwallet%3Aaddresses%3Acreate&state="
+    //             },
+    //             "listing_date": "2021-07-15T20:32:51.223453+00:00"
+    //         }
+    //     },
+    //     {
+    //         "token_groups": [
+    //             {
+    //                 "symbol": "USDC",
+    //                 "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/usdc.png"
+    //             },
+    //             {
+    //                 "symbol": "ETH",
+    //                 "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/eth.png"
+    //             }
+    //         ],
+    //         "name": "LSCEX",
+    //         "display_name": "Fake CEX (for testing)",
+    //         "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/exchanges/lscex.png",
+    //         "metadata": {
+    //             "o_auth": null,
+    //             "listing_date": "2023-01-13T13:23:55.633636+00:00"
+    //         }
+    //     },
+    //     {
+    //         "token_groups": [
+    //             {
+    //                 "symbol": "USDC",
+    //                 "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/usdc.png"
+    //             },
+    //             {
+    //                 "symbol": "ETH",
+    //                 "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/networks/eth.png"
+    //             }
+    //         ],
+    //         "name": "PIPE",
+    //         "display_name": "Pipe",
+    //         "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/exchanges/pipe.png",
+    //         "metadata": {
+    //             "o_auth": null,
+    //             "listing_date": "2023-10-26T11:33:05.256894+00:00"
+    //         }
+    //     }
+    // ],
+    // "sources": [],
+    // "destinations": []
 }
 
 export const SettingChains: any = [
