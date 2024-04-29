@@ -103,7 +103,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     }, [from, query])
 
     useEffect(() => {
-        if (name === "toCurrency" && toCurrency) {
+        if (name === "toCurrency" && toCurrency && !isLoading) {
             if (routes?.data
                 && !!routes?.data
                     ?.find(r => r.name === to?.name)?.tokens
@@ -111,10 +111,10 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 setFieldValue(name, null)
             }
         }
-    }, [fromCurrency, currencyGroup, name, to, routes, error,])
+    }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
 
     useEffect(() => {
-        if (name === "fromCurrency" && fromCurrency) {
+        if (name === "fromCurrency" && fromCurrency && !isLoading) {
             if (routes?.data
                 && !!routes?.data
                     ?.find(r => r.name === from?.name)?.tokens
@@ -122,7 +122,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 setFieldValue(name, null)
             }
         }
-    }, [toCurrency, currencyGroup, name, from, routes, error])
+    }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
 
     const value = currencyMenuItems?.find(x => x.id == currencyAsset);
 
