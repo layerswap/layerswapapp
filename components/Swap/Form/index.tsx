@@ -29,6 +29,7 @@ import dynamic from "next/dynamic";
 import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
+import BalancesFetcher from "./BalancesFetcher";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -139,6 +140,7 @@ export default function Form() {
     }, [router, swap])
 
     return <>
+        <BalancesFetcher />
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
                 {
@@ -165,7 +167,7 @@ export default function Form() {
             modalId="showSwap"
         >
             <ResizablePanel>
-                <SwapDetails type="contained" />
+                <SwapDetails type="contained" swapResponse={swapResponse!} />
             </ResizablePanel>
         </Modal>
         <Formik

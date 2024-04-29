@@ -14,6 +14,7 @@ export default function useLoopringBalance(): BalanceProvider {
 
 
     const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
+
         let balances: Balance[] = [];
 
         if (!network.tokens) return

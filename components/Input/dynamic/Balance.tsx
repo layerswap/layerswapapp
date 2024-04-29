@@ -6,10 +6,10 @@ import { truncateDecimals } from "../../utils/RoundDecimals";
 import useBalance from "../../../hooks/useBalance";
 import { useSettingsState } from "../../../context/settings";
 
-const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direction: string, onLoad: (address: string) => void }) => {
+const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
     const { to, fromCurrency, toCurrency, from } = values
-    const { balances, isBalanceLoading } = useBalancesState()
+    const { balances } = useBalancesState()
     const { getAutofillProvider: getProvider } = useWallet()
 
     const sourceWalletProvider = useMemo(() => {
@@ -39,16 +39,8 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
     const balanceAmount = direction === 'from' ? walletBalanceAmount : destinationBalanceAmount
 
     useEffect(() => {
-        sourceNetworkWallet?.address && onLoad(sourceNetworkWallet?.address)
-    }, [sourceNetworkWallet])
-
-    useEffect(() => {
         direction === 'from' && values.from && fetchNetworkBalances(values.from);
     }, [values.from, values.destination_address, sourceNetworkWallet?.address])
-
-    useEffect(() => {
-        direction === 'from' && values.from && fetchAllBalances(activeNetworks);
-    }, [values.from, networks])
 
     useEffect(() => {
         direction === 'to' && values.to && fetchNetworkBalances(values.to);
@@ -73,9 +65,7 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
             <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
                 <div>
                     <span>Balance:&nbsp;</span>
-                    {isBalanceLoading ?
-                        <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                        :
+                    {!isNaN(balanceAmount) &&
                         <span>{balanceAmount}</span>}
                 </div>
             </div>

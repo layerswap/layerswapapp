@@ -55,15 +55,21 @@ export default function useWallet() {
     }
 
     const getConnectedWallets = () => {
-        let connectedWallets: Wallet[] = []
+        const connectedWallets: Wallet[] = []
 
-        WalletProviders.forEach(wallet => {
-            const w = wallet.getConnectedWallet()
-            connectedWallets = w && [...connectedWallets, w] || [...connectedWallets]
+        WalletProviders.forEach(provider => {
+            const wallet = provider.getConnectedWallet()
+            if (wallet) {
+                connectedWallets.push(wallet)
+            }
         })
 
         return connectedWallets
     }
+
+    const connectedWalletProviders = WalletProviders.filter(provider => {
+        return provider.getConnectedWallet()
+    })
 
     const getWithdrawalProvider = (network: Network) => {
         const provider = WalletProviders.find(provider => provider.withdrawalSupportedNetworks.includes(network.name))
@@ -79,6 +85,7 @@ export default function useWallet() {
         wallets: getConnectedWallets(),
         connectWallet: handleConnect,
         disconnectWallet: handleDisconnect,
+        connectedWalletProviders,
         getWithdrawalProvider,
         getAutofillProvider,
     }

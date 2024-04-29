@@ -92,14 +92,15 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
 
     const isLoading = sourceRoutesLoading || destRoutesLoading
 
-    const currencies: (RouteToken & { network_name: string, network_display_name: string, network_logo: string })[] | undefined = direction === 'from' ? sourceRoutes?.data?.map(route =>
-        route.tokens.map(asset => ({ ...asset, network_display_name: route.display_name, network_name: route.name, network_logo: route.logo }))).flat()
+    const allCurrencies: ((RouteToken & { network_name: string, network_display_name: string, network_logo: string })[] | undefined) = direction === 'from' ?
+        sourceRoutes?.data?.map(route =>
+            route.tokens.map(asset => ({ ...asset, network_display_name: route.display_name, network_name: route.name, network_logo: route.logo }))).flat()
         :
         destinationRoutes?.data?.map(route =>
             route.tokens.map(asset => ({ ...asset, network_display_name: route.display_name, network_name: route.name, network_logo: route.logo }))).flat();
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
-        currencies!,
+        allCurrencies!,
         values,
         direction,
         balances,
@@ -108,7 +109,7 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         wallets
     )
     const currencyAsset = direction === 'from' ? fromCurrency?.symbol : toCurrency?.symbol;
-    const currencyNetwork = currencies?.find(c => c.symbol === currencyAsset && c.network_name === from?.name)?.network_name
+    const currencyNetwork = allCurrencies?.find(c => c.symbol === currencyAsset && c.network_name === from?.name)?.network_name
 
     useEffect(() => {
         if (direction !== "to") return
@@ -118,11 +119,11 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         if (currencyIsAvailable) return
 
         const default_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.symbol?.toUpperCase() === (query?.toAsset)?.toUpperCase())
-            || currencyMenuItems?.[0]
+            c.baseObject?.symbol?.toUpperCase() === (query?.toAsset)?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
+            || currencyMenuItems?.find(c => c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
 
         const selected_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase())
+            c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
 
         if (selected_currency && destinationRoutes?.data?.find(r => r.name === to?.name)?.tokens?.some(r => r.symbol === selected_currency.name && r.status === 'active')) {
             setFieldValue(name, selected_currency.baseObject)
@@ -141,11 +142,11 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
         if (currencyIsAvailable) return
 
         const default_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.symbol?.toUpperCase() === (query?.fromAsset)?.toUpperCase())
-            || currencyMenuItems?.[0]
+            c.baseObject?.symbol?.toUpperCase() === (query?.fromAsset)?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
+            || currencyMenuItems?.find(c => c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
 
         const selected_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.symbol?.toUpperCase() === toCurrency?.symbol?.toUpperCase())
+            c.baseObject?.symbol?.toUpperCase() === toCurrency?.symbol?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
 
         if (selected_currency
             && sourceRoutes?.data
@@ -181,27 +182,16 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
     }, [toCurrency, currencyGroup, name, from, sourceRoutes, sourceRoutesError])
 
     const value = currencyMenuItems?.find(x => x.baseObject.symbol == currencyAsset && x.baseObject.network_name === currencyNetwork);
+
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }>) => {
         const network = (direction === 'from' ? sourceRoutes : destinationRoutes)?.data?.find(r => r.name === item.baseObject.network_name)
         setFieldValue(name, item.baseObject, true)
         setFieldValue(direction, network, true)
     }, [name, direction, toCurrency, fromCurrency, from, to, sourceRoutes, destinationRoutes])
 
-    const valueDetails = <div>
-        {value
-            ?
-            <span className="block font-medium text-primary-text flex-auto items-center">
-                {value?.name}
-            </span>
-            :
-            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
-                Asset
-            </span>}
-    </div>
-
     return (
         <div className="relative">
-            <BalanceComponent values={values} direction={direction} onLoad={(v) => setWalletAddress(v)} />
+            <BalanceComponent values={values} direction={direction} />
             <CommandSelectWrapper
                 disabled={(value && !value?.isAvailable?.value) || isLoading}
                 valueGrouper={groupByType}
@@ -211,7 +201,6 @@ const CurrencyFormField: FC<{ direction: string }> = ({ direction }) => {
                 values={currencyMenuItems}
                 searchHint='Search'
                 isLoading={isLoading}
-                valueDetails={valueDetails}
             />
         </div>
     )
@@ -315,6 +304,7 @@ function GenerateCurrencyMenuItems(
             name: displayName || "-",
             menuItemLabel: DisplayNameComponent,
             menuItemImage: NetworkImage,
+            balanceAmount: Number(formatted_balance_amount),
             order: CurrencySettings.KnownSettings[c.symbol]?.Order ?? 5,
             imgSrc: c.logo,
             isAvailable: currencyIsAvailable(c),

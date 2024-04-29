@@ -27,7 +27,6 @@ export default function useBalanceProvider() {
     const query = useQueryState()
 
     const {
-        setIsBalanceLoading,
         setAllBalances,
         setIsGasLoading,
         setAllGases
@@ -44,8 +43,6 @@ export default function useBalanceProvider() {
         const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance?.request_time).getTime() || 0) > 10000;
 
         if (network && isBalanceOutDated && address) {
-            setIsBalanceLoading(true);
-
             const balanceProvider = getBalanceProvider(network);
             const networkBalances = await balanceProvider?.getNetworkBalances({
                 network: network,
@@ -60,7 +57,6 @@ export default function useBalanceProvider() {
 
                 return updatedData;
             });
-            setIsBalanceLoading(false);
         }
     }
 
@@ -75,7 +71,6 @@ export default function useBalanceProvider() {
         if (network
             && isBalanceOutDated
             && address) {
-            setIsBalanceLoading(true)
 
             const walletBalances = balances[address]
             const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
@@ -88,7 +83,6 @@ export default function useBalanceProvider() {
             }) || []
 
             setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(balance) }))
-            setIsBalanceLoading(false)
         }
     }
 
