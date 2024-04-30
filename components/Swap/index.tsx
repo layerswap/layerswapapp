@@ -8,15 +8,17 @@ import GasDetails from '../gasDetails';
 
 type Props = {
     type: "widget" | "contained",
-    swapResponse: SwapResponse
 }
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import SubmitButton from '../buttons/submitButton';
+import { useSwapDataState } from '../../context/swap';
 
-const SwapDetails: FC<Props> = ({ type, swapResponse }) => {
-    const { swap } = swapResponse;
+const SwapDetails: FC<Props> = ({ type }) => {
+    const { swapResponse } = useSwapDataState()
+
+    const { swap } = swapResponse || {}
     const swapStatus = swap?.status;
     const storedWalletTransactions = useSwapTransactionStore()
     const router = useRouter();
@@ -46,14 +48,14 @@ const SwapDetails: FC<Props> = ({ type, swapResponse }) => {
 
     return (
         <>
-            <Container type={type} swapResponse={swapResponse}>
+            <Container type={type}>
                 {
                     ((swapStatus === SwapStatus.UserTransferPending
                         && !(swapInputTransaction || storedWalletTransaction))) ?
                         <Withdraw />
                         :
                         <>
-                            <Processing swapResponse={swapResponse} />
+                            <Processing />
                             {storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
                                 <SubmitButton isDisabled={false} isSubmitting={false} onClick={cancelSwap}>
                                     Try again

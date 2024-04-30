@@ -1,17 +1,14 @@
 import { FC } from 'react'
+import { useSwapDataState } from '../../../../context/swap';
 import Processing from './Processing';
-import { SwapResponse } from '../../../../lib/layerSwapApiClient';
 
-interface ComponentProps {
-    swapResponse: SwapResponse;
-}
+const Component: FC = () => {
 
-const Component: FC<ComponentProps> = (props) => {
-    const { swapResponse } = props;
+    const { swapResponse: swap } = useSwapDataState()
 
     return (
         <>
-            {swapResponse && <Processing swapResponse={swapResponse} />}
+            {swap && <Processing swapResponse={swap} />}
         </>
 
     )

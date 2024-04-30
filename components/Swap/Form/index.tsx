@@ -167,7 +167,7 @@ export default function Form() {
             modalId="showSwap"
         >
             <ResizablePanel>
-                <SwapDetails type="contained" swapResponse={swapResponse!} />
+                <SwapDetails type="contained" />
             </ResizablePanel>
         </Modal>
         <Formik
