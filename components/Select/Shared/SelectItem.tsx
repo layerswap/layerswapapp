@@ -22,11 +22,5 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                 {item.menuItemDetails}
             </>
         </div>
-        {
-            item.menuItemDetails &&
-            <>
-                {item.menuItemDetails}
-            </>
-        }
     </div>);
 }
