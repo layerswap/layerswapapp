@@ -1,11 +1,10 @@
 import { useFormikContext } from "formik";
-import { ChangeEvent, FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AddressBookItem } from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { Check, Info, Plus, X } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import KnownInternalNames from "../../../lib/knownIds";
 import { isValidAddress } from "../../../lib/address/validator";
-import Image from 'next/image';
 import { Partner } from "../../../Models/Partner";
 import shortenAddress from "../../utils/ShortenAddress";
 import WalletIcon from "../../icons/WalletIcon";
@@ -16,6 +15,7 @@ import { CommandGroup, CommandItem, CommandList, CommandWrapper } from "../../sh
 import AddressIcon from "../../AddressIcon";
 import { addressFormat } from "../../../lib/address/formatter";
 import { ResolveConnectorIcon } from "../../icons/ConnectorIcons";
+import ManualAddressInput from "./ManualAddressInput";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -45,7 +45,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const addresses = useAddressBookStore((state) => state.addresses).filter(a => a.networkType === values.to?.type && !(values.toExchange && a.group === AddressGroup.ConnectedWallet))
     const addAddresses = useAddressBookStore((state) => state.addAddresses)
 
-    const placeholder = "Enter your address here"
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<string | undefined>()
 
@@ -76,37 +75,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         }
     }, [canFocus])
 
-    const handleRemoveNewDepositeAddress = useCallback(async () => {
-        setManualAddress('')
-    }, [setManualAddress])
-
     const handleSelectAddress = useCallback((value: string) => {
         const address = destination && addresses.find(a => addressFormat(a.address, destination) === addressFormat(value, destination))?.address
         setFieldValue("destination_address", address)
         close()
     }, [close, setFieldValue])
 
-    let errorMessage = '';
-    if (manualAddress && !isValidAddress(manualAddress, destination)) {
-        errorMessage = `Enter a valid ${values.to?.display_name} address`
-    }
 
-    const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        setManualAddress(e.target.value)
-    }, [])
-
-    const handleSaveNewAddress = () => {
-        if (isValidAddress(manualAddress, values.to)) {
-            if (destination && !addresses.some(a => addressFormat(a.address, destination) === addressFormat(manualAddress, destination))) {
-                setNewAddress(manualAddress)
-            }
-            setFieldValue(name, manualAddress)
-            setManualAddress("")
-        }
-        close()
-    }
-
-    const destinationAsset = values.toCurrency
     const groupedAddresses = groupBy(addresses, ({ group }) => group)
     const groupedAddressesArray = Object.keys(groupedAddresses).map(g => { const items: AddressItem[] = groupedAddresses[g]; return ({ name: g, items: items, order: (g === AddressGroup.ManualAdded && 3 || g === AddressGroup.RecentlyUsed && 2 || g === AddressGroup.ConnectedWallet && 1) || 10 }) })
 
@@ -219,114 +194,26 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         && provider
                         && !connectedWallet
                         && !values.toExchange &&
-                        <ConnectWallet providerName={provider.name} onClick={() => { connectWallet(provider.name) }} expanded={addresses.length === 0 && !manualAddress} />
+                        <ConnectWalletButton providerName={provider.name} onClick={() => { connectWallet(provider.name) }} expanded={addresses.length === 0 && !manualAddress} />
                     }
 
                     <hr className="border-secondary-500 w-full" />
 
-                    <div className="text-left">
-                        {isPartnerWallet && partner && <span className='truncate text-sm text-secondary-text'> ({partner?.display_name})</span>}
-                        <div className="flex flex-wrap flex-col md:flex-row items-center">
-                            <div className="relative flex grow rounded-lg shadow-sm bg-secondary-700 focus-within:ring-0 focus-within:ring-primary focus-within:border-primary w-full lg:w-fit">
-                                {isPartnerWallet &&
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        {
-                                            partnerImage &&
-                                            <Image alt="Partner logo" className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
-                                        }
-                                    </div>
-                                }
-                                <input
-                                    onChange={handleInputChange}
-                                    value={manualAddress}
-                                    placeholder={placeholder}
-                                    autoCorrect="off"
-                                    type={"text"}
-                                    // disabled={disabled || !!(connectedWallet && values.destination_address)}
-                                    name={name}
-                                    id={name}
-                                    ref={inputReference}
-                                    tabIndex={0}
-                                    className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4  block font-semibold w-full bg-secondary-700 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
-                                />
-                                {
-                                    manualAddress &&
-                                    <span className="inline-flex items-center mr-2">
-                                        <button
-                                            type="button"
-                                            className="p-0.5 duration-200 transition  hover:bg-secondary-400  rounded-md border border-secondary-500 hover:border-secondary-200"
-                                            onClick={handleRemoveNewDepositeAddress}
-                                        >
-                                            <X className="h-5 w-5" />
-                                        </button>
-                                    </span>
-                                }
+                    <ManualAddressInput
+                        manualAddress={manualAddress}
+                        setManualAddress={setManualAddress}
+                        setNewAddress={setNewAddress}
+                        addresses={addresses}
+                        values={values}
+                        partner={partner}
+                        isPartnerWallet={isPartnerWallet}
+                        partnerImage={partnerImage}
+                        name={name}
+                        inputReference={inputReference}
+                        setFieldValue={setFieldValue}
+                        close={close}
+                    />
 
-                            </div>
-
-                            {
-                                errorMessage &&
-                                <div className="basis-full text-xs text-primary">
-                                    {errorMessage}
-                                </div>
-                            }
-                            {
-                                destinationAsset && values.toExchange &&
-                                <div className='text-left p-4 bg-secondary-800 text-primary-text rounded-lg border border-secondary-500 basis-full mt-3 w-full'>
-                                    <div className="flex items-center">
-                                        <Info className='h-5 w-5 text-primary-600 mr-3' />
-                                        <label className="block text-sm md:text-base font-medium leading-6">How to find your {values.toExchange.display_name} deposit address</label>
-                                    </div>
-                                    <ul className="list-disc font-light space-y-1 text-xs md:text-sm mt-2 ml-8 text-primary-text">
-                                        <li>Go to the Deposits page</li>
-                                        <li>
-                                            <span>Select</span>
-                                            <span className="inline-block mx-1">
-                                                <span className='flex gap-1 items-baseline text-sm '>
-                                                    <Image src={destinationAsset.logo}
-                                                        alt="Project Logo"
-                                                        height="15"
-                                                        width="15"
-                                                        className='rounded-sm'
-                                                    />
-                                                    <span className="text-primary-text">{destinationAsset.symbol}</span>
-                                                </span>
-                                            </span>
-                                            <span>as asset</span>
-                                        </li>
-                                        <li>
-                                            <span>Select</span>
-                                            <span className="inline-block mx-1">
-                                                <span className='flex gap-1 items-baseline text-sm '>
-                                                    <Image src={values.to?.logo || ''}
-                                                        alt="Project Logo"
-                                                        height="15"
-                                                        width="15"
-                                                        className='rounded-sm'
-                                                    />
-                                                    <span className="text-primary-text">{destination?.display_name}</span>
-                                                </span>
-                                            </span>
-                                            <span>as network</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            }
-                            {
-                                manualAddress && !errorMessage &&
-                                <div onClick={handleSaveNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 bg-secondary-800 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-700 transition duration-200 p-3 hover:shadow-xl mt-3`}>
-                                    <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
-                                        <AddressIcon size={20} address={manualAddress} />
-                                    </div>
-                                    <div className="flex flex-col grow">
-                                        <div className="block text-md font-medium text-primary-text">
-                                            {shortenAddress(manualAddress)}
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -334,7 +221,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     )
 });
 
-const ConnectWallet = ({ providerName, expanded, onClick }: { providerName: string, expanded: boolean, onClick: () => void }) => {
+const ConnectWalletButton = ({ providerName, expanded, onClick }: { providerName: string, expanded: boolean, onClick: () => void }) => {
     return (
         <button onClick={onClick} type="button" className="py-5 px-4 bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl">
             <div className={expanded ? 'flex items-center gap-8' : ''}>
