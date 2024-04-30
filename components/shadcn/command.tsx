@@ -111,7 +111,7 @@ const CommandItem = React.forwardRef<
     className={classNames(
       "relative cursor-pointer flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-secondary-700 aria-selected:text-primary-text",
       className,
-      props.disabled && "opacity-30 cursor-not-allowed",
+      props.disabled && "cursor-not-allowed",
     )}
     {...props}
   />

@@ -133,8 +133,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         { rotate: 180 }
     );
 
-    const sourceRoutesEndpoint = resolveRoutesURLForSelectedToken('from', source?.name, fromCurrency?.symbol)
-    const destinationRoutesEndpoint = resolveRoutesURLForSelectedToken('to', destination?.name, toCurrency?.symbol)
+    const sourceRoutesEndpoint = resolveRoutesURLForSelectedToken({ direction: 'from', network: source?.name, token: fromCurrency?.symbol, includes: { unavailable: false, unmatched: false } })
+    const destinationRoutesEndpoint = resolveRoutesURLForSelectedToken({ direction: 'to', network: destination?.name, token: toCurrency?.symbol, includes: { unavailable: false, unmatched: false } })
+
     const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<RouteNetwork[]>>(sourceRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true })
     const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<RouteNetwork[]>>(destinationRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true })
 

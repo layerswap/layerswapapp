@@ -103,7 +103,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     }, [from, query])
 
     useEffect(() => {
-        if (name === "toCurrency" && toCurrency) {
+        if (name === "toCurrency" && toCurrency && !isLoading) {
             if (routes?.data
                 && !!routes?.data
                     ?.find(r => r.name === to?.name)?.tokens
@@ -111,10 +111,10 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 setFieldValue(name, null)
             }
         }
-    }, [fromCurrency, currencyGroup, name, to, routes, error,])
+    }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
 
     useEffect(() => {
-        if (name === "fromCurrency" && fromCurrency) {
+        if (name === "fromCurrency" && fromCurrency && !isLoading) {
             if (routes?.data
                 && !!routes?.data
                     ?.find(r => r.name === from?.name)?.tokens
@@ -122,7 +122,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 setFieldValue(name, null)
             }
         }
-    }, [toCurrency, currencyGroup, name, from, routes, error])
+    }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
 
     const value = currencyMenuItems?.find(x => x.id == currencyAsset);
 
@@ -161,7 +161,7 @@ function GenerateCurrencyMenuItems(
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
         else if (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) {
-            if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset) {
+            if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset || currency.status === 'daily_limit_reached') {
                 return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
             }
             return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
@@ -176,6 +176,9 @@ function GenerateCurrencyMenuItems(
         const displayName = currency.symbol;
         const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
+        const details = <p className="text-primary-text-muted">
+            {formatted_balance_amount}
+        </p>
 
         const res: SelectMenuItem<RouteToken> = {
             baseObject: c,
@@ -184,7 +187,7 @@ function GenerateCurrencyMenuItems(
             order: CurrencySettings.KnownSettings[c.symbol]?.Order ?? 5,
             imgSrc: c.logo,
             isAvailable: currencyIsAvailable(c),
-            details: `${formatted_balance_amount}`,
+            details: details,
         };
 
         return res

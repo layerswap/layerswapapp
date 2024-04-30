@@ -12,9 +12,9 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
         disabledReason?: LayerDisabledReason | CurrencyDisabledReason | null
     };
     group?: string;
-    details?: string;
+    details?: JSX.Element | JSX.Element[];
     baseObject: T;
-    constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, group?: string, details?: string) {
+    constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, group?: string, details?: JSX.Element | JSX.Element[]) {
         this.baseObject = baseObject;
         this.id = id;
         this.name = name;
@@ -39,6 +39,6 @@ export interface ISelectMenuItem {
         value: boolean;
         disabledReason?: LayerDisabledReason | CurrencyDisabledReason | null
     };
-    details?: string;
+    details?: JSX.Element | JSX.Element[];
     order?: number;
 }
