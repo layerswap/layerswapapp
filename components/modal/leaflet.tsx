@@ -78,7 +78,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
-                className={`${wrapperHeightClass} max-h-full overflow-y-auto group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'rounded-t-2xl border-t border-secondary-500' : ''}  bg-secondary-900 ${className} shadow-lg`}
+                className={`${wrapperHeightClass} max-h-full overflow-y-hidden group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'rounded-t-2xl border-t border-secondary-500' : ''}  bg-secondary-900 ${className} shadow-lg`}
                 initial={{ y: "20%" }}
                 animate={controls}
                 exit={{ y: "100%" }}
