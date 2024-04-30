@@ -161,6 +161,9 @@ function GenerateMenuItems(
         //         || { network: '', asset: '' }))
 
         const network = routes?.find(l => l.name == e.network.name);
+        const details = <p className="text-primary-text-muted">
+            {e.token.symbol}
+        </p>
 
         const item: SelectMenuItem<ExchangeNetwork> = {
             baseObject: e,
@@ -170,7 +173,7 @@ function GenerateMenuItems(
             order: 1,
             imgSrc: network?.logo || '',
             isAvailable: { value: true, disabledReason: null },
-            details: e.token.symbol
+            details
         }
         return item;
     }).sort(SortingByOrder)
