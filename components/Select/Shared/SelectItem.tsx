@@ -22,5 +22,11 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                 {item.menuItemDetails}
             </>
         </div>
+        {
+            item.details &&
+            <>
+                {item.details}
+            </>
+        }
     </div>);
 }

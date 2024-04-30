@@ -5,8 +5,8 @@ import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { SwapResponse } from "./layerSwapApiClient";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
-    const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset } = queryParams
-    const { exchanges, sourceRoutes, destinationRoutes } = settings || {}
+    const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, depositMethod } = queryParams
+    const { sourceExchanges, destinationExchanges, sourceRoutes, destinationRoutes } = settings || {}
 
     const lockedSourceCurrency = lockFromAsset ?
         sourceRoutes.find(l => l.name === to)
@@ -20,8 +20,8 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
     const sourceNetwork = sourceRoutes.find(l => l.name.toUpperCase() === from?.toUpperCase())
     const destinationNetwork = destinationRoutes.find(l => l.name.toUpperCase() === to?.toUpperCase())
 
-    const initialSourceExchange = exchanges.find(e => e.name.toLowerCase() === from?.toLowerCase())
-    const initialDestinationExchange = exchanges.find(e => e.name.toLowerCase() === to?.toLowerCase())
+    const initialSourceExchange = sourceExchanges.find(e => e.name.toLowerCase() === from?.toLowerCase())
+    const initialDestinationExchange = destinationExchanges.find(e => e.name.toLowerCase() === to?.toLowerCase())
 
     const initialSource = sourceNetwork ?? undefined
     const initialDestination = destinationNetwork ?? undefined
@@ -54,6 +54,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         fromCurrency: initialSourceCurrency,
         toCurrency: initialDestinationCurrency,
         destination_address: initialAddress ? initialAddress : '',
+        depositMethod: depositMethod ? depositMethod : '',
     }
 
     return result
@@ -73,16 +74,14 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapResponse, se
         destination_exchange,
     } = swap
 
-    const { exchanges, sourceRoutes, destinationRoutes } = settings || {}
+    const { sourceRoutes, destinationRoutes } = settings || {}
 
     const from = sourceRoutes.find(l => l.name === source_network.name);
     const to = destinationRoutes.find(l => l.name === destination_network.name);
 
-    const fromExchange = exchanges.find(e => e.name === source_exchange?.name);
-    const toExchange = exchanges.find(e => e.name === destination_exchange?.name);
 
-    const direction = fromExchange ? 'from' : 'to';
-    const availableAssetGroups = direction === 'from' ? fromExchange?.token_groups : toExchange?.token_groups;
+    const direction = source_exchange ? 'from' : 'to';
+    const availableAssetGroups = direction === 'from' ? source_exchange?.token_groups : destination_exchange?.token_groups;
     const currencyGroup = availableAssetGroups?.find(a => a.symbol === (direction === 'from' ? source_token.symbol : destination_token.symbol))
 
     const fromCurrency = from?.tokens.find(c => c.symbol === source_token.symbol);
@@ -96,8 +95,8 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapResponse, se
         toCurrency,
         destination_address,
         refuel: !!refuel,
-        fromExchange,
-        toExchange,
+        fromExchange: source_exchange,
+        toExchange: destination_exchange,
         currencyGroup
     }
 
