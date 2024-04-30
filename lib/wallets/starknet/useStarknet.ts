@@ -71,10 +71,16 @@ export default function useStarknet(): WalletProvider {
         }
     }
 
+    const reconnectWallet = async (chain: string) => {
+        disconnectWallet()
+        await connectWallet(chain)
+    }
+
     return {
         getConnectedWallet: getWallet,
         connectWallet,
         disconnectWallet,
+        reconnectWallet,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         name

@@ -15,10 +15,7 @@ import { groupBy } from "../../utils/groupBy";
 import { CommandGroup, CommandItem, CommandList, CommandWrapper } from "../../shadcn/command";
 import AddressIcon from "../../AddressIcon";
 import { addressFormat } from "../../../lib/address/formatter";
-import MetaMaskIcon from "../../icons/Wallets/MetaMask";
-import WalletConnectIcon from "../../icons/Wallets/WalletConnect";
-import CoinbaseIcon from "../../icons/Wallets/Coinbase";
-import Phantom from "../../icons/Wallets/Phantom";
+import { ResolveConnectorIcon } from "../../icons/ConnectorIcons";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     hideLabel?: boolean;
@@ -114,17 +111,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const groupedAddressesArray = Object.keys(groupedAddresses).map(g => { const items: AddressItem[] = groupedAddresses[g]; return ({ name: g, items: items, order: (g === AddressGroup.ManualAdded && 3 || g === AddressGroup.RecentlyUsed && 2 || g === AddressGroup.ConnectedWallet && 1) || 10 }) })
 
     //fix this
-    const switchAccount = useCallback(async () => {
+    const switchAccount = async () => {
         if (!provider) return
-
-        await provider?.disconnectWallet()
-
-        console.log(provider.getConnectedWallet())
-        if (!connectedWallet && provider) { debugger; await connectWallet(provider.name) }
-    }, [provider, connectWallet, connectedWallet])
+        await provider.reconnectWallet()
+    }
 
     return (<>
-        <div className='w-full flex flex-col justify-between h-full text-primary-text pt-2 min-h-[250px]'>
+        <div className='w-full flex flex-col justify-between h-full text-primary-text pt-2 min-h-[277px]'>
             <div className='flex flex-col self-center grow w-full'>
                 <div className='flex flex-col self-center grow w-full space-y-3'>
 
@@ -171,14 +164,14 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                                         :
                                                         group.name
                                                 }
-                                                className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-0 !py-0 !px-0"
+                                                className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-0 !py-0 !px-0 mt-2"
                                             >
                                                 <div className="bg-secondary-800 overflow-hidden rounded-lg divide-y divide-secondary-600">
                                                     {group.items.map(item => {
                                                         const difference_in_days = item.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(item.date).getTime()) / (1000 * 3600 * 24))) : undefined
 
                                                         return (
-                                                            <CommandItem value={item.address} key={item.address} onSelect={handleSelectAddress} className="!bg-transparent !px-3 hover:!bg-secondary-700 transition duration-200">
+                                                            <CommandItem value={item.address} key={item.address} onSelect={handleSelectAddress} className={`!bg-transparent !px-3 hover:!bg-secondary-700 transition duration-200 ${addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-700'}`}>
                                                                 <div className={`flex items-center justify-between w-full`}>
                                                                     <div className={`space-x-2 flex text-sm items-center`}>
                                                                         <div className='flex bg-secondary-400 text-primary-text flex-row items-left rounded-md p-2'>
@@ -226,7 +219,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         && provider
                         && !connectedWallet
                         && !values.toExchange &&
-                        <ConnectWallet onClick={() => { connectWallet(provider.name) }} expanded={addresses.length === 0 && !manualAddress} />
+                        <ConnectWallet providerName={provider.name} onClick={() => { connectWallet(provider.name) }} expanded={addresses.length === 0 && !manualAddress} />
                     }
 
                     <hr className="border-secondary-500 w-full" />
@@ -341,7 +334,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     )
 });
 
-const ConnectWallet = ({ expanded, onClick }: { expanded: boolean, onClick: () => void }) => {
+const ConnectWallet = ({ providerName, expanded, onClick }: { providerName: string, expanded: boolean, onClick: () => void }) => {
     return (
         <button onClick={onClick} type="button" className="py-5 px-4 bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl">
             <div className={expanded ? 'flex items-center gap-8' : ''}>
@@ -352,13 +345,15 @@ const ConnectWallet = ({ expanded, onClick }: { expanded: boolean, onClick: () =
                             Connect to wallet
                         </h2>
                     </div>
+
                     <div className={expanded ? "flex flex-col gap-1 items-start" : "h-full flex items-start justify-center"}>
                         <div className="justify-start items-end gap-1.5 inline-flex">
-                            <MetaMaskIcon className="w-6 h-6 rounded bg-gray-100" />
-                            <WalletConnectIcon className="w-6 h-6 rounded bg-gray-100" />
-                            <CoinbaseIcon className="w-6 h-6 rounded bg-gray-100" />
-                            <Phantom className="w-6 h-6 rounded bg-gray-100" />
-                            <div className="w-6 h-6 bg-slate-900 rounded flex-col justify-center items-center inline-flex">
+                            <ResolveConnectorIcon
+                                connector={providerName}
+                                iconClassName="w-7 h-7 p-0.5 rounded-md bg-secondary-800 border border-secondary-400"
+                                className="space-x-0.5 inline-flex"
+                            />
+                            <div className="-space-x-2 w-7 h-7 bg-slate-900 rounded-md flex-col justify-center items-center inline-flex">
                                 <Plus className="h-4 w-4 text-secondary-text" />
                             </div>
                         </div>
