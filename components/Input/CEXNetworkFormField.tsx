@@ -173,7 +173,7 @@ function GenerateMenuItems(
             order: 1,
             imgSrc: network?.logo || '',
             isAvailable: { value: true, disabledReason: null },
-            details
+            menuItemDetails: details
         }
         return item;
     }).sort(SortingByOrder)
