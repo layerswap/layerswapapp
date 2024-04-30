@@ -25,5 +25,6 @@ export class ExchangeNetwork {
 
 export class ExchangeToken {
     symbol: string;
-    logo: string
+    logo: string;
+    status: string;
 }

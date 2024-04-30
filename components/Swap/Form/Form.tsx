@@ -25,6 +25,7 @@ import { Balance, Gas } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
+import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 
 type Props = {
     isPartnerWallet?: boolean,
@@ -93,13 +94,11 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
         { rotate: 180 }
     );
 
-    const sourceRoutesEndpoint = `/sources?include_unmatched=true&destination_network=${source?.name}&destination_token=${fromCurrency?.symbol}`
-    const destinationRoutesEndpoint = `/destinations?include_unmatched=true&source_network=${destination?.name}&source_token=${toCurrency?.symbol}`
-    const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<RouteNetwork[]>>((source && fromCurrency) ?
-        sourceRoutesEndpoint : `/sources?include_unmatched=true`, layerswapApiClient.fetcher, { keepPreviousData: true })
+    const sourceRoutesEndpoint = resolveRoutesURLForSelectedToken({ direction: 'from', network: source?.name, token: fromCurrency?.symbol, includes: { unavailable: false, unmatched: false } })
+    const destinationRoutesEndpoint = resolveRoutesURLForSelectedToken({ direction: 'to', network: destination?.name, token: toCurrency?.symbol, includes: { unavailable: false, unmatched: false } })
 
-    const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<RouteNetwork[]>>((destination && toCurrency) ?
-        destinationRoutesEndpoint : `/destinations?include_unmatched=true`, layerswapApiClient.fetcher, { keepPreviousData: true })
+    const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<RouteNetwork[]>>(sourceRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true })
+    const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<RouteNetwork[]>>(destinationRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true })
 
     const sourceCanBeSwapped = destinationRoutes?.data?.some(l => l.name === source?.name && source.tokens.some(t => t.symbol === fromCurrency?.symbol))
     const destinationCanBeSwapped = sourceRoutes?.data?.some(l => l.name === destination?.name && destination.tokens.some(t => t.symbol === toCurrency?.symbol))
