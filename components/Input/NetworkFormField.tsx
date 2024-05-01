@@ -219,7 +219,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
     const mappedLayers = routes?.map(r => {
         let orderProp: keyof NetworkSettings | keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
         const order = NetworkSettings.KnownSettings[r.name]?.[orderProp]
-        const details = !r.tokens?.some(r => r.status !== 'daily_limit_reached') ? <ClickTooltip side="left" text='This network has reached its daily limit. Please try again later.' /> : undefined
+        const details = !r.tokens?.some(r => r.status !== 'daily_limit_reached') ? <ClickTooltip side="left" text='Transfers from this network are not available at the moment. Please try later.' /> : undefined
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
             baseObject: r,
             id: r.name,
