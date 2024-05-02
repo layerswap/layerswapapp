@@ -2,6 +2,7 @@ import { useSwapDataState } from "../../../../context/swap"
 import NetworkGas from "./WalletTransfer/networkGas"
 import { WalletTransferContent } from "./WalletTransferContent"
 import ManualTransferNote from "./WalletTransfer/manualTransferNote"
+import { TransactionType } from "../../../../lib/layerSwapApiClient"
 
 const WalletTransferWrapper = () => {
     const { swapResponse } = useSwapDataState()
@@ -18,7 +19,7 @@ const WalletTransferWrapper = () => {
         }
         <WalletTransferContent />
         {
-            source_network?.deposit_methods.some(m => m === 'deposit_address') &&
+            source_network?.deposit_methods.some(m => m === 'deposit_address') && !swap?.transactions?.find(t => t.type === TransactionType.Input) &&
             <ManualTransferNote />
         }
     </div>

@@ -12,15 +12,15 @@ const ManualTransferNote = () => {
         <>
             <div className="text-xs text-center">
                 <div className='text-secondary-text mt-2'>
-                    Don’t have a wallet? or want to swap manually?
+                    Want to transfer manually or skip connecting a wallet?
                 </div>
                 <div className='text-secondary-text'>
-                    <button onClick={() => setOpen(true)} type="button" className='text-primary'>Click here</button><span>, to see how</span>
+                    <button onClick={() => setOpen(true)} type="button" className='text-primary'>Click here</button><span>, to see how.</span>
                 </div>
             </div>
-            <Modal show={open} setShow={setOpen} height="fit" header="Swap manually" modalId="manualTransferNote">
+            <Modal show={open} setShow={setOpen} height="fit" header="Transfer manually" modalId="manualTransferNote">
                 <div className="mt-2 space-y-5">
-                    <p className="text-sm text-secondary-text">To complete the swap manually you should switch the transfer method to deposit address</p>
+                    <p className="text-sm text-secondary-text">To complete the transaction manually, switch the transfer method to “Deposit address”.</p>
                     <ManualTransferSVG />
                     <div className="space-y-3">
                         {
