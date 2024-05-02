@@ -4,6 +4,9 @@ import { SwapDirection, SwapFormValues } from "../components/DTOs/SwapFormValues
 export const resolveExchangesURLForSelectedToken = (direction: SwapDirection, values: SwapFormValues) => {
 
     const include_unmatched = 'true'
+    const include_swaps = 'true'
+    const include_unavailable = 'true'
+
     const { from, to, fromCurrency, toCurrency } = values
 
     const network = direction === "from" ? to?.name : from?.name
@@ -11,6 +14,8 @@ export const resolveExchangesURLForSelectedToken = (direction: SwapDirection, va
 
     const params = new URLSearchParams({
         include_unmatched,
+        include_swaps,
+        include_unavailable,
         ...(network && token ?
             {
                 [direction === 'to' ? 'source_network' : 'destination_network']: network,
@@ -76,8 +81,13 @@ export const resolveRoutesURLForSelectedToken = ({ direction, network, token, in
 
 export const resolveRoutesURLForSelectedAssetGroup = (direction: SwapDirection, currencyGroup: ExchangeToken) => {
     const include_unmatched = 'true'
+    const include_swaps = 'true'
+    const include_unavailable = 'true'
+
     const parrams = new URLSearchParams({
         include_unmatched,
+        include_swaps,
+        include_unavailable,
         [direction === 'to' ? 'source_token_group' : 'destination_token_group']: currencyGroup.symbol
     });
     const endpoint = direction === "to" ? '/exchange_destination_networks' : '/exchange_source_networks'
