@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useDepositMethod } from "../../../../../context/depositMethodContext"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../../../shadcn/dialog"
 import SubmitButton from "../../../../buttons/submitButton"
 import ManualTransferSVG from "../../../../icons/ManualTransferSVG"
 import Modal from "../../../../modal/modal"
