@@ -39,7 +39,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
     const address = addresses.find(a => a.address === destination_address)
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const address_book_endpoint = authData?.access_token ? `/swaps/recent_addresses` : null
+    const address_book_endpoint = authData?.access_token ? `/internal/recent_addresses` : null
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
     const [showAddressModal, setShowAddressModal] = useState(false);
@@ -116,25 +116,20 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
                 openAddressModal={() => setShowAddressModal(true)}
                 partnerImage={partnerImage}
                 values={values} />
-            <Modal
-                header={`To ${(values.toExchange?.display_name ?? values?.to?.display_name) || ''} address`}
-                height="fit"
-                show={showAddressModal} setShow={setShowAddressModal}
-                modalId="address"
-            >
-                <ResizablePanel>
-                    <AddressPicker
-                        close={() => setShowAddressModal(false)}
-                        disabled={lockAddress || (!values.to || !values.from)}
-                        name={"destination_address"}
-                        partnerImage={partnerImage}
-                        isPartnerWallet={!!isPartnerWallet}
-                        partner={partner}
-                        address_book={address_book?.data}
-                        wrongNetwork={wrongNetwork}
-                    />
-                </ResizablePanel>
-            </Modal>
+
+            <AddressPicker
+                showAddressModal={showAddressModal}
+                setShowAddressModal={setShowAddressModal}
+                close={() => setShowAddressModal(false)}
+                disabled={lockAddress || (!values.to || !values.from)}
+                name={"destination_address"}
+                partnerImage={partnerImage}
+                isPartnerWallet={!!isPartnerWallet}
+                partner={partner}
+                address_book={address_book?.data}
+                wrongNetwork={wrongNetwork}
+            />
+
         </div>
     )
 }
