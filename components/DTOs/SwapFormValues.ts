@@ -15,3 +15,6 @@ export type SwapFormValues = {
   currencyGroup?: ExchangeToken
   depositMethod?: string,
 }
+
+
+export type SwapDirection = "from" | "to";

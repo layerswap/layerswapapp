@@ -39,13 +39,11 @@ export const getServerSideProps = async (ctx) => {
   LayerSwapApiClient.apiKey = apiKey
   const apiClient = new LayerSwapApiClient()
   const { data: networkData } = await apiClient.GetLSNetworksAsync()
-  const { data: exchangeData } = await apiClient.GetExchangesAsync()
 
-  if (!networkData || !exchangeData) return
+  if (!networkData ) return
 
   const settings = {
     networks: networkData,
-    exchanges: exchangeData,
   }
 
   const themeData = await getThemeData(ctx.query)
