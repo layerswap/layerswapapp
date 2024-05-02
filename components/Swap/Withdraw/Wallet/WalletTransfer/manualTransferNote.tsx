@@ -19,8 +19,8 @@ const ManualTransferNote = () => {
                 </div>
             </div>
             <Modal show={open} setShow={setOpen} height="fit" header="Swap manually" modalId="manualTransferNote">
-                <div className="mt-5 space-y-5">
-                    <p className="text-sm text-primary-buttonTextColor">To complete the swap manually you should switch the transfer method to deposit address</p>
+                <div className="mt-2 space-y-5">
+                    <p className="text-sm text-secondary-text">To complete the swap manually you should switch the transfer method to deposit address</p>
                     <ManualTransferSVG />
                     <div className="space-y-3">
                         {
