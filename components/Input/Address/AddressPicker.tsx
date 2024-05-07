@@ -20,6 +20,7 @@ import Modal from "../../modal/modal";
 import ResizablePanel from "../../ResizablePanel";
 import IconButton from "../../buttons/iconButton";
 import RecentlyUsedAddresses from "./RecentlyUsedAddresses";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
     showAddressModal: boolean;
@@ -225,7 +226,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                 && provider
                                 && !connectedWallet
                                 && !values.toExchange &&
-                                <ConnectWalletButton providerName={provider.name} onClick={() => { connectWallet(provider.name) }} expanded={addresses.length === 0 && !manualAddress} />
+
+                                <ConnectWalletButton providerName={provider.name} onClick={() => { connectWallet(provider.name) }} expanded={(addresses.length === 0 && !manualAddress)} />
                             }
 
                             <hr className="border-secondary-500 w-full" />
@@ -250,6 +252,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                 </div >
             </ResizablePanel>
         </Modal>
+
         <Modal header="Recently used" height="fit" show={openRecentAddresses} setShow={setOpenRecentAddresses} modalId="recentlyUsedAddresses">
             <RecentlyUsedAddresses address_book={recentlyUsedAddresses} destination={destination} destination_address={destination_address} onSelect={handleSelectRecentlyAddress} />
         </Modal>
@@ -258,34 +261,86 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 });
 
 const ConnectWalletButton = ({ providerName, expanded, onClick }: { providerName: string, expanded: boolean, onClick: () => void }) => {
-    return (
-        <button onClick={onClick} type="button" className="py-5 px-4 bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl">
-            <div className={expanded ? 'flex items-center gap-8' : ''}>
-                <div className={expanded ? "space-y-3" : 'flex justify-between items-center w-full'}>
-                    <div className="flex items-center gap-1.5">
-                        <WalletIcon className='stroke-2 w-6 h-6' />
-                        <h2 className={expanded ? "text-2xl font-medium" : "text-xl font-medium"}>
-                            Connect to wallet
-                        </h2>
-                    </div>
 
-                    <div className={expanded ? "flex flex-col gap-1 items-start" : "h-full flex items-start justify-center"}>
-                        <div className="justify-start items-end gap-1.5 inline-flex">
-                            <ResolveConnectorIcon
-                                connector={providerName}
-                                iconClassName="w-7 h-7 p-0.5 rounded-md bg-secondary-800 border border-secondary-400"
-                                className="space-x-0.5 inline-flex"
-                            />
-                            <div className="-space-x-2 w-7 h-7 bg-slate-900 rounded-md flex-col justify-center items-center inline-flex">
-                                <Plus className="h-4 w-4 text-secondary-text" />
-                            </div>
+    return (
+        <motion.button
+
+            animate={{
+                height: "auto",
+                opacity: 1,
+                transition: {
+                    height: {
+                        duration: 0.4,
+                    },
+                    opacity: {
+                        duration: 0.25,
+                        delay: 0.15,
+                    },
+                },
+            }}
+            exit={{
+                height: 0,
+                opacity: 0,
+                transition: {
+                    height: {
+                        duration: 0.4,
+                    },
+                    opacity: {
+                        duration: 0.25,
+                    },
+                },
+            }}
+            onClick={onClick} type="button" className="py-5 px-4 bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl">
+            <ResizablePanel>
+                <motion.div
+                    className={expanded ? 'flex items-center gap-8' : ''}>
+                    <div className={expanded ? "space-y-3" : 'flex justify-between items-center w-full'}>
+                        <div className="flex items-center gap-1.5">
+                            <WalletIcon className='stroke-2 w-6 h-6' />
+                            <h2 className="text-lg sm:text-2xl font-medium">
+                                Connect to wallet
+                            </h2>
                         </div>
-                        <p className={expanded ? "text-xs text-secondary-text" : 'hidden'}>Short description about connecting wallets</p>
+                        <div
+                            className={expanded ? "flex flex-col gap-1 items-start" : "h-full flex items-start justify-center"}>
+                            <motion.div layout className="justify-start items-end gap-1.5 inline-flex">
+                                <ResolveConnectorIcon
+                                    connector={providerName}
+                                    iconClassName="w-7 h-7 p-0.5 rounded-md bg-secondary-800 border border-secondary-400"
+                                    className="space-x-0.5 inline-flex"
+                                />
+                                <div className="-space-x-2 w-7 h-7 bg-slate-900 rounded-md flex-col justify-center items-center inline-flex">
+                                    <Plus className="h-4 w-4 text-secondary-text" />
+                                </div>
+                            </motion.div>
+                            {
+                                expanded && <p
+                                    className="text-xs text-secondary-text text-start">
+                                    Short description about connecting wallets
+                                </p>
+                            }
+                        </div>
                     </div>
-                </div>
-                <WalletIcon className={expanded ? 'h-20 w-auto' : 'hidden'} />
-            </div>
-        </button>
+                    <AnimatePresence mode="popLayout">
+                        {
+                            expanded &&
+                            <motion.div
+                                initial={{ opacity: 0, scale: 1 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                transition={{ duration: 0.25 }}
+                            >
+                                <WalletIcon className='h-20 w-auto' />
+
+                            </motion.div>
+                        }
+                    </AnimatePresence>
+
+                </motion.div>
+            </ResizablePanel>
+
+        </motion.button>
+
     )
 }
 
