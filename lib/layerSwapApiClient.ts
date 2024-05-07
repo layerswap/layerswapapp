@@ -2,7 +2,7 @@ import { SwapStatus } from "../Models/SwapStatus";
 import AppSettings from "./AppSettings";
 import { InitializeUnauthInstance, InitializeAuthInstance } from "./axiosInterceptor"
 import { v4 as uuidv4 } from 'uuid';
-import axios, { AxiosInstance, Method } from "axios";
+import { AxiosInstance, Method } from "axios";
 import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
