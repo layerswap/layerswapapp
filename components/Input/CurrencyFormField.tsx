@@ -161,7 +161,7 @@ function GenerateCurrencyMenuItems(
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
         else if (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) {
-            if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset || currency.status === 'daily_limit_reached') {
+            if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset || currency.status === 'inactive') {
                 return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
             }
             return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
