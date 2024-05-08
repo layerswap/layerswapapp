@@ -82,11 +82,11 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                         tabIndex={0}
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
-                        className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:bg-secondary-600 focus:placeholder:text-left focus:placeholder:pl-0 placeholder:pl-6 placeholder:text-center placeholder:text-secondary-text block font-semibold w-full bg-secondary-700 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
+                        className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:bg-secondary-600 focus:placeholder:text-left focus:placeholder:pl-0 placeholder:pl-8 block font-semibold w-full bg-secondary-700 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
                     />
                     {
                         !isFocused && !manualAddress &&
-                        <Pencil className="h-5 w-5 text-secondary-text absolute inset-y-0 top-[calc(50%-10px)] right-[calc(50%+50px)]" />
+                        <Pencil className="h-5 w-5 text-primary-text-muted absolute inset-y-0 top-[calc(50%-10px)] left-4" />
                     }
                     {
                         manualAddress &&

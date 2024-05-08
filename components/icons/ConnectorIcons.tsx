@@ -15,10 +15,12 @@ export const ResolveConnectorIcon = ({
     connector,
     iconClassName,
     className,
+    children
 }: {
     connector: string;
     iconClassName: string;
     className?: string;
+    children?: React.ReactNode;
 }) => {
     switch (connector.toLowerCase()) {
         case KnownConnectors.EVM:
@@ -27,6 +29,7 @@ export const ResolveConnectorIcon = ({
                     <RainbowIcon className={iconClassName} />
                     <WalletConnectIcon className={iconClassName} />
                     <MetaMaskIcon className={iconClassName} />
+                    {children}
                 </div>
             );
         case KnownConnectors.Starknet:
@@ -35,6 +38,7 @@ export const ResolveConnectorIcon = ({
                     <Braavos className={iconClassName} />
                     <Argent className={iconClassName} />
                     <ArgentX className={iconClassName} />
+                    {children}
                 </div>
             );
         case KnownConnectors.TON:
@@ -43,6 +47,7 @@ export const ResolveConnectorIcon = ({
                     <TonKeeper className={iconClassName} />
                     <OpenMask className={iconClassName} />
                     <TON className={iconClassName} />
+                    {children}
                 </div>
             );
         case KnownConnectors.Solana:
@@ -51,6 +56,7 @@ export const ResolveConnectorIcon = ({
                     <CoinbaseIcon className={iconClassName} />
                     <GlowIcon className={iconClassName} />
                     <Phantom className={iconClassName} />
+                    {children}
                 </div>
             );
         default:
