@@ -69,10 +69,10 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase())
 
         if (selected_currency && routes?.data?.find(r => r.name === to?.name)?.tokens?.some(r => r.symbol === selected_currency.name && r.status === 'active')) {
-            setFieldValue(name, selected_currency.baseObject)
+            setFieldValue(name, selected_currency.baseObject, true)
         }
         else if (default_currency) {
-            setFieldValue(name, default_currency.baseObject)
+            setFieldValue(name, default_currency.baseObject, true)
         }
     }, [to, query])
 
@@ -95,10 +95,10 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             && routes?.data
                 ?.find(r => r.name === from?.name)?.tokens
                 ?.some(r => r.symbol === selected_currency.name && r.status === 'active')) {
-            setFieldValue(name, selected_currency.baseObject)
+            setFieldValue(name, selected_currency.baseObject, true)
         }
         else if (default_currency) {
-            setFieldValue(name, default_currency.baseObject)
+            setFieldValue(name, default_currency.baseObject, true)
         }
     }, [from, query])
 
@@ -107,7 +107,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             if (routes?.data
                 && !!routes?.data
                     ?.find(r => r.name === to?.name)?.tokens
-                    ?.some(r => r.symbol === toCurrency?.symbol && r.status === 'route_not_found')) {
+                    ?.some(r => r.symbol === toCurrency?.symbol && r.status === 'not_found')) {
                 setFieldValue(name, null)
             }
         }
@@ -118,7 +118,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             if (routes?.data
                 && !!routes?.data
                     ?.find(r => r.name === from?.name)?.tokens
-                    ?.find(r => (r.symbol === fromCurrency?.symbol) && r.status === 'route_not_found')) {
+                    ?.find(r => (r.symbol === fromCurrency?.symbol) && r.status === 'not_found')) {
                 setFieldValue(name, null)
             }
         }
