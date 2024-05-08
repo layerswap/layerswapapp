@@ -4,6 +4,10 @@ import { LayerDisabledReason } from "../../Popover/PopoverSelect";
 export class SelectMenuItem<T> implements ISelectMenuItem {
     id: string;
     name: string;
+    menuItemLabel?: React.ReactNode;
+    menuItemDetails?: React.ReactNode;
+    menuItemImage?: React.ReactNode;
+    balanceAmount?: number | undefined;
     order: number;
     imgSrc: string;
     displayName?: string | undefined;
@@ -12,7 +16,6 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
         disabledReason?: LayerDisabledReason | CurrencyDisabledReason | null
     };
     group?: string;
-    details?: JSX.Element | JSX.Element[];
     baseObject: T;
     constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, group?: string, details?: JSX.Element | JSX.Element[]) {
         this.baseObject = baseObject;
@@ -21,7 +24,6 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
         this.order = order;
         this.imgSrc = imgSrc;
         this.group = group;
-        this.details = details
         this.isAvailable = {
             value: true,
             disabledReason: null
@@ -32,6 +34,10 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
 export interface ISelectMenuItem {
     id: string;
     name: string;
+    menuItemLabel?: React.ReactNode;
+    menuItemDetails?: React.ReactNode;
+    menuItemImage?: React.ReactNode;
+    balanceAmount?: number | undefined;
     imgSrc: string;
     displayName?: string | undefined;
     group?: string;
@@ -39,6 +45,5 @@ export interface ISelectMenuItem {
         value: boolean;
         disabledReason?: LayerDisabledReason | CurrencyDisabledReason | null
     };
-    details?: JSX.Element | JSX.Element[];
     order?: number;
 }

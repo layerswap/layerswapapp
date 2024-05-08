@@ -4,11 +4,12 @@ import useWallet from "../../../hooks/useWallet";
 import { useEffect, useMemo } from "react";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import useBalance from "../../../hooks/useBalance";
+import { useSettingsState } from "../../../context/settings";
 
-const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direction: string, onLoad: (address: string) => void }) => {
+const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
     const { to, fromCurrency, toCurrency, from } = values
-    const { balances, isBalanceLoading } = useBalancesState()
+    const { balances } = useBalancesState()
     const { getAutofillProvider: getProvider } = useWallet()
 
     const sourceWalletProvider = useMemo(() => {
@@ -18,7 +19,14 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
     const destinationWalletProvider = useMemo(() => {
         return to && getProvider(to)
     }, [to, getProvider])
-    const { fetchNetworkBalances, fetchGas } = useBalance()
+    const { fetchNetworkBalances, fetchGas, fetchAllBalances } = useBalance()
+    const { networks, sourceRoutes } = useSettingsState()
+
+    const filteredNetworks = networks.filter(l => sourceRoutes.some(sr => sr.name.includes(l.name) && l.tokens))
+    const activeNetworks = filteredNetworks.map(chain => {
+        chain.tokens = chain.tokens.filter(asset => asset.contract); //TODO check this check
+        return chain;
+    });
 
     const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet()
     const destinationNetworkWallet = destinationWalletProvider?.getConnectedWallet()
@@ -29,10 +37,6 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
     const destinationBalanceAmount = destinationBalance?.amount && truncateDecimals(destinationBalance?.amount, toCurrency?.precision)
     const balanceAmount = direction === 'from' ? walletBalanceAmount : destinationBalanceAmount
-
-    useEffect(() => {
-        sourceNetworkWallet?.address && onLoad(sourceNetworkWallet?.address)
-    }, [sourceNetworkWallet])
 
     useEffect(() => {
         direction === 'from' && values.from && fetchNetworkBalances(values.from);
@@ -61,9 +65,7 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
             <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
                 <div>
                     <span>Balance:&nbsp;</span>
-                    {isBalanceLoading ?
-                        <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                        :
+                    {!isNaN(balanceAmount) &&
                         <span>{balanceAmount}</span>}
                 </div>
             </div>

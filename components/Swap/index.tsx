@@ -1,9 +1,8 @@
 import { FC, useCallback } from 'react'
 import { Widget } from '../Widget/Index';
-import { useSwapDataState } from '../../context/swap';
 import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
-import { BackendTransactionStatus, TransactionType } from '../../lib/layerSwapApiClient';
+import { BackendTransactionStatus, SwapItem, SwapResponse, TransactionType } from '../../lib/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
 import GasDetails from '../gasDetails';
 
@@ -14,10 +13,11 @@ import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import SubmitButton from '../buttons/submitButton';
+import { useSwapDataState } from '../../context/swap';
 
 const SwapDetails: FC<Props> = ({ type }) => {
     const { swapResponse } = useSwapDataState()
-    
+
     const { swap } = swapResponse || {}
     const swapStatus = swap?.status;
     const storedWalletTransactions = useSwapTransactionStore()

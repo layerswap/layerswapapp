@@ -59,7 +59,7 @@ const connectors = connectorsForWallets([
     },
 ]);
 window.plausible = () => { }
-const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwapOutOfRange?: SwapItem, failedInputSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ settings, swap, failedSwap, failedSwapOutOfRange, theme, initialValues, timestamp, failedInputSwap }) => {
+const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ settings, swapData, theme, initialValues, timestamp }) => {
     const query = useQueryState()
     const wagmiConfig = createConfig({
         autoConnect: true,
@@ -69,7 +69,7 @@ const Comp: FC<{ settings: any, swap: SwapItem, failedSwap?: SwapItem, failedSwa
 
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const appSettings = new LayerSwapAppSettings(Settings)
-    const swapContextInitialValues: SwapData = { codeRequested: false, swapResponse: undefined, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined }
+    const swapContextInitialValues: SwapData = { codeRequested: false, swapResponse: swapData.swapResponse, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined }
 
     if (!appSettings) {
         return <div>Loading...</div>
@@ -126,14 +126,14 @@ const DUMMY_TRANSACTION = {
     to: "0x142c03fc8fd30d11ed17ef0f48a9941fd4a66953",
     created_date: "2023-08-16T16:33:23.4937+00:00",
     transaction_hash: "0xae9231b805139bee7e92ddae631b13bb2d13a09e106826b4f08e8efa965d1c27",
-    confirmations: 28,
+    confirmations: 12,
     max_confirmations: 12,
     amount: 0.00093,
     usd_price: 1819.02,
     type: TransactionType,
     usd_value: 1.6916886,
     status: BackendTransactionStatus,
-    timestamp: ''
+    timestamp: "",
 }
 
 const meta = {
@@ -161,7 +161,7 @@ const meta = {
 
         const handleUpdateArgs = () => {
             const updatedSwap = {
-                ...args.swap,
+                ...args.swapData,
                 transactions: swap?.transactions?.map(transaction => {
                     if (transaction.type === 'input' && (transaction.timestamp || transaction.timestamp === '')) {
                         return {
@@ -189,110 +189,160 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+
 export const UserTransferInitiated: Story = {
     args: {
-        swap: {
-            ...swap.swap,
-            status: SwapStatus.UserTransferPending,
-            transactions: [
-            ]
-        },
+        swapData: {
+            ...swap,
+            swapResponse: {
+                ...(swap.swapResponse as SwapResponse),
+                swap: {
+                    ...(swap.swapResponse.swap as SwapItem),
+                    status: SwapStatus.UserTransferPending,
+                    transactions: [
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input, confirmations: 2, max_confirmations: 3 },
+                    ]
+                }
+            }
+        }
     },
     loaders: [
         async () => ({
-            A: window.localStorage.setItem("swapTransactions", `{"${swap.swap.id}": {"hash": "0xe1d8539c6dbe522560c41d645f10ffc3f50b8f689a4ce4774573576cb845d5fc", "status":2}}`)
+            A: window.localStorage.setItem("swapTransactions", `{"${swap.swapResponse.swap.id}": {"hash": "0xe1d8539c6dbe522560c41d645f10ffc3f50b8f689a4ce4774573576cb845d5fc", "status":2}}`)
         }),
     ],
 };
 
 export const UserTransferDetected: Story = {
     args: {
-        swap: {
-            ...swap.swap,
-            status: SwapStatus.UserTransferPending,
-            transactions: [
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Initiated, type: TransactionType.Input, confirmations: 2, max_confirmations: 3 },
-            ]
+        swapData: {
+            ...swap,
+            swapResponse: {
+                ...(swap.swapResponse as SwapResponse),
+                swap: {
+                    ...(swap.swapResponse.swap as SwapItem),
+                    status: SwapStatus.UserTransferPending,
+                    transactions: [
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Initiated, type: TransactionType.Input, confirmations: 2, max_confirmations: 3 },
+                    ]
+                }
+            }
         }
     }
 };
 export const UserTransferPendingInputCompleted: Story = {
     args: {
-        swap: {
-            ...failedSwap.swap,
-            status: SwapStatus.UserTransferPending,
-            transactions: [
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
-            ]
+        swapData: {
+            ...swap,
+            swapResponse: {
+                ...(swap.swapResponse as SwapResponse),
+                swap: {
+                    ...(swap.swapResponse.swap as SwapItem),
+                    status: SwapStatus.Failed,
+                    transactions: [
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
+                    ]
+                }
+            }
         }
     },
 };
 
 export const LsTransferPending: Story = {
     args: {
-        swap: {
-            ...failedSwap.swap,
-            status: SwapStatus.LsTransferPending,
-            transactions: [
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Output },
-            ]
+        swapData: {
+            ...swap,
+            swapResponse: {
+                ...(swap.swapResponse as SwapResponse),
+                swap: {
+                    ...(swap.swapResponse.swap as SwapItem),
+                    status: SwapStatus.LsTransferPending,
+                    transactions: [
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Output },
+                    ]
+                }
+            }
         }
     }
 };
 
 export const LsTransferPendingWithRefuel: Story = {
     args: {
-        swap: {
-            ...swap.swap,
-            status: SwapStatus.LsTransferPending,
-            transactions: [
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Output },
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Refuel },
-            ]
+        swapData: {
+            ...swap,
+            swapResponse: {
+                ...(swap.swapResponse as SwapResponse),
+                swap: {
+                    ...(swap.swapResponse.swap as SwapItem),
+                    status: SwapStatus.LsTransferPending,
+                    transactions: [
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Output },
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Refuel },
+                    ]
+                }
+            }
         }
     }
 };
 
 export const LsTransferInitiated: Story = {
     args: {
-        swap: {
-            ...swap.swap,
-            status: SwapStatus.LsTransferPending,
-            transactions: [
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Initiated, type: TransactionType.Output, confirmations: 2, max_confirmations: 5 },
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Initiated, type: TransactionType.Refuel, confirmations: 1, max_confirmations: 5 },
-            ]
+        swapData: {
+            ...swap,
+            swapResponse: {
+                ...(swap.swapResponse as SwapResponse),
+                swap: {
+                    ...(swap.swapResponse.swap as SwapItem),
+                    status: SwapStatus.LsTransferPending,
+                    transactions: [
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Initiated, type: TransactionType.Output, confirmations: 2, max_confirmations: 5 },
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Initiated, type: TransactionType.Refuel, confirmations: 1, max_confirmations: 5 },
+                    ]
+                }
+            }
         }
     }
 };
 
 export const Completed: Story = {
     args: {
-        swap: {
-            ...swap.swap,
-            status: SwapStatus.Completed,
-            transactions: [
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Output },
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Refuel },
-            ]
+        swapData: {
+            ...swap,
+            swapResponse: {
+                ...(swap.swapResponse as SwapResponse),
+                swap: {
+                    ...(swap.swapResponse.swap as SwapItem),
+                    status: SwapStatus.Completed,
+                    transactions: [
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Output },
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Refuel },
+                    ]
+                }
+            }
         }
     }
 };
 
 export const OnlyRefuelCompleted: Story = {
     args: {
-        swap: {
-            ...swap.swap,
-            status: SwapStatus.LsTransferPending,
-            transactions: [
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Output },
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Refuel },
-            ]
+        swapData: {
+            ...swap,
+            swapResponse: {
+                ...(swap.swapResponse as SwapResponse),
+                swap: {
+                    ...(swap.swapResponse.swap as SwapItem),
+                    status: SwapStatus.LsTransferPending,
+                    transactions: [
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Output },
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Refuel },
+                    ]
+                }
+            }
         }
     }
 };
@@ -300,72 +350,108 @@ export const OnlyRefuelCompleted: Story = {
 
 export const UserTransferDelayed: Story = {
     args: {
-        swap: {
-            ...swap.swap,
-            status: SwapStatus.UserTransferDelayed,
-            transactions: [
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Input },
-            ]
+        swapData: {
+            ...swap,
+            swapResponse: {
+                ...(swap.swapResponse as SwapResponse),
+                swap: {
+                    ...(swap.swapResponse.swap as SwapItem),
+                    status: SwapStatus.UserTransferDelayed,
+                    transactions: [
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Input },
+                    ]
+                }
+            }
         }
     }
 };
 
 export const Failed: Story = {
     args: {
-        swap: {
-            ...failedSwap.swap,
-            status: SwapStatus.Failed,
-            transactions: [
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
-            ]
+        swapData: {
+            ...swap,
+            swapResponse: {
+                ...(swap.swapResponse as SwapResponse),
+                swap: {
+                    ...(swap.swapResponse.swap as SwapItem),
+                    status: SwapStatus.Failed,
+                    transactions: [
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
+                    ]
+                }
+            }
         }
     }
 };
 
 export const FailedInput: Story = {
     args: {
-        swap: {
-            ...failedInputSwap.swap,
-            status: SwapStatus.UserTransferPending,
-        },
+        swapData: {
+            ...swap,
+            swapResponse: {
+                ...(swap.swapResponse as SwapResponse),
+                swap: {
+                    ...(swap.swapResponse.swap as SwapItem),
+                    status: SwapStatus.UserTransferPending,
+                }
+            }
+        }
     },
     loaders: [
         async () => ({
-            A: window.localStorage.setItem("swapTransactions", `{"${failedInputSwap.swap.id}": {"hash": "0x529ab89f4ed2ece53ca51f52d11e5123f5e5c43c09a9d054d243de0e0829d15f", "status":"failed"}}`),
+            A: window.localStorage.setItem("swapTransactions", `{"${swap.swapResponse.swap.id}": {"hash": "0x529ab89f4ed2ece53ca51f52d11e5123f5e5c43c09a9d054d243de0e0829d15f", "status":"failed"}}`),
         }),
     ]
 };
 
 export const FailedOutOfRangeAmount: Story = {
     args: {
-        swap: {
-            ...failedSwapOutOfRange.swap,
-            status: SwapStatus.Failed,
-            transactions: [
-                { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
-            ]
+        swapData: {
+            ...swap,
+            swapResponse: {
+                ...(swap.swapResponse as SwapResponse),
+                swap: {
+                    ...(swap.swapResponse.swap as SwapItem),
+                    status: SwapStatus.Failed,
+                    transactions: [
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
+                    ]
+                }
+            }
         }
     }
 };
 
 export const Cancelled: Story = {
     args: {
-        swap: {
-            ...cancelled.swap,
-            status: SwapStatus.Cancelled,
-            transactions: [
-            ]
+        swapData: {
+            ...swap,
+            swapResponse: {
+                ...(swap.swapResponse as SwapResponse),
+                swap: {
+                    ...(swap.swapResponse.swap as SwapItem),
+                    status: SwapStatus.Cancelled,
+                    transactions: [
+                    ]
+                }
+            }
         }
     }
 };
 
 export const Expired: Story = {
     args: {
-        swap: {
-            ...expired.swap,
-            status: SwapStatus.Expired,
-            transactions: [
-            ]
+        swapData: {
+            ...swap,
+            swapResponse: {
+                ...(swap.swapResponse as SwapResponse),
+                swap: {
+                    ...(swap.swapResponse.swap as SwapItem),
+                    status: SwapStatus.Expired,
+                    transactions: [
+                    ]
+                }
+            }
         }
     }
 };

@@ -2,12 +2,12 @@ import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
-import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import CurrencySettings from "../../lib/CurrencySettings";
 import { SortingByAvailability } from "../../lib/sorting";
 import { useQueryState } from "../../context/query";
+import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
+import { groupByType } from "./CurrencyFormField";
 import { Exchange, ExchangeToken } from "../../Models/Exchange";
-import { LSAPIKnownErrorCode } from "../../Models/ApiError";
 import { resolveExchangesURLForSelectedToken } from "../../helpers/routes";
 import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
@@ -68,12 +68,28 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
-    return <PopoverSelectWrapper
-        placeholder="Asset"
-        values={currencyMenuItems}
-        value={value}
-        setValue={handleSelect}
+    const valueDetails = <div>
+        {value
+            ?
+            <span className="block font-medium text-primary-text flex-auto items-center">
+                {value?.name}
+            </span>
+            :
+            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                Asset
+            </span>}
+    </div>
+
+    return <CommandSelectWrapper
         disabled={!value?.isAvailable?.value}
+        valueGrouper={groupByType}
+        placeholder="Asset"
+        setValue={handleSelect}
+        value={value}
+        values={currencyMenuItems}
+        searchHint='Search'
+        isLoading={false}
+        valueDetails={valueDetails}
     />;
 }
 

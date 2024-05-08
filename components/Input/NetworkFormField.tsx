@@ -114,6 +114,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const handleSelect = useCallback((item: SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean }) => {
         if (item.baseObject.name === value?.baseObject.name)
             return
+
         if (!item.isAvailable.value && item.isAvailable.disabledReason == LayerDisabledReason.InvalidRoute) {
             setFieldValue(name === "from" ? "to" : "from", null)
             setFieldValue(name === "from" ? "toExchange" : "fromExchange", null)
@@ -229,7 +230,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             isAvailable: layerIsAvailable(r),
             group: getGroupName(r, 'network', layerIsAvailable(r)),
             isExchange: false,
-            details
+            menuItemDetails: details
         }
         return res;
     }).sort(SortingByAvailability) || [];
