@@ -1,5 +1,5 @@
 import { Formik, FormikProps } from "formik";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSettingsState } from "../../../context/settings";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
@@ -66,6 +66,10 @@ export default function Form() {
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee } = useFee()
+
+    useEffect(() => {
+        formikRef?.current?.validateForm();
+    }, [maxAllowedAmount]);
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
