@@ -67,10 +67,6 @@ export default function Form() {
     const { swap } = swapResponse || {}
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee } = useFee()
 
-    useEffect(() => {
-        formikRef?.current?.validateForm();
-    }, [maxAllowedAmount]);
-
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
             const accessToken = TokenService.getAuthData()?.access_token
@@ -135,6 +131,10 @@ export default function Form() {
 
     const initialValues: SwapFormValues = swapResponse ? generateSwapInitialValuesFromSwap(swapResponse, settings)
         : generateSwapInitialValues(settings, query)
+
+    useEffect(() => {
+        formikRef.current?.validateForm();
+    }, [minAllowedAmount, maxAllowedAmount]);
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         pollFee(!value)
