@@ -1,19 +1,18 @@
 import { ChangeEvent, FC, useCallback, useState } from "react";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { Info, Pencil, X } from "lucide-react";
-import { isValidAddress } from "../../../lib/address/validator";
+import { SwapFormValues } from "../../../DTOs/SwapFormValues";
+import { Pencil, X } from "lucide-react";
+import { isValidAddress } from "../../../../lib/address/validator";
 import Image from 'next/image';
-import { Partner } from "../../../Models/Partner";
-import shortenAddress from "../../utils/ShortenAddress";
-import { AddressItem } from "../../../stores/addressBookStore";
-import AddressIcon from "../../AddressIcon";
-import { addressFormat } from "../../../lib/address/formatter";
+import { Partner } from "../../../../Models/Partner";
+import shortenAddress from "../../../utils/ShortenAddress";
+import AddressIcon from "../../../AddressIcon";
+import { NetworkType } from "../../../../Models/Network";
+import { ExchangeType } from ".";
 
 type AddressInput = {
     manualAddress: string,
     setManualAddress: (address: string) => void,
-    setNewAddress: (address: string) => void,
-    addresses: AddressItem[],
+    setNewAddress: (value: { address: string, networkType: NetworkType | ExchangeType } | undefined) => void,
     values: SwapFormValues,
     partner?: Partner,
     isPartnerWallet: boolean,
@@ -24,9 +23,9 @@ type AddressInput = {
     close: () => void
 }
 
-const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress, setNewAddress, addresses, values, partner, isPartnerWallet, partnerImage, name, inputReference, setFieldValue, close }) => {
+const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress, setNewAddress, values, partner, isPartnerWallet, partnerImage, name, inputReference, setFieldValue, close }) => {
 
-    const { to: destination } = values || {}
+    const { to: destination, toExchange: destinationExchange } = values || {}
     const [isFocused, setIsFocused] = useState(false);
 
     const placeholder = "Enter address"
@@ -41,16 +40,14 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
 
     const handleSaveNewAddress = () => {
         if (isValidAddress(manualAddress, destination)) {
-            if (destination && !addresses.some(a => addressFormat(a.address, destination) === addressFormat(manualAddress, destination))) {
-                setNewAddress(manualAddress)
+            if (destination) {
+                setNewAddress({ address: manualAddress, networkType: destinationExchange ? ExchangeType.Exchange : destination.type })
             }
             setFieldValue(name, manualAddress)
             setManualAddress("")
         }
         close()
     }
-
-    const destinationAsset = values.toCurrency
 
     let errorMessage = '';
     if (manualAddress && !isValidAddress(manualAddress, destination)) {

@@ -13,7 +13,6 @@ import { isValidAddress } from "../../../lib/address/validator"
 import { useQueryState } from "../../../context/query"
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap"
 import useWallet from "../../../hooks/useWallet"
-import { AddressItem, AddressGroup, useAddressBookStore } from "../../../stores/addressBookStore"
 import { ChevronRight } from "lucide-react"
 import AddressIcon from "../../AddressIcon"
 
@@ -33,8 +32,6 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
     const { setDepositAddressIsFromAccount: setDepositeAddressIsfromAccount } = useSwapDataUpdate()
     const { depositAddressIsFromAccount: depositeAddressIsfromAccount } = useSwapDataState()
     const { to: destination, destination_address, toExchange } = values
-    const addresses = useAddressBookStore((state) => state.addresses).filter(a => a.networkType === values.to?.type)
-    const address = addresses.find(a => a.address === destination_address)
 
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/internal/recent_addresses` : null
@@ -67,9 +64,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
 
     //If destination exchange changed, remove destination_address
     useEffect(() => {
-        if (toExchange) {
-            setFieldValue("destination_address", '')
-        }
+        setFieldValue("destination_address", '')
     }, [toExchange])
 
     const { disconnectWallet, getAutofillProvider: getProvider } = useWallet()
@@ -79,11 +74,10 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
 
     const connectedWallet = provider?.getConnectedWallet()
     const [wrongNetwork, setWrongNetwork] = useState(false)
-    const addAddresses = useAddressBookStore((state) => state.addAddresses)
 
     //If wallet connected set address from wallet
     useEffect(() => {
-        if (destination && connectedWallet?.address && isValidAddress(connectedWallet?.address, destination) && (addresses.find(a => a.address === values.destination_address)?.group === AddressGroup.ConnectedWallet || !values?.destination_address) && !toExchange) {
+        if (destination && connectedWallet?.address && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address && !toExchange) {
             //TODO move to wallet implementation
             if (connectedWallet
                 && connectedWallet.providerName === 'starknet'
@@ -95,11 +89,8 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
                 })()
                 return
             }
-            addAddresses([{ address: connectedWallet?.address, group: AddressGroup.ConnectedWallet, networkType: values?.to?.type }])
             setFieldValue("destination_address", connectedWallet?.address)
             if (showAddressModal) setShowAddressModal(false)
-        } else if (addresses.find(a => a.address === values.destination_address)?.group === AddressGroup.ConnectedWallet && !connectedWallet?.address) {
-            setFieldValue('destination_address', undefined)
         }
     }, [connectedWallet?.address, destination])
 
@@ -111,7 +102,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
             <AddressButton
                 disabled={!values.to || !values.from}
                 isPartnerWallet={isPartnerWallet}
-                address={address}
+                address={destination_address}
                 openAddressModal={() => setShowAddressModal(true)}
                 partnerImage={partnerImage}
                 values={values} />
@@ -142,7 +133,7 @@ type AddressButtonProps = {
     openAddressModal: () => void;
     isPartnerWallet: boolean;
     values: SwapFormValues;
-    address?: AddressItem;
+    address?: string;
     partnerImage?: string;
     disabled: boolean;
 }
