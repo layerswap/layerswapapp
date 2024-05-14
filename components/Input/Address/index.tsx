@@ -97,7 +97,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
                 })()
                 return
             }
-            addAddresses([{ address: connectedWallet?.address, group: AddressGroup.ConnectedWallet, networkType: values?.to?.type }])
+            addAddresses([{ address: connectedWallet?.address, group: AddressGroup.ConnectedWallet, networkType: values?.to?.type }], destination)
             setFieldValue("destination_address", connectedWallet?.address)
         } else if (addresses.find(a => a.address === values.destination_address)?.group === AddressGroup.ConnectedWallet && !connectedWallet?.address) {
             setFieldValue('destination_address', undefined)

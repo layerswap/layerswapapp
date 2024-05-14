@@ -1,9 +1,10 @@
 import { create } from 'zustand'
-import { NetworkType } from '../Models/Network';
+import { NetworkType, RouteNetwork } from '../Models/Network';
+import { addressFormat } from '../lib/address/formatter';
 
 interface AddressBookState {
     addresses: AddressItem[];
-    addAddresses: (newAddresses: AddressItem[]) => void;
+    addAddresses: (newAddresses: AddressItem[], network: RouteNetwork) => void;
 }
 
 export enum AddressGroup {
@@ -21,10 +22,10 @@ export type AddressItem = {
 
 export const useAddressBookStore = create<AddressBookState>()((set) => ({
     addresses: [],
-    addAddresses: (newAddresses: AddressItem[]) => set((state) => {
+    addAddresses: (newAddresses: AddressItem[], network: RouteNetwork) => set((state) => {
         return ({
             addresses: [
-                ...state.addresses.filter(a => !newAddresses.find(na => na.address === a.address) && !(a.group === AddressGroup.ConnectedWallet && a.address !== newAddresses.find(na => na.group === AddressGroup.ConnectedWallet)?.address)),
+                ...state.addresses.filter(a => !newAddresses.find(na => addressFormat(na.address, network) === addressFormat(a.address, network)) && !(a.group === AddressGroup.ConnectedWallet && addressFormat(newAddresses.find(na => na.group === AddressGroup.ConnectedWallet)?.address || '', network) !== addressFormat(a.address, network))),
                 ...newAddresses
             ]
         })
