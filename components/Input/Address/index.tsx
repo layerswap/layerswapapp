@@ -3,9 +3,7 @@ import { SwapFormValues } from "../../DTOs/SwapFormValues"
 import shortenAddress from "../../utils/ShortenAddress"
 import Image from "next/image"
 import { useFormikContext } from "formik"
-import Modal from "../../modal/modal"
 import { Partner } from "../../../Models/Partner"
-import ResizablePanel from "../../ResizablePanel"
 import AddressPicker from "./AddressPicker"
 import useSWR from "swr"
 import { ApiResponse } from "../../../Models/ApiResponse"
@@ -97,8 +95,9 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
                 })()
                 return
             }
-            addAddresses([{ address: connectedWallet?.address, group: AddressGroup.ConnectedWallet, networkType: values?.to?.type }], destination)
+            addAddresses([{ address: connectedWallet?.address, group: AddressGroup.ConnectedWallet, networkType: values?.to?.type }])
             setFieldValue("destination_address", connectedWallet?.address)
+            if (showAddressModal) setShowAddressModal(false)
         } else if (addresses.find(a => a.address === values.destination_address)?.group === AddressGroup.ConnectedWallet && !connectedWallet?.address) {
             setFieldValue('destination_address', undefined)
         }
@@ -167,8 +166,8 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWall
             <div className="truncate">
                 {values.destination_address ?
                     <div className="flex items-center gap-2">
-                        <div className='flex bg-secondary-400 text-primary-buttonTextColor flex-row items-left rounded-md p-1.5'>
-                            <AddressIcon size={20} address={values.destination_address} />
+                        <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-8 overflow-hidden w-8'>
+                            <AddressIcon className="scale-150 h-8 w-8" address={values.destination_address} size={32} />
                         </div>
                         <TruncatedAdrress address={values.destination_address} />
                     </div>

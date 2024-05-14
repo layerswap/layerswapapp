@@ -109,12 +109,12 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                         {errorMessage}
                     </div>
                 }
-          
+
                 {
                     manualAddress && !errorMessage &&
                     <div onClick={handleSaveNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 bg-secondary-800 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-700 transition duration-200 p-3 hover:shadow-xl mt-3`}>
-                        <div className='flex text-primary-text bg-secondary-400 flex-row items-left rounded-md p-2'>
-                            <AddressIcon size={20} address={manualAddress} />
+                        <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
+                            <AddressIcon className="scale-150 h-9 w-9" address={manualAddress} size={36} />
                         </div>
                         <div className="flex flex-col grow">
                             <div className="block text-md font-medium text-primary-text">

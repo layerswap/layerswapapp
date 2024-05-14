@@ -9,8 +9,7 @@ import { Partner } from "../../../Models/Partner";
 import shortenAddress from "../../utils/ShortenAddress";
 import useWallet, { WalletProvider } from "../../../hooks/useWallet";
 import { AddressItem, AddressGroup, useAddressBookStore } from "../../../stores/addressBookStore";
-import { groupBy } from "../../utils/groupBy";
-import { CommandGroup, CommandItem, CommandList, CommandWrapper } from "../../shadcn/command";
+import { CommandGroup, CommandList, CommandWrapper } from "../../shadcn/command";
 import AddressIcon from "../../AddressIcon";
 import { addressFormat } from "../../../lib/address/formatter";
 import { ResolveConnectorIcon } from "../../icons/ConnectorIcons";
@@ -74,7 +73,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         if (connectedWalletAddress && destination) addresses = [...addresses.filter(a => addressFormat(connectedWalletAddress, destination) !== addressFormat(a.address, destination)), { address: connectedWalletAddress, group: AddressGroup.ConnectedWallet, networkType: destination.type }]
         if (newAddress && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.ManualAdded && addressFormat(newAddress, destination) !== addressFormat(a.address, destination)), { address: newAddress, group: AddressGroup.ManualAdded, networkType: destination.type }]
 
-        addAddresses(addresses.filter(a => a.networkType === values.to?.type), destination)
+        addAddresses(addresses.filter(a => a.networkType === values.to?.type))
 
     }, [address_book, destination_address, connectedWalletAddress, newAddress, values.to])
 
@@ -90,8 +89,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         close()
     }, [close, setFieldValue])
 
-    const groupedAddresses = groupBy(addresses.filter(a => a.group !== AddressGroup.ConnectedWallet), ({ group }) => group)
-    const groupedAddressesArray = Object.keys(groupedAddresses).map(g => { const items: AddressItem[] = groupedAddresses[g]; return ({ name: g, items: items, order: (g === AddressGroup.ManualAdded && 3 || g === AddressGroup.RecentlyUsed && 2) || 10 }) })
+    const filteredAddresses = addresses.filter(a => a.group !== AddressGroup.ConnectedWallet)
 
     return (<>
         <Modal
@@ -130,7 +128,10 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                 </div>
                             }
 
-                            <hr className="border-secondary-500 w-full" />
+                            {
+                                (destinationExchange || provider) &&
+                                <hr className="border-secondary-500 w-full" />
+                            }
 
                             <ManualAddressInput
                                 manualAddress={manualAddress}
@@ -148,59 +149,57 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                             />
 
                             {
-                                !disabled && addresses?.length > 0 && !manualAddress &&
+                                !disabled && filteredAddresses?.length > 0 && !manualAddress &&
                                 <div className="text-left">
                                     <CommandWrapper>
                                         <CommandList>
-                                            {groupedAddressesArray.sort((a, b) => a.order - b.order).map((group) => {
-                                                return (
-                                                    <CommandGroup
-                                                        key={group.name}
-                                                        heading={group.name}
-                                                        className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-0 !py-0 !px-0 mt-2"
-                                                    >
-                                                        <div className="space-y-0 w-full flex flex-col items-stretch">
-                                                            {group.items.map(item => {
-                                                                const difference_in_days = item.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(item.date).getTime()) / (1000 * 3600 * 24))) : undefined
+                                            <CommandGroup
+                                                heading="Address Book"
+                                                className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-0 !py-0 !px-0 mt-2"
+                                            >
+                                                <div className="space-y-0 w-full flex flex-col items-stretch">
+                                                    {filteredAddresses.sort((a, b) =>
+                                                        (a.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(a.date).getTime()) / (1000 * 3600 * 24))) : 0)
+                                                        - (b.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(b.date).getTime()) / (1000 * 3600 * 24))) : 0)
+                                                    ).map(item => {
+                                                        const difference_in_days = item.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(item.date).getTime()) / (1000 * 3600 * 24))) : undefined
 
-                                                                return (
-                                                                    <button key={item.address} onClick={() => handleSelectAddress(item.address)} className={`px-3 py-3  !rounded-md hover:!bg-secondary-700 w-full transition duration-200 ${addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
-                                                                        <div className={`flex items-center justify-between w-full`}>
-                                                                            <div className={`space-x-2 flex text-sm items-center`}>
-                                                                                <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
-                                                                                    <AddressIcon className="scale-150 h-9 w-9" address={item.address} size={36} />
-                                                                                </div>
-                                                                                <div className="flex flex-col">
-                                                                                    <div className="block text-sm font-medium">
-                                                                                        {shortenAddress(item.address)}
-                                                                                    </div>
-                                                                                    <div className="text-gray-500">
-                                                                                        {
-                                                                                            item.group === 'Recently used' &&
-                                                                                            (difference_in_days === 0 ?
-                                                                                                <>Used today</>
-                                                                                                :
-                                                                                                (difference_in_days && difference_in_days > 1 ?
-                                                                                                    <>Used {difference_in_days} days ago</>
-                                                                                                    : <>Used yesterday</>))
-                                                                                        }
-                                                                                    </div>
-                                                                                </div>
+                                                        return (
+                                                            <button type="button" key={item.address} onClick={() => handleSelectAddress(item.address)} className={`px-3 py-3  !rounded-md hover:!bg-secondary-700 w-full transition duration-200 ${addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
+                                                                <div className={`flex items-center justify-between w-full`}>
+                                                                    <div className={`space-x-2 flex text-sm items-center`}>
+                                                                        <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
+                                                                            <AddressIcon className="scale-150 h-9 w-9" address={item.address} size={36} />
+                                                                        </div>
+                                                                        <div className="flex flex-col items-start">
+                                                                            <div className="block text-sm font-medium">
+                                                                                {shortenAddress(item.address)}
                                                                             </div>
-                                                                            <div className="flex h-6 items-center px-1">
+                                                                            <div className="text-gray-500">
                                                                                 {
-                                                                                    addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!) &&
-                                                                                    <Check />
+                                                                                    item.group === 'Recently used' &&
+                                                                                    (difference_in_days === 0 ?
+                                                                                        <>Used today</>
+                                                                                        :
+                                                                                        (difference_in_days && difference_in_days > 1 ?
+                                                                                            <>Used {difference_in_days} days ago</>
+                                                                                            : <>Used yesterday</>))
                                                                                 }
                                                                             </div>
                                                                         </div>
-                                                                    </button>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                    </CommandGroup>
-                                                )
-                                            })}
+                                                                    </div>
+                                                                    <div className="flex h-6 items-center px-1">
+                                                                        {
+                                                                            addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!) &&
+                                                                            <Check />
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </button>
+                                                        )
+                                                    })}
+                                                </div>
+                                            </CommandGroup>
                                         </CommandList>
                                     </CommandWrapper>
                                 </div>
@@ -235,7 +234,7 @@ const ConnectWalletButton = ({ provider, onClick, connectedWallet, destination, 
                     Switch Wallet
                 </button>
             </div>
-            <button onClick={onClick} className={`w-full px-3 py-2 -mx-1 rounded-md hover:!bg-secondary-800 transition duration-200 ${addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
+            <button type="button" onClick={onClick} className={`w-full px-3 py-2 -mx-1 rounded-md hover:!bg-secondary-800 transition duration-200 ${addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
                 <div className={`flex items-center justify-between w-full`}>
                     <div className={`space-x-2 flex text-sm items-center`}>
                         <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
@@ -257,7 +256,7 @@ const ConnectWalletButton = ({ provider, onClick, connectedWallet, destination, 
             </button>
         </div>
         :
-        <button onClick={onClick} type="button" className="py-5 px-6 bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl">
+        <button typeof="button" onClick={onClick} type="button" className="py-5 px-6 bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl">
             <div className="flex flex-row justify-between gap-9 items-stretch">
                 <ResolveConnectorIcon
                     connector={provider.name}
