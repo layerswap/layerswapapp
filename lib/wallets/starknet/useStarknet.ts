@@ -4,6 +4,7 @@ import { useWalletStore } from "../../../stores/walletStore"
 import KnownInternalNames from "../../knownIds"
 import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
+import { Network } from "../../../Models/Network";
 
 export default function useStarknet(): WalletProvider {
     const withdrawalSupportedNetworks = [
@@ -16,6 +17,7 @@ export default function useStarknet(): WalletProvider {
     const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
     const wallets = useWalletStore((state) => state.connectedWallets)
 
+    let error = '';
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
 
@@ -28,6 +30,7 @@ export default function useStarknet(): WalletProvider {
         const chainId = (chain && fromHex(chain as `0x${string}`, 'string')) || constants.NetworkName.SN_MAIN
         const connect = (await import('starknetkit')).connect
         try {
+            error = '';
             const { wallet } = await connect({
                 argentMobileOptions: {
                     dappName: 'Layerswap',
@@ -54,8 +57,15 @@ export default function useStarknet(): WalletProvider {
                 await disconnectWallet()
                 connectWallet(chain)
             }
+            if (wallet && wallet.provider?.provider?.chainId != chain) {
+                chain === '0x534e5f5345504f4c4941' ?
+                    error = 'Please switch to Starknet Sepolia with your wallet and click Autofill again'
+                    :
+                    error = 'Please switch to Starknet Mainnet with your wallet and click Autofill again'
+            }
         }
         catch (e) {
+            error = e;
             throw new Error(e)
         }
     }, [addWallet])
@@ -75,6 +85,7 @@ export default function useStarknet(): WalletProvider {
         getConnectedWallet: getWallet,
         connectWallet,
         disconnectWallet,
+        connectError: error,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         name

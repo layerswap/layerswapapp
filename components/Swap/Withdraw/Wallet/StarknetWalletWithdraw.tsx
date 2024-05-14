@@ -15,7 +15,7 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { getWithdrawalProvider: getProvider } = useWallet()
+    const { getWithdrawalProvider: getProvider, connectError } = useWallet()
     const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
 
     const { userId } = useAuthState()
@@ -93,14 +93,10 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
                 <div className='space-y-4'>
                     {
 
-                        isWrongNetwork &&
+                        isWrongNetwork && connectError &&
                         <WarningMessage messageType='warning'>
                             <span className='flex'>
-                                {
-                                    source_network_internal_name === KnownInternalNames.Networks.StarkNetMainnet
-                                        ? <span>Please switch to Starknet Mainnet with your wallet and click Connect again</span>
-                                        : <span>Please switch to {network?.display_name} with your wallet and click Connect again</span>
-                                }
+                                {connectError}
                             </span>
                         </WarningMessage>
                     }

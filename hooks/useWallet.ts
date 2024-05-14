@@ -6,14 +6,15 @@ import useEVM from "../lib/wallets/evm/useEVM"
 import useStarknet from "../lib/wallets/starknet/useStarknet"
 import useImmutableX from "../lib/wallets/immutableX/useIMX"
 import useSolana from "../lib/wallets/solana/useSolana"
-import { Network } from "../Models/Network"
+import { Network, RouteNetwork } from "../Models/Network"
 
 
 export type WalletProvider = {
-    connectWallet: (chain?: string | number | undefined | null) => Promise<void> | undefined | void,
+    connectWallet: (chain?: string | number | undefined | null, destination?: RouteNetwork) => Promise<void> | undefined | void,
     disconnectWallet: () => Promise<void> | undefined | void,
     getConnectedWallet: () => Wallet | undefined,
     autofillSupportedNetworks?: string[],
+    connectError?: string,
     withdrawalSupportedNetworks: string[],
     name: string,
 }
@@ -27,7 +28,7 @@ export default function useWallet() {
         useImmutableX(),
         useSolana()
     ]
-
+    let error = ''
     async function handleConnect(providerName: string, chain?: string | number) {
         const provider = WalletProviders.find(provider => provider.name === providerName)
         try {
@@ -79,6 +80,7 @@ export default function useWallet() {
         wallets: getConnectedWallets(),
         connectWallet: handleConnect,
         disconnectWallet: handleDisconnect,
+        connectError: error,
         getWithdrawalProvider,
         getAutofillProvider,
     }

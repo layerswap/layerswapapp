@@ -50,7 +50,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const destinationIsStarknet = destination?.name === KnownInternalNames.Networks.StarkNetGoerli
         || destination?.name === KnownInternalNames.Networks.StarkNetMainnet
 
-    const { connectWallet, disconnectWallet, getAutofillProvider: getProvider } = useWallet()
+    const { connectWallet, disconnectWallet, getAutofillProvider: getProvider, connectError } = useWallet()
     const provider = useMemo(() => {
         return values?.to && getProvider(values?.to)
     }, [values?.to, getProvider])
@@ -175,13 +175,9 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     {errorMessage}
                                 </div>
                             }
-                            {wrongNetwork && !inputValue &&
+                            {wrongNetwork && !inputValue && connectError &&
                                 <div className="basis-full text-xs text-primary">
-                                    {
-                                        destination?.name === KnownInternalNames.Networks.StarkNetMainnet
-                                            ? <span>Please switch to Starknet Mainnet with your wallet and click Autofill again</span>
-                                            : <span>Please switch to Starknet Goerli with your wallet and click Autofill again</span>
-                                    }
+                                    {connectError}
                                 </div>
                             }
                         </div>
