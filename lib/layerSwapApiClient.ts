@@ -2,7 +2,7 @@ import { SwapStatus } from "../Models/SwapStatus";
 import AppSettings from "./AppSettings";
 import { InitializeUnauthInstance, InitializeAuthInstance } from "./axiosInterceptor"
 import { v4 as uuidv4 } from 'uuid';
-import axios, { AxiosInstance, Method } from "axios";
+import { AxiosInstance, Method } from "axios";
 import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
@@ -221,7 +221,8 @@ export type SwapQuote = {
     total_fee_in_usd: number,
     blockchain_fee: number,
     service_fee: number,
-    avg_completion_time: string
+    avg_completion_time: string,
+    refuel_in_source?: number,
 }
 
 export type AddressBookItem = {
