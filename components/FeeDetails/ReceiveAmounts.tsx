@@ -19,8 +19,8 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination
     const receiveAmountInUsd = receive_amount && destination_token ? (destination_token?.price_in_usd * receive_amount).toFixed(2) : undefined
 
     return <div className="w-full h-full">
-        <div className="flex items-start justify-between w-full">
-            <span className="md:font-semibold text-sm md:text-base text-primary-buttonTextColor leading-8 flex-1">
+        <div className="flex items-center justify-between w-full">
+            <span className="md:font-semibold text-sm md:text-base text-primary-buttonTextColor leading-8 md:leading-8 flex-1">
                 You will receive
             </span>
             {isFeeLoading ? (
