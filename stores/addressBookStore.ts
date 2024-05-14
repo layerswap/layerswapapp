@@ -12,11 +12,16 @@ export enum AddressGroup {
     RecentlyUsed = "Recently used"
 }
 
+export enum ExchangeType {
+    Exchange = 'exchange'
+}
+
 export type AddressItem = {
     address: string,
     group: AddressGroup,
-    networkType?: NetworkType
+    networkType?: NetworkType | ExchangeType
     date?: string
+    isExchange?: boolean
 }
 
 export const useAddressBookStore = create<AddressBookState>()((set) => ({

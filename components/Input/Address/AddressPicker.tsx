@@ -8,7 +8,7 @@ import { isValidAddress } from "../../../lib/address/validator";
 import { Partner } from "../../../Models/Partner";
 import shortenAddress from "../../utils/ShortenAddress";
 import useWallet, { WalletProvider } from "../../../hooks/useWallet";
-import { AddressItem, AddressGroup, useAddressBookStore } from "../../../stores/addressBookStore";
+import { AddressItem, AddressGroup, useAddressBookStore, ExchangeType } from "../../../stores/addressBookStore";
 import { CommandGroup, CommandList, CommandWrapper } from "../../shadcn/command";
 import AddressIcon from "../../AddressIcon";
 import { addressFormat } from "../../../lib/address/formatter";
@@ -69,9 +69,9 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
         let addresses: AddressItem[] = []
 
-        if (recentlyUsedAddresses && values.to) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: values.to?.type }))]
+        if (recentlyUsedAddresses && values.to) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: destinationExchange ? ExchangeType.Exchange : destination.type }))]
         if (connectedWalletAddress && destination) addresses = [...addresses.filter(a => addressFormat(connectedWalletAddress, destination) !== addressFormat(a.address, destination)), { address: connectedWalletAddress, group: AddressGroup.ConnectedWallet, networkType: destination.type }]
-        if (newAddress && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.ManualAdded && addressFormat(newAddress, destination) !== addressFormat(a.address, destination)), { address: newAddress, group: AddressGroup.ManualAdded, networkType: destination.type }]
+        if (newAddress && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.ManualAdded && addressFormat(newAddress, destination) !== addressFormat(a.address, destination)), { address: newAddress, group: AddressGroup.ManualAdded, networkType: destinationExchange ? ExchangeType.Exchange : destination.type }]
 
         addAddresses(addresses.filter(a => a.networkType === values.to?.type))
 
@@ -95,7 +95,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         <Modal
             header={
                 <div className="w-full">
-                    <span>To</span> <span>{(values.toExchange?.display_name ?? values?.to?.display_name) || ''}</span> <span>address</span>
+                    <span>To</span> <span>{(destinationExchange?.display_name ?? values?.to?.display_name) || ''}</span> <span>address</span>
                 </div>
             }
             height="fit"
