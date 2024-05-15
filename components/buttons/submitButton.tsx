@@ -7,8 +7,8 @@ type text_align = 'center' | 'left'
 type button_align = 'left' | 'right'
 
 export class SubmitButtonProps {
-    isDisabled: boolean;
-    isSubmitting: boolean;
+    isDisabled?: boolean;
+    isSubmitting?: boolean;
     type?: 'submit' | 'reset' | 'button' | undefined;
     onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
     icon?: React.ReactNode;
