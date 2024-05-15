@@ -37,7 +37,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    const [wrongNetwork, setWrongNetwork] = useState(false)
     const inputReference = useRef<HTMLInputElement>(null);
     const destination = values.to
     const destinationExchange = values.toExchange
@@ -50,7 +49,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     const destinationIsStarknet = destination?.name === KnownInternalNames.Networks.StarkNetGoerli
         || destination?.name === KnownInternalNames.Networks.StarkNetMainnet
 
-    const { connectWallet, disconnectWallet, getAutofillProvider: getProvider, connectError } = useWallet()
+    const { connectWallet, getAutofillProvider: getProvider, connectError } = useWallet()
+
     const provider = useMemo(() => {
         return values?.to && getProvider(values?.to)
     }, [values?.to, getProvider])
@@ -58,17 +58,6 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
 
     useEffect(() => {
         if (destination && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address && !values.toExchange) {
-            //TODO move to wallet implementation
-            if (connectedWallet
-                && connectedWallet.providerName === 'starknet'
-                && (connectedWallet.chainId != destinationChainId)
-                && destination) {
-                (async () => {
-                    setWrongNetwork(true)
-                    await disconnectWallet(connectedWallet.providerName)
-                })()
-                return
-            }
             setInputValue(connectedWallet?.address)
             setAddressConfirmed(true)
             setFieldValue("destination_address", connectedWallet?.address)
@@ -101,6 +90,8 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
     let errorMessage = '';
     if (inputValue && !isValidAddress(inputValue, destination)) {
         errorMessage = `Enter a valid ${values.to?.display_name} address`
+    } else if (connectError) {
+        errorMessage = connectError
     }
 
     const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -170,14 +161,10 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                                     </span>
                                 }
                             </div>
-                            {errorMessage &&
+                            {
+                                errorMessage &&
                                 <div className="basis-full text-xs text-primary">
                                     {errorMessage}
-                                </div>
-                            }
-                            {wrongNetwork && !inputValue && connectError &&
-                                <div className="basis-full text-xs text-primary">
-                                    {connectError}
                                 </div>
                             }
                         </div>
@@ -210,7 +197,7 @@ const Address: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
                         && provider
                         && !connectedWallet
                         && !values.toExchange &&
-                        <div onClick={() => { connectWallet(provider.name) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
+                        <div onClick={() => { connectWallet(provider.name, destination?.chain_id) }} className={`min-h-12 text-left cursor-pointer space-x-2 border border-secondary-500 bg-secondary-700/70  flex text-sm rounded-md items-center w-full transform transition duration-200 px-2 py-1.5 hover:border-secondary-500 hover:bg-secondary-700 hover:shadow-xl`}>
                             <div className='flex text-primary-text flex-row items-left bg-secondary-400 px-2 py-1 rounded-md'>
                                 <WalletIcon className="w-6 h-6 text-primary-text" />
                             </div>

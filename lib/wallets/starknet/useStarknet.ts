@@ -4,7 +4,6 @@ import { useWalletStore } from "../../../stores/walletStore"
 import KnownInternalNames from "../../knownIds"
 import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
-import { Network } from "../../../Models/Network";
 
 export default function useStarknet(): WalletProvider {
     const withdrawalSupportedNetworks = [
@@ -30,7 +29,6 @@ export default function useStarknet(): WalletProvider {
         const chainId = (chain && fromHex(chain as `0x${string}`, 'string')) || constants.NetworkName.SN_MAIN
         const connect = (await import('starknetkit')).connect
         try {
-            error = '';
             const { wallet } = await connect({
                 argentMobileOptions: {
                     dappName: 'Layerswap',
@@ -42,6 +40,19 @@ export default function useStarknet(): WalletProvider {
                 dappName: 'Layerswap',
                 modalMode: 'alwaysAsk'
             })
+
+            if (wallet && ((wallet.provider?.chainId && wallet.provider?.chainId != chain) || (wallet.provider?.provider?.chainId && wallet.provider?.provider?.chainId != chain))) {
+
+                await disconnectWallet()
+
+                if (chain === '0x534e5f5345504f4c4941') {
+                    throw new Error('Please switch to Starknet Sepolia with your wallet and click Autofill again')
+                }
+                else {
+                    throw new Error('Please switch to Starknet Mainnet with your wallet and click Autofill again')
+                }
+            }
+
             if (wallet && wallet.account && wallet.isConnected) {
                 addWallet({
                     address: wallet.account.address,
@@ -57,15 +68,9 @@ export default function useStarknet(): WalletProvider {
                 await disconnectWallet()
                 connectWallet(chain)
             }
-            if (wallet && wallet.provider?.provider?.chainId != chain) {
-                chain === '0x534e5f5345504f4c4941' ?
-                    error = 'Please switch to Starknet Sepolia with your wallet and click Autofill again'
-                    :
-                    error = 'Please switch to Starknet Mainnet with your wallet and click Autofill again'
-            }
+
         }
         catch (e) {
-            error = e;
             throw new Error(e)
         }
     }, [addWallet])
@@ -85,7 +90,6 @@ export default function useStarknet(): WalletProvider {
         getConnectedWallet: getWallet,
         connectWallet,
         disconnectWallet,
-        connectError: error,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         name

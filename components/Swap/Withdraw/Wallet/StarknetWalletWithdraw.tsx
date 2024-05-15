@@ -1,10 +1,9 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import { FC, useCallback, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import WarningMessage from '../../../WarningMessage';
 import { useAuthState } from '../../../../context/authContext';
-import KnownInternalNames from '../../../../lib/knownIds';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
@@ -15,14 +14,9 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { getWithdrawalProvider: getProvider, connectError } = useWallet()
-    const [isWrongNetwork, setIsWrongNetwork] = useState<boolean>()
-
+    const { getWithdrawalProvider: getProvider, connectError, connectWallet } = useWallet()
     const { userId } = useAuthState()
-
     const { setSwapTransaction } = useSwapTransactionStore();
-    const source_network_internal_name = network?.name
-    const sourceChainId = network?.chain_id
 
     const provider = useMemo(() => {
         return network && getProvider(network)
@@ -35,26 +29,9 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
             throw new Error(`No provider from ${network?.name}`)
 
         setLoading(true)
-        try {
-            await provider.connectWallet(network?.chain_id)
-        }
-        catch (e) {
-            toast(e.message)
-        }
+        await connectWallet(provider.name, network?.chain_id)
         setLoading(false)
     }, [network, provider])
-
-    useEffect(() => {
-        const connectedChainId = wallet?.chainId
-        if (network && connectedChainId && connectedChainId !== sourceChainId && provider) {
-            (async () => {
-                setIsWrongNetwork(true)
-                await provider.disconnectWallet()
-            })()
-        } else if (network && connectedChainId && connectedChainId === sourceChainId) {
-            setIsWrongNetwork(false)
-        }
-    }, [wallet, network, sourceChainId, provider])
 
     const handleTransfer = useCallback(async () => {
         if (!swapId || !token) {
@@ -93,7 +70,7 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
                 <div className='space-y-4'>
                     {
 
-                        isWrongNetwork && connectError &&
+                        connectError &&
                         <WarningMessage messageType='warning'>
                             <span className='flex'>
                                 {connectError}
@@ -119,9 +96,8 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
                         </div>
                     }
                     {
-                        wallet
-                        && !isWrongNetwork
-                        && <div className="flex flex-row
+                        wallet &&
+                        <div className="flex flex-row
                         text-primary-text text-base space-x-2">
                             <SubmitButton
                                 isDisabled={!!(loading || transferDone)}
