@@ -29,6 +29,7 @@ import dynamic from "next/dynamic";
 import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
+import { DepositMethodProvider } from "../../../context/depositMethodContext";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -142,7 +143,7 @@ export default function Form() {
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
     }, [router, swap])
 
-    return <>
+    return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
                 {
@@ -159,7 +160,10 @@ export default function Form() {
             header={`${networkToConnect?.DisplayName} connect`}
             modalId="showNetwork"
         >
-            {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
+            {
+                networkToConnect &&
+                <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
+            }
         </Modal>
         <Modal
             height='fit'
@@ -181,7 +185,7 @@ export default function Form() {
         >
             <SwapForm isPartnerWallet={!!isPartnerWallet} partner={partner} />
         </Formik>
-    </>
+    </DepositMethodProvider>
 }
 
 const textMotion = {
@@ -214,8 +218,6 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
         source_network,
         destination_network
     } = swap || {}
-
-    const settings = useSettingsState()
 
     if (!swap)
         return <></>
