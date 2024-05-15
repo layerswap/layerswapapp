@@ -27,9 +27,9 @@ type BlockOptions = {
 /**
  * Get gas price Oracle contract
  */
-export const getGasPriceOracleContract = (client: PublicClient) => {
+export const getGasPriceOracleContract = (client: PublicClient, oracleContract?: `0x${string}`) => {
   return getContract({
-    address: gasPriceOracleAddress['420'],
+    address: oracleContract || gasPriceOracleAddress['420'],
     abi: gasPriceOracleABI,
     publicClient: client,
   })
@@ -41,7 +41,7 @@ export const getGasPriceOracleContract = (client: PublicClient) => {
  * @example
  * const L1FeeValue = await getL1Fee(data, params);
  */
-export const getL1Fee = async (options: { data: `0x02${string}`, client: PublicClient } & BlockOptions) => {
+export const getL1Fee = async (options: { data: `0x02${string}`, client: PublicClient, oracleContract: `0x${string}` | null | undefined } & BlockOptions) => {
   const contract = getGasPriceOracleContract(options.client)
   return contract.read.getL1Fee([options.data], {
     blockNumber: options.blockNumber,
