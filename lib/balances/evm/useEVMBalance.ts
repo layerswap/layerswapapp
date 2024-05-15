@@ -112,7 +112,7 @@ export default function useEVMBalance(): BalanceProvider {
             const getEthereumGas = (await import("./gas/ethereum")).default
             const getOptimismGas = (await import("./gas/optimism")).default
 
-            const getGas = NetworkSettings.KnownSettings[network.name]?.GasCalculationType !== GasCalculation.OptimismType ? getEthereumGas : getOptimismGas
+            const getGas = network?.metadata?.evm_oracle_contract ? getOptimismGas : getEthereumGas
 
             const gasProvider = new getGas(
                 publicClient,
