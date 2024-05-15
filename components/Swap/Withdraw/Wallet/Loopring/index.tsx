@@ -10,8 +10,8 @@ import SignatureIcon from '../../../../icons/SignatureIcon';
 import { ActivationTokenPicker } from './ActivationTokentPicker';
 import { useActivationData, useLoopringAccount, useLoopringTokens } from './hooks';
 import { LoopringAPI } from '../../../../../lib/loopring/LoopringAPI';
-import { UnlockedAccount } from '../../../../../lib/loopring/defs';
 import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
+import { useLoopringUnlockedAccount } from '../../../../../stores/loopringStore';
 import { WithdrawPageProps } from '../WalletTransferContent';
 
 const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId, callData, depositAddress, amount }) => {
@@ -25,23 +25,25 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
     const { isConnected, address: fromAddress } = useAccount();
     const { account: accInfo, isLoading: loadingAccount, noAccount, mutate: refetchAccount } = useLoopringAccount({ address: fromAddress })
     const { availableBalances, defaultValue, loading: activationDataIsLoading, feeData } = useActivationData(accInfo?.accountId)
-    const [unlockedAccount, setUnlockedAccount] = useState<UnlockedAccount | undefined>()
     const { tokens } = useLoopringTokens()
     const loopringToken = tokens?.find(t => t.symbol === selectedActivationAsset)
 
+    const loopringAccount = useLoopringUnlockedAccount((state) => state.account)
+    const setLoopringAccount = useLoopringUnlockedAccount((state) => state.setAccount)
+
     useEffect(() => {
-        if (fromAddress) {
-            setUnlockedAccount(undefined)
+        if (fromAddress !== loopringAccount?.address) {
+            setLoopringAccount(undefined)
         }
     }, [fromAddress])
 
     const handleUnlockAccount = useCallback(async () => {
         setLoading(true)
         try {
-            if (!accInfo)
+            if (!accInfo || !fromAddress)
                 return
             const res = await LoopringAPI.userAPI.unlockAccount(accInfo)
-            setUnlockedAccount(res)
+            setLoopringAccount({ unlockedAccount: res, address: fromAddress })
         }
         catch (e) {
             toast(e.message)
@@ -72,7 +74,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
     const handleTransfer = useCallback(async () => {
         setLoading(true)
         try {
-            if (!swapId || !accInfo || !unlockedAccount || !token || !amount)
+            if (!swapId || !accInfo || !loopringAccount || !token || !amount)
                 return
 
             const transferResult = await LoopringAPI.userAPI.transfer({
@@ -81,7 +83,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
                 depositAddress: depositAddress as `0x${string}`,
                 call_data: callData,
                 token,
-                unlockedAccount
+                unlockedAccount: loopringAccount.unlockedAccount
             })
             if (transferResult.hash) {
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, transferResult.hash);
@@ -96,7 +98,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
                 toast(e.message)
         }
         setLoading(false)
-    }, [swapId, network, depositAddress, accInfo, unlockedAccount, token, amount])
+    }, [swapId, network, depositAddress, accInfo, loopringAccount, token, amount])
 
     if (noAccount) {
         //TODO fix text
@@ -149,7 +151,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
                 <div className='space-y-4'>
                     {
-                        (accInfo && unlockedAccount) ?
+                        (accInfo && loopringAccount) ?
                             <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                                 Send from wallet
                             </SubmitButton>
