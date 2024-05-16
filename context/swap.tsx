@@ -34,7 +34,7 @@ export type SwapData = {
     codeRequested: boolean,
     swapResponse?: SwapResponse,
     swapApiError?: ApiError,
-    depositAddressIsFromAccount: boolean,
+    depositAddressIsFromAccount?: boolean,
     withdrawType: WithdrawType | undefined,
     swapTransaction: SwapTransaction | undefined,
 }

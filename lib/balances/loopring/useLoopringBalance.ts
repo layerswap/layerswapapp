@@ -11,8 +11,6 @@ export default function useLoopringBalance(): BalanceProvider {
         KnownInternalNames.Networks.LoopringGoerli
     ]
 
-
-
     const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
         let balances: Balance[] = [];
 
