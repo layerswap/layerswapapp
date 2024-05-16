@@ -24,7 +24,7 @@ type AddressInput = {
     close: () => void
 }
 
-const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress, setNewAddress, values, partner, isPartnerWallet, partnerImage, name, inputReference, setFieldValue, close }) => {
+const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress, setNewAddress, values, name, inputReference, setFieldValue, close }) => {
 
     const { to: destination, toExchange: destinationExchange } = values || {}
     const [isFocused, setIsFocused] = useState(false);
@@ -57,17 +57,8 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
 
     return (
         <div className="text-left">
-            {isPartnerWallet && partner && <span className='truncate text-sm text-secondary-text'> ({partner?.display_name})</span>}
             <div className="flex flex-wrap flex-col md:flex-row items-center">
                 <div className="relative flex grow rounded-lg shadow-sm focus-within:ring-0 focus-within:ring-primary focus-within:border-primary w-full lg:w-fit">
-                    {isPartnerWallet &&
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            {
-                                partnerImage &&
-                                <Image alt="Partner logo" className='rounded-md object-contain' src={partnerImage} width="24" height="24"></Image>
-                            }
-                        </div>
-                    }
                     <input
                         onChange={handleInputChange}
                         value={manualAddress}
@@ -85,7 +76,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                                 handleSaveNewAddress()
                             }
                         }}
-                        className={`${isPartnerWallet ? 'pl-11' : ''} pr-12 disabled:cursor-not-allowed grow h-12 border border-secondary-800 focus:border-primary leading-4 focus:placeholder:text-left placeholder:font-normal focus:placeholder:pl-0 placeholder:pl-8 block font-semibold w-full bg-secondary-800 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
+                        className='pr-12 disabled:cursor-not-allowed grow h-12 border border-secondary-800 focus:border-primary leading-4 focus:placeholder:text-left placeholder:font-normal focus:placeholder:pl-0 placeholder:pl-8 block font-semibold w-full bg-secondary-800 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none'
                     />
                     {
                         !isFocused && !manualAddress &&

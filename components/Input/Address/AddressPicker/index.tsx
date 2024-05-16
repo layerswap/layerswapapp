@@ -100,8 +100,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         />
         <Modal
             header={
-                <div className="w-full">
-                    <span>To</span> <span>{(destinationExchange?.display_name ?? values?.to?.display_name) || ''}</span> <span>address</span>
+                <div className="w-full text-secondary-text font-semibold">
+                    Send To
                 </div>
             }
             height="fit"

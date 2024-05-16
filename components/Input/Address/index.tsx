@@ -73,7 +73,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
 
     //If wallet connected set address from wallet
     useEffect(() => {
-        if (destination && connectedWallet?.address && isValidAddress(connectedWallet?.address, destination) && !values?.destination_address && !toExchange) {
+        if (destination && connectedWallet?.address && isValidAddress(connectedWallet?.address, destination) && !toExchange) {
             //TODO move to wallet implementation
             if (connectedWallet
                 && connectedWallet.providerName === 'starknet'
@@ -93,7 +93,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
     return (
         <div className="w-full mb-3.5 leading-4">
             <label htmlFor="destination_address" className="block font-semibold text-secondary-text text-xs">
-                {`To ${(values.toExchange?.display_name ?? values?.to?.display_name) || ''} address`}
+                Send To
             </label>
             <AddressPicker
                 showAddressModal={showAddressModal}
