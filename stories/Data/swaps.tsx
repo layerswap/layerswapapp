@@ -6,7 +6,7 @@ import { SwapItem, BackendTransactionStatus, TransactionType, SwapResponse } fro
 export const swap = {
     "addressConfirmed": false,
     "codeRequested": false,
-    "depositeAddressIsfromAccount": false,
+    "depositAddressIsFromAccount": false,
     "swapTransaction": undefined,
     "withdrawType": undefined,
     "swapResponse": {

@@ -29,8 +29,8 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
     } = useFormikContext<SwapFormValues>();
     const { authData } = useAuthState()
     const query = useQueryState();
-    const { setDepositAddressIsFromAccount: setDepositeAddressIsfromAccount } = useSwapDataUpdate()
-    const { depositAddressIsFromAccount: depositeAddressIsfromAccount } = useSwapDataState()
+    const { setDepositAddressIsFromAccount } = useSwapDataUpdate()
+    const { depositAddressIsFromAccount } = useSwapDataState()
     const { to: destination, destination_address, toExchange } = values
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -45,19 +45,19 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
         && (((query.lockAddress || query.hideAddress) && (query.appName !== "imxMarketplace")))
 
     const previouslySelectedDestination = useRef(destination);
-    const depositAddressIsFromAccountRef = useRef<boolean | null>(depositeAddressIsfromAccount);
+    const depositAddressIsFromAccountRef = useRef<boolean | null | undefined>(depositAddressIsFromAccount);
 
     useEffect(() => {
-        depositAddressIsFromAccountRef.current = depositeAddressIsfromAccount
+        depositAddressIsFromAccountRef.current = depositAddressIsFromAccount
         return () => { (depositAddressIsFromAccountRef.current = null); return }
-    }, [depositeAddressIsfromAccount])
+    }, [depositAddressIsFromAccount])
 
     useEffect(() => {
         if ((previouslySelectedDestination.current &&
             (destination?.type != previouslySelectedDestination.current?.type)
             || destination && !isValidAddress(values.destination_address, destination)) && !lockAddress) {
             setFieldValue("destination_address", '')
-            setDepositeAddressIsfromAccount(false)
+            setDepositAddressIsFromAccount(false)
         }
         previouslySelectedDestination.current = destination
     }, [destination])
