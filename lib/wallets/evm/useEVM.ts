@@ -11,7 +11,7 @@ import { useEffect, useState } from "react"
 export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
     const [shouldConnect, setShouldConnect] = useState(false)
-    
+
     const withdrawalSupportedNetworks = [
         ...networks.filter(layer => layer.type === NetworkType.EVM && layer.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
@@ -37,13 +37,15 @@ export default function useEVM(): WalletProvider {
             connectWallet()
             setShouldConnect(false)
         }
-    },[shouldConnect])
+    }, [shouldConnect])
 
     const getWallet = () => {
         if (account && account.address && account.connector) {
+            const connector = (account.connector as any)?._wallets?.[0]?.id || account.connector.id
+
             return {
                 address: account.address,
-                connector: (account.connector as any)?._wallets?.[0]?.id || account.connector.id,
+                connector: connector.charAt(0).toUpperCase() + connector.slice(1),
                 providerName: name,
                 icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account.connector), address: account.address })
             }

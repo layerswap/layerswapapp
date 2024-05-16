@@ -2,35 +2,33 @@ import { useFormikContext } from "formik";
 import { FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AddressBookItem } from "../../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../../DTOs/SwapFormValues";
-import { History, Pencil } from "lucide-react";
 import KnownInternalNames from "../../../../lib/knownIds";
 import { isValidAddress } from "../../../../lib/address/validator";
 import { Partner } from "../../../../Models/Partner";
-import shortenAddress from "../../../utils/ShortenAddress";
 import useWallet from "../../../../hooks/useWallet";
-import { CommandGroup, CommandList, CommandWrapper } from "../../../shadcn/command";
-import AddressIcon from "../../../AddressIcon";
 import { addressFormat } from "../../../../lib/address/formatter";
 import ManualAddressInput from "./ManualAddressInput";
 import Modal from "../../../modal/modal";
 import ResizablePanel from "../../../ResizablePanel";
-import FilledCheck from "../../../icons/FilledCheck";
 import ConnectWalletButton from "./ConnectWalletButton";
 import ExchangeNote from "./ExchangeNote";
 import { NetworkType, RouteNetwork } from "../../../../Models/Network";
 import { Exchange } from "../../../../Models/Exchange";
+import AddressBook from "./AddressBook";
+import AddressButton from "./AddressButton";
 
-enum AddressGroup {
+export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
     ManualAdded = "Added Manually",
-    RecentlyUsed = "Recently used"
+    RecentlyUsed = "Recently used",
+    FromQuery = "Partner",
 }
 
 export enum ExchangeType {
     Exchange = 'exchange'
 }
 
-type AddressItem = {
+export type AddressItem = {
     address: string,
     group: AddressGroup,
     networkType?: NetworkType | ExchangeType
@@ -74,7 +72,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const connectedWallet = provider?.getConnectedWallet()
     const connectedWalletAddress = connectedWallet?.address
 
-    const menuItems = destination && generateMenuItems({ address_book, destination, destinationExchange, connectedWalletAddress, newAddress })
+    const menuItems = destination && generateMenuItems({ address_book, destination, destinationExchange, connectedWalletAddress, newAddress, currentAddress: destination_address, partner })
 
     useEffect(() => {
         if (canFocus) {
@@ -89,8 +87,17 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [close, setFieldValue])
 
     const filteredAddresses = menuItems?.filter(a => a.group !== AddressGroup.ConnectedWallet)
+    const destinationAddressItem = destination && menuItems?.find(a => addressFormat(a.address, destination) === addressFormat(destination_address || '', destination))
 
     return (<>
+        <AddressButton
+            disabled={!values.to || !values.from || !!isPartnerWallet}
+            isPartnerWallet={isPartnerWallet}
+            addressItem={destinationAddressItem}
+            openAddressModal={() => setShowAddressModal(true)}
+            connectedWallet={connectedWallet}
+            partnerImage={partnerImage}
+        />
         <Modal
             header={
                 <div className="w-full">
@@ -147,80 +154,15 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                             />
 
                             {
-                                !disabled && filteredAddresses && filteredAddresses?.length > 0 && !manualAddress &&
-                                <div className="text-left">
-                                    <CommandWrapper>
-                                        <CommandList>
-                                            <CommandGroup
-                                                heading="Address Book"
-                                                className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-0 !py-0 !px-0 mt-2"
-                                            >
-                                                <div className="space-y-0 w-full flex flex-col items-stretch">
-                                                    {filteredAddresses.sort((a, b) =>
-                                                        (a.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(a.date).getTime()) / (1000 * 3600 * 24))) : 0)
-                                                        - (b.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(b.date).getTime()) / (1000 * 3600 * 24))) : 0)
-                                                    ).map(item => {
-                                                        const difference_in_days = item.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(item.date).getTime()) / (1000 * 3600 * 24))) : undefined
-
-                                                        return (
-                                                            <button type="button" key={item.address} onClick={() => handleSelectAddress(item.address)} className={`px-3 py-3 rounded-md hover:bg-secondary-700 w-full transition duration-200 ${addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
-                                                                <div className={`flex items-center justify-between w-full`}>
-                                                                    <div className={`flex gap-3 text-sm items-center`}>
-                                                                        <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
-                                                                            <AddressIcon className="scale-150 h-9 w-9" address={item.address} size={36} />
-                                                                        </div>
-                                                                        <div className="flex flex-col items-start">
-                                                                            <div className="block text-sm font-medium">
-                                                                                {shortenAddress(item.address)}
-                                                                            </div>
-                                                                            <div className="text-secondary-text">
-                                                                                {
-                                                                                    item.group === AddressGroup.RecentlyUsed &&
-                                                                                    <div className="inline-flex items-center gap-1">
-                                                                                        <History className="h-3 w-3" />
-                                                                                        {
-                                                                                            (difference_in_days === 0 ?
-                                                                                                <p>Used today</p>
-                                                                                                :
-                                                                                                (difference_in_days && difference_in_days > 1 ?
-                                                                                                    <p><span>Used</span> {difference_in_days} <span>days ago</span></p>
-                                                                                                    : <p>Used yesterday</p>))
-                                                                                        }
-                                                                                    </div>
-                                                                                }
-                                                                                {
-                                                                                    item.group === AddressGroup.ManualAdded &&
-                                                                                    <div className="inline-flex items-center gap-1">
-                                                                                        <Pencil className="h-3 w-3" />
-                                                                                        {
-                                                                                            (difference_in_days === 0 ?
-                                                                                                <p>Added today</p>
-                                                                                                :
-                                                                                                (difference_in_days && difference_in_days > 1 ?
-                                                                                                    <p><span>Added</span> {difference_in_days} <span>days ago</span></p>
-                                                                                                    : <p>Added yesterday</p>))
-                                                                                        }
-                                                                                    </div>
-                                                                                }
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="flex h-6 items-center px-1">
-                                                                        {
-                                                                            addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!) &&
-                                                                            <FilledCheck />
-                                                                        }
-                                                                    </div>
-                                                                </div>
-                                                            </button>
-                                                        )
-                                                    })}
-                                                </div>
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </CommandWrapper>
-                                </div>
+                                !disabled && filteredAddresses && filteredAddresses?.length > 0 && !manualAddress && destination &&
+                                <AddressBook
+                                    addressBook={filteredAddresses}
+                                    onSelectAddress={handleSelectAddress}
+                                    destination={destination}
+                                    destination_address={destination_address}
+                                />
                             }
+
                         </div>
                     </div>
                 </div >
@@ -237,12 +179,16 @@ const generateMenuItems = ({
     destinationExchange,
     connectedWalletAddress,
     newAddress,
+    currentAddress,
+    partner
 }: {
     address_book: AddressBookItem[] | undefined,
     destination: RouteNetwork | undefined,
     destinationExchange: Exchange | undefined,
     connectedWalletAddress: string | undefined,
     newAddress: { address: string, networkType: NetworkType | ExchangeType } | undefined,
+    currentAddress: string | undefined,
+    partner?: Partner,
 }) => {
     const recentlyUsedAddresses = address_book?.filter(a => destinationExchange ? a.exchanges.some(e => destinationExchange.name === e) : a.networks?.some(n => destination?.name === n) && isValidAddress(a.address, destination)) || []
 
@@ -253,6 +199,7 @@ const generateMenuItems = ({
     if (recentlyUsedAddresses && destination) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: destinationExchange ? ExchangeType.Exchange : destination.type }))]
     if (connectedWalletAddress && destination) addresses = [...addresses.filter(a => addressFormat(connectedWalletAddress, destination) !== addressFormat(a.address, destination)), { address: connectedWalletAddress, group: AddressGroup.ConnectedWallet, networkType: destination.type }]
     if (newAddress?.address && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.ManualAdded && addressFormat(newAddress.address, destination) !== addressFormat(a.address, destination)), { address: newAddress.address, date: new Date().toJSON(), group: AddressGroup.ManualAdded, networkType: newAddress.networkType }]
+    if (partner && currentAddress && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.FromQuery && addressFormat(currentAddress, destination) !== addressFormat(a.address, destination)), { address: currentAddress, date: new Date().toJSON(), group: AddressGroup.ManualAdded, networkType: destination.type }]
 
     return addresses.filter(a => a.networkType === (destinationExchange ? ExchangeType.Exchange : destination?.type))
 

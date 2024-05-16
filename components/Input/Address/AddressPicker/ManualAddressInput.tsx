@@ -8,6 +8,7 @@ import shortenAddress from "../../../utils/ShortenAddress";
 import AddressIcon from "../../../AddressIcon";
 import { NetworkType } from "../../../../Models/Network";
 import { ExchangeType } from ".";
+import FilledX from "../../../icons/FilledX";
 
 type AddressInput = {
     manualAddress: string,
@@ -58,7 +59,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
         <div className="text-left">
             {isPartnerWallet && partner && <span className='truncate text-sm text-secondary-text'> ({partner?.display_name})</span>}
             <div className="flex flex-wrap flex-col md:flex-row items-center">
-                <div className="relative flex grow rounded-lg shadow-sm bg-secondary-700 focus-within:ring-0 focus-within:ring-primary focus-within:border-primary w-full lg:w-fit">
+                <div className="relative flex grow rounded-lg shadow-sm focus-within:ring-0 focus-within:ring-primary focus-within:border-primary w-full lg:w-fit">
                     {isPartnerWallet &&
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             {
@@ -79,7 +80,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                         tabIndex={0}
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
-                        className={`${isPartnerWallet ? 'pl-11' : ''} disabled:cursor-not-allowed grow h-12 border-none leading-4 focus:bg-secondary-600 focus:placeholder:text-left focus:placeholder:pl-0 placeholder:pl-8 block font-semibold w-full bg-secondary-700 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
+                        className={`${isPartnerWallet ? 'pl-11' : ''} pr-12 disabled:cursor-not-allowed grow h-12 border border-secondary-800 focus:border-primary leading-4 focus:placeholder:text-left placeholder:font-normal focus:placeholder:pl-0 placeholder:pl-8 block font-semibold w-full bg-secondary-800 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
                     />
                     {
                         !isFocused && !manualAddress &&
@@ -87,15 +88,13 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                     }
                     {
                         manualAddress &&
-                        <span className="inline-flex items-center mr-2">
-                            <button
-                                type="button"
-                                className="p-0.5 duration-200 transition  hover:bg-secondary-400  rounded-md border border-secondary-500 hover:border-secondary-200"
-                                onClick={handleRemoveNewDepositeAddress}
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </span>
+                        <button
+                            type="button"
+                            className="absolute top-[calc(50%-10px)] right-4 hover:bg-secondary-400"
+                            onClick={handleRemoveNewDepositeAddress}
+                        >
+                            <FilledX className="h-5 w-5" />
+                        </button>
                     }
 
                 </div>

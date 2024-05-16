@@ -18,13 +18,13 @@ const ConnectWalletButton = ({ provider, onClick, connectedWallet, destination, 
                     <div className="flex items-center gap-1.5 text-secondary-text text-sm">
                         <connectedWallet.icon className="rounded flex-shrink-0 h-5 w-5" />
                         <p>
-                            {connectedWallet.connector}
+                            {connectedWallet?.connector || 'Connected Wallet'}
                         </p>
                     </div>
                 }
                 <button
                     onClick={async () => await provider.reconnectWallet(destination.chain_id)}
-                    className="text-primary-text-muted text-xs"
+                    className="text-secondary-text no-underline hover:underline hover:text-primary-text text-xs "
                 >
                     Switch Wallet
                 </button>
