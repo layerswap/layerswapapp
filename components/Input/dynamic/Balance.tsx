@@ -56,18 +56,30 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
     }, [contract_address, values.from, values.fromCurrency, sourceNetworkWallet?.address])
 
     return (
-        (direction === 'from' ? (from && fromCurrency && sourceNetworkWallet) : (to && toCurrency && destinationNetworkWallet)) &&
-        <div className="text-xs text-right absolute right-0 -top-7">
-            <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
-                <div>
-                    <span>Balance:&nbsp;</span>
-                    {(isBalanceLoading || balanceAmount == undefined || isNaN(balanceAmount)) ?
-                        <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                        :
-                        <span>{balanceAmount}</span>}
-                </div>
-            </div>
-        </div>
+        <>
+            {
+                (direction === 'from' ? (from && fromCurrency && sourceNetworkWallet) : (to && toCurrency && destinationNetworkWallet)) &&
+                    isBalanceLoading ?
+                    <div className="text-xs text-right absolute right-0 -top-7">
+                        <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
+                            <div>
+                                <span>Balance:&nbsp;</span>
+                                <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                            </div>
+                        </div>
+                    </div>
+                    :
+                    (balanceAmount !== undefined && !isNaN(balanceAmount)) &&
+                    <div className="text-xs text-right absolute right-0 -top-7">
+                        <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
+                            <div>
+                                <span>Balance:&nbsp;</span>
+                                <span>{balanceAmount}</span>
+                            </div>
+                        </div>
+                    </div>
+            }
+        </>
     )
 }
 
