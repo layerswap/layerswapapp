@@ -4,6 +4,7 @@ import { erc20ABI } from "wagmi"
 import { multicall, fetchBalance, FetchBalanceResult } from '@wagmi/core'
 import { Network, NetworkWithTokens, Token } from "../../../../Models/Network"
 import { Balance } from "../../../../Models/Balance"
+import { datadogRum } from "@datadog/browser-rum"
 
 export type ERC20ContractRes = ({
     error: Error;
@@ -96,8 +97,10 @@ export const getErc20Balances = async ({
         }
     }
     catch (e) {
-        //TODO: log the error to our logging service
-        console.log(e);
+        const error = new Error(e)
+        error.name = "ERC20BalanceError"
+        error.cause = e
+        datadogRum.addError(error);
         return null;
     }
 
@@ -113,8 +116,10 @@ export const getTokenBalance = async (address: `0x${string}`, chainId: number, c
         })
         return res
     } catch (e) {
-        //TODO: log the error to our logging service
-        console.log(e)
+        const error = new Error(e)
+        error.name = "TokenBalanceError"
+        error.cause = e
+        datadogRum.addError(error);
         return null
     }
 
