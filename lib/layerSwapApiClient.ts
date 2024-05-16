@@ -43,8 +43,8 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("POST", `/swaps`, params, { 'X-LS-CORRELATION-ID': correlationId });
     }
 
-    async GetSwapsAsync(page: number, include_expired?: boolean): Promise<ApiResponse<SwapResponse[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/internal/swaps?page=${page}${include_expired ? '&include_expired=true' : ''}`);
+    async GetSwapsAsync(page: number, include_expired: boolean): Promise<ApiResponse<SwapResponse[]>> {
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/internal/swaps?page=${page}&include_expired=${include_expired}`);
     }
 
     async GetQuote({ params }: { params: GetQuoteParams }): Promise<ApiResponse<Quote>> {
