@@ -11,7 +11,7 @@ const ManualTransferNote = () => {
 
     return (
         <>
-            <div className="text-xs text-center flex gap-1 justify-center">
+            <div className="text-xs text-center flex flex-col md:flex-row gap-1 justify-center items-center">
                 <p className='text-secondary-text'>
                     Want to transfer without connecting a wallet?
                 </p>
