@@ -80,8 +80,6 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
                     </div>
             }
         </>
-
-
     )
 }
 
