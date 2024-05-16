@@ -90,7 +90,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
     const { swap } = swapResponse || {}
     const { source_network } = swap || {}
 
-    return <div className="flex flex-col text-primary-text text-base">
+    return <div className="flex flex-col text-primary-text text-base space-y-2">
         <SubmitButton
             text_align='center'
             buttonStyle='filled'

@@ -66,7 +66,7 @@ export default function Form() {
 
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
-    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee } = useFee()
+    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateFee } = useFee()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         try {
@@ -93,6 +93,8 @@ export default function Form() {
             setShowSwapModal(true)
         }
         catch (error) {
+            mutateFee()
+            pollFee(true)
             const data: ApiError = error?.response?.data?.error
             if (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS) {
                 toast.error("You can't transfer to that address. Please double check.")
