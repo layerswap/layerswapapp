@@ -61,7 +61,7 @@ export default function Form() {
     const { createSwap, setSwapId } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.appName && `/apps?name=${query?.appName}`, layerswapApiClient.fetcher)
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.appName && `/internal/apps?name=${query?.appName}`, layerswapApiClient.fetcher)
     const partner = query?.appName && partnerData?.data?.client_id?.toLowerCase() === (query?.appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
     const { swapResponse } = useSwapDataState()

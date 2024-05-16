@@ -17,6 +17,7 @@ import dynamic from "next/dynamic";
 import { QueryParams } from "../../Models/QueryParams";
 import { ApiError, LSAPIKnownErrorCode } from "../../Models/ApiError";
 import { resolveNetworkRoutesURL } from "../../helpers/routes";
+import ClickTooltip from "../Tooltips/ClickTooltip";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -176,9 +177,12 @@ function GenerateCurrencyMenuItems(
         const displayName = currency.symbol;
         const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
-        const details = <p className="text-primary-text-muted">
-            {formatted_balance_amount}
-        </p>
+
+        const details = c.status === 'inactive' ?
+            <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> :
+            <p className="text-primary-text-muted">
+                {formatted_balance_amount}
+            </p>
 
         const res: SelectMenuItem<RouteToken> = {
             baseObject: c,

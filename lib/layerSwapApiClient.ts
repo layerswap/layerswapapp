@@ -43,8 +43,8 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("POST", `/swaps`, params, { 'X-LS-CORRELATION-ID': correlationId });
     }
 
-    async GetSwapsAsync(page: number, status?: SwapStatusInNumbers): Promise<ApiResponse<SwapResponse[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/internal/swaps?page=${page}${status ? `&status=${status}` : ''}`);
+    async GetSwapsAsync(page: number, include_expired?: boolean): Promise<ApiResponse<SwapResponse[]>> {
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/internal/swaps?page=${page}${include_expired ? '&include_expired=true' : ''}`);
     }
 
     async GetQuote({ params }: { params: GetQuoteParams }): Promise<ApiResponse<Quote>> {
@@ -309,7 +309,6 @@ export enum SwapStatusInNumbers {
     Expired = 3,
     Delayed = 4,
     Cancelled = 5,
-    SwapsWithoutCancelledAndExpired = '0&status=1&status=2&status=4'
 }
 
 export type Campaign = {
