@@ -27,7 +27,6 @@ function TransactionsHistory() {
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
   const [showAllSwaps, setShowAllSwaps] = useState(false)
-  const [showToggleButton, setShowToggleButton] = useState(false)
 
   const PAGE_SIZE = 20
 
@@ -39,15 +38,6 @@ function TransactionsHistory() {
         query: resolvePersistantQueryParams(router.query)
       })
   }, [router])
-
-
-  useEffect(() => {
-    (async () => {
-      const layerswapApiClient = new LayerSwapApiClient()
-      const { data } = await layerswapApiClient.GetSwapsAsync(1, SwapStatusInNumbers.Cancelled)
-      if (Number(data?.length) > 0) setShowToggleButton(true)
-    })()
-  }, [])
 
   useEffect(() => {
     (async () => {
@@ -72,7 +62,7 @@ function TransactionsHistory() {
 
       } else {
 
-        const { data, error } = await layerswapApiClient.GetSwapsAsync(1, SwapStatusInNumbers.SwapsWithoutCancelledAndExpired)
+        const { data, error } = await layerswapApiClient.GetSwapsAsync(1, showAllSwaps)
 
         if (error) {
           toast.error(error.message);
@@ -108,7 +98,7 @@ function TransactionsHistory() {
 
       setLoading(false)
     } else {
-      const { data, error } = await layerswapApiClient.GetSwapsAsync(nextPage, SwapStatusInNumbers.SwapsWithoutCancelledAndExpired)
+      const { data, error } = await layerswapApiClient.GetSwapsAsync(nextPage, showAllSwaps)
 
       if (error) {
         toast.error(error.message);
@@ -144,14 +134,14 @@ function TransactionsHistory() {
               Number(swaps?.length) > 0 ?
                 <div className="w-full flex flex-col justify-between h-full px-6 space-y-5 text-secondary-text">
                   <div className="mt-4">
-                    {showToggleButton && <div className="flex justify-end mb-2">
+                    <div className="flex justify-end mb-2">
                       <div className='flex space-x-2'>
                         <p className='flex items-center text-xs md:text-sm font-medium'>
                           Show all swaps
                         </p>
                         <ToggleButton onChange={handleToggleChange} value={showAllSwaps} />
                       </div>
-                    </div>}
+                    </div>
                     <div className="max-h-[450px] styled-scroll overflow-y-auto ">
                       <table className="w-full divide-y divide-secondary-500">
                         <thead className="text-secondary-text">
@@ -178,7 +168,7 @@ function TransactionsHistory() {
                         <tbody>
                           {swaps?.map((swapData, index) => {
                             const swap = swapData.swap
-                            const { 
+                            const {
                               source_network,
                               destination_network,
                               source_exchange,

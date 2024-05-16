@@ -2,6 +2,7 @@ import { PublicClient, encodeFunctionData } from "viem";
 import { erc20ABI } from "wagmi";
 import { Network, Token } from "../../../../Models/Network";
 import { Gas } from "../../../../Models/Balance";
+import { datadogRum } from "@datadog/browser-rum";
 
 export default abstract class getEVMGas {
 
@@ -42,7 +43,8 @@ export default abstract class getEVMGas {
 
         let gasPrice = await this.getGasPrice();
         let feesPerGas = await this.estimateFeesPerGas()
-        let maxPriorityFeePerGas = await this.estimateMaxPriorityFeePerGas()
+        let maxPriorityFeePerGas = feesPerGas?.maxPriorityFeePerGas
+        if (!maxPriorityFeePerGas) maxPriorityFeePerGas = await this.estimateMaxPriorityFeePerGas()
 
         return {
             gasPrice,
@@ -57,8 +59,10 @@ export default abstract class getEVMGas {
             return await this.publicClient.getGasPrice()
 
         } catch (e) {
-            //TODO: log the error to our logging service
-            console.log(e)
+            const error = new Error(e)
+            error.name = "GasPriceError"
+            error.cause = e
+            datadogRum.addError(error);
         }
     }
     private async estimateFeesPerGas() {
@@ -66,8 +70,10 @@ export default abstract class getEVMGas {
             return await this.publicClient.estimateFeesPerGas()
 
         } catch (e) {
-            //TODO: log the error to our logging service
-            console.log(e)
+            const error = new Error(e)
+            error.name = "FeesPerGasError"
+            error.cause = e
+            datadogRum.addError(error);
         }
     }
     private async estimateMaxPriorityFeePerGas() {
@@ -75,8 +81,10 @@ export default abstract class getEVMGas {
             return await this.publicClient.estimateMaxPriorityFeePerGas()
 
         } catch (e) {
-            //TODO: log the error to our logging service
-            console.log(e)
+            const error = new Error(e)
+            error.name = "MaxPriorityFeePerGasError"
+            error.cause = e
+            datadogRum.addError(error);
         }
     }
 
