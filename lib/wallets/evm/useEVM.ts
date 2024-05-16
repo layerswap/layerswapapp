@@ -41,11 +41,11 @@ export default function useEVM(): WalletProvider {
 
     const getWallet = () => {
         if (account && account.address && account.connector) {
-            const connector = (account.connector as any)?._wallets?.[0]?.id || account.connector.id
+            const connector = account.connector.id
 
             return {
                 address: account.address,
-                connector: connector.charAt(0).toUpperCase() + connector.slice(1),
+                connector: account.connector.name || connector.charAt(0).toUpperCase() + connector.slice(1),
                 providerName: name,
                 icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account.connector), address: account.address })
             }

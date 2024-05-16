@@ -80,6 +80,11 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                         tabIndex={0}
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleSaveNewAddress()
+                            }
+                        }}
                         className={`${isPartnerWallet ? 'pl-11' : ''} pr-12 disabled:cursor-not-allowed grow h-12 border border-secondary-800 focus:border-primary leading-4 focus:placeholder:text-left placeholder:font-normal focus:placeholder:pl-0 placeholder:pl-8 block font-semibold w-full bg-secondary-800 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-none`}
                     />
                     {
