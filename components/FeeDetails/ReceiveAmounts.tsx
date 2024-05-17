@@ -28,7 +28,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination
             ) :
                 <div className="text-sm md:text-base flex flex-col items-end">
                     {
-                        parsedReceiveAmount > 0 ?
+                        source_token && destination_token && parsedReceiveAmount > 0 ?
                             <div className="font-semibold md:font-bold text-right leading-8">
                                 <div className="flex items-center justify-end">
                                     <p>
