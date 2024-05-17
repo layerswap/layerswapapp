@@ -16,6 +16,7 @@ import { NetworkType, RouteNetwork } from "../../../../Models/Network";
 import { Exchange } from "../../../../Models/Exchange";
 import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";
+import { Wallet } from "../../../../stores/walletStore";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -49,22 +50,22 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     partner?: Partner,
     canFocus?: boolean,
     address_book?: AddressBookItem[],
-    wrongNetwork?: boolean
 }
 
 const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
-    ({ showAddressModal, setShowAddressModal, name, canFocus, close, address_book, disabled, isPartnerWallet, partnerImage, partner, wrongNetwork }, ref) {
+    ({ showAddressModal, setShowAddressModal, name, canFocus, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) {
     const {
         values,
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
+    const [wrongNetwork, setWrongNetwork] = useState(false)
     const inputReference = useRef<HTMLInputElement>(null);
     const { destination_address, to: destination, toExchange: destinationExchange, toCurrency: destinationAsset } = values
 
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | ExchangeType } | undefined>()
-    const { connectWallet, getAutofillProvider: getProvider } = useWallet()
+    const { disconnectWallet, getAutofillProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
         return values?.to && getProvider(values?.to)
     }, [values?.to, getProvider])
@@ -88,6 +89,28 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const filteredAddresses = menuItems?.filter(a => a.group !== AddressGroup.ConnectedWallet)
     const destinationAddressItem = destination && menuItems?.find(a => addressFormat(a.address, destination) === addressFormat(destination_address || '', destination))
+
+    const onConnect = useCallback((connectedWallet: Wallet) => {
+        //TODO move to wallet implementation
+        if (connectedWallet
+            && destination
+            && connectedWallet.providerName === 'starknet'
+            && (connectedWallet.chainId != destination.chain_id)) {
+            (async () => {
+                setWrongNetwork(true)
+                await disconnectWallet(connectedWallet.providerName)
+            })()
+            return
+        }
+        setFieldValue("destination_address", connectedWallet?.address)
+        if (showAddressModal) setShowAddressModal(false)
+    }, [setFieldValue, setShowAddressModal, showAddressModal, destination])
+
+    useEffect(() => {
+        if (!destination_address && connectedWallet) {
+            onConnect(connectedWallet)
+        }
+    }, [destination_address, connectedWallet])
 
     return (<>
         <AddressButton
@@ -120,7 +143,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                     !disabled
                                     && destination
                                     && provider &&
-                                    <ConnectWalletButton provider={provider} connectedWallet={connectedWallet} onClick={() => { connectedWallet ? handleSelectAddress(connectedWallet.address) : connectWallet(provider.name) }} destination={destination} destination_address={destination_address} />
+                                    <ConnectWalletButton provider={provider} connectedWallet={connectedWallet} onClick={() => { connectedWallet && handleSelectAddress(connectedWallet.address) }} onConnect={onConnect} destination={destination} destination_address={destination_address} />
                             }
 
                             {
@@ -199,7 +222,7 @@ const generateMenuItems = ({
     if (recentlyUsedAddresses && destination) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: destinationExchange ? ExchangeType.Exchange : destination.type }))]
     if (connectedWalletAddress && destination) addresses = [...addresses.filter(a => addressFormat(connectedWalletAddress, destination) !== addressFormat(a.address, destination)), { address: connectedWalletAddress, group: AddressGroup.ConnectedWallet, networkType: destination.type }]
     if (newAddress?.address && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.ManualAdded && addressFormat(newAddress.address, destination) !== addressFormat(a.address, destination)), { address: newAddress.address, date: new Date().toJSON(), group: AddressGroup.ManualAdded, networkType: newAddress.networkType }]
-    if (partner && currentAddress && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.FromQuery && addressFormat(currentAddress, destination) !== addressFormat(a.address, destination)), { address: currentAddress, date: new Date().toJSON(), group: AddressGroup.ManualAdded, networkType: destination.type }]
+    if (partner && currentAddress && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.FromQuery && addressFormat(currentAddress, destination) !== addressFormat(a.address, destination)), { address: currentAddress, date: new Date().toJSON(), group: AddressGroup.FromQuery, networkType: destination.type }]
 
     return addresses.filter(a => a.networkType === (destinationExchange ? ExchangeType.Exchange : destination?.type))
 

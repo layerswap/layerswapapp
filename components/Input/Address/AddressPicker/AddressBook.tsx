@@ -27,8 +27,9 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                     >
                         <div className="space-y-0 w-full flex flex-col items-stretch">
                             {addressBook.sort((a, b) =>
-                                (a.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(a.date).getTime()) / (1000 * 3600 * 24))) : 0)
-                                - (b.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(b.date).getTime()) / (1000 * 3600 * 24))) : 0)
+                                (a.group === AddressGroup.RecentlyUsed && b.group === AddressGroup.ManualAdded) ? 0 : -1 +
+                                    (a.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(a.date).getTime()) / (1000 * 3600 * 24))) : 0)
+                                    - (b.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(b.date).getTime()) / (1000 * 3600 * 24))) : 0)
                             ).map(item => {
                                 const difference_in_days = item.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(item.date).getTime()) / (1000 * 3600 * 24))) : undefined
 

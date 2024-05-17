@@ -10,7 +10,6 @@ import { useAuthState } from "../../../context/authContext"
 import { isValidAddress } from "../../../lib/address/validator"
 import { useQueryState } from "../../../context/query"
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap"
-import useWallet from "../../../hooks/useWallet"
 
 type AddressProps = {
     isPartnerWallet: boolean
@@ -27,7 +26,7 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
     const query = useQueryState();
     const { setDepositAddressIsFromAccount } = useSwapDataUpdate()
     const { depositAddressIsFromAccount } = useSwapDataState()
-    const { to: destination, destination_address, toExchange } = values
+    const { to: destination, toExchange } = values
 
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/internal/recent_addresses` : null
@@ -63,33 +62,6 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
         setFieldValue("destination_address", '')
     }, [toExchange])
 
-    const { disconnectWallet, getAutofillProvider: getProvider } = useWallet()
-    const provider = useMemo(() => {
-        return values?.to && getProvider(values?.to)
-    }, [values?.to, getProvider])
-
-    const connectedWallet = provider?.getConnectedWallet()
-    const [wrongNetwork, setWrongNetwork] = useState(false)
-
-    //If wallet connected set address from wallet
-    useEffect(() => {
-        if (destination && connectedWallet?.address && isValidAddress(connectedWallet?.address, destination) && !toExchange) {
-            //TODO move to wallet implementation
-            if (connectedWallet
-                && connectedWallet.providerName === 'starknet'
-                && (connectedWallet.chainId != destination.chain_id)
-                && destination) {
-                (async () => {
-                    setWrongNetwork(true)
-                    await disconnectWallet(connectedWallet.providerName)
-                })()
-                return
-            }
-            setFieldValue("destination_address", connectedWallet?.address)
-            if (showAddressModal) setShowAddressModal(false)
-        }
-    }, [connectedWallet?.address, destination])
-
     return (
         <div className="w-full mb-3.5 leading-4">
             <label htmlFor="destination_address" className="block font-semibold text-secondary-text text-xs">
@@ -105,7 +77,6 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
                 isPartnerWallet={!!isPartnerWallet}
                 partner={partner}
                 address_book={address_book?.data}
-                wrongNetwork={wrongNetwork}
             />
         </div>
     )

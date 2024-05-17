@@ -5,10 +5,15 @@ import AddressIcon from "../../../AddressIcon";
 import { addressFormat } from "../../../../lib/address/formatter";
 import { ResolveConnectorIcon } from "../../../icons/ConnectorIcons";
 import { Wallet } from "../../../../stores/walletStore";
-import { RouteNetwork } from "../../../../Models/Network";
+import { Network } from "../../../../Models/Network";
 import FilledCheck from "../../../icons/FilledCheck";
 
-const ConnectWalletButton = ({ provider, onClick, connectedWallet, destination, destination_address }: { provider: WalletProvider, onClick: () => void, connectedWallet: Wallet | undefined, destination: RouteNetwork, destination_address: string | undefined }) => {
+const ConnectWalletButton = ({ provider, onClick, onConnect, connectedWallet, destination, destination_address }: { provider: WalletProvider, onClick: () => void, onConnect?: (connectedWallet: Wallet) => void, connectedWallet: Wallet | undefined, destination: Network, destination_address?: string | undefined }) => {
+
+    const connect = async () => {
+        const connectedWallet = await provider.connectWallet(destination.chain_id)
+        if (connectedWallet && onConnect) onConnect(connectedWallet)
+    }
 
     return connectedWallet ?
         <div className="px-3 pb-2 pt-2.5 rounded-lg bg-secondary-700 flex flex-col gap-2">
@@ -51,7 +56,7 @@ const ConnectWalletButton = ({ provider, onClick, connectedWallet, destination, 
             </button>
         </div>
         :
-        <button typeof="button" onClick={onClick} type="button" className="py-5 px-6 bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl">
+        <button typeof="button" onClick={connect} type="button" className="py-5 px-6 bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl">
             <div className="flex flex-row justify-between gap-9 items-stretch">
                 <ResolveConnectorIcon
                     connector={provider.name}
