@@ -36,7 +36,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
         destination_network
     } = swap
 
-    const updateWithProps = () => update({customAttributes: { swapId: swap.id, email: email, userId: userId, } });
+    const updateWithProps = () => update({ userId, customAttributes: { swapId: swap.id, email: email, } });
     const startIntercom = useCallback(() => {
         boot();
         show();

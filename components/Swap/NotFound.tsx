@@ -13,7 +13,7 @@ const NotFound: FC = () => {
     const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
     const { query } = useRouter()
-    const updateWithProps = () => update({ customAttributes: { swapId: query?.swapId, email: email, userId: userId, } })
+    const updateWithProps = () => update({ userId, customAttributes: { swapId: query?.swapId, email: email, } })
 
     useEffect(() => {
         plausible(TrackEvent.SwapFailed)
