@@ -136,13 +136,33 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                     <div className='flex flex-col self-center grow w-full'>
                         <div className='flex flex-col self-center grow w-full space-y-3'>
 
+                            <ManualAddressInput
+                                manualAddress={manualAddress}
+                                setManualAddress={setManualAddress}
+                                setNewAddress={setNewAddress}
+                                values={values}
+                                partner={partner}
+                                isPartnerWallet={isPartnerWallet}
+                                partnerImage={partnerImage}
+                                name={name}
+                                inputReference={inputReference}
+                                setFieldValue={setFieldValue}
+                                close={close}
+                            />
+
+                            {
+                                (destinationExchange || provider) && !manualAddress &&
+                                <hr className="border-secondary-500 w-full" />
+                            }
+
                             {
                                 destinationExchange ?
                                     <ExchangeNote destination={destination} destinationAsset={destinationAsset} destinationExchange={destinationExchange} />
                                     :
                                     !disabled
                                     && destination
-                                    && provider &&
+                                    && provider
+                                    && !manualAddress &&
                                     <ConnectWalletButton provider={provider} connectedWallet={connectedWallet} onClick={() => { connectedWallet && handleSelectAddress(connectedWallet.address) }} onConnect={onConnect} destination={destination} destination_address={destination_address} />
                             }
 
@@ -157,24 +177,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                 </div>
                             }
 
-                            {
-                                (destinationExchange || provider) &&
-                                <hr className="border-secondary-500 w-full" />
-                            }
-
-                            <ManualAddressInput
-                                manualAddress={manualAddress}
-                                setManualAddress={setManualAddress}
-                                setNewAddress={setNewAddress}
-                                values={values}
-                                partner={partner}
-                                isPartnerWallet={isPartnerWallet}
-                                partnerImage={partnerImage}
-                                name={name}
-                                inputReference={inputReference}
-                                setFieldValue={setFieldValue}
-                                close={close}
-                            />
 
                             {
                                 !disabled && filteredAddresses && filteredAddresses?.length > 0 && !manualAddress && destination &&

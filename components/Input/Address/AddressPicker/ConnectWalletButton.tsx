@@ -16,7 +16,7 @@ const ConnectWalletButton = ({ provider, onClick, onConnect, connectedWallet, de
     }
 
     return connectedWallet ?
-        <div className="px-3 pb-2 pt-2.5 rounded-lg bg-secondary-700 flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between w-full px-2 ">
                 {
                     connectedWallet &&
@@ -34,7 +34,7 @@ const ConnectWalletButton = ({ provider, onClick, onConnect, connectedWallet, de
                     Switch Wallet
                 </button>
             </div>
-            <button type="button" onClick={onClick} className={`w-full px-3 py-2 -mx-1 rounded-md hover:!bg-secondary-800 transition duration-200 ${addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
+            <button type="button" onClick={onClick} className={`w-full px-3 py-3 rounded-md hover:!bg-secondary-800 transition duration-200 ${addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
                 <div className={`flex items-center justify-between w-full`}>
                     <div className={`space-x-2 flex text-sm items-center`}>
                         <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
