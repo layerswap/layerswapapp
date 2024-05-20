@@ -77,6 +77,7 @@ export const WalletTransferContent: FC = () => {
             network={swap?.source_network}
             token={swap?.source_token}
             swapId={swap?.id}
+            callData={callData}
         />;
     else
         return <>
