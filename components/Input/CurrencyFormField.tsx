@@ -177,7 +177,11 @@ function GenerateCurrencyMenuItems(
         const displayName = currency.symbol;
         const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
+        const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - 604800000;
 
+        const newListedIcon = isNewlyListed ? (
+            <div className="inline bg-secondary-50 px-1.5 pb-0.5 rounded">New</div>
+        ) : <></>;
         const details = c.status === 'inactive' ?
             <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> :
             <p className="text-primary-text-muted">
@@ -188,10 +192,11 @@ function GenerateCurrencyMenuItems(
             baseObject: c,
             id: c.symbol,
             name: displayName || "-",
-            order: CurrencySettings.KnownSettings[c.symbol]?.Order ?? 5,
+            order: newListedIcon ? 20000 : CurrencySettings.KnownSettings[c.symbol]?.Order || 5,
             imgSrc: c.logo,
             isAvailable: currencyIsAvailable(c),
             details: details,
+            newListedIcon
         };
 
         return res

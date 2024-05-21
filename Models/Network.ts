@@ -41,6 +41,7 @@ export class Token {
     price_in_usd: number;
     precision: number;
     status?: string;
+    listing_date: string;
 }
 
 export class RouteToken extends Token {
