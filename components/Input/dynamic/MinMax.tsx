@@ -7,7 +7,6 @@ import useBalance from "../../../hooks/useBalance";
 import { useFee } from "../../../context/feeContext";
 import { useBalancesState } from "../../../context/balances";
 import { useQueryState } from "../../../context/query";
-import upperCaseKeys from "../../utils/upperCaseKeys";
 import { RouteToken, Token } from "../../../Models/Network";
 import { QueryParams } from "../../../Models/QueryParams";
 import { Balance } from "../../../Models/Balance";
@@ -55,7 +54,7 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
             query,
             fromCurrency,
             minAllowedAmount,
-            walletBalance: wallet && updatedBalances?.[wallet.address]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol),
+            walletBalance: wallet && (updatedBalances || [])?.[wallet.address]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol),
             native_currency,
             gasAmount,
         })
