@@ -154,13 +154,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                 (destinationExchange || provider) && !manualAddress &&
                                 <hr className="border-secondary-500 w-full" />
                             }
-                            {connectedWallet && <div>
-                                {connectedWallet.connector}
-                                {connectedWallet.address}
-                                {connectedWallet.providerName}
-                                <connectedWallet.icon />
-                                {connectedWallet.chainId}
-                            </div>}
 
                             {
                                 destinationExchange ?
