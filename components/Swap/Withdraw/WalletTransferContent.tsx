@@ -7,7 +7,9 @@ import useWallet from '../../../hooks/useWallet';
 import { useBalancesState } from '../../../context/balances';
 import { truncateDecimals } from '../../utils/RoundDecimals';
 import useBalance from '../../../hooks/useBalance';
-import ConnectWalletButton from '../../Input/Address/AddressPicker/ConnectWalletButton';
+import AddressIcon from '../../AddressIcon';
+import shortenAddress from '../../utils/ShortenAddress';
+import SpinIcon from '../../icons/spinIcon';
 
 const WalletTransferContent: FC = () => {
     const { openAccountModal } = useAccountModal();
@@ -29,11 +31,11 @@ const WalletTransferContent: FC = () => {
 
     const sourceNetworkWallet = provider?.getConnectedWallet()
     const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
-    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
+    // const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
-    useEffect(() => {
-        source_network && source_token && fetchBalance(source_network, source_token);
-    }, [source_network, source_token, sourceNetworkWallet?.address])
+    // useEffect(() => {
+    //     source_network && source_token && fetchBalance(source_network, source_token);
+    // }, [source_network, source_token, sourceNetworkWallet?.address])
 
     useEffect(() => {
         sourceNetworkWallet?.address && source_network && source_token && destination_token && destination_network && requested_amount && depositAddress && fetchGas(source_network, source_token, destination_address || sourceNetworkWallet.address)
@@ -42,7 +44,8 @@ const WalletTransferContent: FC = () => {
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!wallet) return
         setIsloading(true);
-        await disconnectWallet(wallet.providerName, swap)
+        if (provider?.reconnectWallet) await provider.reconnectWallet(source_network?.chain_id)
+        else await disconnectWallet(wallet.providerName, swap)
         if (source_exchange) await mutateSwap()
         setIsloading(false);
         e?.stopPropagation();
@@ -72,27 +75,33 @@ const WalletTransferContent: FC = () => {
     }
 
     return <div className="grid content-end">
-        <div className='flex w-full items-center text-sm justify-between mb-1 '>
+        <div className='flex w-full items-center text-sm justify-between'>
             <span className='ml-1'>{swap?.source_exchange ? "Connected account" : "Send from"}</span>
-            {
-                walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
-                    <div className="text-right">
-                        <div>
-                            <span>Balance:&nbsp;</span>
-                            {isBalanceLoading ?
-                                <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                                :
-                                <span>{walletBalanceAmount}</span>}
-                        </div>
-                    </div>
-                    :
-                    <></>
-            }
+            <div onClick={handleDisconnect} className="text-secondary-text no-underline hover:underline hover:text-primary-text text-xs hover:cursor-pointer">
+                {isLoading ? <SpinIcon className="animate-spin h-3 w-3" /> : <p>Switch Wallet</p>}
+            </div>
         </div>
         {
             provider &&
             destination_network &&
-            <ConnectWalletButton provider={provider} connectedWallet={wallet} onClick={handleOpenAccount} destination={destination_network} />
+            <button type="button" onClick={handleOpenAccount} className="flex rounded-lg justify-between space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text-placeholder bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
+                <div className="truncate">
+                    <div className="flex items-center gap-2">
+                        <div className='flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-9 overflow-hidden w-9'>
+                            <AddressIcon className="scale-150 h-9 w-9" address={accountAddress} size={36} />
+                        </div>
+                        <div className="text-left">
+                            <p className="text-sm leading-4 text-primary-buttonTextColor">{shortenAddress(accountAddress)}</p>
+                            {
+                                sourceNetworkWallet?.connector &&
+                                <div className="text-xs text-secondary-text">
+                                    {sourceNetworkWallet?.connector}
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </button>
         }
     </div>
 }
