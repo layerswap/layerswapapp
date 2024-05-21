@@ -16,7 +16,7 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                     className="rounded-md object-contain" />}
             </div>
             <p className='text-md font-medium flex w-full justify-between'>
-                <span>{item.displayName ? item.displayName : item.name}</span>
+                <span>{item.displayName ? item.displayName : item.name} {item.newNetworksIcon && item.newNetworksIcon}</span>
             </p>
         </div>
         {

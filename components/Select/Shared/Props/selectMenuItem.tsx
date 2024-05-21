@@ -13,6 +13,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     };
     group?: string;
     details?: JSX.Element | JSX.Element[];
+    newNetworksIcon?: JSX.Element | JSX.Element[];
     baseObject: T;
     constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, group?: string, details?: JSX.Element | JSX.Element[]) {
         this.baseObject = baseObject;
@@ -40,5 +41,6 @@ export interface ISelectMenuItem {
         disabledReason?: LayerDisabledReason | CurrencyDisabledReason | null
     };
     details?: JSX.Element | JSX.Element[];
+    newNetworksIcon?: JSX.Element | JSX.Element[];
     order?: number;
 }

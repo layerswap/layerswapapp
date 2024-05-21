@@ -10,6 +10,7 @@ export function SortingByOrder<T>(x: SelectMenuItem<T>, y: SelectMenuItem<T>) {
 }
 
 export function SortingByAvailability<T>(x: SelectMenuItem<T>, y: SelectMenuItem<T>) {
+    if (x.id === "XLAYER_MAINNET") console.log(x)
     const reasonA = x.isAvailable && x.isAvailable.disabledReason;
     const reasonB = y.isAvailable && y.isAvailable.disabledReason;
     if (reasonA && !reasonB) {
@@ -17,7 +18,7 @@ export function SortingByAvailability<T>(x: SelectMenuItem<T>, y: SelectMenuItem
     } else if (!reasonA && reasonB) {
         return -1;
     } else {
-        const orderComparison = (Number(y.isAvailable?.value) || 0) - (Number(x.isAvailable?.value) || 0) + (x.order - y.order);
+        const orderComparison = (Number(y.isAvailable?.value) || 0) - (Number(x.isAvailable?.value) || 0) + (y.order - x.order);
         return orderComparison;
     }
 }
