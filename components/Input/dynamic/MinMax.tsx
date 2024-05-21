@@ -7,7 +7,6 @@ import useBalance from "../../../hooks/useBalance";
 import { useFee } from "../../../context/feeContext";
 import { useBalancesState } from "../../../context/balances";
 import { useQueryState } from "../../../context/query";
-import upperCaseKeys from "../../utils/upperCaseKeys";
 
 const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) => {
 
@@ -55,7 +54,6 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
     else {
         maxAllowedAmount = Number(maxAmountFromApi) || 0
     }
-
 
     const handleSetMaxAmount = useCallback(async () => {
         setFieldValue('amount', maxAllowedAmount);

@@ -6,7 +6,7 @@ import { SwapItem, TransactionType } from "../../lib/layerSwapApiClient";
 import { datadogRum } from "@datadog/browser-rum";
 
 const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTime, swap }) => {
-    
+
     const { email, userId } = useAuthState();
     const { boot, show, update } = useIntercom();
     const [countdown, setCountdown] = useState<number>();
@@ -23,7 +23,7 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
         return () => clearInterval(timer);
     }, [initialTime, swap.status, swapInputTransaction]);
 
-    const updateWithProps = () => update({customAttributes: { swapId: swap.id, email: email, userId: userId, } });
+    const updateWithProps = () => update({ userId, customAttributes: { email: email, swapId: swap.id } })
     const startIntercom = useCallback(() => {
         boot();
         show();
@@ -35,10 +35,10 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
-        const formattedHours = hours>0 ? String(hours).padStart(2, '0') + ":" : ''
+        const formattedHours = hours > 0 ? String(hours).padStart(2, '0') + ":" : ''
         const formattedMinutes = String(minutes).padStart(2, '0')
         const formattedSeconds = String(seconds).padStart(2, '0')
-        
+
         return `${formattedHours}${formattedMinutes}:${formattedSeconds}`;
     };
     const formatted = countdown && formatTime(countdown);
