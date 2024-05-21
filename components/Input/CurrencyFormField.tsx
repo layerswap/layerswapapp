@@ -180,7 +180,7 @@ function GenerateCurrencyMenuItems(
         const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - 604800000;
 
         const newListedIcon = isNewlyListed ? (
-            <div className="inline bg-secondary-50 px-1.5 pb-0.5 rounded">New</div>
+            <div className="inline bg-secondary-50 px-1 pb-0.5 rounded text-xs">New</div>
         ) : <></>;
         const details = c.status === 'inactive' ?
             <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> :
