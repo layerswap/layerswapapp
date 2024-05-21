@@ -40,8 +40,8 @@ export class Token {
     decimals: number;
     price_in_usd: number;
     precision: number;
-    status?: string;
     listing_date: string;
+    status?: string;
 }
 
 export class RouteToken extends Token {
