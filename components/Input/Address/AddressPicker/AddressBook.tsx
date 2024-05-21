@@ -1,4 +1,4 @@
-import { History, Pencil } from "lucide-react";
+import { Book, BookOpen, History, Pencil } from "lucide-react";
 import shortenAddress from "../../../utils/ShortenAddress";
 import { CommandGroup, CommandList, CommandWrapper } from "../../../shadcn/command";
 import AddressIcon from "../../../AddressIcon";
@@ -22,8 +22,13 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
             <CommandWrapper>
                 <CommandList>
                     <CommandGroup
-                        heading="Address Book"
-                        className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-0 !py-0 !px-0 mt-2"
+                        heading={
+                            <div className="inline-flex items-center gap-2">
+                                <BookOpen className='w-4 h-4' />
+                                <span className="text-sm text-secondary-text">Address Book</span>
+                            </div>
+                        }
+                        className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-0 !py-0 !px-0"
                     >
                         <div className="space-y-0 w-full flex flex-col items-stretch max-h-[200px] overflow-y-auto styled-scroll">
                             {addressBook.sort((a, b) =>

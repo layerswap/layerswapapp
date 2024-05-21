@@ -134,7 +134,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             <ResizablePanel>
                 <div className='w-full flex flex-col justify-between h-full text-primary-text pt-2 min-h-[400px]'>
                     <div className='flex flex-col self-center grow w-full'>
-                        <div className='flex flex-col self-center grow w-full space-y-3'>
+                        <div className='flex flex-col self-center grow w-full space-y-5'>
 
                             <ManualAddressInput
                                 manualAddress={manualAddress}
@@ -150,43 +150,42 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                 close={close}
                             />
 
-                            {
-                                (destinationExchange || provider) && !manualAddress &&
-                                <hr className="border-secondary-500 w-full" />
-                            }
+                            <div className="space-y-4">
 
-                            {
-                                destinationExchange ?
-                                    <ExchangeNote destination={destination} destinationAsset={destinationAsset} destinationExchange={destinationExchange} />
-                                    :
-                                    !disabled
-                                    && destination
-                                    && provider
-                                    && !manualAddress &&
-                                    <ConnectWalletButton provider={provider} connectedWallet={connectedWallet} onClick={() => { connectedWallet && handleSelectAddress(connectedWallet.address) }} onConnect={onConnect} destination={destination} destination_address={destination_address} />
-                            }
+                                {
+                                    destinationExchange ?
+                                        <ExchangeNote destination={destination} destinationAsset={destinationAsset} destinationExchange={destinationExchange} />
+                                        :
+                                        !disabled
+                                        && destination
+                                        && provider
+                                        && !manualAddress &&
+                                        <ConnectWalletButton provider={provider} connectedWallet={connectedWallet} onClick={() => { connectedWallet && handleSelectAddress(connectedWallet.address) }} onConnect={onConnect} destination={destination} destination_address={destination_address} />
+                                }
 
-                            {
-                                wrongNetwork && !destination_address &&
-                                <div className="basis-full text-xs text-primary">
-                                    {
-                                        destination?.name === KnownInternalNames.Networks.StarkNetMainnet
-                                            ? <span>Please switch to Starknet Mainnet with your wallet and click Autofill again</span>
-                                            : <span>Please switch to Starknet Sepolia with your wallet and click Autofill again</span>
-                                    }
-                                </div>
-                            }
+                                {
+                                    wrongNetwork && !destination_address &&
+                                    <div className="basis-full text-xs text-primary">
+                                        {
+                                            destination?.name === KnownInternalNames.Networks.StarkNetMainnet
+                                                ? <span>Please switch to Starknet Mainnet with your wallet and click Autofill again</span>
+                                                : <span>Please switch to Starknet Sepolia with your wallet and click Autofill again</span>
+                                        }
+                                    </div>
+                                }
 
 
-                            {
-                                !disabled && filteredAddresses && filteredAddresses?.length > 0 && !manualAddress && destination &&
-                                <AddressBook
-                                    addressBook={filteredAddresses}
-                                    onSelectAddress={handleSelectAddress}
-                                    destination={destination}
-                                    destination_address={destination_address}
-                                />
-                            }
+                                {
+                                    !disabled && filteredAddresses && filteredAddresses?.length > 0 && !manualAddress && destination &&
+                                    <AddressBook
+                                        addressBook={filteredAddresses}
+                                        onSelectAddress={handleSelectAddress}
+                                        destination={destination}
+                                        destination_address={destination_address}
+                                    />
+                                }
+                            </div>
+
 
                         </div>
                     </div>

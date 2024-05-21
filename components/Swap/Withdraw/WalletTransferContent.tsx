@@ -94,8 +94,11 @@ const WalletTransferContent: FC = () => {
                             <p className="text-sm leading-4 text-primary-buttonTextColor">{shortenAddress(accountAddress)}</p>
                             {
                                 sourceNetworkWallet?.connector &&
-                                <div className="text-xs text-secondary-text">
-                                    {sourceNetworkWallet?.connector}
+                                <div className="flex items-center gap-1.5 text-secondary-text text-sm">
+                                    <sourceNetworkWallet.icon className="rounded flex-shrink-0 h-4 w-4" />
+                                    <p>
+                                        {sourceNetworkWallet.connector}
+                                    </p>
                                 </div>
                             }
                         </div>

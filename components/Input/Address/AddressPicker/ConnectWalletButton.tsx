@@ -7,6 +7,7 @@ import { ResolveConnectorIcon } from "../../../icons/ConnectorIcons";
 import { Wallet } from "../../../../stores/walletStore";
 import { Network } from "../../../../Models/Network";
 import FilledCheck from "../../../icons/FilledCheck";
+import WalletIcon from "../../../icons/WalletIcon";
 
 const ConnectWalletButton = ({ provider, onClick, onConnect, connectedWallet, destination, destination_address }: { provider: WalletProvider, onClick: () => void, onConnect?: (connectedWallet: Wallet) => void, connectedWallet: Wallet | undefined, destination: Network, destination_address?: string | undefined }) => {
 
@@ -17,16 +18,11 @@ const ConnectWalletButton = ({ provider, onClick, onConnect, connectedWallet, de
 
     return connectedWallet ?
         <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between w-full px-2 ">
-                {
-                    connectedWallet &&
-                    <div className="flex items-center gap-1.5 text-secondary-text text-sm">
-                        <connectedWallet.icon className="rounded flex-shrink-0 h-5 w-5" />
-                        <p>
-                            {connectedWallet?.connector || 'Connected Wallet'}
-                        </p>
-                    </div>
-                }
+            <div className="flex items-center justify-between w-full pr-3">
+                <div className="inline-flex items-center gap-2">
+                    <WalletIcon className='w-4 h-4 text-secondary-text stroke-2' />
+                    <span className="text-sm font-medium text-secondary-text">Connected Wallet</span>
+                </div>
                 <button
                     onClick={async () => await provider.reconnectWallet(destination.chain_id)}
                     className="text-secondary-text no-underline hover:underline hover:text-primary-text text-xs "
@@ -44,6 +40,15 @@ const ConnectWalletButton = ({ provider, onClick, onConnect, connectedWallet, de
                             <div className="block text-sm font-medium">
                                 {shortenAddress(connectedWallet.address)}
                             </div>
+                            {
+                                connectedWallet.connector &&
+                                <div className="flex items-center gap-1.5 text-secondary-text text-sm">
+                                    <connectedWallet.icon className="rounded flex-shrink-0 h-4 w-4" />
+                                    <p>
+                                        {connectedWallet.connector}
+                                    </p>
+                                </div>
+                            }
                         </div>
                     </div>
                     <div className="flex h-6 items-center px-1">
