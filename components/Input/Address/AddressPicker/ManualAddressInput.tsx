@@ -7,13 +7,12 @@ import { Partner } from "../../../../Models/Partner";
 import shortenAddress from "../../../utils/ShortenAddress";
 import AddressIcon from "../../../AddressIcon";
 import { NetworkType } from "../../../../Models/Network";
-import { ExchangeType } from ".";
 import FilledX from "../../../icons/FilledX";
 
 type AddressInput = {
     manualAddress: string,
     setManualAddress: (address: string) => void,
-    setNewAddress: (value: { address: string, networkType: NetworkType | ExchangeType } | undefined) => void,
+    setNewAddress: (value: { address: string, networkType: NetworkType | string } | undefined) => void,
     values: SwapFormValues,
     partner?: Partner,
     isPartnerWallet: boolean,
@@ -42,7 +41,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
     const handleSaveNewAddress = () => {
         if (isValidAddress(manualAddress, destination)) {
             if (destination) {
-                setNewAddress({ address: manualAddress, networkType: destinationExchange ? ExchangeType.Exchange : destination.type })
+                setNewAddress({ address: manualAddress, networkType: destinationExchange ? destinationExchange.name : destination.type })
             }
             setFieldValue(name, manualAddress)
             setManualAddress("")

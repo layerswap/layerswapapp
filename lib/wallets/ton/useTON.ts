@@ -25,7 +25,7 @@ export default function useTON(): WalletProvider {
         if (wallet) {
             const w: Wallet = {
                 address: Address.parse(wallet.account.address).toString({ bounceable: false }),
-                connector: name,
+                connector: 'TON',
                 providerName: name,
                 icon: TON
             }

@@ -25,14 +25,10 @@ export enum AddressGroup {
     FromQuery = "Partner",
 }
 
-export enum ExchangeType {
-    Exchange = 'exchange'
-}
-
 export type AddressItem = {
     address: string,
     group: AddressGroup,
-    networkType?: NetworkType | ExchangeType
+    networkType?: NetworkType | string
     date?: string
 }
 
@@ -64,7 +60,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const { destination_address, to: destination, toExchange: destinationExchange, toCurrency: destinationAsset } = values
 
     const [manualAddress, setManualAddress] = useState<string>('')
-    const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | ExchangeType } | undefined>()
+    const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
     const { disconnectWallet, getAutofillProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
         return values?.to && getProvider(values?.to)
@@ -122,11 +118,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             partnerImage={partnerImage}
         />
         <Modal
-            header={
-                <div className="w-full text-secondary-text font-semibold">
-                    Send To
-                </div>
-            }
+            header='Send To'
             height="fit"
             show={showAddressModal} setShow={setShowAddressModal}
             modalId="address"
@@ -210,7 +202,7 @@ const generateMenuItems = ({
     destination: RouteNetwork | undefined,
     destinationExchange: Exchange | undefined,
     connectedWalletAddress: string | undefined,
-    newAddress: { address: string, networkType: NetworkType | ExchangeType } | undefined,
+    newAddress: { address: string, networkType: NetworkType | string } | undefined,
     currentAddress: string | undefined,
     partner?: Partner,
 }) => {
@@ -220,12 +212,12 @@ const generateMenuItems = ({
 
     let addresses: AddressItem[] = []
 
-    if (recentlyUsedAddresses && destination) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: destinationExchange ? ExchangeType.Exchange : destination.type }))]
+    if (recentlyUsedAddresses && destination) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: destinationExchange ? destinationExchange.name : destination.type }))]
     if (connectedWalletAddress && destination) addresses = [...addresses.filter(a => addressFormat(connectedWalletAddress, destination) !== addressFormat(a.address, destination)), { address: connectedWalletAddress, group: AddressGroup.ConnectedWallet, networkType: destination.type }]
     if (newAddress?.address && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.ManualAdded && addressFormat(newAddress.address, destination) !== addressFormat(a.address, destination)), { address: newAddress.address, date: new Date().toJSON(), group: AddressGroup.ManualAdded, networkType: newAddress.networkType }]
     if (partner && currentAddress && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.FromQuery && addressFormat(currentAddress, destination) !== addressFormat(a.address, destination)), { address: currentAddress, date: new Date().toJSON(), group: AddressGroup.FromQuery, networkType: destination.type }]
 
-    return addresses.filter(a => a.networkType === (destinationExchange ? ExchangeType.Exchange : destination?.type))
+    return addresses.filter(a => a.networkType === (destinationExchange ? destinationExchange.name : destination?.type))
 
 }
 

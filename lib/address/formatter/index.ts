@@ -16,8 +16,8 @@ export function addressFormat(address: string, network: { name: string } | null)
         return addAddressPadding(address)
 
     }
-    else if (network?.name.toLowerCase().startsWith("TON".toLowerCase())) {
-        return Address?.parse(address).toString({ bounceable: false, testOnly: false })
+    else if (network?.name.toLowerCase().startsWith("TON".toLowerCase()) && address) {
+        return Address.parse(address).toString({ bounceable: false, testOnly: false, urlSafe: true })
     }
     else if (network?.name.toLowerCase().startsWith("SOLANA".toLowerCase())) {
         return address
