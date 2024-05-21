@@ -55,7 +55,6 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
         maxAllowedAmount = Number(maxAmountFromApi) || 0
     }
 
-
     const handleSetMaxAmount = useCallback(async () => {
         setFieldValue('amount', maxAllowedAmount);
         from && fetchNetworkBalances(from);
