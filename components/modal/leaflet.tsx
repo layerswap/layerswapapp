@@ -84,6 +84,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 exit={{ y: "100%" }}
                 transition={transitionProps}
                 drag={height != 'full' ? "y" : false}
+                dragDirectionLock
                 onDragEnd={handleDragEnd}
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
