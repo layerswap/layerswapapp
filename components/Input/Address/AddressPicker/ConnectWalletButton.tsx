@@ -36,7 +36,7 @@ const ConnectWalletButton = ({ provider, onClick, onConnect, connectedWallet, de
                         <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
                             <AddressIcon className="scale-150 h-9 w-9" address={connectedWallet.address} size={36} />
                         </div>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col items-start">
                             <div className="block text-sm font-medium">
                                 {shortenAddress(connectedWallet.address)}
                             </div>
