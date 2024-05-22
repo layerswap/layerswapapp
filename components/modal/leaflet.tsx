@@ -46,6 +46,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     }, [controls, show, transitionProps]);
 
     const handleCloseModal = useCallback(async (e: React.MouseEvent<HTMLElement>) => {
+        e.stopPropagation();
         await controls.start({ y: "100%", transition: transitionProps, });
         setShow(false);
     }, [setShow, controls, transitionProps])
