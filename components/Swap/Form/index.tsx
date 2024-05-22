@@ -173,9 +173,7 @@ export default function Form() {
             header={`Complete the swap`}
             modalId="showSwap"
         >
-            <ResizablePanel>
-                <SwapDetails type="contained" />
-            </ResizablePanel>
+            <SwapDetails type="contained" />
         </Modal>
         <Formik
             innerRef={formikRef}
