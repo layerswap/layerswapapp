@@ -8,6 +8,7 @@ import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw";
 import SolanaWalletWithdrawStep from "./SolanaWalletWithdraw";
 import LoopringWalletWithdraw from "./Loopring";
 import { Network, Token } from "../../../../Models/Network";
+import TonWalletWithdrawStep from "./TonWalletWithdraw";
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
@@ -33,6 +34,8 @@ export const WalletTransferContent: FC = () => {
 
     const sourceIsSolana = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
         || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaDevnet?.toUpperCase();
+
+    const sourceIsTon = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.TONMainnet?.toUpperCase()
 
     const depositAddress = deposit_actions?.find(da => true)?.to_address;
     const amount = deposit_actions?.find(da => true)?.amount || 0;
@@ -73,6 +76,14 @@ export const WalletTransferContent: FC = () => {
         />;
     else if (sourceIsSolana)
         return <SolanaWalletWithdrawStep
+            amount={amount}
+            depositAddress={depositAddress}
+            network={swap?.source_network}
+            token={swap?.source_token}
+            swapId={swap?.id}
+        />;
+    else if (sourceIsTon)
+        return <TonWalletWithdrawStep
             amount={amount}
             depositAddress={depositAddress}
             network={swap?.source_network}
