@@ -57,18 +57,20 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
             )}
             {isMobile && (
                 <AnimatePresence>
-                    <Leaflet
-                        position="fixed"
-                        height={height == 'full' ? '80%' : height == 'fit' ? 'fit' : 'full'}
-                        ref={mobileModalRef}
-                        show={show}
-                        setShow={setShow}
-                        title={header}
-                        description={subHeader}
-                        className={className}
-                        key={modalId}>
-                        {children}
-                    </Leaflet>
+                    {delayedShow &&
+                        <Leaflet
+                            position="fixed"
+                            height={height == 'full' ? '80%' : height == 'fit' ? 'fit' : 'full'}
+                            ref={mobileModalRef}
+                            show={delayedShow}
+                            setShow={setShow}
+                            title={header}
+                            description={subHeader}
+                            className={className}
+                            key={modalId}>
+                            {children}
+                        </Leaflet>
+                    }
                 </AnimatePresence>
             )}
         </>
