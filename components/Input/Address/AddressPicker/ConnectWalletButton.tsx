@@ -73,7 +73,7 @@ const ConnectWalletButton = ({ provider, onClick, onConnect, connectedWallet, de
                     </div>
                 </ResolveConnectorIcon>
                 <div className="h-full space-y-2">
-                    <p className="text-sm font-medium text-secondary-text text-start">Connect your wallet to browse and select from your addresses</p>
+                    <p className="text-sm font-medium text-secondary-text text-start">Connect your wallet to select a destination address</p>
                     <div className="bg-primary-700/30 border-none !text-primary py-2 rounded-lg text-base font-semibold">
                         Connect Now
                     </div>

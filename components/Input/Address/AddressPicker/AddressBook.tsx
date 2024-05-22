@@ -1,4 +1,4 @@
-import { Book, BookOpen, History, Pencil } from "lucide-react";
+import { BookOpen, History, AlertTriangle } from "lucide-react";
 import shortenAddress from "../../../utils/ShortenAddress";
 import { CommandGroup, CommandList, CommandWrapper } from "../../../shadcn/command";
 import AddressIcon from "../../../AddressIcon";
@@ -67,15 +67,8 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                                                         {
                                                             item.group === AddressGroup.ManualAdded &&
                                                             <div className="inline-flex items-center gap-1">
-                                                                <Pencil className="h-3 w-3" />
-                                                                {
-                                                                    (difference_in_days === 0 ?
-                                                                        <p>Added today</p>
-                                                                        :
-                                                                        (difference_in_days && difference_in_days > 1 ?
-                                                                            <p><span>Added</span> {difference_in_days} <span>days ago</span></p>
-                                                                            : <p>Added yesterday</p>))
-                                                                }
+                                                                <AlertTriangle className="h-3 w-3" />
+                                                                <p>New Address</p>
                                                             </div>
                                                         }
                                                     </div>

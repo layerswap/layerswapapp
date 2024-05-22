@@ -55,7 +55,7 @@
     "framer-motion": "^10.16.15",
     "js-sha3": "^0.8.0",
     "js-sha512": "^0.9.0",
-    "lucide-react": "^0.261.0",
+    "lucide-react": "^0.379.0",
     "next": "^14.0.4",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
