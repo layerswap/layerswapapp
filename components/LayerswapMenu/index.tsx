@@ -38,7 +38,7 @@ export default function LayerswapMenu() {
         setEmbedded(inIframe())
     }, [])
 
-    const updateWithProps = () => update({ customAttributes: { email: email, userId: userId, } })
+    const updateWithProps = () => update({ userId, customAttributes: { email: email, } })
 
     const handleLogout = useCallback(() => {
         TokenService.removeAuthData()

@@ -46,7 +46,7 @@ function TransactionsHistory() {
       const layerswapApiClient = new LayerSwapApiClient()
 
       if (showAllSwaps) {
-        const { data, error } = await layerswapApiClient.GetSwapsAsync(1)
+        const { data, error } = await layerswapApiClient.GetSwapsAsync(1, showAllSwaps)
 
         if (error) {
           toast.error(error.message);
@@ -84,7 +84,7 @@ function TransactionsHistory() {
     setLoading(true)
     const layerswapApiClient = new LayerSwapApiClient()
     if (showAllSwaps) {
-      const { data, error } = await layerswapApiClient.GetSwapsAsync(nextPage)
+      const { data, error } = await layerswapApiClient.GetSwapsAsync(nextPage, showAllSwaps)
 
       if (error) {
         toast.error(error.message);
@@ -142,7 +142,7 @@ function TransactionsHistory() {
                         <ToggleButton onChange={handleToggleChange} value={showAllSwaps} />
                       </div>
                     </div>
-                    <div className="max-h-[450px] styled-scroll overflow-y-auto ">
+                    <div className=" sm:max-h-[450px] styled-scroll overflow-y-auto ">
                       <table className="w-full divide-y divide-secondary-500">
                         <thead className="text-secondary-text">
                           <tr>
