@@ -60,7 +60,7 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
                     {delayedShow &&
                         <Leaflet
                             position="fixed"
-                            height={height == 'full' ? '80%' : height == 'fit' ? 'fit' : 'full'}
+                            height={height == 'full' ? '90%' : height == 'fit' ? 'fit' : 'full'}
                             ref={mobileModalRef}
                             show={delayedShow}
                             setShow={setShow}
