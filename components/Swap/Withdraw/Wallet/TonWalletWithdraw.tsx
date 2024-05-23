@@ -33,10 +33,10 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
     }, [provider])
 
     const handleTransfer = useCallback(async () => {
+        setLoading(true)
 
         if (!swapId || !depositAddress || !token || !wallet || !callData || amount === undefined) return toast('Something went wrong, please try again.')
 
-        setLoading(true)
         try {
 
             const transaction = await transactionBuilder(amount, token, depositAddress, wallet?.address, callData)
