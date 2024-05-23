@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { ChevronsUpDown, Link2Off, Plus, Unlink } from "lucide-react";
 import shortenAddress from "../../../utils/ShortenAddress";
 import { WalletProvider } from "../../../../hooks/useWallet";
 import AddressIcon from "../../../AddressIcon";
@@ -18,16 +18,14 @@ const ConnectWalletButton = ({ provider, onClick, onConnect, connectedWallet, de
 
     return connectedWallet ?
         <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between w-full pr-3">
-                <div className="inline-flex items-center gap-2">
-                    <WalletIcon className='w-4 h-4 text-secondary-text stroke-2' />
-                    <span className="text-sm font-medium text-secondary-text">Connected Wallet</span>
-                </div>
+            <div className="flex items-center justify-between w-full">
+                <p className="text-sm font-medium text-secondary-text">Connected Wallet</p>
                 <button
                     onClick={async () => await provider.reconnectWallet(destination.chain_id)}
-                    className="text-secondary-text no-underline hover:underline hover:text-primary-text text-xs "
+                    className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200"
                 >
-                    Switch Wallet
+                    <Link2Off className="h-3.5 w-auto" />
+                    <p>Switch</p>
                 </button>
             </div>
             <button type="button" onClick={onClick} className={`w-full px-3 py-3 rounded-md hover:!bg-secondary-800 transition duration-200 ${addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
@@ -54,7 +52,7 @@ const ConnectWalletButton = ({ provider, onClick, onConnect, connectedWallet, de
                     <div className="flex h-6 items-center px-1">
                         {
                             addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) &&
-                            <FilledCheck />
+                            <FilledCheck className="text-primary" />
                         }
                     </div>
                 </div>

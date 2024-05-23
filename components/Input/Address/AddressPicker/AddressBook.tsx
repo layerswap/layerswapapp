@@ -23,10 +23,7 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                 <CommandList>
                     <CommandGroup
                         heading={
-                            <div className="inline-flex items-center gap-2">
-                                <BookOpen className='w-4 h-4' />
-                                <span className="text-sm text-secondary-text">Address Book</span>
-                            </div>
+                            <p className="text-sm text-secondary-text">Address Book</p>
                         }
                         className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-0 !py-0 !px-0"
                     >
