@@ -154,7 +154,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                         && destination
                                         && provider
                                         && !manualAddress &&
-                                        <ConnectWalletButton provider={provider} connectedWallet={connectedWallet} onClick={() => { connectedWallet && handleSelectAddress(connectedWallet.address) }} onConnect={onConnect} destination={destination} destination_address={destination_address} />
+                                        <ConnectWalletButton provider={provider} connectedWallet={connectedWallet} onClick={() => { connectedWallet && handleSelectAddress(connectedWallet.address) }} onConnect={onConnect} destination={destination} destination_address={destination_address} addresses={menuItems} />
                                 }
 
                                 {

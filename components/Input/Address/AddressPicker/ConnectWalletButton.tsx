@@ -1,22 +1,34 @@
-import { ChevronsUpDown, Link2Off, Plus, Unlink } from "lucide-react";
-import shortenAddress from "../../../utils/ShortenAddress";
+import { Link2Off, Plus } from "lucide-react";
 import { WalletProvider } from "../../../../hooks/useWallet";
-import AddressIcon from "../../../AddressIcon";
 import { addressFormat } from "../../../../lib/address/formatter";
 import { ResolveConnectorIcon } from "../../../icons/ConnectorIcons";
 import { Wallet } from "../../../../stores/walletStore";
 import { Network } from "../../../../Models/Network";
 import FilledCheck from "../../../icons/FilledCheck";
-import WalletIcon from "../../../icons/WalletIcon";
+import AddressWithIcon from "./AddressWithIcon";
+import { AddressItem } from ".";
+import { FC } from "react";
 
-const ConnectWalletButton = ({ provider, onClick, onConnect, connectedWallet, destination, destination_address }: { provider: WalletProvider, onClick: () => void, onConnect?: (connectedWallet: Wallet) => void, connectedWallet: Wallet | undefined, destination: Network, destination_address?: string | undefined }) => {
+type Props = {
+    addresses: AddressItem[] | undefined,
+    provider: WalletProvider,
+    onClick: () => void,
+    onConnect?: (connectedWallet: Wallet) => void,
+    connectedWallet: Wallet | undefined,
+    destination: Network,
+    destination_address?: string | undefined
+}
+
+const ConnectWalletButton: FC<Props> = ({ addresses, provider, onClick, onConnect, connectedWallet, destination, destination_address }) => {
 
     const connect = async () => {
         const connectedWallet = await provider.connectWallet(destination.chain_id)
         if (connectedWallet && onConnect) onConnect(connectedWallet)
     }
 
-    return connectedWallet ?
+    const addressItem = connectedWallet && addresses?.find(a => addressFormat(a.address, destination) === addressFormat(connectedWallet.address, destination))
+
+    return addressItem ?
         <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between w-full">
                 <p className="text-sm font-medium text-secondary-text">Connected Wallet</p>
@@ -30,25 +42,7 @@ const ConnectWalletButton = ({ provider, onClick, onConnect, connectedWallet, de
             </div>
             <button type="button" onClick={onClick} className={`w-full px-3 py-3 rounded-md hover:!bg-secondary-800 transition duration-200 ${addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
                 <div className={`flex items-center justify-between w-full`}>
-                    <div className={`space-x-2 flex text-sm items-center`}>
-                        <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
-                            <AddressIcon className="scale-150 h-9 w-9" address={connectedWallet.address} size={36} />
-                        </div>
-                        <div className="flex flex-col items-start">
-                            <div className="block text-sm font-medium">
-                                {shortenAddress(connectedWallet.address)}
-                            </div>
-                            {
-                                connectedWallet.connector &&
-                                <div className="flex items-center gap-1.5 text-secondary-text text-sm">
-                                    <connectedWallet.icon className="rounded flex-shrink-0 h-4 w-4" />
-                                    <p>
-                                        {connectedWallet.connector}
-                                    </p>
-                                </div>
-                            }
-                        </div>
-                    </div>
+                    <AddressWithIcon addressItem={addressItem} connectedWallet={connectedWallet} />
                     <div className="flex h-6 items-center px-1">
                         {
                             addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) &&

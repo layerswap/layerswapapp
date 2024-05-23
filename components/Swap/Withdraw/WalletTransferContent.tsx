@@ -5,11 +5,11 @@ import { useAccountModal } from '@rainbow-me/rainbowkit';
 import { NetworkType } from '../../../Models/Network';
 import useWallet from '../../../hooks/useWallet';
 import { useBalancesState } from '../../../context/balances';
-import { truncateDecimals } from '../../utils/RoundDecimals';
 import useBalance from '../../../hooks/useBalance';
-import AddressIcon from '../../AddressIcon';
-import shortenAddress from '../../utils/ShortenAddress';
 import SpinIcon from '../../icons/spinIcon';
+import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
+import { AddressGroup } from '../../Input/Address/AddressPicker';
+import { Link2Off } from 'lucide-react';
 
 const WalletTransferContent: FC = () => {
     const { openAccountModal } = useAccountModal();
@@ -77,33 +77,24 @@ const WalletTransferContent: FC = () => {
     return <div className="grid content-end">
         <div className='flex w-full items-center text-sm justify-between'>
             <span className='ml-1'>{swap?.source_exchange ? "Connected account" : "Send from"}</span>
-            <div onClick={handleDisconnect} className="text-secondary-text no-underline hover:underline hover:text-primary-text text-xs hover:cursor-pointer">
-                {isLoading ? <SpinIcon className="animate-spin h-3 w-3" /> : <p>Switch Wallet</p>}
+            <div onClick={handleDisconnect} className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200 hover:cursor-pointer">
+                {
+                    isLoading ?
+                        <SpinIcon className="animate-spin h-3 w-3" />
+                        :
+                        <>
+                            <Link2Off className="h-3.5 w-auto" />
+                            <p>Switch</p>
+                        </>
+                }
             </div>
         </div>
         {
             provider &&
+            wallet &&
             destination_network &&
-            <button type="button" onClick={handleOpenAccount} className="flex rounded-lg justify-between space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text-placeholder bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
-                <div className="truncate">
-                    <div className="flex items-center gap-2">
-                        <div className='flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-9 overflow-hidden w-9'>
-                            <AddressIcon className="scale-150 h-9 w-9" address={accountAddress} size={36} />
-                        </div>
-                        <div className="text-left">
-                            <p className="text-sm leading-4 text-primary-buttonTextColor">{shortenAddress(accountAddress)}</p>
-                            {
-                                sourceNetworkWallet?.connector &&
-                                <div className="flex items-center gap-1.5 text-secondary-text text-sm">
-                                    <sourceNetworkWallet.icon className="rounded flex-shrink-0 h-4 w-4" />
-                                    <p>
-                                        {sourceNetworkWallet.connector}
-                                    </p>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                </div>
+            <button type="button" onClick={handleOpenAccount} className="flex rounded-lg justify-between space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
+                <AddressWithIcon addressItem={{ address: wallet?.address, group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} />
             </button>
         }
     </div>

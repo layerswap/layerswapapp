@@ -7,6 +7,7 @@ import FilledCheck from "../../../icons/FilledCheck";
 import { AddressGroup, AddressItem } from ".";
 import { RouteNetwork } from "../../../../Models/Network";
 import { FC } from "react";
+import AddressWithIcon from "./AddressWithIcon";
 
 type AddressBookProps = {
     addressBook: AddressItem[];
@@ -33,44 +34,11 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                                     (a.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(a.date).getTime()) / (1000 * 3600 * 24))) : 0)
                                     - (b.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(b.date).getTime()) / (1000 * 3600 * 24))) : 0)
                             ).map(item => {
-                                const difference_in_days = item.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(item.date).getTime()) / (1000 * 3600 * 24))) : undefined
 
                                 return (
                                     <button type="button" key={item.address} onClick={() => onSelectAddress(item.address)} className={`px-3 py-3 rounded-md hover:bg-secondary-700 w-full transition duration-200 ${addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
                                         <div className={`flex items-center justify-between w-full`}>
-                                            <div className={`flex gap-3 text-sm items-center`}>
-                                                <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
-                                                    <AddressIcon className="scale-150 h-9 w-9" address={item.address} size={36} />
-                                                </div>
-                                                <div className="flex flex-col items-start">
-                                                    <div className="block text-sm font-medium">
-                                                        {shortenAddress(item.address)}
-                                                    </div>
-                                                    <div className="text-secondary-text">
-                                                        {
-                                                            item.group === AddressGroup.RecentlyUsed &&
-                                                            <div className="inline-flex items-center gap-1">
-                                                                <History className="h-3 w-3" />
-                                                                {
-                                                                    (difference_in_days === 0 ?
-                                                                        <p>Used today</p>
-                                                                        :
-                                                                        (difference_in_days && difference_in_days > 1 ?
-                                                                            <p><span>Used</span> {difference_in_days} <span>days ago</span></p>
-                                                                            : <p>Used yesterday</p>))
-                                                                }
-                                                            </div>
-                                                        }
-                                                        {
-                                                            item.group === AddressGroup.ManualAdded &&
-                                                            <div className="inline-flex items-center gap-1">
-                                                                <AlertTriangle className="h-3 w-3" />
-                                                                <p>New Address</p>
-                                                            </div>
-                                                        }
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <AddressWithIcon addressItem={item} />
                                             <div className="flex h-6 items-center px-1">
                                                 {
                                                     addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!) &&
