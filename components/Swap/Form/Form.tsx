@@ -28,7 +28,6 @@ import { RouteNetwork } from "../../../Models/Network";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 
 type Props = {
-    isPartnerWallet?: boolean,
     partner?: Partner,
 }
 
@@ -41,7 +40,7 @@ const  Address = dynamic(() => import("../../Input/Address"), {
 });
 
 
-const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
+const SwapForm: FC<Props> = ({ partner }) => {
     const {
         values,
         setValues,
@@ -176,7 +175,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                     </div>
                     {
                         !hideAddress ?
-                            <Address partner={partner} isPartnerWallet={!!isPartnerWallet} />
+                            <Address partner={partner} />
                             : <></>
                     }
                     <div className="w-full">

@@ -1,15 +1,14 @@
 import { ChangeEvent, FC, useCallback, useState } from "react";
 import { SwapFormValues } from "../../../DTOs/SwapFormValues";
-import { AlertTriangle, Pencil, History } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { isValidAddress } from "../../../../lib/address/validator";
 import { Partner } from "../../../../Models/Partner";
-import shortenAddress from "../../../utils/ShortenAddress";
-import AddressIcon from "../../../AddressIcon";
 import { NetworkType } from "../../../../Models/Network";
 import FilledX from "../../../icons/FilledX";
 import { AddressGroup, AddressItem } from ".";
 import { addressFormat } from "../../../../lib/address/formatter";
 import { Wallet } from "../../../../stores/walletStore";
+import AddressWithIcon from "./AddressWithIcon";
 
 type AddressInput = {
     manualAddress: string,
@@ -17,8 +16,6 @@ type AddressInput = {
     setNewAddress: (value: { address: string, networkType: NetworkType | string } | undefined) => void,
     values: SwapFormValues,
     partner?: Partner,
-    isPartnerWallet: boolean,
-    partnerImage?: string,
     name: string,
     inputReference: React.Ref<HTMLInputElement>,
     setFieldValue: (field: string, value: any) => void,
@@ -27,7 +24,7 @@ type AddressInput = {
     connectedWallet: Wallet | undefined
 }
 
-const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress, setNewAddress, values, name, inputReference, setFieldValue, close, addresses, connectedWallet }) => {
+const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress, setNewAddress, values, name, inputReference, setFieldValue, close, addresses, connectedWallet, partner }) => {
 
     const { to: destination, toExchange: destinationExchange } = values || {}
     const [isFocused, setIsFocused] = useState(false);
@@ -59,7 +56,6 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
     }
 
     const addressFromList = destination && addresses?.find(a => addressFormat(a.address, destination) === addressFormat(manualAddress, destination))
-    const difference_in_days = addressFromList?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressFromList.date).getTime()) / (1000 * 3600 * 24))) : undefined
 
     return (
         <div className="text-left">
@@ -103,7 +99,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
 
                 {
                     errorMessage &&
-                    <div className="basis-full text-xs text-primary">
+                    <div className="basis-full w-full text-start text-xs text-primary">
                         {errorMessage}
                     </div>
                 }
@@ -111,46 +107,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                 {
                     manualAddress && !errorMessage &&
                     <div onClick={handleSaveNewAddress} className={`text-left min-h-12 cursor-pointer space-x-2 bg-secondary-800 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-700 transition duration-200 p-3 hover:shadow-xl mt-3`}>
-                        <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
-                            <AddressIcon className="scale-150 h-9 w-9" address={manualAddress} size={36} />
-                        </div>
-                        <div className="flex flex-col grow items-start">
-                            <div className="block text-md font-medium text-primary-text">
-                                {shortenAddress(manualAddress)}
-                            </div>
-                            <div className="text-secondary-text">
-                                {
-                                    addressFromList?.group === AddressGroup.RecentlyUsed &&
-                                    <div className="inline-flex items-center gap-1">
-                                        <History className="h-3 w-3" />
-                                        {
-                                            (difference_in_days === 0 ?
-                                                <p>Used today</p>
-                                                :
-                                                (difference_in_days && difference_in_days > 1 ?
-                                                    <p><span>Used</span> {difference_in_days} <span>days ago</span></p>
-                                                    : <p>Used yesterday</p>))
-                                        }
-                                    </div>
-                                }
-                                {
-                                    addressFromList?.group === AddressGroup.ConnectedWallet && connectedWallet?.connector &&
-                                    <div className="flex items-center gap-1.5 text-secondary-text text-sm">
-                                        <connectedWallet.icon className="rounded flex-shrink-0 h-4 w-4" />
-                                        <p>
-                                            {connectedWallet.connector}
-                                        </p>
-                                    </div>
-                                }
-                                {
-                                    !addressFromList &&
-                                    <div className="inline-flex items-center gap-1">
-                                        <AlertTriangle className="h-3 w-3" />
-                                        <p>New Address</p>
-                                    </div>
-                                }
-                            </div>
-                        </div>
+                        <AddressWithIcon addressItem={addressFromList || { address: manualAddress, group: AddressGroup.ManualAdded }} connectedWallet={connectedWallet} partner={partner} />
                     </div>
                 }
             </div>

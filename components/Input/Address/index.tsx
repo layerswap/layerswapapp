@@ -8,22 +8,19 @@ import { ApiResponse } from "../../../Models/ApiResponse"
 import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiClient"
 import { useAuthState } from "../../../context/authContext"
 import { isValidAddress } from "../../../lib/address/validator"
-import { useQueryState } from "../../../context/query"
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap"
 
 type AddressProps = {
-    isPartnerWallet: boolean
     partner: Partner | undefined
 }
 
-const Address = ({ isPartnerWallet, partner }: AddressProps) => {
+const Address = ({ partner }: AddressProps) => {
 
     const {
         values,
         setFieldValue
     } = useFormikContext<SwapFormValues>();
     const { authData } = useAuthState()
-    const query = useQueryState();
     const { setDepositAddressIsFromAccount } = useSwapDataUpdate()
     const { depositAddressIsFromAccount } = useSwapDataState()
     const { to: destination, toExchange } = values
@@ -33,11 +30,6 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
     const [showAddressModal, setShowAddressModal] = useState(false);
-    const partnerImage = partner?.logo
-    const lockAddress =
-        (values.destination_address && values.to)
-        && isValidAddress(values.destination_address, values.to)
-        && (((query.lockAddress || query.hideAddress) && (query.appName !== "imxMarketplace")))
 
     const previouslySelectedDestination = useRef(destination);
     const depositAddressIsFromAccountRef = useRef<boolean | null | undefined>(depositAddressIsFromAccount);
@@ -50,16 +42,21 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
     useEffect(() => {
         if ((previouslySelectedDestination.current &&
             (destination?.type != previouslySelectedDestination.current?.type)
-            || destination && !isValidAddress(values.destination_address, destination)) && !lockAddress) {
+            || destination && !isValidAddress(values.destination_address, destination))) {
             setFieldValue("destination_address", '')
             setDepositAddressIsFromAccount(false)
         }
         previouslySelectedDestination.current = destination
     }, [destination])
 
+    const previouslySelectedDestinationExchange = useRef(toExchange);
+
     //If destination exchange changed, remove destination_address
     useEffect(() => {
-        setFieldValue("destination_address", '')
+        if (previouslySelectedDestinationExchange.current && (toExchange?.name != previouslySelectedDestinationExchange.current?.name)) {
+            setFieldValue("destination_address", '')
+        }
+        previouslySelectedDestinationExchange.current = toExchange
     }, [toExchange])
 
     return (
@@ -71,10 +68,8 @@ const Address = ({ isPartnerWallet, partner }: AddressProps) => {
                 showAddressModal={showAddressModal}
                 setShowAddressModal={setShowAddressModal}
                 close={() => setShowAddressModal(false)}
-                disabled={lockAddress || (!values.to || !values.from)}
+                disabled={!values.to || !values.from}
                 name={"destination_address"}
-                partnerImage={partnerImage}
-                isPartnerWallet={!!isPartnerWallet}
                 partner={partner}
                 address_book={address_book?.data}
             />

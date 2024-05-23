@@ -41,15 +41,13 @@ interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | '
     children?: JSX.Element | JSX.Element[];
     ref?: any;
     close: () => void,
-    isPartnerWallet: boolean,
-    partnerImage?: string,
     partner?: Partner,
     canFocus?: boolean,
     address_book?: AddressBookItem[],
 }
 
 const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
-    ({ showAddressModal, setShowAddressModal, name, canFocus, close, address_book, disabled, isPartnerWallet, partnerImage, partner }, ref) {
+    ({ showAddressModal, setShowAddressModal, name, canFocus, close, address_book, disabled, partner }, ref) {
     const {
         values,
         setFieldValue
@@ -103,19 +101,18 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [setFieldValue, setShowAddressModal, showAddressModal, destination])
 
     useEffect(() => {
-        if (!destination_address && connectedWallet) {
+        if (!destination_address && connectedWallet && !!partner?.is_wallet) {
             onConnect(connectedWallet)
         }
     }, [destination_address, connectedWallet])
 
     return (<>
         <AddressButton
-            disabled={!values.to || !values.from || !!isPartnerWallet}
-            isPartnerWallet={isPartnerWallet}
+            disabled={!values.to || !values.from}
             addressItem={destinationAddressItem}
             openAddressModal={() => setShowAddressModal(true)}
             connectedWallet={connectedWallet}
-            partnerImage={partnerImage}
+            partner={partner}
         />
         <Modal
             header='Send To'
@@ -134,8 +131,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                 setNewAddress={setNewAddress}
                                 values={values}
                                 partner={partner}
-                                isPartnerWallet={isPartnerWallet}
-                                partnerImage={partnerImage}
                                 name={name}
                                 inputReference={inputReference}
                                 setFieldValue={setFieldValue}
@@ -176,6 +171,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                         onSelectAddress={handleSelectAddress}
                                         destination={destination}
                                         destination_address={destination_address}
+                                        partner={partner}
                                     />
                                 }
                             </div>
@@ -216,8 +212,8 @@ const generateMenuItems = ({
 
     if (recentlyUsedAddresses && destination) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: destinationExchange ? destinationExchange.name : destination.type }))]
     if (newAddress?.address && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.ManualAdded && addressFormat(newAddress.address, destination) !== addressFormat(a.address, destination)), { address: newAddress.address, group: AddressGroup.ManualAdded, networkType: newAddress.networkType }]
-    if (partner && currentAddress && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.FromQuery && addressFormat(currentAddress, destination) !== addressFormat(a.address, destination)), { address: currentAddress, group: AddressGroup.FromQuery, networkType: destination.type }]
     if (connectedWalletAddress && destination) addresses = [...addresses.filter(a => addressFormat(connectedWalletAddress, destination) !== addressFormat(a.address, destination)), { address: connectedWalletAddress, group: AddressGroup.ConnectedWallet, networkType: destination.type }]
+    if (partner && currentAddress && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.FromQuery && addressFormat(currentAddress, destination) !== addressFormat(a.address, destination)), { address: currentAddress, group: AddressGroup.FromQuery, networkType: destination.type }]
 
     return addresses.filter(a => a.networkType === (destinationExchange ? destinationExchange.name : destination?.type))
 

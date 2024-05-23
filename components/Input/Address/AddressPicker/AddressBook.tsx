@@ -1,22 +1,21 @@
-import { BookOpen, History, AlertTriangle } from "lucide-react";
-import shortenAddress from "../../../utils/ShortenAddress";
 import { CommandGroup, CommandList, CommandWrapper } from "../../../shadcn/command";
-import AddressIcon from "../../../AddressIcon";
 import { addressFormat } from "../../../../lib/address/formatter";
 import FilledCheck from "../../../icons/FilledCheck";
 import { AddressGroup, AddressItem } from ".";
 import { RouteNetwork } from "../../../../Models/Network";
 import { FC } from "react";
 import AddressWithIcon from "./AddressWithIcon";
+import { Partner } from "../../../../Models/Partner";
 
 type AddressBookProps = {
     addressBook: AddressItem[];
     onSelectAddress: (address: string) => void;
     destination: RouteNetwork;
     destination_address: string | undefined;
+    partner?: Partner;
 }
 
-const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, destination, destination_address }) => {
+const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, destination, destination_address, partner }) => {
 
     return (
         <div className="text-left">
@@ -38,7 +37,7 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                                 return (
                                     <button type="button" key={item.address} onClick={() => onSelectAddress(item.address)} className={`px-3 py-3 rounded-md hover:bg-secondary-700 w-full transition duration-200 ${addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
                                         <div className={`flex items-center justify-between w-full`}>
-                                            <AddressWithIcon addressItem={item} />
+                                            <AddressWithIcon addressItem={item} partner={partner} />
                                             <div className="flex h-6 items-center px-1">
                                                 {
                                                     addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!) &&
