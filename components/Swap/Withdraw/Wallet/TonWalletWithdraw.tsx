@@ -6,8 +6,8 @@ import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { useTonConnectUI } from '@tonconnect/ui-react';
-import { Address, HttpApi, JettonMaster, TonClient, beginCell, toNano } from '@ton/ton'
-import { Network, Token } from '../../../../Models/Network';
+import { Address, JettonMaster, TonClient, beginCell, toNano } from '@ton/ton'
+import { Token } from '../../../../Models/Network';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 
 const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
@@ -34,12 +34,12 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
 
     const handleTransfer = useCallback(async () => {
 
-        if (!swapId || !depositAddress || !token || !wallet || !callData) return
+        if (!swapId || !depositAddress || !token || !wallet || !callData || amount === undefined) return toast('Something went wrong, please try again.')
 
         setLoading(true)
         try {
 
-            const transaction = await transactionBuilder(amount!, token, depositAddress, wallet?.address, callData)
+            const transaction = await transactionBuilder(amount, token, depositAddress, wallet?.address, callData)
             const res = await tonConnectUI.sendTransaction(transaction)
 
             if (res) {
