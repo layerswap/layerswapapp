@@ -118,7 +118,7 @@ const transactionBuilder = async (amount: number, token: Token, depositAddress: 
             messages: [
                 {
                     address: jettonAddress.toString(), // sender jetton wallet
-                    amount: toNano('0.05').toString(), // for commission fees, excess will be returned
+                    amount: toNano('0.045').toString(), // for commission fees, excess will be returned
                     payload: body.toBoc().toString("base64") // payload with jetton transfer and comment body
                 }
             ]
