@@ -28,7 +28,8 @@ export const WalletTransferContent: FC = () => {
         || swap?.source_network.name === KnownInternalNames.Networks.StarkNetSepolia?.toUpperCase();
 
     const sourceIsLoopring = swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.LoopringMainnet?.toUpperCase()
-        || swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.LoopringGoerli?.toUpperCase();
+        || swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.LoopringGoerli?.toUpperCase()
+        || swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.LoopringSepolia?.toUpperCase();
 
     const sourceIsSolana = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
         || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaDevnet?.toUpperCase();
