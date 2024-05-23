@@ -36,7 +36,6 @@ export const WalletTransferContent: FC = () => {
         || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaDevnet?.toUpperCase();
 
     const sourceIsTon = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.TONMainnet?.toUpperCase()
-
     const depositAddress = deposit_actions?.find(da => true)?.to_address;
     const amount = deposit_actions?.find(da => true)?.amount || 0;
     const callData = deposit_actions?.find(da => true)?.call_data;
@@ -89,6 +88,7 @@ export const WalletTransferContent: FC = () => {
             network={swap?.source_network}
             token={swap?.source_token}
             swapId={swap?.id}
+            callData={callData}
         />;
     else
         return <>

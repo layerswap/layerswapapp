@@ -9,7 +9,7 @@ import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Address, JettonMaster, TonClient, beginCell, toNano } from '@ton/ton'
 import { Network, Token } from '../../../../Models/Network';
 
-const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId }) => {
+const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
     const [loading, setLoading] = useState(false);
     const { getWithdrawalProvider } = useWallet()
     const { setSwapTransaction } = useSwapTransactionStore();
@@ -33,13 +33,13 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
 
     const handleTransfer = useCallback(async () => {
 
-        if (!swapId || !depositAddress || !amount || !token || !wallet) return
+        if (!swapId || !depositAddress || !amount || !token || !wallet || !callData) return
 
         setLoading(true)
         try {
             debugger
 
-            const transaction = await transactionBuilder(amount, token, depositAddress, wallet?.address, 'comment')
+            const transaction = await transactionBuilder(amount, token, depositAddress, wallet?.address, callData)
 
             const res = await tonConnectUI.sendTransaction(transaction)
 
@@ -84,6 +84,7 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
 const transactionBuilder = async (amount: number, token: Token, depositAddress: string, sourceAddress: string, callData: string) => {
     if (token.contract) {
         const destinationAddress = Address.parse(depositAddress);
+        const userAddress = Address.parse(sourceAddress)
 
         const forwardPayload = beginCell()
             .storeUint(0, 32) // 0 opcode means we have a comment
@@ -93,11 +94,11 @@ const transactionBuilder = async (amount: number, token: Token, depositAddress: 
         const body = beginCell()
             .storeUint(0x0f8a7ea5, 32) // opcode for jetton transfer
             .storeUint(0, 64) // query id
-            .storeCoins(toNano(5)) // jetton amount, amount * 10^9
+            .storeCoins(amount * Math.pow(10, token.decimals)) // jetton amount, amount * 10^9
             .storeAddress(destinationAddress) // TON wallet destination address
             .storeAddress(destinationAddress) // response excess destination
             .storeBit(0) // no custom payload
-            .storeCoins(toNano('0.02')) // forward amount (if >0, will send notification message)
+            .storeCoins(toNano('0.0000000000002')) // forward amount (if >0, will send notification message)
             .storeBit(1) // we store forwardPayload as a reference
             .storeRef(forwardPayload)
             .endCell();
@@ -106,9 +107,7 @@ const transactionBuilder = async (amount: number, token: Token, depositAddress: 
             endpoint: 'https://toncenter.com/api/v2/jsonRPC',
             apiKey: '9a591e2fc2d679b8ac31c76427d132bc566d0d217c61256ca9cc7ae1e9280806'
         });
-
         const jettonMasterAddress = Address.parse(token.contract!)
-        const userAddress = Address.parse(sourceAddress)
         const jettonMaster = client.open(JettonMaster.create(jettonMasterAddress))
         const jettonAddress = await jettonMaster.getWalletAddress(userAddress)
 
@@ -117,7 +116,7 @@ const transactionBuilder = async (amount: number, token: Token, depositAddress: 
             messages: [
                 {
                     address: jettonAddress.toString(), // sender jetton wallet
-                    amount: toNano(amount).toString(), // for commission fees, excess will be returned
+                    amount: toNano('0.05').toString(), // for commission fees, excess will be returned
                     payload: body.toBoc().toString("base64") // payload with jetton transfer and comment body
                 }
             ]
