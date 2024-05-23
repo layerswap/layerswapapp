@@ -65,6 +65,7 @@ export default function useBalanceProvider() {
     }
 
     const fetchBalance = async (network: Network, token: Token) => {
+        debugger
         const provider = getAutofillProvider(network)
         const wallet = provider?.getConnectedWallet()
         const address = query.account || wallet?.address

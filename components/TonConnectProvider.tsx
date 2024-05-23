@@ -54,7 +54,7 @@ const TonConnectProvider = ({ children, basePath, themeData, appName }: { childr
                     }
                 }
             }
-            manifestUrl={`https://${process.env.NEXT_PUBLIC_VERCEL_URL}${basePath ? `/${basePath}` : ''}/tonconnect-manifest.json`}
+            manifestUrl={`https://427e-178-160-208-178.ngrok-free.app/tonconnect-manifest.json`}
             actionsConfiguration={{
                 twaReturnUrl: appName === '4233c46e96e44017afae91537841cb46' ? 'https://t.me/layerswap_bridge_bot/bridge' : undefined
             }}

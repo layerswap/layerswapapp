@@ -29,7 +29,7 @@ const Balance = ({ values, direction, onLoad }: { values: SwapFormValues, direct
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
     const destinationBalanceAmount = destinationBalance?.amount && truncateDecimals(destinationBalance?.amount, toCurrency?.precision)
     const balanceAmount = direction === 'from' ? walletBalanceAmount : destinationBalanceAmount
-
+    console.log(balances)
     useEffect(() => {
         sourceNetworkWallet?.address && onLoad(sourceNetworkWallet?.address)
     }, [sourceNetworkWallet])
