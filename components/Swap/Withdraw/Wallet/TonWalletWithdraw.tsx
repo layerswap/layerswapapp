@@ -6,8 +6,9 @@ import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { useTonConnectUI } from '@tonconnect/ui-react';
-import { Address, JettonMaster, TonClient, beginCell, toNano } from '@ton/ton'
+import { Address, HttpApi, JettonMaster, TonClient, beginCell, toNano } from '@ton/ton'
 import { Network, Token } from '../../../../Models/Network';
+import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 
 const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
     const [loading, setLoading] = useState(false);
@@ -33,19 +34,17 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
 
     const handleTransfer = useCallback(async () => {
 
-        if (!swapId || !depositAddress || !amount || !token || !wallet || !callData) return
+        if (!swapId || !depositAddress || !token || !wallet || !callData) return
 
         setLoading(true)
         try {
-            debugger
 
-            const transaction = await transactionBuilder(amount, token, depositAddress, wallet?.address, callData)
-
+            const transaction = await transactionBuilder(amount!, token, depositAddress, wallet?.address, callData)
             const res = await tonConnectUI.sendTransaction(transaction)
 
-            // if (signature) {
-            //     setSwapTransaction(swapId, BackendTransactionStatus.Pending, signature);
-            // }
+            if (res) {
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, res.boc);
+            }
 
         }
         catch (e) {
@@ -82,23 +81,25 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
 }
 
 const transactionBuilder = async (amount: number, token: Token, depositAddress: string, sourceAddress: string, callData: string) => {
+    const parsedCallData = JSON.parse(callData)
+
     if (token.contract) {
         const destinationAddress = Address.parse(depositAddress);
         const userAddress = Address.parse(sourceAddress)
 
         const forwardPayload = beginCell()
             .storeUint(0, 32) // 0 opcode means we have a comment
-            .storeStringTail(callData)
+            .storeStringTail(parsedCallData.comment)
             .endCell();
 
         const body = beginCell()
             .storeUint(0x0f8a7ea5, 32) // opcode for jetton transfer
             .storeUint(0, 64) // query id
-            .storeCoins(amount * Math.pow(10, token.decimals)) // jetton amount, amount * 10^9
+            .storeCoins(parsedCallData.amount) // jetton amount
             .storeAddress(destinationAddress) // TON wallet destination address
             .storeAddress(destinationAddress) // response excess destination
             .storeBit(0) // no custom payload
-            .storeCoins(toNano('0.0000000000002')) // forward amount (if >0, will send notification message)
+            .storeCoins(toNano('0.00002')) // forward amount (if >0, will send notification message)
             .storeBit(1) // we store forwardPayload as a reference
             .storeRef(forwardPayload)
             .endCell();
@@ -107,6 +108,7 @@ const transactionBuilder = async (amount: number, token: Token, depositAddress: 
             endpoint: 'https://toncenter.com/api/v2/jsonRPC',
             apiKey: '9a591e2fc2d679b8ac31c76427d132bc566d0d217c61256ca9cc7ae1e9280806'
         });
+
         const jettonMasterAddress = Address.parse(token.contract!)
         const jettonMaster = client.open(JettonMaster.create(jettonMasterAddress))
         const jettonAddress = await jettonMaster.getWalletAddress(userAddress)
@@ -125,7 +127,7 @@ const transactionBuilder = async (amount: number, token: Token, depositAddress: 
     } else {
         const body = beginCell()
             .storeUint(0, 32) // write 32 zero bits to indicate that a text comment will follow
-            .storeStringTail(callData) // write our text comment
+            .storeStringTail(parsedCallData.comment) // write our text comment
             .endCell();
 
         const tx = {
