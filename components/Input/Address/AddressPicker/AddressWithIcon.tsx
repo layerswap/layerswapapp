@@ -2,18 +2,22 @@ import { FC } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "../../../AddressIcon";
 import shortenAddress from "../../../utils/ShortenAddress";
-import { MessageCircleWarning, History } from "lucide-react";
+import { MessageCircleWarning, History, ExternalLink } from "lucide-react";
 import { Wallet } from "../../../../stores/walletStore";
 import Image from "next/image";
 import { Partner } from "../../../../Models/Partner";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../../../shadcn/tooltip";
+import Link from "next/link";
+import { Network } from "../../../../Models/Network";
 
 type Props = {
     addressItem: AddressItem;
     connectedWallet?: Wallet | undefined;
     partner?: Partner;
+    destination: Network;
 }
 
-const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner }) => {
+const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, destination }) => {
 
     const difference_in_days = addressItem?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressItem.date).getTime()) / (1000 * 3600 * 24))) : undefined
 
@@ -38,9 +42,20 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner }) =
                 }
             </div>
             <div className="flex flex-col items-start">
-                <div className="block text-sm font-medium">
-                    {shortenAddress(addressItem.address)}
-                </div>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Link href={destination?.account_explorer_template?.replace('{0}', addressItem.address)} target="_blank" className="group-hover/addressItem:underline no-underline flex gap-1 items-center">
+                            <p className="block text-sm font-medium">
+                                {shortenAddress(addressItem.address)}
+                            </p>
+                            <ExternalLink className="hidden group-hover/addressItem:block h-4 w-4" />
+                        </Link>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{addressItem.address}</p>
+                    </TooltipContent>
+                </Tooltip>
+
                 <div className="text-secondary-text">
                     {
                         addressItem.group === AddressGroup.RecentlyUsed &&

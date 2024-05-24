@@ -9,7 +9,7 @@ import useBalance from '../../../hooks/useBalance';
 import SpinIcon from '../../icons/spinIcon';
 import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../Input/Address/AddressPicker';
-import { Link2Off } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
 const WalletTransferContent: FC = () => {
     const { openAccountModal } = useAccountModal();
@@ -48,7 +48,7 @@ const WalletTransferContent: FC = () => {
         else await disconnectWallet(wallet.providerName, swap)
         if (source_exchange) await mutateSwap()
         setIsloading(false);
-        e?.stopPropagation();
+        e?.stopPropagation(); ``
     }, [source_network?.type, swap?.source_exchange, disconnectWallet])
 
     let accountAddress: string | undefined = ""
@@ -83,8 +83,8 @@ const WalletTransferContent: FC = () => {
                         <SpinIcon className="animate-spin h-3 w-3" />
                         :
                         <>
-                            <Link2Off className="h-3.5 w-auto" />
-                            <p>Switch</p>
+                            <RefreshCw className="h-3 w-auto" />
+                            <p>Switch Wallet</p>
                         </>
                 }
             </div>
@@ -94,7 +94,7 @@ const WalletTransferContent: FC = () => {
             wallet &&
             destination_network &&
             <button type="button" onClick={handleOpenAccount} className="flex rounded-lg justify-between space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
-                <AddressWithIcon addressItem={{ address: wallet?.address, group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} />
+                <AddressWithIcon addressItem={{ address: wallet?.address, group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} destination={destination_network} />
             </button>
         }
     </div>

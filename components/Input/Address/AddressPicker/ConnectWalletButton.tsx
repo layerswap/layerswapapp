@@ -1,4 +1,4 @@
-import { Link2Off, Plus } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import { WalletProvider } from "../../../../hooks/useWallet";
 import { addressFormat } from "../../../../lib/address/formatter";
 import { ResolveConnectorIcon } from "../../../icons/ConnectorIcons";
@@ -36,13 +36,13 @@ const ConnectWalletButton: FC<Props> = ({ addresses, provider, onClick, onConnec
                     onClick={async () => await provider.reconnectWallet(destination.chain_id)}
                     className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200"
                 >
-                    <Link2Off className="h-3.5 w-auto" />
-                    <p>Switch</p>
+                    <RefreshCw className="h-3 w-auto" />
+                    <p>Switch Wallet</p>
                 </button>
             </div>
-            <button type="button" onClick={onClick} className={`w-full px-3 py-3 rounded-md hover:!bg-secondary-800 transition duration-200 ${addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
+            <button type="button" onClick={onClick} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-800 transition duration-200 ${addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
                 <div className={`flex items-center justify-between w-full`}>
-                    <AddressWithIcon addressItem={addressItem} connectedWallet={connectedWallet} />
+                    <AddressWithIcon addressItem={addressItem} connectedWallet={connectedWallet} destination={destination} />
                     <div className="flex h-6 items-center px-1">
                         {
                             addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) &&

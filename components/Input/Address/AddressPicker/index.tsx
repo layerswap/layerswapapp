@@ -104,7 +104,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [setFieldValue, setShowAddressModal, showAddressModal, destination])
 
     useEffect(() => {
-        if (!destination_address && connectedWallet && !!partner?.is_wallet) {
+        if (!destination_address && connectedWallet) {
             onConnect(connectedWallet)
         }
     }, [destination_address, connectedWallet])
@@ -116,6 +116,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             openAddressModal={() => setShowAddressModal(true)}
             connectedWallet={connectedWallet}
             partner={partner}
+            destination={destination}
         />
         <Modal
             header='Send To'
