@@ -17,6 +17,7 @@ import { Exchange } from "../../../../Models/Exchange";
 import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";
 import { Wallet } from "../../../../stores/walletStore";
+import { useQueryState } from "../../../../context/query";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -53,6 +54,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
+    const query = useQueryState()
+
     const [wrongNetwork, setWrongNetwork] = useState(false)
     const inputReference = useRef<HTMLInputElement>(null);
     const { destination_address, to: destination, toExchange: destinationExchange, toCurrency: destinationAsset } = values
@@ -67,7 +70,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const connectedWallet = provider?.getConnectedWallet()
     const connectedWalletAddress = connectedWallet?.address
 
-    const menuItems = destination && generateMenuItems({ address_book, destination, destinationExchange, connectedWalletAddress, newAddress, currentAddress: destination_address, partner })
+    const menuItems = destination && generateMenuItems({ address_book, destination, destinationExchange, connectedWalletAddress, newAddress, addressFromQuery: query.destAddress, partner })
 
     useEffect(() => {
         if (canFocus) {
@@ -193,7 +196,7 @@ const generateMenuItems = ({
     destinationExchange,
     connectedWalletAddress,
     newAddress,
-    currentAddress,
+    addressFromQuery,
     partner
 }: {
     address_book: AddressBookItem[] | undefined,
@@ -201,7 +204,7 @@ const generateMenuItems = ({
     destinationExchange: Exchange | undefined,
     connectedWalletAddress: string | undefined,
     newAddress: { address: string, networkType: NetworkType | string } | undefined,
-    currentAddress: string | undefined,
+    addressFromQuery: string | undefined,
     partner?: Partner,
 }) => {
     const recentlyUsedAddresses = address_book?.filter(a => destinationExchange ? a.exchanges.some(e => destinationExchange.name === e) : a.networks?.some(n => destination?.name === n) && isValidAddress(a.address, destination)) || []
@@ -213,7 +216,7 @@ const generateMenuItems = ({
     if (recentlyUsedAddresses && destination) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => ra.address === a.address)), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: destinationExchange ? destinationExchange.name : destination.type }))]
     if (newAddress?.address && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.ManualAdded && addressFormat(newAddress.address, destination) !== addressFormat(a.address, destination)), { address: newAddress.address, group: AddressGroup.ManualAdded, networkType: newAddress.networkType }]
     if (connectedWalletAddress && destination) addresses = [...addresses.filter(a => addressFormat(connectedWalletAddress, destination) !== addressFormat(a.address, destination)), { address: connectedWalletAddress, group: AddressGroup.ConnectedWallet, networkType: destination.type }]
-    if (partner && currentAddress && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.FromQuery && addressFormat(currentAddress, destination) !== addressFormat(a.address, destination)), { address: currentAddress, group: AddressGroup.FromQuery, networkType: destination.type }]
+    if (partner && addressFromQuery && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.FromQuery && addressFormat(addressFromQuery, destination) !== addressFormat(a.address, destination)), { address: addressFromQuery, group: AddressGroup.FromQuery, networkType: destination.type }]
 
     return addresses.filter(a => a.networkType === (destinationExchange ? destinationExchange.name : destination?.type))
 
