@@ -1,6 +1,7 @@
 import { TonClient, JettonMaster, JettonWallet, Address } from "@ton/ton"
 import formatAmount from "../../../formatAmount";
 import { Network, Token } from "../../../../Models/Network";
+import { datadogRum } from "@datadog/browser-rum";
 
 
 export const resolveBalance = async ({ address, network, token }: {
@@ -40,7 +41,11 @@ const getNativeAssetBalance = async ({ network, token, address, client }: { netw
         })
     }
     catch (e) {
-        console.log(e)
+        const error = new Error(e)
+        error.name = "TonNativeAssetBalanceError"
+        error.cause = e
+        datadogRum.addError(error);
+        return null;
     }
 }
 
@@ -65,6 +70,10 @@ const getJettonBalance = async ({ network, token, address, client }: { network: 
         return balance
     }
     catch (e) {
-        console.log(e)
+        const error = new Error(e)
+        error.name = "TonJettonBalanceError"
+        error.cause = e
+        datadogRum.addError(error);
+        return null;
     }
 }
