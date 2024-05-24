@@ -11,13 +11,18 @@ import { Widget } from "../Widget/Index";
 
 const Rewards = () => {
 
-    const { networks } = useSettingsState()
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
     const campaigns = campaignsData?.data
 
-    const activeCampaigns = campaigns?.filter(IsCampaignActive) || []
-    const inactiveCampaigns = campaigns?.filter(c => !IsCampaignActive(c)) || []
+    const sortedCampaigns = campaigns?.sort((a, b) => {
+        const dateA = new Date(a.end_date).getDate();
+        const dateB = new Date(b.end_date).getDate();
+        return dateA - dateB;
+    });
+
+    const activeCampaigns = sortedCampaigns?.filter(IsCampaignActive) || []
+    const inactiveCampaigns = sortedCampaigns?.filter(c => !IsCampaignActive(c)) || []
 
     return (
         <Widget className="min-h-[520px]">
@@ -50,7 +55,7 @@ const Rewards = () => {
                                 <p className="font-bold text-left leading-5">Old campaigns</p>
                                 <div className="bg-secondary-700 border border-secondary-700 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg">
                                     <div className="p-3 dpsv flex flex-col space-y-4">
-                                        {inactiveCampaigns.map(c =>
+                                        {inactiveCampaigns?.map(c =>
                                             <CampaignItem
                                                 campaign={c}
                                                 key={c.id}
