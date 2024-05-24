@@ -2,7 +2,7 @@ import { SwapStatus } from "../Models/SwapStatus";
 import AppSettings from "./AppSettings";
 import { InitializeUnauthInstance, InitializeAuthInstance } from "./axiosInterceptor"
 import { v4 as uuidv4 } from 'uuid';
-import axios, { AxiosInstance, Method } from "axios";
+import { AxiosInstance, Method } from "axios";
 import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
@@ -43,8 +43,8 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("POST", `/swaps`, params, { 'X-LS-CORRELATION-ID': correlationId });
     }
 
-    async GetSwapsAsync(page: number, status?: SwapStatusInNumbers): Promise<ApiResponse<SwapResponse[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/internal/swaps?page=${page}${status ? `&status=${status}` : ''}`);
+    async GetSwapsAsync(page: number, include_expired: boolean): Promise<ApiResponse<SwapResponse[]>> {
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/internal/swaps?page=${page}&include_expired=${include_expired}`);
     }
 
     async GetQuote({ params }: { params: GetQuoteParams }): Promise<ApiResponse<Quote>> {
@@ -221,7 +221,8 @@ export type SwapQuote = {
     total_fee_in_usd: number,
     blockchain_fee: number,
     service_fee: number,
-    avg_completion_time: string
+    avg_completion_time: string,
+    refuel_in_source?: number,
 }
 
 export type AddressBookItem = {
@@ -308,7 +309,6 @@ export enum SwapStatusInNumbers {
     Expired = 3,
     Delayed = 4,
     Cancelled = 5,
-    SwapsWithoutCancelledAndExpired = '0&status=1&status=2&status=4'
 }
 
 export type Campaign = {

@@ -117,7 +117,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
             !isLoading &&
             <>
                 <ButtonWrapper
-                    clcikHandler={clickHandler}
+                    onClick={clickHandler}
                     icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 >
                     {(isError && buttonClicked) ? <span>Try again</span>

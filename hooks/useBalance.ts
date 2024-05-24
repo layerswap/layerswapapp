@@ -37,10 +37,10 @@ export default function useBalanceProvider() {
 
     const { getAutofillProvider } = useWallet()
 
-    const fetchNetworkBalances = async (network: NetworkWithTokens) => {
+    const fetchNetworkBalances = async (network: NetworkWithTokens, address?: string) => {
         const provider = getAutofillProvider(network)
         const wallet = provider?.getConnectedWallet()
-        const address = query.account || wallet?.address
+        address = address || query.account || wallet?.address
 
         const balance = balances[address || '']?.find(b => b?.network === network?.name)
         const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000

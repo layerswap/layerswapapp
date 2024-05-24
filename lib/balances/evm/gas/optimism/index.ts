@@ -73,6 +73,7 @@ export default class getOptimismGas extends getEVMGas {
         const fee = await getL1Fee({
             data: serializedTransaction,
             client: this.publicClient,
+            oracleContract: this.from.metadata.evm_oracle_contract
         })
 
         return fee;

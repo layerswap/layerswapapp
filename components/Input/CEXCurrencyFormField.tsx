@@ -54,7 +54,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         if (exchanges?.data
             && !!exchanges?.data
                 ?.find(r => r.name === exchange?.name)?.token_groups
-                ?.find(r => r.symbol === currencyGroup?.symbol && r.status === 'route_not_found')) {
+                ?.find(r => r.symbol === currencyGroup?.symbol && r.status === 'not_found')) {
             setFieldValue(name, null)
         }
     }, [toCurrency, fromCurrency, name, network, exchanges, error])

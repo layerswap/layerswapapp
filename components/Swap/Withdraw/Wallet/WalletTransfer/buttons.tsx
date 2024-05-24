@@ -5,9 +5,10 @@ import {
 import WalletIcon from "../../../../icons/WalletIcon";
 import WalletMessage from "./message";
 import { ActionData } from "./sharedTypes";
-import SubmitButton from "../../../../buttons/submitButton";
+import SubmitButton, { SubmitButtonProps } from "../../../../buttons/submitButton";
 import useWallet from "../../../../../hooks/useWallet";
 import { useSwapDataState } from "../../../../../context/swap";
+import ManualTransferNote from "./manualTransferNote";
 
 export const ConnectWalletButton: FC = () => {
     const { swapResponse } = useSwapDataState()
@@ -27,7 +28,7 @@ export const ConnectWalletButton: FC = () => {
     }, [provider])
 
     return <ButtonWrapper
-        clcikHandler={clickHandler}
+        onClick={clickHandler}
         icon={<WalletIcon className="stroke-2 w-6 h-6" />}
     >
         Connect a wallet
@@ -70,7 +71,7 @@ export const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ 
         {
             !networkChange.isLoading &&
             <ButtonWrapper
-                clcikHandler={clickHandler}
+                onClick={clickHandler}
                 icon={<WalletIcon className="stroke-2 w-6 h-6" />}
             >
                 {
@@ -82,29 +83,25 @@ export const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ 
     </>
 }
 
-type ButtonWrapperProps = {
-    icon?: ReactNode,
-    clcikHandler: () => void,
-    disabled?: boolean,
-    children: ReactNode
-}
-export const ButtonWrapper: FC<ButtonWrapperProps> = ({
-    icon,
-    clcikHandler,
-    disabled,
-    children
+export const ButtonWrapper: FC<SubmitButtonProps> = ({
+    ...props
 }) => {
-    return <div>
-        <div className="flex flex-row text-primary-text text-base space-x-2">
-            <SubmitButton icon={icon}
-                text_align='center'
-                isDisabled={!!disabled}
-                isSubmitting={false}
-                onClick={clcikHandler}
-                buttonStyle='filled'
-                size="medium">
-                {children}
-            </SubmitButton>
-        </div>
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
+    const { source_network } = swap || {}
+
+    return <div className="flex flex-col text-primary-text text-base space-y-2">
+        <SubmitButton
+            text_align='center'
+            buttonStyle='filled'
+            size="medium"
+            {...props}
+        >
+            {props.children}
+        </SubmitButton>
+        {
+            source_network?.deposit_methods.some(m => m === 'deposit_address') &&
+            <ManualTransferNote />
+        }
     </div>
 }

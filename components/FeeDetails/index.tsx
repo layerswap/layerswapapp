@@ -40,7 +40,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                     }
 
                     {
-                        fee &&
+                        fee && fromCurrency && toCurrency &&
                         <FeeDetails.Item>
                             <DetailedEstimates />
                         </FeeDetails.Item>
@@ -57,6 +57,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
 
                     <FeeDetails.Item>
                         <ReceiveAmounts
+                            source_token={fromCurrency}
                             destination_token={toCurrency}
                             refuel={!!refuel}
                             fee={fee}

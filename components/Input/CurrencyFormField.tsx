@@ -17,6 +17,7 @@ import dynamic from "next/dynamic";
 import { QueryParams } from "../../Models/QueryParams";
 import { ApiError, LSAPIKnownErrorCode } from "../../Models/ApiError";
 import { resolveNetworkRoutesURL } from "../../helpers/routes";
+import ClickTooltip from "../Tooltips/ClickTooltip";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -69,10 +70,10 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase())
 
         if (selected_currency && routes?.data?.find(r => r.name === to?.name)?.tokens?.some(r => r.symbol === selected_currency.name && r.status === 'active')) {
-            setFieldValue(name, selected_currency.baseObject)
+            setFieldValue(name, selected_currency.baseObject, true)
         }
         else if (default_currency) {
-            setFieldValue(name, default_currency.baseObject)
+            setFieldValue(name, default_currency.baseObject, true)
         }
     }, [to, query])
 
@@ -95,10 +96,10 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             && routes?.data
                 ?.find(r => r.name === from?.name)?.tokens
                 ?.some(r => r.symbol === selected_currency.name && r.status === 'active')) {
-            setFieldValue(name, selected_currency.baseObject)
+            setFieldValue(name, selected_currency.baseObject, true)
         }
         else if (default_currency) {
-            setFieldValue(name, default_currency.baseObject)
+            setFieldValue(name, default_currency.baseObject, true)
         }
     }, [from, query])
 
@@ -107,7 +108,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             if (routes?.data
                 && !!routes?.data
                     ?.find(r => r.name === to?.name)?.tokens
-                    ?.some(r => r.symbol === toCurrency?.symbol && r.status === 'route_not_found')) {
+                    ?.some(r => r.symbol === toCurrency?.symbol && r.status === 'not_found')) {
                 setFieldValue(name, null)
             }
         }
@@ -118,7 +119,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             if (routes?.data
                 && !!routes?.data
                     ?.find(r => r.name === from?.name)?.tokens
-                    ?.find(r => (r.symbol === fromCurrency?.symbol) && r.status === 'route_not_found')) {
+                    ?.find(r => (r.symbol === fromCurrency?.symbol) && r.status === 'not_found')) {
                 setFieldValue(name, null)
             }
         }
@@ -161,7 +162,7 @@ function GenerateCurrencyMenuItems(
             return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
         }
         else if (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) {
-            if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset || currency.status === 'daily_limit_reached') {
+            if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset || currency.status === 'inactive') {
                 return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
             }
             return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
@@ -176,9 +177,12 @@ function GenerateCurrencyMenuItems(
         const displayName = currency.symbol;
         const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
-        const details = <p className="text-primary-text-muted">
-            {formatted_balance_amount}
-        </p>
+
+        const details = c.status === 'inactive' ?
+            <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> :
+            <p className="text-primary-text-muted">
+                {formatted_balance_amount}
+            </p>
 
         const res: SelectMenuItem<RouteToken> = {
             baseObject: c,

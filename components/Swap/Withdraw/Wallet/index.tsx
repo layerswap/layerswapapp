@@ -11,7 +11,10 @@ const WalletTransferWrapper = () => {
     const { fee_token } = transfer_action || {}
 
     return <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
-        {source_network && fee_token && <NetworkGas network={source_network} token={fee_token} />}
+        {
+            source_network && fee_token &&
+            <NetworkGas network={source_network} token={fee_token} />
+        }
         <WalletTransferContent />
     </div>
 }

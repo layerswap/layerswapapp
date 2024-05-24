@@ -15,7 +15,7 @@ const WalletsHeader = dynamic(() => import("../ConnectedWallets").then((comp) =>
 function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null }) {
    const { email, userId } = useAuthState()
    const { boot, show, update } = useIntercom()
-   const updateWithProps = () => update({ customAttributes: { email: email, userId: userId, } })
+   const updateWithProps = () => update({ userId, customAttributes: { email: email, } })
    const query = useQueryState()
 
    return (
