@@ -29,11 +29,11 @@ export const resolveBalance = async ({ address, network, token }: {
 const getNativeAssetBalance = async ({ network, token, address, client }: { network: Network, token: Token, address: string, client: TonClient }) => {
     try {
 
-        const tonBalance = client.getBalance(Address.parse(address))
+        const tonBalance = await client.getBalance(Address.parse(address))
         return ({
             network: network.name,
             token: token.symbol,
-            amount: formatAmount((await tonBalance).toString(), Number(token?.decimals)),
+            amount: formatAmount(tonBalance.toString(), Number(token?.decimals)),
             request_time: new Date().toJSON(),
             decimals: Number(token?.decimals),
             isNativeCurrency: false,
