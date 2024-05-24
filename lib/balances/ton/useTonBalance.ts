@@ -16,7 +16,6 @@ export default function useTonBalance(): BalanceProvider {
         for (let i = 0; i < network.tokens.length; i++) {
             try {
                 const token = network.tokens[i]
-                debugger
                 const balance = await resolveBalance({ network, address, token })
 
                 if (!balance) return
