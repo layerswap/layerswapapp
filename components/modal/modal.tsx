@@ -23,13 +23,6 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
     const [delayedShow, setDelayedShow] = useState<boolean>()
 
     useEffect(() => {
-        if (isMobile && show) {
-            window.document.body.style.overflow = 'hidden'
-        }
-        return () => { window.document.body.style.overflow = '' }
-    }, [isMobile, show])
-
-    useEffect(() => {
         setDelayedShow(show)
     }, [show])
 
