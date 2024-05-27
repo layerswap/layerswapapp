@@ -3,11 +3,11 @@ import NetworkGas from "./WalletTransfer/networkGas"
 import { WalletTransferContent } from "./WalletTransferContent"
 
 const WalletTransferWrapper = () => {
-    const { swapResponse } = useSwapDataState()
-    const { swap, deposit_actions } = swapResponse || {}
+    const { swapResponse, depositActionsResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const { source_network } = swap || {}
 
-    const transfer_action = deposit_actions?.find(a => true)
+    const transfer_action = depositActionsResponse?.find(a => true)
     const { fee_token } = transfer_action || {}
 
     return <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>

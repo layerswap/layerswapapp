@@ -1,15 +1,13 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction } from '../lib/layerSwapApiClient';
 import { useRouter } from 'next/router';
-import { useSettingsState } from './settings';
 import { QueryParams } from '../Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 import { Partner } from '../Models/Partner';
 import { ApiError } from '../Models/ApiError';
 import { ResolvePollingInterval } from '../components/utils/SwapStatus';
-import { Token } from '../Models/Network';
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
@@ -18,6 +16,7 @@ export const SwapDataStateContext = createContext<SwapData>({
     depositeAddressIsfromAccount: false,
     withdrawType: undefined,
     swapTransaction: undefined,
+    depositActionsResponse: undefined,
 });
 
 export const SwapDataUpdateContext = createContext<UpdateInterface | null>(null);
@@ -37,6 +36,7 @@ export type SwapData = {
     codeRequested: boolean,
     swapResponse?: SwapResponse,
     swapApiError?: ApiError,
+    depositActionsResponse?: DepositAction[],
     addressConfirmed: boolean,
     depositeAddressIsfromAccount: boolean,
     withdrawType: WithdrawType | undefined,
@@ -54,9 +54,11 @@ export function SwapDataProvider({ children }) {
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}`
     const [interval, setInterval] = useState(0)
-    const { data: swapData, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
+    const { data: swapData, mutate, error } = useSWR<ApiResponse<SwapResponse>>(`${swapId ? swap_details_endpoint : null}?exclude_deposit_actions=true`, layerswapApiClient.fetcher, { refreshInterval: interval })
+    const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(`${swapId ? swap_details_endpoint : null}/deposit_actions`, layerswapApiClient.fetcher, { refreshInterval: interval })
 
     const swapResponse = swapData?.data
+    const depositActionsResponse = depositActions?.data
 
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
 
@@ -133,6 +135,7 @@ export function SwapDataProvider({ children }) {
             depositeAddressIsfromAccount: !!depositeAddressIsfromAccount,
             swapResponse: swapResponse,
             swapApiError: error,
+            depositActionsResponse
         }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
