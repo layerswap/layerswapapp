@@ -6,10 +6,11 @@ import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { useTonConnectUI } from '@tonconnect/ui-react';
-import { Address, JettonMaster, TonClient, beginCell, toNano } from '@ton/ton'
+import { Address, JettonMaster, beginCell, toNano } from '@ton/ton'
 import { Token } from '../../../../Models/Network';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import WalletMessage from './WalletTransfer/message';
+import tonClient from '../../../../lib/wallets/ton/client';
 
 const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
     const [loading, setLoading] = useState(false);
@@ -123,13 +124,8 @@ const transactionBuilder = async (amount: number, token: Token, depositAddress: 
             .storeRef(forwardPayload)
             .endCell();
 
-        const client = new TonClient({
-            endpoint: 'https://toncenter.com/api/v2/jsonRPC',
-            apiKey: '9a591e2fc2d679b8ac31c76427d132bc566d0d217c61256ca9cc7ae1e9280806'
-        });
-
         const jettonMasterAddress = Address.parse(token.contract!)
-        const jettonMaster = client.open(JettonMaster.create(jettonMasterAddress))
+        const jettonMaster = tonClient.open(JettonMaster.create(jettonMasterAddress))
         const jettonAddress = await jettonMaster.getWalletAddress(userAddress)
 
         const tx = {

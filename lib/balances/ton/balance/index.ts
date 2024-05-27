@@ -1,8 +1,8 @@
-import { TonClient, JettonMaster, JettonWallet, Address } from "@ton/ton"
+import { JettonMaster, JettonWallet, Address } from "@ton/ton"
 import formatAmount from "../../../formatAmount";
 import { Network, Token } from "../../../../Models/Network";
 import { datadogRum } from "@datadog/browser-rum";
-
+import tonClient from "../../../wallets/ton/client";
 
 export const resolveBalance = async ({ address, network, token }: {
     network: Network,
@@ -11,26 +11,21 @@ export const resolveBalance = async ({ address, network, token }: {
 }
 ) => {
 
-    const client = new TonClient({
-        endpoint: 'https://toncenter.com/api/v2/jsonRPC',
-        apiKey: '9a591e2fc2d679b8ac31c76427d132bc566d0d217c61256ca9cc7ae1e9280806'
-    });
-
     if (token.contract) {
-        const res = await getJettonBalance({ network, token, address, client })
+        const res = await getJettonBalance({ network, token, address })
         return res
     }
     else {
-        const res = await getNativeAssetBalance({ network, token, address, client })
+        const res = await getNativeAssetBalance({ network, token, address })
         return res
     }
 }
 
 
-const getNativeAssetBalance = async ({ network, token, address, client }: { network: Network, token: Token, address: string, client: TonClient }) => {
+const getNativeAssetBalance = async ({ network, token, address }: { network: Network, token: Token, address: string }) => {
     try {
 
-        const tonBalance = await client.getBalance(Address.parse(address))
+        const tonBalance = await tonClient.getBalance(Address.parse(address))
         return ({
             network: network.name,
             token: token.symbol,
@@ -41,6 +36,10 @@ const getNativeAssetBalance = async ({ network, token, address, client }: { netw
         })
     }
     catch (e) {
+        if (e.response.status === 429) {
+            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds
+            return getNativeAssetBalance({ network, token, address }); // Retry getting balance
+        }
         const error = new Error(e)
         error.name = "TonNativeAssetBalanceError"
         error.cause = e
@@ -49,14 +48,14 @@ const getNativeAssetBalance = async ({ network, token, address, client }: { netw
     }
 }
 
-const getJettonBalance = async ({ network, token, address, client }: { network: Network, token: Token, address: string, client: TonClient }) => {
+const getJettonBalance = async ({ network, token, address }: { network: Network, token: Token, address: string }) => {
     try {
         const jettonMasterAddress = Address.parse(token.contract!)
         const userAddress = Address.parse(address)
-        const jettonMaster = client.open(JettonMaster.create(jettonMasterAddress))
+        const jettonMaster = tonClient.open(JettonMaster.create(jettonMasterAddress))
         const jettonAddress = await jettonMaster.getWalletAddress(userAddress)
         const jettonWallet = JettonWallet.create(jettonAddress)
-        const JettonBalance = await jettonWallet.getBalance(client.provider(jettonAddress))
+        const JettonBalance = await jettonWallet.getBalance(tonClient.provider(jettonAddress))
 
         const balance = {
             network: network.name,
@@ -70,6 +69,10 @@ const getJettonBalance = async ({ network, token, address, client }: { network: 
         return balance
     }
     catch (e) {
+        if (e.response.status === 429) {
+            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds
+            return getJettonBalance({ network, token, address }); // Retry getting balance
+        }
         const error = new Error(e)
         error.name = "TonJettonBalanceError"
         error.cause = e
