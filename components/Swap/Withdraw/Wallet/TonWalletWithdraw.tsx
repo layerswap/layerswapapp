@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import useWallet from '../../../../hooks/useWallet';
@@ -17,14 +17,17 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
     const { getWithdrawalProvider } = useWallet()
     const { setSwapTransaction } = useSwapTransactionStore();
     const [tonConnectUI] = useTonConnectUI();
-    const [errorMessage, setErrorMessage] = useState<string | undefined>()
+    const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined)
+
+    const provider = useMemo(() => {
+        return network && getWithdrawalProvider(network)
+    }, [network, getWithdrawalProvider])
+
+    const wallet = provider?.getConnectedWallet()
 
     useEffect(() => {
-        setErrorMessage(undefined)
-    }, [])
-
-    const provider = getWithdrawalProvider(network!);
-    const wallet = provider?.getConnectedWallet();
+        setErrorMessage(undefined);
+    }, []);
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
@@ -40,7 +43,6 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
     }, [provider])
 
     const handleTransfer = useCallback(async () => {
-        setErrorMessage(undefined)
         setLoading(true)
 
         if (!swapId || !depositAddress || !token || !wallet || !callData || amount === undefined) {

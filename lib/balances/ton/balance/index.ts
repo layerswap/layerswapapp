@@ -3,6 +3,7 @@ import formatAmount from "../../../formatAmount";
 import { Network, Token } from "../../../../Models/Network";
 import { datadogRum } from "@datadog/browser-rum";
 import tonClient from "../../../wallets/ton/client";
+import retryWithExponentialBackoff from "../../../retryWithExponentialBackoff";
 
 export const resolveBalance = async ({ address, network, token }: {
     network: Network,
@@ -37,14 +38,22 @@ const getNativeAssetBalance = async ({ network, token, address }: { network: Net
     }
     catch (e) {
         if (e.response.status === 429) {
-            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds
-            return getNativeAssetBalance({ network, token, address }); // Retry getting balance
+            try {
+                await retryWithExponentialBackoff(getNativeAssetBalance({ network, token, address }))
+            } catch (e) {
+                const error = new Error(e)
+                error.name = "TonNativeAssetBalanceError"
+                error.cause = e
+                datadogRum.addError(error);
+                return null;
+            }
+        } else {
+            const error = new Error(e)
+            error.name = "TonNativeAssetBalanceError"
+            error.cause = e
+            datadogRum.addError(error);
+            return null;
         }
-        const error = new Error(e)
-        error.name = "TonNativeAssetBalanceError"
-        error.cause = e
-        datadogRum.addError(error);
-        return null;
     }
 }
 
@@ -70,13 +79,21 @@ const getJettonBalance = async ({ network, token, address }: { network: Network,
     }
     catch (e) {
         if (e.response.status === 429) {
-            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds
-            return getJettonBalance({ network, token, address }); // Retry getting balance
+            try {
+                await retryWithExponentialBackoff(getJettonBalance({ network, token, address }))
+            } catch (e) {
+                const error = new Error(e)
+                error.name = "TonJettonBalanceError"
+                error.cause = e
+                datadogRum.addError(error);
+                return null;
+            }
+        } else {
+            const error = new Error(e)
+            error.name = "TonJettonBalanceError"
+            error.cause = e
+            datadogRum.addError(error);
+            return null;
         }
-        const error = new Error(e)
-        error.name = "TonJettonBalanceError"
-        error.cause = e
-        datadogRum.addError(error);
-        return null;
     }
 }
