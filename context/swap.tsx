@@ -8,6 +8,7 @@ import { ApiResponse } from '../Models/ApiResponse';
 import { Partner } from '../Models/Partner';
 import { ApiError } from '../Models/ApiError';
 import { ResolvePollingInterval } from '../components/utils/SwapStatus';
+import useWallet from "../hooks/useWallet"
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
@@ -55,7 +56,19 @@ export function SwapDataProvider({ children }) {
     const swap_details_endpoint = `/swaps/${swapId}`
     const [interval, setInterval] = useState(0)
     const { data: swapData, mutate, error } = useSWR<ApiResponse<SwapResponse>>(`${swapId ? swap_details_endpoint : null}?exclude_deposit_actions=true`, layerswapApiClient.fetcher, { refreshInterval: interval })
-    const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(`${swapId ? swap_details_endpoint : null}/deposit_actions`, layerswapApiClient.fetcher, { refreshInterval: interval })
+
+    const { getWithdrawalProvider } = useWallet()
+    const provider = swapData?.data?.swap?.source_network && getWithdrawalProvider(swapData?.data?.swap?.source_network)
+    const wallet = provider?.getConnectedWallet()
+    const source_address = wallet?.address
+
+    const use_deposit_address = swapData?.data?.swap?.use_deposit_address
+
+    const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(
+        `${swapData ? swap_details_endpoint : null}/deposit_actions${use_deposit_address ? "" : `?source_address=${source_address}`}`,
+        layerswapApiClient.fetcher,
+        { refreshInterval: interval }
+    );
 
     const swapResponse = swapData?.data
     const depositActionsResponse = depositActions?.data
