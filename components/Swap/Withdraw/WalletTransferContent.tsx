@@ -48,7 +48,7 @@ const WalletTransferContent: FC = () => {
         else await disconnectWallet(wallet.providerName, swap)
         if (source_exchange) await mutateSwap()
         setIsloading(false);
-        e?.stopPropagation(); ``
+        e?.stopPropagation();
     }, [source_network?.type, swap?.source_exchange, disconnectWallet])
 
     let accountAddress: string | undefined = ""
@@ -93,7 +93,7 @@ const WalletTransferContent: FC = () => {
             provider &&
             wallet &&
             destination_network &&
-            <button type="button" onClick={handleOpenAccount} className="flex rounded-lg justify-between space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
+            <button type="button" onClick={handleOpenAccount} className="group/addressItem flex rounded-lg justify-between space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
                 <AddressWithIcon addressItem={{ address: wallet?.address, group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} destination={destination_network} />
             </button>
         }

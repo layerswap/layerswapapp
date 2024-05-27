@@ -15,6 +15,9 @@ export default function useSolanaBalance(): BalanceProvider {
         KnownInternalNames.Networks.SolanaMainnet
     ]
     const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
+
+        if(!address) return
+
         const SolanaWeb3 = await import("@solana/web3.js");
         const { PublicKey, Connection } = SolanaWeb3
         class SolanaConnection extends Connection { }

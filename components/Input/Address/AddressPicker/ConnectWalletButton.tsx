@@ -13,7 +13,7 @@ type Props = {
     addresses: AddressItem[] | undefined,
     provider: WalletProvider,
     onClick: () => void,
-    onConnect?: (connectedWallet: Wallet) => void,
+    onConnect?: () => void,
     connectedWallet: Wallet | undefined,
     destination: Network,
     destination_address?: string | undefined
@@ -22,8 +22,13 @@ type Props = {
 const ConnectWalletButton: FC<Props> = ({ addresses, provider, onClick, onConnect, connectedWallet, destination, destination_address }) => {
 
     const connect = async () => {
-        const connectedWallet = await provider.connectWallet(destination.chain_id)
-        if (connectedWallet && onConnect) onConnect(connectedWallet)
+        await provider.connectWallet(destination.chain_id)
+        if (onConnect) onConnect()
+    }
+
+    const reconnect = async () => {
+        await provider.reconnectWallet(destination.chain_id)
+        if (onConnect) onConnect()
     }
 
     const addressItem = connectedWallet && addresses?.find(a => addressFormat(a.address, destination) === addressFormat(connectedWallet.address, destination))
@@ -33,7 +38,7 @@ const ConnectWalletButton: FC<Props> = ({ addresses, provider, onClick, onConnec
             <div className="flex items-center justify-between w-full">
                 <p className="text-sm font-medium text-secondary-text">Connected Wallet</p>
                 <button
-                    onClick={async () => await provider.reconnectWallet(destination.chain_id)}
+                    onClick={reconnect}
                     className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200"
                 >
                     <RefreshCw className="h-3 w-auto" />

@@ -43,7 +43,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, des
             </div>
             <div className="flex flex-col items-start">
                 <Tooltip>
-                    <TooltipTrigger asChild>
+                    <TooltipTrigger asChild onClick={(e) => e.stopPropagation()}>
                         <Link href={destination?.account_explorer_template?.replace('{0}', addressItem.address)} target="_blank" className="group-hover/addressItem:underline no-underline flex gap-1 items-center">
                             <p className="block text-sm font-medium">
                                 {shortenAddress(addressItem.address)}
