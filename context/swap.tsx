@@ -65,7 +65,7 @@ export function SwapDataProvider({ children }) {
     const use_deposit_address = swapData?.data?.swap?.use_deposit_address
     const deposit_actions_endpoint = `/swaps/${swapId}/deposit_actions${(use_deposit_address || !source_address) ? "" : `?source_address=${source_address}`}`
 
-    const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(swapData ? deposit_actions_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
+    const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(swapData ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
 
     const swapResponse = swapData?.data
     const depositActionsResponse = depositActions?.data
