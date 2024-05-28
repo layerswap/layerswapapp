@@ -15,8 +15,8 @@ import useBalance from '../../../hooks/useBalance';
 const WalletTransferContent: FC = () => {
     const { openAccountModal } = useAccountModal();
     const { getWithdrawalProvider: getProvider, disconnectWallet } = useWallet()
-    const { swapResponse } = useSwapDataState()
-    const { swap, deposit_actions } = swapResponse || {}
+    const { swapResponse, depositActionsResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
     const { source_exchange, source_token, destination_token, destination_address, requested_amount, source_network, destination_network } = swap || {}
     const [isLoading, setIsloading] = useState(false);
     const { mutateSwap } = useSwapDataUpdate()
@@ -25,7 +25,7 @@ const WalletTransferContent: FC = () => {
     }, [source_network, getProvider])
 
     const wallet = provider?.getConnectedWallet()
-    const depositAddress = deposit_actions?.find(da => true)?.to_address
+    const depositAddress = depositActionsResponse?.find(da => true)?.to_address
 
     const { balances, isBalanceLoading } = useBalancesState()
     const { fetchBalance, fetchGas } = useBalance()
