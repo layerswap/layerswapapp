@@ -53,9 +53,9 @@ export function SwapDataProvider({ children }) {
     const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const swap_details_endpoint = `/swaps/${swapId}`
+    const swap_details_endpoint = `/swaps/${swapId}?exclude_deposit_actions=true`
     const [interval, setInterval] = useState(0)
-    const { data: swapData, mutate, error } = useSWR<ApiResponse<SwapResponse>>(`${swapId ? swap_details_endpoint : null}?exclude_deposit_actions=true`, layerswapApiClient.fetcher, { refreshInterval: interval })
+    const { data: swapData, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
     const { getWithdrawalProvider } = useWallet()
     const provider = swapData?.data?.swap?.source_network && getWithdrawalProvider(swapData?.data?.swap?.source_network)
@@ -63,8 +63,9 @@ export function SwapDataProvider({ children }) {
     const source_address = wallet?.address
 
     const use_deposit_address = swapData?.data?.swap?.use_deposit_address
+    const deposit_actions_endpoint = `/swaps/${swapId}/deposit_actions${(use_deposit_address || !source_address) ? "" : `?source_address=${source_address}`}`
 
-    const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(`${swapData ? swap_details_endpoint : null}/deposit_actions${use_deposit_address ? "" : `?source_address=${source_address}`}`, layerswapApiClient.fetcher, { refreshInterval: interval })
+    const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(swapData ? deposit_actions_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
     const swapResponse = swapData?.data
     const depositActionsResponse = depositActions?.data
