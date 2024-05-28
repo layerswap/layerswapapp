@@ -4,6 +4,7 @@ type DepositMethodState = {
     showModal: boolean;
     canRedirect: boolean;
     setShowModal: (value: boolean) => void;
+    redirect: (value: boolean) => void;
 }
 
 export const DepositMethodContext = createContext<DepositMethodState | undefined>(undefined);
@@ -21,21 +22,17 @@ function timeout(delay: number) {
 export const DepositMethodProvider: FC<Props> = ({ children, onRedirect, canRedirect = false }) => {
     const [showModal, setShowModal] = useState(false);
 
-    const handleShowDepositModal = async (value: boolean) => {
-        if (canRedirect && value === true) {
-            onRedirect && onRedirect()
-            await timeout(330);
-            setShowModal(value);
-        }
-        else {
-            setShowModal(value);
-        }
+    const redirect = async (value: boolean) => {
+        onRedirect && onRedirect()
+        await timeout(330);
+        setShowModal(value);
     }
 
     const contextValue: DepositMethodState = {
         showModal,
         canRedirect,
-        setShowModal: handleShowDepositModal,
+        setShowModal,
+        redirect
     };
 
     return (
