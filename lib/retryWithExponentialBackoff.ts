@@ -2,7 +2,6 @@ export default async function retryWithExponentialBackoff(fn, maxAttempts = 3, b
     let attempt = 1
 
     const execute = async () => {
-        console.log("executing", fn, attempt)
         try {
             return await fn()
         } catch (error) {

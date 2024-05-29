@@ -17,7 +17,7 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
     const { getWithdrawalProvider } = useWallet()
     const { setSwapTransaction } = useSwapTransactionStore();
     const [tonConnectUI] = useTonConnectUI();
-    const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined)
+    const [transactionErrorMessage, setTransactionErrorMessage] = useState<string | undefined>(undefined)
 
     const provider = useMemo(() => {
         return network && getWithdrawalProvider(network)
@@ -25,12 +25,9 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
 
     const wallet = provider?.getConnectedWallet()
 
-    useEffect(() => {
-        setErrorMessage(undefined);
-    }, []);
-
     const handleConnect = useCallback(async () => {
         setLoading(true)
+        setTransactionErrorMessage(undefined)
         try {
             await provider?.connectWallet()
         }
@@ -44,7 +41,7 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
 
     const handleTransfer = useCallback(async () => {
         setLoading(true)
-
+        setTransactionErrorMessage(undefined)
         if (!swapId || !depositAddress || !token || !wallet || !callData || amount === undefined) {
             setLoading(false)
             return toast('Something went wrong, please try again.')
@@ -62,10 +59,10 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
         }
         catch (e) {
             if (e?.message.includes('Reject request')) {
-                setErrorMessage('Transaction rejected')
+                setTransactionErrorMessage('Transaction rejected')
             }
             else if (e?.message.includes('Transaction was not sent')) {
-                setErrorMessage('Transaction was not sent')
+                setTransactionErrorMessage('Transaction was not sent')
             }
             else if (e?.message) {
                 toast.error(`Something went wrong. Error: ${e.message}`)
@@ -81,8 +78,8 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
                 <div className='space-y-4'>
                     {
-                        errorMessage &&
-                        <WalletMessage status='error' header={errorMessage} details='Something went wrong' />
+                        transactionErrorMessage && wallet &&
+                        <WalletMessage status='error' header={transactionErrorMessage} details='Something went wrong' />
                     }
                     {
                         !wallet &&

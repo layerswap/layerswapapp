@@ -16,8 +16,8 @@ const Rewards = () => {
     const campaigns = campaignsData?.data
 
     const sortedCampaigns = campaigns?.sort((a, b) => {
-        const dateA = new Date(a.end_date).getDate();
-        const dateB = new Date(b.end_date).getDate();
+        const dateA = new Date(a.end_date).getTime();
+        const dateB = new Date(b.end_date).getTime();
         return dateA - dateB;
     });
 
