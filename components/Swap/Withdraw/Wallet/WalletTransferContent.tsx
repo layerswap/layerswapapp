@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { useSwapDataState } from "../../../../context/swap";
 import KnownInternalNames from "../../../../lib/knownIds";
 import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep";
@@ -12,8 +12,8 @@ import TonWalletWithdrawStep from "./TonWalletWithdraw";
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
-    const { swapResponse } = useSwapDataState();
-    const { swap, deposit_actions } = swapResponse || {};
+    const { swapResponse, depositActionsResponse } = useSwapDataState();
+    const { swap } = swapResponse || {};
 
     const { source_network } = swap || {};
     const source_network_internal_name = source_network?.name;
@@ -36,10 +36,10 @@ export const WalletTransferContent: FC = () => {
         || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaDevnet?.toUpperCase();
 
     const sourceIsTon = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.TONMainnet?.toUpperCase()
-    const depositAddress = deposit_actions?.find(da => true)?.to_address;
-    const amount = deposit_actions?.find(da => true)?.amount || 0;
-    const callData = deposit_actions?.find(da => true)?.call_data;
 
+    const depositAddress = depositActionsResponse?.find(da => true)?.to_address;
+    const amount = depositActionsResponse?.find(da => true)?.amount || 0;
+    const callData = depositActionsResponse?.find(da => true)?.call_data;
     if (sourceIsImmutableX)
         return <ImtblxWalletWithdrawStep
             amount={amount}
