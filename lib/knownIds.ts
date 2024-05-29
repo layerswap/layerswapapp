@@ -86,6 +86,8 @@ export default class KnownInternalNames {
 
         public static readonly LoopringGoerli: string = "LOOPRING_GOERLI";
 
+        public static readonly LoopringSepolia: string = "LOOPRING_SEPOLIA";
+
         public static readonly MoonbeamMainnet: string = "MOONBEAM_MAINNET";
 
         public static readonly StarkNetGoerli: string = "STARKNET_GOERLI";

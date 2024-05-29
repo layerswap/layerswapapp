@@ -6,7 +6,7 @@ import Modal from "../../../../modal/modal"
 import { ArrowUpRight } from "lucide-react"
 
 const ManualTransferNote = () => {
-    const { setShowModal: setShowDepositMethodModal, canRedirect } = useDepositMethod()
+    const { redirect, canRedirect } = useDepositMethod()
     const [open, setOpen] = useState(false)
 
     return (
@@ -25,7 +25,7 @@ const ManualTransferNote = () => {
                         {
                             canRedirect &&
                             <SubmitButton onClick={() => {
-                                setShowDepositMethodModal(true)
+                                redirect(true)
                                 setOpen(false)
                             }} className='text-primary' isDisabled={false} isSubmitting={false}>
                                 Take me there
