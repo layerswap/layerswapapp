@@ -1,7 +1,7 @@
 import { ArrowLeftRight, Lock } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
-import { useAccount, useNetwork } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
 import WalletMessage from '../WalletTransfer/message';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
@@ -18,10 +18,9 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
     const [transferDone, setTransferDone] = useState<boolean>();
     const [activationPubKey, setActivationPubKey] = useState<{ x: string; y: string }>()
     const [selectedActivationAsset, setSelectedActivationAsset] = useState<string>()
-    const { chain } = useNetwork()
 
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { isConnected, address: fromAddress } = useAccount();
+    const { isConnected, address: fromAddress, chain } = useAccount();
     const { account: accInfo, isLoading: loadingAccount, noAccount, mutate: refetchAccount } = useLoopringAccount({ address: fromAddress })
     const { availableBalances, defaultValue, loading: activationDataIsLoading, feeData } = useActivationData(accInfo?.accountId)
     const [unlockedAccount, setUnlockedAccount] = useState<UnlockedAccount | undefined>()

@@ -1,10 +1,13 @@
-import { type PublicClient, usePublicClient, type WalletClient, useWalletClient } from 'wagmi'
+import { usePublicClient, useWalletClient } from 'wagmi'
 import { providers } from 'ethers'
-import { type HttpTransport } from 'viem'
+import { type PublicClient, type HttpTransport, WalletClient } from 'viem'
 import { useMemo } from 'react'
 
 function publicClientToProvider(publicClient: PublicClient) {
     const { chain, transport } = publicClient
+
+    if (!chain) throw new Error('Chain not found in public client')
+
     const network = {
         chainId: chain.id,
         name: chain.name,
@@ -27,6 +30,10 @@ function useEthersProvider({ chainId }: { chainId?: number } = {}) {
 
 function walletClientToSigner(walletClient: WalletClient) {
     const { account, chain, transport } = walletClient
+
+    if (!chain) throw new Error('Chain not found in public client')
+    if (!account) throw new Error('Account not found in public client')
+
     const network = {
         chainId: chain.id,
         name: chain.name,

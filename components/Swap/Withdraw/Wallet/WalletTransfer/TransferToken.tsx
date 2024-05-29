@@ -2,8 +2,7 @@ import { FC, useCallback, useEffect, useState } from "react";
 import {
     useAccount,
     useSendTransaction,
-    useWaitForTransaction,
-    useNetwork,
+    useTransaction
 } from "wagmi";
 import { createPublicClient, http, parseEther } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
@@ -27,23 +26,14 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     const [buttonClicked, setButtonClicked] = useState(false)
     const [openChangeAmount, setOpenChangeAmount] = useState(false)
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
-    const { address } = useAccount();
+    const { address, chain } = useAccount();
     const { setSwapTransaction } = useSwapTransactionStore();
     const { swapResponse } = useSwapDataState()
     const { deposit_actions } = swapResponse || {}
 
     const callData = deposit_actions?.find(da => true)?.call_data as `0x${string}` | undefined
 
-    const tx = {
-        to: depositAddress,
-        value: amount ? parseEther(amount?.toString()) : undefined,
-        gas: estimatedGas,
-        data: callData
-    }
-
-    const transaction = useSendTransaction(tx)
-
-    const { chain } = useNetwork();
+    const transaction = useSendTransaction()
 
     const publicClient = createPublicClient({
         chain: chain,
@@ -53,78 +43,78 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     useEffect(() => {
         (async () => {
             if (address && depositAddress) {
-                const gasEstimate = await publicClient.estimateGas({
-                    account: address,
-                    to: depositAddress,
-                    data: callData,
-                })
-                setEstimatedGas(gasEstimate)
+                try {
+                    const gasEstimate = await publicClient.estimateGas({
+                        account: address,
+                        to: depositAddress,
+                        data: callData,
+                    })
+                    setEstimatedGas(gasEstimate)
+                }
+                catch (e) {
+                    console.error(e)
+                }
             }
         })()
     }, [address, callData, depositAddress, amount])
 
     useEffect(() => {
         try {
-            if (transaction?.data?.hash && transaction?.data?.hash as `0x${string}`) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, transaction?.data?.hash)
+            if (transaction?.data) {
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, transaction.data as `0x${string}`)
             }
         }
         catch (e) {
             //TODO log to logger
             console.error(e.message)
         }
-    }, [transaction?.data?.hash, swapId])
+    }, [transaction?.data, swapId])
 
-    const waitForTransaction = useWaitForTransaction({
-        hash: transaction?.data?.hash || savedTransactionHash,
-        onSuccess: async (trxRcpt) => {
-            setApplyingTransaction(true)
-            setSwapTransaction(swapId, BackendTransactionStatus.Completed, trxRcpt.transactionHash);
-            setApplyingTransaction(false)
-        },
-        onError: async (err) => {
-            if (transaction?.data?.hash)
-                setSwapTransaction(swapId, BackendTransactionStatus.Failed, transaction?.data?.hash, err.message);
-        }
+    const waitForTransaction = useTransaction({
+        hash: transaction?.data || savedTransactionHash,
     })
 
     const clickHandler = useCallback(async () => {
         setButtonClicked(true)
-
-        return transaction?.sendTransaction && transaction?.sendTransaction()
-    }, [transaction, estimatedGas])
+        if (!depositAddress || !amount || !transaction?.sendTransaction) return
+        const tx = {
+            to: depositAddress,
+            value: parseEther(amount?.toString()),
+            gas: estimatedGas,
+            data: callData
+        }
+        transaction?.sendTransaction(tx)
+    }, [transaction, estimatedGas, depositAddress, amount, callData])
 
     const isError = [
         transaction,
         waitForTransaction
-    ].find(d => d.isError)
+    ].some(d => d.isError)
 
     const isLoading = [
         transaction,
         waitForTransaction
-    ].find(d => d.isLoading)
-
+    ].some(d => d.isPending)
+    console.log('isLoading', isLoading)
     return <>
         {
             buttonClicked &&
             <TransactionMessage
-                transaction={transaction}
+                transaction={waitForTransaction}
                 wait={waitForTransaction}
                 applyingTransaction={applyingTransaction}
             />
         }
-        {
-            !isLoading &&
-            <>
-                <ButtonWrapper
-                    onClick={clickHandler}
-                    icon={<WalletIcon className="stroke-2 w-6 h-6" />}
-                >
-                    {(isError && buttonClicked) ? <span>Try again</span>
-                        : <span>Send from wallet</span>}
-                </ButtonWrapper>
-            </>
-        }
+        <>
+            <ButtonWrapper
+                isDisabled={isLoading}
+                onClick={clickHandler}
+                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
+            >
+                {(isError && buttonClicked) ? <span>Try again</span>
+                    : <span>Send from wallet</span>}
+            </ButtonWrapper>
+        </>
         <Modal
             height="80%"
             show={openChangeAmount}
