@@ -2,13 +2,15 @@ import { FC } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "../../../AddressIcon";
 import shortenAddress from "../../../utils/ShortenAddress";
-import { MessageCircleWarning, History, ExternalLink } from "lucide-react";
+import { MessageCircleWarning, History, ExternalLink, Copy, Check, EllipsisVertical, CircleEllipsis } from "lucide-react";
 import { Wallet } from "../../../../stores/walletStore";
 import Image from "next/image";
 import { Partner } from "../../../../Models/Partner";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../../../shadcn/tooltip";
-import Link from "next/link";
 import { Network } from "../../../../Models/Network";
+import { Popover, PopoverContent, PopoverTrigger } from "../../../shadcn/popover";
+import CopyButton from "../../../buttons/copyButton";
+import useCopyClipboard from "../../../../hooks/useCopyClipboard";
+import Link from "next/link";
 
 type Props = {
     addressItem: AddressItem;
@@ -20,6 +22,7 @@ type Props = {
 const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, destination }) => {
 
     const difference_in_days = addressItem?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressItem.date).getTime()) / (1000 * 3600 * 24))) : undefined
+    const [isCopied, setCopied] = useCopyClipboard()
 
     return (
         <div className={`flex gap-3 text-sm items-center`}>
@@ -42,19 +45,32 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, des
                 }
             </div>
             <div className="flex flex-col items-start">
-                <Tooltip>
-                    <TooltipTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Link href={destination?.account_explorer_template?.replace('{0}', addressItem.address)} target="_blank" className="group-hover/addressItem:underline no-underline flex gap-1 items-center">
-                            <p className="block text-sm font-medium">
-                                {shortenAddress(addressItem.address)}
+                <Popover>
+                    <PopoverTrigger className="group-hover/addressItem:underline no-underline flex gap-1 items-center" onClick={(e) => e.stopPropagation()}>
+                        <p className="block text-sm font-medium">
+                            {shortenAddress(addressItem.address)}
+                        </p>
+                        <CircleEllipsis className="invisible group-hover/addressItem:visible h-4 w-4" />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-2 flex flex-col gap-1 items-stretch">
+                        <button type="button" onClick={(e) => { e.stopPropagation(), setCopied(addressItem.address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                            <p>
+                                Copy address
                             </p>
-                            <ExternalLink className="hidden group-hover/addressItem:block h-4 w-4" />
+                            {
+                                isCopied ?
+                                    <Check className="h-4 w-4" />
+                                    : <Copy className="w-4 h-4" />
+                            }
+                        </button>
+                        <Link href={destination?.account_explorer_template?.replace('{0}', addressItem.address)} target="_blank" onClick={(e) => { e.stopPropagation(), setCopied(addressItem.address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                            <p>
+                                Open in explorer
+                            </p>
+                            <ExternalLink className="w-4 h-4" />
                         </Link>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>{addressItem.address}</p>
-                    </TooltipContent>
-                </Tooltip>
+                    </PopoverContent>
+                </Popover>
 
                 <div className="text-secondary-text">
                     {
