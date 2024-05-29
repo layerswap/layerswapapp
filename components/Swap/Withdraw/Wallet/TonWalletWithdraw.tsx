@@ -74,7 +74,7 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
         finally {
             setLoading(false)
         }
-    }, [swapId, depositAddress, network, token, amount])
+    }, [swapId, depositAddress, network, token, amount, callData])
 
     return (
         <>
