@@ -53,19 +53,20 @@ const getJettonBalance = async ({ network, token, address }: { network: Network,
 
         const jettonMasterAddress = Address.parse(token.contract!)
         const userAddress = Address.parse(address)
-
         const jettonMaster = tonClient.open(JettonMaster.create(jettonMasterAddress))
         const getJettonAddress = async () => {
             return await jettonMaster.getWalletAddress(userAddress)
         }
         const jettonAddress = await retryWithExponentialBackoff(getJettonAddress)
 
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
         const jettonWallet = JettonWallet.create(jettonAddress)
-        const getJettonBalance = async () => {
+        const getBalance = async () => {
             return await jettonWallet.getBalance(tonClient.provider(jettonAddress))
         }
-        const jettonBalance = await retryWithExponentialBackoff(getJettonBalance)
-
+        const jettonBalance = await retryWithExponentialBackoff(getBalance)
+        
         const balance = {
             network: network.name,
             token: token.symbol,

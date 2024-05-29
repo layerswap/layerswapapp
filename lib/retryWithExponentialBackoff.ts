@@ -1,7 +1,8 @@
-export default function retryWithExponentialBackoff(fn, maxAttempts = 3, baseDelayMs = 1000) {
+export default async function retryWithExponentialBackoff(fn, maxAttempts = 3, baseDelayMs = 1000) {
     let attempt = 1
 
     const execute = async () => {
+        console.log("executing", fn, attempt)
         try {
             return await fn()
         } catch (error) {
@@ -13,9 +14,9 @@ export default function retryWithExponentialBackoff(fn, maxAttempts = 3, baseDel
             await new Promise((resolve) => setTimeout(resolve, delayMs))
 
             attempt++
-            return execute()
+            return await execute()
         }
     }
 
-    return execute()
+    return await execute()
 }
