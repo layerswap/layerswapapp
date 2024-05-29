@@ -2,15 +2,15 @@ import { FC } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "../../../AddressIcon";
 import shortenAddress from "../../../utils/ShortenAddress";
-import { MessageCircleWarning, History, ExternalLink, Copy, Check, EllipsisVertical, CircleEllipsis } from "lucide-react";
+import { MessageCircleWarning, History, ExternalLink, Copy, Check, ChevronDown } from "lucide-react";
 import { Wallet } from "../../../../stores/walletStore";
 import Image from "next/image";
 import { Partner } from "../../../../Models/Partner";
 import { Network } from "../../../../Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../shadcn/popover";
-import CopyButton from "../../../buttons/copyButton";
 import useCopyClipboard from "../../../../hooks/useCopyClipboard";
 import Link from "next/link";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../../../shadcn/tooltip";
 
 type Props = {
     addressItem: AddressItem;
@@ -46,13 +46,22 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, des
             </div>
             <div className="flex flex-col items-start">
                 <Popover>
-                    <PopoverTrigger className="group-hover/addressItem:underline no-underline flex gap-1 items-center" onClick={(e) => e.stopPropagation()}>
-                        <p className="block text-sm font-medium">
-                            {shortenAddress(addressItem.address)}
-                        </p>
-                        <CircleEllipsis className="invisible group-hover/addressItem:visible h-4 w-4" />
+                    <PopoverTrigger onClick={(e) => e.stopPropagation()}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center">
+                                    <p className="block text-sm font-medium">
+                                        {shortenAddress(addressItem.address)}
+                                    </p>
+                                    <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{addressItem.address}</p>
+                            </TooltipContent>
+                        </Tooltip>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-2 flex flex-col gap-1 items-stretch">
+                    <PopoverContent className="w-full p-2 flex flex-col gap-1 items-stretch" side="top">
                         <button type="button" onClick={(e) => { e.stopPropagation(), setCopied(addressItem.address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
                             <p>
                                 Copy address
