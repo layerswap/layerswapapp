@@ -83,10 +83,11 @@ export default function useBalanceProvider() {
                 network: network,
                 address: address,
                 token
-            }) || []
+            })
 
-            setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(balance) }))
+            setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(balance || []) }))
             setIsBalanceLoading(false)
+
             return balance
         }
     }
