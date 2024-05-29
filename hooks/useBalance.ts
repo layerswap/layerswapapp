@@ -87,6 +87,7 @@ export default function useBalanceProvider() {
 
             setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(balance) }))
             setIsBalanceLoading(false)
+            return balance
         }
     }
 

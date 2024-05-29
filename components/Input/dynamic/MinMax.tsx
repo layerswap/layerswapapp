@@ -21,7 +21,7 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
         return from && getProvider(from)
     }, [from, getProvider])
 
-    const { fetchNetworkBalances, fetchGas } = useBalance()
+    const { fetchBalance, fetchGas } = useBalance()
 
     const wallet = provider?.getConnectedWallet()
 
@@ -56,8 +56,8 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
     }
 
     const handleSetMaxAmount = useCallback(async () => {
+        from && native_currency && fetchBalance(from, native_currency);
         setFieldValue('amount', maxAllowedAmount);
-        from && fetchNetworkBalances(from);
 
         from &&
             fromCurrency &&
