@@ -125,7 +125,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
         finally {
             setLoading(false)
         }
-    }, [syncWallet, swapId, depositAddress, token, amount])
+    }, [syncWallet, swapId, depositAddress, token, amount, sequenceNumber])
 
     if (wallet && wallet?.connector?.toLowerCase() === 'argent') return (
         <div className="rounded-md bg-secondary-800 p-4">

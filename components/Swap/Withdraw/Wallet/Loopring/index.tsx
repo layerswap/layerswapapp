@@ -95,7 +95,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
                 toast(e.message)
         }
         setLoading(false)
-    }, [swapId, network, depositAddress, accInfo, unlockedAccount, token, amount])
+    }, [swapId, network, depositAddress, accInfo, unlockedAccount, token, amount, callData])
 
     if (noAccount) {
         //TODO fix text
