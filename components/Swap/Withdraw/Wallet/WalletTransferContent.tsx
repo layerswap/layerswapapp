@@ -37,7 +37,6 @@ export const WalletTransferContent: FC = () => {
     const depositAddress = depositActionsResponse?.find(da => true)?.to_address;
     const amount = depositActionsResponse?.find(da => true)?.amount || 0;
     const callData = depositActionsResponse?.find(da => true)?.call_data;
-
     if (sourceIsImmutableX)
         return <ImtblxWalletWithdrawStep
             amount={amount}
