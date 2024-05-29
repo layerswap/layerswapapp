@@ -85,7 +85,7 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
                 toast(e.message)
         }
         setLoading(false)
-    }, [wallet, swapId, network, userId, token])
+    }, [wallet, swapId, network, userId, token, callData])
 
     return (
         <>
