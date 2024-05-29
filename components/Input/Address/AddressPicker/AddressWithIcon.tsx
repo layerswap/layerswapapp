@@ -61,7 +61,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, des
                             </TooltipContent>
                         </Tooltip>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-2 flex flex-col gap-1 items-stretch" side="top">
+                    <PopoverContent className="w-full p-2 flex flex-col gap-1 items-stretch">
                         <button type="button" onClick={(e) => { e.stopPropagation(), setCopied(addressItem.address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
                             <p>
                                 Copy address
