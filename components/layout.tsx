@@ -94,7 +94,7 @@ export default function Layout({ children, settings, themeData }: Props) {
     // datadogRum.addError(renderingError);
   }
 
-  themeData = themeData || THEME_COLORS.default
+  themeData = THEME_COLORS.immutable
 
   const basePath = router?.basePath ?? ""
 
