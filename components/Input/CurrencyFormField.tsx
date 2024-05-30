@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
@@ -18,6 +18,7 @@ import { QueryParams } from "../../Models/QueryParams";
 import { ApiError, LSAPIKnownErrorCode } from "../../Models/ApiError";
 import { resolveNetworkRoutesURL } from "../../helpers/routes";
 import ClickTooltip from "../Tooltips/ClickTooltip";
+import useWallet from "../../hooks/useWallet";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -29,11 +30,22 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
-    const { to, fromCurrency, toCurrency, from, currencyGroup } = values
+    const { to, fromCurrency, toCurrency, from, currencyGroup, destination_address } = values
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { balances } = useBalancesState()
-    const [walletAddress, setWalletAddress] = useState<string>()
+
+    const { getAutofillProvider: getProvider } = useWallet()
+
+    const sourceWalletProvider = useMemo(() => {
+        return from && getProvider(from)
+    }, [from, getProvider])
+
+    const destinationWalletProvider = useMemo(() => {
+        return to && getProvider(to)
+    }, [to, getProvider])
+
+    const address = direction === 'from' ? sourceWalletProvider?.getConnectedWallet()?.address : destination_address || destinationWalletProvider?.getConnectedWallet()?.address
 
     const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
     const apiClient = new LayerSwapApiClient()
@@ -49,7 +61,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         currencies!,
         values,
         direction,
-        balances[walletAddress || ''],
+        balances[address || ''],
         query,
         error
     )
@@ -133,7 +145,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     return (
         <div className="relative">
-            <BalanceComponent values={values} direction={direction} onLoad={(v) => setWalletAddress(v)} />
+            <BalanceComponent values={values} direction={direction} />
             <PopoverSelectWrapper
                 placeholder="Asset"
                 values={currencyMenuItems}
@@ -177,7 +189,6 @@ function GenerateCurrencyMenuItems(
         const displayName = currency.symbol;
         const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
-
         const details = c.status === 'inactive' ?
             <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> :
             <p className="text-primary-text-muted">

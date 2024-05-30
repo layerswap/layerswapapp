@@ -36,7 +36,7 @@ export default function useSolana(): WalletProvider {
     }
 
     const reconnectWallet = async () => {
-        disconnectWallet()
+        await disconnectWallet()
         connectWallet()
     }
 
