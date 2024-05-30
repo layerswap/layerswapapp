@@ -50,16 +50,17 @@ export default function useBalanceProvider() {
             && address) {
             setIsBalanceLoading(true)
 
-            const walletBalances = balances[address]
-            const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
-
             const provider = getBalanceProvider(network)
             const networkBalances = await provider?.getNetworkBalances({
                 network: network,
                 address: address,
             }) || []
 
-            setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(networkBalances) }))
+            setAllBalances((data) => {
+                const walletBalances = data[address]
+                const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
+                return { ...data, [address]: [...filteredBalances, ...networkBalances] }
+            })
             setIsBalanceLoading(false)
         }
     }
@@ -77,9 +78,6 @@ export default function useBalanceProvider() {
             && address) {
             setIsBalanceLoading(true)
 
-            const walletBalances = balances[address]
-            const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
-
             const provider = getBalanceProvider(network)
             const balance = await provider?.getBalance({
                 network: network,
@@ -87,7 +85,11 @@ export default function useBalanceProvider() {
                 token
             }) || []
 
-            setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(balance) }))
+            setAllBalances((data) => {
+                const walletBalances = data[address]
+                const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
+                return { ...data, [address]: filteredBalances?.concat(balance) }
+            })
             setIsBalanceLoading(false)
         }
     }
@@ -121,8 +123,11 @@ export default function useBalanceProvider() {
                 }) || []
 
                 if (gas) {
-                    const filteredGases = gases[network.name]?.some(b => b?.token === token?.symbol) ? gases[network.name].filter(g => g.token !== token.symbol) : gases[network.name] || []
-                    setAllGases((data) => ({ ...data, [network.name]: filteredGases.concat(gas) }))
+                    setAllGases((data) => {
+                        const networkGases = data[network.name]
+                        const filteredGases = networkGases?.some(b => b?.token === token?.symbol) ? networkGases.filter(g => g.token !== token.symbol) : networkGases || []
+                        return { ...data, [network.name]: filteredGases.concat(gas) }
+                    })
                 }
             }
             catch (e) { console.log(e) }
