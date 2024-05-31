@@ -65,7 +65,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         max-sm:w-full ${hidden ? 'adnimation-slide-out' : ''}`}>
                     {children}
                 </motion.div>
-                
+
                 <div style={{ height: `${height}px` }}
                     className={`text-primary-text text-base mt-3        
                              max-sm:inset-x-0

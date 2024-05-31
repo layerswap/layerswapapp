@@ -18,6 +18,7 @@ import { QueryParams } from "../../Models/QueryParams";
 import { ApiError, LSAPIKnownErrorCode } from "../../Models/ApiError";
 import { resolveNetworkRoutesURL } from "../../helpers/routes";
 import ClickTooltip from "../Tooltips/ClickTooltip";
+import { ONE_WEEK } from "./NetworkFormField";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -177,7 +178,10 @@ function GenerateCurrencyMenuItems(
         const displayName = currency.symbol;
         const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
-
+        const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
+        const badge = isNewlyListed ? (
+            <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
+        ) : undefined;
         const details = c.status === 'inactive' ?
             <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> :
             <p className="text-primary-text-muted">
@@ -188,10 +192,11 @@ function GenerateCurrencyMenuItems(
             baseObject: c,
             id: c.symbol,
             name: displayName || "-",
-            order: CurrencySettings.KnownSettings[c.symbol]?.Order ?? 5,
+            order: badge ? 20000 : CurrencySettings.KnownSettings[c.symbol]?.Order || 5,
             imgSrc: c.logo,
             isAvailable: currencyIsAvailable(c),
             details: details,
+            badge
         };
 
         return res
