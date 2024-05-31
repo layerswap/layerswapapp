@@ -220,7 +220,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
         const details = !r.tokens?.some(r => r.status !== 'inactive') ? <ClickTooltip side="left" text={`Transfers ${direction} this network are not available at the moment. Please try later.`} /> : undefined
         const isNewlyListed = r?.tokens?.some(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
         const bedge = isNewlyListed ? (
-            <div className="inline bg-secondary-50 px-1 pb-0.5 rounded text-xs">New</div>
+            <div className="inline bg-secondary-50 px-1 pb-0.5 rounded text-xs ml-1.5">New</div>
         ) : <></>;
 
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {

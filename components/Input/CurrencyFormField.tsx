@@ -179,9 +179,8 @@ function GenerateCurrencyMenuItems(
         const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
         const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
-        if (isNewlyListed) console.log(c, "cccccccc")
         const bedge = isNewlyListed ? (
-            <div className="inline bg-secondary-50 px-1 pb-0.5 rounded text-xs">New</div>
+            <div className="inline bg-secondary-50 px-1 pb-[1px] rounded text-xs">New</div>
         ) : <></>;
         const details = c.status === 'inactive' ?
             <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> :
