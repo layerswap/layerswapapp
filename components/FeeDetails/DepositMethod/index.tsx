@@ -19,7 +19,7 @@ const DepositMethodComponent: FC = () => {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
-    const { setShowModal,showModal} = useDepositMethod()
+    const { setShowModal, showModal } = useDepositMethod()
 
     const { depositMethod: defaultDepositMethod, hideDepositMethod } = useQueryState()
     const { from, depositMethod, fromExchange } = values
