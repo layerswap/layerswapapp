@@ -179,7 +179,7 @@ function GenerateCurrencyMenuItems(
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
         const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - 604800000;
 
-        const newListedIcon = isNewlyListed ? (
+        const bedge = isNewlyListed ? (
             <div className="inline bg-secondary-50 px-1 pb-0.5 rounded text-xs">New</div>
         ) : <></>;
         const details = c.status === 'inactive' ?
@@ -192,11 +192,11 @@ function GenerateCurrencyMenuItems(
             baseObject: c,
             id: c.symbol,
             name: displayName || "-",
-            order: newListedIcon ? 20000 : CurrencySettings.KnownSettings[c.symbol]?.Order || 5,
+            order: bedge ? 20000 : CurrencySettings.KnownSettings[c.symbol]?.Order || 5,
             imgSrc: c.logo,
             isAvailable: currencyIsAvailable(c),
             details: details,
-            newListedIcon
+            bedge
         };
 
         return res

@@ -218,7 +218,8 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
         const order = NetworkSettings.KnownSettings[r.name]?.[orderProp]
         const details = !r.tokens?.some(r => r.status !== 'inactive') ? <ClickTooltip side="left" text={`Transfers ${direction} this network are not available at the moment. Please try later.`} /> : undefined
         const isNewlyListed = r?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - 604800000);
-        const newListedIcon = isNewlyListed ? (
+        console.log(r)
+        const bedge = isNewlyListed ? (
             <div className="inline bg-secondary-50 px-1 pb-0.5 rounded text-xs">New</div>
         ) : <></>;
 
@@ -232,7 +233,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             group: getGroupName(r, 'network', layerIsAvailable(r)),
             isExchange: false,
             details,
-            newListedIcon
+            bedge
         }
         return res;
     }).sort(SortingByAvailability) || [];
