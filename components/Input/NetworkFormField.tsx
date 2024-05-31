@@ -14,8 +14,8 @@ import CurrencyFormField from "./CurrencyFormField";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { Network, RouteNetwork } from "../../Models/Network";
-import { Exchange, ExchangeToken } from "../../Models/Exchange";
+import { RouteNetwork } from "../../Models/Network";
+import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
 import { Info } from "lucide-react";
@@ -36,6 +36,7 @@ type LayerIsAvailable = {
     disabledReason: null;
 }
 const GROUP_ORDERS = { "Popular": 1, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
+export const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
 const getGroupName = (value: RouteNetwork | Exchange, type: 'cex' | 'network', layerIsAvailable?: LayerIsAvailable) => {
     if (NetworkSettings.KnownSettings[value.name]?.isFeatured && layerIsAvailable?.disabledReason !== LayerDisabledReason.InvalidRoute) {
         return "Popular";
@@ -217,8 +218,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
         let orderProp: keyof NetworkSettings | keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
         const order = NetworkSettings.KnownSettings[r.name]?.[orderProp]
         const details = !r.tokens?.some(r => r.status !== 'inactive') ? <ClickTooltip side="left" text={`Transfers ${direction} this network are not available at the moment. Please try later.`} /> : undefined
-        const isNewlyListed = r?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - 604800000);
-        console.log(r)
+        const isNewlyListed = r?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
         const bedge = isNewlyListed ? (
             <div className="inline bg-secondary-50 px-1 pb-0.5 rounded text-xs">New</div>
         ) : <></>;

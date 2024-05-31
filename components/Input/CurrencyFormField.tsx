@@ -18,6 +18,7 @@ import { QueryParams } from "../../Models/QueryParams";
 import { ApiError, LSAPIKnownErrorCode } from "../../Models/ApiError";
 import { resolveNetworkRoutesURL } from "../../helpers/routes";
 import ClickTooltip from "../Tooltips/ClickTooltip";
+import { ONE_WEEK } from "./NetworkFormField";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -177,7 +178,7 @@ function GenerateCurrencyMenuItems(
         const displayName = currency.symbol;
         const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
-        const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - 604800000;
+        const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
 
         const bedge = isNewlyListed ? (
             <div className="inline bg-secondary-50 px-1 pb-0.5 rounded text-xs">New</div>
