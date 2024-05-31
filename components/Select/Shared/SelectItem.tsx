@@ -15,8 +15,9 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                     loading="eager"
                     className="rounded-md object-contain" />}
             </div>
-            <p className='text-md font-medium flex w-full justify-between'>
-                <span>{item.displayName ? item.displayName : item.name} {item.bedge && item.bedge}</span>
+            <p className='text-md font-medium flex w-full justify-between space-x-2 '>
+                <span className="flex items-center justify-center pb-0.5">{item.displayName ? item.displayName : item.name}</span>
+                {item.badge}
             </p>
         </div>
         {
