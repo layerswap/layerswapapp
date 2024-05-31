@@ -10,7 +10,6 @@ export class Exchange {
             connect_url: string,
             authorize_url: string
         } | null
-        listing_date: string
     }
 }
 

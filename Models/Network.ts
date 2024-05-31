@@ -40,6 +40,7 @@ export class Token {
     decimals: number;
     price_in_usd: number;
     precision: number;
+    listing_date: string;
     status?: string;
 }
 

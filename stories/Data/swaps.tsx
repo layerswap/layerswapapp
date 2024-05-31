@@ -32,6 +32,7 @@ export const swap = {
                     "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
                     "token": {
                         "symbol": "ETH",
+                        "listing_date": "2023-12-27T16:46:50.617075+00:00",
                         "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                         "contract": null,
                         "decimals": 18,
@@ -44,6 +45,7 @@ export const swap = {
                 },
                 "token": {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": null,
                     "decimals": 18,
@@ -52,6 +54,7 @@ export const swap = {
                 },
                 "fee_token": {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": null,
                     "decimals": 18,
@@ -78,6 +81,7 @@ export const swap = {
                 "account_explorer_template": "https://sepolia.etherscan.io/address/{0}",
                 "token": {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": null,
                     "decimals": 18,
@@ -91,6 +95,7 @@ export const swap = {
             },
             "source_token": {
                 "symbol": "ETH",
+                "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                 "contract": null,
                 "decimals": 18,
@@ -109,6 +114,7 @@ export const swap = {
                 "account_explorer_template": "https://sepolia.arbiscan.io/address/{0}",
                 "token": {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": null,
                     "decimals": 18,
@@ -123,6 +129,7 @@ export const swap = {
             },
             "destination_token": {
                 "symbol": "ETH",
+                "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                 "contract": null,
                 "decimals": 18,
