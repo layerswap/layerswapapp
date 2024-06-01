@@ -1,22 +1,11 @@
 import { Exchange, ExchangeToken } from "../Models/Exchange";
 import { RouteNetwork, RouteToken } from "../Models/Network";
 import { SwapDirection } from "../components/DTOs/SwapFormValues";
-import { ONE_WEEK } from "../components/Input/NetworkFormField";
-import { SelectMenuItem } from "../components/Select/Shared/Props/selectMenuItem";
 import CurrencySettings from "./CurrencySettings";
 import ExchangeSettings from "./ExchangeSettings";
 import NetworkSettings from "./NetworkSettings";
 
-export function SortingByOrder<T>(x: SelectMenuItem<T>, y: SelectMenuItem<T>) {
-    if (!y.isAvailable.value) {
-        y.order += 100;
-    } else if (!x.isAvailable.value) {
-        x.order += 100;
-    };
-    return Number(y.isAvailable.value || 0) - Number(x.isAvailable.value || 0) + (y.order - x.order)
-}
-
-export const SortByAscending = (x: { order: number }, y: { order: number }) => x.order - y.order;
+export const SortAscending = (x: { order: number }, y: { order: number }) => x.order - y.order;
 
 export function ResolveNetworkOrder(network: RouteNetwork, direction: SwapDirection, is_new: boolean) {
 
@@ -35,7 +24,7 @@ export function ResolveExchangeOrder(exchange: Exchange, direction: SwapDirectio
     const initial_order = resolveInitialWeightedOrder(ExchangeSettings.KnownSettings[exchange.name]?.[orderProp], 1)
     return initial_order;
 }
-export function ResolveCEXCurrencyOrder(token: ExchangeToken, direction: SwapDirection) {
+export function ResolveCEXCurrencyOrder(token: ExchangeToken) {
 
     const initial_order = resolveInitialWeightedOrder(CurrencySettings.KnownSettings[token.symbol]?.Order, 1)
 

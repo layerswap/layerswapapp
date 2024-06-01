@@ -5,7 +5,7 @@ import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import ExchangeSettings from "../../lib/ExchangeSettings";
-import { ResolveExchangeOrder, ResolveNetworkOrder, SortByAscending } from "../../lib/sorting"
+import { ResolveExchangeOrder, ResolveNetworkOrder, SortAscending } from "../../lib/sorting"
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
@@ -220,7 +220,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
-        
+
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
             baseObject: r,
             id: r.name,
@@ -234,7 +234,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             badge
         }
         return res;
-    }).sort(SortByAscending) || [];
+    }).sort(SortAscending) || [];
 
     const mappedExchanges = exchanges?.map(e => {
         let orderProp: keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
@@ -251,7 +251,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             isExchange: true,
         }
         return res;
-    }).sort(SortByAscending) || [];
+    }).sort(SortAscending) || [];
 
     const items = [...mappedExchanges, ...mappedLayers]
     return items
