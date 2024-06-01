@@ -32,10 +32,9 @@ export function ResolveCEXCurrencyOrder(token: ExchangeToken) {
 }
 export function ResolveCurrencyOrder(currency: RouteToken, is_new: boolean) {
 
-    const initial_order = resolveInitialWeightedOrder(CurrencySettings.KnownSettings[currency.symbol]?.Order, 2)
+    const initial_order = resolveInitialWeightedOrder(CurrencySettings.KnownSettings[currency.symbol]?.Order, 1)
     const is_active = currency.status === 'active'
-
-    return initial_order + resolveConditionWeight(is_active, 3) + resolveConditionWeight(is_new, 1)
+    return initial_order + resolveConditionWeight(is_active, 2) 
 
 }
 
