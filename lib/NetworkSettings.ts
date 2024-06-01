@@ -311,8 +311,8 @@ export default class NetworkSettings {
                 let destOrder = destinationOrder.indexOf(k);
                 let srcOrder = sourceOrder.indexOf(k);
 
-                networkSetting.OrderInDestination = destOrder < 0 ? 10000 : destOrder;
-                networkSetting.OrderInSource = srcOrder < 0 ? 10000 : srcOrder;
+                networkSetting.OrderInDestination = destOrder < 0 ? destinationOrder.length : destOrder;
+                networkSetting.OrderInSource = srcOrder < 0 ? destinationOrder.length : srcOrder;
             }
         }
     }
