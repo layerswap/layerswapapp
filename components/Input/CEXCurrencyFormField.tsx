@@ -4,7 +4,7 @@ import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import CurrencySettings from "../../lib/CurrencySettings";
-import { SortingByAvailability } from "../../lib/sorting";
+import { SortByAscending } from "../../lib/sorting";
 import { useQueryState } from "../../context/query";
 import { Exchange, ExchangeToken } from "../../Models/Exchange";
 import { LSAPIKnownErrorCode } from "../../Models/ApiError";
@@ -108,7 +108,7 @@ export function GenerateCurrencyMenuItems(
             isAvailable: currencyIsAvailable(c),
         };
         return res
-    }).sort(SortingByAvailability);
+    }).sort(SortByAscending);
 }
 
 export enum CurrencyDisabledReason {

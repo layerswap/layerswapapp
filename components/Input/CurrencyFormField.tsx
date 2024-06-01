@@ -4,7 +4,7 @@ import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import CurrencySettings from "../../lib/CurrencySettings";
-import { SortingByAvailability } from "../../lib/sorting";
+import { ResolveCurrencyOrder, SortByAscending } from "../../lib/sorting";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useQueryState } from "../../context/query";
@@ -192,7 +192,7 @@ function GenerateCurrencyMenuItems(
             baseObject: c,
             id: c.symbol,
             name: displayName || "-",
-            order: badge ? 20000 : CurrencySettings.KnownSettings[c.symbol]?.Order || 5,
+            order: ResolveCurrencyOrder(c, isNewlyListed),
             imgSrc: c.logo,
             isAvailable: currencyIsAvailable(c),
             details: details,
@@ -200,7 +200,7 @@ function GenerateCurrencyMenuItems(
         };
 
         return res
-    }).sort(SortingByAvailability);
+    }).sort(SortByAscending);
 }
 
 export enum CurrencyDisabledReason {
