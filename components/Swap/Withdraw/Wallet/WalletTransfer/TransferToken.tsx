@@ -1,8 +1,7 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import {
     useAccount,
-    useSendTransaction,
-    useTransaction
+    useSendTransaction
 } from "wagmi";
 import { createPublicClient, http, parseEther } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
@@ -15,6 +14,7 @@ import TransactionMessage from "./transactionMessage";
 import { ButtonWrapper } from "./buttons";
 import { useSwapTransactionStore } from "../../../../../stores/swapTransactionStore";
 import { useSwapDataState } from "../../../../../context/swap";
+import { datadogRum } from "@datadog/browser-rum";
 
 const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     depositAddress,
@@ -51,6 +51,10 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
                     setEstimatedGas(gasEstimate)
                 }
                 catch (e) {
+                    const renderingError = new Error("Transaction is taking longer than expected");
+                    renderingError.name = `LongTransactionError`;
+                    renderingError.cause = renderingError;
+                    datadogRum.addError(renderingError);
                     console.error(e)
                 }
             }
@@ -69,51 +73,52 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
         }
     }, [transaction?.data, swapId])
 
-    const waitForTransaction = useTransaction({
-        hash: transaction?.data || savedTransactionHash,
-    })
-
     const clickHandler = useCallback(async () => {
         setButtonClicked(true)
-        if (!depositAddress || !amount || !transaction?.sendTransaction) return
-        const tx = {
-            to: depositAddress,
-            value: parseEther(amount?.toString()),
-            gas: estimatedGas,
-            data: callData
+        try {
+            if (!depositAddress)
+                throw new Error('Missing deposit address')
+            if (!amount)
+                throw new Error('Missing amount')
+            if (!transaction.sendTransaction)
+                throw new Error('Missing sendTransaction')
+
+            const tx = {
+                to: depositAddress,
+                value: parseEther(amount?.toString()),
+                gas: estimatedGas,
+                data: callData
+            }
+            transaction?.sendTransaction(tx)
+        } catch (e) {
+            const error = new Error(e)
+            error.name = "TransferTokenError"
+            error.cause = e
+            datadogRum.addError(error);
         }
-        transaction?.sendTransaction(tx)
     }, [transaction, estimatedGas, depositAddress, amount, callData])
 
-    const isError = [
-        transaction,
-        waitForTransaction
-    ].some(d => d.isError)
-
-    const isLoading = [
-        transaction,
-        waitForTransaction
-    ].some(d => d.isPending)
-    console.log('isLoading', isLoading)
+    const isError = transaction.isError
     return <>
         {
             buttonClicked &&
             <TransactionMessage
-                transaction={waitForTransaction}
-                wait={waitForTransaction}
+                transaction={transaction}
                 applyingTransaction={applyingTransaction}
             />
         }
-        <>
-            <ButtonWrapper
-                isDisabled={isLoading}
-                onClick={clickHandler}
-                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
-            >
-                {(isError && buttonClicked) ? <span>Try again</span>
-                    : <span>Send from wallet</span>}
-            </ButtonWrapper>
-        </>
+        {
+            !transaction.isPending && <>
+                <ButtonWrapper
+                    isDisabled={transaction.isPending}
+                    onClick={clickHandler}
+                    icon={<WalletIcon className="stroke-2 w-6 h-6" />}
+                >
+                    {(isError && buttonClicked) ? <span>Try again</span>
+                        : <span>Send from wallet</span>}
+                </ButtonWrapper>
+            </>
+        }
         <Modal
             height="80%"
             show={openChangeAmount}

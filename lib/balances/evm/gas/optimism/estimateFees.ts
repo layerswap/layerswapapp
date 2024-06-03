@@ -31,8 +31,7 @@ export const getGasPriceOracleContract = (client: PublicClient, oracleContract?:
   return getContract({
     address: oracleContract || gasPriceOracleAddress['420'],
     abi: gasPriceOracleABI,
-    publicClient: client,
-  })
+    client})
 }
 
 /**

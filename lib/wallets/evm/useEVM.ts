@@ -29,7 +29,6 @@ export default function useEVM(): WalletProvider {
     const name = 'evm'
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
-
     const getWallet = () => {
         if (account && account.address && account.connector) {
             return {

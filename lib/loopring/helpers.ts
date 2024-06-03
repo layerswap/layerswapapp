@@ -6,6 +6,8 @@ import { parseUnits } from 'viem';
 import { AccountInfo, ExchangeInfo, KEY_MESSAGE, LOOPRING_URLs, LpFee, OffchainFeeReqType, OriginTransferRequestV3, UnlockedAccount } from "./defs";
 import { generateKey, getEdDSASig, getTransferTypedData, getUpdateAccountEcdsaTypedData, get_EddsaSig_Transfer } from "./utils";
 import { Token } from "../../Models/Network";
+import { createConfig, http } from "wagmi";
+import { mainnet, sepolia } from "wagmi/chains";
 
 type UnlockApiRes = {
     apiKey: string;
@@ -17,10 +19,19 @@ type UnlockApiRes = {
         message: string
     }
 }
+
+const config = createConfig({
+    chains: [mainnet, sepolia],
+    transports: {
+        [mainnet.id]: http(),
+        [sepolia.id]: http(),
+    },
+})
+
 export async function unlockAccount(accInfo: AccountInfo)
     : Promise<UnlockedAccount> {
 
-    const sig = await signMessage({ message: accInfo.keySeed })
+    const sig = await signMessage(config, { message: accInfo.keySeed })
     const eddsaKeyData = generateKey(sig)
     const { sk } = eddsaKeyData
     const { accountId } = accInfo
@@ -156,7 +167,7 @@ async function submitInternalTransfer
     : Promise<TransferApiRes> {
 
     const typedData = getTransferTypedData(req, LoopringAPI.CHAIN)
-    const ecdsaSignature = (await signTypedData(typedData as any)).slice(0, 132)
+    const ecdsaSignature = (await signTypedData(config, typedData as any)).slice(0, 132)
     const eddsaSignature = get_EddsaSig_Transfer(req, eddsaKey).result
     return await (await fetch(`${LoopringAPI.BaseApi}${LOOPRING_URLs.POST_INTERNAL_TRANSFER}`, {
         method: "POST",
@@ -192,7 +203,7 @@ export async function activateAccount
         exchangeInfo.exchangeAddress
     ).replace("${nonce}", accInfo.nonce.toString());
 
-    const sig = await signMessage({ message })
+    const sig = await signMessage(config, { message })
 
     const eddsaKeyData = generateKey(sig)
     const { formatedPx, formatedPy } = eddsaKeyData
@@ -217,7 +228,7 @@ export async function activateAccount
     }
 
     const typedData = getUpdateAccountEcdsaTypedData(req, LoopringAPI.CHAIN)
-    const ecdsaSignature = (await signTypedData(typedData as any)).slice(0, 132)
+    const ecdsaSignature = (await signTypedData(config, typedData as any)).slice(0, 132)
 
     await (await fetch(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}`, {
         method: "POST",

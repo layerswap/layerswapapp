@@ -3,11 +3,9 @@ import { SwapItem, BackendTransactionStatus, TransactionType, SwapResponse } fro
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapData, SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
-import { WagmiConfig, configureChains, createConfig } from 'wagmi';
-import { publicProvider } from 'wagmi/providers/public';
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { BalancesStateContext, BalancesStateUpdateContext } from '../context/balances';
-import { walletConnectWallet, rainbowWallet, metaMaskWallet, bitgetWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
+import { argentWallet, bitgetWallet, coinbaseWallet, metaMaskWallet, phantomWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 import { FC, useEffect, useRef } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap, failedSwap, failedSwapOutOfRange, failedInputSwap, cancelled, expired } from './Data/swaps'
@@ -33,39 +31,11 @@ import { useArgs } from '@storybook/preview-api';
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 const settingsChains = SettingChains;
 
-const { chains, publicClient } = configureChains(
-    settingsChains,
-    [
-        publicProvider()
-    ]
-);
 
-const projectId = WALLETCONNECT_PROJECT_ID;
-const connectors = connectorsForWallets([
-    {
-        groupName: 'Popular',
-        wallets: [
-            metaMaskWallet({ projectId, chains }),
-            walletConnectWallet({ projectId, chains }),
-        ],
-    },
-    {
-        groupName: 'Wallets',
-        wallets: [
-            argentWallet({ projectId, chains }),
-            bitgetWallet({ projectId, chains }),
-            rainbowWallet({ projectId, chains }),
-        ],
-    },
-]);
 window.plausible = () => { }
 const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ settings, swapData, theme, initialValues, timestamp }) => {
     const query = useQueryState()
-    const wagmiConfig = createConfig({
-        autoConnect: true,
-        connectors,
-        publicClient,
-    })
+
 
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const appSettings = new LayerSwapAppSettings(Settings)
@@ -76,8 +46,7 @@ const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme
     }
     const themeData = theme ? THEME_COLORS[theme] : THEME_COLORS["default"];
 
-    return <WagmiConfig config={wagmiConfig}>
-        <IntercomProvider appId='123'>
+    return  <IntercomProvider appId='123'>
             <SettingsStateContext.Provider value={appSettings}>
                 <Layout settings={Settings} themeData={themeData}>
                     <RainbowKitComponent>
@@ -108,7 +77,6 @@ const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme
                 </Layout>
             </SettingsStateContext.Provider>
         </IntercomProvider>
-    </WagmiConfig >
 }
 
 const Component = ({ initialValues }: { initialValues: SwapFormValues | undefined }) => {

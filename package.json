@@ -111,5 +111,8 @@
     "tailwindcss": "^3.0.24",
     "tailwindcss-themer": "^2.0.2",
     "typescript": "^5.1"
+  },
+  "resolutions": {
+    "rpc-websockets": "7.10.0"
   }
 }

@@ -36,7 +36,7 @@ export const ConnectWalletButton: FC = () => {
 }
 
 export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = ({ data, network }) => {
-    if (data.isLoading) {
+    if (data.isPending) {
         return <WalletMessage
             status="pending"
             header='Network switch required'
@@ -53,7 +53,7 @@ export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = (
 }
 
 export const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ chainId, network }) => {
-    const { switchChain, error, isPending } = useSwitchChain();
+    const { switchChain, error, isPending, isError } = useSwitchChain();
 
     const clickHandler = useCallback(() => {
         return switchChain({ chainId })
@@ -63,8 +63,8 @@ export const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ 
         {
             <ChangeNetworkMessage
                 data={{
-                    isLoading: isPending,
-                    isError: !!error,
+                    isPending: isPending,
+                    isError: isError,
                     error
                 }}
                 network={network}

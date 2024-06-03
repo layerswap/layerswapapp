@@ -1,5 +1,5 @@
 import { PublicClient, encodeFunctionData } from "viem";
-import { erc20ABI } from "wagmi";
+import { erc20Abi } from "viem";
 import { Network, Token } from "../../../../Models/Network";
 import { Gas } from "../../../../Models/Balance";
 import { datadogRum } from "@datadog/browser-rum";
@@ -101,7 +101,7 @@ export default abstract class getEVMGas {
 
     protected async estimateERC20GasLimit() {
         let encodedData = encodeFunctionData({
-            abi: erc20ABI,
+            abi: erc20Abi,
             functionName: "transfer",
             args: [this.destination, BigInt(1000)]
         })

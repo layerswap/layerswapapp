@@ -6,7 +6,6 @@ import {
     connectorsForWallets,
     darkTheme,
     DisclaimerComponent,
-    getDefaultConfig,
     RainbowKitProvider,
 } from '@rainbow-me/rainbowkit';
 import { NetworkType } from "../Models/Network";
@@ -73,21 +72,12 @@ function RainbowKitComponent({ children }: Props) {
         .map(resolveChain).filter(isChain) as [Chain]
 
     let chainExceptZkSyncEra = settingsChains.filter(x => x.id != 324) as [Chain];
-    const projectId = WALLETCONNECT_PROJECT_ID;
 
     const config = createConfig({
         connectors,
         chains: chainExceptZkSyncEra,
         transports:[]
     });
-
-    // const config = getDefaultConfig({
-    //     appName: 'Layerswap',
-    //     projectId,
-    //     chains: settingsChains,
-    //     conn
-    //     ssr: true,
-    // });
 
     const theme = darkTheme({
         accentColor: 'rgb(var(--ls-colors-primary-500))',

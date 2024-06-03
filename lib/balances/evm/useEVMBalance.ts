@@ -32,8 +32,8 @@ export default function useEVMBalance(): BalanceProvider {
 
             const erc20BalancesContractRes = await getErc20Balances({
                 address: address,
-                chainId: Number(network?.chain_id),
                 assets: network.tokens,
+                network,
                 publicClient,
                 hasMulticall: !!network.metadata?.evm_multi_call_contract
             });
@@ -48,7 +48,7 @@ export default function useEVMBalance(): BalanceProvider {
 
             for (let i = 0; i < nativeTokens.length; i++) {
                 const token = nativeTokens[i]
-                const nativeBalanceData = await getTokenBalance(address as `0x${string}`, Number(network.chain_id))
+                const nativeBalanceData = await getTokenBalance(address as `0x${string}`, network)
                 const nativeBalance = (nativeBalanceData
                     && await resolveBalance(network, token, nativeBalanceData))
                 if (nativeBalance)
@@ -76,7 +76,7 @@ export default function useEVMBalance(): BalanceProvider {
                 resolveERC20Balance
             } = await import("./balance")
 
-            const balanceData = await getTokenBalance(address as `0x${string}`, Number(network.chain_id), token.contract as `0x${string}`)
+            const balanceData = await getTokenBalance(address as `0x${string}`, network, token.contract as `0x${string}`)
             const balance = (balanceData
                 && (network.token?.symbol === token.symbol ? await resolveBalance(network, token, balanceData) : await resolveERC20Balance(network, token, balanceData)))
 
