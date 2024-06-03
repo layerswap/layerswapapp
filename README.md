@@ -20,9 +20,8 @@ This repository contains implementation of Layerswap UI
 ### Required environment variables
 
   ```yaml
-  NEXT_PUBLIC_LS_BRIDGE_API = https://bridge-api.layerswap.io/
-  NEXT_PUBLIC_API_VERSION = mainnet #sandbox for testnets
-  NEXT_PUBLIC_IDENTITY_API = https://identity-api.layerswap.io
-  NEXT_PUBLIC_RESOURCE_STORAGE_URL = https://prodlslayerswapbridgesa.blob.core.windows.net/
+  NEXT_PUBLIC_LS_API = https://api-dev.layerswap.cloud/
+  NEXT_PUBLIC_API_KEY = mainnet #sandbox for testnets
+  NEXT_PUBLIC_IDENTITY_API = https://identity-api-dev.layerswap.cloud/
   ```
 

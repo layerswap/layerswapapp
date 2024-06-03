@@ -124,8 +124,8 @@ export default class ExchangeSettings {
                 let destOrder = destinationOrder.indexOf(k);
                 let srcOrder = sourceOrder.indexOf(k);
 
-                setting.OrderInDestination = destOrder < 0 ? 10000 : destOrder;
-                setting.OrderInSource = srcOrder < 0 ? 10000 : srcOrder;
+                setting.OrderInDestination = destOrder < 0 ? destinationOrder.length : destOrder;
+                setting.OrderInSource = srcOrder < 0 ? destinationOrder.length : srcOrder;
             }
         }
     }
