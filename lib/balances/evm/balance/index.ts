@@ -131,7 +131,6 @@ export const getTokenBalance = async (address: `0x${string}`, network: Network, 
                 [chain.id]: http()
             }
         })
-        debugger
         const res = await getBalance(config, {
             address,
             chainId: chain.id,
