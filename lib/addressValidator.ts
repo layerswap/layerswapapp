@@ -14,7 +14,7 @@ export function isValidAddress(address?: string, network?: { name: string } | nu
         }
         return isValidEtherAddress(address);
     }
-    else if (network?.name.toLowerCase().startsWith("STARKNET".toLowerCase())) {
+    else if (network?.name.toLowerCase().startsWith("STARKNET".toLowerCase()) || network?.name.toLowerCase().startsWith("PARADEX".toLowerCase())) {
         return validateAndParseAddress(address);
     }
     else if (network?.name.toLowerCase().startsWith("TON".toLowerCase())) {
