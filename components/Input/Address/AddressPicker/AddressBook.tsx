@@ -29,14 +29,14 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                     >
                         <div className="space-y-0 w-full flex flex-col items-stretch max-h-[200px] overflow-y-auto styled-scroll">
                             {addressBook.sort(sortingByDate).map(item => {
-
+                                const isSelected = addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!)
                                 return (
                                     <button type="button" key={item.address} onClick={() => onSelectAddress(item.address)} className={`group/addressItem px-3 py-3 rounded-md hover:bg-secondary-700 w-full transition duration-200 ${addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
                                         <div className={`flex items-center justify-between w-full`}>
                                             <AddressWithIcon addressItem={item} partner={partner} destination={destination} />
                                             <div className="flex h-6 items-center px-1">
                                                 {
-                                                    addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!) &&
+                                                    isSelected &&
                                                     <FilledCheck />
                                                 }
                                             </div>
@@ -54,8 +54,8 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
 
 const sortingByDate = (a: AddressItem, b: AddressItem) => {
     return (a.group === AddressGroup.RecentlyUsed && b.group === AddressGroup.ManualAdded) ? 0 : -1 +
-        (a.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(a.date).getTime()) / (1000 * 3600 * 24))) : 0)
-        - (b.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(b.date).getTime()) / (1000 * 3600 * 24))) : 0)
+        (a.date ? Math.abs(((new Date()).getTime() - new Date(a.date).getTime())) : 0)
+        - (b.date ? Math.abs(((new Date()).getTime() - new Date(b.date).getTime())) : 0)
 }
 
 export default AddressBook;

@@ -63,7 +63,7 @@ export default function useStarknet(): WalletProvider {
     const disconnectWallet = async () => {
         const disconnect = (await import('starknetkit')).disconnect
         try {
-            disconnect({ clearLastWallet: true })
+            await disconnect({ clearLastWallet: true })
             removeWallet(name)
         }
         catch (e) {
