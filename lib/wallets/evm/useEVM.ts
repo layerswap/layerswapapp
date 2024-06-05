@@ -14,8 +14,8 @@ export default function useEVM(): WalletProvider {
     const withdrawalSupportedNetworks = [
         ...networks.filter(layer => layer.type === NetworkType.EVM && layer.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
-        KnownInternalNames.Networks.LoopringGoerli,
-        KnownInternalNames.Networks.LoopringMainnet
+        KnownInternalNames.Networks.LoopringMainnet,
+        KnownInternalNames.Networks.LoopringSepolia,
     ]
 
     const autofillSupportedNetworks = [
@@ -23,8 +23,8 @@ export default function useEVM(): WalletProvider {
         KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli,
         KnownInternalNames.Networks.BrineMainnet,
-        KnownInternalNames.Networks.LoopringGoerli,
-        KnownInternalNames.Networks.LoopringMainnet
+        KnownInternalNames.Networks.LoopringMainnet,
+        KnownInternalNames.Networks.LoopringSepolia,
     ]
     const name = 'evm'
     const account = useAccount()

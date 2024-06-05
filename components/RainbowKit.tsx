@@ -18,11 +18,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { argentWallet, bitgetWallet, coinbaseWallet, metaMaskWallet, phantomWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 import { createConfig } from 'wagmi';
 import { Chain } from 'viem';
+import { mainnet } from 'viem/chains';
+import { http } from 'wagmi'
 
 type Props = {
     children: JSX.Element | JSX.Element[]
 }
-const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
+const WALLETCONNECT_PROJECT_ID = '9e6712830dae97aeea66f59a00ec3e1b';
 
 const queryClient = new QueryClient()
 const CustomAvatar: AvatarComponent = ({ address, size }) => {
@@ -55,7 +57,8 @@ const connectors = connectorsForWallets(
         }
     ],
     {
-        appName: 'Layerswap',
+        appName: 'Layerswap test',
+        appUrl: 'https://gelding-grown-factually.ngrok-free.app/',
         projectId: WALLETCONNECT_PROJECT_ID,
     }
 );
@@ -76,7 +79,9 @@ function RainbowKitComponent({ children }: Props) {
     const config = createConfig({
         connectors,
         chains: chainExceptZkSyncEra,
-        transports:[]
+        transports:{
+            [mainnet.id]: http(),
+        }
     });
 
     const theme = darkTheme({

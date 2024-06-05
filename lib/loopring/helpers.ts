@@ -30,12 +30,20 @@ const config = createConfig({
 
 export async function unlockAccount(accInfo: AccountInfo)
     : Promise<UnlockedAccount> {
-
+    let keySeed = accInfo.keySeed
+    if (!keySeed) {
+        const exchangeInfo = await getExchangeInfo();
+        keySeed = KEY_MESSAGE.replace(
+            "${exchangeAddress}",
+            exchangeInfo.exchangeAddress
+        ).replace("${nonce}", accInfo.nonce.toString());
+    }
     const sig = await signMessage(config, { message: accInfo.keySeed })
     const eddsaKeyData = generateKey(sig)
     const { sk } = eddsaKeyData
     const { accountId } = accInfo
     const url = `${LoopringAPI.BaseApi}${LOOPRING_URLs.API_KEY_ACTION}?accountId=${accountId}`
+
     const dataToSign: Map<string, any> = sortObjDictionary({ accountId })
     const eddsa = getEdDSASig(
         "GET",
