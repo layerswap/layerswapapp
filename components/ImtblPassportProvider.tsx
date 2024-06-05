@@ -11,8 +11,8 @@ export const passportInstance = new passport.Passport({
         publishableKey: PUBLISHABLE_KEY,
     },
     clientId: CLIENT_ID,
-    redirectUri: 'http://localhost:3000/imtblRedirect',
-    logoutRedirectUri: 'http://localhost:3000/',
+    redirectUri: 'https://layerswapapp-git-dev-newwagmi-imtblpassportint-500c40-layerswap.vercel.app/imtblRedirect',
+    logoutRedirectUri: 'https://layerswapapp-git-dev-newwagmi-imtblpassportint-500c40-layerswap.vercel.app/',
     audience: 'platform_api',
     scope: 'openid offline_access email transact',
 });
