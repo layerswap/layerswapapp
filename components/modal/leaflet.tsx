@@ -3,6 +3,7 @@ import { motion, useAnimation } from "framer-motion";
 import { forwardRef } from 'react';
 import IconButton from '../buttons/iconButton';
 import { X } from 'lucide-react';
+import useWindowDimensions from '../../hooks/useWindowDimensions';
 
 export type LeafletHeight = 'fit' | 'full' | '80%' | '90%';
 
@@ -23,6 +24,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 40 };
+    const { isMobile } = useWindowDimensions()
 
     const handleDragEnd = useCallback(async (_, info) => {
         const offset = info.offset.y;
@@ -35,6 +37,15 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
             controls.start({ y: 0, transition: transitionProps });
         }
     }, [controls, setShow, transitionProps])
+
+    useEffect(() => {
+        if (isMobile && show) {
+            window.document.body.classList.add('overflow-hidden')
+        }
+        return () => {
+            window.document.body.classList.remove('overflow-hidden')
+        }
+    }, [isMobile, show])
 
     useEffect(() => {
         if (show) {

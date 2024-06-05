@@ -41,13 +41,6 @@ const Withdraw: FC = () => {
             content: <></>
         }
     }
-    
-    if (sourceIsStarknet || sourceIsImmutableX) {
-        withdraw = {
-            content: <WalletTransferContent />,
-            footer: <WalletTransfer />
-        }
-    }
 
     if (isImtblMarketplace || sourceIsSynquote) {
         withdraw = {

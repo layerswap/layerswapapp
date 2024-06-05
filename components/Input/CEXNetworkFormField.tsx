@@ -7,7 +7,6 @@ import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import shortenAddress from "../utils/ShortenAddress";
 import Link from "next/link";
-import { SortingByOrder } from "../../lib/sorting";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import { Info } from "lucide-react";
@@ -155,10 +154,6 @@ function GenerateMenuItems(
     routes: NetworkWithTokens[] | undefined,
 ): SelectMenuItem<ExchangeNetwork>[] {
     const menuItems = historicalNetworks.map((e, index) => {
-        // const indexOf = Number(historicalNetworks
-        //     ?.indexOf(historicalNetworks
-        //         .find(n => n.asset === e.asset && n.network === e.network)
-        //         || { network: '', asset: '' }))
 
         const network = routes?.find(l => l.name == e.network.name);
         const details = <p className="text-primary-text-muted">
@@ -176,9 +171,8 @@ function GenerateMenuItems(
             details
         }
         return item;
-    }).sort(SortingByOrder)
-    const res = menuItems
-    return res
+    })
+    return menuItems
 }
 
 export default CEXNetworkFormField
