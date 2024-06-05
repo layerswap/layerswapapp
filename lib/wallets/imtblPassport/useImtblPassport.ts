@@ -1,21 +1,13 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { useAccount, useDisconnect } from "wagmi"
-import { NetworkType } from "../../../Models/Network"
-import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
-import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
-import { evmConnectorNameResolver } from "./KnownEVMConnectors"
+import ImtblPassportIcon from "../../../components/icons/Wallets/ImtblPassport"
 import { useEffect, useState } from "react"
 
-export default function useEVM(): WalletProvider {
-    const { networks } = useSettingsState()
+export default function useImtblPassport(): WalletProvider {
     const [shouldConnect, setShouldConnect] = useState(false)
     const { disconnectAsync } = useDisconnect()
-
-    const notSupportedConnectors = [
-        "Immutable Passport"
-    ]
 
     useEffect(() => {
         if (shouldConnect) {
@@ -25,36 +17,31 @@ export default function useEVM(): WalletProvider {
     }, [shouldConnect])
 
     const withdrawalSupportedNetworks = [
-        ...networks.filter(layer => layer.type === NetworkType.EVM && layer.name !== KnownInternalNames.Networks.RoninMainnet && layer.name !== KnownInternalNames.Networks.ImmutableZkEVM).map(l => l.name),
-        KnownInternalNames.Networks.ZksyncMainnet,
-        KnownInternalNames.Networks.LoopringGoerli,
-        KnownInternalNames.Networks.LoopringMainnet
+        KnownInternalNames.Networks.ImmutableZkEVM,
     ]
 
-    const autofillSupportedNetworks = [
-        ...withdrawalSupportedNetworks,
-        KnownInternalNames.Networks.ImmutableXMainnet,
-        KnownInternalNames.Networks.ImmutableXGoerli,
-        KnownInternalNames.Networks.BrineMainnet,
-        KnownInternalNames.Networks.LoopringGoerli,
-        KnownInternalNames.Networks.LoopringMainnet
+    const supportedConnectors = [
+        "Immutable Passport"
     ]
-    const name = 'evm'
+
+    const autofillSupportedNetworks = withdrawalSupportedNetworks
+
+    const name = 'imtblPassport'
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
     const getWallet = () => {
-        if (account && account.address && account.connector && !notSupportedConnectors.includes(account.connector.name)) {
+        if (account && account.address && account.connector && supportedConnectors.includes(account.connector.name)) {
             return {
                 address: account.address,
                 connector: (account.connector as any)?._wallets?.[0]?.id || account.connector.id,
                 providerName: name,
-                icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account.connector), address: account.address })
+                icon: ImtblPassportIcon
             }
         }
     }
 
     const connectWallet = async () => {
-        if (account && account.address && account.connector && notSupportedConnectors.includes(account.connector.name)) {
+        if (account && account.address && account.connector && !supportedConnectors.includes(account.connector.name)) {
             await reconnectWallet()
         }
         else {

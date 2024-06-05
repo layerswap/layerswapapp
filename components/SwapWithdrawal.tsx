@@ -4,6 +4,7 @@ import SwapDetails from "./Swap";
 import { Widget } from "./Widget/Index";
 import NotFound from "./Swap/NotFound";
 import { BalancesDataProvider } from "../context/balances";
+import ImtblPassportProvider from "./ImtblPassportProvider";
 
 const SwapWithdrawal: FC = () => {
     const { swapResponse: swap, swapApiError } = useSwapDataState()
@@ -24,9 +25,11 @@ const SwapWithdrawal: FC = () => {
 
 
     return (
-        <BalancesDataProvider>
-            <SwapDetails type="widget" />
-        </BalancesDataProvider>
+        <ImtblPassportProvider from={swap.swap.source_network}>
+            <BalancesDataProvider>
+                <SwapDetails type="widget" />
+            </BalancesDataProvider>
+        </ImtblPassportProvider>
     )
 };
 

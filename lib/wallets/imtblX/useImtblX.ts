@@ -4,13 +4,13 @@ import KnownInternalNames from "../../knownIds"
 import { WalletProvider } from "../../../hooks/useWallet"
 import IMX from "../../../components/icons/Wallets/IMX"
 
-export default function useImmutableX(): WalletProvider {
+export default function useImtblX(): WalletProvider {
     const withdrawalSupportedNetworks = [
-        KnownInternalNames.Networks.ImmutableXMainnet, 
+        KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli,
         KnownInternalNames.Networks.ImmutableXSepolia,
     ]
-    
+
     const name = 'imx'
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
@@ -42,10 +42,16 @@ export default function useImmutableX(): WalletProvider {
         return removeWallet(name)
     }
 
+    const reconnectWallet = async (chain: string | number) => {
+        disconnectWallet()
+        await connectWallet(chain)
+    }
+
     return {
         getConnectedWallet: getWallet,
         connectWallet,
         disconnectWallet,
+        reconnectWallet,
         withdrawalSupportedNetworks: withdrawalSupportedNetworks,
         name
     }

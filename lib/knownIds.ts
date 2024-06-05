@@ -102,6 +102,8 @@ export default class KnownInternalNames {
 
         public static readonly ImmutableXSepolia: string = "IMMUTABLEX_SEPOLIA";
 
+        public static readonly ImmutableZkEVM: string = "IMMUTABLEZK_MAINNET";
+
         public static readonly AstarMainnet: string = "ASTAR_MAINNET";
 
         public static readonly NahmiiMainnet: string = "NAHMII_MAINNET";

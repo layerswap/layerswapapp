@@ -19,7 +19,6 @@ import TonConnectProvider from "./TonConnectProvider";
 import RainbowKit from "./RainbowKit";
 import Solana from "./SolanaProvider";
 import { IsExtensionError } from "../helpers/errorHelper";
-import ImtblPassportProvider, { passportInstance } from "./ImtblPassportProvider";
 // import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
@@ -137,13 +136,11 @@ export default function Layout({ children, settings, themeData }: Props) {
               <ThemeWrapper>
                 <TonConnectProvider basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
                   <RainbowKit>
-                    <ImtblPassportProvider>
-                      <Solana>
-                        {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                          <MaintananceContent />
-                          : children}
-                      </Solana>
-                    </ImtblPassportProvider>
+                    <Solana>
+                      {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                        <MaintananceContent />
+                        : children}
+                    </Solana>
                   </RainbowKit>
                 </TonConnectProvider>
               </ThemeWrapper>

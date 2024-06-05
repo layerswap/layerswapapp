@@ -29,6 +29,7 @@ import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
+import ImtblPassportProvider from "../../ImtblPassportProvider";
 
 type Props = {
     isPartnerWallet?: boolean,
@@ -170,107 +171,109 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
             setFieldValue('amount', walletBalance?.amount - networkGas?.gas)
     }, [values.amount])
 
-    return <>
-        <Widget className="sm:min-h-[504px]">
-            <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-                <Widget.Content>
-                    <div className='flex-col relative flex justify-between w-full space-y-0.5 mb-3.5 leading-4'>
-                        {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="from" label="From" className="rounded-t-lg pb-5" />
-                        </div>}
-                        {!query?.hideFrom && !query?.hideTo &&
-                            <button
-                                type="button"
-                                aria-label="Reverse the source and destination"
-                                disabled={valuesSwapperDisabled || sourceLoading || destinationLoading}
-                                onClick={valuesSwapper}
-                                className={`${sourceLoading || destinationLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[86px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
-                                <motion.div
-                                    animate={animate}
-                                    transition={{ duration: 0.3 }}
-                                    onTap={() => !valuesSwapperDisabled && cycle()}
-                                >
-                                    {sourceLoading || destinationLoading ?
-                                        <Loader2 className="opacity-50 w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30 animate-spin" />
-                                        :
-                                        <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />
-                                    }
-                                </motion.div>
-                            </button>}
-                        {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="to" label="To" className="rounded-b-lg" />
-                        </div>}
-                    </div>
-                    {
-                        (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
-                            <div className="mb-6 leading-4">
-                                <ResizablePanel>
-                                    <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
-                                </ResizablePanel>
-                            </div>
-                            : <></>
-                    }
-                    <div className="mb-6 leading-4">
-                        <AmountField />
-                    </div>
-                    {
-                        !hideAddress ?
-                            <div className="w-full mb-3.5 leading-4">
-                                <label htmlFor="destination_address" className="block font-semibold text-secondary-text text-xs">
-                                    {`To ${values?.to?.display_name || ''} address`}
-                                </label>
-                                <AddressButton
-                                    disabled={!values.to || !values.from}
-                                    isPartnerWallet={!!isPartnerWallet}
-                                    openAddressModal={() => setShowAddressModal(true)}
-                                    partnerImage={partnerImage}
-                                    values={values} />
-                                <Modal
-                                    header={`To ${values?.to?.display_name || ''} address`}
-                                    height="fit"
-                                    show={showAddressModal} setShow={setShowAddressModal}
-                                    className="min-h-[70%]"
-                                    modalId="address"
-                                >
-                                    <Address
-                                        close={() => setShowAddressModal(false)}
-                                        disabled={lockAddress || (!values.to || !values.from)}
-                                        name={"destination_address"}
-                                        partnerImage={partnerImage}
-                                        isPartnerWallet={!!isPartnerWallet}
-                                        partner={partner}
-                                        address_book={address_book?.data}
-                                    />
-                                </Modal>
-                            </div>
-                            : <></>
-                    }
-                    <div className="w-full">
-                        <FeeDetailsComponent values={values} />
+    return <ImtblPassportProvider from={source} to={destination}>
+        <>
+            <Widget className="sm:min-h-[504px]">
+                <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
+                    <Widget.Content>
+                        <div className='flex-col relative flex justify-between w-full space-y-0.5 mb-3.5 leading-4'>
+                            {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
+                                <NetworkFormField direction="from" label="From" className="rounded-t-lg pb-5" />
+                            </div>}
+                            {!query?.hideFrom && !query?.hideTo &&
+                                <button
+                                    type="button"
+                                    aria-label="Reverse the source and destination"
+                                    disabled={valuesSwapperDisabled || sourceLoading || destinationLoading}
+                                    onClick={valuesSwapper}
+                                    className={`${sourceLoading || destinationLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[86px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
+                                    <motion.div
+                                        animate={animate}
+                                        transition={{ duration: 0.3 }}
+                                        onTap={() => !valuesSwapperDisabled && cycle()}
+                                    >
+                                        {sourceLoading || destinationLoading ?
+                                            <Loader2 className="opacity-50 w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30 animate-spin" />
+                                            :
+                                            <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />
+                                        }
+                                    </motion.div>
+                                </button>}
+                            {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
+                                <NetworkFormField direction="to" label="To" className="rounded-b-lg" />
+                            </div>}
+                        </div>
                         {
-                            values.amount &&
-                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                            (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
+                                <div className="mb-6 leading-4">
+                                    <ResizablePanel>
+                                        <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
+                                    </ResizablePanel>
+                                </div>
+                                : <></>
                         }
-                    </div>
-                </Widget.Content>
-                <Widget.Footer>
-                    <SwapButton
-                        className="plausible-event-name=Swap+initiated"
-                        type='submit'
-                        isDisabled={!isValid}
-                        isSubmitting={isSubmitting}>
-                        {ActionText(errors, actionDisplayName)}
-                    </SwapButton>
-                </Widget.Footer>
-            </Form>
-        </Widget>
-        {
-            process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
-            && values.from
-            && values.fromCurrency &&
-            <GasDetails network={values.from.name} currency={values.fromCurrency.symbol} />
-        }
-    </>
+                        <div className="mb-6 leading-4">
+                            <AmountField />
+                        </div>
+                        {
+                            !hideAddress ?
+                                <div className="w-full mb-3.5 leading-4">
+                                    <label htmlFor="destination_address" className="block font-semibold text-secondary-text text-xs">
+                                        {`To ${values?.to?.display_name || ''} address`}
+                                    </label>
+                                    <AddressButton
+                                        disabled={!values.to || !values.from}
+                                        isPartnerWallet={!!isPartnerWallet}
+                                        openAddressModal={() => setShowAddressModal(true)}
+                                        partnerImage={partnerImage}
+                                        values={values} />
+                                    <Modal
+                                        header={`To ${values?.to?.display_name || ''} address`}
+                                        height="fit"
+                                        show={showAddressModal} setShow={setShowAddressModal}
+                                        className="min-h-[70%]"
+                                        modalId="address"
+                                    >
+                                        <Address
+                                            close={() => setShowAddressModal(false)}
+                                            disabled={lockAddress || (!values.to || !values.from)}
+                                            name={"destination_address"}
+                                            partnerImage={partnerImage}
+                                            isPartnerWallet={!!isPartnerWallet}
+                                            partner={partner}
+                                            address_book={address_book?.data}
+                                        />
+                                    </Modal>
+                                </div>
+                                : <></>
+                        }
+                        <div className="w-full">
+                            <FeeDetailsComponent values={values} />
+                            {
+                                values.amount &&
+                                <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                            }
+                        </div>
+                    </Widget.Content>
+                    <Widget.Footer>
+                        <SwapButton
+                            className="plausible-event-name=Swap+initiated"
+                            type='submit'
+                            isDisabled={!isValid}
+                            isSubmitting={isSubmitting}>
+                            {ActionText(errors, actionDisplayName)}
+                        </SwapButton>
+                    </Widget.Footer>
+                </Form>
+            </Widget>
+            {
+                process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
+                && values.from
+                && values.fromCurrency &&
+                <GasDetails network={values.from.name} currency={values.fromCurrency.symbol} />
+            }
+        </>
+    </ImtblPassportProvider>
 }
 
 function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: string): string {

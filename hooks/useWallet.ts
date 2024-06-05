@@ -4,14 +4,15 @@ import { Wallet } from "../stores/walletStore"
 import useTON from "../lib/wallets/ton/useTON"
 import useEVM from "../lib/wallets/evm/useEVM"
 import useStarknet from "../lib/wallets/starknet/useStarknet"
-import useImmutableX from "../lib/wallets/immutableX/useIMX"
+import useImtblX from "../lib/wallets/imtblX/useImtblX"
 import useSolana from "../lib/wallets/solana/useSolana"
 import { Network } from "../Models/Network"
-
+import useImtblPassport from "../lib/wallets/imtblPassport/useImtblPassport"
 
 export type WalletProvider = {
     connectWallet: (chain?: string | number | undefined | null) => Promise<void> | undefined | void,
     disconnectWallet: () => Promise<void> | undefined | void,
+    reconnectWallet: (chain?: string | number | undefined | null) => Promise<void> | undefined | void,
     getConnectedWallet: () => Wallet | undefined,
     autofillSupportedNetworks?: string[],
     withdrawalSupportedNetworks: string[],
@@ -24,7 +25,8 @@ export default function useWallet() {
         useTON(),
         useEVM(),
         useStarknet(),
-        useImmutableX(),
+        useImtblX(),
+        useImtblPassport(),
         useSolana()
     ]
 
@@ -54,6 +56,16 @@ export default function useWallet() {
         }
     }
 
+    const handleReconnect = async (providerName: string, chain?: string | number) => {
+        const provider = WalletProviders.find(provider => provider.name === providerName)
+        try {
+            await provider?.reconnectWallet(chain)
+        }
+        catch {
+            toast.error("Couldn't reconnect the account")
+        }
+    }
+
     const getConnectedWallets = () => {
         let connectedWallets: Wallet[] = []
 
@@ -79,6 +91,7 @@ export default function useWallet() {
         wallets: getConnectedWallets(),
         connectWallet: handleConnect,
         disconnectWallet: handleDisconnect,
+        reconnectWallet: handleReconnect,
         getWithdrawalProvider,
         getAutofillProvider,
     }
