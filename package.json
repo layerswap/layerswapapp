@@ -115,5 +115,8 @@
   },
   "resolutions": {
     "rpc-websockets": "7.10.0"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }
