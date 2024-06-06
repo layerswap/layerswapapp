@@ -14,7 +14,7 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { getWithdrawalProvider: getProvider, connectError, connectWallet } = useWallet()
+    const { getWithdrawalProvider: getProvider, connectWallet } = useWallet()
     const { userId } = useAuthState()
     const { setSwapTransaction } = useSwapTransactionStore();
 
@@ -40,7 +40,7 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
         setLoading(true)
         try {
             if (!wallet) {
-                throw Error("starknet wallet not connected")
+                throw Error("Starknet wallet not connected")
             }
 
             try {
@@ -68,15 +68,6 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
         <>
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
                 <div className='space-y-4'>
-                    {
-
-                        connectError &&
-                        <WarningMessage messageType='warning'>
-                            <span className='flex'>
-                                {connectError}
-                            </span>
-                        </WarningMessage>
-                    }
                     {
                         !wallet &&
                         <div className="flex flex-row

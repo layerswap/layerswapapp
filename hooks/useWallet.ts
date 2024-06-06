@@ -7,7 +7,6 @@ import useStarknet from "../lib/wallets/starknet/useStarknet"
 import useImmutableX from "../lib/wallets/immutableX/useIMX"
 import useSolana from "../lib/wallets/solana/useSolana"
 import { Network, RouteNetwork } from "../Models/Network"
-import { useState } from "react"
 
 
 export type WalletProvider = {
@@ -16,7 +15,6 @@ export type WalletProvider = {
     reconnectWallet: (chain?: string | number | undefined | null) => Promise<void> | undefined | void,
     getConnectedWallet: () => Wallet | undefined,
     autofillSupportedNetworks?: string[],
-    connectError?: string,
     withdrawalSupportedNetworks: string[],
     name: string,
 }
@@ -31,16 +29,12 @@ export default function useWallet() {
         useSolana()
     ]
 
-    const [error, setError] = useState<string | undefined>(undefined)
-
     async function handleConnect(providerName: string, chain?: string | number | null) {
         const provider = WalletProviders.find(provider => provider.name === providerName)
         try {
-            setError(undefined)
             await provider?.connectWallet(chain)
         }
         catch (e) {
-            setError(e.message.split("Error: ")[1])
             toast.error("Couldn't connect the account")
         }
     }
@@ -48,7 +42,6 @@ export default function useWallet() {
     const handleDisconnect = async (providerName: string, swap?: SwapItem) => {
         const provider = WalletProviders.find(provider => provider.name === providerName)
         try {
-            setError(undefined)
             if (swap?.source_exchange) {
                 const apiClient = new LayerSwapApiClient()
                 await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
@@ -58,7 +51,6 @@ export default function useWallet() {
             }
         }
         catch (e) {
-            setError(e.message.split("Error: ")[1])
             toast.error("Couldn't disconnect the account")
         }
     }
@@ -98,7 +90,6 @@ export default function useWallet() {
         wallets: getConnectedWallets(),
         connectWallet: handleConnect,
         disconnectWallet: handleDisconnect,
-        connectError: error,
         reconnectWallet: handleReconnect,
         getWithdrawalProvider,
         getAutofillProvider,

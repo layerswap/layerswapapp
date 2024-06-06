@@ -21,7 +21,7 @@ export default function ThemeWrapper({ children }: Props) {
 
 
                     error: {
-                        duration: Infinity,
+                        duration: 30000,
                     },
                 }}
                 >
