@@ -5,7 +5,6 @@ import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { isValidAddress } from "../../lib/addressValidator";
 import shortenAddress from "../utils/ShortenAddress";
 import Link from "next/link";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
@@ -13,6 +12,7 @@ import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import { Info } from "lucide-react";
 import { NetworkWithTokens, RouteNetwork } from "../../Models/Network";
 import { ExchangeNetwork } from "../../Models/Exchange";
+import { isValidAddress } from "../../lib/address/validator";
 
 type SwapDirection = "from" | "to";
 type Props = {
