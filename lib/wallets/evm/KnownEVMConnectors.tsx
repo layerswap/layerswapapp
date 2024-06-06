@@ -6,6 +6,7 @@ import CoinbaseIcon from "../../../components/icons/Wallets/Coinbase"
 import Phantom from "../../../components/icons/Wallets/Phantom"
 import { Connector } from "wagmi"
 import Argent from "../../../components/icons/Wallets/Argent"
+import ImtblPassportIcon from "../../../components/icons/Wallets/ImtblPassport"
 
 const KnownEVMConnectors = [
     {
@@ -36,6 +37,10 @@ const KnownEVMConnectors = [
         id: 'argent',
         icon: Argent
     },
+    {
+        id: 'immutable passport',
+        icon: ImtblPassportIcon
+    }
 ]
 
 export const evmConnectorNameResolver = (connector: Connector) => {

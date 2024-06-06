@@ -13,10 +13,6 @@ export default function useEVM(): WalletProvider {
     const [shouldConnect, setShouldConnect] = useState(false)
     const { disconnectAsync } = useDisconnect()
 
-    const notSupportedConnectors = [
-        "Immutable Passport"
-    ]
-
     useEffect(() => {
         if (shouldConnect) {
             connectWallet()
@@ -25,7 +21,7 @@ export default function useEVM(): WalletProvider {
     }, [shouldConnect])
 
     const withdrawalSupportedNetworks = [
-        ...networks.filter(layer => layer.type === NetworkType.EVM && layer.name !== KnownInternalNames.Networks.RoninMainnet && layer.name !== KnownInternalNames.Networks.ImmutableZkEVM).map(l => l.name),
+        ...networks.filter(layer => layer.type === NetworkType.EVM && layer.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
         KnownInternalNames.Networks.LoopringGoerli,
         KnownInternalNames.Networks.LoopringMainnet
@@ -40,10 +36,12 @@ export default function useEVM(): WalletProvider {
         KnownInternalNames.Networks.LoopringMainnet
     ]
     const name = 'evm'
+    
     const account = useAccount()
+
     const { openConnectModal } = useConnectModal()
     const getWallet = () => {
-        if (account && account.address && account.connector && !notSupportedConnectors.includes(account.connector.name)) {
+        if (account && account.address && account.connector) {
             return {
                 address: account.address,
                 connector: (account.connector as any)?._wallets?.[0]?.id || account.connector.id,
@@ -54,7 +52,7 @@ export default function useEVM(): WalletProvider {
     }
 
     const connectWallet = async () => {
-        if (account && account.address && account.connector && notSupportedConnectors.includes(account.connector.name)) {
+        if (account && account.address && account.connector) {
             await reconnectWallet()
         }
         else {
