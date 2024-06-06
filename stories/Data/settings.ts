@@ -7,6 +7,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "USDC.ero",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.ero.png",
                     "contract": "0x0bbe6b2a1440bf6175468c66efcf9669d74b67ff",
                     "decimals": 6,
@@ -16,6 +17,7 @@ export const Settings: LayerSwapSettings = {
                 },
                 {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": null,
                     "decimals": 18,
@@ -25,6 +27,7 @@ export const Settings: LayerSwapSettings = {
                 },
                 {
                     "symbol": "USDC",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.png",
                     "contract": "0x10f6864001398d38d4175619f7c36667e9dbc8ae",
                     "decimals": 6,
@@ -55,6 +58,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "UNI",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/uni.png",
                     "contract": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
                     "decimals": 18,
@@ -64,6 +68,7 @@ export const Settings: LayerSwapSettings = {
                 },
                 {
                     "symbol": "WETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/weth.png",
                     "contract": "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
                     "decimals": 18,
@@ -73,6 +78,7 @@ export const Settings: LayerSwapSettings = {
                 },
                 {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": null,
                     "decimals": 18,
@@ -82,6 +88,7 @@ export const Settings: LayerSwapSettings = {
                 },
                 {
                     "symbol": "USDC",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.png",
                     "contract": "0xF6c4b249CbCBC46f4f29F39ea69aCf68f07CF473",
                     "decimals": 6,
@@ -112,6 +119,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": null,
                     "decimals": 18,
@@ -130,7 +138,7 @@ export const Settings: LayerSwapSettings = {
             "account_explorer_template": "https://immutascan.io/address/{0}",
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
-                "evm_oracle_contract": "",
+                "evm_oracle_contract": null,
                 "evm_multi_call_contract": ""
             },
             "deposit_methods": [
@@ -142,6 +150,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": null,
                     "decimals": 18,
@@ -172,6 +181,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "USDC",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.png",
                     "contract": "0x745884cd9cFA3185C3a3917e47cbfCCcc007a582",
                     "decimals": 6,
@@ -181,6 +191,7 @@ export const Settings: LayerSwapSettings = {
                 },
                 {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": "qwe",
                     "decimals": 18,
@@ -199,7 +210,7 @@ export const Settings: LayerSwapSettings = {
             "account_explorer_template": "https://sepolia-optimism.etherscan.io/address/{0}",
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
-                "evm_oracle_contract": "",
+                "evm_oracle_contract": null,
                 "evm_multi_call_contract": ""
             },
             "deposit_methods": [
@@ -211,6 +222,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": null,
                     "decimals": 18,
@@ -229,7 +241,7 @@ export const Settings: LayerSwapSettings = {
             "account_explorer_template": "https://sepolia.basescan.org/address/{0}",
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
-                "evm_oracle_contract": "",
+                "evm_oracle_contract": null,
                 "evm_multi_call_contract": ""
             },
             "deposit_methods": [
@@ -241,6 +253,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "EVMOS",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/evmos.png",
                     "contract": null,
                     "decimals": 18,
@@ -271,6 +284,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "USDC",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.png",
                     "contract": "Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr",
                     "decimals": 6,
@@ -280,6 +294,7 @@ export const Settings: LayerSwapSettings = {
                 },
                 {
                     "symbol": "SOL",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                     "contract": null,
                     "decimals": 9,
@@ -310,6 +325,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "USDC",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.png",
                     "contract": null,
                     "decimals": 6,
@@ -328,7 +344,7 @@ export const Settings: LayerSwapSettings = {
             "account_explorer_template": "https://testnet.brine.finance/",
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
-                "evm_oracle_contract": "",
+                "evm_oracle_contract": null,
                 "evm_multi_call_contract": ""
             },
             "deposit_methods": [
@@ -340,6 +356,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "tIMX",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/timx.png",
                     "contract": null,
                     "decimals": 18,
@@ -349,6 +366,7 @@ export const Settings: LayerSwapSettings = {
                 },
                 {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": "0x2335EB4D77dE151c22119f7d2867b7cf3F5ff55e",
                     "decimals": 18,
@@ -379,6 +397,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
                     "decimals": 18,
@@ -388,6 +407,7 @@ export const Settings: LayerSwapSettings = {
                 },
                 {
                     "symbol": "ARUSDC",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png",
                     "contract": "0x04a762673b08014b8e7a969f94cc752a93b8ae209ace1aa01fea14a22f8a865c",
                     "decimals": 6,
@@ -397,6 +417,7 @@ export const Settings: LayerSwapSettings = {
                 },
                 {
                     "symbol": "DAI1",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/dai1.png",
                     "contract": "0x05bfa69e3a4b25db845e3914b2a6b9157ac39fd8fbd12497b5d3ba414f9451a4",
                     "decimals": 18,
@@ -406,6 +427,7 @@ export const Settings: LayerSwapSettings = {
                 },
                 {
                     "symbol": "DAI2",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/dai2.png",
                     "contract": "0x0338833f0015c69b60a6d1635f0767538c839d9d53905149e480a4d52d54db0f",
                     "decimals": 18,
@@ -424,7 +446,7 @@ export const Settings: LayerSwapSettings = {
             "account_explorer_template": "https://sepolia.starkscan.co/contract/{0}",
             "metadata": {
                 "listing_date": "2024-01-10T10:17:29.071644+00:00",
-                "evm_oracle_contract": "",
+                "evm_oracle_contract": null,
                 "evm_multi_call_contract": ""
             },
             "deposit_methods": [
@@ -435,6 +457,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "TMETIS",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/tmetis.png",
                     "contract": null,
                     "decimals": 18,
@@ -465,6 +488,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": "NAHMII",
                     "decimals": 18,
@@ -495,6 +519,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": null,
                     "decimals": 18,
@@ -513,7 +538,7 @@ export const Settings: LayerSwapSettings = {
             "account_explorer_template": "https://sepolia.explorer.mode.network/address/{0}",
             "metadata": {
                 "listing_date": "2024-02-19T12:01:16.537629+00:00",
-                "evm_oracle_contract": "",
+                "evm_oracle_contract": null,
                 "evm_multi_call_contract": ""
             },
             "deposit_methods": [
@@ -525,6 +550,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": null,
                     "decimals": 18,
@@ -543,7 +569,7 @@ export const Settings: LayerSwapSettings = {
             "account_explorer_template": "https://testnet.blastscan.io/address/{0}",
             "metadata": {
                 "listing_date": "2024-02-26T15:27:10.003491+00:00",
-                "evm_oracle_contract": "",
+                "evm_oracle_contract": null,
                 "evm_multi_call_contract": ""
             },
             "deposit_methods": [
@@ -555,6 +581,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": "0",
                     "decimals": 18,
@@ -573,7 +600,7 @@ export const Settings: LayerSwapSettings = {
             "account_explorer_template": "",
             "metadata": {
                 "listing_date": "2024-03-05T14:07:36.71174+00:00",
-                "evm_oracle_contract": "",
+                "evm_oracle_contract": null,
                 "evm_multi_call_contract": ""
             },
             "deposit_methods": [
@@ -585,6 +612,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": null,
                     "decimals": 18,
@@ -594,6 +622,7 @@ export const Settings: LayerSwapSettings = {
                 },
                 {
                     "symbol": "USDC",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.png",
                     "contract": "0xAc746B083d85548faA74282D0935002DCB81fc56",
                     "decimals": 6,
@@ -612,7 +641,7 @@ export const Settings: LayerSwapSettings = {
             "account_explorer_template": "https://sepolia.explorer.zksync.io/address/{0}",
             "metadata": {
                 "listing_date": "2024-03-18T12:01:24.240915+00:00",
-                "evm_oracle_contract": "",
+                "evm_oracle_contract": null,
                 "evm_multi_call_contract": ""
             },
             "deposit_methods": [
@@ -624,6 +653,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": "0x4D50106E64F3aBFb1bDC85Fe8161e2b23a502625",
                     "decimals": 18,
@@ -633,6 +663,7 @@ export const Settings: LayerSwapSettings = {
                 },
                 {
                     "symbol": "ZETA",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/zeta.png",
                     "contract": null,
                     "decimals": 18,
@@ -663,6 +694,7 @@ export const Settings: LayerSwapSettings = {
             "tokens": [
                 {
                     "symbol": "ETH",
+                    "listing_date": "2023-12-27T16:46:50.617075+00:00",
                     "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                     "contract": null,
                     "decimals": 18,
@@ -681,7 +713,7 @@ export const Settings: LayerSwapSettings = {
             "account_explorer_template": "https://blockscout.sepolia.kroma.network/address/{0}",
             "metadata": {
                 "listing_date": "2024-03-19T22:02:43.744528+00:00",
-                "evm_oracle_contract": "",
+                "evm_oracle_contract": null,
                 "evm_multi_call_contract": ""
             },
             "deposit_methods": [

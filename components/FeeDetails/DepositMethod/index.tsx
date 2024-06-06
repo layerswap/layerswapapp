@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
 import WalletIcon from "../../icons/WalletIcon";
 import { AlignLeft, ChevronDown, ChevronUp } from "lucide-react"
 import { motion } from "framer-motion";
+import { useDepositMethod } from "../../../context/depositMethodContext";
 import { useQueryState } from "../../../context/query";
 
 const variants = {
@@ -18,7 +19,7 @@ const DepositMethodComponent: FC = () => {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
-    const [open, setOpen] = useState<boolean>();
+    const { setShowModal, showModal } = useDepositMethod()
 
     const { depositMethod: defaultDepositMethod, hideDepositMethod } = useQueryState()
     const { from, depositMethod, fromExchange } = values
@@ -56,7 +57,7 @@ const DepositMethodComponent: FC = () => {
 
     const handleSelect = useCallback((item: string) => {
         setFieldValue(name, item, true)
-        setOpen(false)
+        setShowModal(false)
     }, [name, depositMethod, menuItems])
 
     const selectedMethod = menuItems?.find(i => i.id === depositMethod)?.display_name
@@ -68,10 +69,10 @@ const DepositMethodComponent: FC = () => {
 
     return (
         <div className="relative w-full mb-1.5">
-            <Popover open={open} onOpenChange={setOpen}>
+            <Popover open={showModal} onOpenChange={setShowModal}>
                 <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1">
                     <span> Transfer via </span> <span>{selectedMethod?.toLowerCase()}</span> <motion.div
-                        animate={open ? "open" : "closed"}
+                        animate={showModal ? "open" : "closed"}
                         variants={variants}
                     >
                         <ChevronDown className=" w-4 h-4 " />

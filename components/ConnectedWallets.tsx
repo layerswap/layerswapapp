@@ -6,7 +6,6 @@ import SubmitButton from "./buttons/submitButton"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./shadcn/dialog"
 import { useState } from "react"
 import { Plus } from "lucide-react"
-import AddressIcon from "./AddressIcon"
 import { Wallet } from "../stores/walletStore"
 
 export const WalletsHeader = () => {

@@ -1,9 +1,8 @@
 import { ArrowLeftRight, Lock } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
-import SubmitButton from '../../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import { useAccount, useNetwork } from 'wagmi';
-import { ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
+import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
 import WalletMessage from '../WalletTransfer/message';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
 import SignatureIcon from '../../../../icons/SignatureIcon';
@@ -96,7 +95,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
                 toast(e.message)
         }
         setLoading(false)
-    }, [swapId, network, depositAddress, accInfo, unlockedAccount, token, amount])
+    }, [swapId, network, depositAddress, accInfo, unlockedAccount, token, amount, callData])
 
     if (noAccount) {
         //TODO fix text
@@ -150,9 +149,9 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
                 <div className='space-y-4'>
                     {
                         (accInfo && unlockedAccount) ?
-                            <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                            <ButtonWrapper isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                                 Send from wallet
-                            </SubmitButton>
+                            </ButtonWrapper>
                             :
                             <>
                                 {shouldActivate &&
@@ -163,7 +162,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
                                         feeData={feeData}
                                     />
                                 }
-                                <SubmitButton
+                                <ButtonWrapper
                                     isDisabled={loadingAccount || !accInfo || loading || activationDataIsLoading}
                                     isSubmitting={loadingAccount || loading}
                                     onClick={shouldActivate ? activateAccout : handleUnlockAccount}
@@ -173,7 +172,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
                                     }
                                 >
                                     {shouldActivate ? <>Activate account</> : <>Unlock account</>}
-                                </SubmitButton>
+                                </ButtonWrapper>
                             </>
                     }
                 </div>

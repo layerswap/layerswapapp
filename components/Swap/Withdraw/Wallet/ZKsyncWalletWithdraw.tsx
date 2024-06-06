@@ -7,7 +7,7 @@ import { utils } from 'ethers';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
+import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
 import { useNetwork } from 'wagmi';
 import ClickTooltip from '../../../Tooltips/ClickTooltip';
@@ -17,6 +17,7 @@ import useWallet from '../../../../hooks/useWallet';
 import Link from 'next/link';
 import KnownInternalNames from '../../../../lib/knownIds';
 import { WithdrawPageProps } from './WalletTransferContent';
+import ManualTransferNote from './WalletTransfer/manualTransferNote';
 
 const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, sequenceNumber, swapId }) => {
     const [loading, setLoading] = useState(false);
@@ -125,7 +126,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
         finally {
             setLoading(false)
         }
-    }, [syncWallet, swapId, depositAddress, token, amount])
+    }, [syncWallet, swapId, depositAddress, token, amount, sequenceNumber])
 
     if (wallet && wallet?.connector?.toLowerCase() === 'argent') return (
         <div className="rounded-md bg-secondary-800 p-4">
@@ -163,9 +164,9 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
 
                     {
                         !syncWallet &&
-                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleAuthorize} icon={<SignatureIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        <ButtonWrapper isDisabled={loading} isSubmitting={loading} onClick={handleAuthorize} icon={<SignatureIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Authorize to Send on zkSync
-                        </SubmitButton>
+                        </ButtonWrapper>
                     }
                     {
                         syncWallet && !accountIsActivated &&
@@ -192,16 +193,20 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
                                 </p>
                                 <p className='flex mt-4 w-full justify-between items-center text-sm text-secondary-text'><span className='font-bold sm:inline hidden'>One time activation fee</span> <span className='font-bold sm:hidden'>Fee</span> <span className='text-primary-text text-sm sm:text-base flex items-center'>{activationFee?.feeInAsset}{token?.symbol}<span className='text-secondary-text text-sm'>({activationFee?.feeInUsd.toFixed(2)}$)</span></span></p>
                             </div>
-                            <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={activateAccout} icon={<SignatureIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                            <ButtonWrapper isDisabled={loading} isSubmitting={loading} onClick={activateAccout} icon={<SignatureIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
                                 Sign to activate
-                            </SubmitButton>
+                            </ButtonWrapper>
                         </>
                     }
                     {
                         syncWallet && accountIsActivated &&
-                        <SubmitButton isDisabled={!!(loading)} isSubmitting={!!loading} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        <ButtonWrapper isDisabled={!!(loading)} isSubmitting={!!loading} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Send from wallet
-                        </SubmitButton>
+                        </ButtonWrapper>
+                    }
+                    {
+                        network?.deposit_methods.some(m => m === 'deposit_address') &&
+                        <ManualTransferNote />
                     }
                 </div>
             </div>

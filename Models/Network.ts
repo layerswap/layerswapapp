@@ -40,6 +40,7 @@ export class Token {
     decimals: number;
     price_in_usd: number;
     precision: number;
+    listing_date: string;
     status?: string;
 }
 
@@ -48,7 +49,7 @@ export class RouteToken extends Token {
 }
 
 export class Metadata {
-    evm_oracle_contract?: string | null
+    evm_oracle_contract?: `0x${string}` | null
     evm_multi_call_contract?: string | null
     listing_date: string
 }

@@ -29,10 +29,9 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
     const { address } = useAccount();
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { swapResponse } = useSwapDataState()
-    const { deposit_actions } = swapResponse || {}
+    const { depositActionsResponse } = useSwapDataState()
 
-    const callData = deposit_actions?.find(da => true)?.call_data as `0x${string}` | undefined
+    const callData = depositActionsResponse?.find(da => true)?.call_data as `0x${string}` | undefined
 
     const tx = {
         to: depositAddress,
@@ -117,7 +116,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
             !isLoading &&
             <>
                 <ButtonWrapper
-                    clcikHandler={clickHandler}
+                    onClick={clickHandler}
                     icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 >
                     {(isError && buttonClicked) ? <span>Try again</span>

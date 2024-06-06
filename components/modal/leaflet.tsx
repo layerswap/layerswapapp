@@ -3,6 +3,7 @@ import { motion, useAnimation } from "framer-motion";
 import { forwardRef } from 'react';
 import IconButton from '../buttons/iconButton';
 import { X } from 'lucide-react';
+import useWindowDimensions from '../../hooks/useWindowDimensions';
 
 export type LeafletHeight = 'fit' | 'full' | '80%' | '90%';
 
@@ -23,6 +24,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 40 };
+    const { isMobile } = useWindowDimensions()
 
     const handleDragEnd = useCallback(async (_, info) => {
         const offset = info.offset.y;
@@ -35,6 +37,15 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
             controls.start({ y: 0, transition: transitionProps });
         }
     }, [controls, setShow, transitionProps])
+
+    useEffect(() => {
+        if (isMobile && show) {
+            window.document.body.classList.add('overflow-hidden')
+        }
+        return () => {
+            window.document.body.classList.remove('overflow-hidden')
+        }
+    }, [isMobile, show])
 
     useEffect(() => {
         if (show) {
@@ -69,7 +80,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
         <div ref={topmostRef}>
             <motion.div
                 key="backdrop"
-                className={`${position} inset-0 z-20 bg-black/50 block`}
+                className={`${position} inset-0 z-40 bg-black/50 block`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -91,7 +102,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
             >
                 <div className={`py-3 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
                     <div className='px-6 flex justify-between items-center'>
-                        <div className="text-lg text-primary-text font-semibold">
+                        <div className="text-lg text-primary-text font-normal">
                             <div>{title}</div>
                         </div>
                         <IconButton onClick={handleCloseModal} icon={

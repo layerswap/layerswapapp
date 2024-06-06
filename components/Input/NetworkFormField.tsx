@@ -5,7 +5,7 @@ import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import ExchangeSettings from "../../lib/ExchangeSettings";
-import { SortingByAvailability } from "../../lib/sorting"
+import { ResolveExchangeOrder, ResolveNetworkOrder, SortAscending } from "../../lib/sorting"
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
@@ -14,8 +14,8 @@ import CurrencyFormField from "./CurrencyFormField";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { Network, RouteNetwork } from "../../Models/Network";
-import { Exchange, ExchangeToken } from "../../Models/Exchange";
+import { RouteNetwork } from "../../Models/Network";
+import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
 import { Info } from "lucide-react";
@@ -35,13 +35,11 @@ type LayerIsAvailable = {
     value: boolean;
     disabledReason: null;
 }
-const GROUP_ORDERS = { "Popular": 1, "New": 2, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
+const GROUP_ORDERS = { "Popular": 1, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
+export const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
 const getGroupName = (value: RouteNetwork | Exchange, type: 'cex' | 'network', layerIsAvailable?: LayerIsAvailable) => {
     if (NetworkSettings.KnownSettings[value.name]?.isFeatured && layerIsAvailable?.disabledReason !== LayerDisabledReason.InvalidRoute) {
         return "Popular";
-    }
-    else if (new Date(value.metadata?.listing_date).getTime() >= (new Date().getTime() - 2629800000)) {
-        return "New";
     }
     else if (type === 'network') {
         return "Networks";
@@ -217,38 +215,43 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
     }
 
     const mappedLayers = routes?.map(r => {
-        let orderProp: keyof NetworkSettings | keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
-        const order = NetworkSettings.KnownSettings[r.name]?.[orderProp]
-        const details = !r.tokens?.some(r => r.status !== 'inactive') ? <ClickTooltip side="left" text='Transfers from this network are not available at the moment. Please try later.' /> : undefined
+        const details = !r.tokens?.some(r => r.status !== 'inactive') ? <ClickTooltip side="left" text={`Transfers ${direction} this network are not available at the moment. Please try later.`} /> : undefined
+        const isNewlyListed = r?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
+        const badge = isNewlyListed ? (
+            <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
+        ) : undefined;
+
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
             baseObject: r,
             id: r.name,
             name: r.display_name,
-            order: order || 100,
+            order: ResolveNetworkOrder(r, direction, isNewlyListed),
             imgSrc: r.logo,
             isAvailable: layerIsAvailable(r),
             group: getGroupName(r, 'network', layerIsAvailable(r)),
             isExchange: false,
-            details
+            details,
+            badge
         }
         return res;
-    }).sort(SortingByAvailability) || [];
+    }).sort(SortAscending) || [];
 
     const mappedExchanges = exchanges?.map(e => {
         let orderProp: keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
         const order = ExchangeSettings.KnownSettings[e.name]?.[orderProp]
+
         const res: SelectMenuItem<Exchange> & { isExchange: boolean } = {
             baseObject: e,
             id: e.name,
             name: e.display_name,
-            order: order || 100,
+            order: ResolveExchangeOrder(e, direction),
             imgSrc: e.logo,
             isAvailable: exchangeIsAvailable(e),
             group: getGroupName(e, 'cex'),
             isExchange: true,
         }
         return res;
-    }).sort(SortingByAvailability) || [];
+    }).sort(SortAscending) || [];
 
     const items = [...mappedExchanges, ...mappedLayers]
     return items

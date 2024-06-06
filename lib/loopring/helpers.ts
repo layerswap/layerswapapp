@@ -212,14 +212,14 @@ export async function activateAccount
             volume: fee,
         },
         keySeed: message,
-        validUntil: 1713438026,
+        validUntil: Math.round(Date.now() / 1000) + 30 * 86400,
         nonce: accInfo.nonce as number,
     }
 
     const typedData = getUpdateAccountEcdsaTypedData(req, LoopringAPI.CHAIN)
     const ecdsaSignature = (await signTypedData(typedData as any)).slice(0, 132)
 
-    await (await fetch(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}`, {
+    const activationReq = await (await fetch(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}`, {
         method: "POST",
         body: JSON.stringify({ ...req, ecdsaSignature: ecdsaSignature }),
         headers: {
@@ -227,6 +227,10 @@ export async function activateAccount
             'X-Api-Sig': ecdsaSignature
         }
     })).json()
+
+    if (activationReq?.resultInfo?.message) {
+        throw new Error(activationReq.resultInfo.message)
+    }
 
     return publicKey
 }

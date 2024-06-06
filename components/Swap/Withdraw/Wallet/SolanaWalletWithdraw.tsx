@@ -10,6 +10,7 @@ import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
+import ManualTransferNote from './WalletTransfer/manualTransferNote';
 
 const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId }) => {
     const [loading, setLoading] = useState(false);
@@ -117,6 +118,10 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
                         <SubmitButton isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
                             Send from wallet
                         </SubmitButton>
+                    }
+                    {
+                        network?.deposit_methods.some(m => m === 'deposit_address') &&
+                        <ManualTransferNote />
                     }
                 </div>
             </div>
