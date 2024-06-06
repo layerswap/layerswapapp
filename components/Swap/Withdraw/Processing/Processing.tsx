@@ -74,7 +74,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 
-    const progressStatuses = getProgressStatuses(swapResponse, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
+    const progressStatuses = getProgressStatuses(swapResponse, 'inputTxStatusData?.data?.status.toLowerCase()' as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
     const outputPendingDetails = quote?.avg_completion_time && <div className='flex items-center space-x-1'>
@@ -125,7 +125,6 @@ const Processing: FC<Props> = ({ swapResponse }) => {
             failed: {
                 name: `The transfer failed`,
                 description: <div className='flex space-x-1'>
-                    <span>Error: </span>
                     <div className='space-x-1 text-primary-text'>
                         {inputTxStatus === TransactionStatus.Failed ?
                             <div className="flex flex-col">
@@ -142,7 +141,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
                                 swap?.fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
                                     "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
                                     :
-                                    <div><span>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer' onClick={() => startIntercom()}> please contact our support.</a></div>
+                                    <div><span className='text-secondary-text'>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</a></div>
                         }
                     </div>
                 </div>
@@ -183,7 +182,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
                             swap?.fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
                                 "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
                                 :
-                                <div><span>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer' onClick={() => startIntercom()}> please contact our support.</a></div>
+                                <div><span className='text-secondary-text'>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</a></div>
                         }
                     </div>
                 </div>
