@@ -30,7 +30,6 @@ import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
 import { DepositMethodProvider } from "../../../context/depositMethodContext";
-import { useBalance } from "wagmi";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -49,12 +48,6 @@ const SwapDetails = dynamic(() => import(".."), {
 })
 
 export default function Form() {
-    const { data } = useBalance({
-        address:'0x3Cb9907aB2cCA160b1b0e940eA2732c7440655bb',
-        chainId: 1,
-        
-    })
-    console.log(data)
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [showSwapModal, setShowSwapModal] = useState(false);
