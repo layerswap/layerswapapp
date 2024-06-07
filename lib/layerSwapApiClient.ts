@@ -137,7 +137,6 @@ export type CreateSwapParams = {
 }
 
 export type SwapResponse = {
-    deposit_actions: DepositAction[]
     swap: SwapItem;
     quote: SwapQuote
     refuel?: Refuel,

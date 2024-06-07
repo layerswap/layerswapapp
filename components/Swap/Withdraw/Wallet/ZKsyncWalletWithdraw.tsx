@@ -17,6 +17,7 @@ import useWallet from '../../../../hooks/useWallet';
 import Link from 'next/link';
 import KnownInternalNames from '../../../../lib/knownIds';
 import { WithdrawPageProps } from './WalletTransferContent';
+import ManualTransferNote from './WalletTransfer/manualTransferNote';
 
 const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, sequenceNumber, swapId }) => {
     const [loading, setLoading] = useState(false);
@@ -125,7 +126,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
         finally {
             setLoading(false)
         }
-    }, [syncWallet, swapId, depositAddress, token, amount])
+    }, [syncWallet, swapId, depositAddress, token, amount, sequenceNumber])
 
     if (wallet && wallet?.connector?.toLowerCase() === 'argent') return (
         <div className="rounded-md bg-secondary-800 p-4">
@@ -202,6 +203,10 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
                         <ButtonWrapper isDisabled={!!(loading)} isSubmitting={!!loading} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Send from wallet
                         </ButtonWrapper>
+                    }
+                    {
+                        network?.deposit_methods.some(m => m === 'deposit_address') &&
+                        <ManualTransferNote />
                     }
                 </div>
             </div>

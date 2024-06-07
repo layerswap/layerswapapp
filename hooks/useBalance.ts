@@ -10,6 +10,7 @@ import { useBalancesState, useBalancesUpdate } from "../context/balances"
 import { Network, NetworkWithTokens, Token } from "../Models/Network"
 import useQueryBalances from "../lib/balances/query/useQueryBalances"
 import { useQueryState } from "../context/query"
+import useTonBalance from "../lib/balances/ton/useTonBalance"
 
 export default function useBalanceProvider() {
 
@@ -20,7 +21,8 @@ export default function useBalanceProvider() {
         useLoopringBalance(),
         useZkSyncBalance(),
         useSolanaBalance(),
-        useImxBalance()
+        useImxBalance(),
+        useTonBalance()
     ]
 
     const { balances, gases } = useBalancesState()
@@ -35,10 +37,10 @@ export default function useBalanceProvider() {
 
     const { getAutofillProvider } = useWallet()
 
-    const fetchNetworkBalances = async (network: NetworkWithTokens) => {
+    const fetchNetworkBalances = async (network: NetworkWithTokens, address?: string) => {
         const provider = getAutofillProvider(network)
         const wallet = provider?.getConnectedWallet()
-        const address = query.account || wallet?.address
+        address = address || query.account || wallet?.address
 
         const balance = balances[address || '']?.find(b => b?.network === network?.name)
         const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
@@ -48,16 +50,17 @@ export default function useBalanceProvider() {
             && address) {
             setIsBalanceLoading(true)
 
-            const walletBalances = balances[address]
-            const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
-
             const provider = getBalanceProvider(network)
             const networkBalances = await provider?.getNetworkBalances({
                 network: network,
                 address: address,
             }) || []
 
-            setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(networkBalances) }))
+            setAllBalances((data) => {
+                const walletBalances = data[address]
+                const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
+                return { ...data, [address]: [...filteredBalances, ...networkBalances] }
+            })
             setIsBalanceLoading(false)
         }
     }
@@ -75,9 +78,6 @@ export default function useBalanceProvider() {
             && address) {
             setIsBalanceLoading(true)
 
-            const walletBalances = balances[address]
-            const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
-
             const provider = getBalanceProvider(network)
             const balance = await provider?.getBalance({
                 network: network,
@@ -85,7 +85,11 @@ export default function useBalanceProvider() {
                 token
             }) || []
 
-            setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(balance) }))
+            setAllBalances((data) => {
+                const walletBalances = data[address]
+                const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
+                return { ...data, [address]: filteredBalances?.concat(balance) }
+            })
             setIsBalanceLoading(false)
         }
     }
@@ -119,8 +123,11 @@ export default function useBalanceProvider() {
                 }) || []
 
                 if (gas) {
-                    const filteredGases = gases[network.name]?.some(b => b?.token === token?.symbol) ? gases[network.name].filter(g => g.token !== token.symbol) : gases[network.name] || []
-                    setAllGases((data) => ({ ...data, [network.name]: filteredGases.concat(gas) }))
+                    setAllGases((data) => {
+                        const networkGases = data[network.name]
+                        const filteredGases = networkGases?.some(b => b?.token === token?.symbol) ? networkGases.filter(g => g.token !== token.symbol) : networkGases || []
+                        return { ...data, [network.name]: filteredGases.concat(gas) }
+                    })
                 }
             }
             catch (e) { console.log(e) }
