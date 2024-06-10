@@ -12,6 +12,7 @@ import { LoopringAPI } from '../../../../../lib/loopring/LoopringAPI';
 import { UnlockedAccount } from '../../../../../lib/loopring/defs';
 import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
 import { WithdrawPageProps } from '../WalletTransferContent';
+import { useConfig } from 'wagmi'
 
 const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId, callData, depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
@@ -26,6 +27,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
     const [unlockedAccount, setUnlockedAccount] = useState<UnlockedAccount | undefined>()
     const { tokens } = useLoopringTokens()
     const loopringToken = tokens?.find(t => t.symbol === selectedActivationAsset)
+    const config = useConfig()
 
     useEffect(() => {
         if (fromAddress) {
@@ -38,7 +40,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
         try {
             if (!accInfo)
                 return
-            const res = await LoopringAPI.userAPI.unlockAccount(accInfo)
+            const res = await LoopringAPI.userAPI.unlockAccount(accInfo, config)
             setUnlockedAccount(res)
         }
         catch (e) {
@@ -47,7 +49,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
         finally {
             setLoading(false)
         }
-    }, [accInfo])
+    }, [accInfo, config])
 
     const activateAccout = useCallback(async () => {
         setLoading(true)

@@ -6,7 +6,7 @@ import { parseUnits } from 'viem';
 import { AccountInfo, ExchangeInfo, KEY_MESSAGE, LOOPRING_URLs, LpFee, OffchainFeeReqType, OriginTransferRequestV3, UnlockedAccount } from "./defs";
 import { generateKey, getEdDSASig, getTransferTypedData, getUpdateAccountEcdsaTypedData, get_EddsaSig_Transfer } from "./utils";
 import { Token } from "../../Models/Network";
-import { createConfig, http } from "wagmi";
+import { Config, createConfig, http } from "wagmi";
 import { mainnet, sepolia } from "wagmi/chains";
 
 type UnlockApiRes = {
@@ -28,17 +28,18 @@ const config = createConfig({
     },
 })
 
-export async function unlockAccount(accInfo: AccountInfo)
+export async function unlockAccount(accInfo: AccountInfo, config: Config)
     : Promise<UnlockedAccount> {
     let keySeed = accInfo.keySeed
+
     if (!keySeed) {
         const exchangeInfo = await getExchangeInfo();
         keySeed = KEY_MESSAGE.replace(
             "${exchangeAddress}",
             exchangeInfo.exchangeAddress
-        ).replace("${nonce}", accInfo.nonce.toString());
+        ).replace("${nonce}", '0');
     }
-    const sig = await signMessage(config, { message: accInfo.keySeed })
+    const sig = await signMessage(config, { message: keySeed })
     const eddsaKeyData = generateKey(sig)
     const { sk } = eddsaKeyData
     const { accountId } = accInfo
