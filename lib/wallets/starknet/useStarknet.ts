@@ -66,7 +66,7 @@ export default function useStarknet(): WalletProvider {
         }
         catch (e) {
             console.log(e)
-            toast.error(e.message)
+            toast.error(e.message, { duration: 30000 })
         }
     }, [addWallet])
 
