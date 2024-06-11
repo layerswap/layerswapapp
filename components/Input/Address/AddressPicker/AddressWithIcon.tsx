@@ -25,7 +25,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, des
     const [isCopied, setCopied] = useCopyClipboard()
 
     return (
-        <div className={`flex gap-3 text-sm items-center`}>
+        <div className='flex gap-3 text-sm items-center'>
             <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
                 {
                     (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ?
