@@ -393,6 +393,10 @@ export const FailedInput: Story = {
                 swap: {
                     ...(swap.swapResponse.swap as SwapItem),
                     status: SwapStatus.UserTransferPending,
+                    transactions: [
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Failed, type: TransactionType.Input },
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Output },
+                    ]
                 }
             }
         }
