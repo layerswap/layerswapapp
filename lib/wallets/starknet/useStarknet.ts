@@ -1,9 +1,9 @@
-import { fromHex } from "viem";
 import { WalletProvider } from "../../../hooks/useWallet";
 import { useWalletStore } from "../../../stores/walletStore"
 import KnownInternalNames from "../../knownIds"
 import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
+import toast from "react-hot-toast";
 
 export default function useStarknet(): WalletProvider {
     const withdrawalSupportedNetworks = [
@@ -25,6 +25,7 @@ export default function useStarknet(): WalletProvider {
 
     const connectWallet = useCallback(async (chain: string) => {
         const constants = (await import('starknet')).constants
+        const fromHex = (await import('viem')).fromHex
         const chainId = (chain && fromHex(chain as `0x${string}`, 'string')) || constants.NetworkName.SN_MAIN
         const connect = (await import('starknetkit')).connect
         try {
@@ -39,6 +40,13 @@ export default function useStarknet(): WalletProvider {
                 dappName: 'Layerswap',
                 modalMode: 'alwaysAsk'
             })
+
+            if (wallet && chain && ((wallet.provider?.chainId && wallet.provider?.chainId != chain) || (wallet.provider?.provider?.chainId && wallet.provider?.provider?.chainId != chain))) {
+                await disconnectWallet()
+                const errorMessage = `Please switch to Starknet ${chainId === constants.NetworkName.SN_SEPOLIA ? 'Sepolia' : 'Mainnet'} with your wallet and click connect again`
+                throw new Error(errorMessage)
+            }
+
             if (wallet && wallet.account && wallet.isConnected) {
                 addWallet({
                     address: wallet.account.address,
@@ -54,9 +62,11 @@ export default function useStarknet(): WalletProvider {
                 await disconnectWallet()
                 connectWallet(chain)
             }
+
         }
         catch (e) {
-            throw new Error(e)
+            console.log(e)
+            toast.error(e.message)
         }
     }, [addWallet])
 

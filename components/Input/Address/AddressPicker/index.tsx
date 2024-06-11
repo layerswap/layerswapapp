@@ -56,7 +56,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const query = useQueryState()
     const { destination_address, to: destination, toExchange: destinationExchange, toCurrency: destinationAsset } = values
 
-    const { disconnectWallet, getAutofillProvider: getProvider } = useWallet()
+    const { getAutofillProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
         return values?.to && getProvider(values?.to)
     }, [values?.to, getProvider])
@@ -66,7 +66,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const [isConnecting, setIsConnecting] = useState(false)
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
-    const [wrongNetwork, setWrongNetwork] = useState(false)
 
     const inputReference = useRef<HTMLInputElement>(null);
 
@@ -81,17 +80,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [close, setFieldValue])
 
     const autofillConnectedWallet = useCallback(() => {
-        //TODO move to wallet implementation
-        if (connectedWallet
-            && destination
-            && connectedWallet.providerName === 'starknet'
-            && (connectedWallet.chainId != destination.chain_id)) {
-            (async () => {
-                setWrongNetwork(true)
-                await disconnectWallet(connectedWallet.providerName)
-            })()
-            return
-        }
         setFieldValue("destination_address", connectedWallet?.address)
         if (showAddressModal && connectedWallet) setShowAddressModal(false)
 
@@ -158,18 +146,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                         && !manualAddress &&
                                         <ConnectWalletButton provider={provider} connectedWallet={connectedWallet} onClick={() => { connectedWallet && handleSelectAddress(connectedWallet.address) }} onConnect={() => setIsConnecting(true)} destination={destination} destination_address={destination_address} addresses={menuItems} />
                                 }
-
-                                {
-                                    wrongNetwork && !destination_address &&
-                                    <div className="basis-full text-xs text-primary">
-                                        {
-                                            destination?.name === KnownInternalNames.Networks.StarkNetMainnet
-                                                ? <span>Please switch to Starknet Mainnet with your wallet and click Autofill again</span>
-                                                : <span>Please switch to Starknet Sepolia with your wallet and click Autofill again</span>
-                                        }
-                                    </div>
-                                }
-
 
                                 {
                                     !disabled && filteredAddresses && filteredAddresses?.length > 0 && !manualAddress && destination &&
