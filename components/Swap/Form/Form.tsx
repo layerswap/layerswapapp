@@ -29,7 +29,7 @@ import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
-import ImtblPassportProvider from "../../ImtblPassportProvider";
+import { ImtblPassportProvider } from "../../ImtblPassportProvider";
 
 type Props = {
     isPartnerWallet?: boolean,

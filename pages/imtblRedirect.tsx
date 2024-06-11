@@ -1,10 +1,13 @@
 import { useEffect } from "react";
-import { passportInstance } from "../components/ImtblPassportProvider";
+import { passportInstance, initilizePassport } from "../components/ImtblPassportProvider";
 
 const ImtblRedirect = () => {
 
     useEffect(() => {
-        passportInstance.loginCallback();
+        (async () => {
+            if (!passportInstance) await initilizePassport()
+            passportInstance.loginCallback();
+        })()
     }, [passportInstance])
 
     return (

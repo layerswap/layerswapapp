@@ -1,28 +1,38 @@
-import { useEffect } from "react"
-import { passport, config } from '@imtbl/sdk'
+import { createContext, useContext, useEffect } from "react"
 import { Network } from "../Models/Network";
 
 const PUBLISHABLE_KEY = 'pk_imapik-$nKlgSN_PduRUn-zvKMI';
 const CLIENT_ID = 'dma7UQfD7MvtqQCz9MxbwXKLt46V2T6J';
 
-export const passportInstance = new passport.Passport({
-    baseConfig: {
-        environment: config.Environment.PRODUCTION,
-        publishableKey: PUBLISHABLE_KEY,
-    },
-    clientId: CLIENT_ID,
-    redirectUri: 'https://layerswapapp-git-dev-newwagmi-imtblpassportint-500c40-layerswap.vercel.app/imtblRedirect',
-    logoutRedirectUri: 'https://layerswapapp-git-dev-newwagmi-imtblpassportint-500c40-layerswap.vercel.app/',
-    audience: 'platform_api',
-    scope: 'openid offline_access email transact',
-});
+export const initilizePassport = async () => {
+    const passport = (await import('@imtbl/sdk')).passport
+    const config = (await import('@imtbl/sdk')).config
 
-const ImtblPassportProvider = ({ children, from, to }: { children: JSX.Element | JSX.Element[], from: Network | undefined, to?: Network | undefined }) => {
+    passportInstance = new passport.Passport({
+        baseConfig: {
+            environment: config.Environment.PRODUCTION,
+            publishableKey: PUBLISHABLE_KEY,
+        },
+        clientId: CLIENT_ID,
+        redirectUri: 'http://localhost:3000/imtblRedirect',
+        logoutRedirectUri: 'http://localhost:3000/',
+        audience: 'platform_api',
+        scope: 'openid offline_access email transact',
+    });
+}
+
+export var passportInstance: any = undefined
+
+export function ImtblPassportProvider({ children, from, to }: { children: JSX.Element | JSX.Element[], from: Network | undefined, to?: Network | undefined }) {
 
     useEffect(() => {
-        if (!passportInstance) return
-        if (from?.name.startsWith('IMMUTABLE') || to?.name.startsWith('IMMUTABLE')) passportInstance.connectEvm() // EIP-6963
-    }, [from, to, passportInstance])
+        if (from?.name.startsWith('IMMUTABLE') || to?.name.startsWith('IMMUTABLE')) {
+            (async () => {
+                await initilizePassport()
+                passportInstance.connectEvm() // EIP-6963
+            })()
+        }
+    }, [from, to])
 
     return (
         <>
@@ -30,5 +40,3 @@ const ImtblPassportProvider = ({ children, from, to }: { children: JSX.Element |
         </>
     )
 }
-
-export default ImtblPassportProvider

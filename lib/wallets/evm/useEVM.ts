@@ -7,6 +7,7 @@ import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
+import { passportInstance, initilizePassport } from "../../../components/ImtblPassportProvider"
 
 export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
@@ -36,7 +37,7 @@ export default function useEVM(): WalletProvider {
         KnownInternalNames.Networks.LoopringMainnet
     ]
     const name = 'evm'
-    
+
     const account = useAccount()
 
     const { openConnectModal } = useConnectModal()
@@ -63,6 +64,10 @@ export default function useEVM(): WalletProvider {
     const disconnectWallet = async () => {
         try {
             await disconnectAsync()
+            if (account?.connector?.name === 'Immutable Passport') {
+                if (passportInstance === undefined) await initilizePassport()
+                await passportInstance.logout()
+            }
         }
         catch (e) {
             console.log(e)
@@ -71,7 +76,7 @@ export default function useEVM(): WalletProvider {
 
     const reconnectWallet = async () => {
         try {
-            await disconnectAsync()
+            await disconnectWallet()
             setShouldConnect(true)
         }
         catch (e) {
