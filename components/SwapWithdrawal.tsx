@@ -4,7 +4,7 @@ import SwapDetails from "./Swap";
 import { Widget } from "./Widget/Index";
 import NotFound from "./Swap/NotFound";
 import { BalancesDataProvider } from "../context/balances";
-import ImtblPassportProvider from "./ImtblPassportProvider";
+import { ImtblPassportProvider } from "./ImtblPassportProvider";
 
 const SwapWithdrawal: FC = () => {
     const { swapResponse: swap, swapApiError } = useSwapDataState()
