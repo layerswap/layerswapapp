@@ -4,7 +4,6 @@ import WalletIcon from '../../icons/WalletIcon';
 import useWallet from '../../../hooks/useWallet';
 import { useBalancesState } from '../../../context/balances';
 import useBalance from '../../../hooks/useBalance';
-import SpinIcon from '../../icons/spinIcon';
 import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../Input/Address/AddressPicker';
 import { RefreshCw } from 'lucide-react';
@@ -46,8 +45,7 @@ const WalletTransferContent: FC = () => {
         else await disconnectWallet(wallet.providerName, swap)
         if (source_exchange) await mutateSwap()
         setIsloading(false);
-        e?.stopPropagation();
-    }, [source_network?.type, swap?.source_exchange, disconnectWallet])
+    }, [source_network?.type, swap?.source_exchange, disconnectWallet, setIsloading, isLoading])
 
     let accountAddress: string | undefined = ""
     if (swap?.source_exchange) {
@@ -71,13 +69,11 @@ const WalletTransferContent: FC = () => {
             <div onClick={handleDisconnect} className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200 hover:cursor-pointer">
                 {
                     isLoading ?
-                        <SpinIcon className="animate-spin h-3 w-3" />
+                        <RefreshCw className="h-3 w-auto animate-spin" />
                         :
-                        <>
-                            <RefreshCw className="h-3 w-auto" />
-                            <p>Switch Wallet</p>
-                        </>
+                        <RefreshCw className="h-3 w-auto" />
                 }
+                <p>Switch Wallet</p>
             </div>
         </div>
         {
