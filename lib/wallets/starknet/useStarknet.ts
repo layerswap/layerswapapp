@@ -43,7 +43,7 @@ export default function useStarknet(): WalletProvider {
 
             if (wallet && chain && ((wallet.provider?.chainId && wallet.provider?.chainId != chain) || (wallet.provider?.provider?.chainId && wallet.provider?.provider?.chainId != chain))) {
                 await disconnectWallet()
-                const errorMessage = `Please switch to Starknet ${chainId === constants.NetworkName.SN_SEPOLIA ? 'Sepolia' : 'Mainnet'} with your wallet and click connect again`
+                const errorMessage = `Please switch the network in your wallet to ${chainId === constants.NetworkName.SN_SEPOLIA ? 'Sepolia' : 'Mainnet'} and click connect again`
                 throw new Error(errorMessage)
             }
 
