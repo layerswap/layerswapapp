@@ -2,7 +2,7 @@ import { FC } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "../../../AddressIcon";
 import shortenAddress from "../../../utils/ShortenAddress";
-import { MessageCircleWarning, History, ExternalLink, Copy, Check, ChevronDown } from "lucide-react";
+import { MessageCircleWarning, History, ExternalLink, Copy, Check, ChevronDown, AlertTriangle } from "lucide-react";
 import { Wallet } from "../../../../stores/walletStore";
 import Image from "next/image";
 import { Partner } from "../../../../Models/Partner";
@@ -113,10 +113,11 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, des
                         </div>
                     }
                     {
-                        addressItem.group === AddressGroup.FromQuery && partner &&
+                        addressItem.group === AddressGroup.FromQuery &&
                         <div className="flex items-center gap-1.5 text-secondary-text text-sm">
+                            <AlertTriangle className="h-3 w-3 text-orange-500" />
                             <p>
-                                {partner.display_name}
+                                <span>Autofilled from</span> <span>{partner?.display_name ?? 'URL'}</span>
                             </p>
                         </div>
                     }

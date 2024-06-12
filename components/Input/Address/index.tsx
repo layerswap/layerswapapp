@@ -31,7 +31,7 @@ const Address = ({ partner }: AddressProps) => {
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
     const [showAddressModal, setShowAddressModal] = useState(false);
-    const [showAddressNoteModal, setShowAddressNoteModal] = useState(true);
+    const [showAddressNoteModal, setShowAddressNoteModal] = useState(false);
 
     const previouslySelectedDestination = useRef(destination);
     const depositAddressIsFromAccountRef = useRef<boolean | null | undefined>(depositAddressIsFromAccount);
