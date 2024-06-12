@@ -37,7 +37,8 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, des
                                     className='rounded-md object-contain'
                                     src={partner.logo}
                                     width="36"
-                                    height="36"></Image>
+                                    height="36"
+                                />
                             }
                         </div>
                         :
