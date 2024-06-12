@@ -27,7 +27,7 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, addressItem, 
                     destination={destination}
                 />
                 :
-                <span className="text-secondary-text">Address</span>
+                <span className="text-primary-text-placeholder">Address</span>
             }
         </div>
         {
