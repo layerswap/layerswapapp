@@ -1,18 +1,15 @@
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import WalletIcon from '../../icons/WalletIcon';
-import { useAccountModal } from '@rainbow-me/rainbowkit';
-import { NetworkType } from '../../../Models/Network';
 import useWallet from '../../../hooks/useWallet';
 import { useBalancesState } from '../../../context/balances';
 import useBalance from '../../../hooks/useBalance';
-import SpinIcon from '../../icons/spinIcon';
 import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../Input/Address/AddressPicker';
 import { RefreshCw } from 'lucide-react';
+import { truncateDecimals } from '../../utils/RoundDecimals';
 
 const WalletTransferContent: FC = () => {
-    const { openAccountModal } = useAccountModal();
     const { getWithdrawalProvider: getProvider, disconnectWallet } = useWallet()
     const { swapResponse, depositActionsResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
@@ -31,11 +28,11 @@ const WalletTransferContent: FC = () => {
 
     const sourceNetworkWallet = provider?.getConnectedWallet()
     const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
-    // const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
+    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
-    // useEffect(() => {
-    //     source_network && source_token && fetchBalance(source_network, source_token);
-    // }, [source_network, source_token, sourceNetworkWallet?.address])
+    useEffect(() => {
+        source_network && source_token && fetchBalance(source_network, source_token);
+    }, [source_network, source_token, sourceNetworkWallet?.address])
 
     useEffect(() => {
         sourceNetworkWallet?.address && source_network && source_token && destination_token && destination_network && requested_amount && depositAddress && fetchGas(source_network, source_token, destination_address || sourceNetworkWallet.address)
@@ -48,8 +45,7 @@ const WalletTransferContent: FC = () => {
         else await disconnectWallet(wallet.providerName, swap)
         if (source_exchange) await mutateSwap()
         setIsloading(false);
-        e?.stopPropagation();
-    }, [source_network?.type, swap?.source_exchange, disconnectWallet])
+    }, [source_network?.type, swap?.source_exchange, disconnectWallet, setIsloading, isLoading])
 
     let accountAddress: string | undefined = ""
     if (swap?.source_exchange) {
@@ -58,13 +54,6 @@ const WalletTransferContent: FC = () => {
     else if (wallet) {
         accountAddress = wallet.address || "";
     }
-
-    const canOpenAccount = source_network?.type === NetworkType.EVM && !swap?.source_exchange
-
-    const handleOpenAccount = useCallback(() => {
-        if (canOpenAccount && openAccountModal)
-            openAccountModal()
-    }, [canOpenAccount, openAccountModal])
 
     if (!accountAddress || (swap?.source_exchange && !swap.exchange_account_connected)) {
         return <>
@@ -80,22 +69,37 @@ const WalletTransferContent: FC = () => {
             <div onClick={handleDisconnect} className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200 hover:cursor-pointer">
                 {
                     isLoading ?
-                        <SpinIcon className="animate-spin h-3 w-3" />
+                        <RefreshCw className="h-3 w-auto animate-spin" />
                         :
-                        <>
-                            <RefreshCw className="h-3 w-auto" />
-                            <p>Switch Wallet</p>
-                        </>
+                        <RefreshCw className="h-3 w-auto" />
                 }
+                <p>Switch Wallet</p>
             </div>
         </div>
         {
             provider &&
             wallet &&
             destination_network &&
-            <button type="button" onClick={handleOpenAccount} className="group/addressItem flex rounded-lg justify-between space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
+            <div className="group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
                 <AddressWithIcon addressItem={{ address: wallet?.address, group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} destination={destination_network} />
-            </button>
+                <div>
+                    {
+                        walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
+                            <div className="text-right text-secondary-text font-normal text-sm">
+                                {
+                                    isBalanceLoading ?
+                                        <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                        :
+                                        <>
+                                            <span>{walletBalanceAmount}</span> <span>{source_token?.symbol}</span>
+                                        </>
+                                }
+                            </div>
+                            :
+                            <></>
+                    }
+                </div>
+            </div>
         }
     </div>
 }

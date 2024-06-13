@@ -53,7 +53,12 @@ export default function useEVM(): WalletProvider {
     }
 
     const connectWallet = () => {
-        return openConnectModal && openConnectModal()
+        try {
+            return openConnectModal && openConnectModal()
+        }
+        catch (e) {
+            console.log(e)
+        }
     }
 
     const disconnectWallet = async () => {

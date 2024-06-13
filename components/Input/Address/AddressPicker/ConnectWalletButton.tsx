@@ -7,7 +7,8 @@ import { Network } from "../../../../Models/Network";
 import FilledCheck from "../../../icons/FilledCheck";
 import AddressWithIcon from "./AddressWithIcon";
 import { AddressItem } from ".";
-import { FC } from "react";
+import { FC, useState } from "react";
+import SpinIcon from "../../../icons/spinIcon";
 
 type Props = {
     addresses: AddressItem[] | undefined,
@@ -21,14 +22,20 @@ type Props = {
 
 const ConnectWalletButton: FC<Props> = ({ addresses, provider, onClick, onConnect, connectedWallet, destination, destination_address }) => {
 
+    const [isLoading, setIsLoading] = useState(false)
+
     const connect = async () => {
+        setIsLoading(true)
         await provider.connectWallet(destination.chain_id)
         if (onConnect) onConnect()
+        setIsLoading(false)
     }
 
     const reconnect = async () => {
+        setIsLoading(true)
         await provider.reconnectWallet(destination.chain_id)
         if (onConnect) onConnect()
+        setIsLoading(false)
     }
 
     const addressItem = connectedWallet && addresses?.find(a => addressFormat(a.address, destination) === addressFormat(connectedWallet.address, destination))
@@ -39,9 +46,15 @@ const ConnectWalletButton: FC<Props> = ({ addresses, provider, onClick, onConnec
                 <p className="text-sm font-medium text-secondary-text">Connected Wallet</p>
                 <button
                     onClick={reconnect}
+                    disabled={isLoading}
                     className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200"
                 >
-                    <RefreshCw className="h-3 w-auto" />
+                    {
+                        isLoading ?
+                            <RefreshCw className="h-3 w-auto animate-spin" />
+                            :
+                            <RefreshCw className="h-3 w-auto" />
+                    }
                     <p>Switch Wallet</p>
                 </button>
             </div>
