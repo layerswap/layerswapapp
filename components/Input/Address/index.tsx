@@ -9,7 +9,6 @@ import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiCl
 import { useAuthState } from "../../../context/authContext"
 import { isValidAddress } from "../../../lib/address/validator"
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap"
-import AddressNoteModal from "./AddressNote"
 
 type AddressProps = {
     partner: Partner | undefined
@@ -31,7 +30,6 @@ const Address = ({ partner }: AddressProps) => {
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
     const [showAddressModal, setShowAddressModal] = useState(false);
-    const [showAddressNoteModal, setShowAddressNoteModal] = useState(false);
 
     const previouslySelectedDestination = useRef(destination);
     const depositAddressIsFromAccountRef = useRef<boolean | null | undefined>(depositAddressIsFromAccount);
@@ -62,26 +60,20 @@ const Address = ({ partner }: AddressProps) => {
     }, [toExchange])
 
     return (
-        <>
-            <div className="w-full mb-3.5 leading-4">
-                <label htmlFor="destination_address" className="block font-semibold text-secondary-text text-xs">
-                    Send To
-                </label>
-                <AddressPicker
-                    showAddressModal={showAddressModal}
-                    setShowAddressModal={setShowAddressModal}
-                    close={() => setShowAddressModal(false)}
-                    disabled={!values.to || !values.from}
-                    name={"destination_address"}
-                    partner={partner}
-                    address_book={address_book?.data}
-                />
-            </div>
-            {
-                destination && destination_address &&
-                <AddressNoteModal openModal={showAddressNoteModal} setOpenModal={setShowAddressNoteModal} destination={destination} destination_address={destination_address} />
-            }
-        </>
+        <div className="w-full mb-3.5 leading-4">
+            <label htmlFor="destination_address" className="block font-semibold text-secondary-text text-xs">
+                Send To
+            </label>
+            <AddressPicker
+                showAddressModal={showAddressModal}
+                setShowAddressModal={setShowAddressModal}
+                close={() => setShowAddressModal(false)}
+                disabled={!values.to || !values.from}
+                name={"destination_address"}
+                partner={partner}
+                address_book={address_book?.data}
+            />
+        </div>
     )
 }
 

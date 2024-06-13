@@ -7,19 +7,34 @@ import CopyButton from "../../buttons/copyButton"
 import Link from "next/link"
 import AddressIcon from "../../AddressIcon"
 import SecondaryButton from "../../buttons/secondaryButton"
+import { useFormikContext } from "formik"
+import { SwapFormValues } from "../../DTOs/SwapFormValues"
 
 
 type AddressNoteModalProps = {
     openModal: boolean,
     setOpenModal: Dispatch<SetStateAction<boolean>>
-    destination: Network,
-    destination_address: string
+    onConfirm: (values: SwapFormValues) => void
 }
 
-const AddressNoteModal: FC<AddressNoteModalProps> = ({ openModal, setOpenModal, destination, destination_address }) => {
+const AddressNoteModal: FC<AddressNoteModalProps> = ({ openModal, setOpenModal, onConfirm }) => {
+
+    const {
+        values
+    } = useFormikContext<SwapFormValues>();
+    const {
+        to: destination,
+        destination_address
+    } = values
+
+    const confirm = () => {
+        setOpenModal(false)
+        onConfirm(values)
+    }
 
     return (
-        <Modal height="fit" show={openModal} setShow={setOpenModal} modalId={"refuel"}>
+        destination && destination_address &&
+        <Modal height="fit" show={openModal} setShow={setOpenModal} modalId={"addressNote"}>
             <div className="flex flex-col items-center gap-6 mt-2">
                 <div className="relative z-10 flex h-28 w-28 items-center justify-center rounded-xl p-2 bg-orange-500/20">
                     <TriangleAlert className="h-16 w-16 text-orange-500" aria-hidden="true" />
@@ -38,7 +53,7 @@ const AddressNoteModal: FC<AddressNoteModalProps> = ({ openModal, setOpenModal, 
                                 <span>{destination?.display_name}</span> <span>address</span>
                             </div>
                             <div className="flex items-center gap-4 text-secondary-text">
-                                <CopyButton toCopy={''} />
+                                <CopyButton toCopy={destination_address} />
                                 <Link href={destination?.account_explorer_template?.replace('{0}', destination_address) || ''} target="_blank">
                                     <ExternalLink className="h-4 w-4" />
                                 </Link>
@@ -55,10 +70,10 @@ const AddressNoteModal: FC<AddressNoteModalProps> = ({ openModal, setOpenModal, 
                     </div>
                 </div>
                 <div className="h-full w-full space-y-3">
-                    <SubmitButton type="submit" onClick={() => setOpenModal(false)} isDisabled={false} isSubmitting={false}>
+                    <SubmitButton type="submit" onClick={confirm} isDisabled={false} isSubmitting={false}>
                         Confirm address
                     </SubmitButton>
-                    <SecondaryButton className="w-full h-full py-3" onClick={() => setOpenModal(false)}>
+                    <SecondaryButton className="w-full h-full py-3 !text-base" onClick={() => setOpenModal(false)}>
                         Change address
                     </SecondaryButton>
                 </div>

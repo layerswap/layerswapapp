@@ -30,6 +30,7 @@ import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
 import { DepositMethodProvider } from "../../../context/depositMethodContext";
+import AddressNoteModal from "../../Input/Address/AddressNote";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -51,6 +52,7 @@ export default function Form() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [showSwapModal, setShowSwapModal] = useState(false);
+    const [showAddressNoteModal, setShowAddressNoteModal] = useState(true);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
@@ -69,6 +71,7 @@ export default function Form() {
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useFee()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
+        //Add check for addresses from query and open modal
         try {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken) {
@@ -107,7 +110,7 @@ export default function Form() {
                     AppURL: data.message
                 })
                 setShowConnectNetworkModal(true);
-            } else if (data.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
+            } else if (data?.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
                 const time = data.metadata.RemainingLimitPeriod?.split(':');
                 const hours = Number(time[0])
                 const minutes = Number(time[1])
@@ -178,7 +181,10 @@ export default function Form() {
             validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
         >
-            <SwapForm partner={partner} />
+            <>
+                <SwapForm partner={partner} />
+                <AddressNoteModal openModal={showAddressNoteModal} setOpenModal={setShowAddressNoteModal} onConfirm={handleSubmit} />
+            </>
         </Formik>
     </DepositMethodProvider>
 }

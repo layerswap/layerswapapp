@@ -42,13 +42,13 @@ const SwapSummary: FC = () => {
 
     let sourceAccountAddress = ""
     if (hideFrom && account) {
-        sourceAccountAddress = shortenAddress(addressFormat(account, source_network));
+        sourceAccountAddress = account;
     }
     else if (swapInputTransaction?.from) {
-        sourceAccountAddress = shortenAddress(addressFormat(swapInputTransaction?.from, source_network));
+        sourceAccountAddress = swapInputTransaction?.from;
     }
     else if (wallet) {
-        sourceAccountAddress = shortenAddress(addressFormat(wallet.address, source_network));
+        sourceAccountAddress = wallet.address;
     }
     else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && swap?.exchange_account_connected) {
         sourceAccountAddress = shortenEmail(swap?.exchange_account_name, 10);
