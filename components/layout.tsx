@@ -100,14 +100,14 @@ export default function Layout({ children, settings, themeData }: Props) {
 
   return (<>
     <Head>
-      <title>Layerswap</title>
+      <title>Layerswap App</title>
       <link rel="apple-touch-icon" sizes="180x180" href={`${basePath}/favicon/apple-touch-icon.png`} />
       <link rel="icon" type="image/png" sizes="32x32" href={`${basePath}/favicon/favicon-32x32.png`} />
       <link rel="icon" type="image/png" sizes="16x16" href={`${basePath}/favicon/favicon-16x16.png`} />
       <link rel="manifest" href={`${basePath}/favicon/site.webmanifest`} />
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content={`rgb(${themeData.secondary?.[900]})`} />
-      <meta name="description" content="Move crypto across exchanges, blockchains, and wallets." />
+      <meta name="description" content="Streamline your asset transaction experience with Layerswap across 35+ blockchains" />
 
       {/* Facebook Meta Tags */}
       <meta property="og:url" content={`https://www.layerswap.io/${basePath}`} />
