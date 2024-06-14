@@ -2,8 +2,6 @@ import { ReactNode, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import useWallet from "../../hooks/useWallet";
 import { NetworkType } from "../../Models/Network";
-import RainbowIcon from "../icons/Wallets/Rainbow";
-import TON from "../icons/Wallets/TON";
 import {
     Dialog,
     DialogContent,
@@ -12,16 +10,7 @@ import {
     DialogTrigger,
 } from "../shadcn/dialog";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
-import MetaMaskIcon from "../icons/Wallets/MetaMask";
-import WalletConnectIcon from "../icons/Wallets/WalletConnect";
-import Braavos from "../icons/Wallets/Braavos";
-import ArgentX from "../icons/Wallets/ArgentX";
-import Argent from "../icons/Wallets/Argent";
-import TonKeeper from "../icons/Wallets/TonKeeper";
-import OpenMask from "../icons/Wallets/OpenMask";
-import Phantom from "../icons/Wallets/Phantom";
-import CoinbaseIcon from "../icons/Wallets/Coinbase";
-import GlowIcon from "../icons/Wallets/Glow";
+import { ResolveConnectorIcon } from "../icons/ConnectorIcons";
 
 const ConnectButton = ({
     children,
@@ -87,7 +76,7 @@ const ConnectButton = ({
                                     <div className="inline-flex items-center relative">
                                         <ResolveConnectorIcon
                                             connector={connector.id}
-                                            className="w-7 h-7 p-0.5 rounded-full bg-secondary-800 border border-secondary-400"
+                                            iconClassName="w-7 h-7 p-0.5 rounded-full bg-secondary-800 border border-secondary-400"
                                         />
                                     </div>
                                 )}
@@ -124,7 +113,7 @@ const ConnectButton = ({
                                 <div className="inline-flex items-center relative">
                                     <ResolveConnectorIcon
                                         connector={connector.id}
-                                        className="w-7 h-7 p-0.5 rounded-full bg-secondary-800 border border-secondary-400"
+                                        iconClassName="w-7 h-7 p-0.5 rounded-full bg-secondary-800 border border-secondary-400"
                                     />
                                 </div>
                             )}
@@ -138,56 +127,3 @@ const ConnectButton = ({
 };
 
 export default ConnectButton;
-
-const ResolveConnectorIcon = ({
-    connector,
-    className,
-}: {
-    connector: string;
-    className: string;
-}) => {
-    switch (connector.toLowerCase()) {
-        case KnownConnectors.EVM:
-            return (
-                <div className="-space-x-2 flex">
-                    <RainbowIcon className={className} />
-                    <WalletConnectIcon className={className} />
-                    <MetaMaskIcon className={className} />
-                </div>
-            );
-        case KnownConnectors.Starknet:
-            return (
-                <div className="-space-x-2 flex">
-                    <Braavos className={className} />
-                    <Argent className={className} />
-                    <ArgentX className={className} />
-                </div>
-            );
-        case KnownConnectors.TON:
-            return (
-                <div className="-space-x-2 flex">
-                    <TonKeeper className={className} />
-                    <OpenMask className={className} />
-                    <TON className={className} />
-                </div>
-            );
-        case KnownConnectors.Solana:
-            return (
-                <div className="-space-x-2 flex">
-                    <CoinbaseIcon className={className} />
-                    <GlowIcon className={className} />
-                    <Phantom className={className} />
-                </div>
-            );
-        default:
-            return <></>;
-    }
-};
-
-const KnownConnectors = {
-    Starknet: "starknet",
-    EVM: "evm",
-    TON: "ton",
-    Solana: "solana",
-    Glow: "glow"
-};

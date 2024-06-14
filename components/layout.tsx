@@ -66,7 +66,6 @@ export default function Layout({ children, settings, themeData }: Props) {
 
   const query: QueryParams = {
     ...router.query,
-    ...(router.query.lockAddress === 'true' ? { lockAddress: true } : {}),
     ...(router.query.lockNetwork === 'true' ? { lockNetwork: true } : {}),
     ...(router.query.lockExchange === 'true' ? { lockExchange: true } : {}),
     ...(router.query.hideRefuel === 'true' ? { hideRefuel: true } : {}),

@@ -6,7 +6,7 @@ import KnownInternalNames from "../../../lib/knownIds";
 import BackgroundField from "../../backgroundField";
 import SubmitButton from "../../buttons/submitButton";
 import shortenAddress from "../../utils/ShortenAddress";
-import { isValidAddress } from "../../../lib/addressValidator";
+import { isValidAddress } from "../../../lib/address/validator";
 import { useSwapDepositHintClicked } from "../../../stores/swapTransactionStore";
 import { Exchange } from "../../../Models/Exchange";
 import Link from "next/link";

@@ -1,5 +1,5 @@
 import { keccak256 } from "js-sha3";
-import KnownInternalNames from "./knownIds";
+import KnownInternalNames from "../../knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
 import { PublicKey } from '@solana/web3.js'
 

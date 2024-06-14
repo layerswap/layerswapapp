@@ -10,6 +10,7 @@ import useSWR from 'swr'
 import { useQueryState } from "../../../context/query";
 import { Network, Token } from "../../../Models/Network";
 import { Exchange } from "../../../Models/Exchange";
+import { addressFormat } from "../../../lib/address/formatter";
 
 type SwapInfoProps = {
     sourceCurrency: Token,
@@ -97,7 +98,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                         }
                         <div>
                             <p className="text-primary-text text-sm leading-5">{destExchange ? destExchange?.display_name : destination?.display_name}</p>
-                            <p className="text-sm text-secondary-text">{shortenAddress(destAddress)}</p>
+                            <p className="text-sm text-secondary-text">{shortenAddress(addressFormat(destAddress, to))}</p>
                         </div>
                     </div>
                     {
