@@ -27,7 +27,6 @@ export enum AddressGroup {
 export type AddressItem = {
     address: string,
     group: AddressGroup,
-    networkType?: NetworkType | string
     date?: string
 }
 
@@ -68,15 +67,15 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const inputReference = useRef<HTMLInputElement>(null);
 
-    const menuItems = destination && generateMenuItems({ address_book, destination, destinationExchange, connectedWalletAddress, newAddress, addressFromQuery: query.destAddress })
-    const filteredAddresses = menuItems?.filter(a => a.group !== AddressGroup.ConnectedWallet)
-    const destinationAddressItem = destination && menuItems?.find(a => addressFormat(a.address, destination) === addressFormat(destination_address || '', destination))
+    const groupedAddresses = destination && resolveAddressGroups({ address_book, destination, destinationExchange, connectedWalletAddress, newAddress, addressFromQuery: query.destAddress })
+    const destinationAddressItem = destination && destination_address ? groupedAddresses?.find(a => addressFormat(a.address, destination) === addressFormat(destination_address, destination)) : undefined
+    const addressBookAddresses = groupedAddresses?.filter(a => a.group !== AddressGroup.ConnectedWallet)
 
     const handleSelectAddress = useCallback((value: string) => {
-        const address = destination && menuItems?.find(a => addressFormat(a.address, destination) === addressFormat(value, destination))?.address
+        const address = destination && groupedAddresses?.find(a => addressFormat(a.address, destination) === addressFormat(value, destination))?.address
         setFieldValue("destination_address", address)
         close()
-    }, [close, setFieldValue])
+    }, [close, setFieldValue, groupedAddresses])
 
     const autofillConnectedWallet = useCallback(() => {
         setFieldValue("destination_address", connectedWallet?.address)
@@ -129,7 +128,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                 inputReference={inputReference}
                                 setFieldValue={setFieldValue}
                                 close={close}
-                                addresses={menuItems}
+                                addresses={groupedAddresses}
                                 connectedWallet={connectedWallet}
                             />
 
@@ -143,21 +142,21 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                         && destination
                                         && provider
                                         && !manualAddress &&
-                                        <ConnectWalletButton provider={provider} connectedWallet={connectedWallet} onClick={() => { connectedWallet && handleSelectAddress(connectedWallet.address) }} onConnect={() => setIsConnecting(true)} destination={destination} destination_address={destination_address} addresses={menuItems} />
+                                        <ConnectWalletButton provider={provider} connectedWallet={connectedWallet} onClick={() => { connectedWallet && handleSelectAddress(connectedWallet.address) }} onConnect={() => setIsConnecting(true)} destination={destination} destination_address={destination_address} />
                                 }
 
                                 {
-                                    !disabled && filteredAddresses && filteredAddresses?.length > 0 && !manualAddress && destination &&
+                                    !disabled && addressBookAddresses && addressBookAddresses?.length > 0 && !manualAddress && destination &&
                                     <AddressBook
-                                        addressBook={filteredAddresses}
+                                        addressBook={addressBookAddresses}
                                         onSelectAddress={handleSelectAddress}
                                         destination={destination}
                                         destination_address={destination_address}
                                         partner={partner}
                                     />
                                 }
-                            </div>
 
+                            </div>
 
                         </div>
                     </div>
@@ -168,8 +167,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     )
 });
 
-
-const generateMenuItems = ({
+const resolveAddressGroups = ({
     address_book,
     destination,
     destinationExchange,
@@ -184,19 +182,35 @@ const generateMenuItems = ({
     newAddress: { address: string, networkType: NetworkType | string } | undefined,
     addressFromQuery: string | undefined,
 }) => {
-    const recentlyUsedAddresses = address_book?.filter(a => destinationExchange ? a.exchanges.some(e => destinationExchange.name === e) : a.networks?.some(n => destination?.name === n) && isValidAddress(a.address, destination)) || []
 
     if (!destination) return
 
+    const filteredAddressBook = address_book?.filter(a => destinationExchange ? a.exchanges.some(e => destinationExchange.name === e) : a.networks?.some(n => destination?.name === n) && isValidAddress(a.address, destination)) || []
+    const recentlyUsedAddresses = filteredAddressBook.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: destinationExchange ? destinationExchange.name : destination.type }))
+
+    const networkType = destinationExchange ? destinationExchange.name : destination?.type
+
     let addresses: AddressItem[] = []
 
-    if (newAddress?.address && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.ManualAdded && addressFormat(newAddress.address, destination) !== addressFormat(a.address, destination)), { address: newAddress.address, group: AddressGroup.ManualAdded, networkType: newAddress.networkType }]
-    if (recentlyUsedAddresses && destination) addresses = [...addresses.filter(a => !recentlyUsedAddresses.find(ra => addressFormat(ra.address, destination) === addressFormat(a.address, destination))), ...recentlyUsedAddresses.map(ra => ({ address: ra.address, date: ra.date, group: AddressGroup.RecentlyUsed, networkType: destinationExchange ? destinationExchange.name : destination.type }))]
-    if (connectedWalletAddress && destination) addresses = [...addresses.filter(a => addressFormat(connectedWalletAddress, destination) !== addressFormat(a.address, destination)), { address: connectedWalletAddress, group: AddressGroup.ConnectedWallet, networkType: destination.type }]
-    if (addressFromQuery && destination) addresses = [...addresses.filter(a => a.group !== AddressGroup.FromQuery && addressFormat(addressFromQuery, destination) !== addressFormat(a.address, destination)), { address: addressFromQuery, group: AddressGroup.FromQuery, networkType: destination.type }]
+    if (addressFromQuery) {
+        addresses.push({ address: addressFromQuery, group: AddressGroup.FromQuery })
+    }
 
-    return addresses.filter(a => a.networkType === (destinationExchange ? destinationExchange.name : destination?.type))
+    if (connectedWalletAddress) {
+        addresses.push({ address: connectedWalletAddress, group: AddressGroup.ConnectedWallet })
+    }
 
+    if (recentlyUsedAddresses.length > 0) {
+        addresses = [...addresses, ...recentlyUsedAddresses]
+    }
+
+    if (newAddress?.address && newAddress.networkType === networkType) {
+        addresses.push({ address: newAddress.address, group: AddressGroup.ManualAdded })
+    }
+
+    const uniqueAddresses = addresses.filter((a, index, self) => self.findIndex(t => addressFormat(t.address, destination) === addressFormat(a.address, destination)) === index)
+
+    return uniqueAddresses
 }
 
 export default AddressPicker

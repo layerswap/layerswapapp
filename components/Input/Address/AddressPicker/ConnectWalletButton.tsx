@@ -6,12 +6,10 @@ import { Wallet } from "../../../../stores/walletStore";
 import { Network } from "../../../../Models/Network";
 import FilledCheck from "../../../icons/FilledCheck";
 import AddressWithIcon from "./AddressWithIcon";
-import { AddressItem } from ".";
+import { AddressGroup } from ".";
 import { FC, useState } from "react";
-import SpinIcon from "../../../icons/spinIcon";
 
 type Props = {
-    addresses: AddressItem[] | undefined,
     provider: WalletProvider,
     onClick: () => void,
     onConnect?: () => void,
@@ -20,7 +18,7 @@ type Props = {
     destination_address?: string | undefined
 }
 
-const ConnectWalletButton: FC<Props> = ({ addresses, provider, onClick, onConnect, connectedWallet, destination, destination_address }) => {
+const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connectedWallet, destination, destination_address }) => {
 
     const [isLoading, setIsLoading] = useState(false)
 
@@ -38,7 +36,12 @@ const ConnectWalletButton: FC<Props> = ({ addresses, provider, onClick, onConnec
         setIsLoading(false)
     }
 
-    const addressItem = connectedWallet && addresses?.find(a => addressFormat(a.address, destination) === addressFormat(connectedWallet.address, destination))
+
+
+    const addressItem = connectedWallet?.address && {
+        address: connectedWallet?.address,
+        group: AddressGroup.ConnectedWallet,
+    }
 
     return addressItem ?
         <div className="flex flex-col gap-2">
