@@ -13,7 +13,7 @@ export function addressFormat(address: string, network: { name: string } | null)
             return addHexPrefix(removeHexPrefix(address)?.padStart(64, '0'))
         }
 
-        return addAddressPadding(address)
+        return addAddressPadding(address?.toLowerCase());
 
     }
     else if (network?.name.toLowerCase().startsWith("TON".toLowerCase())) {

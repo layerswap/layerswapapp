@@ -194,12 +194,12 @@ const resolveAddressGroups = ({
 
     let addresses: AddressItem[] = []
 
-    if (partner && addressFromQuery) {
-        addresses.push({ address: addressFromQuery, group: AddressGroup.FromQuery })
-    }
-
     if (connectedWalletAddress) {
         addresses.push({ address: connectedWalletAddress, group: AddressGroup.ConnectedWallet })
+    }
+
+    if (partner && addressFromQuery) {
+        addresses.push({ address: addressFromQuery, group: AddressGroup.FromQuery })
     }
 
     if (recentlyUsedAddresses.length > 0) {
