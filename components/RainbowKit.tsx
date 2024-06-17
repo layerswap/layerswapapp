@@ -6,7 +6,7 @@ import {
     DisclaimerComponent,
     AvatarComponent
 } from '@rainbow-me/rainbowkit';
-const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
+const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
 import { publicProvider } from 'wagmi/providers/public';
 import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitgetWallet, argentWallet, phantomWallet } from '@rainbow-me/rainbowkit/wallets';
 import { useSettingsState } from "../context/settings";
