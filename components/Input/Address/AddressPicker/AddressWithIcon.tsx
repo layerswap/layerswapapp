@@ -21,15 +21,9 @@ type Props = {
 
 const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, destination }) => {
 
-    const difference_in_days = addressItem?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressItem.date).getTime()) / (1000 * 3600 * 24))) : undefined
-    const [isClient, setIsClient] = useState(false)
-
-    useEffect(() => {
-        setIsClient(true)
-    }, [])
+    const difference_in_days = addressItem?.date ? Math.round(Math.abs((new Date()).getTime() - new Date(addressItem.date).getTime())) : undefined
 
     return (
-        isClient &&
         <div className='flex gap-3 text-sm items-center'>
             <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
                 {
@@ -51,7 +45,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, des
                 }
             </div>
             <div className="flex flex-col items-start">
-                
+
                 <ExtendedAddress address={addressItem.address} network={destination} />
 
                 <div className="text-secondary-text">
@@ -107,8 +101,14 @@ type ExtendedAddressProps = {
 
 export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network }) => {
     const [isCopied, setCopied] = useCopyClipboard()
+    const [isClient, setIsClient] = useState(false)
+
+    useEffect(() => {
+        setIsClient(true)
+    }, [])
 
     return (
+        isClient &&
         <Popover>
             <PopoverTrigger onClick={(e) => e.stopPropagation()}>
                 <Tooltip>
@@ -126,7 +126,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network }) 
                 </Tooltip>
             </PopoverTrigger>
             <PopoverContent className="w-full p-2 flex flex-col gap-1 items-stretch" side="top">
-                <button type="button" onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                <div onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
                     <p>
                         Copy address
                     </p>
@@ -135,8 +135,8 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network }) 
                             <Check className="h-4 w-4" />
                             : <Copy className="w-4 h-4" />
                     }
-                </button>
-                <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                </div>
+                <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
                     <p>
                         Open in explorer
                     </p>

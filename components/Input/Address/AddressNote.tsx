@@ -2,7 +2,6 @@ import { Dispatch, FC, SetStateAction } from "react"
 import Modal from "../../modal/modal"
 import { ExternalLink, TriangleAlert } from "lucide-react"
 import SubmitButton from "../../buttons/submitButton"
-import { Network } from "../../../Models/Network"
 import CopyButton from "../../buttons/copyButton"
 import Link from "next/link"
 import AddressIcon from "../../AddressIcon"
@@ -14,13 +13,14 @@ import { SwapFormValues } from "../../DTOs/SwapFormValues"
 type AddressNoteModalProps = {
     openModal: boolean,
     setOpenModal: Dispatch<SetStateAction<boolean>>
-    onConfirm: (values: SwapFormValues) => void
+    onConfirm: () => void
 }
 
 const AddressNoteModal: FC<AddressNoteModalProps> = ({ openModal, setOpenModal, onConfirm }) => {
 
     const {
-        values
+        values,
+        submitForm
     } = useFormikContext<SwapFormValues>();
     const {
         to: destination,
@@ -29,7 +29,12 @@ const AddressNoteModal: FC<AddressNoteModalProps> = ({ openModal, setOpenModal, 
 
     const confirm = () => {
         setOpenModal(false)
-        onConfirm(values)
+        submitForm()
+        onConfirm()
+    }
+
+    const close = () => {
+        setOpenModal(false)
     }
 
     return (
@@ -61,7 +66,7 @@ const AddressNoteModal: FC<AddressNoteModalProps> = ({ openModal, setOpenModal, 
                         </div>
                     </div>
                     <div className='flex gap-3 text-sm items-center'>
-                        <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
+                        <div className='flex flex-shrink-0 bg-secondary-400 text-primary-text items-center justify-center rounded-md h-9 overflow-hidden w-9'>
                             <AddressIcon className="scale-150 h-9 w-9" address={destination_address} size={36} />
                         </div>
                         <p className="break-all text-sm">
@@ -70,10 +75,10 @@ const AddressNoteModal: FC<AddressNoteModalProps> = ({ openModal, setOpenModal, 
                     </div>
                 </div>
                 <div className="h-full w-full space-y-3">
-                    <SubmitButton type="submit" onClick={confirm} isDisabled={false} isSubmitting={false}>
+                    <SubmitButton type="button" onClick={confirm} isDisabled={false} isSubmitting={false}>
                         Confirm address
                     </SubmitButton>
-                    <SecondaryButton className="w-full h-full py-3 !text-base" onClick={() => setOpenModal(false)}>
+                    <SecondaryButton className="w-full h-full py-3 !text-base" onClick={close}>
                         Change address
                     </SecondaryButton>
                 </div>

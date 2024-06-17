@@ -31,6 +31,9 @@ import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
 import { DepositMethodProvider } from "../../../context/depositMethodContext";
 import AddressNoteModal from "../../Input/Address/AddressNote";
+import { addressFormat } from "../../../lib/address/formatter";
+import { useAddressesStore } from "../../../stores/addressesStore";
+import { AddressGroup } from "../../Input/Address/AddressPicker";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -52,11 +55,13 @@ export default function Form() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [showSwapModal, setShowSwapModal] = useState(false);
-    const [showAddressNoteModal, setShowAddressNoteModal] = useState(true);
+    const [showAddressNoteModal, setShowAddressNoteModal] = useState(false);
+    const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
     const { getWithdrawalProvider } = useWallet()
+    const addresses = useAddressesStore(state => state.addresses)
 
     const settings = useSettingsState();
     const query = useQueryState()
@@ -71,7 +76,18 @@ export default function Form() {
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useFee()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
-        //Add check for addresses from query and open modal
+        const { destination_address, to } = values
+
+        if (to &&
+            destination_address &&
+            (query.destAddress) &&
+            (addressFormat(query.destAddress?.toString(), to) === addressFormat(destination_address, to)) &&
+            !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
+
+            setShowAddressNoteModal(true)
+            return
+
+        }
         try {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken) {
@@ -123,7 +139,7 @@ export default function Form() {
                 }
             }
             else {
-                toast.error(data.message || error.message)
+                toast.error(data?.message || error?.message)
             }
         }
     }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getWithdrawalProvider])
@@ -183,7 +199,7 @@ export default function Form() {
         >
             <>
                 <SwapForm partner={partner} />
-                <AddressNoteModal openModal={showAddressNoteModal} setOpenModal={setShowAddressNoteModal} onConfirm={handleSubmit} />
+                <AddressNoteModal openModal={showAddressNoteModal} setOpenModal={setShowAddressNoteModal} onConfirm={() => setIsAddressFromQueryConfirmed(true)} />
             </>
         </Formik>
     </DepositMethodProvider>

@@ -1,11 +1,5 @@
 import { create } from 'zustand'
-import { AddressGroup } from '../components/Input/Address/AddressPicker';
-
-export type AddressItem = {
-    address: string,
-    group: AddressGroup,
-    date?: string
-}
+import { AddressItem } from '../components/Input/Address/AddressPicker';
 
 interface AddressesState {
     addresses: AddressItem[];
