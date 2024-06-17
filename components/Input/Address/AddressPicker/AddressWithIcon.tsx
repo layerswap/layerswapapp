@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react"
+import { FC } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "../../../AddressIcon";
 import shortenAddress from "../../../utils/ShortenAddress";
@@ -101,14 +101,8 @@ type ExtendedAddressProps = {
 
 export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network }) => {
     const [isCopied, setCopied] = useCopyClipboard()
-    const [isClient, setIsClient] = useState(false)
-
-    useEffect(() => {
-        setIsClient(true)
-    }, [])
 
     return (
-        isClient &&
         <Popover>
             <PopoverTrigger onClick={(e) => e.stopPropagation()}>
                 <Tooltip>
