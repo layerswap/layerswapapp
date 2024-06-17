@@ -43,7 +43,7 @@ function RainbowKitComponent({ children }: Props) {
             groupName: 'Popular',
             wallets: [
                 metaMaskWallet({ projectId, chains }),
-                walletConnectWallet({ projectId, chains, options: { metadata: { url: 'https://layerswap.io', name: "Layerswap", description: "Streamline your asset transaction experience with Layerswap across 35+ blockchains", icons: ["https://layerswap.io/app/favicon/apple-touch-icon.png"] }, projectId } }),
+                walletConnectWallet({ projectId, chains, options: { metadata: { url: 'https://layerswap.io', name: "Layerswap app", description: "Streamline your asset transaction experience with Layerswap across 35+ blockchains", icons: ["https://layerswap.io/app/favicon/apple-touch-icon.png"] }, projectId } }),
             ],
         },
         {
