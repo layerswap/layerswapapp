@@ -2,17 +2,22 @@ import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
 import { Balance, BalanceProps, BalanceProvider, Gas, GasProps, NetworkBalancesProps } from "../../../Models/Balance";
 import ZkSyncLiteRPCClient from "./zksyncLiteRpcClient";
+import { useSettingsState } from "../../../context/settings";
 
 export default function useZkSyncBalance(): BalanceProvider {
+    const { networks } = useSettingsState()
+
     const supportedNetworks = [
         KnownInternalNames.Networks.ZksyncMainnet
     ]
     const client = new ZkSyncLiteRPCClient();
 
-    const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
+    const getNetworkBalances = async ({ network: routeNetwork, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === routeNetwork.name)
+
         let balances: Balance[] = []
 
-        if (!network.tokens) return
+        if (!network?.tokens) return
 
         try {
             const result = await client.getAccountInfo(network.node_url, address);

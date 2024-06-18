@@ -4,10 +4,13 @@ import formatAmount from "../../formatAmount";
 import { Balance, BalanceProps, BalanceProvider, GasProps, NetworkBalancesProps } from "../../../Models/Balance";
 import { useRouter } from "next/router";
 import { ApiResponse } from "../../../Models/ApiResponse";
-import { EstimateFee, RpcProvider } from "starknet";
+import { EstimateFee } from "starknet";
 import InternalApiClient from "../../internalApiClient";
+import { useSettingsState } from "../../../context/settings";
 
 export default function useStarknetBalance(): BalanceProvider {
+
+    const { networks } = useSettingsState()
 
     const supportedNetworks = [
         KnownInternalNames.Networks.StarkNetMainnet,
@@ -16,7 +19,9 @@ export default function useStarknetBalance(): BalanceProvider {
     ]
     const router = useRouter()
 
-    const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
+    const getNetworkBalances = async ({ network: routeNetwork, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === routeNetwork.name)
+
         const {
             Contract,
             RpcProvider,
@@ -26,7 +31,7 @@ export default function useStarknetBalance(): BalanceProvider {
 
         let balances: Balance[] = []
 
-        if (!network.tokens) return
+        if (!network?.tokens) return
 
         const provider = new RpcProvider({
             nodeUrl: network.node_url,

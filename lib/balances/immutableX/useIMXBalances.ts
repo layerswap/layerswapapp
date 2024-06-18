@@ -1,27 +1,31 @@
 import KnownInternalNames from "../../knownIds"
 import formatAmount from "../../formatAmount";
 import { BalanceProps, BalanceProvider, GasProps, NetworkBalancesProps } from "../../../Models/Balance";
+import { useSettingsState } from "../../../context/settings";
 
 export default function useImxBalance(): BalanceProvider {
+
+    const { networks } = useSettingsState()
 
     const supportedNetworks = [
         KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli
     ]
 
-    const getNetworkBalances = async ({ network: layer, address }: NetworkBalancesProps) => {
+    const getNetworkBalances = async ({ network: routeNetwork, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === routeNetwork.name)
 
         const axios = (await import("axios")).default
 
-        if (!layer.tokens) return
+        if (!network?.tokens) return
 
-        const res: BalancesResponse = await axios.get(`${layer?.node_url}/v2/balances/${address}`).then(r => r.data)
+        const res: BalancesResponse = await axios.get(`${network?.node_url}/v2/balances/${address}`).then(r => r.data)
 
-        const balances = layer?.tokens?.map(asset => {
+        const balances = network?.tokens?.map(asset => {
             const balance = res.result.find(r => r.symbol === asset.symbol)
 
             return {
-                network: layer.name,
+                network: network.name,
                 amount: formatAmount(balance?.balance, asset.decimals),
                 decimals: asset.decimals,
                 isNativeCurrency: false,

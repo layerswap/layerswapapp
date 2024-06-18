@@ -4,17 +4,24 @@ import axios from "axios";
 import { Balance, BalanceProps, BalanceProvider, Gas, GasProps, NetworkBalancesProps } from "../../../Models/Balance";
 import { LoopringAPI } from "../../loopring/LoopringAPI";
 import { LOOPRING_URLs, LpFee } from "../../loopring/defs";
+import { useSettingsState } from "../../../context/settings";
 
 export default function useLoopringBalance(): BalanceProvider {
+
+    const { networks } = useSettingsState()
+
     const supportedNetworks = [
         KnownInternalNames.Networks.LoopringMainnet,
         KnownInternalNames.Networks.LoopringGoerli
     ]
 
-    const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
+    const getNetworkBalances = async ({ network: routeNetwork, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === routeNetwork.name)
+
         let balances: Balance[] = [];
 
-        if (!network.tokens) return
+        if (!network?.tokens) return
+
         try {
 
             const account: { data: AccountInfo } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`)

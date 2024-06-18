@@ -1,8 +1,9 @@
 import ToggleButton from "../buttons/toggleButton"
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { Info } from "lucide-react";
+import { useBalancesState } from "../../context/balances";
 
 type RefuelProps = {
     onButtonClick: () => void
@@ -14,6 +15,16 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
         values,
         setFieldValue
     } = useFormikContext<SwapFormValues>();
+    const { balances } = useBalancesState()
+    const destinationNativeBalance = values?.destination_address ? balances[values?.destination_address]?.find(b => b?.network === values?.to?.name && b?.token === values?.to?.token?.symbol) : undefined
+
+    useEffect(() => {
+        if (values.toCurrency?.refuel && destinationNativeBalance && destinationNativeBalance?.amount < values.toCurrency.refuel.amount) {
+            setFieldValue('refuel', true)
+        } else {
+            setFieldValue('refuel', false)
+        }
+    }, [destinationNativeBalance])
 
     const handleConfirmToggleChange = (value: boolean) => {
         setFieldValue('refuel', value)

@@ -1,7 +1,6 @@
 import { useSettingsState } from "../../../context/settings"
 import { Balance, BalanceProps, BalanceProvider, GasProps, NetworkBalancesProps } from "../../../Models/Balance"
 import { NetworkType } from "../../../Models/Network"
-import NetworkSettings, { GasCalculation } from "../../NetworkSettings"
 
 export default function useEVMBalance(): BalanceProvider {
     const { networks } = useSettingsState()
@@ -11,7 +10,11 @@ export default function useEVMBalance(): BalanceProvider {
             && l.token)
         .map(l => l.name)
 
-    const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
+    const getNetworkBalances = async ({ network: routeNetwork, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === routeNetwork.name)
+
+        if (!network) return
+
         try {
             const resolveChain = (await import("../../resolveChain")).default
             const chain = resolveChain(network)

@@ -9,14 +9,20 @@ import {
     GasProps,
     NetworkBalancesProps
 } from "../../../Models/Balance";
+import { useSettingsState } from "../../../context/settings";
 
 export default function useSolanaBalance(): BalanceProvider {
+
+    const { networks } = useSettingsState()
+
     const supportedNetworks = [
         KnownInternalNames.Networks.SolanaMainnet
     ]
-    const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
 
-        if(!address) return
+    const getNetworkBalances = async ({ network: routeNetwork, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === routeNetwork.name)
+
+        if (!address) return
 
         const SolanaWeb3 = await import("@solana/web3.js");
         const { PublicKey, Connection } = SolanaWeb3
@@ -25,7 +31,7 @@ export default function useSolanaBalance(): BalanceProvider {
         const walletPublicKey = new PublicKey(address)
         let balances: Balance[] = []
 
-        if (!network.tokens || !walletPublicKey) return
+        if (!network?.tokens || !walletPublicKey) return
 
         const connection = new SolanaConnection(
             `${network.node_url}`,
