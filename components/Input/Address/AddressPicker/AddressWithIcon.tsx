@@ -106,7 +106,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network }) 
                     <div>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-default">
+                                <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-pointer">
                                     <p className="block text-sm font-medium">
                                         {shortenAddress(address)}
                                     </p>
