@@ -37,9 +37,9 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
     let initialAddress =
         destAddress && initialDestination && isValidAddress(destAddress, destinationNetwork) ? destAddress : "";
 
-    let initialSourceCurrency = filteredSourceCurrencies?.find(c => c.symbol?.toUpperCase() == fromAsset?.toUpperCase())
+    let initialSourceCurrency = filteredSourceCurrencies?.find(c => c.symbol?.toUpperCase() == fromAsset?.toUpperCase()) || initialSource?.tokens?.[0]
 
-    let initialDestinationCurrency = filteredDestinationCurrencies?.find(c => c.symbol?.toUpperCase() == toAsset?.toUpperCase())
+    let initialDestinationCurrency = filteredDestinationCurrencies?.find(c => c.symbol?.toUpperCase() == toAsset?.toUpperCase()) || initialDestination?.tokens?.[0]
 
     //TODO this looks wrong
     let initialAmount =
