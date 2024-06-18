@@ -94,6 +94,8 @@ export default function useBalanceProvider() {
 
             return balance
         }
+
+        return balance
     }
 
     const fetchGas = async (network: Network, token: Token, userDestinationAddress: string) => {
