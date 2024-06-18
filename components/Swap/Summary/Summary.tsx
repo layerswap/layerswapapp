@@ -78,7 +78,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                                     : sourceAccountAddress ?
                                         isValidAddress(sourceAccountAddress, from) ?
                                             <div className="text-sm group/addressItem">
-                                                <ExtendedAddress address={addressFormat(sourceAccountAddress, to)} network={from} />
+                                                <ExtendedAddress address={addressFormat(sourceAccountAddress, from)} network={from} />
                                             </div>
                                             :
                                             <p className="text-sm text-secondary-text">{sourceAccountAddress}</p>

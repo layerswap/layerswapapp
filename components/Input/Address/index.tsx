@@ -68,7 +68,7 @@ const Address = ({ partner }: AddressProps) => {
                 showAddressModal={showAddressModal}
                 setShowAddressModal={setShowAddressModal}
                 close={() => setShowAddressModal(false)}
-                disabled={!values.to || !values.from}
+                disabled={!values.to}
                 name={"destination_address"}
                 partner={partner}
                 address_book={address_book?.data}

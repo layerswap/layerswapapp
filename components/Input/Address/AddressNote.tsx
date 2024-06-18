@@ -41,8 +41,8 @@ const AddressNoteModal: FC<AddressNoteModalProps> = ({ openModal, setOpenModal, 
         destination && destination_address &&
         <Modal height="fit" show={openModal} setShow={setOpenModal} modalId={"addressNote"}>
             <div className="flex flex-col items-center gap-6 mt-2">
-                <div className="relative z-10 flex h-28 w-28 items-center justify-center rounded-xl p-2 bg-orange-500/20">
-                    <TriangleAlert className="h-16 w-16 text-orange-500" aria-hidden="true" />
+                <div className="h-24 w-24 rounded-2xl overflow-hidden">
+                    <AddressIcon className="scale-150 h-24 w-24 blur-[1.5px]" address={destination_address} size={96} />
                 </div>
                 <div className="text-center max-w-xs space-y-1">
                     <p className="text-2xl">Address Confirmation</p>

@@ -107,7 +107,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     return (<>
         <AddressButton
-            disabled={!values.to || !values.from}
+            disabled={disabled}
             addressItem={destinationAddressItem}
             openAddressModal={() => setShowAddressModal(true)}
             connectedWallet={connectedWallet}

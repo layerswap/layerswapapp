@@ -2,7 +2,7 @@ import { FC, useEffect, useRef, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "../../../AddressIcon";
 import shortenAddress from "../../../utils/ShortenAddress";
-import { MessageCircleWarning, History, ExternalLink, Copy, Check, ChevronDown, AlertTriangle } from "lucide-react";
+import { History, ExternalLink, Copy, Check, ChevronDown, AlertTriangle, WalletIcon, Pencil } from "lucide-react";
 import { Wallet } from "../../../../stores/walletStore";
 import Image from "next/image";
 import { Partner } from "../../../../Models/Partner";
@@ -22,6 +22,37 @@ type Props = {
 const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, destination }) => {
 
     const difference_in_days = addressItem?.date ? Math.round(Math.abs((new Date()).getTime() - new Date(addressItem.date).getTime())) : undefined
+
+    const descriptions = [
+        {
+            group: AddressGroup.RecentlyUsed,
+            text: (difference_in_days === 0 ?
+                <p>Used today</p>
+                :
+                (difference_in_days && difference_in_days > 1 ?
+                    <p><span>Used</span> {difference_in_days} <span>days ago</span></p>
+                    : <p>Used yesterday</p>))
+            ,
+            icon: History
+        },
+        {
+            group: AddressGroup.ManualAdded,
+            text: <p>Added Manually</p>,
+            icon: Pencil
+        },
+        {
+            group: AddressGroup.ConnectedWallet,
+            text: <p>{connectedWallet?.connector || 'Connected wallet'}</p>,
+            icon: connectedWallet?.icon || WalletIcon
+        },
+        {
+            group: AddressGroup.FromQuery,
+            text: <p><span>Autofilled from</span> <span>{partner?.display_name ?? 'URL'}</span></p>,
+            icon: AlertTriangle
+        }
+    ]
+
+    const itemDescription = descriptions.find(d => d.group === addressItem.group)
 
     return (
         <div className='flex gap-3 text-sm items-center'>
@@ -49,45 +80,10 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, des
                 <ExtendedAddress address={addressItem.address} network={destination} />
 
                 <div className="text-secondary-text">
-                    {
-                        addressItem.group === AddressGroup.RecentlyUsed &&
-                        <div className="inline-flex items-center gap-1">
-                            <History className="h-4 w-4" />
-                            {
-                                (difference_in_days === 0 ?
-                                    <p>Used today</p>
-                                    :
-                                    (difference_in_days && difference_in_days > 1 ?
-                                        <p><span>Used</span> {difference_in_days} <span>days ago</span></p>
-                                        : <p>Used yesterday</p>))
-                            }
-                        </div>
-                    }
-                    {
-                        addressItem.group === AddressGroup.ManualAdded &&
-                        <div className="inline-flex items-center gap-1">
-                            <MessageCircleWarning className="h-4 w-4" />
-                            <p>New Address</p>
-                        </div>
-                    }
-                    {
-                        addressItem.group === AddressGroup.ConnectedWallet && connectedWallet?.connector &&
-                        <div className="flex items-center gap-1.5 text-secondary-text text-sm">
-                            <connectedWallet.icon className="rounded flex-shrink-0 h-4 w-4" />
-                            <p>
-                                {connectedWallet.connector}
-                            </p>
-                        </div>
-                    }
-                    {
-                        addressItem.group === AddressGroup.FromQuery &&
-                        <div className="flex items-center gap-1.5 text-secondary-text text-sm">
-                            <AlertTriangle className="h-4 w-4 text-orange-500" />
-                            <p>
-                                <span>Autofilled from</span> <span>{partner?.display_name ?? 'URL'}</span>
-                            </p>
-                        </div>
-                    }
+                    <div className="inline-flex items-center gap-1.5">
+                        {itemDescription?.icon && <itemDescription.icon className="rounded flex-shrink-0 h-4 w-4" />}
+                        {itemDescription?.text}
+                    </div>
                 </div>
             </div>
         </div>
@@ -110,7 +106,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network }) 
                     <div>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center">
+                                <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-default">
                                     <p className="block text-sm font-medium">
                                         {shortenAddress(address)}
                                     </p>
