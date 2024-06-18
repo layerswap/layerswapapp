@@ -125,12 +125,6 @@ export default function Form() {
         }
     }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getWithdrawalProvider])
 
-    const destAddress: string = query?.destAddress as string;
-
-    const isPartnerAddress = partner && destAddress;
-
-    const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
-
     const initialValues: SwapFormValues = swapResponse ? generateSwapInitialValuesFromSwap(swapResponse, settings)
         : generateSwapInitialValues(settings, query)
 
@@ -184,7 +178,7 @@ export default function Form() {
             validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
         >
-            <SwapForm isPartnerWallet={!!isPartnerWallet} partner={partner} />
+            <SwapForm partner={partner} />
         </Formik>
     </DepositMethodProvider>
 }

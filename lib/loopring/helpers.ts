@@ -67,7 +67,6 @@ export async function unlockAccount(accInfo: AccountInfo, config: Config)
     }
 
 }
-
 async function getExchangeInfo()
     : Promise<ExchangeInfo> {
     const result: ExchangeInfo = await (await fetch(`${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_EXCHANGE_INFO}`)).json()

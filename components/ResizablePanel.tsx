@@ -7,7 +7,7 @@ export default function ResizablePanel({ children, className }: { children: Reac
 
     return (
         <motion.div
-            animate={{ height: height || "auto" }}
+            animate={{ height: height || "auto", width: "100%" }}
             className="relative overflow-hidden"
         >
             <AnimatePresence initial={false}>

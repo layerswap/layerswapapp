@@ -6,10 +6,12 @@ import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
+import { useEffect, useState } from "react"
 
 export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
     const { disconnect } = useDisconnect()
+    const [shouldConnect, setShouldConnect] = useState(false)
 
     const withdrawalSupportedNetworks = [
         ...networks.filter(layer => layer.type === NetworkType.EVM && layer.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
@@ -29,11 +31,22 @@ export default function useEVM(): WalletProvider {
     const name = 'evm'
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
+    const { disconnectAsync } = useDisconnect()
+
+    useEffect(() => {
+        if (shouldConnect) {
+            connectWallet()
+            setShouldConnect(false)
+        }
+    }, [shouldConnect])
+
     const getWallet = () => {
         if (account && account.address && account.connector) {
+            const connector = account.connector.id
+
             return {
                 address: account.address,
-                connector: (account.connector as any)?._wallets?.[0]?.id || account.connector.id,
+                connector: account.connector.name || connector.charAt(0).toUpperCase() + connector.slice(1),
                 providerName: name,
                 icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account.connector), address: account.address })
             }
@@ -41,22 +54,39 @@ export default function useEVM(): WalletProvider {
     }
 
     const connectWallet = () => {
-        return openConnectModal && openConnectModal()
-    }
-
-    const disconnectWallet = async () => {
         try {
-            await disconnect()
+            return openConnectModal && openConnectModal()
         }
         catch (e) {
             console.log(e)
         }
     }
 
+    const disconnectWallet = async () => {
+        try {
+            await disconnectAsync()
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
+    const reconnectWallet = async () => {
+        try {
+            await disconnectAsync()
+            setShouldConnect(true)
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
+
     return {
         getConnectedWallet: getWallet,
         connectWallet,
         disconnectWallet,
+        reconnectWallet,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         name
