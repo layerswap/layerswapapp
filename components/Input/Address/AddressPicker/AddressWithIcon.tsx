@@ -47,7 +47,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, des
         },
         {
             group: AddressGroup.FromQuery,
-            text: <p><span>Autofilled from</span> <span>{partner?.display_name ?? 'URL'}</span></p>,
+            text: <p><span>Autofilled</span> <span>{partner ? `by ${partner.display_name}` : 'from URL'}</span></p>,
             icon: AlertTriangle
         }
     ]

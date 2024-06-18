@@ -199,7 +199,7 @@ export default function Form() {
         >
             <>
                 <SwapForm partner={partner} />
-                <AddressNoteModal openModal={showAddressNoteModal} setOpenModal={setShowAddressNoteModal} onConfirm={() => setIsAddressFromQueryConfirmed(true)} />
+                <AddressNoteModal partner={partner} openModal={showAddressNoteModal} setOpenModal={setShowAddressNoteModal} onConfirm={() => setIsAddressFromQueryConfirmed(true)} />
             </>
         </Formik>
     </DepositMethodProvider>
