@@ -65,10 +65,10 @@ export default function useBalanceProvider() {
         }
     }
 
-    const fetchBalance = async (network: Network, token: Token) => {
+    const fetchBalance = async (network: Network, token: Token, address?: string) => {
         const provider = getAutofillProvider(network)
         const wallet = provider?.getConnectedWallet()
-        const address = query.account || wallet?.address
+        address = address || query.account || wallet?.address
 
         const balance = balances[address || '']?.find(b => b?.network === network?.name)
         const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
@@ -83,14 +83,16 @@ export default function useBalanceProvider() {
                 network: network,
                 address: address,
                 token
-            }) || []
+            })
 
             setAllBalances((data) => {
                 const walletBalances = data[address]
                 const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
-                return { ...data, [address]: filteredBalances?.concat(balance) }
+                return { ...data, [address]: filteredBalances?.concat(balance || []) }
             })
             setIsBalanceLoading(false)
+
+            return balance
         }
     }
 
