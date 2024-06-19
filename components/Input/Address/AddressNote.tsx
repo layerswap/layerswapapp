@@ -10,7 +10,6 @@ import { useFormikContext } from "formik"
 import { SwapFormValues } from "../../DTOs/SwapFormValues"
 import { Partner } from "../../../Models/Partner"
 
-
 type AddressNoteModalProps = {
     openModal: boolean,
     setOpenModal: Dispatch<SetStateAction<boolean>>
@@ -49,7 +48,7 @@ const AddressNoteModal: FC<AddressNoteModalProps> = ({ openModal, setOpenModal, 
                 <div className="text-center max-w-xs space-y-1">
                     <p className="text-2xl">Address Confirmation</p>
                     <p className="text-secondary-text">
-                        <span>Deposit address was autofilled from URL {partner && <span>by {partner.display_name}</span>}. Please double-check its correctness.</span>
+                        <span>Deposit address was autofilled from URL</span> {partner && <><span>by</span> <span>{partner.display_name}.</span></>} <span>Please double-check its correctness.</span>
                     </p>
                 </div>
 
