@@ -11,7 +11,7 @@ export default function resolveChain(network: Network): (Chain & RainbowKitChain
             : null
 
     const metadata = network.metadata
-    const { evm_multi_call_contract } = metadata || {}
+    const { evm_multicall_contract } = metadata || {}
 
     if (!nativeCurrency) {
         SendErrorMessage("UI Settings error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: could not find native currency for ${network.name} ${JSON.stringify(network)} %0A`)
@@ -45,9 +45,9 @@ export default function resolveChain(network: Network): (Chain & RainbowKitChain
             }
         } : {}),
         contracts: {
-            ...(evm_multi_call_contract ? {
+            ...(evm_multicall_contract ? {
                 multicall3: {
-                    address: evm_multi_call_contract as `0x${string}`
+                    address: evm_multicall_contract as `0x${string}`
                 }
             } : {}),
         },
