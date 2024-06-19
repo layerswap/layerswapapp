@@ -1,5 +1,5 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit"
-import { useAccount, useDisconnect } from "wagmi"
+import { useAccount, useDisconnect, useSwitchAccount } from "wagmi"
 import { NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
@@ -11,6 +11,7 @@ import { useEffect, useState } from "react"
 export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
     const [shouldConnect, setShouldConnect] = useState(false)
+    const { disconnectAsync } = useDisconnect()
 
     const withdrawalSupportedNetworks = [
         ...networks.filter(layer => layer.type === NetworkType.EVM && layer.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
@@ -51,6 +52,7 @@ export default function useEVM(): WalletProvider {
         }
     }
 
+
     const connectWallet = () => {
         try {
             return openConnectModal && openConnectModal()
@@ -63,6 +65,7 @@ export default function useEVM(): WalletProvider {
     const disconnectWallet = async () => {
         try {
             account.connector && await account.connector.disconnect()
+            await disconnectAsync()
         }
         catch (e) {
             console.log(e)
@@ -72,6 +75,7 @@ export default function useEVM(): WalletProvider {
     const reconnectWallet = async () => {
         try {
             account.connector && await account.connector.disconnect()
+            await disconnectAsync()
             setShouldConnect(true)
         }
         catch (e) {
