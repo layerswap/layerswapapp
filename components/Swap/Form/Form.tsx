@@ -26,6 +26,8 @@ import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
+import useValidationStore from "../../validationError/validationErrorStore";
+import ValidationError from "../../validationError";
 
 type Props = {
     partner?: Partner,
@@ -35,7 +37,7 @@ const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
     loading: () => <></>,
 });
 
-const  Address = dynamic(() => import("../../Input/Address"), {
+const Address = dynamic(() => import("../../Input/Address"), {
     loading: () => <></>,
 });
 
@@ -59,6 +61,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const { minAllowedAmount, valuesChanger } = useFee()
     const toAsset = values.toCurrency
     const fromAsset = values.fromCurrency
+
+    const { setValidationMessage } = useValidationStore();
 
     const layerswapApiClient = new LayerSwapApiClient()
     const query = useQueryState();
@@ -92,6 +96,14 @@ const SwapForm: FC<Props> = ({ partner }) => {
         { rotate: 0 },
         { rotate: 180 }
     );
+
+    const triggerError = () => {
+        setValidationMessage('Route unavailable', 'Please try again.', 'error');
+    };
+
+    const triggerWarning = () => {
+        setValidationMessage('Route Not Found', 'Warning message short description up to 2 lines, preferably with next step suggestions.', 'warning');
+    };
 
     const sourceRoutesEndpoint = (source || destination) ? resolveRoutesURLForSelectedToken({ direction: 'from', network: source?.name, token: fromCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
     const destinationRoutesEndpoint = (source || destination) ? resolveRoutesURLForSelectedToken({ direction: 'to', network: destination?.name, token: toCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
@@ -187,6 +199,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
+                    <ValidationError />
                     <SwapButton
                         className="plausible-event-name=Swap+initiated"
                         type='submit'

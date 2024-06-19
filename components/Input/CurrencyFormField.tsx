@@ -3,7 +3,6 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
-import CurrencySettings from "../../lib/CurrencySettings";
 import { ResolveCurrencyOrder, SortAscending } from "../../lib/sorting";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
@@ -20,6 +19,7 @@ import { resolveNetworkRoutesURL } from "../../helpers/routes";
 import ClickTooltip from "../Tooltips/ClickTooltip";
 import useWallet from "../../hooks/useWallet";
 import { ONE_WEEK } from "./NetworkFormField";
+import useValidationErrorStore from "../validationError/validationErrorStore";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -35,6 +35,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { balances } = useBalancesState()
+    const { setValidationMessage, clearValidationMessage } = useValidationErrorStore();
 
     const { getAutofillProvider: getProvider } = useWallet()
 
@@ -122,7 +123,9 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 && !!routes?.data
                     ?.find(r => r.name === to?.name)?.tokens
                     ?.some(r => r.symbol === toCurrency?.symbol && r.status === 'not_found')) {
-                setFieldValue(name, null)
+                setValidationMessage('Warning', 'Token not found in route.', 'warning');
+            } else {
+                clearValidationMessage()
             }
         }
     }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
@@ -133,7 +136,9 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 && !!routes?.data
                     ?.find(r => r.name === from?.name)?.tokens
                     ?.find(r => (r.symbol === fromCurrency?.symbol) && r.status === 'not_found')) {
-                setFieldValue(name, null)
+                setValidationMessage('Warning', 'Token not found in route.', 'warning');
+            } else {
+                clearValidationMessage()
             }
         }
     }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
