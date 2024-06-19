@@ -10,7 +10,6 @@ import { useEffect, useState } from "react"
 
 export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
-    const { disconnect } = useDisconnect()
     const [shouldConnect, setShouldConnect] = useState(false)
 
     const withdrawalSupportedNetworks = [
@@ -31,7 +30,6 @@ export default function useEVM(): WalletProvider {
     const name = 'evm'
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
-    const { disconnectAsync } = useDisconnect()
 
     useEffect(() => {
         if (shouldConnect) {
@@ -64,7 +62,7 @@ export default function useEVM(): WalletProvider {
 
     const disconnectWallet = async () => {
         try {
-            await disconnectAsync()
+            account.connector && await account.connector.disconnect()
         }
         catch (e) {
             console.log(e)
@@ -73,7 +71,7 @@ export default function useEVM(): WalletProvider {
 
     const reconnectWallet = async () => {
         try {
-            await disconnectAsync()
+            account.connector && await account.connector.disconnect()
             setShouldConnect(true)
         }
         catch (e) {
