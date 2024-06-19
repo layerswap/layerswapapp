@@ -11,7 +11,7 @@ import { useQueryState } from "../../../context/query";
 const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) => {
 
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
-    const { fromCurrency, from, to, toCurrency, destination_address, amount } = values || {};
+    const { fromCurrency, from, destination_address, amount } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
     const { balances, gases } = useBalancesState()
     const query = useQueryState()

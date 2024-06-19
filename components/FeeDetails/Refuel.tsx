@@ -3,7 +3,6 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { FC, useEffect, useRef } from "react";
 import { Info } from "lucide-react";
-import { useBalancesState } from "../../context/balances";
 import useBalance from "../../hooks/useBalance";
 import { isValidAddress } from "../../lib/address/validator";
 
@@ -19,7 +18,6 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
     } = useFormikContext<SwapFormValues>();
     const { toCurrency, to, destination_address, refuel } = values
 
-    const { isBalanceLoading } = useBalancesState()
     const { fetchBalance } = useBalance()
 
     const precviouslySelectedDestination = useRef(to)
@@ -31,7 +29,6 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
                 const destinationNativeBalance = to.token && await fetchBalance(to, to.token, destination_address)
 
                 if (destinationNativeBalance && toCurrency.refuel && destinationNativeBalance?.amount < toCurrency.refuel.amount) {
-                    debugger
                     setFieldValue('refuel', true)
                     return
                 }

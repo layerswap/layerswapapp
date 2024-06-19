@@ -3,7 +3,6 @@ import { SwapFormValues } from '../DTOs/SwapFormValues';
 import { ReceiveAmounts } from './ReceiveAmounts';
 import DetailedEstimates from './DetailedEstimates';
 import { useFee } from '../../context/feeContext';
-import RefuelToggle from './Refuel';
 import FeeDetails from './FeeDetailsComponent';
 import { useQueryState } from '../../context/query';
 import ResizablePanel from '../ResizablePanel';
@@ -13,6 +12,10 @@ import DepositMethod from './DepositMethod';
 import Campaign from './Campaign';
 
 const RefuelModal = dynamic(() => import("./RefuelModal"), {
+    loading: () => <></>,
+});
+
+const RefuelToggle = dynamic(() => import("./Refuel"), {
     loading: () => <></>,
 });
 
