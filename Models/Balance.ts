@@ -8,7 +8,7 @@ export type BalanceProps = {
 }
 
 export type NetworkBalancesProps = {
-    network: NetworkWithTokens,
+    networkName: string,
     address: string
 }
 

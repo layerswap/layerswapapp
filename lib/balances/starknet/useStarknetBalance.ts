@@ -19,8 +19,8 @@ export default function useStarknetBalance(): BalanceProvider {
     ]
     const router = useRouter()
 
-    const getNetworkBalances = async ({ network: routeNetwork, address }: NetworkBalancesProps) => {
-        const network = networks.find(n => n.name === routeNetwork.name)
+    const getNetworkBalances = async ({ networkName, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === networkName)
 
         const {
             Contract,

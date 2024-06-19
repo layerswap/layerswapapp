@@ -8,8 +8,8 @@ export default function useQueryBalances(): BalanceProvider {
     const { networks } = useSettingsState()
     const supportedNetworks = [(networks.find(l => l.name.toLowerCase() === query.from?.toLowerCase())?.name || ''), (networks.find(l => l.name.toLowerCase() === query.to?.toLowerCase())?.name || '')]
 
-    const getNetworkBalances = ({ network: routeNetwork }: NetworkBalancesProps) => {
-        const network = networks.find(n => n.name === routeNetwork.name)
+    const getNetworkBalances = ({ networkName }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === networkName)
 
         const asset = network?.tokens?.find(a => a.symbol === query.fromAsset)
 

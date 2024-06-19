@@ -12,8 +12,8 @@ export default function useZkSyncBalance(): BalanceProvider {
     ]
     const client = new ZkSyncLiteRPCClient();
 
-    const getNetworkBalances = async ({ network: routeNetwork, address }: NetworkBalancesProps) => {
-        const network = networks.find(n => n.name === routeNetwork.name)
+    const getNetworkBalances = async ({ networkName, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === networkName)
 
         let balances: Balance[] = []
 

@@ -15,8 +15,8 @@ export default function useLoopringBalance(): BalanceProvider {
         KnownInternalNames.Networks.LoopringGoerli
     ]
 
-    const getNetworkBalances = async ({ network: routeNetwork, address }: NetworkBalancesProps) => {
-        const network = networks.find(n => n.name === routeNetwork.name)
+    const getNetworkBalances = async ({ networkName, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === networkName)
 
         let balances: Balance[] = [];
 
@@ -76,7 +76,7 @@ export default function useLoopringBalance(): BalanceProvider {
         }
     }
 
-    const getGas = async ({ network: layer, token, address }: GasProps) => {
+    const getGas = async ({ token, address }: GasProps) => {
         let gas: Gas[] = [];
         try {
 
