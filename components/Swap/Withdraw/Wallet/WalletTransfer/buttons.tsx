@@ -1,7 +1,5 @@
-import { FC, ReactNode, useCallback, useMemo } from "react";
-import {
-    useSwitchNetwork,
-} from "wagmi";
+import { FC, useCallback, useMemo } from "react";
+import { useSwitchNetwork } from "wagmi";
 import WalletIcon from "../../../../icons/WalletIcon";
 import WalletMessage from "./message";
 import { ActionData } from "./sharedTypes";
