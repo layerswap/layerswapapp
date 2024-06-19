@@ -62,13 +62,12 @@ export default function useZkSyncBalance(): BalanceProvider {
         }
     }
 
-    const getGas = async ({ network, token, address }: GasProps) => {
+    const getGas = async ({ network, token }: GasProps) => {
 
         let gas: Gas[] = [];
-        if (!address) return
 
         try {
-            const result = await client.getTransferFee(network.node_url, address, token.symbol);
+            const result = await client.getTransferFee(network.node_url, '0x2fc617e933a52713247ce25730f6695920b3befe', token.symbol);
             const currencyDec = token.decimals;
             const formatedGas = formatAmount(result.totalFee, Number(currencyDec))
 
