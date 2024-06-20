@@ -25,7 +25,6 @@ export class PersistantQueryParams {
     actionButtonText?: string = "";
     theme?: string = "";
     appName?: string = "";
-    clientId?: string = "";
     depositMethod?: string = "";
     hideDepositMethod?: boolean = false;
     hideLogo?: boolean = false
