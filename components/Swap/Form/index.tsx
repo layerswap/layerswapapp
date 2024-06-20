@@ -25,18 +25,18 @@ import StatusIcon from "../../SwapHistory/StatusIcons";
 import Image from 'next/image';
 import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import dynamic from "next/dynamic";
 import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
 import { DepositMethodProvider } from "../../../context/depositMethodContext";
+import { dynamicWithRetries } from "../../../lib/dynamicWithRetries";
 
 type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
-const SwapDetails = dynamic(() => import(".."), {
-    loading: () => <div className="w-full h-[450px]">
+const SwapDetails = dynamicWithRetries(() => import(".."),
+    <div className="w-full h-[450px]">
         <div className="animate-pulse flex space-x-4">
             <div className="flex-1 space-y-6 py-1">
                 <div className="h-32 bg-secondary-700 rounded-lg"></div>
@@ -45,7 +45,7 @@ const SwapDetails = dynamic(() => import(".."), {
             </div>
         </div>
     </div>
-})
+)
 
 export default function Form() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
