@@ -35,7 +35,7 @@ export default function useEVMBalance(): BalanceProvider {
                 chainId: Number(network?.chain_id),
                 assets: network.tokens,
                 publicClient,
-                hasMulticall: !!network.metadata?.evm_multi_call_contract
+                hasMulticall: !!network.metadata?.evm_multicall_contract
             });
 
             const erc20Balances = (erc20BalancesContractRes && await resolveERC20Balances(
