@@ -11,8 +11,6 @@ import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
 import { ArrowUpDown, Loader2 } from 'lucide-react'
-import WarningMessage from "../../WarningMessage";
-import { useAuthState } from "../../../context/authContext";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
@@ -26,7 +24,6 @@ import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
-import DynamicDefaultError from "../../../lib/dynamicWithRetries/defaultError";
 
 type Props = {
     partner?: Partner,
