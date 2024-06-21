@@ -36,8 +36,6 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
         setIsLoading(false)
     }
 
-
-
     const addressItem = connectedWallet?.address && {
         address: connectedWallet?.address,
         group: AddressGroup.ConnectedWallet,
