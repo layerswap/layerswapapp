@@ -26,6 +26,7 @@ import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
+import DynamicDefaultError from "../../../lib/dynamicWithRetries/defaultError";
 
 type Props = {
     partner?: Partner,
@@ -161,6 +162,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             <NetworkFormField direction="to" label="To" className="rounded-b-lg" />
                         </div>}
                     </div>
+                    <DynamicDefaultError />
                     {
                         (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
                             <div className="mb-6 leading-4">

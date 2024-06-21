@@ -1,6 +1,7 @@
 import dynamic, { DynamicOptions, Loader } from "next/dynamic";
+import DynamicDefaultError from "./defaultError";
 
-export const dynamicWithRetries = <T>(importer: () => DynamicOptions<T> | Loader<T>, loading: JSX.Element | null) => {
+export const dynamicWithRetries = <T>(importer: () => DynamicOptions<T> | Loader<T>, loading: JSX.Element | null, errorComponent?: JSX.Element | null) => {
 
     const retryImport = async () => {
         try {
@@ -16,7 +17,10 @@ export const dynamicWithRetries = <T>(importer: () => DynamicOptions<T> | Loader
                     console.log("retrying import", e);
                 }
             }
-            throw error;
+
+            const errorComp = errorComponent ? () => errorComponent : DynamicDefaultError;
+
+            return errorComp;
         }
     };
 
