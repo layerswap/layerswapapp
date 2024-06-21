@@ -162,7 +162,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             <NetworkFormField direction="to" label="To" className="rounded-b-lg" />
                         </div>}
                     </div>
-                    <DynamicDefaultError />
                     {
                         (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
                             <div className="mb-6 leading-4">
