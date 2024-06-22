@@ -21,10 +21,12 @@ import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import AppSettings from "../../lib/AppSettings";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import shortenAddress from "../utils/ShortenAddress";
+import useWallet from "../../hooks/useWallet";
 
 const PAGE_SIZE = 20;
 
 function TransactionsHistory() {
+  const { wallets } = useWallet();
   const [page, setPage] = useState(0);
   const [isLastPage, setIsLastPage] = useState(false);
   const [swaps, setSwaps] = useState<{
@@ -35,6 +37,8 @@ function TransactionsHistory() {
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>();
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false);
   const [showAllSwaps, setShowAllSwaps] = useState(false);
+
+  const wallet = wallets[0];
 
   const goBack = useCallback(() => {
     window?.["navigation"]?.["canGoBack"]
@@ -60,7 +64,27 @@ function TransactionsHistory() {
         setLoading(false);
         return;
       }
-      if (data) {
+      let combinedData = data;
+
+      if (wallet?.address) {
+        const { data: explorerData, error: explorerError } =
+          await layerswapApiClient.GetExplorerSwapsAsync(wallet.address);
+
+        if (explorerError) {
+          toast.error(explorerError.message);
+        } else if (explorerData) {
+          const uniqueExplorerData = explorerData.filter(
+            (explorerSwap) =>
+              !data?.some((swap) => swap.swap.id === explorerSwap.swap.id)
+          );
+          combinedData = [...(data || []), ...uniqueExplorerData];
+          combinedData.sort((a, b) =>
+            a.swap.created_date < b.swap.created_date ? 1 : -1
+          );
+        }
+      }
+
+      if (combinedData) {
         const groupByCreatedDate = (array: SwapResponse[]) => {
           return array.reduce<{ [key: string]: SwapResponse[] }>((acc, obj) => {
             const date = obj.swap.created_date.split("T")[0];
@@ -72,7 +96,7 @@ function TransactionsHistory() {
           }, {});
         };
 
-        const groupedData = groupByCreatedDate(data);
+        const groupedData = groupByCreatedDate(combinedData);
 
         setSwaps((prev) => {
           const mergedData = reset ? groupedData : { ...prev };
@@ -91,12 +115,12 @@ function TransactionsHistory() {
         });
 
         setPage(page);
-        setIsLastPage(data?.length < PAGE_SIZE);
+        setIsLastPage(combinedData?.length < PAGE_SIZE);
       }
 
       setLoading(false);
     },
-    []
+    [wallet?.address]
   );
 
   useEffect(() => {
@@ -167,7 +191,7 @@ function TransactionsHistory() {
                               className="w-full cursor-pointer"
                             >
                               <div className="mt-2 bg-secondary p-3 rounded-lg border-2 border-secondary-text/5 flex gap-x-4 pb-4">
-                                <div className="flex flex-col flex-grow min-w-[40px]">
+                                <div className="flex flex-col flex-grow w-16">
                                   <div className="text-primary-text flex flex-col items-center">
                                     <div className="flex-shrink-0  relative">
                                       {source_network && (
@@ -223,7 +247,7 @@ function TransactionsHistory() {
                                 </div>
 
                                 <div
-                                  className="flex flex-col justify-between items-baseline cursor-pointer"
+                                  className="flex flex-col justify-between items-baseline cursor-pointer w-56"
                                   onClick={(e) => {
                                     handleOpenSwapDetails(swap);
                                     e.preventDefault();
@@ -243,7 +267,7 @@ function TransactionsHistory() {
                                     </div>
                                     <div className="text-secondary-text text-xs  truncate">
                                       <span>
-                                        {swap?.source_network.display_name} -{" "}
+                                        {swap?.source_network.display_name} -
                                       </span>
                                       <span>
                                         {shortenAddress(
@@ -255,9 +279,9 @@ function TransactionsHistory() {
                                   </div>
 
                                   {output_transaction ? (
-                                    <div className="flex flex-col">
-                                      <div className="text-xl">
-                                        <span>
+                                    <div className="flex flex-col max-w-56">
+                                      <div className="text-xl flex">
+                                        <span className="truncate">
                                           {truncateDecimals(
                                             output_transaction?.amount,
                                             source_token?.precision
@@ -267,16 +291,15 @@ function TransactionsHistory() {
                                           {destination_token?.symbol}
                                         </span>
                                       </div>
-                                      <div className="text-secondary-text text-xs  truncate">
+                                      <div className="text-secondary-text text-xs truncate">
                                         <span>
                                           {
                                             swap?.destination_network
                                               .display_name
-                                          }{" "}
-                                          -{" "}
+                                          }
+                                          -
                                         </span>
                                         <span>
-                                          {" "}
                                           {shortenAddress(
                                             swap.destination_address
                                           )}
