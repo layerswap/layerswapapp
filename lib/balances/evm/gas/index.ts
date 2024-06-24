@@ -16,15 +16,27 @@ export default abstract class getEVMGas {
     protected nativeToken: Token
     protected isSweeplessTx: boolean
     constructor(
-        publicClient: PublicClient,
-        chainId: number,
-        contract_address: `0x${string}`,
-        account: `0x${string}`,
-        from: Network,
-        currency: Token,
-        destination: `0x${string}`,
-        nativeToken: Token,
-        isSweeplessTx: boolean
+        {
+            publicClient,
+            chainId,
+            contract_address,
+            account,
+            from,
+            currency,
+            destination,
+            nativeToken,
+            isSweeplessTx
+        }: {
+            publicClient: PublicClient,
+            chainId: number,
+            contract_address: `0x${string}`,
+            account: `0x${string}`,
+            from: Network,
+            currency: Token,
+            destination: `0x${string}`,
+            nativeToken: Token,
+            isSweeplessTx: boolean
+        }
     ) {
         this.publicClient = publicClient
         this.chainId = chainId
