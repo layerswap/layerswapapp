@@ -273,14 +273,14 @@ export interface MarketInfo {
     isSwapEnabled?: boolean;
     createdAt?: number;
 }
-export declare enum MarketStatus {
+export enum MarketStatus {
     AMM = 1,
     ORDER_BOOK = 2,
     ALL = 3
 }
-export declare const SEP = ",";
-export declare const SoursURL = "https://static.loopring.io/assets/";
-export declare type TokenAddress = string;
+export const SEP = ",";
+export const SoursURL = "https://static.loopring.io/assets/";
+export type TokenAddress = string;
 export interface TokenInfo {
     type: string;
     tokenId: number;
@@ -308,7 +308,7 @@ export interface TokenInfo {
     enabled: boolean;
     isLpToken: boolean;
 }
-export declare type TOKENMAPLIST = {
+export type TOKENMAPLIST = {
     tokensMap: LoopringMap<TokenInfo>;
     coinMap: LoopringMap<{
         icon?: string;
@@ -354,7 +354,7 @@ export interface DefiMarketInfo {
     baseLimitAmount: string;
     quoteAlias: string;
 }
-export declare enum DefiMarketStatus {
+export enum DefiMarketStatus {
     hide = 0,
     show = 1,
     depositOnly = 3,
