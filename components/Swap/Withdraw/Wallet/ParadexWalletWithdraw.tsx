@@ -12,7 +12,7 @@ import { useNetwork } from 'wagmi';
 import { useSettingsState } from '../../../../context/settings';
 import KnownInternalNames from '../../../../lib/knownIds';
 
-const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, token }) => {
+const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, token, callData }) => {
 
     const [account, setAccount] = useState<Account | undefined>(undefined)
     const [loading, setLoading] = useState(false)
@@ -67,7 +67,7 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, tok
     }, [setAccount, Paradex, setLoading])
 
     const handleTransfer = async () => {
-        if (!account || !token || !amount) return
+        if (!account || !token || !amount || !callData) return
         setLoading(true)
 
         try {
@@ -94,21 +94,8 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, tok
                 );
             }
 
-            const withdrawResult = await Paradex.Paraclear.withdraw({
-                config,
-                account,
-                token: token.symbol,
-                amount: amount.toString(),
-                bridgeCall: {
-                    contractAddress: '0x...',
-                    entrypoint: 'deposit',
-                    calldata: ['...', receivableAmountResult.receivableAmountChain],
-                },
-            });
-
-            await account.waitForTransaction(withdrawResult.hash);
+            await account.execute(callData as any);
         } catch (e) {
-            debugger
             console.log(e)
         } finally {
             setLoading(false)
