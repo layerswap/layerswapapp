@@ -16,9 +16,6 @@ const Withdraw: FC = () => {
 
     const sourceIsImmutableX = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swap?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-    const sourceIsStarknet = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase()
-        || swap?.source_network.name === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
-        || swap?.source_network.name === KnownInternalNames.Networks.StarkNetSepolia?.toUpperCase()
     const sourceIsArbitrumOne = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
         || swap?.source_network.name === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
 

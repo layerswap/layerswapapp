@@ -17,7 +17,7 @@ import SubmitButton from '../buttons/submitButton';
 
 const SwapDetails: FC<Props> = ({ type }) => {
     const { swapResponse } = useSwapDataState()
-    
+
     const { swap } = swapResponse || {}
     const swapStatus = swap?.status;
     const storedWalletTransactions = useSwapTransactionStore()
@@ -56,7 +56,8 @@ const SwapDetails: FC<Props> = ({ type }) => {
                         :
                         <>
                             <Processing />
-                            {storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
+                            {
+                                storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
                                 <SubmitButton isDisabled={false} isSubmitting={false} onClick={cancelSwap}>
                                     Try again
                                 </SubmitButton>
