@@ -1,5 +1,5 @@
 import { CurrencyDisabledReason } from "../../Input/CurrencyFormField";
-import UnavailableIcon from "../../icons/UnavailableIcon";
+import RouteIcon from "../../icons/RouteIcon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../shadcn/tooltip";
 import { LayerDisabledReason } from "../Popover/PopoverSelect";
 import { ISelectMenuItem } from "./Props/selectMenuItem";
@@ -7,18 +7,18 @@ import Image from 'next/image'
 
 export default function SelectItem({ item }: { item: ISelectMenuItem }) {
     return (<div className={`flex items-center justify-between gap-4  w-full overflow-hidden`}>
-        <div className="flex items-center gap-3">
-            {(item?.isAvailable?.disabledReason == CurrencyDisabledReason.InvalidRoute || item?.isAvailable?.disabledReason == LayerDisabledReason.LockNetworkIsTrue) ?
-                <Tooltip>
-                    <TooltipTrigger>
-                        <UnavailableIcon />
+        <div className="relative flex items-center gap-3 pl-5">
+            {(item?.isAvailable?.disabledReason == CurrencyDisabledReason.InvalidRoute || item?.isAvailable?.disabledReason == LayerDisabledReason.LockNetworkIsTrue) &&
+                <Tooltip delayDuration={200}  >
+                    <TooltipTrigger asChild className="absolute -left-0">
+                        <div className="">
+                            <RouteIcon className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+                        </div>
                     </TooltipTrigger>
                     <TooltipContent>
                         <p className="max-w-72">Transfers from selected network/asset are not supported by this network.</p>
                     </TooltipContent>
                 </Tooltip>
-                :
-                <span className="w-7"></span>
             }
             <div className="flex-shrink-0 h-6 w-6 relative">
                 {item.imgSrc && <Image

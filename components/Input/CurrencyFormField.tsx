@@ -38,6 +38,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const { setValidationMessage, clearValidationMessage } = useValidationErrorStore();
 
     const { getAutofillProvider: getProvider } = useWallet()
+    const { message: validationErrorMessage } = useValidationErrorStore()
 
     const sourceWalletProvider = useMemo(() => {
         return from && getProvider(from)
@@ -158,6 +159,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 value={value}
                 setValue={handleSelect}
                 disabled={!value?.isAvailable?.value || isLoading}
+                validationErrorMessage={validationErrorMessage}
             />
         </div>
     )

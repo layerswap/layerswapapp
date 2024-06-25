@@ -5,7 +5,6 @@ import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
 import { Popover, PopoverContent, PopoverTrigger } from '../../shadcn/popover'
 import PopoverSelect from './PopoverSelect'
 import { CurrencyDisabledReason } from '../../Input/CurrencyFormField'
-import useValidationErrorStore from '../../validationError/validationErrorStore'
 
 type PopoverSelectWrapper = {
     setValue: (value: ISelectMenuItem) => void;
@@ -14,6 +13,7 @@ type PopoverSelectWrapper = {
     placeholder?: string;
     searchHint?: string;
     disabled?: boolean;
+    validationErrorMessage?: string;
 }
 
 export default function PopoverSelectWrapper<T>({
@@ -21,9 +21,9 @@ export default function PopoverSelectWrapper<T>({
     value,
     values,
     placeholder,
+    validationErrorMessage
 }: PopoverSelectWrapper) {
     const [showModal, setShowModal] = useState(false)
-    const { message } = useValidationErrorStore()
 
     const handleSelect = useCallback((item: SelectMenuItem<T>) => {
         setValue(item)
@@ -38,7 +38,7 @@ export default function PopoverSelectWrapper<T>({
             <PopoverTrigger asChild>
                 {
                     value ?
-                        <div className={`${message ? "border-[#f8974b]" : "border-secondary-500"} rounded-lg border focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-secondary-600 font-semibold align-sub`}>
+                        <div className={`${validationErrorMessage ? "border-[#f8974b]" : "border-secondary-500"} rounded-lg border focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-secondary-600 font-semibold align-sub`}>
                             <button type='button' className='w-full py-0 border-transparent bg-transparent font-semibold rounded-md flex items-center justify-between'>
                                 <span className="flex items-center text-xs md:text-base">
                                     <div className="flex-shrink-0 h-6 w-6 relative">

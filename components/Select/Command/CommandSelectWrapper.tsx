@@ -18,6 +18,7 @@ type CommandSelectWrapperProps = {
     valueDetails?: React.ReactNode;
     exchangeDetails?: React.ReactNode;
     modalContent?: React.ReactNode;
+    validationErrorMessage?: string;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -31,7 +32,8 @@ export default function CommandSelectWrapper<T>({
     isLoading,
     modalHeight,
     valueDetails,
-    modalContent
+    modalContent,
+    validationErrorMessage
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -46,7 +48,7 @@ export default function CommandSelectWrapper<T>({
 
     return (
         <>
-            <div className="flex items-center relative">
+            <div className={`${validationErrorMessage ? "border rounded-lg border-[#f8974b]" : ""} flex items-center relative`}>
                 <button
                     type="button"
                     onClick={openModal}
