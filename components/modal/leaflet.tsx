@@ -18,9 +18,10 @@ export interface LeafletProps {
     className?: string;
     height?: LeafletHeight;
     position: LeafletPosition;
+    onClose?: () => void;
 }
 // TODO handle overflow when height is set to 'fit'
-export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, description, position }, topmostRef) {
+export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, position, onClose }, topmostRef) {
     const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 40 };
@@ -33,6 +34,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
         if (offset > height / 2 || velocity > 800) {
             await controls.start({ y: "100%", transition: transitionProps, });
             setShow(false);
+            onClose && onClose();
         } else {
             controls.start({ y: 0, transition: transitionProps });
         }
@@ -59,6 +61,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     const handleCloseModal = useCallback(async (e: React.MouseEvent<HTMLElement>) => {
         await controls.start({ y: "100%", transition: transitionProps, });
         setShow(false);
+        onClose && onClose();
     }, [setShow, controls, transitionProps])
 
     let wrapperHeightClass = ''
