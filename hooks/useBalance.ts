@@ -98,7 +98,7 @@ export default function useBalanceProvider() {
         return balance
     }
 
-    const fetchGas = async (network: Network, token: Token, userDestinationAddress: string) => {
+    const fetchGas = async (network: Network, token: Token, userDestinationAddress: string, recipientAddress?: string) => {
 
         if (!network) {
             return
@@ -122,7 +122,8 @@ export default function useBalanceProvider() {
                     address: wallet?.address as `0x${string}`,
                     network,
                     token,
-                    userDestinationAddress,
+                    recipientAddress,
+                    isSweeplessTx: wallet.address !== userDestinationAddress,
                     wallet
                 }) || []
 

@@ -1,18 +1,17 @@
-import { FC, MouseEventHandler } from "react"
+import { ButtonHTMLAttributes, FC } from "react"
 
 type buttonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 
 type SecondaryButtonProps = {
     size?: buttonSize
-    onClick?: MouseEventHandler<HTMLButtonElement>
-    className?: string,
-    disabled?: boolean
-    children?: React.ReactNode
+    children: React.ReactNode
 }
 
-const SecondaryButton: FC<SecondaryButtonProps> = ({ size = 'md', onClick, children, className, disabled }) => {
+const SecondaryButton: FC<ButtonHTMLAttributes<HTMLButtonElement> & SecondaryButtonProps> = (props) => {
 
-    let defaultStyle = 'rounded-md duration-200 break-keep transition bg-secondary-500 hover:bg-secondary-400 border border-secondary-400 hover:border-secondary-200 font-semibold text-primary-buttonTextColor shadow-sm cursor-pointer ' + className
+    const size = props.size || 'md'
+
+    let defaultStyle = `rounded-md duration-200 break-keep transition bg-secondary-500 hover:bg-secondary-400 border border-secondary-400 hover:border-secondary-200 font-semibold text-primary-buttonTextColor shadow-sm cursor-pointer ${props.className} `
 
     switch (size) {
         case 'xs':
@@ -34,12 +33,11 @@ const SecondaryButton: FC<SecondaryButtonProps> = ({ size = 'md', onClick, child
 
     return (
         <button
+            {...props}
             type="button"
             className={defaultStyle}
-            onClick={onClick}
-            disabled={disabled}
         >
-            {children}
+            {props.children}
         </button>
     )
 }

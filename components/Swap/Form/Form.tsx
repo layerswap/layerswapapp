@@ -11,8 +11,6 @@ import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
 import { ArrowUpDown, Loader2 } from 'lucide-react'
-import WarningMessage from "../../WarningMessage";
-import { useAuthState } from "../../../context/authContext";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
@@ -35,7 +33,7 @@ const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
     loading: () => <></>,
 });
 
-const  Address = dynamic(() => import("../../Input/Address"), {
+const Address = dynamic(() => import("../../Input/Address"), {
     loading: () => <></>,
 });
 
