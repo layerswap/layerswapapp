@@ -9,7 +9,7 @@ import { isValidAddress } from "../../../lib/address/validator";
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
     const { to, fromCurrency, toCurrency, from, destination_address, amount } = values
-    const { balances, isBalanceLoading } = useBalancesState()
+    const { balances, isBalanceLoading, gases } = useBalancesState()
     const { getAutofillProvider: getProvider } = useWallet()
 
     const sourceWalletProvider = useMemo(() => {
@@ -54,18 +54,14 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
         previouslySelectedDestination.current = to
     }, [to, destination_address, destinationNetworkWallet?.address])
 
-    const contract_address = values?.from?.tokens.find(a => a.symbol === values?.fromCurrency?.symbol)?.contract
-
     useEffect(() => {
         direction === 'from'
             && sourceNetworkWallet?.address
             && from
             && fromCurrency
-            && to
-            && toCurrency
-            && amount
             && fetchGas(from, fromCurrency, destination_address || sourceNetworkWallet.address)
-    }, [contract_address, from, fromCurrency, sourceNetworkWallet?.address])
+
+    }, [from, fromCurrency, sourceNetworkWallet?.address])
 
     return (
         <>

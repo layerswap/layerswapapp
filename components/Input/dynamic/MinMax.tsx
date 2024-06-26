@@ -11,7 +11,7 @@ import { useQueryState } from "../../../context/query";
 const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) => {
 
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
-    const { fromCurrency, from, destination_address, amount } = values || {};
+    const { fromCurrency, from, destination_address } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
     const { balances, gases } = useBalancesState()
     const query = useQueryState()
@@ -59,9 +59,7 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
         setFieldValue('amount', maxAllowedAmount);
         from && fetchNetworkBalances(from);
 
-        from &&
-            fromCurrency &&
-            amount && fetchGas(from, fromCurrency, destination_address || "");
+        from && fromCurrency && fetchGas(from, fromCurrency, wallet?.address || destination_address || "");
 
     }, [from, fromCurrency, destination_address, maxAllowedAmount])
 
