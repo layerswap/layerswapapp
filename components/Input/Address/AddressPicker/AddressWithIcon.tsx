@@ -21,7 +21,7 @@ type Props = {
 
 const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, destination }) => {
 
-    const difference_in_days = addressItem?.date ? Math.round(Math.abs((new Date()).getTime() - new Date(addressItem.date).getTime())) : undefined
+    const difference_in_days = addressItem?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressItem.date).getTime()) / (1000 * 3600 * 24))) : undefined
 
     const descriptions = [
         {
