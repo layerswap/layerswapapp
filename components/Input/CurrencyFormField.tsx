@@ -125,6 +125,8 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                     ?.find(r => r.name === to?.name)?.tokens
                     ?.some(r => r.symbol === toCurrency?.symbol && r.status === 'not_found')) {
                 setValidationMessage('Warning', 'Token not found in route.', 'warning');
+                if (fromCurrency && query?.lockToAsset)
+                    setValidationMessage('Warning', 'Locked destination.', 'warning');
             } else {
                 clearValidationMessage()
             }
@@ -138,6 +140,8 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                     ?.find(r => r.name === from?.name)?.tokens
                     ?.find(r => (r.symbol === fromCurrency?.symbol) && r.status === 'not_found')) {
                 setValidationMessage('Warning', 'Token not found in route.', 'warning');
+                if (toCurrency && query?.lockFromAsset)
+                    setValidationMessage('Warning', 'Locked source.', 'warning');
             } else {
                 clearValidationMessage()
             }

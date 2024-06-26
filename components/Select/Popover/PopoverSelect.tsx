@@ -18,7 +18,7 @@ export default function PopoverSelect({ values, value, setValue }: SelectProps) 
 
                     return (
                         <CommandItem
-                            disabled={!item.isAvailable.value}
+                            //disabled={!item.isAvailable.value}
                             value={item.id}
                             key={item.id}
                             onSelect={() => {
