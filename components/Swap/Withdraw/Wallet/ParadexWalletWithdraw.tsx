@@ -11,8 +11,10 @@ import { TypedData } from '@paradex/sdk/dist/ethereum-signer';
 import { useNetwork } from 'wagmi';
 import { useSettingsState } from '../../../../context/settings';
 import KnownInternalNames from '../../../../lib/knownIds';
+import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
+import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 
-const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, token, callData }) => {
+const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, token, callData, swapId }) => {
 
     const [account, setAccount] = useState<Account | undefined>(undefined)
     const [loading, setLoading] = useState(false)
@@ -20,10 +22,12 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, tok
     const { networks } = useSettingsState();
     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
 
+    const { setSwapTransaction } = useSwapTransactionStore();
+
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
-        return network && getProvider(network)
-    }, [network, getProvider])
+        return l1Network && getProvider(l1Network)
+    }, [l1Network, getProvider])
     const { chain } = useNetwork();
 
     const wallet = provider?.getConnectedWallet()
@@ -33,7 +37,8 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, tok
 
         try {
 
-            const config = await Paradex.Config.fetchConfig('prod'); // "testnet" | "prod"
+            const environment = process.env.NEXT_PUBLIC_API_VERSION === 'prod' ? 'prod' : 'testnet'
+            const config = await Paradex.Config.fetchConfig(environment);
 
             const paraclearProvider = new Paradex.ParaclearProvider.DefaultProvider(config);
 
@@ -56,10 +61,10 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, tok
                 signer,
             });
 
+
             setAccount(account);
         } catch (e) {
-            debugger
-            console.log(e)
+            throw new Error(e)
         } finally {
             setLoading(false)
         }
@@ -67,36 +72,17 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, tok
     }, [setAccount, Paradex, setLoading])
 
     const handleTransfer = async () => {
-        if (!account || !token || !amount || !callData) return
+        if (!account || !token || !amount || !callData || !swapId) return
         setLoading(true)
 
         try {
-            const config = await Paradex.Config.fetchConfig('testnet'); // "testnet" | "mainnet"
+            const res = await account.execute(JSON.parse(callData || ""), undefined, { maxFee: '1000000000000000' });
 
-            // const getBalanceResult = await Paradex.Paraclear.getTokenBalance({
-            //     provider: account,
-            //     config,
-            //     account,
-            //     token: token.symbol,
-            // });
-
-            const receivableAmountResult = await Paradex.Paraclear.getReceivableAmount({
-                provider: account, // account can be passed as the provider
-                config,
-                token: token.symbol,
-                amount: amount.toString(),
-            });
-
-            if (Number(receivableAmountResult.socializedLossFactor) !== 0) {
-                console.log(
-                    `Socialized loss is active. You will receive` +
-                    ` ${receivableAmountResult.receivableAmount} USDC.`,
-                );
+            if (res.transaction_hash) {
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, res.transaction_hash);
             }
-
-            await account.execute(callData as any);
         } catch (e) {
-            console.log(e)
+            throw new Error(e)
         } finally {
             setLoading(false)
         }
