@@ -38,7 +38,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const { setValidationMessage, clearValidationMessage } = useValidationErrorStore();
 
     const { getAutofillProvider: getProvider } = useWallet()
-    const { message: validationErrorMessage } = useValidationErrorStore()
+    const { message: validationErrorMessage, directions } = useValidationErrorStore()
 
     const sourceWalletProvider = useMemo(() => {
         return from && getProvider(from)
@@ -119,41 +119,41 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     }, [from, query])
 
     useEffect(() => {
-        if (name === "toCurrency" && toCurrency && !isLoading) {
+        if (name === "toCurrency" && toCurrency && !isLoading && (query.lockTo !== true || (query.lockTo && query.lockFrom))) {
+
+
             if (routes?.data
                 && !!routes?.data
                     ?.find(r => r.name === to?.name)?.tokens
                     ?.some(r => r.symbol === toCurrency?.symbol && r.status === 'not_found')) {
-                setValidationMessage('Warning', 'Token not found in route.', 'warning');
-                if (fromCurrency && query?.lockToAsset)
-                    setValidationMessage('Warning', 'Locked destination.', 'warning');
+                setValidationMessage('Warning', 'Token not found in route.', 'warning', name);
+
             } else {
                 clearValidationMessage()
             }
         }
-    }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
+    }, [fromCurrency, toCurrency, currencyGroup, name, to, routes, error, isLoading, query])
 
     useEffect(() => {
-        if (name === "fromCurrency" && fromCurrency && !isLoading) {
+        if (name === "fromCurrency" && fromCurrency && !isLoading && (query.lockFrom !== true || (query.lockTo && query.lockFrom))) {
             if (routes?.data
                 && !!routes?.data
                     ?.find(r => r.name === from?.name)?.tokens
                     ?.find(r => (r.symbol === fromCurrency?.symbol) && r.status === 'not_found')) {
-                setValidationMessage('Warning', 'Token not found in route.', 'warning');
-                if (toCurrency && query?.lockFromAsset)
-                    setValidationMessage('Warning', 'Locked source.', 'warning');
+                setValidationMessage('Warning', 'Token not found in route.', 'warning', name);
+
             } else {
                 clearValidationMessage()
             }
         }
-    }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
+    }, [toCurrency, fromCurrency, currencyGroup, name, from, routes, error, isLoading, query])
 
     const value = currencyMenuItems?.find(x => x.id == currencyAsset);
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken>) => {
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
-
+    const errorMessage = directions.find(d => d === name) ? validationErrorMessage : undefined
     return (
         <div className="relative">
             <BalanceComponent values={values} direction={direction} />
@@ -163,7 +163,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 value={value}
                 setValue={handleSelect}
                 disabled={!value?.isAvailable?.value || isLoading}
-                validationErrorMessage={validationErrorMessage}
+                validationErrorMessage={errorMessage}
             />
         </div>
     )
