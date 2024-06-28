@@ -97,14 +97,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
         { rotate: 180 }
     );
 
-    const triggerError = () => {
-        setValidationMessage('Route unavailable', 'Please try again.', 'error');
-    };
-
-    const triggerWarning = () => {
-        setValidationMessage('Route Not Found', 'Warning message short description up to 2 lines, preferably with next step suggestions.', 'warning');
-    };
-
     const sourceRoutesEndpoint = (source || destination) ? resolveRoutesURLForSelectedToken({ direction: 'from', network: source?.name, token: fromCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
     const destinationRoutesEndpoint = (source || destination) ? resolveRoutesURLForSelectedToken({ direction: 'to', network: destination?.name, token: toCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
 
