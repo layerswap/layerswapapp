@@ -1,22 +1,19 @@
 import { ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useMemo, useState } from 'react'
 import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
-import SignatureIcon from '../../../icons/SignatureIcon';
 import useWallet from '../../../../hooks/useWallet';
 import { WithdrawPageProps } from './WalletTransferContent';
 import * as Paradex from "@paradex/sdk";
-import { ethers } from 'ethers';
-import { Account } from '@paradex/sdk/dist/account';
 import { TypedData } from '@paradex/sdk/dist/ethereum-signer';
 import { useNetwork } from 'wagmi';
 import { useSettingsState } from '../../../../context/settings';
 import KnownInternalNames from '../../../../lib/knownIds';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
 
 const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, token, callData, swapId }) => {
 
-    const [account, setAccount] = useState<Account | undefined>(undefined)
     const [loading, setLoading] = useState(false)
 
     const { networks } = useSettingsState();
@@ -32,8 +29,11 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, tok
 
     const wallet = provider?.getConnectedWallet()
 
+    const ethersSigner = useEthersSigner()
+
     const handleAuthorize = useCallback(async () => {
-        setLoading(true)
+
+        if (!ethersSigner) return
 
         try {
 
@@ -42,40 +42,41 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, tok
 
             const paraclearProvider = new Paradex.ParaclearProvider.DefaultProvider(config);
 
-            if (window.ethereum == null) throw new Error('Ethereum provider not found');
-            const ethersProvider = new ethers.providers.Web3Provider(window.ethereum as any);
-            const ethersSigner = ethersProvider.getSigner(wallet?.address);
-
             function ethersSignerAdapter(signer: typeof ethersSigner) {
                 return {
                     async signTypedData(typedData: TypedData) {
-                        return await signer._signTypedData(typedData.domain, typedData.types, typedData.message);
+                        return await signer!._signTypedData(typedData.domain, typedData.types, typedData.message);
                     },
                 };
             }
             const signer = ethersSignerAdapter(ethersSigner);
 
+            if (!signer) throw new Error('Signer not found');
+
             const account = await Paradex.Account.fromEthSigner({
                 provider: paraclearProvider,
                 config,
-                signer,
+                signer: signer,
             });
 
-
-            setAccount(account);
+            console.log(account)
+            return account
         } catch (e) {
+            debugger
             throw new Error(e)
-        } finally {
-            setLoading(false)
         }
 
-    }, [setAccount, Paradex, setLoading])
+    }, [Paradex, setLoading, ethersSigner])
 
     const handleTransfer = async () => {
-        if (!account || !token || !amount || !callData || !swapId) return
+        if (!token || !amount || !callData || !swapId) return
         setLoading(true)
 
         try {
+            const account = await handleAuthorize()
+
+            if (!account) throw new Error('Account not found')
+
             const res = await account.execute(JSON.parse(callData || ""), undefined, { maxFee: '1000000000000000' });
 
             if (res.transaction_hash) {
@@ -101,28 +102,14 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, tok
         )
     }
 
-
     return (
-        <>
-            <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
-                <div className='space-y-4'>
-
-                    {
-                        !account &&
-                        <ButtonWrapper isDisabled={loading} isSubmitting={loading} onClick={handleAuthorize} icon={<SignatureIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Authorize to Send on Paradex
-                        </ButtonWrapper>
-                    }
-
-                    {
-                        account &&
-                        <ButtonWrapper isDisabled={!!(loading)} isSubmitting={!!loading} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Send from wallet
-                        </ButtonWrapper>
-                    }
-                </div>
+        <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
+            <div className='space-y-4'>
+                <ButtonWrapper isDisabled={!!(loading)} isSubmitting={!!loading} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                    Send from wallet
+                </ButtonWrapper>
             </div>
-        </>
+        </div>
     )
 }
 export default ParadexWalletWithdrawStep;
