@@ -65,8 +65,8 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         max-sm:px-6 
                         max-sm:w-full ${hidden ? 'adnimation-slide-out' : ''}`}>
                     {children}
-                    <div className="flex justify-center mt-2">
-                        <GoHomeButton className='footerLogo h-5 w-auto fill-primary-text cursor-pointer' />
+                    <div className="flex justify-center mt-2.5 text-primary-text-placeholder">
+                        <span className="text-xs footerLogo">Powered by</span> <GoHomeButton className='footerLogo ml-1 fill-primary-text-placeholder h-5 w-auto cursor-pointer' />
                     </div>
                 </motion.div>
 
