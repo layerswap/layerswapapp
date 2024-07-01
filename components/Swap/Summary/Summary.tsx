@@ -77,7 +77,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                                     <p className="text-sm text-secondary-text">Exchange</p>
                                     : sourceAccountAddress ?
                                         isValidAddress(sourceAccountAddress, from) ?
-                                            <div className="text-sm group/addressItem">
+                                            <div className="text-sm group/addressItem text-secondary-text">
                                                 <ExtendedAddress address={addressFormat(sourceAccountAddress, from)} network={from} />
                                             </div>
                                             :
@@ -105,7 +105,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                                     :
                                     null
                         }
-                        <div className="group/addressItem text-sm">
+                        <div className="group/addressItem text-sm text-secondary-text">
                             <p className="text-primary-text leading-5">{destExchange ? destExchange?.display_name : destination?.display_name}</p>
                             <ExtendedAddress address={addressFormat(destAddress, to)} network={to} />
                         </div>
