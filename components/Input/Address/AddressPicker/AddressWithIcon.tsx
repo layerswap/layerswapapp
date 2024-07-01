@@ -2,7 +2,7 @@ import { FC, useEffect, useRef, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "../../../AddressIcon";
 import shortenAddress from "../../../utils/ShortenAddress";
-import { History, ExternalLink, Copy, Check, ChevronDown, AlertTriangle, WalletIcon, Pencil } from "lucide-react";
+import { History, ExternalLink, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2 } from "lucide-react";
 import { Wallet } from "../../../../stores/walletStore";
 import Image from "next/image";
 import { Partner } from "../../../../Models/Partner";
@@ -21,7 +21,7 @@ type Props = {
 
 const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, destination }) => {
 
-    const difference_in_days = addressItem?.date ? Math.round(Math.abs((new Date()).getTime() - new Date(addressItem.date).getTime())) : undefined
+    const difference_in_days = addressItem?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressItem.date).getTime()) / (1000 * 3600 * 24))) : undefined
 
     const descriptions = [
         {
@@ -48,7 +48,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, des
         {
             group: AddressGroup.FromQuery,
             text: <p><span>Autofilled</span> <span>{partner ? `by ${partner.display_name}` : 'from URL'}</span></p>,
-            icon: AlertTriangle
+            icon: Link2
         }
     ]
 

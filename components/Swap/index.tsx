@@ -49,7 +49,8 @@ const SwapDetails: FC<Props> = ({ type }) => {
                         :
                         <>
                             <Processing />
-                            {storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
+                            {
+                                storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
                                 <SubmitButton isDisabled={false} isSubmitting={false} onClick={cancelSwap}>
                                     Try again
                                 </SubmitButton>

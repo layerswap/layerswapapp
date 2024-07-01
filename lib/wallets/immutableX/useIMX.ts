@@ -22,7 +22,7 @@ export default function useImmutableX(): WalletProvider {
 
     const connectWallet = async (chain: string | number) => {
         if (!chain) throw new Error('No chain id for imx connect wallet')
-        const networkName = chain == 1 ? KnownInternalNames.Networks.ImmutableXMainnet : KnownInternalNames.Networks.ImmutableXGoerli
+        const networkName = chain == 'testnet' ? KnownInternalNames.Networks.ImmutableXGoerli : KnownInternalNames.Networks.ImmutableXMainnet
         try {
             const imtblClient = new ImtblClient(networkName)
             const res = await imtblClient.ConnectWallet();
