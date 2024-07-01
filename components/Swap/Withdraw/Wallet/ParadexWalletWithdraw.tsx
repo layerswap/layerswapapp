@@ -59,7 +59,6 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, tok
                 signer: signer,
             });
 
-            console.log(account)
             return account
         } catch (e) {
             debugger
