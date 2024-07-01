@@ -93,13 +93,26 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
 
 export default SolanaWalletWithdrawStep;
 
-const configureAndSendCurrentTransaction = async (
+export const configureAndSendCurrentTransaction = async (
     transaction: Transaction,
     connection: Connection,
     signTransaction: SignerWalletAdapterProps['signTransaction']
 ) => {
+    const blockHash = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = blockHash.blockhash;
+    transaction.lastValidBlockHeight = blockHash.lastValidBlockHeight;
+
     const signed = await signTransaction(transaction);
     const signature = await connection.sendRawTransaction(signed.serialize());
+    const res = await connection.confirmTransaction({
+        blockhash: transaction.recentBlockhash,
+        lastValidBlockHeight: transaction.lastValidBlockHeight,
+        signature
+    });
+
+    if (res.value.err) {
+        throw new Error(res.value.err.toString())
+    }
 
     return signature;
 };
