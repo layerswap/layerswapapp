@@ -26,7 +26,7 @@ export default function useZkSyncBalance(): BalanceProvider {
                     amount: formatAmount(amount, Number(currency?.decimals)),
                     request_time: new Date().toJSON(),
                     decimals: Number(currency?.decimals),
-                    isNativeCurrency: currency?.symbol === 'ETH' ? true : false
+                    isNativeCurrency: true
                 })
             });
 
@@ -54,7 +54,7 @@ export default function useZkSyncBalance(): BalanceProvider {
                 amount: formatAmount(amount, Number(token?.decimals)),
                 request_time: new Date().toJSON(),
                 decimals: Number(token?.decimals),
-                isNativeCurrency: token.symbol === 'ETH' ? true : false
+                isNativeCurrency: true
             })
         }
         catch (e) {
