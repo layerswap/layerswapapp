@@ -35,10 +35,9 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { balances } = useBalancesState()
-    const { setValidationMessage, clearValidationMessage } = useValidationErrorStore();
 
     const { getAutofillProvider: getProvider } = useWallet()
-    const { message: validationErrorMessage, directions } = useValidationErrorStore()
+    const { message: validationErrorMessage, directions, setValidationMessage, clearValidationMessage } = useValidationErrorStore()
 
     const sourceWalletProvider = useMemo(() => {
         return from && getProvider(from)
@@ -120,14 +119,11 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     useEffect(() => {
         if (name === "toCurrency" && toCurrency && !isLoading && (query.lockTo !== true || (query.lockTo && query.lockFrom))) {
-
-
             if (routes?.data
                 && !!routes?.data
                     ?.find(r => r.name === to?.name)?.tokens
                     ?.some(r => r.symbol === toCurrency?.symbol && r.status === 'not_found')) {
                 setValidationMessage('Warning', 'Token not found in route.', 'warning', name);
-
             } else {
                 clearValidationMessage()
             }
@@ -141,7 +137,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                     ?.find(r => r.name === from?.name)?.tokens
                     ?.find(r => (r.symbol === fromCurrency?.symbol) && r.status === 'not_found')) {
                 setValidationMessage('Warning', 'Token not found in route.', 'warning', name);
-
             } else {
                 clearValidationMessage()
             }
@@ -154,6 +149,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
     const errorMessage = directions.find(d => d === name) ? validationErrorMessage : undefined
+
     return (
         <div className="relative">
             <BalanceComponent values={values} direction={direction} />
