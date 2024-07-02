@@ -4,7 +4,7 @@ import KnownInternalNames from "../../knownIds"
 import { WalletProvider } from "../../../hooks/useWallet"
 import IMX from "../../../components/icons/Wallets/IMX"
 
-export default function useImmutableX(): WalletProvider {
+export default function useImtblX(): WalletProvider {
     const withdrawalSupportedNetworks = [
         KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli,

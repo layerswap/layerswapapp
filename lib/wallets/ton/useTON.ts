@@ -13,7 +13,7 @@ export default function useTON(): WalletProvider {
     const wallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
     const [shouldConnect, setShouldConnect] = useState(false)
-
+    
     useEffect(() => {
         if (shouldConnect) {
             connectWallet()

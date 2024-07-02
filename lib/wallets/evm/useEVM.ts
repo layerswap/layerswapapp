@@ -7,11 +7,20 @@ import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
+import { passportInstance, initilizePassport } from "../../../components/ImtblPassportProvider"
+import { useRouter } from "next/router"
 
 export default function useEVM(): WalletProvider {
+    const router = useRouter();
     const { networks } = useSettingsState()
     const [shouldConnect, setShouldConnect] = useState(false)
     const { disconnectAsync } = useDisconnect()
+    useEffect(() => {
+        if (shouldConnect) {
+            connectWallet()
+            setShouldConnect(false)
+        }
+    }, [shouldConnect])
 
     const withdrawalSupportedNetworks = [
         ...networks.filter(layer => layer.type === NetworkType.EVM && layer.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
@@ -29,7 +38,9 @@ export default function useEVM(): WalletProvider {
         KnownInternalNames.Networks.LoopringSepolia,
     ]
     const name = 'evm'
+
     const account = useAccount()
+
     const { openConnectModal } = useConnectModal()
 
     useEffect(() => {
@@ -52,20 +63,22 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-
-    const connectWallet = () => {
-        try {
-            return openConnectModal && openConnectModal()
+    const connectWallet = async () => {
+        if (account && account.address && account.connector) {
+            await reconnectWallet()
         }
-        catch (e) {
-            console.log(e)
+        else {
+            return openConnectModal && openConnectModal()
         }
     }
 
     const disconnectWallet = async () => {
         try {
-            account.connector && await account.connector.disconnect()
             await disconnectAsync()
+            if (account?.connector?.name === 'Immutable Passport') {
+                if (passportInstance === undefined) await initilizePassport(router.basePath)
+                await passportInstance.logout()
+            }
         }
         catch (e) {
             console.log(e)
@@ -74,14 +87,14 @@ export default function useEVM(): WalletProvider {
 
     const reconnectWallet = async () => {
         try {
-            account.connector && await account.connector.disconnect()
-            await disconnectAsync()
+            await disconnectWallet()
             setShouldConnect(true)
         }
         catch (e) {
             console.log(e)
         }
     }
+
 
 
     return {

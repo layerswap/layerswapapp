@@ -4,10 +4,9 @@ import { Wallet } from "../stores/walletStore"
 import useTON from "../lib/wallets/ton/useTON"
 import useEVM from "../lib/wallets/evm/useEVM"
 import useStarknet from "../lib/wallets/starknet/useStarknet"
-import useImmutableX from "../lib/wallets/immutableX/useIMX"
+import useImtblX from "../lib/wallets/imtblX/useImtblX"
 import useSolana from "../lib/wallets/solana/useSolana"
 import { Network, RouteNetwork } from "../Models/Network"
-
 
 export type WalletProvider = {
     connectWallet: (chain?: string | number | undefined | null, destination?: RouteNetwork) => Promise<void> | undefined | void,
@@ -25,7 +24,7 @@ export default function useWallet() {
         useTON(),
         useEVM(),
         useStarknet(),
-        useImmutableX(),
+        useImtblX(),
         useSolana()
     ]
 
