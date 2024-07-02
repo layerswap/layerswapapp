@@ -30,8 +30,8 @@ function SolanaProvider({ children }: { children: ReactNode }) {
                     metadata: {
                         name: 'Layerwap',
                         description: 'Layerswap App',
-                        url: 'https://github.com/solana-labs/wallet-adapter',
-                        icons: ['https://avatars.githubusercontent.com/u/35608259?s=200'],
+                        url: 'https://layerswap.io/app',
+                        icons: ['https://www.layerswap.io/app/symbol.png'],
                     },
                 },
             })

@@ -47,7 +47,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "evm_oracle_contract": "0x420000000000000000000000000000000000000F",
-                "evm_multi_call_contract": ""
+                "evm_multicall_contract": ""
             },
             "deposit_methods": [
                 "Wallet",
@@ -108,7 +108,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": null
+                "evm_multicall_contract": null
             },
             "deposit_methods": [
                 "Wallet",
@@ -139,7 +139,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": ""
+                "evm_multicall_contract": ""
             },
             "deposit_methods": [
                 "Wallet",
@@ -170,7 +170,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": null
+                "evm_multicall_contract": null
             },
             "deposit_methods": [
                 "Wallet",
@@ -211,7 +211,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": ""
+                "evm_multicall_contract": ""
             },
             "deposit_methods": [
                 "Wallet",
@@ -242,7 +242,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": ""
+                "evm_multicall_contract": ""
             },
             "deposit_methods": [
                 "Wallet",
@@ -273,7 +273,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": null
+                "evm_multicall_contract": null
             },
             "deposit_methods": [
                 "Wallet",
@@ -314,7 +314,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": null
+                "evm_multicall_contract": null
             },
             "deposit_methods": [
                 "Wallet",
@@ -345,7 +345,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": ""
+                "evm_multicall_contract": ""
             },
             "deposit_methods": [
                 "Wallet",
@@ -386,7 +386,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": null
+                "evm_multicall_contract": null
             },
             "deposit_methods": [
                 "Wallet",
@@ -447,7 +447,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2024-01-10T10:17:29.071644+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": ""
+                "evm_multicall_contract": ""
             },
             "deposit_methods": [
                 "wallet"
@@ -477,7 +477,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2024-01-12T15:15:58.168996+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": null
+                "evm_multicall_contract": null
             },
             "deposit_methods": [
                 "Wallet",
@@ -508,7 +508,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2024-02-12T16:37:43.198211+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": null
+                "evm_multicall_contract": null
             },
             "deposit_methods": [
                 "Wallet",
@@ -539,7 +539,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2024-02-19T12:01:16.537629+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": ""
+                "evm_multicall_contract": ""
             },
             "deposit_methods": [
                 "Wallet",
@@ -570,7 +570,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2024-02-26T15:27:10.003491+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": ""
+                "evm_multicall_contract": ""
             },
             "deposit_methods": [
                 "Wallet",
@@ -601,7 +601,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2024-03-05T14:07:36.71174+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": ""
+                "evm_multicall_contract": ""
             },
             "deposit_methods": [
                 "Wallet",
@@ -642,7 +642,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2024-03-18T12:01:24.240915+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": ""
+                "evm_multicall_contract": ""
             },
             "deposit_methods": [
                 "Wallet",
@@ -683,7 +683,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2024-03-19T19:36:01.889627+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": null
+                "evm_multicall_contract": null
             },
             "deposit_methods": [
                 "Wallet",
@@ -714,7 +714,7 @@ export const Settings: LayerSwapSettings = {
             "metadata": {
                 "listing_date": "2024-03-19T22:02:43.744528+00:00",
                 "evm_oracle_contract": null,
-                "evm_multi_call_contract": ""
+                "evm_multicall_contract": ""
             },
             "deposit_methods": [
                 "Wallet",

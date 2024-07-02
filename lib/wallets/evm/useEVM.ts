@@ -1,5 +1,5 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit"
-import { useAccount, useDisconnect } from "wagmi"
+import { useAccount, useDisconnect, useSwitchAccount } from "wagmi"
 import { NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
@@ -14,18 +14,11 @@ export default function useEVM(): WalletProvider {
     const [shouldConnect, setShouldConnect] = useState(false)
     const { disconnectAsync } = useDisconnect()
 
-    useEffect(() => {
-        if (shouldConnect) {
-            connectWallet()
-            setShouldConnect(false)
-        }
-    }, [shouldConnect])
-
     const withdrawalSupportedNetworks = [
         ...networks.filter(layer => layer.type === NetworkType.EVM && layer.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
-        KnownInternalNames.Networks.LoopringGoerli,
-        KnownInternalNames.Networks.LoopringMainnet
+        KnownInternalNames.Networks.LoopringMainnet,
+        KnownInternalNames.Networks.LoopringSepolia,
     ]
 
     const autofillSupportedNetworks = [
@@ -33,19 +26,29 @@ export default function useEVM(): WalletProvider {
         KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli,
         KnownInternalNames.Networks.BrineMainnet,
-        KnownInternalNames.Networks.LoopringGoerli,
-        KnownInternalNames.Networks.LoopringMainnet
+        KnownInternalNames.Networks.LoopringMainnet,
+        KnownInternalNames.Networks.LoopringSepolia,
     ]
     const name = 'evm'
 
     const account = useAccount()
 
     const { openConnectModal } = useConnectModal()
+
+    useEffect(() => {
+        if (shouldConnect) {
+            connectWallet()
+            setShouldConnect(false)
+        }
+    }, [shouldConnect])
+
     const getWallet = () => {
         if (account && account.address && account.connector) {
+            const connector = account.connector.id
+
             return {
                 address: account.address,
-                connector: (account.connector as any)?._wallets?.[0]?.id || account.connector.id,
+                connector: account.connector.name || connector.charAt(0).toUpperCase() + connector.slice(1),
                 providerName: name,
                 icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account.connector), address: account.address })
             }
@@ -53,15 +56,6 @@ export default function useEVM(): WalletProvider {
     }
 
     const connectWallet = async () => {
-        if (account && account.address && account.connector) {
-            await reconnectWallet()
-        }
-        else {
-            return openConnectModal && openConnectModal()
-        }
-    }
-
-    const disconnectWallet = async () => {
         try {
             await disconnectAsync()
             if (account?.connector?.name === 'Immutable Passport') {
@@ -74,15 +68,27 @@ export default function useEVM(): WalletProvider {
         }
     }
 
+    const disconnectWallet = async () => {
+        try {
+            account.connector && await account.connector.disconnect()
+            await disconnectAsync()
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
     const reconnectWallet = async () => {
         try {
-            await disconnectWallet()
+            account.connector && await account.connector.disconnect()
+            await disconnectAsync()
             setShouldConnect(true)
         }
         catch (e) {
             console.log(e)
         }
     }
+
 
     return {
         getConnectedWallet: getWallet,

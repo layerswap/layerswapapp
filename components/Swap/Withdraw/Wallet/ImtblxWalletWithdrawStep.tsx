@@ -1,6 +1,5 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useMemo, useState } from 'react'
-import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import WarningMessage from '../../../WarningMessage';
@@ -8,7 +7,7 @@ import GuideLink from '../../../guideLink';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import { WithdrawPageProps } from './WalletTransferContent';
-import ManualTransferNote from './WalletTransfer/manualTransferNote';
+import { ButtonWrapper } from './WalletTransfer/buttons';
 
 const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId }) => {
     const [loading, setLoading] = useState(false)
@@ -73,19 +72,15 @@ const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
                     </WarningMessage>
                     {
                         !imxAccount &&
-                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        <ButtonWrapper isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Connect
-                        </SubmitButton>
+                        </ButtonWrapper>
                     }
                     {
                         imxAccount &&
-                        <SubmitButton isDisabled={!!(loading || transferDone) || !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        <ButtonWrapper isDisabled={!!(loading || transferDone) || !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Send from wallet
-                        </SubmitButton>
-                    }
-                    {
-                        network?.deposit_methods.some(m => m === 'deposit_address') &&
-                        <ManualTransferNote />
+                        </ButtonWrapper>
                     }
                 </div>
             </div>

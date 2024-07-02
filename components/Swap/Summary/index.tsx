@@ -2,7 +2,7 @@ import { FC, useMemo } from "react"
 import { useSwapDataState } from "../../../context/swap"
 import Summary from "./Summary"
 import { TransactionType } from "../../../lib/layerSwapApiClient"
-import shortenAddress, { shortenEmail } from "../../utils/ShortenAddress"
+import { shortenEmail } from "../../utils/ShortenAddress"
 import KnownInternalNames from "../../../lib/knownIds"
 import useWallet from "../../../hooks/useWallet"
 import { useQueryState } from "../../../context/query"
@@ -41,13 +41,13 @@ const SwapSummary: FC = () => {
 
     let sourceAccountAddress = ""
     if (hideFrom && account) {
-        sourceAccountAddress = shortenAddress(account);
+        sourceAccountAddress = account;
     }
     else if (swapInputTransaction?.from) {
-        sourceAccountAddress = shortenAddress(swapInputTransaction?.from);
+        sourceAccountAddress = swapInputTransaction?.from;
     }
     else if (wallet) {
-        sourceAccountAddress = shortenAddress(wallet.address);
+        sourceAccountAddress = wallet.address;
     }
     else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && swap?.exchange_account_connected) {
         sourceAccountAddress = shortenEmail(swap?.exchange_account_name, 10);

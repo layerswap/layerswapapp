@@ -1,5 +1,5 @@
 import { keccak256 } from "js-sha3";
-import KnownInternalNames from "./knownIds";
+import KnownInternalNames from "../../knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
 import { PublicKey } from '@solana/web3.js'
 
@@ -14,7 +14,7 @@ export function isValidAddress(address?: string, network?: { name: string } | nu
         }
         return isValidEtherAddress(address);
     }
-    else if (network?.name.toLowerCase().startsWith("STARKNET".toLowerCase())) {
+    else if (network?.name.toLowerCase().startsWith("STARKNET".toLowerCase()) || network?.name.toLowerCase().startsWith("PARADEX".toLowerCase())) {
         return validateAndParseAddress(address);
     }
     else if (network?.name.toLowerCase().startsWith("TON".toLowerCase())) {

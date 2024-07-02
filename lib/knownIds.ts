@@ -162,6 +162,8 @@ export default class KnownInternalNames {
 
         public static readonly BlastMainnet: string = "BLAST_MAINNET";
 
+        public static readonly ParadexTestnet: string = "PARADEX_TESTNET"
+
     }
 
     static Currencies = class {

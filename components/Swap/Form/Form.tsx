@@ -1,21 +1,16 @@
 import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
-import Image from 'next/image';
+import { FC, useCallback, useEffect } from "react";
 import SwapButton from "../../buttons/swapButton";
 import React from "react";
 import NetworkFormField from "../../Input/NetworkFormField";
-import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
-import Modal from "../../modal/modal";
-import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
-import { isValidAddress } from "../../../lib/addressValidator";
-import shortenAddress from "../../utils/ShortenAddress";
+import { isValidAddress } from "../../../lib/address/validator";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
 import { ArrowUpDown, Loader2 } from 'lucide-react'
-import { useAuthState } from "../../../context/authContext";
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
@@ -32,7 +27,6 @@ import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { ImtblPassportProvider } from "../../ImtblPassportProvider";
 
 type Props = {
-    isPartnerWallet?: boolean,
     partner?: Partner,
 }
 
@@ -45,7 +39,7 @@ const Address = dynamic(() => import("../../Input/Address"), {
 });
 
 
-const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
+const SwapForm: FC<Props> = ({ partner }) => {
     const {
         values,
         setValues,
@@ -65,35 +59,15 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     const toAsset = values.toCurrency
     const fromAsset = values.fromCurrency
 
-    const { authData } = useAuthState()
-
     const layerswapApiClient = new LayerSwapApiClient()
-    const address_book_endpoint = authData?.access_token ? `/internal/recent_addresses` : null
-    const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
-
-    const partnerImage = partner?.logo
-    const { setDepositeAddressIsfromAccount, setAddressConfirmed } = useSwapDataUpdate()
-    const { depositeAddressIsfromAccount } = useSwapDataState()
     const query = useQueryState();
     let valuesSwapperDisabled = false;
-    const [showAddressModal, setShowAddressModal] = useState(false);
-    const lockAddress =
-        (values.destination_address && values.to)
-        && isValidAddress(values.destination_address, values.to)
-        && (((query.lockAddress || query.hideAddress) && (query.appName !== "imxMarketplace"))); //TODO Discuss about this with Babken dzyadzya: (query.appName !== "imxMarketplace" || settings.validSignatureisPresent)
 
     const actionDisplayName = query?.actionButtonText || "Swap now"
-
-    const depositeAddressIsfromAccountRef = useRef<boolean | null>(depositeAddressIsfromAccount);
 
     useEffect(() => {
         valuesChanger(values)
     }, [values])
-
-    useEffect(() => {
-        depositeAddressIsfromAccountRef.current = depositeAddressIsfromAccount
-        return () => { (depositeAddressIsfromAccountRef.current = null); return }
-    }, [depositeAddressIsfromAccount])
 
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {
@@ -102,25 +76,9 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
     }, [toAsset, destination, source, fromAsset, currencyGroup])
 
     useEffect(() => {
-        setAddressConfirmed(false)
-    }, [source])
-
-    useEffect(() => {
         (async () => {
             (await import("../../Input/Address")).default
         })()
-    }, [destination])
-    const previouslySelectedDestination = useRef(destination);
-
-    //If destination changed to exchange, remove destination_address
-    useEffect(() => {
-        if ((previouslySelectedDestination.current &&
-            (destination?.name != previouslySelectedDestination.current?.name)
-            || destination && !isValidAddress(values.destination_address, destination)) && !lockAddress) {
-            setFieldValue("destination_address", '')
-            setDepositeAddressIsfromAccount(false)
-        }
-        previouslySelectedDestination.current = destination
     }, [destination])
 
     useEffect(() => {
@@ -217,34 +175,7 @@ const SwapForm: FC<Props> = ({ partner, isPartnerWallet }) => {
                         </div>
                         {
                             !hideAddress ?
-                                <div className="w-full mb-3.5 leading-4">
-                                    <label htmlFor="destination_address" className="block font-semibold text-secondary-text text-xs">
-                                        {`To ${values?.to?.display_name || ''} address`}
-                                    </label>
-                                    <AddressButton
-                                        disabled={!values.to || !values.from}
-                                        isPartnerWallet={!!isPartnerWallet}
-                                        openAddressModal={() => setShowAddressModal(true)}
-                                        partnerImage={partnerImage}
-                                        values={values} />
-                                    <Modal
-                                        header={`To ${values?.to?.display_name || ''} address`}
-                                        height="fit"
-                                        show={showAddressModal} setShow={setShowAddressModal}
-                                        className="min-h-[70%]"
-                                        modalId="address"
-                                    >
-                                        <Address
-                                            close={() => setShowAddressModal(false)}
-                                            disabled={lockAddress || (!values.to || !values.from)}
-                                            name={"destination_address"}
-                                            partnerImage={partnerImage}
-                                            isPartnerWallet={!!isPartnerWallet}
-                                            partner={partner}
-                                            address_book={address_book?.data}
-                                        />
-                                    </Modal>
-                                </div>
+                                <Address partner={partner} />
                                 : <></>
                         }
                         <div className="w-full">
@@ -285,44 +216,6 @@ function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: str
         || errors.amount
         || errors.destination_address
         || (actionDisplayName)
-}
-
-const TruncatedAdrress = ({ address }: { address: string }) => {
-    const shortAddress = shortenAddress(address)
-    return <div className="tracking-wider text-primary-buttonTextColor">{shortAddress}</div>
-}
-
-type AddressButtonProps = {
-    openAddressModal: () => void;
-    isPartnerWallet: boolean;
-    values: SwapFormValues;
-    partnerImage?: string;
-    disabled: boolean;
-}
-const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, isPartnerWallet, values, partnerImage, disabled }) => {
-    return <button type="button" disabled={disabled} onClick={openAddressModal} className="flex rounded-lg space-x-3 items-center cursor-pointer shadow-sm mt-1.5 text-primary-buttonTextColor bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 focus:ring-primary focus:border-primary font-semibold w-full px-3.5 py-3">
-        {isPartnerWallet && values.destination_address &&
-            <div className="shrink-0 flex items-center pointer-events-none">
-                {
-                    partnerImage &&
-                    <Image
-                        alt="Partner logo"
-                        className='rounded-md object-contain'
-                        src={partnerImage}
-                        width="24"
-                        height="24"
-                    />
-                }
-            </div>
-        }
-        <div className="truncate">
-            {values.destination_address ?
-                <TruncatedAdrress address={values.destination_address} />
-                :
-                <span className="text-primary-text-placeholder">Enter your address here</span>
-            }
-        </div>
-    </button>
 }
 
 export default SwapForm
