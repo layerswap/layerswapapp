@@ -82,6 +82,10 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callD
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, res.transaction_hash);
             }
         } catch (e) {
+            if (e.message.includes('Contract not found')) {
+                toast.error('Account not found', { duration: 30000 })
+                return
+            }
             toast.error(e.message, { duration: 30000 })
         } finally {
             setLoading(false)
