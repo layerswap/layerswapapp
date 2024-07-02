@@ -60,7 +60,7 @@ export default function Form() {
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
-    const { getWithdrawalProvider } = useWallet()
+    const { getSourceProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
 
     const settings = useSettingsState();
@@ -102,7 +102,7 @@ export default function Form() {
                     return;
                 }
             }
-            const provider = values.from && getWithdrawalProvider(values.from)
+            const provider = values.from && getSourceProvider(values.from)
             const wallet = provider?.getConnectedWallet()
 
             const swapId = await createSwap(values, wallet?.address, query, partner);
@@ -142,7 +142,7 @@ export default function Form() {
                 toast.error(data?.message || error?.message)
             }
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getWithdrawalProvider])
+    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getSourceProvider])
 
     const initialValues: SwapFormValues = swapResponse ? generateSwapInitialValuesFromSwap(swapResponse, settings)
         : generateSwapInitialValues(settings, query)
