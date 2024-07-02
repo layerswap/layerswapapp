@@ -24,27 +24,16 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
     const { balances } = useBalancesState()
 
     const destinationNativeBalance = destination_address && balances[destination_address].find(b => (b.token === to?.token?.symbol) && (b.network === to.name))
-    const needRefuel = toCurrency && toCurrency.refuel && to && to.token && isValidAddress(destination_address, to) && destinationNativeBalance && destinationNativeBalance?.amount < toCurrency.refuel.amount
-
-    const precviouslySelectedDestination = useRef(to)
+    const needRefuel = toCurrency && toCurrency.refuel && to && to.token && isValidAddress(destination_address, to) && destinationNativeBalance && destinationNativeBalance?.amount < toCurrency.refuel.amount && !refuel
 
     useEffect(() => {
 
         if (toCurrency && toCurrency.refuel && to && to.token && isValidAddress(destination_address, to)) {
             (async () => {
                 to.token && await fetchBalance(to, to.token, destination_address)
-
-                // if (destinationNativeBalance && toCurrency.refuel && destinationNativeBalance?.amount < toCurrency.refuel.amount) {
-                //     setFieldValue('refuel', true)
-                //     return
-                // }
             })()
         }
-        if (to && precviouslySelectedDestination.current !== to) {
-            setFieldValue('refuel', false)
-        }
-        precviouslySelectedDestination.current = to
-
+        
     }, [to, destination_address, toCurrency])
 
     const handleConfirmToggleChange = (value: boolean) => {
