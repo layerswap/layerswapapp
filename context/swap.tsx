@@ -53,8 +53,8 @@ export function SwapDataProvider({ children }) {
     const [interval, setInterval] = useState(0)
     const { data: swapData, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
-    const { getWithdrawalProvider } = useWallet()
-    const provider = swapData?.data?.swap?.source_network && getWithdrawalProvider(swapData?.data?.swap?.source_network)
+    const { getSourceProvider } = useWallet()
+    const provider = swapData?.data?.swap?.source_network && getSourceProvider(swapData?.data?.swap?.source_network)
     const wallet = provider?.getConnectedWallet()
     const source_address = wallet?.address
 

@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 
 export default function useTON(): WalletProvider {
     const withdrawalSupportedNetworks = [KnownInternalNames.Networks.TONMainnet]
-    const autofillSupportedNetworks = withdrawalSupportedNetworks
     const name = 'ton'
     const wallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
@@ -61,8 +60,9 @@ export default function useTON(): WalletProvider {
         connectWallet,
         disconnectWallet,
         reconnectWallet,
-        autofillSupportedNetworks,
         withdrawalSupportedNetworks,
+        autofillSupportedNetworks: withdrawalSupportedNetworks,
+        asSourceSupportedNetworks: withdrawalSupportedNetworks,
         name
     }
 }

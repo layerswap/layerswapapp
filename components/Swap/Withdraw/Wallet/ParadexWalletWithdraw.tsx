@@ -11,8 +11,9 @@ import KnownInternalNames from '../../../../lib/knownIds';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
+import toast from 'react-hot-toast';
 
-const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, token, callData, swapId }) => {
+const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {
 
     const [loading, setLoading] = useState(false)
 
@@ -61,8 +62,7 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, tok
 
             return account
         } catch (e) {
-            debugger
-            throw new Error(e)
+            throw new Error(e.message)
         }
 
     }, [Paradex, setLoading, ethersSigner])
@@ -82,7 +82,7 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, tok
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, res.transaction_hash);
             }
         } catch (e) {
-            throw new Error(e)
+            toast.error(e.message, { duration: 30000 })
         } finally {
             setLoading(false)
         }
@@ -102,13 +102,9 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, network, tok
     }
 
     return (
-        <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
-            <div className='space-y-4'>
-                <ButtonWrapper isDisabled={!!(loading)} isSubmitting={!!loading} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                    Send from wallet
-                </ButtonWrapper>
-            </div>
-        </div>
+        <ButtonWrapper isDisabled={!!(loading || !ethersSigner || !callData)} isSubmitting={!!(loading || !ethersSigner || !callData)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+            Send from wallet
+        </ButtonWrapper>
     )
 }
 export default ParadexWalletWithdrawStep;
