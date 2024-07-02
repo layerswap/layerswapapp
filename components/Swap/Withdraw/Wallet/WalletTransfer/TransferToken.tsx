@@ -110,10 +110,9 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
         {
             !transaction.isPending && <>
                 <ButtonWrapper
-                    isDisabled={transaction.isPending}
                     onClick={clickHandler}
-                    isSubmitting={isLoading || !depositAddress}
-                    isDisabled={isLoading || !depositAddress}
+                    isSubmitting={!depositAddress}
+                    isDisabled={!depositAddress}
                     icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 >
                     {(isError && buttonClicked) ? <span>Try again</span>
