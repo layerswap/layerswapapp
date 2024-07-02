@@ -47,6 +47,10 @@ export default class LayerSwapApiClient {
         return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/internal/swaps?page=${page}&include_expired=${include_expired}`);
     }
 
+    async GetExplorerSwapsByAddressAsync(address: string): Promise<ApiResponse<SwapResponse[]>> {
+      return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/explorer/${address}?version=sandbox`);
+    }
+
     async GetQuote({ params }: { params: GetQuoteParams }): Promise<ApiResponse<Quote>> {
         const { source_network, source_token, source_address, destination_token, destination_network, amount, use_deposit_address, include_gas, refuel } = params
         return await this.AuthenticatedRequest<ApiResponse<Quote>>("GET", `/quote?source_network=${source_network}&source_token=${source_token}&source_address=${source_address}&destination_network=${destination_network}&destination_token=${destination_token}&use_deposit_address=${use_deposit_address}&include_gas=${include_gas}&amount=${amount}&refuel=${refuel}`);
