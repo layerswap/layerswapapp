@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import { passportInstance, initilizePassport } from "../components/ImtblPassportProvider";
+import { useRouter } from "next/router";
 
 const ImtblRedirect = () => {
+    const router = useRouter();
 
     useEffect(() => {
         (async () => {
-            if (!passportInstance) await initilizePassport()
+            if (!passportInstance) await initilizePassport(router.basePath)
             passportInstance.loginCallback();
         })()
     }, [passportInstance])
