@@ -23,7 +23,7 @@ const Address = ({ partner }: AddressProps) => {
     const { authData } = useAuthState()
     const { setDepositAddressIsFromAccount } = useSwapDataUpdate()
     const { depositAddressIsFromAccount } = useSwapDataState()
-    const { to: destination, toExchange } = values
+    const { to: destination, toExchange, destination_address } = values
 
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/internal/recent_addresses` : null
@@ -68,7 +68,7 @@ const Address = ({ partner }: AddressProps) => {
                 showAddressModal={showAddressModal}
                 setShowAddressModal={setShowAddressModal}
                 close={() => setShowAddressModal(false)}
-                disabled={!values.to || !values.from}
+                disabled={!values.to}
                 name={"destination_address"}
                 partner={partner}
                 address_book={address_book?.data}
