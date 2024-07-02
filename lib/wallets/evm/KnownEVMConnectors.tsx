@@ -38,7 +38,7 @@ const KnownEVMConnectors = [
     },
 ]
 
-export const evmConnectorNameResolver = (connector: Connector<any, any>) => {
+export const evmConnectorNameResolver = (connector: Connector) => {
 
     const connectorById = KnownEVMConnectors.find(c => c.id === connector.id.toLowerCase())
     const connectorByName = KnownEVMConnectors.find(c => c.id === connector.name.toLowerCase())

@@ -1,7 +1,6 @@
 import { FC } from "react"
 import { Network, Token } from "../../../../../Models/Network"
 import { useBalancesState } from "../../../../../context/balances"
-import { truncateDecimals } from "../../../../utils/RoundDecimals"
 import { Fuel } from "lucide-react"
 
 type NetworkGasProps = {
