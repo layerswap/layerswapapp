@@ -1,15 +1,19 @@
 import KnownInternalNames from "../../knownIds";
 import { Balance, BalanceProps, BalanceProvider, NetworkBalancesProps } from "../../../Models/Balance";
 import { resolveBalance } from "./balance";
+import { useSettingsState } from "../../../context/settings";
 
 export default function useTonBalance(): BalanceProvider {
+    const { networks } = useSettingsState()
+
     const supportedNetworks = [KnownInternalNames.Networks.TONMainnet]
 
-    const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
+    const getNetworkBalances = async ({ networkName, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === networkName)
 
         let balances: Balance[] = []
 
-        if (!network.tokens) return
+        if (!network?.tokens) return
 
         for (let i = 0; i < network.tokens.length; i++) {
             try {

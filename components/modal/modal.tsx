@@ -14,9 +14,10 @@ export interface ModalProps {
     show: boolean;
     setShow: Dispatch<SetStateAction<boolean>>;
     modalId: string;
+    onClose?: () => void;
 }
 
-const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow, modalId }) => {
+const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow, modalId, onClose }) => {
     const { isMobile, isDesktop } = useWindowDimensions()
     const mobileModalRef = useRef(null)
     //Fixes draggebles closing
@@ -41,6 +42,7 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
                                 title={header}
                                 description={subHeader}
                                 className={className}
+                                onClose={onClose}
                             >
                                 {children}
                             </Leaflet>
@@ -60,7 +62,9 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
                             title={header}
                             description={subHeader}
                             className={className}
-                            key={modalId}>
+                            key={modalId}
+                            onClose={onClose}
+                        >
                             {children}
                         </Leaflet>
                     }

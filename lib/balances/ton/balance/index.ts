@@ -1,4 +1,3 @@
-import { JettonMaster, JettonWallet, Address } from "@ton/ton"
 import formatAmount from "../../../formatAmount";
 import { Network, Token } from "../../../../Models/Network";
 import { datadogRum } from "@datadog/browser-rum";
@@ -24,6 +23,8 @@ export const resolveBalance = async ({ address, network, token }: {
 
 const getNativeAssetBalance = async ({ network, token, address }: { network: Network, token: Token, address: string }) => {
     try {
+        
+        const { Address } = await import("@ton/ton");
 
         const getBalance = async () => {
             return await tonClient.getBalance(Address.parse(address))
@@ -51,6 +52,8 @@ const getNativeAssetBalance = async ({ network, token, address }: { network: Net
 const getJettonBalance = async ({ network, token, address }: { network: Network, token: Token, address: string }) => {
     try {
 
+        const { JettonMaster, JettonWallet, Address } = await import("@ton/ton");
+
         const jettonMasterAddress = Address.parse(token.contract!)
         const userAddress = Address.parse(address)
         const jettonMaster = tonClient.open(JettonMaster.create(jettonMasterAddress))
@@ -66,7 +69,7 @@ const getJettonBalance = async ({ network, token, address }: { network: Network,
             return await jettonWallet.getBalance(tonClient.provider(jettonAddress))
         }
         const jettonBalance = await retryWithExponentialBackoff(getBalance)
-        
+
         const balance = {
             network: network.name,
             token: token.symbol,
