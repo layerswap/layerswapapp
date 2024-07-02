@@ -21,7 +21,7 @@ const ConnectButton = ({
     className?: string;
     onClose?: () => void;
 }) => {
-    const { connectWallet, wallets } = useWallet();
+    const { connectWallet } = useWallet();
     const [open, setOpen] = useState<boolean>();
     const { isMobile } = useWindowDimensions();
 
@@ -47,9 +47,10 @@ const ConnectButton = ({
             type: NetworkType.Solana,
         },
     ];
-    const filteredConnectors = knownConnectors.filter(
-        (c) => !wallets.map((w) => w?.providerName).includes(c.id)
-    );
+    const filteredConnectors = knownConnectors
+    // .filter(
+    //     (c) => !wallets.map((w) => w?.providerName).includes(c.id)
+    // );
     return isMobile ? (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger aria-label="Connect wallet">{children}</DialogTrigger>

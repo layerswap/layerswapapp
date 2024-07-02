@@ -63,7 +63,7 @@ export default function CommandSelectWrapper<T>({
                                         height="40"
                                         width="40"
                                         loading="eager"
-                                        priority
+                                        fetchPriority='high'
                                         className="rounded-md object-contain"
                                     />
                                 </div>

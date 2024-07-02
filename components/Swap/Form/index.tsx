@@ -30,6 +30,12 @@ import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
 import { DepositMethodProvider } from "../../../context/depositMethodContext";
+import { Connector, createConfig, http, useAccount, useConnect, useConnectorClient, useConnectors } from "wagmi";
+import { mainnet } from "wagmi/chains";
+import { injected, metaMask } from "wagmi/connectors";
+import { useSwitchAccount } from 'wagmi'
+import { WalletButton, useConnectModal } from '@rainbow-me/rainbowkit';
+import QRCodeModal from "../../QRCodeWallet";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -46,8 +52,25 @@ const SwapDetails = dynamic(() => import(".."), {
         </div>
     </div>
 })
+// export const imtoken_config = createConfig({
+//     chains: [mainnet],
+//     transports: {
+//         [mainnet.id]: http(),
+//     },
+//     connectors: [injected({ target: "imToken" })],
+// })
 
 export default function Form() {
+    const { connectors, switchAccount } = useSwitchAccount()
+
+    const { connect } = useConnect()
+
+
+    const [allConnectors, setAllConnectors] = useState<any>()
+    const _connectors = useConnectors()
+    useEffect(() => {
+        setAllConnectors(_connectors.filter((value, index, array) => value.rkDetails))
+    }, [_connectors])
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [showSwapModal, setShowSwapModal] = useState(false);
@@ -55,7 +78,7 @@ export default function Form() {
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
     const { getWithdrawalProvider } = useWallet()
-
+    const account = useAccount()
     const settings = useSettingsState();
     const query = useQueryState()
     const { createSwap, setSwapId } = useSwapDataUpdate()
@@ -125,6 +148,12 @@ export default function Form() {
         }
     }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getWithdrawalProvider])
 
+    const destAddress: string = query?.destAddress as string;
+
+    const isPartnerAddress = partner && destAddress;
+
+    const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
+
     const initialValues: SwapFormValues = swapResponse ? generateSwapInitialValuesFromSwap(swapResponse, settings)
         : generateSwapInitialValues(settings, query)
 
@@ -137,8 +166,198 @@ export default function Form() {
         setShowSwapModal(value)
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
     }, [router, swap])
+    const { openConnectModal } = useConnectModal();
+    const { connectAsync } = useConnect();
+
+
+    async function connectWallet(connector: Connector) {
+        const walletChainId = await connector.getChainId();
+        const result = await connectAsync({
+            chainId: mainnet.id,
+            connector,
+        });
+        return result;
+    }
+    const getWalletConnectUri = async (
+        connector: Connector,
+        uriConverter: (uri: string) => string,
+    ): Promise<string> => {
+        const provider = await connector.getProvider();
+
+        if (connector.id === 'coinbase') {
+            // @ts-expect-error
+            return provider.qrUrl;
+        }
+
+        return new Promise<string>((resolve) =>
+            // Wagmi v2 doesn't have a return type for provider yet
+            // @ts-expect-error
+            provider.once('display_uri', (uri) => {
+                resolve(uriConverter(uri));
+            }),
+        );
+    };
+
+    async function connectToWalletConnectModal(
+        walletConnectModalConnector: Connector,
+    ) {
+        try {
+            await connectWallet(walletConnectModalConnector);
+        } catch (err) {
+            const isUserRejection =
+                err.name === 'UserRejectedRequestError' ||
+                err.message === 'Connection request reset. Please try again.';
+
+            if (!isUserRejection) {
+                throw err;
+            }
+        }
+    }
+    const c = allConnectors?.[5];
+    const foo = c && {
+        ...c,
+        ready: c.installed ?? true,
+        connect: () => connectWallet(c),
+        getQrCodeUri: c.qrCode?.getUri
+            ? () => getWalletConnectUri(c, c.qrCode!.getUri!)
+            : undefined,
+        getDesktopUri: c.desktop?.getUri
+            ? () => getWalletConnectUri(c, c.desktop!.getUri!)
+            : undefined,
+        getMobileUri: c.mobile?.getUri
+            ? () => getWalletConnectUri(c, c.mobile?.getUri!)
+            : undefined,
+        showWalletConnectModal: () => connectToWalletConnectModal(c.walletConnectModalConnector!)
+    }
+    const [qr, setqr] = useState<string>()
 
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
+
+        <button onClick={async () => {
+
+            console.log(foo.connect())
+            foo && foo.connect()
+
+        }}>Connect </button>
+        {/* <>
+            {
+                allConnectors?.map(c => <div key={c.id}>
+                    <button onClick={async () => {
+
+                        const result = connectAsync({
+                            chainId: mainnet.id,
+                            connector: c,
+                        }, {
+                            onSuccess: (data) => {
+                                console.log("data", data)
+                            }
+                        });
+
+                        const bar = await getWalletConnectUri(c, c.rkDetails.qrCode.getUri!)
+                        setqr(bar)
+                        console.log("c", c)
+
+                    }}>Connect {c.name} {c.rkDetails?.name}</button>
+                </div>)
+            }
+        </> */}
+        <>
+            {qr && <QRCodeModal qrUrl={qr?.toLocaleString()} className=' text-secondary-text bg-secondary-text/10 p-1.5 hover:text-primary-text rounded' />}
+        </>
+
+        <WalletButton.Custom wallet="bitget">
+            {({ ready, connect, connector }) => {
+                return (
+                    <button
+                        type="button"
+                        className="bg-primary-500 text-white px-4 py-2 rounded-lg block"
+                        onClick={() => {
+                            debugger
+                            connect()
+                            console.log("connector", connector)
+                            console.log("connect", connect)
+
+                        }}
+                    >
+                        Connect bitget
+                    </button>
+                );
+            }}
+        </WalletButton.Custom>
+        <WalletButton.Custom wallet="MetaMask">
+            {({ ready, connect, connector, connected }) => {
+                return (
+                    <button
+                        type="button"
+                        className="bg-primary-500 text-white px-4 py-2 rounded-lg block"
+                        onClick={() => {
+                            connect()
+                            connector.connect()
+                        }}
+                    >
+                        Connect MetaMask
+                    </button>
+                );
+            }}
+        </WalletButton.Custom>
+        {/* <div>
+            {connectors.filter((value, index, array) => array.findIndex(a => a.id === value.id) === index).map((connector, index) => (
+                <div key={connector.id}><ConnectorRenderer connector={connector} /></div>
+            ))}
+        </div> */}
+        {/*         
+        <WalletButton.Custom wallet="phantom">
+            {({ ready, connect, connector }) => {
+                return (
+                    <button
+                        type="button"
+                        className="bg-primary-500 text-white px-4 py-2 rounded-lg block"
+                        onClick={() => {
+                            connector.connect()
+                        }}
+                    >
+                        Connect phantom
+                    </button>
+                );
+            }}
+        </WalletButton.Custom>
+      
+
+        <WalletButton.Custom wallet="walletconnect">
+            {({ ready, connect, connector, connected }) => {
+                return (
+                    <button
+                        type="button"
+                        className="bg-primary-500 text-white px-4 py-2 rounded-lg block"
+                        onClick={async () => {
+                            console.log("connected", connected)
+                            await connect()
+                            // all_connectors.find(c => c.id.toLowerCase() === 'walletconnect')?.connect()
+                        }}
+                    >
+                        Connect WalletCaonnet
+                    </button>
+                );
+            }}
+        </WalletButton.Custom>
+        <WalletButton.Custom wallet="bitget">
+            {({ ready, connect, connector, connected }) => {
+                return (
+                    <button
+                        type="button"
+                        className="bg-primary-500 text-white px-4 py-2 rounded-lg block"
+                        onClick={() => {
+                            const conn = all_connectors.find(c => c?.['rkDetails']?.['id'] === "bitget")
+                            console.log("bitget connector", conn)
+                            conn?.connect()
+                        }}
+                    >
+                        Connect bitget
+                    </button>
+                );
+            }}
+        </WalletButton.Custom> */}
+
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
                 {
@@ -180,7 +399,7 @@ export default function Form() {
         >
             <SwapForm partner={partner} />
         </Formik>
-    </DepositMethodProvider>
+    </DepositMethodProvider >
 }
 
 const textMotion = {
@@ -275,6 +494,42 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
         </motion.div>
     </motion.div>
 }
+
+
+
+
+
+const ConnectorRenderer = ({ connector }: { connector: Connector }) => {
+    const { switchAccount, data } = useSwitchAccount()
+    const [accounts, setAcconts] = useState<string[]>([])
+    const { addresses, connector: _ } = useAccount()
+
+    useEffect(() => {
+
+        (async () => {
+            const res = connector?.getAccounts && await connector?.getAccounts()
+            res && setAcconts(res.map(x => x.toLowerCase()))
+        })()
+
+    }, [connector, addresses])
+
+    return <>
+        <button className="block" onClick={() => switchAccount({ connector })}>
+            {connector.name}
+        </button>
+        <>
+            {
+                accounts.map(x => <div
+                    onClick={() => {
+                        connector.connect({})
+                    }}
+                    className="block p-1 bg-slate-500 cursor-pointer m-1" key={x}>{x}</div>)
+            }
+        </>
+    </>
+
+}
+
 
 const setSwapPath = (swapId: string, router: NextRouter) => {
     const basePath = router?.basePath || ""

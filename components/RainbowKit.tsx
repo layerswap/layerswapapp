@@ -18,6 +18,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { argentWallet, bitgetWallet, coinbaseWallet, metaMaskWallet, phantomWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 import { createConfig } from 'wagmi';
 import { Chain } from 'viem';
+import { WalletModalProvider } from '../context/walletModalContext';
+import Solana from "./SolanaProvider";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -34,7 +36,7 @@ const disclaimer: DisclaimerComponent = ({ Text }) => (
     </Text>
 );
 
-const connectors = connectorsForWallets(
+export const connectors = connectorsForWallets(
     [
         {
             groupName: 'Popular',
@@ -76,7 +78,7 @@ function RainbowKitComponent({ children }: Props) {
     const config = createConfig({
         connectors,
         chains: chainExceptZkSyncEra,
-        transports:[]
+        transports: []
     });
 
     const theme = darkTheme({
@@ -105,7 +107,11 @@ function RainbowKitComponent({ children }: Props) {
                         learnMoreUrl: 'https://docs.layerswap.io/',
                         disclaimer: disclaimer
                     }}>
-                    {children}
+                    <Solana>
+                        <WalletModalProvider>
+                            {children}
+                        </WalletModalProvider>
+                    </Solana>
                 </RainbowKitProvider>
             </QueryClientProvider>
         </WagmiProvider>

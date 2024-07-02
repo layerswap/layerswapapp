@@ -54,7 +54,7 @@ export const ResolveConnectorIcon = ({
             return (
                 <div className={className ?? "-space-x-2 flex"}>
                     <CoinbaseIcon className={iconClassName} />
-                    <GlowIcon className={iconClassName} />
+                    {/* <GlowIcon className={iconClassName} /> */}
                     <Phantom className={iconClassName} />
                     {children}
                 </div>

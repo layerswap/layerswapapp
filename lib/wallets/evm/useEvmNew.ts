@@ -8,12 +8,11 @@ import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
 import { useWalletModal } from "../../../context/walletModalContext"
+import { addresses } from "@eth-optimism/contracts-ts"
 
 
-export default function useEVM(): WalletProvider & { availableWalletsforConnect: Connector[] } {
+export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
-    const [shouldConnect, setShouldConnect] = useState(false)
-    const { disconnectAsync } = useDisconnect()
 
     const withdrawalSupportedNetworks = [
         ...networks.filter(layer => layer.type === NetworkType.EVM && layer.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
@@ -31,41 +30,8 @@ export default function useEVM(): WalletProvider & { availableWalletsforConnect:
         KnownInternalNames.Networks.LoopringSepolia,
     ]
 
-    const name = 'evm'
-
-    const account = useAccount()
-
     const { openConnectModal } = useConnectModal()
     const { setWalletModalIsOpen } = useWalletModal()
-
-    useEffect(() => {
-        if (shouldConnect) {
-            connectWallet()
-            setShouldConnect(false)
-        }
-    }, [shouldConnect])
-
-    const { connectors, switchAccount } = useSwitchAccount()
-
-    const uniqueConnectors = connectors.filter((value, index, array) => array.findIndex(a => a.id === value.id) === index)
-
-    const { connectors: connectedWallets } = useSwitchAccount()
-    const allConnectors = useConnectors()
-
-    const availableWalletsforConnect = resolveAvailableWallets(allConnectors, connectedWallets)
-
-    const getWallet = () => {
-        if (account && account.address && account.connector) {
-            const connector = account.connector.id
-
-            return {
-                address: account.address,
-                connector: account.connector.name || connector.charAt(0).toUpperCase() + connector.slice(1),
-                providerName: name,
-                icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account.connector), address: account.address })
-            }
-        }
-    }
 
     const connectWallet = () => {
         try {
@@ -79,27 +45,16 @@ export default function useEVM(): WalletProvider & { availableWalletsforConnect:
         }
     }
 
-    const disconnectWallet = async () => {
-        try {
-            account.connector && await account.connector.disconnect()
-            await disconnectAsync()
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
+    const { connectors: connectedWallets } = useSwitchAccount()
+    const allConnectors = useConnectors()
 
-    const reconnectWallet = async () => {
-        try {
-            account.connector && await account.connector.disconnect()
-            await disconnectAsync()
-            setShouldConnect(true)
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
+    const availableWalletsforConnect = resolveAvailableWallets(allConnectors, connectedWallets)
 
+
+    const res = {
+        availableWalletsforConnect,
+        connectedWallets
+    }
 
     return {
         getConnectedWallet: getWallet,
@@ -113,10 +68,15 @@ export default function useEVM(): WalletProvider & { availableWalletsforConnect:
     }
 }
 
+const resolveConnector = (connector: Connector) => {
+    return {
+        address: connector.account,
+        addresses: connector.accounts,
+        iconUrl: connector?.['rkDetails']?.['iconUrl'],
+    }
+}
 
 const resolveAvailableWallets = (all_connectors: readonly Connector[], connected: readonly Connector[]) => {
-    console.log("connected", connected)
-    console.log("all_connectors", all_connectors)
     const available_connectors = all_connectors.filter((connector, index, array) => {
         return connector?.['rkDetails']
             && array.findIndex(a => a?.['rkDetails']?.['id'] === connector?.['rkDetails']?.['id']) === index

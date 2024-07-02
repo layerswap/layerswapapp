@@ -7,18 +7,28 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { useState } from "react"
 import { Plus } from "lucide-react"
 import { Wallet } from "../stores/walletStore"
+import Modal from "./modal/modal"
+import WalletsList from "./Wallet/WalletsList"
 
 export const WalletsHeader = () => {
     const { wallets } = useWallet()
-    const [openDialog, setOpenDialog] = useState<boolean>(false)
+    const [openModal, setOpenModal] = useState<boolean>(false)
 
     if (wallets.length > 0) {
         return (
             <>
-                <button type="button" aria-label="Connected wallets" onClick={() => setOpenDialog(true)} className="-mx-2 p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
+                <button type="button" aria-label="Connected wallets" onClick={() => setOpenModal(true)} className="-mx-2 p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
                     <WalletsIcons wallets={wallets} />
                 </button>
-                <ConnectedWalletsDialog openDialog={openDialog} setOpenDialog={setOpenDialog} />
+                <Modal
+                    height='80%'
+                    show={openModal}
+                    setShow={setOpenModal}
+                    header={`Connected Wallets`}
+                    modalId="connectedWallets"
+                >
+                    <WalletsList />
+                </Modal>
             </>
         )
     }

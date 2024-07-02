@@ -44,7 +44,7 @@ export default function PopoverSelectWrapper<T>({
                                             value.imgSrc && <Image
                                                 src={value.imgSrc}
                                                 alt="Project Logo"
-                                                priority
+                                                fetchPriority='high'
                                                 height="40"
                                                 width="40"
                                                 className="rounded-md object-contain"
@@ -109,7 +109,7 @@ const LockedAsset = ({ value }: { value: ISelectMenuItem }) => {
                             value?.imgSrc && <Image
                                 src={value?.imgSrc}
                                 alt="Project Logo"
-                                priority
+                                fetchPriority='high'
                                 height="40"
                                 width="40"
                                 className="rounded-md object-contain"
