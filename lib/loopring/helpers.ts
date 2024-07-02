@@ -28,7 +28,6 @@ export async function unlockAccount(accInfo: AccountInfo)
             exchangeInfo.exchangeAddress
         ).replace("${nonce}", '0');
     }
-    console.log('keySeed', keySeed)
     const sig = await signMessage({ message: keySeed })
     const eddsaKeyData = generateKey(sig)
     const { sk } = eddsaKeyData
