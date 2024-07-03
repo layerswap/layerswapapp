@@ -1,7 +1,7 @@
 export type ActionData = {
     error: Error | null;
     isError: boolean;
-    isLoading: boolean;
+    isPending: boolean;
 }
 
 export type BaseTransferButtonProps = {

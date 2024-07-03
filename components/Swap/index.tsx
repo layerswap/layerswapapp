@@ -11,8 +11,6 @@ type Props = {
     type: "widget" | "contained",
 }
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
-import { useRouter } from 'next/router';
-import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import SubmitButton from '../buttons/submitButton';
 
 const SwapDetails: FC<Props> = ({ type }) => {
@@ -21,18 +19,13 @@ const SwapDetails: FC<Props> = ({ type }) => {
     const { swap } = swapResponse || {}
     const swapStatus = swap?.status;
     const storedWalletTransactions = useSwapTransactionStore()
-    const router = useRouter();
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id || '']
 
     const cancelSwap = useCallback(() => {
-        router.push({
-            pathname: "/",
-            query: resolvePersistantQueryParams(router.query)
-        })
         useSwapTransactionStore.getState().removeSwapTransaction(swap?.id || '');
-    }, [router])
+    }, [swap?.id, storedWalletTransactions])
 
     if (!swap) return <>
         <div className="w-full h-[430px]">

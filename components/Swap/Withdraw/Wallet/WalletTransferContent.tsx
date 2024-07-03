@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 import { useSwapDataState } from "../../../../context/swap";
 import KnownInternalNames from "../../../../lib/knownIds";
 import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep";
@@ -9,6 +9,7 @@ import SolanaWalletWithdrawStep from "./SolanaWalletWithdraw";
 import LoopringWalletWithdraw from "./Loopring";
 import { Network, Token } from "../../../../Models/Network";
 import TonWalletWithdrawStep from "./TonWalletWithdraw";
+import ParadexWalletWithdrawStep from "./ParadexWalletWithdraw";
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
@@ -36,6 +37,9 @@ export const WalletTransferContent: FC = () => {
         || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaDevnet?.toUpperCase();
 
     const sourceIsTon = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.TONMainnet?.toUpperCase()
+
+    const sourceIsParadex = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ParadexMainnet?.toUpperCase()
+        || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ParadexTestnet?.toUpperCase();
 
     const depositAddress = depositActionsResponse?.find(da => true)?.to_address;
     const amount = depositActionsResponse?.find(da => true)?.amount || 0;
@@ -84,6 +88,15 @@ export const WalletTransferContent: FC = () => {
         />;
     else if (sourceIsTon)
         return <TonWalletWithdrawStep
+            amount={amount}
+            depositAddress={depositAddress}
+            network={swap?.source_network}
+            token={swap?.source_token}
+            swapId={swap?.id}
+            callData={callData}
+        />;
+    else if (sourceIsParadex)
+        return <ParadexWalletWithdrawStep
             amount={amount}
             depositAddress={depositAddress}
             network={swap?.source_network}

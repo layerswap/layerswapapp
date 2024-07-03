@@ -14,8 +14,9 @@ export type WalletProvider = {
     disconnectWallet: () => Promise<void> | undefined | void,
     reconnectWallet: (chain?: string | number | undefined | null) => Promise<void> | undefined | void,
     getConnectedWallet: () => Wallet | undefined,
-    autofillSupportedNetworks?: string[],
     withdrawalSupportedNetworks: string[],
+    autofillSupportedNetworks?: string[],
+    asSourceSupportedNetworks?: string[],
     name: string,
 }
 
@@ -86,6 +87,11 @@ export default function useWallet() {
         return provider
     }
 
+    const getSourceProvider = (network: Network) => {
+        const provider = WalletProviders.find(provider => provider?.asSourceSupportedNetworks?.includes(network.name))
+        return provider
+    }
+
     return {
         wallets: getConnectedWallets(),
         connectWallet: handleConnect,
@@ -93,5 +99,6 @@ export default function useWallet() {
         reconnectWallet: handleReconnect,
         getWithdrawalProvider,
         getAutofillProvider,
+        getSourceProvider
     }
 }
