@@ -1,5 +1,5 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit"
-import { useAccount, useDisconnect, useSwitchAccount } from "wagmi"
+import { useAccount, useDisconnect } from "wagmi"
 import { NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
@@ -13,18 +13,22 @@ export default function useEVM(): WalletProvider {
     const [shouldConnect, setShouldConnect] = useState(false)
     const { disconnectAsync } = useDisconnect()
 
-    const withdrawalSupportedNetworks = [
+    const asSourceSupportedNetworks = [
         ...networks.filter(network => network.type === NetworkType.EVM && network.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
-        KnownInternalNames.Networks.ParadexMainnet,
-        KnownInternalNames.Networks.ParadexTestnet,
         KnownInternalNames.Networks.LoopringGoerli,
         KnownInternalNames.Networks.LoopringMainnet,
         KnownInternalNames.Networks.LoopringSepolia
     ]
 
+    const withdrawalSupportedNetworks = [
+        ...asSourceSupportedNetworks,
+        KnownInternalNames.Networks.ParadexMainnet,
+        KnownInternalNames.Networks.ParadexTestnet,
+    ]
+
     const autofillSupportedNetworks = [
-        ...withdrawalSupportedNetworks.filter(network => network !== KnownInternalNames.Networks.ParadexMainnet && network !== KnownInternalNames.Networks.ParadexTestnet),
+        ...asSourceSupportedNetworks,
         KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli,
         KnownInternalNames.Networks.BrineMainnet,
@@ -93,7 +97,7 @@ export default function useEVM(): WalletProvider {
         reconnectWallet,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
-        asSourceSupportedNetworks: autofillSupportedNetworks,
+        asSourceSupportedNetworks,
         name
     }
 }
