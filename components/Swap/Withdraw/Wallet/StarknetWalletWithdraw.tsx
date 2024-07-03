@@ -22,7 +22,7 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
         return network && getProvider(network)
     }, [network, getProvider])
 
-    const wallet = provider?.getConnectedWallet()
+    const wallet = provider?.getConnectedWallet(network)
 
     const handleConnect = useCallback(async () => {
         if (!provider)

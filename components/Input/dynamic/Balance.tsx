@@ -21,8 +21,8 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     }, [to, getProvider])
     const { fetchNetworkBalances, fetchGas } = useBalance()
 
-    const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet()
-    const destinationNetworkWallet = destinationWalletProvider?.getConnectedWallet()
+    const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet(values.from)
+    const destinationNetworkWallet = destinationWalletProvider?.getConnectedWallet(values.to)
 
     const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     const destinationBalance = destinationNetworkWallet && balances[destination_address || destinationNetworkWallet?.address]?.find(b => b?.network === to?.name && b?.token === toCurrency?.symbol)

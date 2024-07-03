@@ -55,7 +55,7 @@ export function SwapDataProvider({ children }) {
 
     const { getWithdrawalProvider } = useWallet()
     const provider = swapData?.data?.swap?.source_network && getWithdrawalProvider(swapData?.data?.swap?.source_network)
-    const wallet = provider?.getConnectedWallet()
+    const wallet = provider?.getConnectedWallet(swapData?.data?.swap?.source_network)
     const source_address = wallet?.address
 
     const use_deposit_address = swapData?.data?.swap?.use_deposit_address

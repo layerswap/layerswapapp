@@ -19,7 +19,7 @@ const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
         return network && getProvider(network)
     }, [network, getProvider])
 
-    const imxAccount = provider?.getConnectedWallet()
+    const imxAccount = provider?.getConnectedWallet(network)
 
     const handleConnect = useCallback(async () => {
         if (!provider)

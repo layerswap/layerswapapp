@@ -61,7 +61,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const provider = useMemo(() => {
         return values?.to && getProvider(values?.to)
     }, [values?.to, getProvider])
-    const connectedWallet = provider?.getConnectedWallet()
+    const connectedWallet = provider?.getConnectedWallet(values.to)
     const connectedWalletAddress = connectedWallet?.address
 
     const [isConnecting, setIsConnecting] = useState(false)

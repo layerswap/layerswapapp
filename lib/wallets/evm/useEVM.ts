@@ -1,6 +1,6 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit"
-import { useAccount, useDisconnect, useSwitchAccount } from "wagmi"
-import { NetworkType } from "../../../Models/Network"
+import { Config, UseAccountReturnType, useAccount, useDisconnect, useSwitchAccount } from "wagmi"
+import { Network, NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
@@ -10,7 +10,7 @@ import { useEffect, useState } from "react"
 import { passportInstance, initilizePassport } from "../../../components/ImtblPassportProvider"
 import { useRouter } from "next/router"
 
-export default function useEVM(): WalletProvider {
+export default function useEVM(network?: Network): WalletProvider {
     const router = useRouter();
     const { networks } = useSettingsState()
     const [shouldConnect, setShouldConnect] = useState(false)
@@ -37,10 +37,10 @@ export default function useEVM(): WalletProvider {
         KnownInternalNames.Networks.LoopringMainnet,
         KnownInternalNames.Networks.LoopringSepolia,
     ]
+
     const name = 'evm'
 
     const account = useAccount()
-
     const { openConnectModal } = useConnectModal()
 
     useEffect(() => {
@@ -50,10 +50,12 @@ export default function useEVM(): WalletProvider {
         }
     }, [shouldConnect])
 
-    const getWallet = () => {
+    const getWallet = (network?: Network) => {
         if (account && account.address && account.connector) {
             const connector = account.connector.id
-
+            if (account.connector?.name == "com.immutable.passport" && network && (network.name == KnownInternalNames.Networks.ImmutableZkEVM || network.name == KnownInternalNames.Networks.ImmutableXMainnet)) {
+                return undefined
+            }
             return {
                 address: account.address,
                 connector: account.connector.name || connector.charAt(0).toUpperCase() + connector.slice(1),

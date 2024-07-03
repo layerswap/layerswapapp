@@ -103,7 +103,7 @@ export default function Form() {
                 }
             }
             const provider = values.from && getWithdrawalProvider(values.from)
-            const wallet = provider?.getConnectedWallet()
+            const wallet = provider?.getConnectedWallet(values.from)
 
             const swapId = await createSwap(values, wallet?.address, query, partner);
             setSwapId(swapId)

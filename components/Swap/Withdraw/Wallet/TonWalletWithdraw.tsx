@@ -23,7 +23,7 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
         return network && getWithdrawalProvider(network)
     }, [network, getWithdrawalProvider])
 
-    const wallet = provider?.getConnectedWallet()
+    const wallet = provider?.getConnectedWallet(network)
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
