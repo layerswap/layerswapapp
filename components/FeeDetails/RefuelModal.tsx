@@ -4,20 +4,23 @@ import useWallet from '../../hooks/useWallet';
 import { useBalancesState } from '../../context/balances';
 import Modal from '../modal/modal';
 import { Fuel } from 'lucide-react';
-import { truncateDecimals } from '../utils/RoundDecimals';
+import { roundDecimals, truncateDecimals } from '../utils/RoundDecimals';
 import SubmitButton from '../buttons/submitButton';
-import { Quote } from '../../lib/layerSwapApiClient';
+import SecondaryButton from '../buttons/secondaryButton';
+import { useFormikContext } from 'formik';
 
 type RefuelModalProps = {
-    values: SwapFormValues
     openModal: boolean,
     setOpenModal: Dispatch<SetStateAction<boolean>>
-    fee: Quote | undefined
 }
 
-const RefuelModal: FC<RefuelModalProps> = ({ values, openModal, setOpenModal, fee }) => {
+const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
+    const {
+        values,
+        setFieldValue
+    } = useFormikContext<SwapFormValues>();
 
-    const { to } = values || {};
+    const { to, toCurrency, refuel } = values || {};
 
     const { getAutofillProvider: getProvider } = useWallet()
     const { balances } = useBalancesState()
@@ -30,6 +33,15 @@ const RefuelModal: FC<RefuelModalProps> = ({ values, openModal, setOpenModal, fe
     const connectedWallet = provider?.getConnectedWallet()
     const destNativeTokenBalance = balances[connectedWallet?.address || '']?.find(b => b.token === nativeAsset?.symbol && b.network === to?.name)
     const amountInUsd = (destNativeTokenBalance && nativeAsset) ? (destNativeTokenBalance.amount * nativeAsset.price_in_usd).toFixed(2) : undefined
+
+    const closeModal = () => {
+        setOpenModal(false)
+    }
+
+    const enabldeRefuel = () => {
+        setFieldValue('refuel', true)
+        setOpenModal(false)
+    }
 
     return (
         <Modal height="fit" show={openModal} setShow={setOpenModal} modalId={"refuel"}>
@@ -60,23 +72,31 @@ const RefuelModal: FC<RefuelModalProps> = ({ values, openModal, setOpenModal, fe
                             </div>
                         }
                         {
-                            values.refuel &&
+                            toCurrency?.refuel && nativeAsset &&
                             <div className="gap-4 flex relative items-center outline-none w-full text-primary-text px-4 py-3">
                                 <div className="flex items-center justify-between w-full">
                                     <div className="text-secondary-text">
                                         You will receive
                                     </div>
                                     <p>
-                                        <span>{fee?.refuel?.amount} {nativeAsset?.symbol}</span> <span className="text-secondary-text">(${fee?.refuel?.amount_in_usd})</span>
+                                        <span>{roundDecimals(toCurrency.refuel?.amount, nativeAsset.precision)} {nativeAsset?.symbol}</span> <span className="text-secondary-text">(${toCurrency.refuel?.amount_in_usd})</span>
                                     </p>
                                 </div>
                             </div>
                         }
                     </div>
                 }
-                <SubmitButton type="button" onClick={() => setOpenModal(false)} isDisabled={false} isSubmitting={false}>
-                    OK
-                </SubmitButton>
+                <div className='flex flex-col gap-3 w-full h-full'>
+                    {
+                        !refuel &&
+                        <SubmitButton type="button" onClick={enabldeRefuel}>
+                            Enable refuel
+                        </SubmitButton>
+                    }
+                    <SecondaryButton type="button" className='h-full w-full py-3' onClick={closeModal}>
+                        Close
+                    </SecondaryButton>
+                </div>
             </div>
         </Modal>
     )

@@ -70,7 +70,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                 </FeeDetails>
             </ResizablePanel>
 
-            <RefuelModal values={values} openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} fee={fee} />
+            <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
 
         </>
     )
