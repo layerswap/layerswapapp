@@ -21,6 +21,8 @@ import { QueryParams } from "../../Models/QueryParams";
 import { Info } from "lucide-react";
 import ClickTooltip from "../Tooltips/ClickTooltip";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../../helpers/routes";
+import useValidationErrorStore from "../validationError/validationErrorStore";
+import validationMessageResolver from "../utils/validationErrorResolver";
 
 
 type Props = {
@@ -62,6 +64,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const { from, to, fromCurrency, toCurrency, fromExchange, toExchange } = values
     const query = useQueryState()
     const { lockFrom, lockTo } = query
+    const { message: validationErrorMessage, directions, setValidationMessage, clearValidationMessage } = useValidationErrorStore()
 
     const { sourceExchanges, destinationExchanges, destinationRoutes, sourceRoutes } = useSettingsState();
     let placeholder = "";
@@ -128,6 +131,11 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 setFieldValue(`${name}Currency`, assetSubstitute, true)
             }
         }
+        const message = validationMessageResolver(values, direction, query, error, value)
+        if (value?.isAvailable.disabledReason === LayerDisabledReason.LockNetworkIsTrue)
+            setValidationMessage('Warning', message, 'warning', name);
+        else
+            clearValidationMessage()
     }, [name, value])
 
     const pickNetworkDetails = <div>
