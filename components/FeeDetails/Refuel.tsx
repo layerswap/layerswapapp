@@ -23,7 +23,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
     const { fetchBalance } = useBalance()
     const { balances } = useBalancesState()
 
-    const destinationNativeBalance = destination_address && balances[destination_address].find(b => (b.token === to?.token?.symbol) && (b.network === to.name))
+    const destinationNativeBalance = destination_address && balances[destination_address]?.find(b => (b.token === to?.token?.symbol) && (b.network === to.name))
     const needRefuel = toCurrency && toCurrency.refuel && to && to.token && isValidAddress(destination_address, to) && destinationNativeBalance && destinationNativeBalance?.amount < toCurrency.refuel.amount && !refuel
 
     useEffect(() => {
