@@ -2,12 +2,12 @@ import { FC, useCallback, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import WarningMessage from '../../../WarningMessage';
 import { useAuthState } from '../../../../context/authContext';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
+import { ConnectWalletButton } from './WalletTransfer/buttons';
 
 
 const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, callData, swapId }) => {
@@ -23,15 +23,6 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
     }, [network, getProvider])
 
     const wallet = provider?.getConnectedWallet()
-
-    const handleConnect = useCallback(async () => {
-        if (!provider)
-            throw new Error(`No provider from ${network?.name}`)
-
-        setLoading(true)
-        await connectWallet(provider.name, network?.chain_id)
-        setLoading(false)
-    }, [network, provider])
 
     const handleTransfer = useCallback(async () => {
         if (!swapId || !token) {
@@ -64,49 +55,31 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
         setLoading(false)
     }, [wallet, swapId, network, userId, token, callData])
 
+    if (!wallet) {
+        return <ConnectWalletButton />
+    }
+
     return (
-        <>
-            <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
-                <div className='space-y-4'>
-                    {
-                        !wallet &&
-                        <div className="flex flex-row
-                         text-primary-text text-base space-x-2">
-                            <SubmitButton
-                                isDisabled={loading}
-                                isSubmitting={loading}
-                                onClick={handleConnect}
-                                icon={
-                                    <WalletIcon
-                                        className="stroke-2 w-6 h-6"
-                                        aria-hidden="true"
-                                    />
-                                } >
-                                Connect a wallet
-                            </SubmitButton>
-                        </div>
-                    }
-                    {
-                        wallet &&
-                        <div className="flex flex-row
+        <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
+            {
+                wallet &&
+                <div className="flex flex-row
                         text-primary-text text-base space-x-2">
-                            <SubmitButton
-                                isDisabled={!!(loading || transferDone)}
-                                isSubmitting={!!(loading || transferDone)}
-                                onClick={handleTransfer}
-                                icon={
-                                    <WalletIcon
-                                        className="h-6 w-6 stroke-2"
-                                        aria-hidden="true"
-                                    />
-                                } >
-                                Send from wallet
-                            </SubmitButton>
-                        </div>
-                    }
+                    <SubmitButton
+                        isDisabled={!!(loading || transferDone)}
+                        isSubmitting={!!(loading || transferDone)}
+                        onClick={handleTransfer}
+                        icon={
+                            <WalletIcon
+                                className="h-6 w-6 stroke-2"
+                                aria-hidden="true"
+                            />
+                        } >
+                        Send from wallet
+                    </SubmitButton>
                 </div>
-            </div >
-        </>
+            }
+        </div >
     )
 }
 

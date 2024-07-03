@@ -75,7 +75,6 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
 
     const clickHandler = useCallback(async () => {
         setButtonClicked(true)
-        debugger
         try {
             if (!depositAddress)
                 throw new Error('Missing deposit address')
