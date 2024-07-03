@@ -16,12 +16,15 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
 }) => {
     const transactionResolvedError = resolveError(transaction?.error as BaseError)
     const hasError = transaction?.isError || wait?.isError
-
+    debugger
     if (wait?.isPending || applyingTransaction) {
         return <TransactionInProgressMessage />
     }
     else if (transaction?.isPending || applyingTransaction) {
         return <ConfirmTransactionMessage />
+    }
+    else if (transaction?.isError && transactionResolvedError === "insufficient_funds") {
+        return <InsufficientFundsMessage />
     }
     else if (transaction?.isError && transactionResolvedError) {
         return <TransactionRejectedMessage />
