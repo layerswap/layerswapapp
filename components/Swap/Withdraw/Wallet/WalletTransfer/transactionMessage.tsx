@@ -16,7 +16,7 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
 }) => {
     const transactionResolvedError = resolveError(transaction?.error as BaseError)
     const hasError = transaction?.isError || wait?.isError
-    debugger
+    
     if (wait?.isPending || applyingTransaction) {
         return <TransactionInProgressMessage />
     }
