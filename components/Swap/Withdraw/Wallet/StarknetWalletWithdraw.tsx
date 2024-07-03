@@ -2,7 +2,6 @@ import { FC, useCallback, useMemo, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import WarningMessage from '../../../WarningMessage';
 import { useAuthState } from '../../../../context/authContext';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
@@ -57,7 +56,7 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
     }, [wallet, swapId, network, userId, token, callData])
 
     if (!wallet) {
-        return <ConnectWalletButton isDisabled={loading} isSubmitting={loading}  />
+        return <ConnectWalletButton />
     }
 
     return (
