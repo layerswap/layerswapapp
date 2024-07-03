@@ -20,6 +20,7 @@ import ClickTooltip from "../Tooltips/ClickTooltip";
 import useWallet from "../../hooks/useWallet";
 import { ONE_WEEK } from "./NetworkFormField";
 import useValidationErrorStore from "../validationError/validationErrorStore";
+import validationMessageResolver from "../utils/validationErrorResolver";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -123,7 +124,8 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 && !!routes?.data
                     ?.find(r => r.name === to?.name)?.tokens
                     ?.some(r => r.symbol === toCurrency?.symbol && r.status === 'not_found')) {
-                setValidationMessage('Warning', 'Token not found in route.', 'warning', name);
+                const message = validationMessageResolver(values, direction, query, error)
+                setValidationMessage('Warning', message, 'warning', name);
             } else {
                 clearValidationMessage()
             }
@@ -136,7 +138,8 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 && !!routes?.data
                     ?.find(r => r.name === from?.name)?.tokens
                     ?.find(r => (r.symbol === fromCurrency?.symbol) && r.status === 'not_found')) {
-                setValidationMessage('Warning', 'Token not found in route.', 'warning', name);
+                const message = validationMessageResolver(values, direction, query, error)
+                setValidationMessage('Warning', message, 'warning', name);
             } else {
                 clearValidationMessage()
             }
