@@ -11,6 +11,7 @@ import { Token } from '../../../../Models/Network';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import WalletMessage from './WalletTransfer/message';
 import tonClient from '../../../../lib/wallets/ton/client';
+import { ConnectWalletButton } from './WalletTransfer/buttons';
 
 const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
     const [loading, setLoading] = useState(false);
@@ -73,29 +74,25 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
         }
     }, [swapId, depositAddress, network, token, amount, callData])
 
+    if (!wallet) {
+        return <ConnectWalletButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} />
+    }
+
     return (
-        <>
-            <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
-                <div className='space-y-4'>
-                    {
-                        transactionErrorMessage && wallet &&
-                        <WalletMessage status='error' header={transactionErrorMessage} details='Something went wrong' />
-                    }
-                    {
-                        !wallet &&
-                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
-                            Connect a wallet
-                        </SubmitButton>
-                    }
-                    {
-                        wallet &&
-                        <SubmitButton isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
-                            Send from wallet
-                        </SubmitButton>
-                    }
-                </div>
+        <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
+            <div className='space-y-4'>
+                {
+                    transactionErrorMessage && wallet &&
+                    <WalletMessage status='error' header={transactionErrorMessage} details='Something went wrong' />
+                }
+                {
+                    wallet &&
+                    <SubmitButton isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
+                        Send from wallet
+                    </SubmitButton>
+                }
             </div>
-        </>
+        </div>
     )
 }
 
