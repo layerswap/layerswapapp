@@ -5,7 +5,7 @@ import useWallet from '../../../../hooks/useWallet';
 import { WithdrawPageProps } from './WalletTransferContent';
 import * as Paradex from "@paradex/sdk";
 import { TypedData } from '@paradex/sdk/dist/ethereum-signer';
-import { useNetwork } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { useSettingsState } from '../../../../context/settings';
 import KnownInternalNames from '../../../../lib/knownIds';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
@@ -26,7 +26,7 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callD
     const provider = useMemo(() => {
         return l1Network && getProvider(l1Network)
     }, [l1Network, getProvider])
-    const { chain } = useNetwork();
+    const { chain } = useAccount();
 
     const wallet = provider?.getConnectedWallet()
 
