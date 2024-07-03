@@ -75,14 +75,14 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
 
     const clickHandler = useCallback(async () => {
         setButtonClicked(true)
+        debugger
         try {
             if (!depositAddress)
                 throw new Error('Missing deposit address')
-            if (!amount)
+            if (amount == undefined)
                 throw new Error('Missing amount')
             if (!transaction.sendTransaction)
                 throw new Error('Missing sendTransaction')
-
             const tx = {
                 to: depositAddress,
                 value: parseEther(amount?.toString()),
