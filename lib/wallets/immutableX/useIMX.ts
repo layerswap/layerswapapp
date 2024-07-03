@@ -52,7 +52,8 @@ export default function useImmutableX(): WalletProvider {
         connectWallet,
         disconnectWallet,
         reconnectWallet,
-        withdrawalSupportedNetworks: withdrawalSupportedNetworks,
+        withdrawalSupportedNetworks,
+        asSourceSupportedNetworks: withdrawalSupportedNetworks,
         name
     }
 }
