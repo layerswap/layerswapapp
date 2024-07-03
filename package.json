@@ -27,7 +27,7 @@
     "@radix-ui/react-select": "^1.2.1",
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tooltip": "^1.0.7",
-    "@rainbow-me/rainbowkit": "^1.1.2",
+    "@rainbow-me/rainbowkit": "^2.1.2",
     "@solana/spl-token": "^0.3.9",
     "@solana/wallet-adapter-base": "0.9.18",
     "@solana/wallet-adapter-coinbase": "^0.1.18",
@@ -42,6 +42,7 @@
     "@stripe/stripe-js": "^1.53.0",
     "@tailwindcss/forms": "^0.5.0",
     "@tailwindcss/typography": "^0.5.2",
+    "@tanstack/react-query": "^5.37.1",
     "@ton/core": "^0.53.0",
     "@ton/crypto": "^3.2.0",
     "@ton/ton": "^13.11.1",
@@ -72,8 +73,8 @@
     "tailwindcss-animate": "^1.0.5",
     "ton": "^13.9.0",
     "uuid": "^9.0.0",
-    "viem": "^1.13.1",
-    "wagmi": "^1.4.12",
+    "viem": "^2.15.1",
+    "wagmi": "^2.10.2",
     "web-encoding": "^1.1.5",
     "web3": "1.8.0",
     "zksync": "0.13.1",
@@ -111,5 +112,8 @@
     "tailwindcss": "^3.0.24",
     "tailwindcss-themer": "^2.0.2",
     "typescript": "^5.1"
+  },
+  "resolutions": {
+    "rpc-websockets": "7.10.0"
   }
 }

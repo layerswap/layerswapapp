@@ -1,5 +1,7 @@
 import { FC, useCallback, useMemo } from "react";
-import { useSwitchNetwork } from "wagmi";
+import {
+    useSwitchChain,
+} from "wagmi";
 import WalletIcon from "../../../../icons/WalletIcon";
 import WalletMessage from "./message";
 import { ActionData } from "./sharedTypes";
@@ -34,7 +36,7 @@ export const ConnectWalletButton: FC = () => {
 }
 
 export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = ({ data, network }) => {
-    if (data.isLoading) {
+    if (data.isPending) {
         return <WalletMessage
             status="pending"
             header='Network switch required'
@@ -51,29 +53,31 @@ export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = (
 }
 
 export const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ chainId, network }) => {
-    const networkChange = useSwitchNetwork({
-        chainId: chainId,
-    });
+    const { switchChain, error, isPending, isError } = useSwitchChain();
 
     const clickHandler = useCallback(() => {
-        return networkChange?.switchNetwork && networkChange?.switchNetwork()
-    }, [networkChange])
+        return switchChain({ chainId })
+    }, [switchChain, chainId])
 
     return <>
         {
             <ChangeNetworkMessage
-                data={networkChange}
+                data={{
+                    isPending: isPending,
+                    isError: isError,
+                    error
+                }}
                 network={network}
             />
         }
         {
-            !networkChange.isLoading &&
+            !isPending &&
             <ButtonWrapper
                 onClick={clickHandler}
                 icon={<WalletIcon className="stroke-2 w-6 h-6" />}
             >
                 {
-                    networkChange.isError ? <span>Try again</span>
+                    error ? <span>Try again</span>
                         : <span>Send from wallet</span>
                 }
             </ButtonWrapper>

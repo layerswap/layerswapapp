@@ -1,9 +1,7 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import {
     useAccount,
-    useSendTransaction,
-    useWaitForTransaction,
-    useNetwork,
+    useSendTransaction
 } from "wagmi";
 import { createPublicClient, http, parseEther } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
@@ -16,6 +14,7 @@ import TransactionMessage from "./transactionMessage";
 import { ButtonWrapper } from "./buttons";
 import { useSwapTransactionStore } from "../../../../../stores/swapTransactionStore";
 import { useSwapDataState } from "../../../../../context/swap";
+import { datadogRum } from "@datadog/browser-rum";
 
 const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     depositAddress,
@@ -27,22 +26,13 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     const [buttonClicked, setButtonClicked] = useState(false)
     const [openChangeAmount, setOpenChangeAmount] = useState(false)
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
-    const { address } = useAccount();
+    const { address, chain } = useAccount();
     const { setSwapTransaction } = useSwapTransactionStore();
     const { depositActionsResponse } = useSwapDataState()
 
     const callData = depositActionsResponse?.find(da => true)?.call_data as `0x${string}` | undefined
 
-    const tx = {
-        to: depositAddress,
-        value: amount ? parseEther(amount?.toString()) : undefined,
-        gas: estimatedGas,
-        data: callData
-    }
-
-    const transaction = useSendTransaction(tx)
-
-    const { chain } = useNetwork();
+    const transaction = useSendTransaction()
 
     const publicClient = createPublicClient({
         chain: chain,
@@ -52,73 +42,77 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     useEffect(() => {
         (async () => {
             if (address && depositAddress) {
-                const gasEstimate = await publicClient.estimateGas({
-                    account: address,
-                    to: depositAddress,
-                    data: callData,
-                })
-                setEstimatedGas(gasEstimate)
+                try {
+                    const gasEstimate = await publicClient.estimateGas({
+                        account: address,
+                        to: depositAddress,
+                        data: callData,
+                    })
+                    setEstimatedGas(gasEstimate)
+                }
+                catch (e) {
+                    const renderingError = new Error("Transaction is taking longer than expected");
+                    renderingError.name = `LongTransactionError`;
+                    renderingError.cause = renderingError;
+                    datadogRum.addError(renderingError);
+                    console.error(e)
+                }
             }
         })()
     }, [address, callData, depositAddress, amount])
 
     useEffect(() => {
         try {
-            if (transaction?.data?.hash && transaction?.data?.hash as `0x${string}`) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, transaction?.data?.hash)
+            if (transaction?.data) {
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, transaction.data as `0x${string}`)
             }
         }
         catch (e) {
             //TODO log to logger
             console.error(e.message)
         }
-    }, [transaction?.data?.hash, swapId])
-
-    const waitForTransaction = useWaitForTransaction({
-        hash: transaction?.data?.hash || savedTransactionHash,
-        onSuccess: async (trxRcpt) => {
-            setApplyingTransaction(true)
-            setSwapTransaction(swapId, BackendTransactionStatus.Completed, trxRcpt.transactionHash);
-            setApplyingTransaction(false)
-        },
-        onError: async (err) => {
-            if (transaction?.data?.hash)
-                setSwapTransaction(swapId, BackendTransactionStatus.Failed, transaction?.data?.hash, err.message);
-        }
-    })
+    }, [transaction?.data, swapId])
 
     const clickHandler = useCallback(async () => {
         setButtonClicked(true)
+        try {
+            if (!depositAddress)
+                throw new Error('Missing deposit address')
+            if (!amount)
+                throw new Error('Missing amount')
+            if (!transaction.sendTransaction)
+                throw new Error('Missing sendTransaction')
 
-        return transaction?.sendTransaction && transaction?.sendTransaction()
-    }, [transaction, estimatedGas])
+            const tx = {
+                to: depositAddress,
+                value: parseEther(amount?.toString()),
+                gas: estimatedGas,
+                data: callData
+            }
+            transaction?.sendTransaction(tx)
+        } catch (e) {
+            const error = new Error(e)
+            error.name = "TransferTokenError"
+            error.cause = e
+            datadogRum.addError(error);
+        }
+    }, [transaction, estimatedGas, depositAddress, amount, callData])
 
-    const isError = [
-        transaction,
-        waitForTransaction
-    ].find(d => d.isError)
-
-    const isLoading = [
-        transaction,
-        waitForTransaction
-    ].find(d => d.isLoading)
-
+    const isError = transaction.isError
     return <>
         {
             buttonClicked &&
             <TransactionMessage
                 transaction={transaction}
-                wait={waitForTransaction}
                 applyingTransaction={applyingTransaction}
             />
         }
         {
-            !isLoading &&
-            <>
+            !transaction.isPending && <>
                 <ButtonWrapper
                     onClick={clickHandler}
-                    isSubmitting={isLoading || !depositAddress}
-                    isDisabled={isLoading || !depositAddress}
+                    isSubmitting={!depositAddress}
+                    isDisabled={!depositAddress}
                     icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 >
                     {(isError && buttonClicked) ? <span>Try again</span>
