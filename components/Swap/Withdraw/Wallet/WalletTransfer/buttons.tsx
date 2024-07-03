@@ -1,7 +1,5 @@
-import { FC, useCallback, useMemo } from "react";
-import {
-    useSwitchChain,
-} from "wagmi";
+import { FC, useCallback, useMemo, useState } from "react";
+import { useSwitchChain } from "wagmi";
 import WalletIcon from "../../../../icons/WalletIcon";
 import WalletMessage from "./message";
 import { ActionData } from "./sharedTypes";
@@ -9,29 +7,42 @@ import SubmitButton, { SubmitButtonProps } from "../../../../buttons/submitButto
 import useWallet from "../../../../../hooks/useWallet";
 import { useSwapDataState } from "../../../../../context/swap";
 import ManualTransferNote from "./manualTransferNote";
+import toast from "react-hot-toast";
 
-export const ConnectWalletButton: FC = () => {
+export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
     const { source_network } = swap || {}
+    const [loading, setLoading] = useState(false)
 
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
         return source_network && getProvider(source_network)
     }, [source_network, getProvider])
 
-    const clickHandler = useCallback(() => {
-        if (!provider)
-            throw new Error(`No provider from ${source_network?.name}`)
+    const clickHandler = useCallback(async () => {
+        try {
+            setLoading(true)
 
-        return provider.connectWallet(provider?.name)
+            if (!provider) throw new Error(`No provider from ${source_network?.name}`)
+
+            await provider.connectWallet(provider?.name)
+        }
+        catch (e) {
+            toast.error(e.message)
+        }
+        finally {
+            setLoading(false)
+        }
+
     }, [provider])
 
     return <ButtonWrapper
-        onClick={clickHandler}
-        icon={<WalletIcon className="stroke-2 w-6 h-6" />}
+        onClick={props.onClick ?? clickHandler}
+        icon={props.icon ?? <WalletIcon className="stroke-2 w-6 h-6" />}
+        {...props}
     >
-        Connect a wallet
+        Send from wallet
     </ButtonWrapper>
 }
 
