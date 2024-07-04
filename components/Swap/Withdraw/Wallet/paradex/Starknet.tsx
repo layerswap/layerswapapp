@@ -45,13 +45,12 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
             if (!wallet) {
                 throw Error("Starknet wallet not connected")
             }
-            if (!amount)
+
+            if (amount == undefined && !amount)
                 throw Error("No amount")
+
             try {
                 const config = await Paradex.Config.fetchConfig(process.env.NEXT_PUBLIC_API_VERSION === "sandbox" ? 'testnet' : 'prod'); ///TODO: check environemnt may be mainnet
-
-
-
 
                 const paraclearProvider = new Paradex.ParaclearProvider.DefaultProvider(config);
 
@@ -63,22 +62,16 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
                     account: snAccount,
                 });
 
-                const increaseAllowanceCall: Call =
-                {
-                    contractAddress: config.bridgedTokens[token.symbol].l2TokenAddress,
-                    entrypoint: 'increaseAllowance',
-                    calldata: [config.paraclearAddress, ethers.utils.parseUnits(amount.toString(), config.bridgedTokens[token.symbol].decimals)]
-                };
+                const increaseAllowanceCall: Call[] =
+                    [{
+                        contractAddress: config.bridgedTokens[token.symbol].l2TokenAddress,
+                        entrypoint: 'increaseAllowance',
+                        calldata: [config.paraclearAddress, ethers.utils.parseUnits(amount.toString(), config.bridgedTokens[token.symbol].decimals)]
+                    }];
 
-                const increaseAllowance = await paradexAccount.execute(increaseAllowanceCall, undefined, { maxFee: '1000000000000000' });
+                const parsedCallData = JSON.parse(callData || "")
 
-                const paradexAccount2 = await Paradex.Account.fromStarknetAccount({
-                    provider: paraclearProvider,
-                    config,
-                    account: snAccount,
-                });
-
-                const res = await paradexAccount2.execute(JSON.parse(callData || ""), undefined, { maxFee: '1000000000000000' });
+                const res = await paradexAccount.execute([...increaseAllowanceCall, ...parsedCallData], undefined, { maxFee: '1000000000000000' });
 
                 if (res.transaction_hash) {
                     setSwapTransaction(swapId, BackendTransactionStatus.Pending, res.transaction_hash);
@@ -103,7 +96,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
                 <div className="flex flex-row
                     text-primary-text text-base space-x-2">
                     <SubmitButton
-                        isDisabled={!!(loading || transferDone)}
+                        isDisabled={!!(loading || transferDone || !callData)}
                         isSubmitting={!!(loading || transferDone)}
                         onClick={handleTransfer}
                         icon={

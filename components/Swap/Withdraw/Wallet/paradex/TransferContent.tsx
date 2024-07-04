@@ -23,6 +23,7 @@ const WalletTransferContent: FC = () => {
     const [isLoading, setIsloading] = useState(false);
     const { mutateSwap } = useSwapDataUpdate()
     const select = useWalletStore((state) => state.selectProvider)
+    const selectedProvider = useWalletStore((state) => state.selectedProveder)
 
     const { networks } = useSettingsState();
 
@@ -36,7 +37,6 @@ const WalletTransferContent: FC = () => {
     const starknetProvider = useMemo(() => {
         return starknet && getWithdrawalProvider(starknet)
     }, [l1Network, getWithdrawalProvider])
-
 
     const evmWallet = evmProvider?.getConnectedWallet()
 
@@ -56,10 +56,14 @@ const WalletTransferContent: FC = () => {
     else if (evmWallet) {
         evmAccountAddress = evmWallet.address || "";
     }
-
-
-
     const starknetWallet = starknetProvider?.getConnectedWallet()
+
+    useEffect(() => {
+        if (!selectedProvider) {
+            if (evmWallet && evmProvider) select(evmProvider.name)
+            else if (starknetWallet && starknetProvider) select(starknetProvider.name)
+        }
+    }, [evmAccountAddress, starknetWallet, selectedProvider])
 
     const handleStarknetDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!starknetWallet) return
@@ -100,7 +104,7 @@ const WalletTransferContent: FC = () => {
                     isButton={false}
                     network={l1Network}
                     text='Connect EVM'
-                    onConnect={()=>select(evmProvider?.name)}
+                    onConnect={() => select(evmProvider?.name)}
                     icon={<ResolveConnectorIcon
                         connector={evmProvider?.name}
                         iconClassName="w-7 h-7 p-0.5 rounded-full bg-secondary-800 border border-secondary-400"
@@ -113,7 +117,7 @@ const WalletTransferContent: FC = () => {
                     isButton={false}
                     network={starknet}
                     text='Connect Starknet'
-                    onConnect={()=>select(starknetProvider?.name)}
+                    onConnect={() => select(starknetProvider?.name)}
                     icon={<ResolveConnectorIcon
                         connector={starknetProvider?.name}
                         iconClassName="w-7 h-7 p-0.5 rounded-full bg-secondary-800 border border-secondary-400"
@@ -123,20 +127,6 @@ const WalletTransferContent: FC = () => {
         </div>
     </>
 }
-
-
-// if (!accountAddress || (swap?.source_exchange && !swap.exchange_account_connected)) {
-//     return <>
-//         {provider && <ConnectWalletButton
-//             network={network}
-//             text='Connect'
-//             icon={<ResolveConnectorIcon
-//                 connector={provider?.name}
-//                 iconClassName="w-7 h-7 p-0.5 rounded-full bg-secondary-800 border border-secondary-400"
-//             />}
-//         />}
-//     </>
-// }
 
 
 const Content: FC<{ network: NetworkWithTokens | undefined }> = ({ network }) => {

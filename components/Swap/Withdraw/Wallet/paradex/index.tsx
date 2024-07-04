@@ -36,7 +36,7 @@ const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ amount, token, callData,
     }, [l1Network, getWithdrawalProvider])
 
     const evmWallet = evmProvider?.getConnectedWallet()
-    const starknetWallet = evmProvider?.getConnectedWallet()
+    const starknetWallet = starknetProvider?.getConnectedWallet()
 
     if (selectedProvider === evmProvider?.name && evmWallet) {
         return <Evm amount={amount} callData={callData} token={token} swapId={swapId} />
