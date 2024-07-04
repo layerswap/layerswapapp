@@ -86,29 +86,21 @@ export default function Form() {
 
             setShowAddressNoteModal(true)
             return
-
         }
         try {
-            const accessToken = TokenService.getAuthData()?.access_token
-            if (!accessToken) {
-                try {
-                    var apiClient = new LayerSwapAuthApiClient();
-                    const res = await apiClient.guestConnectAsync()
-                    updateAuthData(res)
-                    setUserType(UserType.GuestUser)
-                }
-                catch (error) {
-                    toast.error(error.response?.data?.error || error.message)
-                    return;
-                }
-            }
-            const provider = values.from && getSourceProvider(values.from)
-            const wallet = provider?.getConnectedWallet()
+          
+            const source_provider = values.from && getSourceProvider(values.from)
+            const destination_provider = values.from && getSourceProvider(values.from)
 
-            const swapId = await createSwap(values, wallet?.address, query, partner);
-            setSwapId(swapId)
+            await source_provider?.createPreHTLC()//TODO: extract data from the form
+            await destination_provider?.waitForTransaction("address", "chain")   
+            await source_provider?.convertToHTLC()
+            //TODO: wait for destination transfer to be completed
+            await destination_provider?.claimHTLC()
+                
+
+            
             pollFee(false)
-            setSwapPath(swapId, router)
             setShowSwapModal(true)
         }
         catch (error) {

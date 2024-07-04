@@ -18,6 +18,14 @@ export type WalletProvider = {
     autofillSupportedNetworks?: string[],
     asSourceSupportedNetworks?: string[],
     name: string,
+
+    createPreHTLC: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
+    convertToHTLC: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
+    claimHTLC: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
+    refundHTLC: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
+
+    getPreHTLC: (id: string) => Promise<void> | undefined | void,
+    waitForTransaction: (address: string, chain: string | number) => Promise<void> | undefined | void,
 }
 
 export default function useWallet() {

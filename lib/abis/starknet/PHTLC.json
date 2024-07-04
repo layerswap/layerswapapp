@@ -1,0 +1,681 @@
+[
+    {
+      "name": "HashedTimelockERC20",
+      "type": "impl",
+      "interface_name": "htlc::Erc20github::IHashedTimelockERC20"
+    },
+    {
+      "name": "core::integer::u256",
+      "type": "struct",
+      "members": [
+        {
+          "name": "low",
+          "type": "core::integer::u128"
+        },
+        {
+          "name": "high",
+          "type": "core::integer::u128"
+        }
+      ]
+    },
+    {
+      "name": "core::array::Span::<core::integer::u256>",
+      "type": "struct",
+      "members": [
+        {
+          "name": "snapshot",
+          "type": "@core::array::Array::<core::integer::u256>"
+        }
+      ]
+    },
+    {
+      "name": "core::array::Span::<core::felt252>",
+      "type": "struct",
+      "members": [
+        {
+          "name": "snapshot",
+          "type": "@core::array::Array::<core::felt252>"
+        }
+      ]
+    },
+    {
+      "name": "core::option::Option::<core::starknet::contract_address::ContractAddress>",
+      "type": "enum",
+      "variants": [
+        {
+          "name": "Some",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "None",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "name": "core::option::Option::<core::integer::u256>",
+      "type": "enum",
+      "variants": [
+        {
+          "name": "Some",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "None",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "name": "core::array::Span::<core::starknet::contract_address::ContractAddress>",
+      "type": "struct",
+      "members": [
+        {
+          "name": "snapshot",
+          "type": "@core::array::Array::<core::starknet::contract_address::ContractAddress>"
+        }
+      ]
+    },
+    {
+      "name": "core::bool",
+      "type": "enum",
+      "variants": [
+        {
+          "name": "False",
+          "type": "()"
+        },
+        {
+          "name": "True",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "name": "htlc::Erc20github::IHashedTimelockERC20",
+      "type": "interface",
+      "items": [
+        {
+          "name": "createP",
+          "type": "function",
+          "inputs": [
+            {
+              "name": "chainIds",
+              "type": "core::array::Span::<core::integer::u256>"
+            },
+            {
+              "name": "LpPath",
+              "type": "core::array::Span::<core::felt252>"
+            },
+            {
+              "name": "dstChainId",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "dstAssetId",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "dstAddress",
+              "type": "core::felt252"
+            },
+            {
+              "name": "srcAssetId",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "srcAddress",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "timelock",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "messenger",
+              "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>"
+            },
+            {
+              "name": "tokenContract",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "amount",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "name": "createP1",
+          "type": "function",
+          "inputs": [
+            {
+              "name": "chainIds",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "LpPath",
+              "type": "core::felt252"
+            },
+            {
+              "name": "dstChainId",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "dstAssetId",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "dstAddress",
+              "type": "core::felt252"
+            },
+            {
+              "name": "srcAssetId",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "srcAddress",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "timelock",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "messenger",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "tokenContract",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "amount",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "name": "create",
+          "type": "function",
+          "inputs": [
+            {
+              "name": "_srcAddress",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "_hashlock",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "_timelock",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "_tokenContract",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "_amount",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "_chainId",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "_dstAddress",
+              "type": "core::felt252"
+            },
+            {
+              "name": "_phtlcId",
+              "type": "core::option::Option::<core::integer::u256>"
+            },
+            {
+              "name": "_messenger",
+              "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "name": "create1",
+          "type": "function",
+          "inputs": [
+            {
+              "name": "_srcAddress",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "_hashlock",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "_timelock",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "_tokenContract",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "_amount",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "_chainId",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "_dstAddress",
+              "type": "core::felt252"
+            },
+            {
+              "name": "_phtlcId",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "_messenger",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "name": "batchCreate",
+          "type": "function",
+          "inputs": [
+            {
+              "name": "_srcAddresses",
+              "type": "core::array::Span::<core::starknet::contract_address::ContractAddress>"
+            },
+            {
+              "name": "_hashlocks",
+              "type": "core::array::Span::<core::integer::u256>"
+            },
+            {
+              "name": "_timelocks",
+              "type": "core::array::Span::<core::integer::u256>"
+            },
+            {
+              "name": "_tokenContracts",
+              "type": "core::array::Span::<core::starknet::contract_address::ContractAddress>"
+            },
+            {
+              "name": "_amounts",
+              "type": "core::array::Span::<core::integer::u256>"
+            },
+            {
+              "name": "_chainIds",
+              "type": "core::array::Span::<core::integer::u256>"
+            },
+            {
+              "name": "_dstAddresses",
+              "type": "core::array::Span::<core::felt252>"
+            },
+            {
+              "name": "_phtlcIds",
+              "type": "core::array::Span::<core::integer::u256>"
+            },
+            {
+              "name": "_messengers",
+              "type": "core::array::Span::<core::starknet::contract_address::ContractAddress>"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::array::Span::<core::integer::u256>"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "name": "redeem",
+          "type": "function",
+          "inputs": [
+            {
+              "name": "htlcId",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "_secret",
+              "type": "core::felt252"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "name": "batchRedeem",
+          "type": "function",
+          "inputs": [
+            {
+              "name": "htlcIds",
+              "type": "core::array::Span::<core::integer::u256>"
+            },
+            {
+              "name": "_secrets",
+              "type": "core::array::Span::<core::felt252>"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "name": "refundP",
+          "type": "function",
+          "inputs": [
+            {
+              "name": "phtlcId",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "name": "refund",
+          "type": "function",
+          "inputs": [
+            {
+              "name": "htlcId",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "name": "convertP",
+          "type": "function",
+          "inputs": [
+            {
+              "name": "phtlcId",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "hashlock",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "name": "getPHTLCDetails",
+          "type": "function",
+          "inputs": [
+            {
+              "name": "phtlcId",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "((core::starknet::contract_address::ContractAddress, core::starknet::contract_address::ContractAddress, core::starknet::contract_address::ContractAddress, core::starknet::contract_address::ContractAddress), (core::integer::u256, core::integer::u256, core::integer::u256), (core::bool, core::bool), core::felt252)"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "name": "getHTLCDetails",
+          "type": "function",
+          "inputs": [
+            {
+              "name": "htlcId",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "((core::starknet::contract_address::ContractAddress, core::starknet::contract_address::ContractAddress, core::starknet::contract_address::ContractAddress), (core::integer::u256, core::integer::u256, core::integer::u256), (core::bool, core::bool), core::felt252)"
+            }
+          ],
+          "state_mutability": "view"
+        }
+      ]
+    },
+    {
+      "name": "constructor",
+      "type": "constructor",
+      "inputs": []
+    },
+    {
+      "kind": "struct",
+      "name": "htlc::Erc20github::HashedTimelockERC20::TokenTransferPreInitiated",
+      "type": "event",
+      "members": [
+        {
+          "kind": "data",
+          "name": "chainIds",
+          "type": "core::array::Span::<core::integer::u256>"
+        },
+        {
+          "kind": "data",
+          "name": "LpPath",
+          "type": "core::array::Span::<core::felt252>"
+        },
+        {
+          "kind": "data",
+          "name": "phtlcId",
+          "type": "core::integer::u256"
+        },
+        {
+          "kind": "data",
+          "name": "dstChainId",
+          "type": "core::integer::u256"
+        },
+        {
+          "kind": "data",
+          "name": "dstAssetId",
+          "type": "core::integer::u256"
+        },
+        {
+          "kind": "data",
+          "name": "dstAddress",
+          "type": "core::felt252"
+        },
+        {
+          "kind": "key",
+          "name": "sender",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "kind": "data",
+          "name": "srcAssetId",
+          "type": "core::integer::u256"
+        },
+        {
+          "kind": "key",
+          "name": "srcAddress",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "kind": "data",
+          "name": "timelock",
+          "type": "core::integer::u256"
+        },
+        {
+          "kind": "data",
+          "name": "messenger",
+          "type": "core::option::Option::<core::starknet::contract_address::ContractAddress>"
+        },
+        {
+          "kind": "data",
+          "name": "amount",
+          "type": "core::integer::u256"
+        },
+        {
+          "kind": "data",
+          "name": "tokenContract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "kind": "struct",
+      "name": "htlc::Erc20github::HashedTimelockERC20::TokenTransferInitiated",
+      "type": "event",
+      "members": [
+        {
+          "kind": "key",
+          "name": "hashlock",
+          "type": "core::integer::u256"
+        },
+        {
+          "kind": "data",
+          "name": "amount",
+          "type": "core::integer::u256"
+        },
+        {
+          "kind": "data",
+          "name": "chainId",
+          "type": "core::integer::u256"
+        },
+        {
+          "kind": "data",
+          "name": "timelock",
+          "type": "core::integer::u256"
+        },
+        {
+          "kind": "key",
+          "name": "sender",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "kind": "key",
+          "name": "srcAddress",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "kind": "data",
+          "name": "tokenContract",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "kind": "data",
+          "name": "dstAddress",
+          "type": "core::felt252"
+        },
+        {
+          "kind": "data",
+          "name": "phtlcId",
+          "type": "core::option::Option::<core::integer::u256>"
+        }
+      ]
+    },
+    {
+      "kind": "struct",
+      "name": "htlc::Erc20github::HashedTimelockERC20::TokenTransferClaimed",
+      "type": "event",
+      "members": [
+        {
+          "kind": "key",
+          "name": "htlcId",
+          "type": "core::integer::u256"
+        },
+        {
+          "kind": "data",
+          "name": "redeemAddress",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "kind": "struct",
+      "name": "htlc::Erc20github::HashedTimelockERC20::TokenTransferRefunded",
+      "type": "event",
+      "members": [
+        {
+          "kind": "key",
+          "name": "htlcId",
+          "type": "core::integer::u256"
+        }
+      ]
+    },
+    {
+      "kind": "struct",
+      "name": "htlc::Erc20github::HashedTimelockERC20::TokenTransferRefundedP",
+      "type": "event",
+      "members": [
+        {
+          "kind": "key",
+          "name": "phtlcId",
+          "type": "core::integer::u256"
+        }
+      ]
+    },
+    {
+      "kind": "enum",
+      "name": "htlc::Erc20github::HashedTimelockERC20::Event",
+      "type": "event",
+      "variants": [
+        {
+          "kind": "nested",
+          "name": "TokenTransferPreInitiated",
+          "type": "htlc::Erc20github::HashedTimelockERC20::TokenTransferPreInitiated"
+        },
+        {
+          "kind": "nested",
+          "name": "TokenTransferInitiated",
+          "type": "htlc::Erc20github::HashedTimelockERC20::TokenTransferInitiated"
+        },
+        {
+          "kind": "nested",
+          "name": "TokenTransferClaimed",
+          "type": "htlc::Erc20github::HashedTimelockERC20::TokenTransferClaimed"
+        },
+        {
+          "kind": "nested",
+          "name": "TokenTransferRefunded",
+          "type": "htlc::Erc20github::HashedTimelockERC20::TokenTransferRefunded"
+        },
+        {
+          "kind": "nested",
+          "name": "TokenTransferRefundedP",
+          "type": "htlc::Erc20github::HashedTimelockERC20::TokenTransferRefundedP"
+        }
+      ]
+    }
+  ]
