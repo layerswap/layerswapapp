@@ -8,6 +8,7 @@ import { AlignLeft, ChevronDown, ChevronUp } from "lucide-react"
 import { motion } from "framer-motion";
 import { useDepositMethod } from "../../../context/depositMethodContext";
 import { useQueryState } from "../../../context/query";
+import KnownInternalNames from "../../../lib/knownIds";
 
 const variants = {
     open: { rotate: 180 },
@@ -21,7 +22,7 @@ const DepositMethodComponent: FC = () => {
     } = useFormikContext<SwapFormValues>();
     const { setShowModal, showModal } = useDepositMethod()
 
-    const { depositMethod: defaultDepositMethod, hideDepositMethod } = useQueryState()
+    const { depositMethod: defaultDepositMethod, hideDepositMethod, appName } = useQueryState()
     const { from, depositMethod, fromExchange } = values
     const name = 'depositMethod'
 
@@ -36,7 +37,7 @@ const DepositMethodComponent: FC = () => {
         }
     ]
 
-    const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods)
+    const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods, appName)
     const defaultMethod = menuItems?.find(i => i.id === defaultDepositMethod)
 
     useEffect(() => {
@@ -157,7 +158,15 @@ type DepositMethod = {
     display_name: string
 }
 
-function GenerateDepositMethodMenuItems(network: Network, depositMethods: DepositMethod[]): DepositMethod[] {
+function GenerateDepositMethodMenuItems(network: Network, depositMethods: DepositMethod[], appName?: string): DepositMethod[] {
+
+    const sourceIsArbitrumOne = network.name?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
+        || network.name === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
+    const sourceIsSynquote = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
+
+    if (sourceIsSynquote) {
+        return depositMethods.filter(m => m.id === 'deposit_address')
+    }
 
     return network.deposit_methods.map(m => ({
         id: m,
