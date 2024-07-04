@@ -125,7 +125,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                     ?.find(r => r.name === to?.name)?.tokens
                     ?.some(r => r.symbol === toCurrency?.symbol && r.status === 'not_found')) {
                 const message = validationMessageResolver(values, direction, query, error)
-                setValidationMessage('Warning', message, 'warning', name);
+                setValidationMessage('Route Unavailable', message, 'warning', name);
             } else {
                 clearValidationMessage()
             }
@@ -139,7 +139,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                     ?.find(r => r.name === from?.name)?.tokens
                     ?.find(r => (r.symbol === fromCurrency?.symbol) && r.status === 'not_found')) {
                 const message = validationMessageResolver(values, direction, query, error)
-                setValidationMessage('Warning', message, 'warning', name);
+                setValidationMessage('Route Unavailable', message, 'warning', name);
             } else {
                 clearValidationMessage()
             }
@@ -150,6 +150,10 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken>) => {
         setFieldValue(name, item.baseObject, true)
+        const message = validationMessageResolver(values, direction, query, error)
+        if (!item.isAvailable.value)
+            setValidationMessage('Warning', message, 'warning', name);
+
     }, [name, direction, toCurrency, fromCurrency, from, to])
     const errorMessage = directions.find(d => d === name) ? validationErrorMessage : undefined
 

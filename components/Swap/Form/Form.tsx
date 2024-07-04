@@ -62,7 +62,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const toAsset = values.toCurrency
     const fromAsset = values.fromCurrency
 
-    const { setValidationMessage } = useValidationStore();
+    const { message } = useValidationStore();
 
     const layerswapApiClient = new LayerSwapApiClient()
     const query = useQueryState();
@@ -183,7 +183,11 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             : <></>
                     }
                     <div className="w-full">
-                        <FeeDetailsComponent values={values} />
+                        {message ?
+                            <ValidationError />
+                            :
+                            <FeeDetailsComponent values={values} />
+                        }
                         {
                             values.amount &&
                             <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
@@ -191,7 +195,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
-                    <ValidationError />
                     <SwapButton
                         className="plausible-event-name=Swap+initiated"
                         type='submit'
