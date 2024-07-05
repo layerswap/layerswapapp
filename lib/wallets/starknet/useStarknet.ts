@@ -6,15 +6,18 @@ import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
 
 export default function useStarknet(): WalletProvider {
-    const withdrawalSupportedNetworks = [
-        KnownInternalNames.Networks.ParadexMainnet,
-        KnownInternalNames.Networks.ParadexTestnet,
+    const commonSupportedNetworks = [
         KnownInternalNames.Networks.StarkNetMainnet,
         KnownInternalNames.Networks.StarkNetGoerli,
         KnownInternalNames.Networks.StarkNetSepolia
     ]
 
-    
+    const withdrawalSupportedNetworks = [
+        ...commonSupportedNetworks,
+        KnownInternalNames.Networks.ParadexMainnet,
+        KnownInternalNames.Networks.ParadexTestnet,
+    ]
+
     const name = 'starknet'
     const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
     const wallets = useWalletStore((state) => state.connectedWallets)
@@ -28,7 +31,6 @@ export default function useStarknet(): WalletProvider {
 
     const connectWallet = useCallback(async (chain: string) => {
         const constants = (await import('starknet')).constants
-        const fromHex = (await import('viem')).fromHex
         const chainId = process.env.NEXT_PUBLIC_API_VERSION === "sandbox" ? constants.NetworkName.SN_SEPOLIA : constants.NetworkName.SN_MAIN
         const connect = (await import('starknetkit')).connect
         try {
@@ -94,8 +96,8 @@ export default function useStarknet(): WalletProvider {
         disconnectWallet,
         reconnectWallet,
         withdrawalSupportedNetworks,
-        autofillSupportedNetworks: withdrawalSupportedNetworks,
-        asSourceSupportedNetworks: withdrawalSupportedNetworks,
+        autofillSupportedNetworks: commonSupportedNetworks,
+        asSourceSupportedNetworks: commonSupportedNetworks,
         name
     }
 }
