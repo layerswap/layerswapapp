@@ -8,6 +8,7 @@ import External from './External';
 import { useQueryState } from '../../../context/query';
 import { Widget } from '../../Widget/Index';
 import WalletTransferContent from './WalletTransferContent';
+import ParadexTransferContent from './Wallet/paradex/TransferContent';
 
 const Withdraw: FC = () => {
     const { swapResponse } = useSwapDataState()
@@ -27,7 +28,13 @@ const Withdraw: FC = () => {
         footer?: JSX.Element | JSX.Element[],
     } = {}
 
-    if (swap?.use_deposit_address === false) {
+    if(swap?.source_network.name === KnownInternalNames.Networks.ParadexMainnet || swap?.source_network.name === KnownInternalNames.Networks.ParadexTestnet) {
+        withdraw = {
+            content: <ParadexTransferContent />,
+            footer: <WalletTransfer />
+        }
+    }
+    else if (swap?.use_deposit_address === false) {
         withdraw = {
             content: <WalletTransferContent />,
             footer: <WalletTransfer />
