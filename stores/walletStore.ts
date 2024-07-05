@@ -5,6 +5,8 @@ interface WalletState {
     connectedWallets: Wallet[];
     connectWallet: (wallet: Wallet) => void;
     disconnectWallet: (providerName: string) => void;
+    selectedProveder?: string;
+    selectProvider: (providerName: string) => void;
 }
 
 export type Wallet = {
@@ -20,6 +22,7 @@ export type Wallet = {
 
 export const useWalletStore = create<WalletState>()((set) => ({
     connectedWallets: [],
+    selectProvider: (providerName) => set({ selectedProveder: providerName }),
     connectWallet: (wallet) => set((state) => {
         return ({
             connectedWallets: [
