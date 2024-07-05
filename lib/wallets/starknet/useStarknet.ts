@@ -13,6 +13,8 @@ export default function useStarknet(): WalletProvider {
         KnownInternalNames.Networks.StarkNetGoerli,
         KnownInternalNames.Networks.StarkNetSepolia
     ]
+
+    
     const name = 'starknet'
     const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
     const wallets = useWalletStore((state) => state.connectedWallets)
