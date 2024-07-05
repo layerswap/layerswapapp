@@ -101,7 +101,7 @@ const WalletTransferContent: FC = () => {
             {
                 !evmAccountAddress && evmProvider &&
                 <ConnectWalletButton
-                    isButton={false}
+                    secondary={true}
                     network={l1Network}
                     text='Connect EVM'
                     onConnect={() => select(evmProvider?.name)}
@@ -114,7 +114,7 @@ const WalletTransferContent: FC = () => {
             {
                 !starknetAccountAddress && starknetProvider &&
                 <ConnectWalletButton
-                    isButton={false}
+                    secondary={true}
                     network={starknet}
                     text='Connect Starknet'
                     onConnect={() => select(starknetProvider?.name)}
@@ -187,7 +187,7 @@ const Content: FC<{ network: NetworkWithTokens | undefined }> = ({ network }) =>
                 </div> */}
                 <div
                     onClick={() => select(provider?.name)}
-                    className={`${isSelected ? 'bg-secondary-700' : 'bg-secondary-800'} group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 border-secondary-500 text-primary-text border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7`}>
+                    className={`${isSelected ? 'bg-secondary-700 border-secondary-500 text-primary-text' : 'bg-secondary-900 border-secondary-700 text-secondary-text cursor-pointer hover:text-primary-text hover:border-secondary-500'} group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7`}>
                     <AddressWithIcon addressItem={{ address: wallet?.address, group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} destination={source_network} />
                     {
                         !isSelected &&

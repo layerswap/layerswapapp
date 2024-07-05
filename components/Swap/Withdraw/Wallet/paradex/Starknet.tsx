@@ -33,9 +33,6 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
     }, [starknet, getProvider])
     const wallet = provider?.getConnectedWallet()
 
-
-
-
     const handleTransfer = useCallback(async () => {
         if (!swapId || !token) {
             return
@@ -99,12 +96,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
                         isDisabled={!!(loading || transferDone || !callData)}
                         isSubmitting={!!(loading || transferDone)}
                         onClick={handleTransfer}
-                        icon={
-                            <WalletIcon
-                                className="h-6 w-6 stroke-2"
-                                aria-hidden="true"
-                            />
-                        } >
+                        icon={<WalletIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
                         Send from Starknet wallet
                     </SubmitButton>
                 </div>

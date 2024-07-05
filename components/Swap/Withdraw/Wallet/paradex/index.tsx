@@ -69,7 +69,7 @@ const ConnectWalletModal = () => {
                 </DialogHeader>
                 <div className="flex flex-col justify-start space-y-2">
                     <ConnectWalletButton
-                        isButton={true}
+                        secondary={false}
                         onClick={() => setOpenDialog(false)}
                         onConnect={()=>select("evm")}
                         network={l1Network}
@@ -80,7 +80,7 @@ const ConnectWalletModal = () => {
                         />}
                     />
                     <ConnectWalletButton
-                        isButton={true}
+                        secondary={false}
                         onClick={() => setOpenDialog(false)}
                         onConnect={()=>select("starknet")}
                         network={starknet}

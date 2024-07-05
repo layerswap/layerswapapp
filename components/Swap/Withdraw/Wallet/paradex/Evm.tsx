@@ -1,4 +1,4 @@
-import { ArrowLeftRight } from 'lucide-react';
+import { ArrowLeftRight, WalletIcon } from 'lucide-react';
 import { FC, useCallback, useMemo, useState } from 'react'
 import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
 import useWallet from '../../../../../hooks/useWallet';
@@ -106,7 +106,7 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callD
     }
 
     return (
-        <ButtonWrapper isDisabled={!!(loading || !ethersSigner || !callData)} isSubmitting={!!(loading || !ethersSigner || !callData)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+        <ButtonWrapper isDisabled={!!(loading || !ethersSigner || !callData)} isSubmitting={!!(loading || !ethersSigner || !callData)} onClick={handleTransfer} icon={<WalletIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
             Send from EVM wallet
         </ButtonWrapper>
     )

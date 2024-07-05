@@ -15,12 +15,12 @@ type ConnectProps = {
     text: string,
     icon: React.ReactNode,
     onClick?: () => void,
-    isButton: boolean,
+    secondary: boolean,
     onConnect?: () => void
 }
 
 
-export const ConnectWalletButton: FC<ConnectProps> = ({ network, text, icon, onClick, isButton, onConnect }) => {
+export const ConnectWalletButton: FC<ConnectProps> = ({ network, text, icon, onClick, secondary, onConnect }) => {
     const [loading, setLoading] = useState(false)
 
     const { getWithdrawalProvider: getProvider } = useWallet()
@@ -47,15 +47,13 @@ export const ConnectWalletButton: FC<ConnectProps> = ({ network, text, icon, onC
 
     }, [provider, onClick])
 
-    return <ButtonWrapper
-        buttonStyle="outline"
-        className={isButton ? "w-full relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 font-normal"
-            : "flex items-center justify-between gap-2 cursor-pointer rounded-md outline-none border-none text-primary-text p-3 font-light"}
+    return <div
+        className={`${secondary ? 'bg-secondary-900 border-secondary-700' : 'bg-secondary-700 border-secondary-500'} flex items-center gap-2 rounded-md outline-none text-secondary-text p-3 font-normal text-sm border cursor-pointer hover:text-primary-text hover:border-secondary-500`}
         onClick={clickHandler}
-        icon={icon}
     >
+        {icon}
         {text}
-    </ButtonWrapper>
+    </div>
 }
 
 export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = ({ data, network }) => {
