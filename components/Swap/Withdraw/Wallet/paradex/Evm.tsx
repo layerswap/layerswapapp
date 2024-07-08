@@ -1,16 +1,16 @@
-import { ArrowLeftRight } from 'lucide-react';
+import { ArrowLeftRight, WalletIcon } from 'lucide-react';
 import { FC, useCallback, useMemo, useState } from 'react'
-import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
-import useWallet from '../../../../hooks/useWallet';
-import { WithdrawPageProps } from './WalletTransferContent';
+import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
+import useWallet from '../../../../../hooks/useWallet';
+import { WithdrawPageProps } from '../WalletTransferContent';
 import * as Paradex from "@paradex/sdk";
 import { TypedData } from '@paradex/sdk/dist/ethereum-signer';
 import { useAccount } from 'wagmi';
-import { useSettingsState } from '../../../../context/settings';
-import KnownInternalNames from '../../../../lib/knownIds';
-import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
+import { useSettingsState } from '../../../../../context/settings';
+import KnownInternalNames from '../../../../../lib/knownIds';
+import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
+import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
+import { useEthersSigner } from '../../../../../lib/ethersToViem/ethers';
 import toast from 'react-hot-toast';
 
 const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {
@@ -106,8 +106,8 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callD
     }
 
     return (
-        <ButtonWrapper isDisabled={!!(loading || !ethersSigner || !callData)} isSubmitting={!!(loading || !ethersSigner || !callData)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
-            Send from wallet
+        <ButtonWrapper isDisabled={!!(loading || !ethersSigner || !callData)} isSubmitting={!!(loading || !ethersSigner || !callData)} onClick={handleTransfer} icon={<WalletIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
+            Send from EVM wallet
         </ButtonWrapper>
     )
 }

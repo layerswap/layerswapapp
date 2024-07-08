@@ -9,7 +9,7 @@ import SolanaWalletWithdrawStep from "./SolanaWalletWithdraw";
 import LoopringWalletWithdraw from "./Loopring";
 import { Network, Token } from "../../../../Models/Network";
 import TonWalletWithdrawStep from "./TonWalletWithdraw";
-import ParadexWalletWithdrawStep from "./ParadexWalletWithdraw";
+import ParadexWalletWithdrawStep from "./paradex/index";
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
