@@ -90,7 +90,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
                     {
                         !refuel &&
                         <SubmitButton type="button" onClick={enabldeRefuel}>
-                            Enable refuel
+                            Enable Refuel
                         </SubmitButton>
                     }
                     <SecondaryButton type="button" className='h-full w-full py-3' onClick={closeModal}>
