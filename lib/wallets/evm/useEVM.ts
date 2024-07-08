@@ -25,6 +25,8 @@ export default function useEVM(): WalletProvider {
         ...asSourceSupportedNetworks,
         KnownInternalNames.Networks.ParadexMainnet,
         KnownInternalNames.Networks.ParadexTestnet,
+        KnownInternalNames.Networks.ParadexNewMainnet,
+        KnownInternalNames.Networks.ParadexNewTestnet,
     ]
 
     const autofillSupportedNetworks = [
