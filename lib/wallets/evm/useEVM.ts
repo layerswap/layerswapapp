@@ -90,6 +90,26 @@ export default function useEVM(): WalletProvider {
     }
 
 
+    const createPreHTLC = () => {
+        throw new Error('Not implemented')
+    }
+    const convertToHTLC = () => {
+        throw new Error('Not implemented')
+    }
+    const claim = () => {
+        throw new Error('Not implemented')
+    }
+    const refund = () => {
+        throw new Error('Not implemented')
+    }
+    const getPreHTLC = () => {
+        throw new Error('Not implemented')
+    }
+    const waitForTransaction = (address: string, chain: string | number) => {
+        throw new Error('Not implemented')
+    }
+
+
     return {
         getConnectedWallet: getWallet,
         connectWallet,
@@ -98,6 +118,15 @@ export default function useEVM(): WalletProvider {
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
-        name
+        name,
+
+
+        
+        createPreHTLC,
+        convertToHTLC,
+        claim,
+        refund,
+        getPreHTLC,
+        waitForTransaction,
     }
 }

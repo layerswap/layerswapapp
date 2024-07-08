@@ -4,6 +4,8 @@ import KnownInternalNames from "../../knownIds"
 import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
+import { Contract } from "starknet";
+import PHTLCAbi from "../../../lib/abis/starknet/PHTLC.json"
 
 export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
@@ -25,8 +27,10 @@ export default function useStarknet(): WalletProvider {
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
 
+    const wallet = wallets.find(wallet => wallet.providerName === name)
+
     const getWallet = () => {
-        return wallets.find(wallet => wallet.providerName === name)
+        return wallet
     }
 
     const connectWallet = useCallback(async (chain: string) => {
@@ -90,6 +94,54 @@ export default function useStarknet(): WalletProvider {
         await connectWallet(chain)
     }
 
+    const PHTLC_CONTRACT_ADDRESS = '0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90'
+
+
+    type CreatyePreHTLCParams = {
+        chain: string,
+        amount: string,
+        destinationAsset: string,
+        sourceAsset:string;
+        lpAddress:string;
+        address:string;
+    }
+
+    const createPreHTLC = async () => {
+
+        if (!wallet?.metadata?.starknetAccount?.account) {
+            throw new Error('Wallet not connected')
+        }
+
+        const data = [
+            {
+                contractAddress: PHTLC_CONTRACT_ADDRESS,
+                entrypoint: 'createP1',
+                calldata: []
+            }
+        ]
+
+
+
+        const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.account?.execute(JSON.parse(callData || "")) || {});
+
+        throw new Error('Not implemented')
+    }
+    const convertToHTLC = () => {
+        throw new Error('Not implemented')
+    }
+    const claim = () => {
+        throw new Error('Not implemented')
+    }
+    const refund = () => {
+        throw new Error('Not implemented')
+    }
+    const getPreHTLC = () => {
+        throw new Error('Not implemented')
+    }
+    const waitForTransaction = (address: string, chain: string | number) => {
+        throw new Error('Not implemented')
+    }
+
     return {
         getConnectedWallet: getWallet,
         connectWallet,
@@ -98,6 +150,13 @@ export default function useStarknet(): WalletProvider {
         withdrawalSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
-        name
+        name,
+
+        createPreHTLC,
+        convertToHTLC,
+        claim,
+        refund,
+        getPreHTLC,
+        waitForTransaction,
     }
 }

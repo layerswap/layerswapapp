@@ -96,7 +96,7 @@ export default function Form() {
             await destination_provider?.waitForTransaction("address", "chain")   
             await source_provider?.convertToHTLC()
             //TODO: wait for destination transfer to be completed
-            await destination_provider?.claimHTLC()
+            await destination_provider?.claim()
                 
 
             

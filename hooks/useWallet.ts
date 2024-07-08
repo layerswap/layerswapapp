@@ -21,8 +21,8 @@ export type WalletProvider = {
 
     createPreHTLC: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
     convertToHTLC: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
-    claimHTLC: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
-    refundHTLC: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
+    claim: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
+    refund: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
 
     getPreHTLC: (id: string) => Promise<void> | undefined | void,
     waitForTransaction: (address: string, chain: string | number) => Promise<void> | undefined | void,
@@ -31,11 +31,11 @@ export type WalletProvider = {
 export default function useWallet() {
 
     const WalletProviders: WalletProvider[] = [
-        useTON(),
+        // useTON(),
         useEVM(),
         useStarknet(),
-        useImmutableX(),
-        useSolana()
+        // useImmutableX(),
+        // useSolana()
     ]
 
     async function handleConnect(providerName: string, chain?: string | number | null) {
