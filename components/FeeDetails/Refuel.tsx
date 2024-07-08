@@ -33,7 +33,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
                 to.token && await fetchBalance(to, to.token, destination_address)
             })()
         }
-        
+
     }, [to, destination_address, toCurrency])
 
     const handleConfirmToggleChange = (value: boolean) => {
@@ -51,14 +51,13 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
                         </div>
                         {
                             needRefuel &&
-                            <p className="text-secondary-text">You need to refuel</p>
+                            <p className="text-secondary-text"><span>You need gas on</span> <span>{to.display_name}</span></p>
                         }
                     </button>
                     <ToggleButton value={!!refuel} onChange={handleConfirmToggleChange} />
                 </div>
             </div>
         </ResizablePanel>
-
     )
 }
 

@@ -52,7 +52,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
                 <div className="text-center max-w-72">
                     <p className="text-2xl">About Refuel</p>
                     <p className="text-secondary-text">
-                        <span>You will get a small amount of</span> <span>{nativeAsset?.symbol}</span> <span>that you can use to pay for gas fees.</span>
+                        <span>You can get a small amount of</span> <span>{nativeAsset?.symbol}</span> <span>that can be used for covering gass fees on</span> <span>{to?.display_name}.</span>
                     </p>
                 </div>
                 {
@@ -63,7 +63,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
                             <div className="gap-4 flex relative items-center outline-none w-full text-primary-text px-4 py-3">
                                 <div className="flex items-center justify-between w-full">
                                     <div className="text-secondary-text">
-                                        <span>You have</span>
+                                        <span>Your current balance</span>
                                     </div>
                                     <p>
                                         <span>{truncateDecimals(destNativeTokenBalance.amount, nativeAsset?.precision)} {nativeAsset?.symbol}</span> <span className="text-secondary-text">(${amountInUsd})</span>
