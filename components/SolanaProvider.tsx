@@ -27,6 +27,12 @@ function SolanaProvider({ children }: { children: ReactNode }) {
                 network: solNetwork, 
                 options: {
                     projectId: WALLETCONNECT_PROJECT_ID,
+                    metadata: {
+                        name: 'Layerwap',
+                        description: 'Layerswap App',
+                        url: 'https://layerswap.io/app',
+                        icons: ['https://www.layerswap.io/app/symbol.png'],
+                    },
                 },
             })
         ],

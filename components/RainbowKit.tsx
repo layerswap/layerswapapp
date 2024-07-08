@@ -1,27 +1,67 @@
-import "@rainbow-me/rainbowkit/styles.css";
-import {
-    darkTheme,
-    connectorsForWallets,
-    RainbowKitProvider,
-    DisclaimerComponent,
-    AvatarComponent
-} from '@rainbow-me/rainbowkit';
-const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
-import { publicProvider } from 'wagmi/providers/public';
-import { walletConnectWallet, rainbowWallet, metaMaskWallet, coinbaseWallet, bitgetWallet, argentWallet, phantomWallet } from '@rainbow-me/rainbowkit/wallets';
+
+import '@rainbow-me/rainbowkit/styles.css';
 import { useSettingsState } from "../context/settings";
-import { Chain, WagmiConfig, configureChains, createConfig, mainnet } from "wagmi";
+import {
+    AvatarComponent,
+    connectorsForWallets,
+    darkTheme,
+    DisclaimerComponent,
+    RainbowKitProvider,
+} from '@rainbow-me/rainbowkit';
 import { NetworkType } from "../Models/Network";
 import resolveChain from "../lib/resolveChain";
 import React from "react";
 import AddressIcon from "./AddressIcon";
 import NetworkSettings from "../lib/NetworkSettings";
+import { WagmiProvider } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { argentWallet, bitgetWallet, coinbaseWallet, metaMaskWallet, phantomWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
+import { createConfig } from 'wagmi';
+import { Chain } from 'viem';
 
 type Props = {
     children: JSX.Element | JSX.Element[]
 }
+const WALLETCONNECT_PROJECT_ID = '9e6712830dae97aeea66f59a00ec3e1b';
+
+const queryClient = new QueryClient()
+const CustomAvatar: AvatarComponent = ({ address, size }) => {
+    return <AddressIcon address={address} size={size} />
+};
+const disclaimer: DisclaimerComponent = ({ Text }) => (
+    <Text>
+        Thanks for choosing Layerswap!
+    </Text>
+);
+
+const connectors = connectorsForWallets(
+    [
+        {
+            groupName: 'Popular',
+            wallets: [
+                metaMaskWallet,
+                walletConnectWallet,
+            ],
+        },
+        {
+            groupName: 'Wallets',
+            wallets: [
+                coinbaseWallet,
+                argentWallet,
+                bitgetWallet,
+                rainbowWallet,
+                phantomWallet
+            ],
+        }
+    ],
+    {
+        appName: 'Layerswap',
+        projectId: WALLETCONNECT_PROJECT_ID,
+    }
+);
 
 function RainbowKitComponent({ children }: Props) {
+
     const settings = useSettingsState();
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
     const settingsChains = settings?.networks
@@ -29,34 +69,15 @@ function RainbowKitComponent({ children }: Props) {
         .filter(net => net.type === NetworkType.EVM
             && net.node_url
             && net.token)
-        .map(resolveChain).filter(isChain)
+        .map(resolveChain).filter(isChain) as [Chain]
 
-    const { chains, publicClient } = configureChains(
-        settingsChains?.length > 0 ? settingsChains : [mainnet],
-        [publicProvider()]
-    );
+    let chainExceptZkSyncEra = settingsChains.filter(x => x.id != 324) as [Chain];
 
-    let chainExceptZkSyncEra = chains.filter(x => x.id != 324);
-    const projectId = WALLETCONNECT_PROJECT_ID;
-    const connectors = connectorsForWallets([
-        {
-            groupName: 'Popular',
-            wallets: [
-                metaMaskWallet({ projectId, chains }),
-                walletConnectWallet({ projectId, chains, options: { metadata: { url: 'https://layerswap.io', name: "Layerswap app", description: "Streamline your asset transaction experience with Layerswap across 35+ blockchains", icons: ["https://layerswap.io/app/favicon/apple-touch-icon.png"] }, projectId } }),
-            ],
-        },
-        {
-            groupName: 'Wallets',
-            wallets: [
-                coinbaseWallet({ chains, appName: 'Layerswap' }),
-                argentWallet({ projectId, chains: chainExceptZkSyncEra }),
-                bitgetWallet({ projectId, chains }),
-                rainbowWallet({ projectId, chains }),
-                phantomWallet({ chains })
-            ],
-        }
-    ])
+    const config = createConfig({
+        connectors,
+        chains: chainExceptZkSyncEra,
+        transports:[]
+    });
 
     const theme = darkTheme({
         accentColor: 'rgb(var(--ls-colors-primary-500))',
@@ -75,33 +96,19 @@ function RainbowKitComponent({ children }: Props) {
     theme.colors.closeButtonBackground = 'rgb(var(--ls-colors-secondary-500))'
     theme.colors.generalBorder = 'rgb(var(--ls-colors-secondary-500))'
 
-    const wagmiConfig = createConfig({
-        autoConnect: true,
-        connectors,
-        publicClient,
-    })
-
-    const disclaimer: DisclaimerComponent = ({ Text }) => (
-        <Text>
-            Thanks for choosing Layerswap!
-        </Text>
-    );
-
-    const CustomAvatar: AvatarComponent = ({ address, size }) => {
-        return <AddressIcon address={address} size={size} />
-    };
-
     return (
-        <WagmiConfig config={wagmiConfig}>
-            <RainbowKitProvider avatar={CustomAvatar} modalSize="compact" chains={chains} theme={theme}
-                appInfo={{
-                    appName: 'Layerswap',
-                    learnMoreUrl: 'https://docs.layerswap.io/',
-                    disclaimer: disclaimer
-                }}>
-                {children}
-            </RainbowKitProvider>
-        </WagmiConfig>
+        <WagmiProvider config={config}>
+            <QueryClientProvider client={queryClient}>
+                <RainbowKitProvider avatar={CustomAvatar} modalSize="compact" theme={theme}
+                    appInfo={{
+                        appName: 'Layerswap',
+                        learnMoreUrl: 'https://docs.layerswap.io/',
+                        disclaimer: disclaimer
+                    }}>
+                    {children}
+                </RainbowKitProvider>
+            </QueryClientProvider>
+        </WagmiProvider>
     )
 }
 

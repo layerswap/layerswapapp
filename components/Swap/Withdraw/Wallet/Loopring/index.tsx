@@ -1,7 +1,7 @@
 import { ArrowLeftRight, Lock } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
-import { useAccount, useNetwork } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
 import WalletMessage from '../WalletTransfer/message';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
@@ -12,21 +12,22 @@ import { LoopringAPI } from '../../../../../lib/loopring/LoopringAPI';
 import { UnlockedAccount } from '../../../../../lib/loopring/defs';
 import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
 import { WithdrawPageProps } from '../WalletTransferContent';
+import { useConfig } from 'wagmi'
 
 const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId, callData, depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
     const [activationPubKey, setActivationPubKey] = useState<{ x: string; y: string }>()
     const [selectedActivationAsset, setSelectedActivationAsset] = useState<string>()
-    const { chain } = useNetwork()
 
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { isConnected, address: fromAddress } = useAccount();
+    const { isConnected, address: fromAddress, chain } = useAccount();
     const { account: accInfo, isLoading: loadingAccount, noAccount, mutate: refetchAccount } = useLoopringAccount({ address: fromAddress })
     const { availableBalances, defaultValue, loading: activationDataIsLoading, feeData } = useActivationData(accInfo?.accountId)
     const [unlockedAccount, setUnlockedAccount] = useState<UnlockedAccount | undefined>()
     const { tokens } = useLoopringTokens()
     const loopringToken = tokens?.find(t => t.symbol === selectedActivationAsset)
+    const config = useConfig()
 
     useEffect(() => {
         if (fromAddress) {
@@ -39,7 +40,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
         try {
             if (!accInfo)
                 return
-            const res = await LoopringAPI.userAPI.unlockAccount(accInfo)
+            const res = await LoopringAPI.userAPI.unlockAccount(accInfo, config)
             setUnlockedAccount(res)
         }
         catch (e) {
@@ -48,7 +49,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
         finally {
             setLoading(false)
         }
-    }, [accInfo])
+    }, [accInfo, config])
 
     const activateAccout = useCallback(async () => {
         setLoading(true)

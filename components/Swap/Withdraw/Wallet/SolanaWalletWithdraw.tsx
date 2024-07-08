@@ -8,7 +8,7 @@ import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
-import { ButtonWrapper } from './WalletTransfer/buttons';
+import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
 
 const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId }) => {
     const [loading, setLoading] = useState(false);
@@ -19,19 +19,6 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
     const wallet = provider?.getConnectedWallet();
     const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
     const solanaNode = network?.node_url
-
-    const handleConnect = useCallback(async () => {
-        setLoading(true)
-        try {
-            await provider?.connectWallet()
-        }
-        catch (e) {
-            toast(e.message)
-        }
-        finally {
-            setLoading(false)
-        }
-    }, [provider])
 
     const handleTransfer = useCallback(async () => {
 
@@ -69,25 +56,19 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
         }
     }, [swapId, callData, walletPublicKey, signTransaction])
 
+    if (!wallet) {
+        return <ConnectWalletButton />
+    }
+
     return (
-        <>
-            <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
-                <div className='space-y-4'>
-                    {
-                        !wallet &&
-                        <ButtonWrapper isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
-                            Connect a wallet
-                        </ButtonWrapper>
-                    }
-                    {
-                        wallet &&
-                        <ButtonWrapper isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
-                            Send from wallet
-                        </ButtonWrapper>
-                    }
-                </div>
-            </div>
-        </>
+        <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
+            {
+                wallet &&
+                <ButtonWrapper isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
+                    Send from wallet
+                </ButtonWrapper>
+            }
+        </div>
     )
 }
 

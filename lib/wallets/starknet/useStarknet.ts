@@ -6,12 +6,18 @@ import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
 
 export default function useStarknet(): WalletProvider {
-    const withdrawalSupportedNetworks = [
+    const commonSupportedNetworks = [
         KnownInternalNames.Networks.StarkNetMainnet,
         KnownInternalNames.Networks.StarkNetGoerli,
         KnownInternalNames.Networks.StarkNetSepolia
     ]
-    const autofillSupportedNetworks = withdrawalSupportedNetworks
+
+    const withdrawalSupportedNetworks = [
+        ...commonSupportedNetworks,
+        KnownInternalNames.Networks.ParadexMainnet,
+        KnownInternalNames.Networks.ParadexTestnet,
+    ]
+
     const name = 'starknet'
     const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
     const wallets = useWalletStore((state) => state.connectedWallets)
@@ -25,8 +31,7 @@ export default function useStarknet(): WalletProvider {
 
     const connectWallet = useCallback(async (chain: string) => {
         const constants = (await import('starknet')).constants
-        const fromHex = (await import('viem')).fromHex
-        const chainId = (chain && fromHex(chain as `0x${string}`, 'string')) || constants.NetworkName.SN_MAIN
+        const chainId = process.env.NEXT_PUBLIC_API_VERSION === "sandbox" ? constants.NetworkName.SN_SEPOLIA : constants.NetworkName.SN_MAIN
         const connect = (await import('starknetkit')).connect
         try {
             const { wallet } = await connect({
@@ -40,8 +45,7 @@ export default function useStarknet(): WalletProvider {
                 dappName: 'Layerswap',
                 modalMode: 'alwaysAsk'
             })
-
-            if (wallet && chain && ((wallet.provider?.chainId && wallet.provider?.chainId != chain) || (wallet.provider?.provider?.chainId && wallet.provider?.provider?.chainId != chain))) {
+            if (wallet && chain && ((wallet.provider?.chainId && wallet.provider?.chainId != constants.StarknetChainId[chainId]) || (wallet.provider?.provider?.chainId && wallet.provider?.provider?.chainId != constants.StarknetChainId[chainId]))) {
                 await disconnectWallet()
                 const errorMessage = `Please switch the network in your wallet to ${chainId === constants.NetworkName.SN_SEPOLIA ? 'Sepolia' : 'Mainnet'} and click connect again`
                 throw new Error(errorMessage)
@@ -91,8 +95,9 @@ export default function useStarknet(): WalletProvider {
         connectWallet,
         disconnectWallet,
         reconnectWallet,
-        autofillSupportedNetworks,
         withdrawalSupportedNetworks,
+        autofillSupportedNetworks: commonSupportedNetworks,
+        asSourceSupportedNetworks: commonSupportedNetworks,
         name
     }
 }

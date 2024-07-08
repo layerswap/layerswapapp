@@ -8,7 +8,7 @@ import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
-import { useNetwork } from 'wagmi';
+import { useAccount } from 'wagmi';
 import ClickTooltip from '../../../Tooltips/ClickTooltip';
 import SignatureIcon from '../../../icons/SignatureIcon';
 import formatAmount from '../../../../lib/formatAmount';
@@ -24,7 +24,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
     const [activationFee, setActivationFee] = useState<({ feeInAsset: number, feeInUsd: number } | undefined)>(undefined);
 
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { chain } = useNetwork();
+    const { chain } = useAccount();
     const signer = useEthersSigner();
 
     const { networks: layers } = useSettingsState();
