@@ -28,7 +28,7 @@ const Withdraw: FC = () => {
         footer?: JSX.Element | JSX.Element[],
     } = {}
 
-    if(swap?.source_network.name === KnownInternalNames.Networks.ParadexMainnet || swap?.source_network.name === KnownInternalNames.Networks.ParadexTestnet) {
+    if(swap?.source_network.name === KnownInternalNames.Networks.ParadexMainnet || swap?.source_network.name === KnownInternalNames.Networks.ParadexTestnet || swap?.source_network.name === KnownInternalNames.Networks.ParadexNewMainnet || swap?.source_network.name === KnownInternalNames.Networks.ParadexNewTestnet) {
         withdraw = {
             content: <ParadexTransferContent />,
             footer: <WalletTransfer />

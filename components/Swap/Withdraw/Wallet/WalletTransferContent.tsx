@@ -39,7 +39,9 @@ export const WalletTransferContent: FC = () => {
     const sourceIsTon = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.TONMainnet?.toUpperCase()
 
     const sourceIsParadex = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ParadexMainnet?.toUpperCase()
-        || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ParadexTestnet?.toUpperCase();
+        || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ParadexTestnet?.toUpperCase()
+        || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ParadexNewMainnet?.toUpperCase()
+        || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ParadexNewTestnet?.toUpperCase();
 
     const depositAddress = depositActionsResponse?.find(da => true)?.to_address;
     const amount = depositActionsResponse?.find(da => true)?.amount || 0;
