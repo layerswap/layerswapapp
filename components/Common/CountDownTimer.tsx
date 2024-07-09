@@ -10,6 +10,7 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
     const { email, userId } = useAuthState();
     const { boot, show, update } = useIntercom();
     const [countdown, setCountdown] = useState<number>();
+    const [elapsedThreshold, setElapsedThreshold] = useState<boolean>(false);
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
 
     useEffect(() => {
@@ -18,10 +19,17 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
             const elapsedTime = currentTime.getTime() - new Date(swapInputTransaction?.timestamp!).getTime();
             const remainingTime = Math.max(timeStringToMilliseconds(initialTime) - Math.abs(elapsedTime), 0)
             setCountdown(remainingTime);
+            console.log(elapsedTime, "elapsedTime")
+            console.log(remainingTime, "remainingTime")
+            if (elapsedTime > 2 * timeStringToMilliseconds(initialTime)) {
+                setElapsedThreshold(true);
+            } else {
+                setElapsedThreshold(false);
+            }
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [initialTime, swap.status, swapInputTransaction]);
+    }, [initialTime, swap.status, swapInputTransaction, elapsedThreshold]);
 
     const updateWithProps = () => update({ userId, customAttributes: { email: email, swapId: swap.id } })
     const startIntercom = useCallback(() => {
@@ -43,7 +51,7 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
     };
     const formatted = countdown && formatTime(countdown);
 
-    if (countdown === 0 && swap.status !== SwapStatus.Completed) {
+    if (elapsedThreshold && swap.status !== SwapStatus.Completed) {
         const renderingError = new Error("Transaction is taking longer than expected");
         renderingError.name = `LongTransactionError`;
         renderingError.cause = renderingError;
@@ -52,15 +60,26 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
 
     return (
         <div className='flex items-center space-x-1'>
-            {countdown === 0 && swap.status !== SwapStatus.Completed ?
-                <div>
-                    <div><span>Transaction is taking longer than expected</span> <a className='underline hover:cursor-pointer' onClick={() => startIntercom()}> please contact our support.</a></div>
-                </div>
-                :
-                swap.status === SwapStatus.Completed && (!countdown || countdown === 0) ?
+            {
+                elapsedThreshold && swap.status !== SwapStatus.UserTransferPending ? (
+                    <div>
+                        <span>Transaction is taking longer than expected</span>
+                        <a className='underline hover:cursor-pointer' onClick={() => startIntercom()}> please contact our support.</a>
+                    </div>
+                ) : countdown === 0 && swap.status !== SwapStatus.Completed ? (
+                    <div>
+                        <span>Taking a bit longer than expected</span>
+                    </div>
+                ) : swap.status === SwapStatus.Completed && (!countdown || countdown === 0) ? (
                     ""
-                    :
-                    <div className='text-secondary-text flex items-center'><span>Estimated time:</span> <span className='text-primary-text ml-0.5'>{countdown ? formatted : <div className="h-[10px] mt-1 w-16 ml-1 animate-pulse rounded bg-gray-500" />}</span></div>
+                ) : (
+                    <div className='text-secondary-text flex items-center'>
+                        <span>Estimated time:</span>
+                        <span className='text-primary-text ml-0.5'>
+                            {countdown ? formatted : <div className="h-[10px] mt-1 w-16 ml-1 animate-pulse rounded bg-gray-500" />}
+                        </span>
+                    </div>
+                )
             }
         </div>
 
