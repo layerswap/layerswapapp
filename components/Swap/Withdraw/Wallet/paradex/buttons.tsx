@@ -35,7 +35,7 @@ export const ConnectWalletButton: FC<ConnectProps> = ({ network, text, icon, onC
             onClick && onClick()
             if (!provider) throw new Error(`No provider from ${network?.name}`)
 
-            await provider.connectWallet(provider?.name)
+            await provider.connectWallet()
             onConnect && onConnect()
         }
         catch (e) {

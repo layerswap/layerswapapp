@@ -24,14 +24,14 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
 
     const connect = async () => {
         setIsLoading(true)
-        await provider.connectWallet(destination.chain_id)
+        await provider.connectWallet({ chain: destination.chain_id })
         if (onConnect) onConnect()
         setIsLoading(false)
     }
 
     const reconnect = async () => {
         setIsLoading(true)
-        await provider.reconnectWallet(destination.chain_id)
+        await provider.reconnectWallet({ chain: destination.chain_id })
         if (onConnect) onConnect()
         setIsLoading(false)
     }

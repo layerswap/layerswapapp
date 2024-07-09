@@ -40,7 +40,7 @@ const WalletTransferContent: FC = () => {
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!wallet) return
         setIsloading(true);
-        if (provider?.reconnectWallet) await provider.reconnectWallet(source_network?.chain_id)
+        if (provider?.reconnectWallet) await provider.reconnectWallet({ chain: source_network?.chain_id })
         else await disconnectWallet(wallet.providerName, swap)
         if (source_exchange) await mutateSwap()
         setIsloading(false);
