@@ -59,16 +59,9 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
                     account: snAccount,
                 });
 
-                const increaseAllowanceCall: Call[] =
-                    [{
-                        contractAddress: config.bridgedTokens[token.symbol].l2TokenAddress,
-                        entrypoint: 'increaseAllowance',
-                        calldata: [config.paraclearAddress, ethers.utils.parseUnits(amount.toString(), config.bridgedTokens[token.symbol].decimals)]
-                    }];
-
                 const parsedCallData = JSON.parse(callData || "")
 
-                const res = await paradexAccount.execute([...increaseAllowanceCall, ...parsedCallData], undefined, { maxFee: '1000000000000000' });
+                const res = await paradexAccount.execute(parsedCallData, undefined, { maxFee: '1000000000000000' });
 
                 if (res.transaction_hash) {
                     setSwapTransaction(swapId, BackendTransactionStatus.Pending, res.transaction_hash);
