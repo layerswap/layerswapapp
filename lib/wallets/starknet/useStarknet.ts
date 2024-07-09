@@ -29,7 +29,7 @@ export default function useStarknet(): WalletProvider {
         return wallets.find(wallet => wallet.providerName === name)
     }
 
-    const connectWallet = useCallback(async (chainId: string) => {
+    const connectWallet = useCallback(async ({ chain }: { chain: string }) => {
         const constants = (await import('starknet')).constants
         const connect = (await import('starknetkit')).connect
         try {
@@ -39,14 +39,14 @@ export default function useStarknet(): WalletProvider {
                     projectId: WALLETCONNECT_PROJECT_ID,
                     url: 'https://www.layerswap.io/app',
                     description: 'Move crypto across exchanges, blockchains, and wallets.',
-                    chainId: chainId as any
+                    chainId: chain as any
                 },
                 dappName: 'Layerswap',
                 modalMode: 'alwaysAsk'
             })
-            if (wallet && chainId && ((wallet.provider?.chainId && wallet.provider?.chainId != chainId) || (wallet.provider?.provider?.chainId && wallet.provider?.provider?.chainId != chainId))) {
+            if (wallet && chain && ((wallet.provider?.chainId && wallet.provider?.chainId != chain) || (wallet.provider?.provider?.chainId && wallet.provider?.provider?.chainId != chain))) {
                 await disconnectWallet()
-                const errorMessage = `Please switch the network in your wallet to ${chainId === constants.StarknetChainId.SN_SEPOLIA ? 'Sepolia' : 'Mainnet'} and click connect again`
+                const errorMessage = `Please switch the network in your wallet to ${chain === constants.StarknetChainId.SN_SEPOLIA ? 'Sepolia' : 'Mainnet'} and click connect again`
                 throw new Error(errorMessage)
             }
 
@@ -63,7 +63,7 @@ export default function useStarknet(): WalletProvider {
                 })
             } else if (wallet?.isConnected === false) {
                 await disconnectWallet()
-                connectWallet(chainId)
+                connectWallet({ chain })
             }
 
         }
@@ -84,9 +84,9 @@ export default function useStarknet(): WalletProvider {
         }
     }
 
-    const reconnectWallet = async (chain: string) => {
+    const reconnectWallet = async ({ chain }: { chain: string }) => {
         await disconnectWallet()
-        await connectWallet(chain)
+        await connectWallet({ chain })
     }
 
     return {

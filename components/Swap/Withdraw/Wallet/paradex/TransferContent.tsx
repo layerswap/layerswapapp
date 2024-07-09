@@ -43,7 +43,7 @@ const WalletTransferContent: FC = () => {
     const handleEvmDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!evmWallet) return
         setIsloading(true);
-        if (evmProvider?.reconnectWallet) await evmProvider.reconnectWallet(source_network?.chain_id)
+        if (evmProvider?.reconnectWallet) await evmProvider.reconnectWallet({ chain: source_network?.chain_id })
         else await disconnectWallet(evmWallet.providerName, swap)
         if (source_exchange) await mutateSwap()
         setIsloading(false);
@@ -68,7 +68,7 @@ const WalletTransferContent: FC = () => {
     const handleStarknetDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!starknetWallet) return
         setIsloading(true);
-        if (evmProvider?.reconnectWallet) await evmProvider.reconnectWallet(source_network?.chain_id)
+        if (evmProvider?.reconnectWallet) await evmProvider.reconnectWallet({ chain: source_network?.chain_id })
         else await disconnectWallet(starknetWallet.providerName, swap)
         if (source_exchange) await mutateSwap()
         setIsloading(false);
@@ -153,7 +153,7 @@ const Content: FC<{ network: NetworkWithTokens | undefined }> = ({ network }) =>
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!wallet) return
         setIsloading(true);
-        if (provider?.reconnectWallet) await provider.reconnectWallet(source_network?.chain_id)
+        if (provider?.reconnectWallet) await provider.reconnectWallet({ chain: source_network?.chain_id })
         else await disconnectWallet(wallet.providerName, swap)
         if (source_exchange) await mutateSwap()
         setIsloading(false);
