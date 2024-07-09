@@ -1,26 +1,18 @@
-import { ArrowLeftRight, WalletIcon } from 'lucide-react';
+import { WalletIcon } from 'lucide-react';
 import { FC, useCallback, useMemo, useState } from 'react'
-import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
 import useWallet from '../../../../../hooks/useWallet';
 import { WithdrawPageProps } from '../WalletTransferContent';
 import * as Paradex from "./lib";
-import { TypedData } from '@paradex/sdk/dist/ethereum-signer';
-import { useAccount } from 'wagmi';
 import { useSettingsState } from '../../../../../context/settings';
 import KnownInternalNames from '../../../../../lib/knownIds';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
 import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
-import { useEthersSigner } from '../../../../../lib/ethersToViem/ethers';
 import toast from 'react-hot-toast';
 import SubmitButton from '../../../../buttons/submitButton';
-import * as Starknet from 'starknet';
-import { Call } from 'starknet';
-import { BigNumber, ethers } from 'ethers';
 
 const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {
 
     const [loading, setLoading] = useState(false)
-    const [transferDone, setTransferDone] = useState<boolean>()
 
     const { networks } = useSettingsState();
     const starknet = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia);
@@ -86,8 +78,8 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
                 <div className="flex flex-row
                     text-primary-text text-base space-x-2">
                     <SubmitButton
-                        isDisabled={!!(loading || transferDone || !callData)}
-                        isSubmitting={!!(loading || transferDone)}
+                        isDisabled={!!(loading || !callData)}
+                        isSubmitting={!!(loading)}
                         onClick={handleTransfer}
                         icon={<WalletIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
                         Send from Starknet wallet
