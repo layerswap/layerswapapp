@@ -42,7 +42,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
 
     return (
         <ResizablePanel>
-            <div className={`gap-4 flex relative items-center outline-none w-full text-primary-text px-3.5 py-2.5 border border-transparent transition-colors duration-200 rounded-lg ${needRefuel && ' !border-primary'}`}>
+            <div className={`gap-4 flex relative items-center outline-none w-full text-primary-text px-3.5 py-2.5 border border-transparent transition-colors duration-200 rounded-t-lg ${needRefuel && ' !border-primary'}`}>
                 <div className="flex items-center justify-between w-full">
                     <button type="button" onClick={() => onButtonClick()}>
                         <div className="font- flex items-center text-sm">
