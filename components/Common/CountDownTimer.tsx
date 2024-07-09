@@ -19,8 +19,7 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
             const elapsedTime = currentTime.getTime() - new Date(swapInputTransaction?.timestamp!).getTime();
             const remainingTime = Math.max(timeStringToMilliseconds(initialTime) - Math.abs(elapsedTime), 0)
             setCountdown(remainingTime);
-            console.log(elapsedTime, "elapsedTime")
-            console.log(remainingTime, "remainingTime")
+
             if (elapsedTime > 2 * timeStringToMilliseconds(initialTime)) {
                 setElapsedThreshold(true);
             } else {
