@@ -71,11 +71,9 @@ function RainbowKitComponent({ children }: Props) {
             && net.token)
         .map(resolveChain).filter(isChain) as [Chain]
 
-    let chainExceptZkSyncEra = settingsChains.filter(x => x.id != 324) as [Chain];
-
     const config = createConfig({
         connectors,
-        chains: chainExceptZkSyncEra,
+        chains: settingsChains,
         transports:[]
     });
 
