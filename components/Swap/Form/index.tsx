@@ -29,7 +29,7 @@ import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
 import { DepositMethodProvider } from "../../../context/depositMethodContext";
-import { Connector, createConfig, http, useAccount, useConnect, useConnectorClient, useConnectors } from "wagmi";
+import { Connector, useAccount, useConnect, useConnectors } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { useSwitchAccount } from 'wagmi'
 import { WalletButton, useConnectModal } from '@rainbow-me/rainbowkit';
@@ -120,7 +120,7 @@ export default function Form() {
                 }
             }
             const provider = values.from && getSourceProvider(values.from)
-            const wallet = provider?.getConnectedWallet()
+            const wallet = provider?.getConnectedWallets()
 
             const swapId = await createSwap(values, wallet?.address, query, partner);
             setSwapId(swapId)
@@ -248,7 +248,7 @@ export default function Form() {
 
         <button onClick={async () => {
 
-            console.log(foo.connect())
+            // console.log(foo.connect())
             foo && foo.connect()
 
         }}>Connect </button>
@@ -285,10 +285,9 @@ export default function Form() {
                         type="button"
                         className="bg-primary-500 text-white px-4 py-2 rounded-lg block"
                         onClick={() => {
-                            debugger
                             connect()
-                            console.log("connector", connector)
-                            console.log("connect", connect)
+                            // console.log("connector", connector)
+                            // console.log("connect", connect)
 
                         }}
                     >

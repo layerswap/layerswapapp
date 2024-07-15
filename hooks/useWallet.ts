@@ -1,42 +1,30 @@
 import toast from "react-hot-toast"
 import LayerSwapApiClient, { SwapItem } from "../lib/layerSwapApiClient"
 import { Wallet } from "../stores/walletStore"
-import useTON from "../lib/wallets/ton/useTON"
 import useEVM from "../lib/wallets/evm/useEVM"
-import useStarknet from "../lib/wallets/starknet/useStarknet"
-import useImmutableX from "../lib/wallets/immutableX/useIMX"
-import useSolana from "../lib/wallets/solana/useSolana"
 import { Network, RouteNetwork } from "../Models/Network"
-
-
-type Connector = {
-    providerName: string
-    icon?: string;
-    name?: string;
-}
+import { Connector } from "@wagmi/core"
 
 
 export type WalletProvider = {
     connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
-    disconnectWallet: () => Promise<void> | undefined | void,
+    disconnectWallet: (connectorName: string) => Promise<void> | undefined | void,
     reconnectWallet: (props?: { chain?: string | number | undefined | null }) => Promise<void> | undefined | void,
-    getConnectedWallet: () => Wallet | undefined,
+    getConnectedWallets: () => Wallet[] | undefined,
     withdrawalSupportedNetworks: string[],
     autofillSupportedNetworks?: string[],
     asSourceSupportedNetworks?: string[],
     name: string,
-
-    requestedConnectors?: Connector[],
 }
 
 export default function useWallet() {
 
     const WalletProviders: WalletProvider[] = [
-        useTON(),
+        // useTON(),
         useEVM(),
-        useStarknet(),
-        useImmutableX(),
-        useSolana()
+        // useStarknet(),
+        // useImmutableX(),
+        // useSolana()
     ]
 
     async function connectWallet({ providerName, chain }: { providerName: string, chain?: string | number | null }) {
@@ -49,7 +37,7 @@ export default function useWallet() {
         }
     }
 
-    const disconnectWallet = async (providerName: string, swap?: SwapItem) => {
+    const disconnectWallet = async (providerName: string, connectorName: string, swap?: SwapItem) => {
         const provider = WalletProviders.find(provider => provider.name === providerName)
         try {
             if (swap?.source_exchange) {
@@ -57,7 +45,7 @@ export default function useWallet() {
                 await apiClient.DisconnectExchangeAsync(swap.id, "coinbase")
             }
             else {
-                await provider?.disconnectWallet()
+                await provider?.disconnectWallet(connectorName)
             }
         }
         catch (e) {
@@ -79,10 +67,9 @@ export default function useWallet() {
         let connectedWallets: Wallet[] = []
 
         WalletProviders.forEach(wallet => {
-            const w = wallet.getConnectedWallet()
-            connectedWallets = w && [...connectedWallets, w] || [...connectedWallets]
+            const w = wallet.getConnectedWallets()
+            connectedWallets = w && [...connectedWallets, ...w] || [...connectedWallets]
         })
-
         return connectedWallets
     }
 

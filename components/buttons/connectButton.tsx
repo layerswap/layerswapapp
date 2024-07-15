@@ -31,21 +31,21 @@ const ConnectButton = ({
             id: "evm",
             type: NetworkType.EVM,
         },
-        {
-            name: "Starknet",
-            id: "starknet",
-            type: NetworkType.Starknet,
-        },
-        {
-            name: "TON",
-            id: "ton",
-            type: NetworkType.TON,
-        },
-        {
-            name: "Solana",
-            id: "solana",
-            type: NetworkType.Solana,
-        },
+        // {
+        //     name: "Starknet",
+        //     id: "starknet",
+        //     type: NetworkType.Starknet,
+        // },
+        // {
+        //     name: "TON",
+        //     id: "ton",
+        //     type: NetworkType.TON,
+        // },
+        // {
+        //     name: "Solana",
+        //     id: "solana",
+        //     type: NetworkType.Solana,
+        // },
     ];
     const filteredConnectors = knownConnectors
     // .filter(

@@ -31,7 +31,7 @@ const WalletsList = () => {
                                 }
                                 <p>{shortenAddress(wallet.address)}</p>
                             </div>
-                            <button onClick={() => { disconnectWallet(wallet.providerName); }} className="p-1 hover:bg-secondary-700 text-xs text-secondary-text hover:opacity-75">
+                            <button onClick={() => { disconnectWallet(wallet.providerName, wallet.connector!); }} className="p-1 hover:bg-secondary-700 text-xs text-secondary-text hover:opacity-75">
                                 Disconnect
                             </button>
                         </div>

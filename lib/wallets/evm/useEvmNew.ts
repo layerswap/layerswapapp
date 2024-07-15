@@ -2,32 +2,34 @@ import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { Connector, useAccount, useConnectors, useDisconnect, useSwitchAccount } from "wagmi"
 import { NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
-import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
-import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
-import { evmConnectorNameResolver } from "./KnownEVMConnectors"
-import { useEffect, useState } from "react"
 import { useWalletModal } from "../../../context/walletModalContext"
-import { addresses } from "@eth-optimism/contracts-ts"
+import { NewWalletProvider } from "../../../hooks/useWalletNew"
 
 
-export default function useEVM(): WalletProvider {
+export default function useEVMNew(): NewWalletProvider {
     const { networks } = useSettingsState()
+    const name = 'evm'
+
+    const asSourceSupportedNetworks = [
+        ...networks.filter(network => network.type === NetworkType.EVM && network.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
+        KnownInternalNames.Networks.ZksyncMainnet,
+        KnownInternalNames.Networks.LoopringGoerli,
+        KnownInternalNames.Networks.LoopringMainnet,
+        KnownInternalNames.Networks.LoopringSepolia
+    ]
 
     const withdrawalSupportedNetworks = [
-        ...networks.filter(layer => layer.type === NetworkType.EVM && layer.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
-        KnownInternalNames.Networks.ZksyncMainnet,
-        KnownInternalNames.Networks.LoopringMainnet,
-        KnownInternalNames.Networks.LoopringSepolia,
+        ...asSourceSupportedNetworks,
+        KnownInternalNames.Networks.ParadexMainnet,
+        KnownInternalNames.Networks.ParadexTestnet,
     ]
 
     const autofillSupportedNetworks = [
-        ...withdrawalSupportedNetworks,
+        ...asSourceSupportedNetworks,
         KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli,
         KnownInternalNames.Networks.BrineMainnet,
-        KnownInternalNames.Networks.LoopringMainnet,
-        KnownInternalNames.Networks.LoopringSepolia,
     ]
 
     const { openConnectModal } = useConnectModal()
@@ -50,27 +52,31 @@ export default function useEVM(): WalletProvider {
 
     const availableWalletsforConnect = resolveAvailableWallets(allConnectors, connectedWallets)
 
-
     const res = {
         availableWalletsforConnect,
         connectedWallets
     }
+console.log(...connectedWallets.map(resolveConnector))
+    const getWallets = () => [
+        ...connectedWallets.map(resolveConnector),
+    ]
 
     return {
-        getConnectedWallet: getWallet,
+        getConnectedWallets: getWallet,
         connectWallet,
         availableWalletsforConnect,
         disconnectWallet,
         reconnectWallet,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
+        asSourceSupportedNetworks,
         name
     }
 }
 
-const resolveConnector = (connector: Connector) => {
+const resolveConnector = async (connector: Connector) => {
     return {
-        address: connector.account,
+        address: await connector.getAccounts(),
         addresses: connector.accounts,
         iconUrl: connector?.['rkDetails']?.['iconUrl'],
     }

@@ -1,12 +1,7 @@
 import { Context, createContext, useContext, useState } from 'react'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../components/shadcn/dialog';
-import ConnectButton from '../components/buttons/connectButton';
-import { Plus } from 'lucide-react';
-import { Config, Connector, useAccount, useConnect, useConnectors, useSwitchAccount } from 'wagmi';
-import { connectors } from '../components/RainbowKit';
-import useWallet from '../hooks/useWallet';
+import { Connector, useAccount, useConnect, useConnectors, useSwitchAccount } from 'wagmi';
 import { WalletButton } from '@rainbow-me/rainbowkit';
-import { ConnectMutateAsync } from 'wagmi/query';
 import { mainnet } from 'viem/chains';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -109,8 +104,8 @@ const getWalletConnectUri = async (
 
 
 const resolveAvailableWallets = (all_connectors: readonly Connector[], connected: readonly Connector[]) => {
-    console.log("connected", connected)
-    console.log("all_connectors", all_connectors)
+    // console.log("connected", connected)
+    // console.log("all_connectors", all_connectors)
     const available_connectors = all_connectors.filter((connector, index, array) => {
         return connector.rkDetails
             && array.findIndex(a => a?.['rkDetails']?.['id'] === connector?.['rkDetails']?.['id']) === index
