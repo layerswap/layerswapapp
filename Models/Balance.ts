@@ -16,7 +16,8 @@ export type GasProps = {
     network: Network,
     token: Token,
     address?: `0x${string}`,
-    userDestinationAddress?: string,
+    recipientAddress?: string,
+    isSweeplessTx?: boolean,
     wallet?: Wallet
 }
 

@@ -16,6 +16,7 @@ import { Exchange } from "../../../../Models/Exchange";
 import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";
 import { useQueryState } from "../../../../context/query";
+import { useAddressesStore } from "../../../../stores/addressesStore";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -53,6 +54,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     } = useFormikContext<SwapFormValues>();
     const query = useQueryState()
     const { destination_address, to: destination, toExchange: destinationExchange, toCurrency: destinationAsset } = values
+    const groupedAddresses = useAddressesStore(state => state.addresses)
+    const setAddresses = useAddressesStore(state => state.setAddresses)
 
     const { getAutofillProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -67,7 +70,11 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const inputReference = useRef<HTMLInputElement>(null);
 
-    const groupedAddresses = destination && resolveAddressGroups({ address_book, destination, destinationExchange, connectedWalletAddress, newAddress, addressFromQuery: query.destAddress, partner })
+    useEffect(() => {
+        const groupedAddresses = destination && resolveAddressGroups({ address_book, destination, destinationExchange, connectedWalletAddress, newAddress, addressFromQuery: query.destAddress })
+        if (groupedAddresses) setAddresses(groupedAddresses)
+    }, [address_book, destination, destinationExchange, connectedWalletAddress, newAddress, query.destAddress])
+
     const destinationAddressItem = destination && destination_address ? groupedAddresses?.find(a => addressFormat(a.address, destination) === addressFormat(destination_address, destination)) : undefined
     const addressBookAddresses = groupedAddresses?.filter(a => a.group !== AddressGroup.ConnectedWallet)
 
@@ -100,7 +107,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     return (<>
         <AddressButton
-            disabled={!values.to || !values.from}
+            disabled={disabled}
             addressItem={destinationAddressItem}
             openAddressModal={() => setShowAddressModal(true)}
             connectedWallet={connectedWallet}
@@ -174,7 +181,6 @@ const resolveAddressGroups = ({
     connectedWalletAddress,
     newAddress,
     addressFromQuery,
-    partner
 }: {
     address_book: AddressBookItem[] | undefined,
     destination: RouteNetwork | undefined,
@@ -182,7 +188,6 @@ const resolveAddressGroups = ({
     connectedWalletAddress: string | undefined,
     newAddress: { address: string, networkType: NetworkType | string } | undefined,
     addressFromQuery: string | undefined,
-    partner?: Partner,
 }) => {
 
     if (!destination) return
@@ -198,7 +203,7 @@ const resolveAddressGroups = ({
         addresses.push({ address: connectedWalletAddress, group: AddressGroup.ConnectedWallet })
     }
 
-    if (partner && addressFromQuery) {
+    if (addressFromQuery) {
         addresses.push({ address: addressFromQuery, group: AddressGroup.FromQuery })
     }
 

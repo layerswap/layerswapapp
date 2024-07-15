@@ -15,20 +15,25 @@ export default function useEVM(): WalletProvider & { availableWalletsforConnect:
     const [shouldConnect, setShouldConnect] = useState(false)
     const { disconnectAsync } = useDisconnect()
 
-    const withdrawalSupportedNetworks = [
-        ...networks.filter(layer => layer.type === NetworkType.EVM && layer.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
+    const asSourceSupportedNetworks = [
+        ...networks.filter(network => network.type === NetworkType.EVM && network.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
+        KnownInternalNames.Networks.LoopringGoerli,
         KnownInternalNames.Networks.LoopringMainnet,
-        KnownInternalNames.Networks.LoopringSepolia,
+        KnownInternalNames.Networks.LoopringSepolia
+    ]
+
+    const withdrawalSupportedNetworks = [
+        ...asSourceSupportedNetworks,
+        KnownInternalNames.Networks.ParadexMainnet,
+        KnownInternalNames.Networks.ParadexTestnet,
     ]
 
     const autofillSupportedNetworks = [
-        ...withdrawalSupportedNetworks,
+        ...asSourceSupportedNetworks,
         KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli,
         KnownInternalNames.Networks.BrineMainnet,
-        KnownInternalNames.Networks.LoopringMainnet,
-        KnownInternalNames.Networks.LoopringSepolia,
     ]
 
     const name = 'evm'
@@ -109,6 +114,7 @@ export default function useEVM(): WalletProvider & { availableWalletsforConnect:
         reconnectWallet,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
+        asSourceSupportedNetworks,
         name
     }
 }

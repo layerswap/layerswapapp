@@ -78,11 +78,10 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
         try {
             if (!depositAddress)
                 throw new Error('Missing deposit address')
-            if (!amount)
+            if (amount == undefined)
                 throw new Error('Missing amount')
             if (!transaction.sendTransaction)
                 throw new Error('Missing sendTransaction')
-
             const tx = {
                 to: depositAddress,
                 value: parseEther(amount?.toString()),
@@ -110,8 +109,9 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
         {
             !transaction.isPending && <>
                 <ButtonWrapper
-                    isDisabled={transaction.isPending}
                     onClick={clickHandler}
+                    isSubmitting={!depositAddress}
+                    isDisabled={!depositAddress}
                     icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 >
                     {(isError && buttonClicked) ? <span>Try again</span>

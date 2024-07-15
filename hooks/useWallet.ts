@@ -17,12 +17,13 @@ type Connector = {
 
 
 export type WalletProvider = {
-    connectWallet: (chain?: string | number | undefined | null) => Promise<void> | undefined | void,
+    connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
     disconnectWallet: () => Promise<void> | undefined | void,
-    reconnectWallet: (chain?: string | number | undefined | null) => Promise<void> | undefined | void,
+    reconnectWallet: (props?: { chain?: string | number | undefined | null }) => Promise<void> | undefined | void,
     getConnectedWallet: () => Wallet | undefined,
-    autofillSupportedNetworks?: string[],
     withdrawalSupportedNetworks: string[],
+    autofillSupportedNetworks?: string[],
+    asSourceSupportedNetworks?: string[],
     name: string,
 
     requestedConnectors?: Connector[],
@@ -38,17 +39,17 @@ export default function useWallet() {
         useSolana()
     ]
 
-    async function handleConnect(providerName: string, chain?: string | number | null) {
+    async function connectWallet({ providerName, chain }: { providerName: string, chain?: string | number | null }) {
         const provider = WalletProviders.find(provider => provider.name === providerName)
         try {
-            await provider?.connectWallet(chain)
+            await provider?.connectWallet({ chain })
         }
         catch (e) {
             toast.error("Couldn't connect the account")
         }
     }
 
-    const handleDisconnect = async (providerName: string, swap?: SwapItem) => {
+    const disconnectWallet = async (providerName: string, swap?: SwapItem) => {
         const provider = WalletProviders.find(provider => provider.name === providerName)
         try {
             if (swap?.source_exchange) {
@@ -64,10 +65,10 @@ export default function useWallet() {
         }
     }
 
-    const handleReconnect = async (providerName: string, chain?: string | number) => {
+    const reconnectWallet = async (providerName: string, chain?: string | number) => {
         const provider = WalletProviders.find(provider => provider.name === providerName)
         try {
-            await provider?.reconnectWallet(chain)
+            await provider?.reconnectWallet({ chain })
         }
         catch {
             toast.error("Couldn't reconnect the account")
@@ -95,12 +96,18 @@ export default function useWallet() {
         return provider
     }
 
+    const getSourceProvider = (network: Network) => {
+        const provider = WalletProviders.find(provider => provider?.asSourceSupportedNetworks?.includes(network.name))
+        return provider
+    }
+
     return {
         wallets: getConnectedWallets(),
-        connectWallet: handleConnect,
-        disconnectWallet: handleDisconnect,
-        reconnectWallet: handleReconnect,
+        connectWallet,
+        disconnectWallet,
+        reconnectWallet,
         getWithdrawalProvider,
         getAutofillProvider,
+        getSourceProvider
     }
 }

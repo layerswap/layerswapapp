@@ -1,6 +1,5 @@
 import { ArrowLeftRight, Info } from 'lucide-react';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
-import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import * as zksync from 'zksync';
 import { utils } from 'ethers';
@@ -17,7 +16,6 @@ import useWallet from '../../../../hooks/useWallet';
 import Link from 'next/link';
 import KnownInternalNames from '../../../../lib/knownIds';
 import { WithdrawPageProps } from './WalletTransferContent';
-import ManualTransferNote from './WalletTransfer/manualTransferNote';
 
 const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, sequenceNumber, swapId }) => {
     const [loading, setLoading] = useState(false);
@@ -203,10 +201,6 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
                         <ButtonWrapper isDisabled={!!(loading)} isSubmitting={!!loading} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Send from wallet
                         </ButtonWrapper>
-                    }
-                    {
-                        network?.deposit_methods.some(m => m === 'deposit_address') &&
-                        <ManualTransferNote />
                     }
                 </div>
             </div>

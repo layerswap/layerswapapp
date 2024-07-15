@@ -25,24 +25,27 @@ import StatusIcon from "../../SwapHistory/StatusIcons";
 import Image from 'next/image';
 import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import dynamic from "next/dynamic";
 import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
 import { DepositMethodProvider } from "../../../context/depositMethodContext";
 import { Connector, createConfig, http, useAccount, useConnect, useConnectorClient, useConnectors } from "wagmi";
 import { mainnet } from "wagmi/chains";
-import { injected, metaMask } from "wagmi/connectors";
 import { useSwitchAccount } from 'wagmi'
 import { WalletButton, useConnectModal } from '@rainbow-me/rainbowkit';
 import QRCodeModal from "../../QRCodeWallet";
+import { dynamicWithRetries } from "../../../lib/dynamicWithRetries";
+import AddressNoteModal from "../../Input/Address/AddressNote";
+import { addressFormat } from "../../../lib/address/formatter";
+import { AddressGroup } from "../../Input/Address/AddressPicker";
+import { useAddressesStore } from "../../../stores/addressesStore";
 
 type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
-const SwapDetails = dynamic(() => import(".."), {
-    loading: () => <div className="w-full h-[450px]">
+const SwapDetails = dynamicWithRetries(() => import(".."),
+    <div className="w-full h-[450px]">
         <div className="animate-pulse flex space-x-4">
             <div className="flex-1 space-y-6 py-1">
                 <div className="h-32 bg-secondary-700 rounded-lg"></div>
@@ -51,14 +54,7 @@ const SwapDetails = dynamic(() => import(".."), {
             </div>
         </div>
     </div>
-})
-// export const imtoken_config = createConfig({
-//     chains: [mainnet],
-//     transports: {
-//         [mainnet.id]: http(),
-//     },
-//     connectors: [injected({ target: "imToken" })],
-// })
+)
 
 export default function Form() {
     const { connectors, switchAccount } = useSwitchAccount()
@@ -74,11 +70,16 @@ export default function Form() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [showSwapModal, setShowSwapModal] = useState(false);
+    const [showAddressNoteModal, setShowAddressNoteModal] = useState(false);
+    const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
     const { getWithdrawalProvider } = useWallet()
     const account = useAccount()
+    const { getSourceProvider } = useWallet()
+    const addresses = useAddressesStore(state => state.addresses)
+
     const settings = useSettingsState();
     const query = useQueryState()
     const { createSwap, setSwapId } = useSwapDataUpdate()
@@ -92,6 +93,18 @@ export default function Form() {
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useFee()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
+        const { destination_address, to } = values
+
+        if (to &&
+            destination_address &&
+            (query.destAddress) &&
+            (addressFormat(query.destAddress?.toString(), to) === addressFormat(destination_address, to)) &&
+            !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
+
+            setShowAddressNoteModal(true)
+            return
+
+        }
         try {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken) {
@@ -106,7 +119,7 @@ export default function Form() {
                     return;
                 }
             }
-            const provider = values.from && getWithdrawalProvider(values.from)
+            const provider = values.from && getSourceProvider(values.from)
             const wallet = provider?.getConnectedWallet()
 
             const swapId = await createSwap(values, wallet?.address, query, partner);
@@ -130,7 +143,7 @@ export default function Form() {
                     AppURL: data.message
                 })
                 setShowConnectNetworkModal(true);
-            } else if (data.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
+            } else if (data?.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
                 const time = data.metadata.RemainingLimitPeriod?.split(':');
                 const hours = Number(time[0])
                 const minutes = Number(time[1])
@@ -143,10 +156,10 @@ export default function Form() {
                 }
             }
             else {
-                toast.error(data.message || error.message)
+                toast.error(data?.message || error?.message)
             }
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getWithdrawalProvider])
+    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getSourceProvider])
 
     const destAddress: string = query?.destAddress as string;
 
@@ -397,7 +410,10 @@ export default function Form() {
             validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
         >
-            <SwapForm partner={partner} />
+            <>
+                <SwapForm partner={partner} />
+                <AddressNoteModal partner={partner} openModal={showAddressNoteModal} setOpenModal={setShowAddressNoteModal} onConfirm={() => setIsAddressFromQueryConfirmed(true)} />
+            </>
         </Formik>
     </DepositMethodProvider >
 }

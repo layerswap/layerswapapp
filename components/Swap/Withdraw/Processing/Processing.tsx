@@ -74,7 +74,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 
-    const progressStatuses = getProgressStatuses(swapResponse, 'inputTxStatusData?.data?.status.toLowerCase()' as TransactionStatus)
+    const progressStatuses = getProgressStatuses(swapResponse, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
     const outputPendingDetails = quote?.avg_completion_time && <div className='flex items-center space-x-1'>

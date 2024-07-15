@@ -35,9 +35,9 @@ export default class ZkSyncLiteRPCClient {
         return this._client;
     }
 
-    async getTransferFee(nodeUrl: string, senderAddress: `0x${string}`, asset: string) {
+    async getTransferFee(nodeUrl: string, recipientAddress: `0x${string}`, asset: string) {
         let client = await this.getPublicClient(nodeUrl);
-        return await client.request({ method: 'get_tx_fee' as any, params: ["Transfer" as any, senderAddress as `0x${string}`, asset as any] }) as zkSyncGas;
+        return await client.request({ method: 'get_tx_fee' as any, params: ["Transfer" as any, recipientAddress as `0x${string}`, asset as any] }) as zkSyncGas;
     }
 
     async getAccountInfo(nodeUrl: string, address: string) {

@@ -1,7 +1,6 @@
 import { useSettingsState } from "../../../context/settings"
 import { Balance, BalanceProps, BalanceProvider, GasProps, NetworkBalancesProps } from "../../../Models/Balance"
 import { NetworkType } from "../../../Models/Network"
-import NetworkSettings, { GasCalculation } from "../../NetworkSettings"
 
 export default function useEVMBalance(): BalanceProvider {
     const { networks } = useSettingsState()
@@ -35,7 +34,7 @@ export default function useEVMBalance(): BalanceProvider {
                 assets: network.tokens,
                 network,
                 publicClient,
-                hasMulticall: !!network.metadata?.evm_multi_call_contract
+                hasMulticall: !!network.metadata?.evm_multicall_contract
             });
 
             const erc20Balances = (erc20BalancesContractRes && await resolveERC20Balances(
@@ -88,15 +87,13 @@ export default function useEVMBalance(): BalanceProvider {
     }
 
 
-    const getGas = async ({ network, address, token, userDestinationAddress }: GasProps) => {
+    const getGas = async ({ network, address, token, isSweeplessTx, recipientAddress = '0x2fc617e933a52713247ce25730f6695920b3befe' }: GasProps) => {
 
-        if (!network || !address) {
-            return
-        }
         const chainId = Number(network?.chain_id)
 
-        if (!chainId || !network)
+        if (!network || !address || isSweeplessTx === undefined || !chainId || !recipientAddress) {
             return
+        }
 
         const contract_address = token.contract as `0x${string}`
 
@@ -115,15 +112,18 @@ export default function useEVMBalance(): BalanceProvider {
             const getGas = network?.metadata?.evm_oracle_contract ? getOptimismGas : getEthereumGas
 
             const gasProvider = new getGas(
-                publicClient,
-                chainId,
-                contract_address,
-                address,
-                network,
-                token,
-                address,
-                token,
-                address !== userDestinationAddress,
+                {
+
+                    publicClient,
+                    chainId,
+                    contract_address,
+                    account: address,
+                    from: network,
+                    currency: token,
+                    destination: recipientAddress as `0x${string}`,
+                    nativeToken: token,
+                    isSweeplessTx,
+                }
             )
 
             const gas = await gasProvider.resolveGas()

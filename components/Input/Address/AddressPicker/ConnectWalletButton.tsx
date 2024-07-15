@@ -24,19 +24,17 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
 
     const connect = async () => {
         setIsLoading(true)
-        await provider.connectWallet(destination.chain_id)
+        await provider.connectWallet({ chain: destination.chain_id })
         if (onConnect) onConnect()
         setIsLoading(false)
     }
 
     const reconnect = async () => {
         setIsLoading(true)
-        await provider.reconnectWallet(destination.chain_id)
+        await provider.reconnectWallet({ chain: destination.chain_id })
         if (onConnect) onConnect()
         setIsLoading(false)
     }
-
-
 
     const addressItem = connectedWallet?.address && {
         address: connectedWallet?.address,
@@ -61,7 +59,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
                     <p>Switch Wallet</p>
                 </button>
             </div>
-            <button type="button" onClick={onClick} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-800 transition duration-200 ${addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
+            <button type="button" onClick={onClick} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 ${addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && 'bg-secondary-800'}`}>
                 <div className={`flex items-center justify-between w-full`}>
                     <AddressWithIcon addressItem={addressItem} connectedWallet={connectedWallet} destination={destination} />
                     <div className="flex h-6 items-center px-1">
