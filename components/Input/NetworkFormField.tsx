@@ -16,13 +16,16 @@ import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import { RouteNetwork } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
-import CurrencyGroupFormField from "./CEXCurrencyFormField";
+import CurrencyGroupFormField, { CurrencyDisabledReason } from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
 import { Info } from "lucide-react";
 import ClickTooltip from "../Tooltips/ClickTooltip";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../../helpers/routes";
 import useValidationErrorStore from "../validationError/validationErrorStore";
 import validationMessageResolver from "../utils/validationErrorResolver";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
+import RouteIcon from "../icons/RouteIcon";
+import { motion } from "framer-motion";
 
 
 type Props = {
@@ -163,6 +166,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     searchHint={searchHint}
                     isLoading={isLoading}
                     modalContent={pickNetworkDetails}
+                    direction={direction}
                 />
             </div>
             <div className="col-span-3 md:col-span-2 w-full ml-2">
@@ -223,10 +227,31 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
     }
 
     const mappedLayers = routes?.map(r => {
-        const details = !r.tokens?.some(r => r.status !== 'inactive') ? <ClickTooltip side="left" text={`Transfers ${direction} this network are not available at the moment. Please try later.`} /> : undefined
+        const disabledDetails = !r.tokens?.some(r => r.status !== 'inactive') ? (
+            <p className="max-w-72">
+                Transfers {direction} this network are not available at the moment. Please try later.
+            </p>
+        ) : undefined;
         const isNewlyListed = r?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
+        ) : undefined;
+
+        const isAvailable = layerIsAvailable(r)
+        const showRouteIcon = isAvailable?.disabledReason == LayerDisabledReason.InvalidRoute || isAvailable?.disabledReason == LayerDisabledReason.LockNetworkIsTrue;
+        const icon = showRouteIcon ? (
+            <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild >
+                    <div className="absolute -left-0 z-50">
+                        <RouteIcon className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p className="max-w-72">
+                        Transfers from selected network/asset are not supported by this network.
+                    </p>
+                </TooltipContent>
+            </Tooltip>
         ) : undefined;
 
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
@@ -235,11 +260,12 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             name: r.display_name,
             order: ResolveNetworkOrder(r, direction, isNewlyListed),
             imgSrc: r.logo,
-            isAvailable: layerIsAvailable(r),
-            group: getGroupName(r, 'network', layerIsAvailable(r)),
+            isAvailable: isAvailable,
+            group: getGroupName(r, 'network', isAvailable),
             isExchange: false,
-            details,
-            badge
+            disabledDetails,
+            badge,
+            icon
         }
         return res;
     }).sort(SortAscending) || [];

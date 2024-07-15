@@ -1,44 +1,88 @@
-import { CurrencyDisabledReason } from "../../Input/CurrencyFormField";
-import RouteIcon from "../../icons/RouteIcon";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../../shadcn/tooltip";
-import { LayerDisabledReason } from "../Popover/PopoverSelect";
+import { useState } from "react";
+import { Tooltip, TooltipTrigger } from "../../shadcn/tooltip";
 import { ISelectMenuItem } from "./Props/selectMenuItem";
 import Image from 'next/image'
+import { motion } from "framer-motion";
 
-export default function SelectItem({ item }: { item: ISelectMenuItem }) {
-    return (<div className={`flex items-center justify-between gap-4  w-full overflow-hidden`}>
-        <div className="relative flex items-center gap-3 pl-5">
-            {(item?.isAvailable?.disabledReason == CurrencyDisabledReason.InvalidRoute || item?.isAvailable?.disabledReason == LayerDisabledReason.LockNetworkIsTrue) &&
-                <Tooltip delayDuration={200}  >
-                    <TooltipTrigger asChild className="absolute -left-0">
-                        <div className="">
-                            <RouteIcon className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+interface SelectItemWrapperProps {
+    item: ISelectMenuItem;
+}
+
+export function SelectItem({ item }: { item: ISelectMenuItem }) {
+    const isDisabled = !item.isAvailable.value;
+
+    return (
+        <div className={`${isDisabled ? "opacity-50" : ""} flex items-center justify-between gap-4 w-full overflow-hidden`}>
+            <div className={`relative flex items-center gap-4 pl-4`}>
+                {item.icon && item.icon}
+                <div className="flex-shrink-0 h-6 w-6 ml-0.5 relative">
+                    {item.imgSrc && (
+                        <Image
+                            src={item.imgSrc}
+                            alt="Project Logo"
+                            height="40"
+                            width="40"
+                            loading="eager"
+                            className="rounded-md object-contain"
+                        />
+                    )}
+                </div>
+                <p className='text-md font-medium flex w-full justify-between space-x-2'>
+                    <span className="flex items-center justify-center pb-0.5">{item.displayName ? item.displayName : item.name}</span>
+                    {item.badge}
+                </p>
+            </div>
+        </div>
+    );
+}
+
+function selectItemWrapper(Component: React.ComponentType<{ item: ISelectMenuItem }>) {
+    return function WrappedComponent({ item }: SelectItemWrapperProps) {
+        const [showDisabledDetails, setShowDisabledDetails] = useState(false);
+
+        const isDisabled = !item.isAvailable.value;
+
+        const handleMobileTap = () => {
+            setShowDisabledDetails(!showDisabledDetails);
+        };
+
+        const handleMouseEnter = () => {
+            setShowDisabledDetails(true);
+        };
+
+        const handleMouseLeave = () => {
+            setShowDisabledDetails(false);
+        };
+
+        if (isDisabled) {
+            return (
+                <Tooltip delayDuration={200}>
+                    <TooltipTrigger asChild>
+                        <div
+                            className="w-full"
+                            onClick={handleMobileTap}
+                            onMouseEnter={handleMouseEnter}
+                            onMouseLeave={handleMouseLeave}
+                        >
+                            <Component item={item} />
+                            {showDisabledDetails && <motion.div
+                                initial={{ x: -20, opacity: 0 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                exit={{ x: -20, opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="absolute z-20 p-2 max-w-72 shadow-md top-0 rounded bg-primary-background"
+                            >
+                                {item.disabledDetails}
+                            </motion.div>}
                         </div>
                     </TooltipTrigger>
-                    <TooltipContent>
-                        <p className="max-w-72">Transfers from selected network/asset are not supported by this network.</p>
-                    </TooltipContent>
                 </Tooltip>
-            }
-            <div className="flex-shrink-0 h-6 w-6 relative">
-                {item.imgSrc && <Image
-                    src={item.imgSrc}
-                    alt="Project Logo"
-                    height="40"
-                    width="40"
-                    loading="eager"
-                    className="rounded-md object-contain" />}
-            </div>
-            <p className='text-md font-medium flex w-full justify-between space-x-2 '>
-                <span className="flex items-center justify-center pb-0.5">{item.displayName ? item.displayName : item.name}</span>
-                {item.badge}
-            </p>
-        </div>
-        {
-            item.details &&
-            <>
-                {item.details}
-            </>
+            );
         }
-    </div>);
+
+        return <Component item={item} />;
+    };
 }
+
+const SelectItemWithConditionalTooltip = selectItemWrapper(SelectItem);
+export default SelectItemWithConditionalTooltip;

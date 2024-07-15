@@ -208,7 +208,7 @@ function GenerateCurrencyMenuItems(
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
-        const details = c.status === 'inactive' ?
+        const disabledDetails = c.status === 'inactive' ?
             <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> :
             <p className="text-primary-text-muted">
                 {formatted_balance_amount}
@@ -221,7 +221,7 @@ function GenerateCurrencyMenuItems(
             order: ResolveCurrencyOrder(c, isNewlyListed),
             imgSrc: c.logo,
             isAvailable: currencyIsAvailable(c),
-            details: details,
+            disabledDetails,
             badge
         };
 

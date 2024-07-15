@@ -19,6 +19,7 @@ type CommandSelectWrapperProps = {
     exchangeDetails?: React.ReactNode;
     modalContent?: React.ReactNode;
     validationErrorMessage?: string;
+    direction?: string;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -33,7 +34,8 @@ export default function CommandSelectWrapper<T>({
     modalHeight,
     valueDetails,
     modalContent,
-    validationErrorMessage
+    validationErrorMessage,
+    direction
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
