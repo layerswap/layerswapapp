@@ -73,11 +73,11 @@ const Processing: FC<Props> = ({ swapResponse }) => {
                 clearInterval(interval);
             };
         }
-    }, [inputTxStatus]);
+    }, [inputTxStatus, swapInputTransaction]);
 
     useEffect(() => {
         if (storedWalletTransaction?.status !== inputTxStatus) setSwapTransaction(swap?.id, inputTxStatus, storedWalletTransaction?.hash)
-    }, [inputTxStatus, swapInputTransaction])
+    }, [inputTxStatus])
 
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Failed) {
