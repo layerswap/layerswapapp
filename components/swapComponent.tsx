@@ -2,6 +2,8 @@ import { FC } from 'react';
 import { SwapDataProvider } from '../context/swap';
 import { TimerProvider } from '../context/timerContext';
 import Atomic from "./Swap/Atomic"
+import SwapForm from "./Swap/Form"
+
 import { BalancesDataProvider } from '../context/balances';
 import { FeeProvider } from '../context/feeContext';
 

@@ -49,6 +49,23 @@ const SwapDetails = dynamicWithRetries(() => import(".."),
     </div>
 )
 
+
+const NETWORKS_DETAILS = {
+    'ETHEREUM_SEPOLIA': {
+        contract: '0x44E5A65a5CE709C8394B5E79663faD9F0D57D9ca',
+        lp: '0x276446774befDCDAA417d269139d27d2EFD972bc'
+    },
+    'ARBITRUM_SEPOLIA': {
+        contract: '0xeAdCC212315Fd1Ef9f85F2778517bca30E91F6D6',
+        lp: '0x276446774befDCDAA417d269139d27d2EFD972bc'
+    },
+    'STARKNET_SEPOLIA': {
+        contract: '0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90',
+        lp: '0x0454aC1A4567D8128CDA1f23de531702E6c9c06476c705dEcC6c5faEF4714623'
+    }
+}
+
+
 export default function Form() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
@@ -74,8 +91,8 @@ export default function Form() {
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useFee()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
-        const { destination_address, to } = values
 
+        const { destination_address, to } = values
         if (to &&
             destination_address &&
             (query.destAddress) &&
@@ -86,51 +103,59 @@ export default function Form() {
             return
         }
         try {
-          
+            if (!values.amount) {
+                throw new Error("No amount specified")
+            }
+            if (!values.destination_address) {
+                throw new Error("Please enter a valid address")
+            }
+            if (!values.to?.chain_id) {
+                throw new Error("No destination chain")
+            }
+            if (!values.from?.chain_id) {
+                throw new Error("No source chain")
+            }
+            if (!values.fromCurrency) {
+                throw new Error("No source asset")
+            }
+            if (!values.toCurrency) {
+                throw new Error("No destination asset")
+            }
+
             const source_provider = values.from && getSourceProvider(values.from)
             const destination_provider = values.from && getSourceProvider(values.from)
 
-            await source_provider?.createPreHTLC()//TODO: extract data from the form
-            await destination_provider?.waitForTransaction("address", "chain")   
-            await source_provider?.convertToHTLC()
-            //TODO: wait for destination transfer to be completed
-            await destination_provider?.claim()
-                
+            const details = NETWORKS_DETAILS[values.from?.name]
 
-            
-            pollFee(false)
-            setShowSwapModal(true)
+            if (!details?.lp) {
+                throw new Error("No network LP address")
+            }
+            if (!details?.contract) {
+                throw new Error("No network PHTLC contract address")
+            }
+            if (!source_provider) {
+                throw new Error("No source_provider")
+            }
+            if (!destination_provider) {
+                throw new Error("No destination_provider")
+            }
+
+            const { commitId, hash } = await source_provider.createPreHTLC({
+                address: values.destination_address,
+                amount: values.amount,
+                destinationChain: values.to?.chain_id,
+                sourceChain: values.from?.chain_id,
+                destinationAsset: values.toCurrency.symbol,
+                sourceAsset: values.fromCurrency.symbol,
+                lpAddress: details.lp,
+                tokenContractAddress: values.fromCurrency.contract,
+                decimals: values.fromCurrency.decimals,
+                atomicContrcat: details.contract
+            })
+
         }
         catch (error) {
-            mutateLimits()
-            const data: ApiError = error?.response?.data?.error
-            if (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS) {
-                toast.error("You can't transfer to that address. Please double check.")
-            }
-            else if (data?.code === LSAPIKnownErrorCode.INVALID_ADDRESS_ERROR) {
-                toast.error(`Enter a valid ${values.to?.display_name} address`)
-            }
-            else if (data?.code === LSAPIKnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.to) {
-                setNetworkToConnect({
-                    DisplayName: values.to.display_name,
-                    AppURL: data.message
-                })
-                setShowConnectNetworkModal(true);
-            } else if (data?.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
-                const time = data.metadata.RemainingLimitPeriod?.split(':');
-                const hours = Number(time[0])
-                const minutes = Number(time[1])
-                const remainingTime = `${hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''} ${minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}`
-
-                if (minAllowedAmount && data.metadata.AvailableTransactionAmount > minAllowedAmount) {
-                    toast.error(`Daily limit of ${values.fromCurrency?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromCurrency?.symbol} or retry in ${remainingTime}.`)
-                } else {
-                    toast.error(`Daily limit of ${values.fromCurrency?.symbol} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
-                }
-            }
-            else {
-                toast.error(data?.message || error?.message)
-            }
+            console.log(error)
         }
     }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getSourceProvider])
 

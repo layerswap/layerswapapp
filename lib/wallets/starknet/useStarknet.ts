@@ -4,8 +4,12 @@ import KnownInternalNames from "../../knownIds"
 import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
-import { Contract } from "starknet";
-import PHTLCAbi from "../../../lib/abis/starknet/PHTLC.json"
+import { Call, CallData, Contract, parseCalldataField } from "starknet";
+import PHTLCAbi from "../../../lib/abis/atomic/STARKNET_PHTLC.json"
+import { call } from "viem/actions";
+import { CreatyePreHTLCParams } from "../phtlc";
+import { ethers } from "ethers";
+import * as Paradex from "../../../components/Swap/Withdraw/Wallet/paradex/lib";
 
 export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
@@ -95,36 +99,48 @@ export default function useStarknet(): WalletProvider {
     }
 
     const PHTLC_CONTRACT_ADDRESS = '0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90'
+    const LOCK_TIME = 1000 * 60 * 60 * 3 // 3 hours
+    const messanger = "0x152747029e738c20a4ecde5ef869ea072642938d62f0aa7f3d0e9dfb5051cb9"
 
 
-    type CreatyePreHTLCParams = {
-        chain: string,
-        amount: string,
-        destinationAsset: string,
-        sourceAsset:string;
-        lpAddress:string;
-        address:string;
-    }
-
-    const createPreHTLC = async () => {
-
+    const createPreHTLC = async (params: CreatyePreHTLCParams) => {
+        const { destinationChain: chain, destinationAsset, sourceAsset, lpAddress, address, tokenContractAddress, amount, decimals } = params
         if (!wallet?.metadata?.starknetAccount?.account) {
             throw new Error('Wallet not connected')
         }
+        if (!tokenContractAddress) {
+            throw new Error('No soource wallet contract address')
+        }
+        const timeLock = Date.now() + LOCK_TIME
+        const parsedAmount = ethers.utils.parseUnits(amount.toString(), decimals).toNumber().toString()
 
-        const data = [
-            {
-                contractAddress: PHTLC_CONTRACT_ADDRESS,
-                entrypoint: 'createP1',
-                calldata: []
-            }
-        ]
+        const increaseAllowanceCall: Call = {
+            contractAddress: tokenContractAddress,
+            entrypoint: 'increase_allowance',
+            calldata: [PHTLC_CONTRACT_ADDRESS, parsedAmount, 0]
+        }
 
+        const createP1Call: Call = {
+            contractAddress: PHTLC_CONTRACT_ADDRESS,
+            entrypoint: 'createP1',
+            calldata: [
+                chain,
+                destinationAsset,
+                address,
+                sourceAsset,
+                lpAddress,
+                timeLock,
+                0,
+                messanger,
+                tokenContractAddress,
+                parsedAmount,
+                0
+            ]
+        }
 
-
-        const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.account?.execute(JSON.parse(callData || "")) || {});
-
-        throw new Error('Not implemented')
+        const { transaction_hash } = (await wallet?.metadata?.starknetAccount?.account?.execute(createP1Call))
+        debugger
+        return transaction_hash
     }
     const convertToHTLC = () => {
         throw new Error('Not implemented')
@@ -157,6 +173,8 @@ export default function useStarknet(): WalletProvider {
         claim,
         refund,
         getPreHTLC,
-        waitForTransaction,
+        waitForLock(props: { commitId: string, chainId: string, contractAddress: `0x${string}` }) {
+            throw new Error('Not implemented')
+        },
     }
 }

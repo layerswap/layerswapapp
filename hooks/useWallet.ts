@@ -7,6 +7,7 @@ import useStarknet from "../lib/wallets/starknet/useStarknet"
 import useImmutableX from "../lib/wallets/immutableX/useIMX"
 import useSolana from "../lib/wallets/solana/useSolana"
 import { Network, RouteNetwork } from "../Models/Network"
+import { CreatyePreHTLCParams, CommitmentParams } from "../lib/wallets/phtlc"
 
 
 export type WalletProvider = {
@@ -19,13 +20,13 @@ export type WalletProvider = {
     asSourceSupportedNetworks?: string[],
     name: string,
 
-    createPreHTLC: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
+    createPreHTLC: (args: CreatyePreHTLCParams) => Promise<{ hash: `0x${string}`, commitId: string }>,
     convertToHTLC: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
     claim: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
     refund: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
 
     getPreHTLC: (id: string) => Promise<void> | undefined | void,
-    waitForTransaction: (address: string, chain: string | number) => Promise<void> | undefined | void,
+    waitForLock: (args: CommitmentParams, callback: (data: any) => void) => Promise<() => void>
 }
 
 export default function useWallet() {

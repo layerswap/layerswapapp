@@ -17,7 +17,7 @@ import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { argentWallet, bitgetWallet, coinbaseWallet, metaMaskWallet, phantomWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 import { createConfig } from 'wagmi';
-import { Chain } from 'viem';
+import { Chain, http } from 'viem';
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -71,12 +71,11 @@ function RainbowKitComponent({ children }: Props) {
             && net.token)
         .map(resolveChain).filter(isChain) as [Chain]
 
-    let chainExceptZkSyncEra = settingsChains.filter(x => x.id != 324) as [Chain];
-
+    const transports = settingsChains.reduce((acc, ch) => (acc[ch.id] = http(), acc), {});
     const config = createConfig({
         connectors,
-        chains: chainExceptZkSyncEra,
-        transports:[]
+        chains: settingsChains,
+        transports
     });
 
     const theme = darkTheme({

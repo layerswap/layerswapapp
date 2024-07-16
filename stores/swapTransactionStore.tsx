@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { BackendTransactionStatus, TransactionStatus } from '../lib/layerSwapApiClient';
+import { Commit } from '../Models/PHTLC';
 
 type SwapTransaction = {
     hash: string;
@@ -68,6 +69,28 @@ export const useSwapDepositHintClicked = create(
         {
             name: 'swapDepositHintClicked',
             storage: createJSONStorage(() => sessionStorage),
+        }
+    ),
+)
+
+type PHTLCStore = {
+    commits: Record<string, Commit>;
+    setCommit: (Id: string, data: Commit) => void;
+};
+
+export const usePHTLCStore = create(
+    persist<PHTLCStore>(
+        (set, get) => ({
+            commits: {},
+            setCommit: (Id, data: Commit) => {
+                set((state) => {
+                    return { ...state, [Id]: data };
+                });
+            },
+        }),
+        {
+            name: 'PHTLC_Commits',
+            storage: createJSONStorage(() => localStorage),
         }
     ),
 )
