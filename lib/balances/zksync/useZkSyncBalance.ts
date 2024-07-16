@@ -26,7 +26,7 @@ export default function useZkSyncBalance(): BalanceProvider {
                     amount: formatAmount(amount, Number(currency?.decimals)),
                     request_time: new Date().toJSON(),
                     decimals: Number(currency?.decimals),
-                    isNativeCurrency: false
+                    isNativeCurrency: true
                 })
             });
 
@@ -54,7 +54,7 @@ export default function useZkSyncBalance(): BalanceProvider {
                 amount: formatAmount(amount, Number(token?.decimals)),
                 request_time: new Date().toJSON(),
                 decimals: Number(token?.decimals),
-                isNativeCurrency: false
+                isNativeCurrency: true
             })
         }
         catch (e) {
@@ -62,14 +62,14 @@ export default function useZkSyncBalance(): BalanceProvider {
         }
     }
 
-    const getGas = async ({ network, token }: GasProps) => {
+    const getGas = async ({ network, token, recipientAddress = '0x2fc617e933a52713247ce25730f6695920b3befe' }: GasProps) => {
 
         let gas: Gas[] = [];
 
         try {
-            const result = await client.getTransferFee(network.node_url, '0x2fc617e933a52713247ce25730f6695920b3befe', token.symbol);
+            const result = await client.getTransferFee(network.node_url, recipientAddress as `0x${string}`, token.symbol);
             const currencyDec = token.decimals;
-            const formatedGas = formatAmount(result.totalFee, Number(currencyDec))
+            const formatedGas = formatAmount(Number(result.totalFee) * 1.5, Number(currencyDec))
 
             gas = [{
                 token: token.symbol,

@@ -1,7 +1,7 @@
 import { TransactionSerializedEIP1559, encodeFunctionData, formatGwei, serializeTransaction } from "viem";
 import formatAmount from "../../../../formatAmount";
 import getEVMGas from "..";
-import { erc20ABI } from "wagmi";
+import { erc20Abi } from "viem";
 import { getL1Fee } from "./estimateFees";
 import { Gas } from "../../../../../Models/Balance";
 
@@ -40,7 +40,7 @@ export default class getOptimismGas extends getEVMGas {
 
         if (this.contract_address) {
             let encodedData = encodeFunctionData({
-                abi: erc20ABI,
+                abi: erc20Abi,
                 functionName: "transfer",
                 args: [this.destination, amount]
             })
@@ -51,7 +51,7 @@ export default class getOptimismGas extends getEVMGas {
 
             serializedTransaction = serializeTransaction({
                 client: this.publicClient,
-                abi: erc20ABI,
+                abi: erc20Abi,
                 functionName: "transfer",
                 chainId: this.chainId,
                 args: [this.destination, amount],

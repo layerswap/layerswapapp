@@ -13,7 +13,7 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, netwo
         values,
     } = useFormikContext<SwapFormValues>();
     const { balances, gases } = useBalancesState()
-    const {minAllowedAmount } = useFee()
+    const { minAllowedAmount } = useFee()
 
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -27,8 +27,8 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, netwo
         gases?.[values.from?.name]?.find(g => g?.token === values?.fromCurrency?.symbol)
         : null
 
-    const mightBeAutOfGas = !!(networkGas && walletBalance?.isNativeCurrency && Number(values.amount)
-        + networkGas?.gas > walletBalance.amount
+    const mightBeAutOfGas = !!(networkGas && walletBalance?.isNativeCurrency && (Number(values.amount)
+        + networkGas?.gas) > walletBalance.amount
         && minAllowedAmount
         && walletBalance.amount > minAllowedAmount
     )

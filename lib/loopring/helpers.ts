@@ -6,6 +6,7 @@ import { parseUnits } from 'viem';
 import { AccountInfo, ExchangeInfo, KEY_MESSAGE, LOOPRING_URLs, LpFee, OffchainFeeReqType, OriginTransferRequestV3, UnlockedAccount } from "./defs";
 import { generateKey, getEdDSASig, getTransferTypedData, getUpdateAccountEcdsaTypedData, get_EddsaSig_Transfer } from "./utils";
 import { Token } from "../../Models/Network";
+import { Config } from "wagmi";
 
 type UnlockApiRes = {
     apiKey: string;
@@ -18,9 +19,10 @@ type UnlockApiRes = {
     }
 }
 
-export async function unlockAccount(accInfo: AccountInfo)
+export async function unlockAccount(accInfo: AccountInfo, config: Config)
     : Promise<UnlockedAccount> {
     let keySeed = accInfo.keySeed
+
     if (!keySeed) {
         const exchangeInfo = await getExchangeInfo();
         keySeed = KEY_MESSAGE.replace(
@@ -28,8 +30,7 @@ export async function unlockAccount(accInfo: AccountInfo)
             exchangeInfo.exchangeAddress
         ).replace("${nonce}", '0');
     }
-    console.log('keySeed', keySeed)
-    const sig = await signMessage({ message: keySeed })
+    const sig = await signMessage(config, { message: keySeed })
     const eddsaKeyData = generateKey(sig)
     const { sk } = eddsaKeyData
     const { accountId } = accInfo
@@ -122,7 +123,7 @@ export async function transfer
         call_data,
         token,
         unlockedAccount
-    }: TransferProps): Promise<TransferApiRes> {
+    }: TransferProps, config: Config): Promise<TransferApiRes> {
 
     const exchangeInfo = await getExchangeInfo();
     const { apiKey, eddsaKey } = unlockedAccount
@@ -156,16 +157,16 @@ export async function transfer
         ...(call_data ? { memo: call_data } : {}),
     }
 
-    return await submitInternalTransfer(req, apiKey, eddsaKey.sk)
+    return await submitInternalTransfer(req, apiKey, eddsaKey.sk, config)
 }
 
 
 async function submitInternalTransfer
-    (req: OriginTransferRequestV3, apiKey: string, eddsaKey: string)
+    (req: OriginTransferRequestV3, apiKey: string, eddsaKey: string, config: Config)
     : Promise<TransferApiRes> {
 
     const typedData = getTransferTypedData(req, LoopringAPI.CHAIN)
-    const ecdsaSignature = (await signTypedData(typedData as any)).slice(0, 132)
+    const ecdsaSignature = (await signTypedData(config, typedData as any)).slice(0, 132)
     const eddsaSignature = get_EddsaSig_Transfer(req, eddsaKey).result
     return await (await fetch(`${LoopringAPI.BaseApi}${LOOPRING_URLs.POST_INTERNAL_TRANSFER}`, {
         method: "POST",
@@ -191,7 +192,7 @@ export async function activateAccount
     ({
         token,
         accInfo
-    }: ActivateAccountProps)
+    }: ActivateAccountProps, config: Config)
     : Promise<{ x: string; y: string }> {
 
     const exchangeInfo = await getExchangeInfo();
@@ -201,7 +202,7 @@ export async function activateAccount
         exchangeInfo.exchangeAddress
     ).replace("${nonce}", accInfo.nonce.toString());
 
-    const sig = await signMessage({ message })
+    const sig = await signMessage(config, { message })
 
     const eddsaKeyData = generateKey(sig)
     const { formatedPx, formatedPy } = eddsaKeyData
@@ -226,7 +227,7 @@ export async function activateAccount
     }
 
     const typedData = getUpdateAccountEcdsaTypedData(req, LoopringAPI.CHAIN)
-    const ecdsaSignature = (await signTypedData(typedData as any)).slice(0, 132)
+    const ecdsaSignature = (await signTypedData(config, typedData as any)).slice(0, 132)
 
     const activationReq = await (await fetch(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}`, {
         method: "POST",

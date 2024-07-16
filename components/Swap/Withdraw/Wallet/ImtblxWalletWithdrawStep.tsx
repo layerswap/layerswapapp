@@ -7,7 +7,7 @@ import GuideLink from '../../../guideLink';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import { WithdrawPageProps } from './WalletTransferContent';
-import { ButtonWrapper } from './WalletTransfer/buttons';
+import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
 
 const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId }) => {
     const [loading, setLoading] = useState(false)
@@ -20,15 +20,6 @@ const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
     }, [network, getProvider])
 
     const imxAccount = provider?.getConnectedWallet()
-
-    const handleConnect = useCallback(async () => {
-        if (!provider)
-            throw new Error(`No provider from ${network?.name}`)
-
-        setLoading(true)
-        await provider?.connectWallet(network?.chain_id)
-        setLoading(false)
-    }, [provider, network])
 
     const handleTransfer = useCallback(async () => {
         if (!network || !depositAddress || !amount)
@@ -60,6 +51,10 @@ const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
         setLoading(false)
     }, [imxAccount, swapId, network, depositAddress, token, amount])
 
+    if (!imxAccount) {
+        return <ConnectWalletButton icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} />
+    }
+
     return (
         <>
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
@@ -70,12 +65,6 @@ const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
                         </span>
                         <GuideLink text={network?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex' />
                     </WarningMessage>
-                    {
-                        !imxAccount &&
-                        <ButtonWrapper isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Connect
-                        </ButtonWrapper>
-                    }
                     {
                         imxAccount &&
                         <ButtonWrapper isDisabled={!!(loading || transferDone) || !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >

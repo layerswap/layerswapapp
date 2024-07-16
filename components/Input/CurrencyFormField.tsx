@@ -90,7 +90,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         else if (default_currency) {
             setFieldValue(name, default_currency.baseObject, true)
         }
-    }, [to, query])
+    }, [to, query, routes])
 
 
     useEffect(() => {
@@ -116,7 +116,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         else if (default_currency) {
             setFieldValue(name, default_currency.baseObject, true)
         }
-    }, [from, query])
+    }, [from, query, routes])
 
     useEffect(() => {
         if (name === "toCurrency" && toCurrency && !isLoading && (query.lockTo !== true || (query.lockTo && query.lockFrom))) {

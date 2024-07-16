@@ -1,5 +1,5 @@
 import { PublicClient, encodeFunctionData } from "viem";
-import { erc20ABI } from "wagmi";
+import { erc20Abi } from "viem";
 import { Network, Token } from "../../../../Models/Network";
 import { Gas } from "../../../../Models/Balance";
 import { datadogRum } from "@datadog/browser-rum";
@@ -16,15 +16,27 @@ export default abstract class getEVMGas {
     protected nativeToken: Token
     protected isSweeplessTx: boolean
     constructor(
-        publicClient: PublicClient,
-        chainId: number,
-        contract_address: `0x${string}`,
-        account: `0x${string}`,
-        from: Network,
-        currency: Token,
-        destination: `0x${string}`,
-        nativeToken: Token,
-        isSweeplessTx: boolean
+        {
+            publicClient,
+            chainId,
+            contract_address,
+            account,
+            from,
+            currency,
+            destination,
+            nativeToken,
+            isSweeplessTx
+        }: {
+            publicClient: PublicClient,
+            chainId: number,
+            contract_address: `0x${string}`,
+            account: `0x${string}`,
+            from: Network,
+            currency: Token,
+            destination: `0x${string}`,
+            nativeToken: Token,
+            isSweeplessTx: boolean
+        }
     ) {
         this.publicClient = publicClient
         this.chainId = chainId
@@ -101,7 +113,7 @@ export default abstract class getEVMGas {
 
     protected async estimateERC20GasLimit() {
         let encodedData = encodeFunctionData({
-            abi: erc20ABI,
+            abi: erc20Abi,
             functionName: "transfer",
             args: [this.destination, BigInt(1000)]
         })

@@ -31,7 +31,7 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                             {addressBook.sort(sortingByDate).map(item => {
                                 const isSelected = addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!)
                                 return (
-                                    <button type="button" key={item.address} onClick={() => onSelectAddress(item.address)} className={`group/addressItem px-3 py-3 rounded-md hover:bg-secondary-700 w-full transition duration-200 ${addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!) && '!bg-secondary-800'}`}>
+                                    <button type="button" key={item.address} onClick={() => onSelectAddress(item.address)} className={`group/addressItem px-3 py-3 rounded-md hover:bg-secondary-700 w-full transition duration-200 ${isSelected && 'bg-secondary-800'}`}>
                                         <div className={`flex items-center justify-between w-full`}>
                                             <AddressWithIcon addressItem={item} partner={partner} destination={destination} />
                                             <div className="flex h-6 items-center px-1">
