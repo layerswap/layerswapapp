@@ -1,10 +1,10 @@
 import { datadogRum } from "@datadog/browser-rum";
 
-const logError = (error: Error, details?: { swapId?: string }) => {
-    const errorCopy = new Error(error.message)
-    errorCopy.name = 'AlertUI'
-    errorCopy.stack = error.stack
-    datadogRum.addError(errorCopy);
+const logError = (message: string) => {
+    const error = new Error(message)
+    error.name = 'AlertUI';
+    error.cause = error;
+    datadogRum.addError(error);
 }
 
 export default logError;

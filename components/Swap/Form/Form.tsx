@@ -24,7 +24,6 @@ import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
-import { datadogRum } from "@datadog/browser-rum";
 
 type Props = {
     partner?: Partner,
@@ -128,13 +127,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
         if (walletBalance && networkGas)
             setFieldValue('amount', walletBalance?.amount - networkGas?.gas)
     }, [values.amount])
-
-    useEffect(() => {
-        const error = new Error('Test error')
-        error.name = `AlertUI`;
-        error.cause = error;
-        datadogRum.addError(error);
-    }, [])
 
     return <>
         <Widget className="sm:min-h-[504px]">

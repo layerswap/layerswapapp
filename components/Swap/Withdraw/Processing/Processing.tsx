@@ -19,6 +19,7 @@ import { ApiResponse } from '../../../../Models/ApiResponse';
 import { datadogRum } from '@datadog/browser-rum';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../../context/authContext';
+import logError from '../../../../lib/logError';
 
 type Props = {
     swapResponse: SwapResponse;
@@ -59,8 +60,24 @@ const Processing: FC<Props> = ({ swapResponse }) => {
     const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
 
     useEffect(() => {
+        if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
+            const interval = setInterval(() => {
+                if (swapInputTransaction) {
+                    clearInterval(interval);
+                } else {
+                    logError(`Transaction not detected in ${swap.source_network.name}. Tx hash: ${transactionHash}. Tx status: ${inputTxStatus}. Swap id: ${swap.id}. env: ${process.env.NEXT_PUBLIC_API_VERSION ?? 'sandbox'}`);
+                }
+            }, 60000);
+
+            return () => {
+                clearInterval(interval);
+            };
+        }
+    }, [inputTxStatus]);
+
+    useEffect(() => {
         if (storedWalletTransaction?.status !== inputTxStatus) setSwapTransaction(swap?.id, inputTxStatus, storedWalletTransaction?.hash)
-    }, [inputTxStatus])
+    }, [inputTxStatus, swapInputTransaction])
 
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Failed) {
