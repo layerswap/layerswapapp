@@ -166,7 +166,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 value={value}
                 setValue={handleSelect}
                 disabled={!value?.isAvailable?.value || isLoading}
-                validationErrorMessage={errorMessage}
             />
         </div>
     )
