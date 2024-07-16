@@ -16,16 +16,15 @@ import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import { RouteNetwork } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
-import CurrencyGroupFormField, { CurrencyDisabledReason } from "./CEXCurrencyFormField";
+import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
 import { Info } from "lucide-react";
-import ClickTooltip from "../Tooltips/ClickTooltip";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../../helpers/routes";
 import useValidationErrorStore from "../validationError/validationErrorStore";
 import validationMessageResolver from "../utils/validationErrorResolver";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 import RouteIcon from "../icons/RouteIcon";
-import { motion } from "framer-motion";
+import ClickTooltip from "../Tooltips/ClickTooltip";
 
 
 type Props = {
@@ -227,11 +226,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
     }
 
     const mappedLayers = routes?.map(r => {
-        const disabledDetails = !r.tokens?.some(r => r.status !== 'inactive') ? (
-            <p className="max-w-72">
-                Transfers {direction} this network are not available at the moment. Please try later.
-            </p>
-        ) : undefined;
+        const details = !r.tokens?.some(r => r.status !== 'inactive') ? <ClickTooltip side="left" text={`Transfers ${direction} this network are not available at the moment. Please try later.`} /> : undefined
         const isNewlyListed = r?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
@@ -253,17 +248,17 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
                 </TooltipContent>
             </Tooltip>
         ) : undefined;
-
+        const order = ResolveNetworkOrder(r, direction, isNewlyListed)
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
             baseObject: r,
             id: r.name,
             name: r.display_name,
-            order: ResolveNetworkOrder(r, direction, isNewlyListed),
+            order,
             imgSrc: r.logo,
             isAvailable: isAvailable,
             group: getGroupName(r, 'network', isAvailable),
             isExchange: false,
-            disabledDetails,
+            details,
             badge,
             icon
         }
@@ -271,9 +266,6 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
     }).sort(SortAscending) || [];
 
     const mappedExchanges = exchanges?.map(e => {
-        let orderProp: keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
-        const order = ExchangeSettings.KnownSettings[e.name]?.[orderProp]
-
         const res: SelectMenuItem<Exchange> & { isExchange: boolean } = {
             baseObject: e,
             id: e.name,

@@ -21,6 +21,8 @@ import useWallet from "../../hooks/useWallet";
 import { ONE_WEEK } from "./NetworkFormField";
 import useValidationErrorStore from "../validationError/validationErrorStore";
 import validationMessageResolver from "../utils/validationErrorResolver";
+import RouteIcon from "../icons/RouteIcon";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -204,14 +206,31 @@ function GenerateCurrencyMenuItems(
         const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
         const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
+        const isAvailable = currencyIsAvailable(c)
+        const showRouteIcon = isAvailable?.disabledReason == CurrencyDisabledReason.InvalidRoute || isAvailable?.disabledReason == CurrencyDisabledReason.LockAssetIsTrue;
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
-        const disabledDetails = c.status === 'inactive' ?
+        const details = c.status === 'inactive' ?
             <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> :
             <p className="text-primary-text-muted">
                 {formatted_balance_amount}
             </p>
+
+        const icon = showRouteIcon ? (
+            <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild >
+                    <div className="absolute -left-0 z-50">
+                        <RouteIcon className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p className="max-w-72">
+                        Transfers from selected network/asset are not supported by this network.
+                    </p>
+                </TooltipContent>
+            </Tooltip>
+        ) : undefined;
 
         const res: SelectMenuItem<RouteToken> = {
             baseObject: c,
@@ -220,8 +239,9 @@ function GenerateCurrencyMenuItems(
             order: ResolveCurrencyOrder(c, isNewlyListed),
             imgSrc: c.logo,
             isAvailable: currencyIsAvailable(c),
-            disabledDetails,
-            badge
+            details,
+            badge,
+            icon
         };
 
         return res
