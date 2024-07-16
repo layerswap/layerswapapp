@@ -227,7 +227,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
     }
 
     const mappedLayers = routes?.map(r => {
-        const details = !r.tokens?.some(r => r.status !== 'inactive') ? (
+        const disabledDetails = !r.tokens?.some(r => r.status !== 'inactive') ? (
             <p className="max-w-72">
                 Transfers {direction} this network are not available at the moment. Please try later.
             </p>
@@ -263,7 +263,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             isAvailable: isAvailable,
             group: getGroupName(r, 'network', isAvailable),
             isExchange: false,
-            details,
+            disabledDetails,
             badge,
             icon
         }
