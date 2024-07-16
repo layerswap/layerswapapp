@@ -19,8 +19,6 @@ function CampaignDetails() {
     const router = useRouter();
     const camapaignName = router.query.campaign?.toString()
 
-    const { isConnected } = useAccount();
-
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
     const campaign = campaignsData?.data?.find(c => c.name === camapaignName)
@@ -34,6 +32,9 @@ function CampaignDetails() {
     const handleConnect = useCallback(async () => {
         await provider?.connectWallet({ chain: network?.chain_id })
     }, [provider, network])
+
+    const wallet = provider?.getConnectedWallet()
+    const isConnected = !!wallet?.address
 
     if (isLoading) {
         return <Loading />
