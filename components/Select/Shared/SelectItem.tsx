@@ -70,7 +70,7 @@ function selectItemWrapper(Component: React.ComponentType<{ item: ISelectMenuIte
                                 animate={{ x: 50, opacity: 1 }}
                                 exit={{ x: 20, opacity: 0 }}
                                 transition={{ duration: 0.3 }}
-                                className="absolute z-20 p-2 max-w-72 shadow-md top-0 rounded bg-primary-background"
+                                className="absolute z-20 p-2 max-w-72 shadow-md top-0 rounded text-primary-text-placeholder text-xs bg-secondary-800 border border-secondary"
                             >
                                 {item.disabledDetails}
                             </motion.div>}
