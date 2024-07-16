@@ -12,18 +12,18 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
         disabledReason?: LayerDisabledReason | CurrencyDisabledReason | null
     };
     group?: string;
-    disabledDetails?: JSX.Element | JSX.Element[];
+    details?: JSX.Element | JSX.Element[];
     badge?: JSX.Element | JSX.Element[];
     icon?: JSX.Element | JSX.Element[];
     baseObject: T;
-    constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, group?: string, disabledDetails?: JSX.Element | JSX.Element[]) {
+    constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, group?: string, details?: JSX.Element | JSX.Element[]) {
         this.baseObject = baseObject;
         this.id = id;
         this.name = name;
         this.order = order;
         this.imgSrc = imgSrc;
         this.group = group;
-        this.disabledDetails = disabledDetails
+        this.details = details
         this.isAvailable = {
             value: true,
             disabledReason: null
@@ -41,7 +41,7 @@ export interface ISelectMenuItem {
         value: boolean;
         disabledReason?: LayerDisabledReason | CurrencyDisabledReason | null
     };
-    disabledDetails?: JSX.Element | JSX.Element[];
+    details?: JSX.Element | JSX.Element[];
     badge?: JSX.Element | JSX.Element[];
     icon?: JSX.Element | JSX.Element[];
     order?: number;

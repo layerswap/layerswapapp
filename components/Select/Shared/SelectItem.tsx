@@ -72,7 +72,7 @@ function selectItemWrapper(Component: React.ComponentType<{ item: ISelectMenuIte
                                 transition={{ duration: 0.3 }}
                                 className="absolute z-20 p-2 max-w-72 shadow-md top-0 rounded text-primary-text-placeholder text-xs bg-secondary-800 border border-secondary"
                             >
-                                {item.disabledDetails}
+                                {item.details}
                             </motion.div>}
                         </div>
                     </TooltipTrigger>
