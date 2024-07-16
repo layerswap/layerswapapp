@@ -81,7 +81,7 @@ export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChang
                                                     />
                                                 }
                                             </div>
-                                            <div className="mx-1 block"><span className='text-primary-text'>{cv.name}</span> <span>{cv.disabledDetails}</span></div>
+                                            <div className="mx-1 block"><span className='text-primary-text'>{cv.name}</span> <span>{cv.details}</span></div>
                                         </div>
                                     </SelectItem>
                                 ))}
