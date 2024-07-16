@@ -1,18 +1,13 @@
-import { useState } from "react";
+import { FC, useState } from "react";
 import { Tooltip, TooltipTrigger } from "../../shadcn/tooltip";
 import { ISelectMenuItem } from "./Props/selectMenuItem";
 import Image from 'next/image'
 import { motion } from "framer-motion";
 
-interface SelectItemWrapperProps {
-    item: ISelectMenuItem;
-}
-
 export function SelectItem({ item }: { item: ISelectMenuItem }) {
-    const isDisabled = !item.isAvailable.value;
 
     return (
-        <div className={`${isDisabled ? "opacity-50" : ""} flex items-center justify-between gap-4 w-full overflow-hidden`}>
+        <SelectItemWrapper item={item} >
             <div className={`relative flex items-center gap-4 pl-4`}>
                 {item.icon && item.icon}
                 <div className="flex-shrink-0 h-6 w-6 ml-0.5 relative">
@@ -32,57 +27,54 @@ export function SelectItem({ item }: { item: ISelectMenuItem }) {
                     {item.badge}
                 </p>
             </div>
+        </SelectItemWrapper>
+    );
+}
+
+const SelectItemWrapper: FC<{ item: ISelectMenuItem, children: JSX.Element | JSX.Element[]; }> = ({ item, children }) => {
+    const [showDisabledDetails, setShowDisabledDetails] = useState(false);
+
+    const disabled = !item.isAvailable.value;
+
+    const handleMobileTap = () => {
+        setShowDisabledDetails(!showDisabledDetails);
+    };
+
+    const handleMouseEnter = () => {
+        setShowDisabledDetails(true);
+    };
+
+    const handleMouseLeave = () => {
+        setShowDisabledDetails(false);
+    };
+
+    if (!disabled)
+        return <div className="flex items-center justify-between gap-4 w-full overflow-hidden">{children}</div>
+
+    return (
+        <div
+            className="w-full"
+            onClick={handleMobileTap}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+        >
+            <div className="opacity-50 flex items-center justify-between gap-4 w-full overflow-hidden">
+                {children}
+            </div>
+            {
+                showDisabledDetails &&
+                <motion.div
+                    initial={{ x: 120 }}
+                    animate={{ x: 50 }}
+                    exit={{ x: 20 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute z-20 p-2 max-w-72 shadow-md top-0 rounded text-primary-text-placeholder text-xs bg-secondary-800 border border-secondary"
+                >
+                    {item.disabledDetails}
+                </motion.div>
+            }
         </div>
     );
 }
 
-function selectItemWrapper(Component: React.ComponentType<{ item: ISelectMenuItem }>) {
-    return function WrappedComponent({ item }: SelectItemWrapperProps) {
-        const [showDisabledDetails, setShowDisabledDetails] = useState(false);
-
-        const isDisabled = !item.isAvailable.value;
-
-        const handleMobileTap = () => {
-            setShowDisabledDetails(!showDisabledDetails);
-        };
-
-        const handleMouseEnter = () => {
-            setShowDisabledDetails(true);
-        };
-
-        const handleMouseLeave = () => {
-            setShowDisabledDetails(false);
-        };
-
-        if (isDisabled) {
-            return (
-                <Tooltip delayDuration={200}>
-                    <TooltipTrigger asChild>
-                        <div
-                            className="w-full"
-                            onClick={handleMobileTap}
-                            onMouseEnter={handleMouseEnter}
-                            onMouseLeave={handleMouseLeave}
-                        >
-                            <Component item={item} />
-                            {showDisabledDetails && <motion.div
-                                initial={{ x: 120, opacity: 0 }}
-                                animate={{ x: 50, opacity: 1 }}
-                                exit={{ x: 20, opacity: 0 }}
-                                transition={{ duration: 0.3 }}
-                                className="absolute z-20 p-2 max-w-72 shadow-md top-0 rounded text-primary-text-placeholder text-xs bg-secondary-800 border border-secondary"
-                            >
-                                {item.disabledDetails}
-                            </motion.div>}
-                        </div>
-                    </TooltipTrigger>
-                </Tooltip>
-            );
-        }
-
-        return <Component item={item} />;
-    };
-}
-
-const SelectItemWithConditionalTooltip = selectItemWrapper(SelectItem);
-export default SelectItemWithConditionalTooltip;
+export default SelectItem;
