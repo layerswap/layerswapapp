@@ -2427,10 +2427,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@paradex/sdk@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@paradex/sdk/-/sdk-0.5.0.tgz#4b2ca0b1c533b43c1ce781da95604b250b1ac1e3"
-  integrity sha512-n86OR5940okvEpiou9PVdAVgQPVdgTImZ9e8Mta+TobKDWuhIZBunj50eC+XgPzg6zqy8pxFc5YUPZJGGBUWeQ==
+"@paradex/sdk@^0.5.1":
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/@paradex/sdk/-/sdk-0.5.1.tgz#6160052ad3e74bc2fc31aa186acddeb1e271e149"
+  integrity sha512-FoXUuwAdZ+phrJIskSh/p7GX4FxjDkRL2vx8h7ugBrLRJarnqFUVYHGC3bpbQSvAmOzFmctSdyoBpq8OTZ2OKQ==
   dependencies:
     "@starkware-industries/starkware-crypto-utils" "^0.2.1"
     bignumber.js "^9.1.2"
