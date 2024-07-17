@@ -3,15 +3,15 @@ import { FC, useCallback, useEffect } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
-import CurrencySettings from "../../lib/CurrencySettings";
 import { ResolveCEXCurrencyOrder, SortAscending } from "../../lib/sorting";
 import { useQueryState } from "../../context/query";
 import { Exchange, ExchangeToken } from "../../Models/Exchange";
-import { LSAPIKnownErrorCode } from "../../Models/ApiError";
 import { resolveExchangesURLForSelectedToken } from "../../helpers/routes";
 import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
+import RouteIcon from "../icons/RouteIcon";
 
 const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -99,6 +99,23 @@ export function GenerateCurrencyMenuItems(
             }
         }
 
+        const isAvailable = currencyIsAvailable(c)
+        const showRouteIcon = isAvailable?.disabledReason == CurrencyDisabledReason.InvalidRoute || isAvailable?.disabledReason == CurrencyDisabledReason.LockAssetIsTrue;
+        const icon = showRouteIcon ? (
+            <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild >
+                    <div className="absolute -left-0 z-50">
+                        <RouteIcon className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p className="max-w-72">
+                        Transfers from selected network/asset are not supported by this network.
+                    </p>
+                </TooltipContent>
+            </Tooltip>
+        ) : undefined;
+
         const res: SelectMenuItem<ExchangeToken> = {
             baseObject: c,
             id: c.symbol,
@@ -106,6 +123,7 @@ export function GenerateCurrencyMenuItems(
             order: ResolveCEXCurrencyOrder(c),
             imgSrc: c.logo,
             isAvailable: currencyIsAvailable(c),
+            icon
         };
         return res
     }).sort(SortAscending);

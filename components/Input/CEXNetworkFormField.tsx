@@ -156,7 +156,7 @@ function GenerateMenuItems(
     const menuItems = historicalNetworks.map((e, index) => {
 
         const network = routes?.find(l => l.name == e.network.name);
-        const icon = <p className="text-primary-text-muted">
+        const details = <p className="text-primary-text-muted">
             {e.token.symbol}
         </p>
 
@@ -168,7 +168,7 @@ function GenerateMenuItems(
             order: 1,
             imgSrc: network?.logo || '',
             isAvailable: { value: true, disabledReason: null },
-            icon
+            details
         }
         return item;
     })
