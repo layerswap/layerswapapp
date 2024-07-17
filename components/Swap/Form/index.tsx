@@ -34,6 +34,7 @@ import AddressNoteModal from "../../Input/Address/AddressNote";
 import { addressFormat } from "../../../lib/address/formatter";
 import { useAddressesStore } from "../../../stores/addressesStore";
 import { AddressGroup } from "../../Input/Address/AddressPicker";
+import useValidationErrorStore from "../../validationError/validationErrorStore";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -62,6 +63,7 @@ export default function Form() {
     const { updateAuthData, setUserType } = useAuthDataUpdate()
     const { getSourceProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
+    const { message: validationErrorMessage } = useValidationErrorStore()
 
     const settings = useSettingsState();
     const query = useQueryState()
@@ -194,7 +196,7 @@ export default function Form() {
             innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
-            validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
+            validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount, validationErrorMessage })}
             onSubmit={handleSubmit}
         >
             <>
