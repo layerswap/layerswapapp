@@ -46,37 +46,37 @@ const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme
     }
     const themeData = theme ? THEME_COLORS[theme] : THEME_COLORS["default"];
 
-    return  <IntercomProvider appId='123'>
-            <SettingsStateContext.Provider value={appSettings}>
-                <Layout settings={Settings} themeData={themeData}>
-                    <RainbowKitComponent>
-                        <SwapDataStateContext.Provider value={swapContextInitialValues}>
-                            <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
-                                <AuthDataUpdateContext.Provider value={AuthMockFunctions}>
-                                    <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
-                                        <BalancesStateContext.Provider value={BalancesStateMock}>
-                                            <BalancesStateUpdateContext.Provider value={WalletMockFunctions}>
-                                                <Formik
-                                                    innerRef={formikRef}
-                                                    initialValues={initialValues!}
-                                                    validateOnMount={true}
-                                                    validate={MainStepValidation({ minAllowedAmount: 8, maxAllowedAmount: 10 })}
-                                                    onSubmit={() => { }}
-                                                >
-                                                    <FeeProvider>
-                                                        <Component initialValues={initialValues} />
-                                                    </FeeProvider>
-                                                </Formik>
-                                            </BalancesStateUpdateContext.Provider>
-                                        </BalancesStateContext.Provider>
-                                    </SwapDataUpdateContext.Provider>
-                                </AuthDataUpdateContext.Provider>
-                            </AuthStateContext.Provider>
-                        </SwapDataStateContext.Provider >
-                    </RainbowKitComponent>
-                </Layout>
-            </SettingsStateContext.Provider>
-        </IntercomProvider>
+    return <IntercomProvider appId='123'>
+        <SettingsStateContext.Provider value={appSettings}>
+            <Layout settings={Settings} themeData={themeData}>
+                <RainbowKitComponent>
+                    <SwapDataStateContext.Provider value={swapContextInitialValues}>
+                        <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
+                            <AuthDataUpdateContext.Provider value={AuthMockFunctions}>
+                                <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
+                                    <BalancesStateContext.Provider value={BalancesStateMock}>
+                                        <BalancesStateUpdateContext.Provider value={WalletMockFunctions}>
+                                            <Formik
+                                                innerRef={formikRef}
+                                                initialValues={initialValues!}
+                                                validateOnMount={true}
+                                                validate={MainStepValidation({ minAllowedAmount: 8, maxAllowedAmount: 10, validationErrorMessage: '' })}
+                                                onSubmit={() => { }}
+                                            >
+                                                <FeeProvider>
+                                                    <Component initialValues={initialValues} />
+                                                </FeeProvider>
+                                            </Formik>
+                                        </BalancesStateUpdateContext.Provider>
+                                    </BalancesStateContext.Provider>
+                                </SwapDataUpdateContext.Provider>
+                            </AuthDataUpdateContext.Provider>
+                        </AuthStateContext.Provider>
+                    </SwapDataStateContext.Provider >
+                </RainbowKitComponent>
+            </Layout>
+        </SettingsStateContext.Provider>
+    </IntercomProvider>
 }
 
 const Component = ({ initialValues }: { initialValues: SwapFormValues | undefined }) => {
