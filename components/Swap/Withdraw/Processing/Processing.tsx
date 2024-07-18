@@ -1,5 +1,5 @@
 import { ExternalLink } from 'lucide-react';
-import { FC, useCallback, useEffect } from 'react'
+import { FC, useCallback, useEffect, useRef } from 'react'
 import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
@@ -59,21 +59,19 @@ const Processing: FC<Props> = ({ swapResponse }) => {
 
     const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
 
+    const loggedNotDetectedTxAt = useRef<number | null>(null);
+
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
-            const interval = setInterval(() => {
-                if (swapInputTransaction) {
-                    clearInterval(interval);
-                } else {
-                    logError(`Transaction not detected in ${swap.source_network.name}. Tx hash: ${transactionHash}. Tx status: ${inputTxStatus}. Swap id: ${swap.id}.`);
-                }
-            }, 60000);
-
-            return () => {
-                clearInterval(interval);
-            };
+            if (swap?.transactions?.find(t => t.type === TransactionType.Input) || !swap) {
+                return
+            }
+            if (Date.now() - (loggedNotDetectedTxAt.current || storedWalletTransaction.timestamp) > 10000) {
+                loggedNotDetectedTxAt.current = Date.now();
+                logError(`Transaction not detected in ${swap.source_network.name}. Tx hash: ${transactionHash}. Tx status: ${inputTxStatus}. Swap id: ${swap.id}.`);
+            }
         }
-    }, [inputTxStatus, swapInputTransaction]);
+    }, [swap, storedWalletTransaction]);
 
     useEffect(() => {
         if (storedWalletTransaction?.status !== inputTxStatus) setSwapTransaction(swap?.id, inputTxStatus, storedWalletTransaction?.hash)
