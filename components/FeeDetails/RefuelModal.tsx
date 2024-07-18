@@ -20,7 +20,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    const { to, toCurrency, refuel } = values || {};
+    const { to, toCurrency, refuel, destination_address } = values || {};
 
     const { getAutofillProvider: getProvider } = useWallet()
     const { balances } = useBalancesState()
@@ -31,7 +31,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
 
     const nativeAsset = to?.token
     const connectedWallet = provider?.getConnectedWallet()
-    const destNativeTokenBalance = balances[connectedWallet?.address || '']?.find(b => b.token === nativeAsset?.symbol && b.network === to?.name)
+    const destNativeTokenBalance = balances[destination_address || (connectedWallet?.address || '')]?.find(b => b.token === nativeAsset?.symbol && b.network === to?.name)
     const amountInUsd = (destNativeTokenBalance && nativeAsset) ? (destNativeTokenBalance.amount * nativeAsset.price_in_usd).toFixed(2) : undefined
 
     const closeModal = () => {
