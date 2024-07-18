@@ -8,8 +8,8 @@ const configs: {
 } = process.env.NEXT_PUBLIC_DATADOG_CONFIGS ? JSON.parse(process.env.NEXT_PUBLIC_DATADOG_CONFIGS) : undefined
 
 datadogRum.init({
-    applicationId: configs.applicationId,
-    clientToken: configs.clientToken,
+    applicationId: configs?.applicationId,
+    clientToken: configs?.clientToken,
     site: 'datadoghq.com',
     service: 'layerswapuiapp',
     env: process.env.NEXT_PUBLIC_VERCEL_ENV,
