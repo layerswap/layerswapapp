@@ -19,6 +19,7 @@ import { ApiResponse } from '../../../../Models/ApiResponse';
 import { datadogRum } from '@datadog/browser-rum';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../../context/authContext';
+import logError from '../../../../lib/logError';
 
 type Props = {
     swapResponse: SwapResponse;
@@ -57,6 +58,22 @@ const Processing: FC<Props> = ({ swapResponse }) => {
     const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_network?.name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
 
     const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
+
+    useEffect(() => {
+        if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
+            const interval = setInterval(() => {
+                if (swapInputTransaction) {
+                    clearInterval(interval);
+                } else {
+                    logError(`Transaction not detected in ${swap.source_network.name}. Tx hash: ${transactionHash}. Tx status: ${inputTxStatus}. Swap id: ${swap.id}.`);
+                }
+            }, 60000);
+
+            return () => {
+                clearInterval(interval);
+            };
+        }
+    }, [inputTxStatus, swapInputTransaction]);
 
     useEffect(() => {
         if (storedWalletTransaction?.status !== inputTxStatus) setSwapTransaction(swap?.id, inputTxStatus, storedWalletTransaction?.hash)
