@@ -35,7 +35,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
             })()
         }
 
-        if (to && precviouslySelectedDestination.current !== to) {
+        if (to && precviouslySelectedDestination.current !== to && !!refuel) {
             setFieldValue('refuel', false)
         }
         precviouslySelectedDestination.current = to
