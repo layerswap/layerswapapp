@@ -56,7 +56,7 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount,
                 errors.destination_address = `Enter a valid ${values.to?.display_name} address`;
             }
         }
-        if (validationErrorMessage) {
+        if (values.fromCurrency?.status === 'not_found' || values.toCurrency?.status === 'not_found') {
             errors.amount = `Route unavailable`;
         }
 
