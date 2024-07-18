@@ -66,7 +66,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
             if (swap?.transactions?.find(t => t.type === TransactionType.Input) || !swap) {
                 return
             }
-            if (Date.now() - (loggedNotDetectedTxAt.current || storedWalletTransaction.timestamp) > 10000) {
+            if (Date.now() - (loggedNotDetectedTxAt.current || storedWalletTransaction.timestamp) > 60000) {
                 loggedNotDetectedTxAt.current = Date.now();
                 logError(`Transaction not detected in ${swap.source_network.name}. Tx hash: ${transactionHash}. Tx status: ${inputTxStatus}. Swap id: ${swap.id}.`);
             }
