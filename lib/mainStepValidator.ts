@@ -6,7 +6,7 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount,
     return (values: SwapFormValues) => {
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = Number(values.amount);
-        debugger
+
         if (!values.from && !values.fromExchange) {
             errors.from = 'Select source';
         }
