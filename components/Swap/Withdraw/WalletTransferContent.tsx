@@ -11,37 +11,35 @@ import { truncateDecimals } from '../../utils/RoundDecimals';
 
 const WalletTransferContent: FC = () => {
     const { getWithdrawalProvider: getProvider, disconnectWallet } = useWallet()
-    const { swapResponse, depositActionsResponse } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
-    const { source_exchange, source_token, destination_token, destination_address, requested_amount, source_network, destination_network } = swap || {}
+    const { source_exchange, source_token, source_network } = swap || {}
     const [isLoading, setIsloading] = useState(false);
     const { mutateSwap } = useSwapDataUpdate()
     const provider = useMemo(() => {
         return source_network && getProvider(source_network)
     }, [source_network, getProvider])
 
-    const wallet = provider?.getConnectedWallet(source_network)
-    const depositAddress = depositActionsResponse?.find(da => true)?.to_address
+    const wallet = provider?.getConnectedWallet()
 
     const { balances, isBalanceLoading } = useBalancesState()
     const { fetchBalance, fetchGas } = useBalance()
 
-    const sourceNetworkWallet = provider?.getConnectedWallet(source_network)
-    const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
+    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
     useEffect(() => {
         source_network && source_token && fetchBalance(source_network, source_token);
-    }, [source_network, source_token, sourceNetworkWallet?.address])
+    }, [source_network, source_token, wallet?.address])
 
     useEffect(() => {
-        sourceNetworkWallet?.address && source_network && source_token && destination_token && destination_network && requested_amount && depositAddress && fetchGas(source_network, source_token, destination_address || sourceNetworkWallet.address)
-    }, [source_network, source_token, sourceNetworkWallet?.address, destination_token, destination_network, requested_amount, depositAddress])
+        wallet?.address && source_network && source_token && fetchGas(source_network, source_token, wallet.address)
+    }, [source_network, source_token, wallet?.address])
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!wallet) return
         setIsloading(true);
-        if (provider?.reconnectWallet) await provider.reconnectWallet(source_network?.chain_id)
+        if (provider?.reconnectWallet) await provider.reconnectWallet({ chain: source_network?.chain_id })
         else await disconnectWallet(wallet.providerName, swap)
         if (source_exchange) await mutateSwap()
         setIsloading(false);
@@ -79,9 +77,9 @@ const WalletTransferContent: FC = () => {
         {
             provider &&
             wallet &&
-            destination_network &&
+            source_network &&
             <div className="group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
-                <AddressWithIcon addressItem={{ address: wallet?.address, group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} destination={destination_network} />
+                <AddressWithIcon addressItem={{ address: wallet?.address, group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} destination={source_network} />
                 <div>
                     {
                         walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?

@@ -1,5 +1,5 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit"
-import { Config, UseAccountReturnType, useAccount, useDisconnect, useSwitchAccount } from "wagmi"
+import { useAccount, useDisconnect } from "wagmi"
 import { Network, NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
@@ -10,7 +10,7 @@ import { useEffect, useState } from "react"
 import { passportInstance, initilizePassport } from "../../../components/ImtblPassportProvider"
 import { useRouter } from "next/router"
 
-export default function useEVM(network?: Network): WalletProvider {
+export default function useEVM(): WalletProvider {
     const router = useRouter();
     const { networks } = useSettingsState()
     const [shouldConnect, setShouldConnect] = useState(false)
@@ -22,20 +22,25 @@ export default function useEVM(network?: Network): WalletProvider {
         }
     }, [shouldConnect])
 
-    const withdrawalSupportedNetworks = [
-        ...networks.filter(layer => layer.type === NetworkType.EVM && layer.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
+    const asSourceSupportedNetworks = [
+        ...networks.filter(network => network.type === NetworkType.EVM && network.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
+        KnownInternalNames.Networks.LoopringGoerli,
         KnownInternalNames.Networks.LoopringMainnet,
-        KnownInternalNames.Networks.LoopringSepolia,
+        KnownInternalNames.Networks.LoopringSepolia
+    ]
+
+    const withdrawalSupportedNetworks = [
+        ...asSourceSupportedNetworks,
+        KnownInternalNames.Networks.ParadexMainnet,
+        KnownInternalNames.Networks.ParadexTestnet,
     ]
 
     const autofillSupportedNetworks = [
-        ...withdrawalSupportedNetworks,
+        ...asSourceSupportedNetworks,
         KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli,
         KnownInternalNames.Networks.BrineMainnet,
-        KnownInternalNames.Networks.LoopringMainnet,
-        KnownInternalNames.Networks.LoopringSepolia,
     ]
 
     const name = 'evm'
@@ -106,6 +111,7 @@ export default function useEVM(network?: Network): WalletProvider {
         reconnectWallet,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
+        asSourceSupportedNetworks,
         name
     }
 }

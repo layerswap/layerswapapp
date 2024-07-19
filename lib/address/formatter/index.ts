@@ -17,8 +17,11 @@ export function addressFormat(address: string, network: { name: string } | null)
 
     }
     else if (network?.name.toLowerCase().startsWith("TON".toLowerCase())) {
-        if (address && !address.startsWith("0x")) return Address.parse(address).toString({ bounceable: false, testOnly: false, urlSafe: true })
-        else return address
+        try {
+            return Address.parse(address).toString({ bounceable: false, testOnly: false, urlSafe: true })
+        } catch (error) {
+            return address
+        }
     }
     else if (network?.name.toLowerCase().startsWith("SOLANA".toLowerCase())) {
         return address

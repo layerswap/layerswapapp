@@ -10,7 +10,7 @@ import { useQueryState } from "../../../context/query"
 const SwapSummary: FC = () => {
     const { swapResponse } = useSwapDataState()
     const { swap, quote: swapQuote, refuel: swapRefuel } = swapResponse || {}
-    const { getWithdrawalProvider: getProvider } = useWallet()
+    const { getSourceProvider: getProvider } = useWallet()
     const {
         hideFrom,
         account,
