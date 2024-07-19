@@ -1,31 +1,25 @@
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { useBalancesState } from "../../../context/balances";
 import useWallet from "../../../hooks/useWallet";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import useBalance from "../../../hooks/useBalance";
 import { isValidAddress } from "../../../lib/address/validator";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
-    const { to, fromCurrency, toCurrency, from, destination_address, amount } = values
-    const { balances, isBalanceLoading, gases } = useBalancesState()
-    const { getAutofillProvider: getProvider } = useWallet()
+    const { to, fromCurrency, toCurrency, from, destination_address } = values
+    const { balances, isBalanceLoading } = useBalancesState()
+    const { provider: destinationWalletProvider } = useWallet(to, 'autofil')
+    const { provider: sourceWalletProvider } = useWallet(from, 'autofil')
 
-    const sourceWalletProvider = useMemo(() => {
-        return from && getProvider(from)
-    }, [from, getProvider])
-
-    const destinationWalletProvider = useMemo(() => {
-        return to && getProvider(to)
-    }, [to, getProvider])
     const { fetchNetworkBalances, fetchGas } = useBalance()
 
-    const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet()
-    const destinationNetworkWallet = destinationWalletProvider?.getConnectedWallet()
+    const sourceNetworkWallet = sourceWalletProvider?.activeWallet
+    const destinationNetworkWallet = destinationWalletProvider?.activeWallet
 
-    const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
-    const destinationBalance = destinationNetworkWallet && balances[destination_address || destinationNetworkWallet?.address]?.find(b => b?.network === to?.name && b?.token === toCurrency?.symbol)
+    const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address || '']?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+    const destinationBalance = destinationNetworkWallet && balances[destination_address || (destinationNetworkWallet?.address || '')]?.find(b => b?.network === to?.name && b?.token === toCurrency?.symbol)
 
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
     const destinationBalanceAmount = destinationBalance?.amount && truncateDecimals(destinationBalance?.amount, toCurrency?.precision)

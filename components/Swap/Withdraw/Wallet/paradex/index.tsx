@@ -1,16 +1,9 @@
-import { ArrowLeftRight, WalletIcon } from 'lucide-react';
-import { FC, useCallback, useMemo, useState } from 'react'
+import { WalletIcon } from 'lucide-react';
+import { FC, useState } from 'react'
 import useWallet from '../../../../../hooks/useWallet';
 import { WithdrawPageProps } from '../WalletTransferContent';
-import * as Paradex from "@paradex/sdk";
-import { TypedData } from '@paradex/sdk/dist/ethereum-signer';
-import { useAccount } from 'wagmi';
 import { useSettingsState } from '../../../../../context/settings';
 import KnownInternalNames from '../../../../../lib/knownIds';
-import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
-import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
-import { useEthersSigner } from '../../../../../lib/ethersToViem/ethers';
-import toast from 'react-hot-toast';
 import Evm from './Evm';
 import Starknet from './Starknet';
 import { ButtonWrapper, ConnectWalletButton } from './buttons';
@@ -25,18 +18,11 @@ const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ amount, token, callData,
     const starknet = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia);
     const selectedProvider = useWalletStore((state) => state.selectedProveder)
 
-    const { getWithdrawalProvider } = useWallet()
+    const { provider: evmProvider } = useWallet(l1Network, 'withdrawal')
+    const { provider: starknetProvider } = useWallet(starknet, 'withdrawal')
 
-    const evmProvider = useMemo(() => {
-        return l1Network && getWithdrawalProvider(l1Network)
-    }, [l1Network, getWithdrawalProvider])
-
-    const starknetProvider = useMemo(() => {
-        return starknet && getWithdrawalProvider(starknet)
-    }, [l1Network, getWithdrawalProvider])
-
-    const evmWallet = evmProvider?.getConnectedWallet()
-    const starknetWallet = starknetProvider?.getConnectedWallet()
+    const evmWallet = evmProvider?.activeWallet
+    const starknetWallet = starknetProvider?.activeWallet
 
     if (selectedProvider === evmProvider?.name && evmWallet) {
         return <Evm amount={amount} callData={callData} token={token} swapId={swapId} />
@@ -71,7 +57,7 @@ const ConnectWalletModal = () => {
                     <ConnectWalletButton
                         secondary={false}
                         onClick={() => setOpenDialog(false)}
-                        onConnect={()=>select("evm")}
+                        onConnect={() => select("evm")}
                         network={l1Network}
                         text='EVM'
                         icon={<ResolveConnectorIcon
@@ -82,7 +68,7 @@ const ConnectWalletModal = () => {
                     <ConnectWalletButton
                         secondary={false}
                         onClick={() => setOpenDialog(false)}
-                        onConnect={()=>select("starknet")}
+                        onConnect={() => select("starknet")}
                         network={starknet}
                         text='Starknet'
                         icon={<ResolveConnectorIcon

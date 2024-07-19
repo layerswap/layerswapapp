@@ -2,18 +2,19 @@ import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { Connector, useAccount, useConnectors, useDisconnect, useSwitchAccount } from "wagmi"
 import { NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
-import { WalletProvider } from "../../../hooks/useWallet"
+import { NewWalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useCallback, useEffect, useState } from "react"
 import { useWalletModal } from "../../../context/walletModalContext"
 import { Wallet } from "../../../stores/walletStore"
+import { useEVMAddressesStore } from "../../../stores/evmAddressesStore"
 
-export default function useEVM(): WalletProvider & { availableWalletsforConnect: Connector[] } {
+export default function useEVM(): NewWalletProvider & { availableWalletsforConnect: Connector[] } {
+    const name = 'EVM'
+    const id = 'evm'
     const { networks } = useSettingsState()
-    const [shouldConnect, setShouldConnect] = useState(false)
-    const { disconnectAsync } = useDisconnect()
 
     const asSourceSupportedNetworks = [
         ...networks.filter(network => network.type === NetworkType.EVM && network.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
@@ -36,25 +37,35 @@ export default function useEVM(): WalletProvider & { availableWalletsforConnect:
         KnownInternalNames.Networks.BrineMainnet,
     ]
 
-    const name = 'evm'
-
     const { openConnectModal } = useConnectModal()
     const { setWalletModalIsOpen } = useWalletModal()
-
-    useEffect(() => {
-        if (shouldConnect) {
-            connectWallet()
-            setShouldConnect(false)
-        }
-    }, [shouldConnect])
-
-
-    const { connectors: connectedWallets, switchAccount } = useSwitchAccount()
-
-    const uniqueConnectors = connectedWallets.filter((value, index, array) => array.findIndex(a => a.name.toLowerCase() === value.name.toLowerCase()) === index)
+    const { disconnectAsync } = useDisconnect()
+    const { connectors: connectedWallets } = useSwitchAccount()
+    const activeAccount = useAccount()
     const allConnectors = useConnectors()
 
-    const availableWalletsforConnect = resolveAvailableWallets(allConnectors, connectedWallets)
+    const uniqueConnectors = connectedWallets.filter((value, index, array) => array.findIndex(a => a.name.toLowerCase() === value.name.toLowerCase()) === index)
+
+    const EVMAddresses = useEVMAddressesStore((state) => state.EVMAddresses)
+    const setAddresses = useEVMAddressesStore((state) => state.setEVMAddresses)
+    const [isLoading, setIsLoading] = useState(false)
+
+    useEffect(() => {
+
+        if (EVMAddresses) return
+
+        setIsLoading(true)
+
+        let addresses: { connectorName: string, addresses: string[] }[] = []
+
+        uniqueConnectors.forEach(async (connector) => {
+            const res = connector.getAccounts && await connector.getAccounts()
+            addresses.push({ connectorName: connector.name, addresses: res as string[] || [] })
+        })
+
+        setAddresses(addresses)
+        setIsLoading(false)
+    }, [])
 
     const getConnectedWallets = useCallback(() => {
 
@@ -63,23 +74,33 @@ export default function useEVM(): WalletProvider & { availableWalletsforConnect:
         if (uniqueConnectors) {
 
             for (let i = 0; i < uniqueConnectors.length; i++) {
+
                 const account = uniqueConnectors[i];
+                const accountIsActive = activeAccount?.connector?.name === account.name
 
-                // const res = account.getAccounts && account.getAccounts()
-                // const address = res && res[0]
+                const activeAddress = activeAccount?.address
 
-                wallets.push({
-                    address: 'testAddress',
+                const addresses = EVMAddresses.find(w => w.connectorName === account.name)?.addresses
+
+                let wallet: Wallet = {
+                    isActive: accountIsActive,
+                    address: accountIsActive ? activeAddress : addresses?.[0],
+                    addresses: addresses,
                     connector: account.name,
                     providerName: name,
-                    icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account), address: 'testAddress' })
-                })
+                    isLoading: isLoading,
+                    icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account), address: activeAddress || '' }),
+                    connect: connectWallet,
+                    disconnect: () => disconnectWallet(account.name)
+                }
+
+                wallets.push(wallet)
             }
         }
 
         return wallets
 
-    }, [uniqueConnectors])
+    }, [uniqueConnectors, activeAccount, EVMAddresses, isLoading])
 
     const connectWallet = () => {
         try {
@@ -107,28 +128,42 @@ export default function useEVM(): WalletProvider & { availableWalletsforConnect:
         }
     }
 
-    const reconnectWallet = async () => {
+    const disconnectWallets = () => {
         try {
-            // account.connector && await account.connector.disconnect()
-            await disconnectAsync()
-            setShouldConnect(true)
+            connectedWallets.forEach(async (connector) => {
+                disconnectWallet(connector.name)
+            })
         }
         catch (e) {
             console.log(e)
         }
     }
 
+    const reconnectWallet = async () => {
+        try {
+            // account.connector && await account.connector.disconnect()
+            // await disconnectAsync()
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
+    const availableWalletsforConnect = resolveAvailableWallets(allConnectors, connectedWallets)
+    const resolvedConnectedWallets = getConnectedWallets()
 
     return {
-        getConnectedWallets,
         connectWallet,
-        availableWalletsforConnect,
-        disconnectWallet,
+        disconnectWallets,
         reconnectWallet,
+        connectedWallets: resolvedConnectedWallets,
+        activeWallet: resolvedConnectedWallets.find(w => w.isActive),
+        availableWalletsforConnect,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
-        name
+        name,
+        id
     }
 }
 

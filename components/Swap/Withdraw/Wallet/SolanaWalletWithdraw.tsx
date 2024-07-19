@@ -12,11 +12,10 @@ import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
 
 const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId }) => {
     const [loading, setLoading] = useState(false);
-    const { getWithdrawalProvider } = useWallet()
+    const { provider } = useWallet(network, 'withdrawal');
     const { setSwapTransaction } = useSwapTransactionStore();
 
-    const provider = getWithdrawalProvider(network!);
-    const wallet = provider?.getConnectedWallet();
+    const wallet = provider?.activeWallet
     const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
     const solanaNode = network?.node_url
 

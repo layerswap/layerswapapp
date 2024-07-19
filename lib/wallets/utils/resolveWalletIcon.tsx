@@ -17,7 +17,7 @@ const resolveWalletConnectorIcon = ({ connector, address }: { connector: string,
     return knownConnector.icon
 }
 
-const AddressIconWrapper = (address: string) => (props) => {
-    return <AddressIcon {...props} address={address} size={24} />
+const AddressIconWrapper = (address: string) => (props: typeof AddressIcon) => {
+    return <AddressIcon address={address} size={24} {...props} />
 }
 export default resolveWalletConnectorIcon

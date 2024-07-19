@@ -1,4 +1,4 @@
-import { FC, useMemo } from "react"
+import { FC } from "react"
 import { useSwapDataState } from "../../../context/swap"
 import Summary from "./Summary"
 import { TransactionType } from "../../../lib/layerSwapApiClient"
@@ -10,22 +10,17 @@ import { useQueryState } from "../../../context/query"
 const SwapSummary: FC = () => {
     const { swapResponse } = useSwapDataState()
     const { swap, quote: swapQuote, refuel: swapRefuel } = swapResponse || {}
-    const { getSourceProvider: getProvider } = useWallet()
+    const { source_network, destination_network, source_token, destination_token } = swap || {}
+    const { provider } = useWallet(source_network, 'asSource')
     const {
         hideFrom,
         account,
     } = useQueryState()
 
-    const { source_network, destination_network, source_token, destination_token } = swap || {}
-
     const sourceExchange = swap?.source_exchange
     const destExchange = swap?.destination_exchange
 
-    const provider = useMemo(() => {
-        return source_network && getProvider(source_network)
-    }, [source_network, getProvider])
-
-    const wallet = provider?.getConnectedWallet()
+    const wallet = provider?.activeWallet
 
     if (!swap || !source_network || !source_token || !destination_token || !destination_network) {
         return <></>
@@ -46,7 +41,7 @@ const SwapSummary: FC = () => {
     else if (swapInputTransaction?.from) {
         sourceAccountAddress = swapInputTransaction?.from;
     }
-    else if (wallet) {
+    else if (wallet?.address) {
         sourceAccountAddress = wallet.address;
     }
     else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && swap?.exchange_account_connected) {

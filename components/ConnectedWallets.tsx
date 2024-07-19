@@ -78,7 +78,7 @@ export const WalletsMenu = () => {
                         wallets.length === 1 ?
                             <div className="flex gap-4 items-start">
                                 <wallet.icon className='h-5 w-5' />
-                                <p>{shortenAddress(wallet.address)}</p>
+                                {!wallet.isLoading && wallet.address && <p>{shortenAddress(wallet.address)}</p>}
                             </div>
                             :
                             <>
@@ -106,7 +106,7 @@ export const WalletsMenu = () => {
 }
 
 const ConnectedWalletsDialog = ({ openDialog, setOpenDialog }: { openDialog: boolean, setOpenDialog: (open: boolean) => void }) => {
-    const { wallets, disconnectWallet } = useWallet()
+    const { wallets } = useWallet()
 
     return (
         <Dialog open={openDialog} onOpenChange={setOpenDialog}>
@@ -125,9 +125,9 @@ const ConnectedWalletsDialog = ({ openDialog, setOpenDialog }: { openDialog: boo
                                             <wallet.icon className="w-8 h-8 p-0.5 rounded-full bg-secondary-800 border border-secondary-400" />
                                         </div>
                                     }
-                                    <p>{shortenAddress(wallet.address)}</p>
+                                    {!wallet.isLoading && wallet.address && <p>{shortenAddress(wallet.address)}</p>}
                                 </div>
-                                <button onClick={() => { disconnectWallet(wallet.providerName, wallet.connector!); wallets.length === 1 && setOpenDialog(false) }} className="p-1 hover:bg-secondary-700 text-xs text-secondary-text hover:opacity-75">
+                                <button onClick={wallet.disconnect} className="p-1 hover:bg-secondary-700 text-xs text-secondary-text hover:opacity-75">
                                     Disconnect
                                 </button>
                             </div>

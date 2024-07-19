@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
@@ -14,15 +14,11 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { getWithdrawalProvider: getProvider, connectWallet } = useWallet()
+    const { provider } = useWallet(network, 'withdrawal')
     const { userId } = useAuthState()
     const { setSwapTransaction } = useSwapTransactionStore();
 
-    const provider = useMemo(() => {
-        return network && getProvider(network)
-    }, [network, getProvider])
-
-    const wallet = provider?.getConnectedWallet()
+    const wallet = provider?.activeWallet
 
     const handleTransfer = useCallback(async () => {
         if (!swapId || !token) {

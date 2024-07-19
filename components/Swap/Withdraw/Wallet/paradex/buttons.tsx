@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, useCallback, useState } from "react";
 import { useSwitchChain } from "wagmi";
 import WalletIcon from "../../../../icons/WalletIcon";
 import SubmitButton, { SubmitButtonProps } from "../../../../buttons/submitButton";
@@ -23,11 +23,7 @@ type ConnectProps = {
 export const ConnectWalletButton: FC<ConnectProps> = ({ network, text, icon, onClick, secondary, onConnect }) => {
     const [loading, setLoading] = useState(false)
 
-    const { getWithdrawalProvider: getProvider } = useWallet()
-
-    const provider = useMemo(() => {
-        return network && getProvider(network)
-    }, [network, getProvider])
+    const { provider } = useWallet(network, 'withdrawal')
 
     const clickHandler = useCallback(async () => {
         try {

@@ -1,5 +1,5 @@
 import { SwapFormValues } from '../DTOs/SwapFormValues';
-import { Dispatch, FC, SetStateAction, useMemo } from 'react';
+import { Dispatch, FC, SetStateAction } from 'react';
 import useWallet from '../../hooks/useWallet';
 import { useBalancesState } from '../../context/balances';
 import Modal from '../modal/modal';
@@ -19,15 +19,11 @@ const RefuelModal: FC<RefuelModalProps> = ({ values, openModal, setOpenModal, fe
 
     const { to } = values || {};
 
-    const { getAutofillProvider: getProvider } = useWallet()
+    const { provider } = useWallet(to, "autofil")
     const { balances } = useBalancesState()
 
-    const provider = useMemo(() => {
-        return values?.to && getProvider(values?.to)
-    }, [values?.to, getProvider])
-
     const nativeAsset = to?.token
-    const connectedWallet = provider?.getConnectedWallet()
+    const connectedWallet = provider?.connectedWallets?.[0]
     const destNativeTokenBalance = balances[connectedWallet?.address || '']?.find(b => b.token === nativeAsset?.symbol && b.network === to?.name)
     const amountInUsd = (destNativeTokenBalance && nativeAsset) ? (destNativeTokenBalance.amount * nativeAsset.price_in_usd).toFixed(2) : undefined
 

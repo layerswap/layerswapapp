@@ -10,14 +10,19 @@ interface WalletState {
 }
 
 export type Wallet = {
-    address: string | `0x${string}`;
+    isActive: boolean;
+    address?: string | `0x${string}`;
+    addresses?: string[] | `0x${string}`[];
     providerName: string
     icon: (props: any) => React.JSX.Element;
     connector?: string;
     metadata?: {
         starknetAccount?: StarknetWindowObject,
     }
-    chainId?: string | number
+    chainId?: string | number,
+    isLoading?: boolean,
+    disconnect: () => Promise<void> | undefined | void;
+    connect: () => Promise<void> | undefined | void;
 }
 
 export const useWalletStore = create<WalletState>()((set) => ({

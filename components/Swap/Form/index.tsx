@@ -57,11 +57,6 @@ const SwapDetails = dynamicWithRetries(() => import(".."),
 )
 
 export default function Form() {
-    const { connectors, switchAccount } = useSwitchAccount()
-
-    const { connect } = useConnect()
-
-
     const [allConnectors, setAllConnectors] = useState<any>()
     const _connectors = useConnectors()
     useEffect(() => {
@@ -75,9 +70,7 @@ export default function Form() {
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
-    const { getWithdrawalProvider } = useWallet()
-    const account = useAccount()
-    const { getSourceProvider } = useWallet()
+    const { getProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
 
     const settings = useSettingsState();
@@ -119,8 +112,8 @@ export default function Form() {
                     return;
                 }
             }
-            const provider = values.from && getSourceProvider(values.from)
-            const wallet = provider?.getConnectedWallets()
+            const provider = values.from && getProvider(values.from, 'asSource')
+            const wallet = provider?.activeWallet
 
             const swapId = await createSwap(values, wallet?.address, query, partner);
             setSwapId(swapId)
@@ -159,7 +152,7 @@ export default function Form() {
                 toast.error(data?.message || error?.message)
             }
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getSourceProvider])
+    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getProvider])
 
     const destAddress: string = query?.destAddress as string;
 

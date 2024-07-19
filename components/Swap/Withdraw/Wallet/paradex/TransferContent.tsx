@@ -1,13 +1,9 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react'
-import { useSwapDataState, useSwapDataUpdate } from '../../../../../context/swap';
+import { FC, useEffect, useMemo } from 'react'
+import { useSwapDataState } from '../../../../../context/swap';
 import WalletIcon from '../../../../icons/WalletIcon';
 import useWallet from '../../../../../hooks/useWallet';
-import { useBalancesState } from '../../../../../context/balances';
-import useBalance from '../../../../../hooks/useBalance';
 import AddressWithIcon from '../../../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../../../Input/Address/AddressPicker';
-import { RefreshCw } from 'lucide-react';
-import { truncateDecimals } from '../../../../utils/RoundDecimals';
 import { useSettingsState } from '../../../../../context/settings';
 import KnownInternalNames from '../../../../../lib/knownIds';
 import { NetworkWithTokens } from '../../../../../Models/Network';
@@ -16,12 +12,9 @@ import { ConnectWalletButton } from './buttons';
 import { ResolveConnectorIcon } from '../../../../icons/ConnectorIcons';
 
 const WalletTransferContent: FC = () => {
-    const { getWithdrawalProvider, disconnectWallet } = useWallet()
+    const { getProvider } = useWallet()
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
-    const { source_exchange, source_network } = swap || {}
-    const [isLoading, setIsloading] = useState(false);
-    const { mutateSwap } = useSwapDataUpdate()
     const select = useWalletStore((state) => state.selectProvider)
     const selectedProvider = useWalletStore((state) => state.selectedProveder)
 
@@ -31,23 +24,14 @@ const WalletTransferContent: FC = () => {
     const starknet = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia);
 
     const evmProvider = useMemo(() => {
-        return l1Network && getWithdrawalProvider(l1Network)
-    }, [l1Network, getWithdrawalProvider])
+        return l1Network && getProvider(l1Network, 'withdrawal')
+    }, [l1Network, getProvider])
 
     const starknetProvider = useMemo(() => {
-        return starknet && getWithdrawalProvider(starknet)
-    }, [l1Network, getWithdrawalProvider])
+        return starknet && getProvider(starknet, 'withdrawal')
+    }, [l1Network, getProvider])
 
-    const evmWallet = evmProvider?.getConnectedWallet()
-
-    const handleEvmDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!evmWallet) return
-        setIsloading(true);
-        if (evmProvider?.reconnectWallet) await evmProvider.reconnectWallet({ chain: source_network?.chain_id })
-        else await disconnectWallet(evmWallet.providerName, swap)
-        if (source_exchange) await mutateSwap()
-        setIsloading(false);
-    }, [source_network?.type, swap?.source_exchange, disconnectWallet, setIsloading, isLoading])
+    const evmWallet = evmProvider?.activeWallet
 
     let evmAccountAddress: string | undefined = ""
     if (swap?.source_exchange) {
@@ -56,7 +40,7 @@ const WalletTransferContent: FC = () => {
     else if (evmWallet) {
         evmAccountAddress = evmWallet.address || "";
     }
-    const starknetWallet = starknetProvider?.getConnectedWallet()
+    const starknetWallet = starknetProvider?.activeWallet
 
     useEffect(() => {
         if (!selectedProvider) {
@@ -64,15 +48,6 @@ const WalletTransferContent: FC = () => {
             else if (starknetWallet && starknetProvider) select(starknetProvider.name)
         }
     }, [evmAccountAddress, starknetWallet, selectedProvider])
-
-    const handleStarknetDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!starknetWallet) return
-        setIsloading(true);
-        if (evmProvider?.reconnectWallet) await evmProvider.reconnectWallet({ chain: source_network?.chain_id })
-        else await disconnectWallet(starknetWallet.providerName, swap)
-        if (source_exchange) await mutateSwap()
-        setIsloading(false);
-    }, [source_network?.type, swap?.source_exchange, disconnectWallet, setIsloading, isLoading])
 
     let starknetAccountAddress: string | undefined = ""
     if (swap?.source_exchange) {
@@ -131,33 +106,16 @@ const WalletTransferContent: FC = () => {
 
 const Content: FC<{ network: NetworkWithTokens | undefined }> = ({ network }) => {
 
-    const { getWithdrawalProvider, disconnectWallet } = useWallet()
+    const { provider } = useWallet(network, 'withdrawal')
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
-    const { source_exchange, source_network } = swap || {}
-    const [isLoading, setIsloading] = useState(false);
-    const { mutateSwap } = useSwapDataUpdate()
+    const { source_network } = swap || {}
     const selectedProvider = useWalletStore((state) => state.selectedProveder)
     const select = useWalletStore((state) => state.selectProvider)
 
-
-    const provider = useMemo(() => {
-        return network && getWithdrawalProvider(network)
-    }, [network, getWithdrawalProvider])
-
     const isSelected = selectedProvider === provider?.name
 
-
-    const wallet = provider?.getConnectedWallet()
-
-    const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!wallet) return
-        setIsloading(true);
-        if (provider?.reconnectWallet) await provider.reconnectWallet({ chain: source_network?.chain_id })
-        else await disconnectWallet(wallet.providerName, swap)
-        if (source_exchange) await mutateSwap()
-        setIsloading(false);
-    }, [source_network?.type, swap?.source_exchange, disconnectWallet, setIsloading, isLoading])
+    const wallet = provider?.activeWallet
 
     let accountAddress: string | undefined = ""
     if (swap?.source_exchange) {
@@ -188,7 +146,7 @@ const Content: FC<{ network: NetworkWithTokens | undefined }> = ({ network }) =>
                 <div
                     onClick={() => select(provider?.name)}
                     className={`${isSelected ? 'bg-secondary-700 border-secondary-500 text-primary-text' : 'bg-secondary-900 border-secondary-700 text-secondary-text cursor-pointer hover:text-primary-text hover:border-secondary-500'} group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7`}>
-                    <AddressWithIcon addressItem={{ address: wallet?.address, group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} destination={source_network} />
+                    <AddressWithIcon addressItem={{ address: wallet?.address || '', group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} destination={source_network} />
                     {
                         !isSelected &&
                         <div className='font-light text-sm'>

@@ -1,5 +1,5 @@
 import { Plus, RefreshCw } from "lucide-react";
-import { WalletProvider } from "../../../../hooks/useWallet";
+import { NewWalletProvider } from "../../../../hooks/useWallet";
 import { addressFormat } from "../../../../lib/address/formatter";
 import { ResolveConnectorIcon } from "../../../icons/ConnectorIcons";
 import { Wallet } from "../../../../stores/walletStore";
@@ -10,7 +10,7 @@ import { AddressGroup } from ".";
 import { FC, useState } from "react";
 
 type Props = {
-    provider: WalletProvider,
+    provider: NewWalletProvider,
     onClick: () => void,
     onConnect?: () => void,
     connectedWallet: Wallet | undefined,
@@ -59,12 +59,12 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
                     <p>Switch Wallet</p>
                 </button>
             </div>
-            <button type="button" onClick={onClick} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 ${addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && 'bg-secondary-800'}`}>
+            <button type="button" onClick={onClick} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 ${connectedWallet.address && addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && 'bg-secondary-800'}`}>
                 <div className={`flex items-center justify-between w-full`}>
                     <AddressWithIcon addressItem={addressItem} connectedWallet={connectedWallet} destination={destination} />
                     <div className="flex h-6 items-center px-1">
                         {
-                            addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) &&
+                            connectedWallet.address && addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) &&
                             <FilledCheck className="text-primary" />
                         }
                     </div>
