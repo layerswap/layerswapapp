@@ -51,7 +51,7 @@ const ConnectWalletModal = () => {
         <Dialog open={openDialog} onOpenChange={setOpenDialog}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle className="text-center">Connect wllet</DialogTitle>
+                    <DialogTitle className="text-center">Connect wallet</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col justify-start space-y-2">
                     <ConnectWalletButton

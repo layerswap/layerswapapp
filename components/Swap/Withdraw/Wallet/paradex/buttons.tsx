@@ -21,24 +21,18 @@ type ConnectProps = {
 
 
 export const ConnectWalletButton: FC<ConnectProps> = ({ network, text, icon, onClick, secondary, onConnect }) => {
-    const [loading, setLoading] = useState(false)
-
     const { provider } = useWallet(network, 'withdrawal')
 
     const clickHandler = useCallback(async () => {
         try {
-            setLoading(true)
             onClick && onClick()
             if (!provider) throw new Error(`No provider from ${network?.name}`)
-
-            await provider.connectWallet()
+            
+            await provider.connectWallet({ chain: network?.chain_id })
             onConnect && onConnect()
         }
         catch (e) {
             toast.error(e.message)
-        }
-        finally {
-            setLoading(false)
         }
 
     }, [provider, onClick])

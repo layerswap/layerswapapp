@@ -1,5 +1,5 @@
 import { ExternalLink } from 'lucide-react';
-import { FC, useCallback, useEffect } from 'react'
+import { FC, useCallback, useEffect, useRef } from 'react'
 import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
@@ -19,6 +19,7 @@ import { ApiResponse } from '../../../../Models/ApiResponse';
 import { datadogRum } from '@datadog/browser-rum';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../../context/authContext';
+import logError from '../../../../lib/logError';
 
 type Props = {
     swapResponse: SwapResponse;
@@ -57,6 +58,20 @@ const Processing: FC<Props> = ({ swapResponse }) => {
     const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_network?.name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
 
     const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
+
+    const loggedNotDetectedTxAt = useRef<number | null>(null);
+
+    useEffect(() => {
+        if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
+            if (swap?.transactions?.find(t => t.type === TransactionType.Input) || !swap) {
+                return
+            }
+            if (Date.now() - (loggedNotDetectedTxAt.current || storedWalletTransaction.timestamp) > 60000) {
+                loggedNotDetectedTxAt.current = Date.now();
+                logError(`Transaction not detected in ${swap.source_network.name}. Tx hash: ${transactionHash}. Tx status: ${inputTxStatus}. Swap id: ${swap.id}. ${source_network.display_name} explorer: ${source_network?.transaction_explorer_template?.replace("{0}", transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);
+            }
+        }
+    }, [swap, storedWalletTransaction]);
 
     useEffect(() => {
         if (storedWalletTransaction?.status !== inputTxStatus) setSwapTransaction(swap?.id, inputTxStatus, storedWalletTransaction?.hash)
