@@ -2,12 +2,8 @@ import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../../../context/swap';
 import WalletIcon from '../../../../icons/WalletIcon';
 import useWallet from '../../../../../hooks/useWallet';
-import { useBalancesState } from '../../../../../context/balances';
-import useBalance from '../../../../../hooks/useBalance';
 import AddressWithIcon from '../../../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../../../Input/Address/AddressPicker';
-import { RefreshCw } from 'lucide-react';
-import { truncateDecimals } from '../../../../utils/RoundDecimals';
 import { useSettingsState } from '../../../../../context/settings';
 import KnownInternalNames from '../../../../../lib/knownIds';
 import { NetworkWithTokens } from '../../../../../Models/Network';
