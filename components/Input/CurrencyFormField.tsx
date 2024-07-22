@@ -71,6 +71,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         error
     )
     const currencyAsset = direction === 'from' ? fromCurrency?.symbol : toCurrency?.symbol;
+    const value = currencyMenuItems?.find(x => x.id == currencyAsset);
 
     useEffect(() => {
         if (direction !== "to") return
@@ -121,34 +122,31 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     }, [from, query, routes])
 
     useEffect(() => {
-        if (name === "toCurrency" && toCurrency && !isLoading && (query.lockTo !== true || (query.lockTo && query.lockFrom))) {
-            if (routes?.data
-                && !!routes?.data
-                    ?.find(r => r.name === to?.name)?.tokens
-                    ?.some(r => r.symbol === toCurrency?.symbol && r.status === 'not_found')) {
+        if (name === "toCurrency" && toCurrency && !isLoading && routes) {
+            const value = routes.data?.find(r => r.name === to?.name)?.tokens?.find(r => r.symbol === toCurrency?.symbol)
+            if (!value) return
+
+            if (value?.status === 'not_found') {
                 const message = validationMessageResolver(values, direction, query, error)
                 setValidationMessage('Route Unavailable', message, 'warning', name);
-            } else {
-                clearValidationMessage()
             }
+            setFieldValue(name, value)
         }
-    }, [fromCurrency, toCurrency, currencyGroup, name, to, routes, error, isLoading, query])
+    }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
 
     useEffect(() => {
-        if (name === "fromCurrency" && fromCurrency && !isLoading && (query.lockFrom !== true || (query.lockTo && query.lockFrom))) {
-            if (routes?.data
-                && !!routes?.data
-                    ?.find(r => r.name === from?.name)?.tokens
-                    ?.find(r => (r.symbol === fromCurrency?.symbol) && r.status === 'not_found')) {
+        if (name === "fromCurrency" && fromCurrency && !isLoading && routes) {
+            const value = routes.data?.find(r => r.name === from?.name)?.tokens?.find(r => r.symbol === fromCurrency?.symbol)
+            if (!value) return
+
+            if (value?.status === 'not_found') {
                 const message = validationMessageResolver(values, direction, query, error)
                 setValidationMessage('Route Unavailable', message, 'warning', name);
-            } else {
-                clearValidationMessage()
             }
+            setFieldValue(name, value)
         }
-    }, [toCurrency, fromCurrency, currencyGroup, name, from, routes, error, isLoading, query])
+    }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
 
-    const value = currencyMenuItems?.find(x => x.id == currencyAsset);
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken>) => {
         setFieldValue(name, item.baseObject, true)
@@ -157,7 +155,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             setValidationMessage('Warning', message, 'warning', name);
 
     }, [name, direction, toCurrency, fromCurrency, from, to])
-    const errorMessage = directions.find(d => d === name) ? validationErrorMessage : undefined
+
 
     return (
         <div className="relative">
