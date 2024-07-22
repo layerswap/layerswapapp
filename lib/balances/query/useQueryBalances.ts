@@ -6,7 +6,7 @@ export default function useQueryBalances(): BalanceProvider {
 
     const query = useQueryState()
     const { networks } = useSettingsState()
-    const supportedNetworks = [(networks.find(l => l.name.toLowerCase() === query.from?.toLowerCase())?.name || ''), (networks.find(l => l.name.toLowerCase() === query.to?.toLowerCase())?.name || '')]
+    const supportedNetworks = query.balances ? [(networks.find(l => l.name.toLowerCase() === query.from?.toLowerCase())?.name || ''), (networks.find(l => l.name.toLowerCase() === query.to?.toLowerCase())?.name || '')] : []
 
     const getNetworkBalances = ({ networkName }: NetworkBalancesProps) => {
         const network = networks.find(n => n.name === networkName)
