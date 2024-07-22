@@ -91,13 +91,15 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [setFieldValue, setShowAddressModal, showAddressModal, destination, connectedWallet])
 
     useEffect(() => {
-        if (!destination_address && connectedWallet) {
-            autofillConnectedWallet()
-        } else if (isConnecting && connectedWallet) {
-            setIsConnecting(false)
-            autofillConnectedWallet()
+        if (!destinationExchange) {
+            if (!destination_address && connectedWallet) {
+                autofillConnectedWallet()
+            } else if (isConnecting && connectedWallet) {
+                setIsConnecting(false)
+                autofillConnectedWallet()
+            }
         }
-    }, [destination_address, connectedWallet, isConnecting])
+    }, [destination_address, connectedWallet, isConnecting, destinationExchange])
 
     useEffect(() => {
         if (canFocus) {
