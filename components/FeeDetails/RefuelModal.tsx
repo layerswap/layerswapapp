@@ -52,7 +52,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
                 <div className="text-center max-w-72">
                     <p className="text-2xl">About Refuel</p>
                     <p className="text-secondary-text">
-                        <span>You can get a small amount of</span> <span>{nativeAsset?.symbol}</span> <span>that can be used for covering gass fees on</span> <span>{to?.display_name}.</span>
+                        <span>You can get a small amount of</span> <span>{nativeAsset?.symbol}</span> <span>that can be used for covering gas fees on</span> <span>{to?.display_name}.</span>
                     </p>
                 </div>
                 {
