@@ -31,12 +31,8 @@ export default function validationMessageResolver(
     const toCurrencyInactive = toCurrency?.status !== "active";
     const routeNotFoundError = error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR;
 
-    if (fromCurrencyInactive || routeNotFoundError) {
-        return `Can't transfer from ${fromDisplayName} ${fromCurrency?.symbol} to ${toDisplayName} ${toCurrency?.symbol}`;
-    }
-
-    if (toCurrencyInactive || routeNotFoundError) {
-        return `Can't transfer to ${toDisplayName} ${toCurrency?.symbol} from ${fromDisplayName} ${fromCurrency?.symbol}`;
+    if (fromCurrencyInactive || toCurrencyInactive || routeNotFoundError) {
+        return `Please change one of the selected tokens`;
     }
 
     if (value?.isAvailable.disabledReason === LayerDisabledReason.LockNetworkIsTrue) {

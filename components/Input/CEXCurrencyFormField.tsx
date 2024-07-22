@@ -110,7 +110,7 @@ export function GenerateCurrencyMenuItems(
                 </TooltipTrigger>
                 <TooltipContent>
                     <p className="max-w-72">
-                        Transfers from selected network/asset are not supported by this network.
+                        Route unavailable
                     </p>
                 </TooltipContent>
             </Tooltip>
