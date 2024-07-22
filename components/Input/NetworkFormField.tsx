@@ -233,21 +233,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
         ) : undefined;
 
         const isAvailable = layerIsAvailable(r)
-        const showRouteIcon = isAvailable?.disabledReason == LayerDisabledReason.InvalidRoute || isAvailable?.disabledReason == LayerDisabledReason.LockNetworkIsTrue;
-        const icon = showRouteIcon ? (
-            <Tooltip delayDuration={200}>
-                <TooltipTrigger asChild >
-                    <div className="absolute -left-0 z-50">
-                        <RouteIcon className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p className="max-w-72">
-                        Route unavailable
-                    </p>
-                </TooltipContent>
-            </Tooltip>
-        ) : undefined;
+
         const order = ResolveNetworkOrder(r, direction, isNewlyListed)
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
             baseObject: r,
@@ -259,8 +245,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             group: getGroupName(r, 'network', isAvailable),
             isExchange: false,
             details,
-            badge,
-            icon
+            badge
         }
         return res;
     }).sort(SortAscending) || [];
