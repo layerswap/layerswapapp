@@ -10,7 +10,7 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
     const { email, userId } = useAuthState();
     const { boot, show, update } = useIntercom();
     const [countdown, setCountdown] = useState<number>();
-    const [elapsedThreshold, setElapsedThreshold] = useState<boolean>(false);
+    const [thresholdElapsed, setThresholdElapsed] = useState<boolean>(false);
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
 
     useEffect(() => {
@@ -21,14 +21,14 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
             setCountdown(remainingTime);
 
             if (elapsedTime > 2 * timeStringToMilliseconds(initialTime)) {
-                setElapsedThreshold(true);
+                setThresholdElapsed(true);
             } else {
-                setElapsedThreshold(false);
+                setThresholdElapsed(false);
             }
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [initialTime, swap.status, swapInputTransaction, elapsedThreshold]);
+    }, [initialTime, swap.status, swapInputTransaction, thresholdElapsed]);
 
     const updateWithProps = () => update({ userId, customAttributes: { email: email, swapId: swap.id } })
     const startIntercom = useCallback(() => {
@@ -50,7 +50,7 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
     };
     const formatted = countdown && formatTime(countdown);
 
-    if (elapsedThreshold && swap.status !== SwapStatus.Completed) {
+    if (thresholdElapsed && swap.status !== SwapStatus.Completed) {
         const renderingError = new Error("Transaction is taking longer than expected");
         renderingError.name = `LongTransactionError`;
         renderingError.cause = renderingError;
@@ -60,7 +60,7 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
     return (
         <div className='flex items-center space-x-1'>
             {
-                elapsedThreshold && swap.status !== SwapStatus.UserTransferPending ? (
+                thresholdElapsed && swap.status !== SwapStatus.UserTransferPending ? (
                     <div>
                         <span>Transaction is taking longer than expected</span>
                         <a className='underline hover:cursor-pointer' onClick={() => startIntercom()}> please contact our support.</a>
