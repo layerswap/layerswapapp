@@ -8,14 +8,12 @@ import { BalanceProvider } from "../Models/Balance"
 import useWallet from "./useWallet"
 import { useBalancesState, useBalancesUpdate } from "../context/balances"
 import { Network, NetworkWithTokens, Token } from "../Models/Network"
-import useQueryBalances from "../lib/balances/query/useQueryBalances"
 import { useQueryState } from "../context/query"
 import useTonBalance from "../lib/balances/ton/useTonBalance"
 
 export default function useBalanceProvider() {
 
     const BalanceProviders: BalanceProvider[] = [
-        useQueryBalances(),
         useEVMBalance(),
         useStarknetBalance(),
         useLoopringBalance(),
