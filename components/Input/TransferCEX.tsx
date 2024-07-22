@@ -1,31 +1,35 @@
 import { FC, useEffect, useState, memo } from "react";
 import Image from 'next/image'
-import { ISelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
+import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
+import { ExchangeNetwork } from "../../Models/Exchange";
 
 type TransferCEXProps = {
     values: SwapFormValues;
     manuItems: ISelectMenuItem[] | undefined;
-    value?: ISelectMenuItem;
+    onMouseEnter?: (item: SelectMenuItem<ExchangeNetwork> | null) => void;
 }
 
-const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value }) => {
+const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems }) => {
+    const [currentValue, setCurrentImgSrc] = useState<ISelectMenuItem | null>(manuItems && manuItems.length > 0 ? manuItems[0] : null);
+
+    useEffect(() => {
+        if (manuItems && manuItems.length > 0) {
+            const interval = setInterval(() => {
+                setCurrentImgSrc(prevImgSrc => {
+                    if (!prevImgSrc) return manuItems[0];
+                    const currentIndex = manuItems.indexOf(prevImgSrc);
+                    const nextIndex = (currentIndex + 1) % manuItems.length;
+                    return manuItems[nextIndex];
+                });
+            }, 500);
+            return () => clearInterval(interval);
+        }
+    }, [manuItems]);
+
     if (!manuItems?.length) return null;
 
     const { from, to, fromExchange, toExchange } = values
-    const [currentValue, setCurrentImgSrc] = useState(manuItems[0]);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentImgSrc(prevImgSrc => {
-                const currentIndex = manuItems.indexOf(prevImgSrc);
-                const nextIndex = (currentIndex + 1) % manuItems.length;
-                return manuItems[nextIndex];
-            });
-        }, 500);
-        return () => clearInterval(interval);
-    }, [manuItems]);
-
     const sourceLogo = from ? from.logo : fromExchange?.logo
     const destinationLogo = to ? to.logo : toExchange?.logo
 
@@ -44,11 +48,10 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value }) => {
                                     The network you select here will be used as an intermediary for the transfer from {"{chain}"} to {"{CEX}"}. Before selecting the network, please check which one is available on {"{CEX}"} for deposit.
                                 </p>
                             }
-
                         </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                        <div className="flex-shrink-0 h-5 w-5 relative">
+                        <div className="flex-shrink-0 h-4 w-4 relative">
                             {(values.from || values.fromExchange) && <Image
                                 src={sourceLogo!}
                                 alt="Project Logo"
@@ -58,10 +61,10 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value }) => {
                                 className="rounded-md object-contain"
                             />}
                         </div>
-                        <div className="w-full h-0.5 bg-gray-300 my-2" />
-                        <AnimatedImage src={currentValue.imgSrc} />
-                        <div className="w-full h-0.5 bg-gray-300 my-2" />
-                        <div className="flex-shrink-0 h-5 w-5 relative">
+                        <div className="w-full h-[2px] bg-gray-300 my-2" />
+                        <AnimatedImage src={currentValue?.imgSrc ?? ''} />
+                        <div className="w-full h-[1px] bg-gray-300 my-2" />
+                        <div className="flex-shrink-0 h-4 w-4 relative">
                             {(values.to || values.toExchange) && <Image
                                 src={destinationLogo!}
                                 alt="Project Logo"
