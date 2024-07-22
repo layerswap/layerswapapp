@@ -46,12 +46,20 @@ export default function useSolanaBalance(): BalanceProvider {
         for (let i = 0; i < network.tokens.length; i++) {
             try {
                 const asset = network.tokens[i]
-                const sourceToken = new PublicKey(asset?.contract!);
-                const associatedTokenFrom = await getAssociatedTokenAddress(
-                    sourceToken,
-                    walletPublicKey
-                );
-                const result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
+
+                let result: number | null = null
+
+                if (asset.contract) {
+                    const sourceToken = new PublicKey(asset?.contract!);
+                    const associatedTokenFrom = await getAssociatedTokenAddress(
+                        sourceToken,
+                        walletPublicKey
+                    );
+                    if (!associatedTokenFrom) return
+                    result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
+                } else {
+                    result = await connection.getBalance(walletPublicKey)
+                }
 
                 if (result != null && !isNaN(result)) {
                     const balance = {
@@ -96,12 +104,19 @@ export default function useSolanaBalance(): BalanceProvider {
             return info?.value?.uiAmount;
         }
 
-        const sourceToken = new PublicKey(token?.contract!);
-        const associatedTokenFrom = await getAssociatedTokenAddress(
-            sourceToken,
-            walletPublicKey
-        );
-        const result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
+        let result: number | null = null
+
+        if (token.contract) {
+            const sourceToken = new PublicKey(token?.contract);
+            const associatedTokenFrom = await getAssociatedTokenAddress(
+                sourceToken,
+                walletPublicKey
+            );
+            if (!associatedTokenFrom) return
+            result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
+        } else {
+            result = await connection.getBalance(walletPublicKey)
+        }
 
         if (result != null && !isNaN(result)) {
             return {
