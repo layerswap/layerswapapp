@@ -12,7 +12,7 @@ export type WalletProvider = {
     connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
     disconnectWallet: () => Promise<void> | undefined | void,
     reconnectWallet: (props?: { chain?: string | number | undefined | null }) => Promise<void> | undefined | void,
-    getConnectedWallet: () => Wallet | undefined,
+    getConnectedWallet: (network?: Network) => Wallet | undefined,
     withdrawalSupportedNetworks: string[],
     autofillSupportedNetworks?: string[],
     asSourceSupportedNetworks?: string[],
