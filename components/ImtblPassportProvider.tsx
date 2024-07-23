@@ -25,6 +25,7 @@ export const initilizePassport = async (basePath: string) => {
         scope: 'openid offline_access email transact',
         redirectUri,
         logoutRedirectUri,
+        logoutMode: 'silent',
     });
 }
 
