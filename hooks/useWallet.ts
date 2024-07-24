@@ -1,13 +1,11 @@
 import toast from "react-hot-toast"
 import LayerSwapApiClient, { SwapItem } from "../lib/layerSwapApiClient"
 import { Wallet } from "../stores/walletStore"
-import useTON from "../lib/wallets/ton/useTON"
 import useEVM from "../lib/wallets/evm/useEVM"
 import useStarknet from "../lib/wallets/starknet/useStarknet"
-import useImmutableX from "../lib/wallets/immutableX/useIMX"
-import useSolana from "../lib/wallets/solana/useSolana"
 import { Network, RouteNetwork } from "../Models/Network"
-import { CreatyePreHTLCParams, CommitmentParams } from "../lib/wallets/phtlc"
+import { CreatyePreHTLCParams, CommitmentParams, LockParams } from "../lib/wallets/phtlc"
+import { AssetLock, Commit } from "../Models/PHTLC"
 
 
 export type WalletProvider = {
@@ -27,6 +25,12 @@ export type WalletProvider = {
 
     getPreHTLC: (id: string) => Promise<void> | undefined | void,
     waitForLock: (args: CommitmentParams, callback: (data: any) => void) => Promise<() => void>
+    getCommitment: (args: CommitmentParams) => Promise<Commit | null>,
+    getLock: (args: LockParams) => Promise<AssetLock>,
+
+    lockCommitment: (args: CommitmentParams & LockParams) => Promise<{ hash: `0x${string}`, result: any }>,
+    getLockIdByCommitId: (args: CommitmentParams) => Promise<string>,
+
 }
 
 export default function useWallet() {

@@ -15,7 +15,7 @@ export default function useImxBalance(): BalanceProvider {
 
         if (!layer.tokens) return
 
-        const res: BalancesResponse = await axios.get(`${layer?.node_url}/v2/balances/${address}`).then(r => r.data)
+        const res: BalancesResponse = await axios.get(`${layer?.node_url}/balances/${address}`).then(r => r.data)
 
         const balances = layer?.tokens?.map(asset => {
             const balance = res.result.find(r => r.symbol === asset.symbol)
@@ -38,7 +38,7 @@ export default function useImxBalance(): BalanceProvider {
 
         const axios = (await import("axios")).default
 
-        const res: BalancesResponse = await axios.get(`${network?.node_url}/v2/balances/${address}`).then(r => r.data)
+        const res: BalancesResponse = await axios.get(`${network?.node_url}/balances/${address}`).then(r => r.data)
 
         const balance = res.result.find(r => r.symbol === token.symbol)
 

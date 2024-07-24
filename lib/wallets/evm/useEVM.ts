@@ -7,11 +7,11 @@ import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
-import { CreatyePreHTLCParams, CommitmentParams } from "../phtlc"
-import PHTLCAbi from "../../../lib/abis/atomic/EVM_PHTLC.json"
+import { CreatyePreHTLCParams, CommitmentParams, LockParams } from "../phtlc"
 import { writeContract, simulateContract, watchContractEvent, readContract } from '@wagmi/core'
 import { ethers } from "ethers"
 import { sepolia } from "viem/chains"
+import { AssetLock, Commit } from "../../../Models/PHTLC"
 
 export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
@@ -42,7 +42,7 @@ export default function useEVM(): WalletProvider {
     const name = 'evm'
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
-
+    
     useEffect(() => {
         if (shouldConnect) {
             connectWallet()
@@ -58,7 +58,8 @@ export default function useEVM(): WalletProvider {
                 address: account.address,
                 connector: account.connector.name || connector.charAt(0).toUpperCase() + connector.slice(1),
                 providerName: name,
-                icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account.connector), address: account.address })
+                icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account.connector), address: account.address }),
+                chainId: account.chainId
             }
         }
     }
@@ -97,21 +98,21 @@ export default function useEVM(): WalletProvider {
     const messanger = "0x39c58617d355d8B432a3675714b93eC840872236"
 
     const createPreHTLC = async (params: CreatyePreHTLCParams) => {
-        const { destinationChain, sourceChain, destinationAsset, sourceAsset, lpAddress, address, tokenContractAddress, amount, decimals, atomicContrcat } = params
+        const { abi, destinationChain, sourceChain, destinationAsset, sourceAsset, lpAddress, address, amount, decimals, atomicContrcat, chainId } = params
         if (!account.address) {
             throw Error("Wallet not connected")
         }
-        if (isNaN(Number(sourceChain))) {
+        if (isNaN(Number(chainId))) {
             throw Error("Invalid source chain")
         }
 
-        const timeLock = Date.now() + LOCK_TIME
+        const timeLockMS = Date.now() + LOCK_TIME
+        const timeLock = Math.floor(timeLockMS / 1000)
         const parsedAmount = ethers.utils.parseUnits(amount.toString(), decimals).toBigInt()
-
         const { request, result } = await simulateContract(config, {
-            abi: PHTLCAbi,
+            abi: abi,
             address: atomicContrcat,
-            functionName: 'createP',
+            functionName: 'commit',
             args: [
                 [destinationChain],
                 [destinationAsset],
@@ -124,14 +125,17 @@ export default function useEVM(): WalletProvider {
                 timeLock,
                 messanger,
             ],
-            chainId: Number(sourceChain),
+            chainId: Number(chainId),
             value: parsedAmount,
         })
 
         const hash = await writeContract(config, request)
         console.log('Hash:', hash, 'Result:', result)
-        return { hash, commitId: result }
+        return { hash, commitId: result.toString() }
     }
+
+
+
     const convertToHTLC = () => {
         throw new Error('Not implemented')
     }
@@ -147,31 +151,73 @@ export default function useEVM(): WalletProvider {
 
 
     const waitForLock = async (params: CommitmentParams, onLog: (data: any) => void) => {
-        const { chainId, commitId, contractAddress } = params
-        const unwatch = watchContractEvent(config, {
-            address: contractAddress,
-            abi: PHTLCAbi,
-            eventName: 'TokenLocked',
-            onLogs(logs) {
-                console.log('New logs!', logs)
-                debugger
-                onLog(logs)
-            },
-            chainId: Number(chainId),
-        })
-        return unwatch
+        throw new Error('Not implemented')
     }
 
-    const getCommitment = async (commitId: string, chainId: string, contractAddress: `0x${string}`) => {
-
+    const getCommitment = async (params: CommitmentParams): Promise<Commit> => {
+        const { abi, chainId, commitId, contractAddress } = params
         const result = await readContract(config, {
-            abi: PHTLCAbi,
+            abi,
             address: contractAddress,
-            functionName: 'getCommitmentDetails',
+            functionName: 'getCommitDetails',
             args: [commitId],
             chainId: Number(chainId),
         })
+        console.log('commitment result', result)
+        if (!result) {
+            throw new Error("No result")
+        }
+        return result as Commit
+    }
 
+    const getLockIdByCommitId = async (params: CommitmentParams) => {
+        const { abi, chainId, commitId, contractAddress } = params
+
+        const result = await readContract(config, {
+            abi,
+            address: contractAddress,
+            functionName: 'getLockIdByCommitId',
+            args: [commitId],
+            chainId: Number(chainId),
+        })
+        if (!result) {
+            throw new Error("No result")
+        }
+        return result as `0x${string}`
+    }
+
+    const lockCommitment = async (params: CommitmentParams & LockParams) => {
+        const { abi, chainId, commitId, contractAddress, lockId } = params
+        console.log('params', params)
+        const { request, result } = await simulateContract(config, {
+            abi,
+            address: contractAddress,
+            functionName: 'lockCommitment',
+            args: [commitId, lockId],
+            chainId: Number(chainId),
+        })
+
+        const hash = await writeContract(config, request)
+        console.log('Hash:', hash, 'Result:', result)
+        return { hash, result: result }
+    }
+
+    const getLock = async (params: LockParams): Promise<AssetLock> => {
+        const { abi, chainId, lockId, contractAddress, lockDataResolver } = params
+
+        const result = await readContract(config, {
+            abi,
+            address: contractAddress,
+            functionName: 'getLockDetails',
+            args: [lockId],
+            chainId: Number(chainId),
+        })
+
+        if (!result) {
+            throw new Error("No result")
+        }
+        console.log('lock result', result)
+        return result as AssetLock
     }
 
     return {
@@ -185,12 +231,15 @@ export default function useEVM(): WalletProvider {
         name,
 
 
-
+        getLockIdByCommitId,
+        getCommitment,
         createPreHTLC,
         convertToHTLC,
         claim,
         refund,
         getPreHTLC,
         waitForLock,
+        getLock,
+        lockCommitment
     }
 }

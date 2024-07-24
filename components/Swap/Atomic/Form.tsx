@@ -176,7 +176,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             <Address partner={partner} />
                             : <></>
                     }
-                    <div className="w-full">
+                    <div className="w-full hidden">
                         <FeeDetailsComponent values={values} />
                         {
                             values.amount &&

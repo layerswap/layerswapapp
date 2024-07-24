@@ -25,4 +25,5 @@ export type StatusStep = {
     status: ProgressStatus;
     description?: | JSX.Element | string | null;
     index?: number;
+    hasSpinner?: boolean;
 }

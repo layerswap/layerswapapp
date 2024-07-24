@@ -9,7 +9,6 @@ import { useQueryState } from '../../context/query';
 import ResizablePanel from '../ResizablePanel';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import DepositMethod from './DepositMethod';
 import Campaign from './Campaign';
 
 const RefuelModal = dynamic(() => import("./RefuelModal"), {
@@ -25,12 +24,6 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
     return (
         <>
             <ResizablePanel>
-
-                {
-                    from && to && toCurrency && fromCurrency &&
-                    <DepositMethod />
-                }
-
                 <FeeDetails>
                     {
                         toCurrency?.refuel && !query.hideRefuel && !toExchange &&

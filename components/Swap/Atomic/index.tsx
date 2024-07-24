@@ -16,7 +16,6 @@ import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import { useAuthDataUpdate } from "../../../context/authContext";
-import { ApiError, LSAPIKnownErrorCode } from "../../../Models/ApiError";
 import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 import { useQueryState } from "../../../context/query";
 import StatusIcon from "../../SwapHistory/StatusIcons";
@@ -32,6 +31,9 @@ import AddressNoteModal from "../../Input/Address/AddressNote";
 import { addressFormat } from "../../../lib/address/formatter";
 import { useAddressesStore } from "../../../stores/addressesStore";
 import { AddressGroup } from "../../Input/Address/AddressPicker";
+import EthPhtlcAbi from "../../../lib/abis/atomic/ETHEREUM_PHTLC.json"
+import ArbPhtlcAbi from "../../../lib/abis/atomic/ARBITRUM_PHTLC.json"
+import { AssetLock } from "../../../Models/PHTLC";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -50,21 +52,48 @@ const SwapDetails = dynamicWithRetries(() => import(".."),
 )
 
 
-const NETWORKS_DETAILS = {
+export const NETWORKS_DETAILS = {
     'ETHEREUM_SEPOLIA': {
-        contract: '0x44E5A65a5CE709C8394B5E79663faD9F0D57D9ca',
-        lp: '0x276446774befDCDAA417d269139d27d2EFD972bc'
+        abi: EthPhtlcAbi,
+        lockDataResolver: (data: any[]): AssetLock => {
+            return {
+                dstAddress: data[0],
+                dstChain: data[1],
+                dstAsset: data[2],
+                srcAsset: data[3],
+                sender: data[4],
+                srcReceiver: data[5],
+                hashlock: data[6],
+                secret: data[7],
+                amount: data[8],
+                timelock: data[9],
+                redeemed: data[10],
+                unlocked: data[11],
+            }
+        }
+
     },
     'ARBITRUM_SEPOLIA': {
-        contract: '0xeAdCC212315Fd1Ef9f85F2778517bca30E91F6D6',
-        lp: '0x276446774befDCDAA417d269139d27d2EFD972bc'
+        abi: ArbPhtlcAbi,
+        lockDataResolver: (data: any[]): AssetLock => {
+            console.log("dest data -----", data)
+            return {
+                hashlock: data[0],
+                secret: data[1],
+                amount: data[2],
+                timelock: data[3],
+                sender: data[4],
+                srcReceiver: data[5],
+                redeemed: data[6],
+                unlocked: data[7],
+            }
+        }
     },
     'STARKNET_SEPOLIA': {
         contract: '0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90',
         lp: '0x0454aC1A4567D8128CDA1f23de531702E6c9c06476c705dEcC6c5faEF4714623'
     }
 }
-
 
 export default function Form() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
@@ -127,12 +156,6 @@ export default function Form() {
 
             const details = NETWORKS_DETAILS[values.from?.name]
 
-            if (!details?.lp) {
-                throw new Error("No network LP address")
-            }
-            if (!details?.contract) {
-                throw new Error("No network PHTLC contract address")
-            }
             if (!source_provider) {
                 throw new Error("No source_provider")
             }
@@ -140,19 +163,33 @@ export default function Form() {
                 throw new Error("No destination_provider")
             }
 
-            const { commitId, hash } = await source_provider.createPreHTLC({
-                address: values.destination_address,
-                amount: values.amount,
-                destinationChain: values.to?.chain_id,
-                sourceChain: values.from?.chain_id,
-                destinationAsset: values.toCurrency.symbol,
-                sourceAsset: values.fromCurrency.symbol,
-                lpAddress: details.lp,
-                tokenContractAddress: values.fromCurrency.contract,
-                decimals: values.fromCurrency.decimals,
-                atomicContrcat: details.contract
-            })
+            // const { commitId, hash } = await source_provider.createPreHTLC({
+            //     abi: details.abi,
+            //     address: values.destination_address,
+            //     amount: values.amount,
+            //     destinationChain: values.to?.name,
+            //     sourceChain: values.from?.name,
+            //     destinationAsset: values.toCurrency.symbol,
+            //     sourceAsset: values.fromCurrency.symbol,
+            //     lpAddress: values.from.metadata.lp_address,
+            //     tokenContractAddress: values.fromCurrency.contract,
+            //     decimals: values.fromCurrency.decimals,
+            //     atomicContrcat: values.from.metadata.htlc_contract as `0x${string}`,
+            //     chainId: values.from?.chain_id,
+            // })
+            // router.push(`/commitment/${commitId}?network=${values.from?.name}`)
 
+            router.push({
+                pathname: `/commitSwap`,
+                query: {
+                    amount: values.amount,
+                    address: values.destination_address,
+                    source: values.from?.name,
+                    destination: values.to?.name,
+                    source_asseet: values.fromCurrency.symbol,
+                    destination_asset: values.toCurrency.symbol,
+                }
+            }, undefined, { shallow: false })
         }
         catch (error) {
             console.log(error)

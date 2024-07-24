@@ -139,7 +139,6 @@ export default function useStarknet(): WalletProvider {
         }
 
         const { transaction_hash } = (await wallet?.metadata?.starknetAccount?.account?.execute(createP1Call))
-        debugger
         return transaction_hash
     }
     const convertToHTLC = () => {

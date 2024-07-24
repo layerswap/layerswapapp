@@ -49,7 +49,9 @@ export class RouteToken extends Token {
 }
 
 export class Metadata {
-    evm_oracle_contract?: `0x${string}` | null
-    evm_multicall_contract?: string | null
-    listing_date: string
+    evm_oracle_contract?: `0x${string}` | null;
+    evm_multicall_contract?: string | null;
+    listing_date: string;
+    htlc_contract: string;
+    lp_address: string;
 }
