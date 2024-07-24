@@ -10,7 +10,11 @@ export default function useEVMBalance(): BalanceProvider {
             && l.token)
         .map(l => l.name)
 
-    const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
+    const getNetworkBalances = async ({ networkName, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === networkName)
+
+        if (!network) return
+
         try {
             const resolveChain = (await import("../../resolveChain")).default
             const chain = resolveChain(network)
