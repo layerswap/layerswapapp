@@ -15,12 +15,6 @@ export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
     const [shouldConnect, setShouldConnect] = useState(false)
     const { disconnectAsync } = useDisconnect()
-    useEffect(() => {
-        if (shouldConnect) {
-            connectWallet()
-            setShouldConnect(false)
-        }
-    }, [shouldConnect])
 
     const asSourceSupportedNetworks = [
         ...networks.filter(network => network.type === NetworkType.EVM && network.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
