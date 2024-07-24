@@ -6,7 +6,10 @@ export type ThemeData = {
     logo: string,
     placeholderText: string,
     primary: ThemeColor,
-    secondary?: ThemeColor
+    secondary?: ThemeColor,
+    headerLogo?: string,
+    footerLogo?: string,
+    footerLogoHeight?: string,
 }
 
 export type ThemeColor = {
@@ -33,6 +36,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         buttonTextColor: '255, 255, 255',
         placeholderText: '140, 152, 192',
         logo: '255, 255, 255',
+        footerLogo: 'none',
         primary: {
             DEFAULT: '46, 236, 255',
             '50': '230, 253, 255',
@@ -70,6 +74,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         actionButtonText: '0, 0, 0',
         buttonTextColor: '255, 255, 255',
         logo: '255, 255, 255',
+        footerLogo: 'none',
         primary: {
             DEFAULT: '128, 226, 235',
             '50': '255, 255, 255',
@@ -107,6 +112,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         actionButtonText: '255, 255, 255',
         buttonTextColor: '17, 17, 17',
         logo: '255, 0, 147',
+        footerLogo: 'none',
         primary: {
             DEFAULT: '228, 37, 117',
             '50': '248, 200, 220',
@@ -144,6 +150,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         actionButtonText: '254, 255, 254',
         buttonTextColor: '228, 229, 240',
         logo: '255, 0, 147',
+        footerLogo: 'none',
         primary: {
             DEFAULT: '228, 37, 117',
             '50': '248, 200, 220',
@@ -180,6 +187,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         actionButtonText: '254, 255, 254',
         buttonTextColor: '74, 61, 59',
         logo: '226, 49, 115',
+        footerLogo: 'none',
         primary: {
             DEFAULT: '237, 78, 51',
             '50': '248, 200, 220',
@@ -216,6 +224,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         actionButtonText: '255, 255, 255',
         buttonTextColor: '15, 15, 15',
         logo: '15, 15, 15',
+        footerLogo: 'none',
         primary: {
             DEFAULT: '51, 144, 236',
             '50': '248, 200, 220',
@@ -245,6 +254,45 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '900': '250, 248, 248',
             '950': '255, 255, 255',
             'text': '106, 119, 133',
+        },
+    },
+    "immutable": {
+        placeholderText: '182, 182, 182',
+        actionButtonText: '19, 19, 19',
+        buttonTextColor: '243, 243, 243',
+        logo: '15, 15, 15',
+        headerLogo: 'none',
+        footerLogo: 'block',
+        footerLogoHeight: '20px',
+        primary: {
+            DEFAULT: '243, 243, 243',
+            '50': '248, 200, 220',
+            '100': '246, 182, 209',
+            '200': '241, 146, 186',
+            '300': '237, 110, 163',
+            '400': '232, 73, 140',
+            '500': '45, 148, 229',
+            '600': '166, 51, 94',
+            '700': '136, 17, 67',
+            '800': '45, 148, 229',
+            '900': '243, 243, 243',
+            'text': '243, 243, 243',
+            'textMuted': '86, 97, 123',
+        },
+        secondary: {
+            DEFAULT: '240, 240, 240',
+            '50': '190, 195, 200',
+            '100': '199, 201, 206',
+            '200': '208, 210, 211',
+            '300': '212, 214, 219',
+            '400': '243, 243, 243, 0.08',
+            '500': '45, 45, 45',
+            '600': '26, 26, 26',
+            '700': '37, 37, 37',
+            '800': '13, 13, 13',
+            '900': '13, 13, 13',
+            '950': '255, 255, 255',
+            'text': '200, 200, 200',
         },
     }
 }
