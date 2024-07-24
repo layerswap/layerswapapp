@@ -52,7 +52,7 @@ export default function useEVM(): WalletProvider {
     const getWallet = (network?: Network) => {
         if (account && account.address && account.connector) {
             const connector = account.connector.id
-            if (account.connector?.name == "com.immutable.passport" && network && (network.name == KnownInternalNames.Networks.ImmutableZkEVM || network.name == KnownInternalNames.Networks.ImmutableXMainnet)) {
+            if (connector == "com.immutable.passport" && network && !(network.name == KnownInternalNames.Networks.ImmutableZkEVM || network.name == KnownInternalNames.Networks.ImmutableXMainnet)) {
                 return undefined
             }
             return {

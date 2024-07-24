@@ -65,11 +65,11 @@ export default function useWallet() {
         }
     }
 
-    const getConnectedWallets = () => {
+    const getConnectedWallets = (network?: Network) => {
         let connectedWallets: Wallet[] = []
 
         WalletProviders.forEach(wallet => {
-            const w = wallet.getConnectedWallet()
+            const w = wallet.getConnectedWallet(network)
             connectedWallets = w && [...connectedWallets, w] || [...connectedWallets]
         })
 
