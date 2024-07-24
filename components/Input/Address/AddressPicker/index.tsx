@@ -85,19 +85,23 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [close, setFieldValue, groupedAddresses])
 
     const autofillConnectedWallet = useCallback(() => {
-        setFieldValue("destination_address", connectedWallet?.address)
+        setFieldValue("destination_address", connectedWalletAddress)
         if (showAddressModal && connectedWallet) setShowAddressModal(false)
 
     }, [setFieldValue, setShowAddressModal, showAddressModal, destination, connectedWallet])
 
     useEffect(() => {
-        if (!destination_address && connectedWallet) {
-            autofillConnectedWallet()
-        } else if (isConnecting && connectedWallet) {
+        if (isConnecting && connectedWalletAddress) {
             setIsConnecting(false)
             autofillConnectedWallet()
         }
-    }, [destination_address, connectedWallet, isConnecting])
+    }, [connectedWalletAddress, isConnecting])
+
+    useEffect(() => {
+        if (!destination_address && connectedWallet) {
+            autofillConnectedWallet()
+        }
+    }, [connectedWallet, destination_address])
 
     useEffect(() => {
         if (canFocus) {
