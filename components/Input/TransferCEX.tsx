@@ -7,14 +7,17 @@ import { ExchangeNetwork } from "../../Models/Exchange";
 type TransferCEXProps = {
     values: SwapFormValues;
     manuItems: ISelectMenuItem[] | undefined;
-    onMouseEnter?: (item: SelectMenuItem<ExchangeNetwork> | null) => void;
+    value: SelectMenuItem<ExchangeNetwork> | undefined;
+    selectedItem?: ISelectMenuItem | null;
 }
 
-const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems }) => {
+const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedItem }) => {
     const [currentValue, setCurrentImgSrc] = useState<ISelectMenuItem | null>(manuItems && manuItems.length > 0 ? manuItems[0] : null);
 
     useEffect(() => {
-        if (manuItems && manuItems.length > 0) {
+        if (selectedItem) {
+            setCurrentImgSrc(selectedItem);
+        } else if (manuItems && manuItems.length > 0) {
             const interval = setInterval(() => {
                 setCurrentImgSrc(prevImgSrc => {
                     if (!prevImgSrc) return manuItems[0];
@@ -25,9 +28,7 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems }) => {
             }, 500);
             return () => clearInterval(interval);
         }
-    }, [manuItems]);
-
-    if (!manuItems?.length) return null;
+    }, [manuItems, selectedItem]);
 
     const { from, to, fromExchange, toExchange } = values
     const sourceLogo = from ? from.logo : fromExchange?.logo

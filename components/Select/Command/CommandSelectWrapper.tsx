@@ -18,6 +18,9 @@ type CommandSelectWrapperProps = {
     valueDetails?: React.ReactNode;
     exchangeDetails?: React.ReactNode;
     modalContent?: React.ReactNode;
+    requireConfirmation?: boolean;
+    selectedItem?: ISelectMenuItem | null;
+    setSelectedItem?: (item: ISelectMenuItem | null) => void;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -31,7 +34,10 @@ export default function CommandSelectWrapper<T>({
     isLoading,
     modalHeight,
     valueDetails,
-    modalContent
+    modalContent,
+    requireConfirmation,
+    selectedItem,
+    setSelectedItem
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -95,6 +101,9 @@ export default function CommandSelectWrapper<T>({
                 isLoading={isLoading}
                 modalHeight={modalHeight}
                 modalContent={modalContent}
+                requireConfirmation={requireConfirmation}
+                selectedItem={selectedItem}
+                setSelectedItem={setSelectedItem}
             />
         </>
     )

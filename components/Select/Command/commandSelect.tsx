@@ -7,13 +7,14 @@ import {
     CommandList,
     CommandWrapper
 } from '../../shadcn/command'
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import useWindowDimensions from '../../../hooks/useWindowDimensions';
 import SelectItem from '../Shared/SelectItem';
 import { SelectProps } from '../Shared/Props/SelectProps'
 import Modal from '../../modal/modal';
 import SpinIcon from '../../icons/spinIcon';
 import { LeafletHeight } from '../../modal/leaflet';
+import SubmitButton from '../../buttons/submitButton';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
@@ -23,6 +24,9 @@ export interface CommandSelectProps extends SelectProps {
     isLoading: boolean;
     modalHeight?: LeafletHeight;
     modalContent?: React.ReactNode;
+    requireConfirmation?: boolean;
+    selectedItem?: ISelectMenuItem | null;
+    setSelectedItem?: (item: ISelectMenuItem | null) => void;
 }
 
 export class SelectMenuItemGroup {
@@ -34,14 +38,29 @@ export class SelectMenuItemGroup {
     items: ISelectMenuItem[];
 }
 
-export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading, modalHeight = 'full', modalContent }: CommandSelectProps) {
+export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading, modalHeight = 'full', modalContent, requireConfirmation = false, selectedItem, setSelectedItem }: CommandSelectProps) {
     const { isDesktop } = useWindowDimensions();
 
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
     const handleSelectValue = useCallback((item: ISelectMenuItem) => {
-        setValue(item)
-        setShow(false)
-    }, [setValue])
+        if (!requireConfirmation) {
+            setValue(item);
+            setShow(false);
+        } else {
+            setSelectedItem!(selectedItem?.id === item.id ? null : item);
+        }
+    }, [setValue, setShow, requireConfirmation, selectedItem, setSelectedItem]);
+
+    const handleConfirm = () => {
+        if (selectedItem) {
+            setValue(selectedItem);
+            setShow(false);
+            if (setSelectedItem) {
+                setSelectedItem(null);
+            }
+        }
+    };
+
     return (
         <Modal height={modalHeight} show={show} setShow={setShow} modalId='comandSelect'>
             {show ?
@@ -56,7 +75,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                     <CommandGroup key={group.name} heading={group.name}>
                                         {group.items.map(item => {
                                             return (
-                                                <CommandItem disabled={!item.isAvailable.value} value={item.name} key={item.id} onSelect={() => handleSelectValue(item)}>
+                                                <CommandItem className={`${selectedItem?.id === item.id || (!selectedItem && item.name === value?.name) ? "bg-secondary-600" : ""}`} disabled={!item.isAvailable.value} value={item.name} key={item.id} onSelect={() => handleSelectValue(item)}>
                                                     <SelectItem item={item} />
                                                 </CommandItem>
                                             )
@@ -70,6 +89,11 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                             <SpinIcon className="animate-spin h-5 w-5" />
                         </div>
                     }
+                    {requireConfirmation && selectedItem && (
+                        <SubmitButton type='button' className='mt-auto' onClick={handleConfirm}>
+                            Confirm
+                        </SubmitButton>
+                    )}
                 </CommandWrapper>
                 : <></>
             }

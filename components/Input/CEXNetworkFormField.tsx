@@ -1,7 +1,7 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useEffect } from "react";
+import { forwardRef, useCallback, useEffect, useState } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
+import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
@@ -37,6 +37,8 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         currencyGroup
     } = values
 
+
+    const [selectedItem, setSelectedItem] = useState<ISelectMenuItem | null>(null);
     const apiClient = new LayerSwapApiClient()
 
     const routesEndpoint = `/${direction === "from" ? `exchange_source_networks?destination_token_group=${currencyGroup?.symbol}&include_unmatched=true` : `exchange_destination_networks?source_token_group=${currencyGroup?.symbol}&include_unmatched=true`}`
@@ -111,7 +113,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
                 <Info className='h-3 w-3 inline-block mb-0.5' /><span>&nbsp;You&apos;re accessing Layerswap from a partner&apos;s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.</span>
             </div>
         }
-        <TransferCEX values={values} manuItems={menuItems} />
+        <TransferCEX values={values} manuItems={menuItems} selectedItem={selectedItem} value={value} />
         <div className="relative z-20 mb-3 ml-3 text-primary-buttonTextColor text-sm">
             <p className="text-sm mt-2 flex space-x-1">
                 <span>Please make sure that the exchange supports the token and network you select here.</span>
@@ -147,6 +149,9 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             valueDetails={valueDetails}
             modalContent={networkDetails}
             key={value?.id}
+            requireConfirmation={true}
+            selectedItem={selectedItem}
+            setSelectedItem={setSelectedItem}
         />
     </div>)
 })
