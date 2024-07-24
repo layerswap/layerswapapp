@@ -98,7 +98,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const autofillConnectedWallet = useCallback(() => {
         setFieldValue("destination_address", connectedWalletAddress)
-        previouslyAutofilledAddress.current = connectedWallet?.address
+        previouslyAutofilledAddress.current = connectedWalletAddress
         if (showAddressModal && connectedWallet) setShowAddressModal(false)
     }, [setFieldValue, setShowAddressModal, showAddressModal, destination, connectedWallet])
 
@@ -110,7 +110,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [connectedWalletAddress, isConnecting])
 
     useEffect(() => {
-        if ((!destination_address || (previouslyAutofilledAddress.current && previouslyAutofilledAddress.current != connectedWallet?.address)) && connectedWallet) {
+        if ((!destination_address || (previouslyAutofilledAddress.current && previouslyAutofilledAddress.current != connectedWalletAddress)) && connectedWallet) {
             autofillConnectedWallet()
         }
     }, [connectedWallet, destination_address])
