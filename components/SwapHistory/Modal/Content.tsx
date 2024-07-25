@@ -1,6 +1,5 @@
-import LayerSwapApiClient, { SwapItem, TransactionType } from "../../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapItem, SwapResponse } from "../../../lib/layerSwapApiClient"
 import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
-import { useSettingsState } from "../../../context/settings"
 import { SwapDataProvider } from "../../../context/swap"
 import WithdrawalPage from "../../Swap"
 import { Scroll } from 'lucide-react'
@@ -67,8 +66,8 @@ type ListProps = {
     loadExplorerSwaps: boolean;
 }
 
-const getSwapsKey = (statuses: string | number) => (index) =>
-    `/swaps?page=${index + 1}&status=${statuses}`
+const getSwapsKey = () => (index) =>
+    `/internal/swaps?page=${index + 1}`
 
 const getExplorerKey = (addresses: string[]) => (index) => {
     if (!addresses?.[index])
@@ -76,25 +75,25 @@ const getExplorerKey = (addresses: string[]) => (index) => {
     return `/explorer/${addresses[index]}`
 }
 
-const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
+const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
     const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
-    const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
+    const [selectedSwap, setSelectedSwap] = useState<SwapResponse | undefined>()
     const { wallets } = useWallet()
     const addresses = wallets.map(w => w.address)
     const [cachedSize, setCachedSize] = useState(1)
 
-    const handleopenSwapDetails = (swap: SwapItem) => {
+    const handleopenSwapDetails = (swap: SwapResponse) => {
         setSelectedSwap(swap)
         setOpenSwapDetailsModal(true)
     }
 
-    const getKey = useMemo(() => getSwapsKey(statuses), [statuses])
+    const getKey = useMemo(() => getSwapsKey(), [])
     const getFromExplorerKey = getExplorerKey(addresses)
 
     const apiClient = new LayerSwapApiClient()
 
     const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, mutate } =
-        useSWRInfinite<ApiResponse<SwapItem[]>>(
+        useSWRInfinite<ApiResponse<SwapResponse[]>>(
             getKey,
             apiClient.fetcher,
             { revalidateAll: true, dedupingInterval: 10000 }
@@ -108,7 +107,7 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
         return data
     }
 
-    const { data: explorerPages, error: explorerError, isLoading: explorerSwapsLoading, setSize: setExplorerSize, size: explorerSize } = useSWRInfinite<ApiResponse<SwapItem[]>>(
+    const { data: explorerPages, error: explorerError, isLoading: explorerSwapsLoading, setSize: setExplorerSize, size: explorerSize } = useSWRInfinite<ApiResponse<SwapResponse[]>>(
         loadExplorerSwaps ? getFromExplorerKey : () => null,
         explorerDataFetcher,
         { revalidateAll: true, dedupingInterval: 60000, parallel: true, initialSize: addresses?.length }
@@ -125,8 +124,8 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
     }, [])
 
     const userSwaps = userSwapPages?.map(p => p.data).flat(1) || []
-    const explorerSwaps = explorerPages?.map(p => p?.data?.filter(s => s.status === 'completed')).flat(1) || []
-
+    const explorerSwaps = explorerPages?.map(p => p?.data?.filter(s => s.swap.status === 'completed')).flat(1) || []
+console.log(explorerPages)
     const userSwapsisEmpty =
         (userSwapPages?.[0] instanceof EmptyApiResponse)
 
@@ -144,19 +143,19 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
     }
     // TODO filter explorer swaps by status
     !userSwapsLoading && explorerSwaps?.forEach(es => {
-        if (!es || userSwaps?.find(us => us?.created_date === es.created_date))
+        if (!es || userSwaps?.find(us => us?.swap.created_date === es.swap.created_date))
             return
         const userLoadedOldestSwap = userSwaps?.[userSwaps?.length - 1]
         if (!userLoadedOldestSwap) {
             userSwaps.push(es)
             return
         }
-        const userLoadedOldestSwapDate = new Date(userLoadedOldestSwap.created_date)
-        const swapDate = new Date(es.created_date)
+        const userLoadedOldestSwapDate = new Date(userLoadedOldestSwap.swap.created_date)
+        const swapDate = new Date(es.swap.created_date)
         if (userLoadedOldestSwapDate > swapDate && !isReachingEnd)
             return
         else {
-            const index = userSwaps.findLastIndex(us => us && new Date(us?.created_date) > swapDate)
+            const index = userSwaps.findLastIndex(us => us && new Date(us?.swap.created_date) > swapDate)
             userSwaps.splice(index + 1 || 0, 0, es)
         }
     })
@@ -182,10 +181,10 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
 
                             return <motion.div
                                 onClick={() => handleopenSwapDetails(swap)}
-                                key={swap.id}
+                                key={swap.swap.id}
                                 variants={item as any}
                             >
-                                <Summary swap={swap} />
+                                <Summary swap={swap.swap} />
                             </motion.div>
                         })
                     }
@@ -220,10 +219,10 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
         >
             <SwapDataProvider>
                 {
-                    selectedSwap?.id ?
+                    selectedSwap?.swap.id ?
                         <WithdrawalPage type="contained" />
                         :
-                        <SwapDetails id={selectedSwap?.id!} />
+                        <SwapDetails id={selectedSwap?.swap?.id!} />
                 }
             </SwapDataProvider>
         </Modal>

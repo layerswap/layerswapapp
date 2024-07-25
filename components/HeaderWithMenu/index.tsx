@@ -70,7 +70,7 @@ const PendingSwapsModal = () => {
    const apiClient = new LayerSwapApiClient()
    const { data, mutate } =
       useSWR<ApiResponse<{ count: number }>>(
-         '/swaps/count',
+         '/internal/swaps/count',
          apiClient.fetcher)
 
    const pendingSwapsCount = Number(data?.data?.count)

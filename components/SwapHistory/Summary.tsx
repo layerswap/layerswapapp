@@ -36,7 +36,7 @@ const Summary: FC<SwapInfoProps> = ({
     const source = hideFrom ? partner : (source_exchange || source_network)
     const destination = hideTo ? partner : (destination_exchange || destination_network)
 
-    const sourceTransaction = swap.transactions.find(t => t.type === TransactionType.Input)
+    const sourceTransaction = swap.transactions?.find(t => t.type === TransactionType.Input)
     const sourceAddressFromInput = sourceTransaction?.from;
 
     let sourceAccountAddress = ""
@@ -54,7 +54,7 @@ const Summary: FC<SwapInfoProps> = ({
     }
     const destAddress = (hideAddress && hideTo && account) ? account : destination_address
 
-    return (<>
+    return (source_token && <>
         <div className="bg-secondary-800 rounded-lg cursor-pointer border border-secondary-500">
             <div className="bg-secondary-700 rounded-lg px-3  border border-secondary-500 w-full relative z-10 space-y-4">
                 <div className="font-normal flex flex-col w-full relative z-10 space-y-4">

@@ -37,7 +37,7 @@ function updatePendingCount(useSWRNext) {
       if (swapKeyPattern.test(key) && swap) {
         const status = swap.status
         if (swapsStatuses[swap.id] !== status) {
-          mutate('/swaps/count')
+          mutate('/internal/swaps/count')
         }
         swapsStatuses[swap.id] = status
       }
