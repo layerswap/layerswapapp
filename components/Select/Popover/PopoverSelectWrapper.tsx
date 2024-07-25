@@ -4,7 +4,6 @@ import { ChevronDown } from 'lucide-react'
 import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
 import { Popover, PopoverContent, PopoverTrigger } from '../../shadcn/popover'
 import PopoverSelect from './PopoverSelect'
-import { CurrencyDisabledReason } from '../../Input/CurrencyFormField'
 
 type PopoverSelectWrapper = {
     setValue: (value: ISelectMenuItem) => void;
@@ -13,6 +12,7 @@ type PopoverSelectWrapper = {
     placeholder?: string;
     searchHint?: string;
     disabled?: boolean;
+    isAssetLocked?: boolean
 }
 
 export default function PopoverSelectWrapper<T>({
@@ -20,6 +20,7 @@ export default function PopoverSelectWrapper<T>({
     value,
     values,
     placeholder,
+    isAssetLocked
 }: PopoverSelectWrapper) {
     const [showModal, setShowModal] = useState(false)
 
@@ -29,7 +30,7 @@ export default function PopoverSelectWrapper<T>({
     }, [])
 
     if (!values) return <Placeholder placeholder={placeholder} />
-    if (value?.isAvailable.disabledReason === CurrencyDisabledReason.LockAssetIsTrue) return <LockedAsset value={value} />
+    if (isAssetLocked && value) return <LockedAsset value={value} />
 
     return (
         <Popover open={showModal} onOpenChange={() => setShowModal(!showModal)}>

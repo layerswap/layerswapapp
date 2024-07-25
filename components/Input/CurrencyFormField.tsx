@@ -129,6 +129,8 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             if (value?.status === 'not_found') {
                 const message = validationMessageResolver(values, direction, query, error)
                 setValidationMessage('Route Unavailable', message, 'warning', name);
+            } else {
+                clearValidationMessage()
             }
             setFieldValue(name, value)
         }
@@ -142,6 +144,8 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             if (value?.status === 'not_found') {
                 const message = validationMessageResolver(values, direction, query, error)
                 setValidationMessage('Route Unavailable', message, 'warning', name);
+            } else {
+                clearValidationMessage()
             }
             setFieldValue(name, value)
         }
@@ -151,8 +155,10 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken>) => {
         setFieldValue(name, item.baseObject, true)
         const message = validationMessageResolver(values, direction, query, error)
-        if (!item.isAvailable.value)
+        if (!item.isAvailable)
             setValidationMessage('Warning', message, 'warning', name);
+        else
+            clearValidationMessage()
 
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
@@ -165,7 +171,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 values={currencyMenuItems}
                 value={value}
                 setValue={handleSelect}
-                disabled={!value?.isAvailable?.value || isLoading}
+                disabled={!value?.isAvailable || isLoading}
             />
         </div>
     )
@@ -183,29 +189,20 @@ function GenerateCurrencyMenuItems(
     const lockAsset = direction === 'from' ? query?.lockFromAsset
         : query?.lockToAsset
 
-    let currencyIsAvailable = (currency: RouteToken) => {
-        if (lockAsset) {
-            return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
-        }
-        else if (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) {
-            if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset || currency.status === 'inactive') {
-                return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
-            }
-            return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
-        }
-        else {
-            return { value: true, disabledReason: null }
-        }
-    }
-
     return currencies?.map(c => {
         const currency = c
         const displayName = currency.symbol;
         const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.name === b.network)
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
         const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
-        const isAvailable = currencyIsAvailable(c)
-        const showRouteIcon = isAvailable?.disabledReason == CurrencyDisabledReason.InvalidRoute || isAvailable?.disabledReason == CurrencyDisabledReason.LockAssetIsTrue;
+
+        const currencyIsAvailable = !lockAsset &&
+            (
+                (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
+                !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive')
+            );
+
+        const showRouteIcon = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) || lockAsset;
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
@@ -236,7 +233,7 @@ function GenerateCurrencyMenuItems(
             name: displayName || "-",
             order: ResolveCurrencyOrder(c, isNewlyListed),
             imgSrc: c.logo,
-            isAvailable: currencyIsAvailable(c),
+            isAvailable: currencyIsAvailable,
             details,
             badge,
             icon
@@ -244,12 +241,6 @@ function GenerateCurrencyMenuItems(
 
         return res
     }).sort(SortAscending);
-}
-
-export enum CurrencyDisabledReason {
-    LockAssetIsTrue = '',
-    InsufficientLiquidity = 'Temporarily disabled. Please check later.',
-    InvalidRoute = 'InvalidRoute'
 }
 
 export default CurrencyFormField

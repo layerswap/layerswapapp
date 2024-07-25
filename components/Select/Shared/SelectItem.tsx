@@ -2,7 +2,7 @@ import { ISelectMenuItem } from "./Props/selectMenuItem";
 import Image from 'next/image'
 
 export default function SelectItem({ item }: { item: ISelectMenuItem }) {
-    const isDisabled = !item.isAvailable.value;
+    const isDisabled = !item.isAvailable;
 
     return (<div className={`${isDisabled ? "opacity-50" : ""} flex items-center justify-between gap-4 w-full overflow-hidden`}>
         <div className={`relative flex items-center gap-4 ${item.group ? "" : "pl-4"}`}>

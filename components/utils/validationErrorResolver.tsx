@@ -1,22 +1,16 @@
 import { ApiError, LSAPIKnownErrorCode } from "../../Models/ApiError";
-import { Exchange } from "../../Models/Exchange";
-import { RouteNetwork } from "../../Models/Network";
 import { QueryParams } from "../../Models/QueryParams";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
-import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 
 export default function validationMessageResolver(
     values: SwapFormValues,
     direction: string,
     query?: QueryParams,
     error?: ApiError,
-    value?: (SelectMenuItem<RouteNetwork | Exchange> & {
-        isExchange: boolean;
-    }) | undefined
 ): string {
     const { to, from, fromCurrency, toCurrency, toExchange, fromExchange } = values;
     const lockAsset = direction === 'from' ? query?.lockFromAsset : query?.lockToAsset;
+    const lockNetwork = direction === 'from' ? query?.lockFrom : query?.lockTo;
 
     const fromDisplayName = from ? from.display_name : fromExchange?.display_name;
     const toDisplayName = to ? to.display_name : toExchange?.display_name;
@@ -35,7 +29,7 @@ export default function validationMessageResolver(
         return `Please change one of the selected tokens`;
     }
 
-    if (value?.isAvailable.disabledReason === LayerDisabledReason.LockNetworkIsTrue) {
+    if (lockNetwork) {
         return `No routes available between ${direction === 'from' ? fromDisplayName : toDisplayName} and this token`;
     }
 
