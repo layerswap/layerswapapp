@@ -68,19 +68,17 @@ type ListProps = {
 }
 
 const getSwapsKey = (statuses: string | number) => (index) =>
-    `/swaps?page=${index + 1}&status=${statuses}&version=${LayerSwapApiClient.apiVersion}`
+    `/swaps?page=${index + 1}&status=${statuses}`
 
 const getExplorerKey = (addresses: string[]) => (index) => {
     if (!addresses?.[index])
         return null;
-    return `/explorer/${addresses[index]}?version=${LayerSwapApiClient.apiVersion}`
+    return `/explorer/${addresses[index]}`
 }
 
 const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
     const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
     const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
-    const settings = useSettingsState()
-    const { layers, exchanges } = settings
     const { wallets } = useWallet()
     const addresses = wallets.map(w => w.address)
     const [cachedSize, setCachedSize] = useState(1)
@@ -103,7 +101,7 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
         )
 
     const explorerDataFetcher = async (url: string) => {
-        const uri = LayerSwapApiClient.apiBaseEndpoint + "/api" + url
+        const uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2" + url
         const data = await axios.get(uri).then(res => res.data).catch(e => {
             if (e) return { data: [] }
         })
@@ -179,67 +177,15 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
                 >
                     {
                         userSwaps?.map((swap) => {
-                            const {
-                                source_network: source_network_internal_name,
-                                source_exchange: source_exchange_internal_name,
-                                destination_exchange: destination_exchange_internal_name,
-                                destination_network: destination_network_internal_name,
-                                source_network_asset,
-                                destination_network_asset
-                            } = swap || {}
 
-
-                            const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
-                            const sourceAsset = source_layer?.assets?.find(currency => currency?.asset === source_network_asset)
-                            const destination_layer = layers?.find(l => l.internal_name === destination_network_internal_name)
-                            const destinationAsset = destination_layer?.assets?.find(currency => currency?.asset === destination_network_asset)
-                            const sourceExchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
-                            const destExchange = exchanges.find(e => e.internal_name === destination_exchange_internal_name)
-
-
-                            if (!swap || !source_layer || !sourceAsset || !destinationAsset || !destination_layer) {
-                                return <></>
-                            }
-
-                            const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
-                            const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
-                            const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
-
-                            const requested_amount = swap.requested_amount
-
-                            const destinationNetworkNativeAsset = layers.find(n => n.internal_name === destination_layer?.internal_name)?.assets.find(a => a.is_native);
-                            const refuel_amount_in_usd = Number(destinationAsset?.refuel_amount_in_usd)
-                            const native_usd_price = Number(destinationNetworkNativeAsset?.usd_price)
-
-                            const refuelAmountInNativeCurrency = swap?.has_refuel
-                                ? ((swapRefuelTransaction?.amount ??
-                                    (refuel_amount_in_usd / native_usd_price))) : undefined;
-                            const receive_amount = swapOutputTransaction?.amount
+                            if (!swap) return <></>
 
                             return <motion.div
                                 onClick={() => handleopenSwapDetails(swap)}
                                 key={swap.id}
                                 variants={item as any}
                             >
-                                {
-                                    <Summary
-                                        sourceCurrency={sourceAsset}
-                                        destinationCurrency={destinationAsset}
-                                        source={source_layer}
-                                        destination={destination_layer}
-                                        requestedAmount={swap.requested_amount || swapInputTransaction?.amount}
-                                        receiveAmount={receive_amount}
-                                        destinationAddress={swap.destination_address}
-                                        hasRefuel={swap?.has_refuel}
-                                        refuelAmount={refuelAmountInNativeCurrency}
-                                        fee={swap.fee}
-                                        swap={swap}
-                                        exchange_account_connected={swap?.exchange_account_connected}
-                                        exchange_account_name={swap?.exchange_account_name}
-                                        destExchange={destExchange}
-                                        sourceExchange={sourceExchange}
-                                    />
-                                }
+                                <Summary swap={swap} />
                             </motion.div>
                         })
                     }
@@ -272,12 +218,12 @@ const List: FC<ListProps> = ({ statuses, refreshing, loadExplorerSwaps }) => {
             header={`Swap`}
             modalId="pendingSwapDetails"
         >
-            <SwapDataProvider id={selectedSwap?.id}>
+            <SwapDataProvider>
                 {
                     selectedSwap?.id ?
-                        < WithdrawalPage type="contained" />
+                        <WithdrawalPage type="contained" />
                         :
-                        <SwapDetails swap={selectedSwap!} />
+                        <SwapDetails id={selectedSwap?.id!} />
                 }
             </SwapDataProvider>
         </Modal>

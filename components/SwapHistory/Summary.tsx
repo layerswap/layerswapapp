@@ -2,57 +2,22 @@
 import useSWR from "swr"
 import LayerSwapApiClient, { SwapItem, TransactionType } from "../../lib/layerSwapApiClient"
 import { ApiResponse } from "../../Models/ApiResponse"
-import { useSettingsState } from "../../context/settings"
 import Image from 'next/image';
-import { truncateDecimals } from "../utils/RoundDecimals"
-import { useSwapDataState } from "../../context/swap"
 import { useQueryState } from "../../context/query"
-import { Layer } from "../../Models/Layer"
 import { Partner } from "../../Models/Partner"
 import shortenAddress, { shortenEmail } from "../utils/ShortenAddress"
 import KnownInternalNames from "../../lib/knownIds"
-import { ChevronDownIcon, ChevronRightIcon, ExternalLink } from 'lucide-react'
+import { ChevronRightIcon } from 'lucide-react'
 import StatusIcon from "../SwapHistory/StatusIcons"
 import { FC } from "react"
-import { Exchange } from "../../Models/Exchange";
-import { NetworkCurrency } from "../../Models/CryptoNetwork";
+import { truncateDecimals } from "../utils/RoundDecimals";
 
 type SwapInfoProps = {
-    sourceCurrency: NetworkCurrency,
-    destinationCurrency: NetworkCurrency,
-    source: Layer,
-    destination: Layer;
-    requestedAmount: number | undefined;
-    receiveAmount?: number;
-    destinationAddress: string;
-    hasRefuel?: boolean;
-    refuelAmount?: number;
-    fee?: number,
-    exchange_account_connected: boolean;
-    exchange_account_name?: string;
     swap: SwapItem,
-    destExchange: Exchange | undefined;
-    sourceExchange: Exchange | undefined;
 }
 const Summary: FC<SwapInfoProps> = ({
     swap,
-    sourceCurrency,
-    destinationCurrency,
-    sourceExchange,
-    destExchange,
-    source: from,
-    destination: to,
-    requestedAmount,
-    receiveAmount,
-    destinationAddress,
-    hasRefuel,
-    refuelAmount,
-    fee,
-    exchange_account_connected,
-    exchange_account_name
 }) => {
-    const { resolveImgSrc } = useSettingsState()
-    const { selectedAssetNetwork } = useSwapDataState()
 
     const {
         hideFrom,
@@ -66,8 +31,10 @@ const Summary: FC<SwapInfoProps> = ({
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = partnerData?.data
 
-    const source = hideFrom ? partner : (sourceExchange || from)
-    const destination = hideTo ? partner : (destExchange || to)
+    const { source_network, destination_network, source_token, destination_token, source_exchange, destination_exchange, destination_address, exchange_account_connected, exchange_account_name, requested_amount } = swap || {}
+
+    const source = hideFrom ? partner : (source_exchange || source_network)
+    const destination = hideTo ? partner : (destination_exchange || destination_network)
 
     const sourceTransaction = swap.transactions.find(t => t.type === TransactionType.Input)
     const sourceAddressFromInput = sourceTransaction?.from;
@@ -76,16 +43,16 @@ const Summary: FC<SwapInfoProps> = ({
     if (sourceAddressFromInput) {
         sourceAccountAddress = shortenAddress(sourceAddressFromInput)
     }
-    else if (from?.internal_name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
+    else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
         sourceAccountAddress = shortenEmail(exchange_account_name, 10);
     }
-    else if (sourceExchange) {
+    else if (source_exchange) {
         sourceAccountAddress = "Exchange"
     }
     else {
         sourceAccountAddress = "Network"
     }
-    const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
+    const destAddress = (hideAddress && hideTo && account) ? account : destination_address
 
     return (<>
         <div className="bg-secondary-800 rounded-lg cursor-pointer border border-secondary-500">
@@ -97,7 +64,7 @@ const Summary: FC<SwapInfoProps> = ({
                             {
                                 source &&
                                 <Image
-                                    src={resolveImgSrc(source)}
+                                    src={source.logo}
                                     alt={source.display_name}
                                     width={24}
                                     height={24}
@@ -105,7 +72,7 @@ const Summary: FC<SwapInfoProps> = ({
                             }
                             <div>
                                 <p className="font-semibold text-primary-text text-base leading-5">
-                                    {requestedAmount} {sourceCurrency.asset}
+                                    {truncateDecimals(requested_amount, source_token.precision)} {source_token.symbol}
                                 </p>
                                 <p className="text-secondary-text text-sm">{source?.display_name}</p>
                             </div>
@@ -118,14 +85,14 @@ const Summary: FC<SwapInfoProps> = ({
                             {
                                 destination &&
                                 <Image
-                                    src={resolveImgSrc(destination)}
+                                    src={destination.logo}
                                     alt={destination.display_name}
                                     width={24}
                                     height={24}
                                     className="rounded-full" />
                             }
                             <div>
-                                <p className="font-semibold text-primary-text text-base leading-5">{receiveAmount} {destinationCurrency.asset}</p>
+                                <p className="font-semibold text-primary-text text-base leading-5">{truncateDecimals(10, destination_token.precision)} {destination_token.symbol}</p>
                                 <p className="text-sm text-secondary-text">{destination?.display_name}</p>
                             </div>
                         </div>

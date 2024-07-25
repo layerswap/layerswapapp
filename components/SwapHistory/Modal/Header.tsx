@@ -1,4 +1,3 @@
-import LayerSwapApiClient from "../../../lib/layerSwapApiClient"
 import IconButton from "../../buttons/iconButton"
 import { RefreshCcw } from 'lucide-react'
 import { useCallback, useMemo } from "react"
@@ -15,12 +14,12 @@ type Props = {
 }
 
 const getSwapsKey = (statuses: string | number) => (index) =>
-    `/swaps?page=${index + 1}&status=${statuses}&version=${LayerSwapApiClient.apiVersion}`
+    `/swaps?page=${index + 1}&status=${statuses}`
 
 const getExplorerKey = (addresses: string[]) => (index) => {
     if (!addresses?.[index])
         return null;
-    return `/explorer/${addresses[index]}?version=${LayerSwapApiClient.apiVersion}`
+    return `/explorer/${addresses[index]}`
 }
 
 const Header = ({ statuses, title, loadExplorerSwaps, setRefreshing }: Props) => {

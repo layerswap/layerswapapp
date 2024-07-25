@@ -312,6 +312,7 @@ export enum SwapStatusInNumbers {
     Expired = 3,
     Delayed = 4,
     Cancelled = 5,
+    SwapsWithoutCancelledAndExpired = '0&status=1&status=2&status=3&status=4'
 }
 
 export type Campaign = {
