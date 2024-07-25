@@ -4,7 +4,8 @@ import KnownInternalNames from "../../knownIds"
 import { useWallet } from "@solana/wallet-adapter-react"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 
-export default function useSolana(): WalletProvider {
+// export default function useSolana(): WalletProvider {
+export default function useSolana() {
     const withdrawalSupportedNetworks = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet]
 
     const name = 'solana'

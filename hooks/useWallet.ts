@@ -38,7 +38,7 @@ export default function useWallet() {
     const WalletProviders: WalletProvider[] = [
         // useTON(),
         useEVM(),
-        useStarknet(),
+        // useStarknet(),
         // useImmutableX(),
         // useSolana()
     ]

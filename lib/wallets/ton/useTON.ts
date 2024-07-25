@@ -6,13 +6,15 @@ import { WalletProvider } from "../../../hooks/useWallet";
 import TON from "../../../components/icons/Wallets/TON";
 import { useEffect, useState } from "react";
 
-export default function useTON(): WalletProvider {
+export default function useTON() {
+// export default function useTON(): WalletProvider {
+
     const withdrawalSupportedNetworks = [KnownInternalNames.Networks.TONMainnet]
     const name = 'ton'
     const wallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
     const [shouldConnect, setShouldConnect] = useState(false)
-
+    
     useEffect(() => {
         if (shouldConnect) {
             connectWallet()
@@ -26,7 +28,8 @@ export default function useTON(): WalletProvider {
                 address: Address.parse(wallet.account.address).toString({ bounceable: false }),
                 connector: 'TON',
                 providerName: name,
-                icon: TON
+                icon: TON,
+                chainId: wallet?.account.chain //TODO check if it is correct
             }
             return w
         }

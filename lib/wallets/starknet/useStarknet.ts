@@ -11,7 +11,8 @@ import { CreatyePreHTLCParams } from "../phtlc";
 import { ethers } from "ethers";
 import * as Paradex from "../../../components/Swap/Withdraw/Wallet/paradex/lib";
 
-export default function useStarknet(): WalletProvider {
+export default function useStarknet() {
+    // export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
         KnownInternalNames.Networks.StarkNetMainnet,
         KnownInternalNames.Networks.StarkNetGoerli,

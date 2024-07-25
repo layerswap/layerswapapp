@@ -4,7 +4,10 @@ import KnownInternalNames from "../../knownIds"
 import { WalletProvider } from "../../../hooks/useWallet"
 import IMX from "../../../components/icons/Wallets/IMX"
 
-export default function useImmutableX(): WalletProvider {
+//TODO bring back type implementation
+// export default function useImmutableX(): WalletProvider {
+export default function useImmutableX() {
+
     const withdrawalSupportedNetworks = [
         KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli,
@@ -30,7 +33,8 @@ export default function useImmutableX(): WalletProvider {
                 address: res.address,
                 connector: 'imx',
                 providerName: name,
-                icon: IMX
+                icon: IMX,
+                chainId: chain
             });
         }
         catch (e) {

@@ -57,7 +57,12 @@ export const initialValues: SwapFormValues = {
             "precision": 6
         },
         "metadata": {
-            "listing_date": "2023-12-27T16:46:50.617075+00:00"
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+
+            //TODO these are not the correct values
+            htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+            lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+
         },
         "deposit_methods": [
             "deposit_address",
@@ -115,7 +120,10 @@ export const initialValues: SwapFormValues = {
             "precision": 6
         },
         "metadata": {
-            "listing_date": "2023-12-27T16:46:50.617075+00:00"
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
+             //TODO these are not the correct values
+             htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+             lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
         },
         "deposit_methods": [
             "deposit_address",
