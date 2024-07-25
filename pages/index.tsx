@@ -7,7 +7,8 @@ import { SwapStatus } from '../Models/SwapStatus'
 import { useEffect } from 'react'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 
-export default function Home({ settings, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Home({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+  LayerSwapApiClient.apiKey = apiKey
   return (
     <SWRConfig value={{ use: [updatePendingCount] }}>
       <Layout settings={settings} themeData={themeData}>
@@ -29,7 +30,7 @@ function updatePendingCount(useSWRNext) {
       if (swapKeyPattern.test(key) && swap) {
         const status = swap.status
         if (swapsStatuses[swap.id] !== status) {
-          mutate(`/swaps/count?version=${LayerSwapApiClient.apiVersion}`)
+          mutate('/swaps/count')
         }
         swapsStatuses[swap.id] = status
       }

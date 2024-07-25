@@ -15,6 +15,9 @@ export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChang
             const loopringToken = tokens?.find(t => t.tokenId === b.tokenId)
             const symbol: string = loopringToken?.symbol || "-"
             const decimals = loopringToken?.decimals
+            const details = <p className="text-primary-text-muted">
+                {decimals ? `${formatAmount(b.total, decimals)}` : ''}
+            </p>
             return {
                 id: symbol,
                 name: symbol,
@@ -22,7 +25,7 @@ export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChang
                 type: 'currency',
                 imgSrc: `${resource_storage_url}layerswap/currencies/${symbol.toLowerCase()}.png`,
                 baseObject: symbol,
-                details: decimals ? `${formatAmount(b.total, decimals)}` : '',
+                details,
                 order: 0,
             }
         }) || []

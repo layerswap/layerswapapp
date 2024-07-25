@@ -19,7 +19,7 @@ const SwapGuide = ({ swap }: { swap: SwapItem }) => {
                         </div>
                     </div>
                     <div className='space-y-3'>
-                        <p><span className='text-primary'>.02</span><span>&nbsp;Send&nbsp;</span><span className='text-primary-text'>{swap?.destination_network_asset}</span><span>&nbsp;to that address from your&nbsp;</span><span>{swap?.source_exchange ? 'exchange account' : 'wallet'}</span></p>
+                        <p><span className='text-primary'>.02</span><span>&nbsp;Send&nbsp;</span><span className='text-primary-text'>{swap?.destination_token.symbol}</span><span>&nbsp;to that address from your&nbsp;</span><span>{swap?.source_exchange ? 'exchange account' : 'wallet'}</span></p>
                         <div className='border-2 border-secondary-400 rounded-xl p-2 bg-secondary-500'>
                             <Image src={swap?.source_exchange ? secondExchangeGuideGuidePic : secondNetworkGuidePic} className='w-full rounded-xl' alt={''} />
                         </div>

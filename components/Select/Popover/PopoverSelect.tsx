@@ -35,7 +35,7 @@ export default function PopoverSelect({ values, value, setValue }: SelectProps) 
 }
 
 export enum LayerDisabledReason {
-    LockNetworkIsTrue = '',
+    LockNetworkIsTrue = 'LockNetworkIsTrue',
     InsufficientLiquidity = 'Temporarily disabled. Please check later.',
     InvalidRoute = 'InvalidRoute'
 }

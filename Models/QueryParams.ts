@@ -2,7 +2,6 @@
 export class PersistantQueryParams {
     from?: string = "";
     to?: string = "";
-    lockAddress?: boolean = false;
     lockFrom?: boolean = false;
     lockTo?: boolean = false;
 
@@ -26,6 +25,8 @@ export class PersistantQueryParams {
     actionButtonText?: string = "";
     theme?: string = "";
     appName?: string = "";
+    depositMethod?: string = "";
+    hideDepositMethod?: boolean = false;
     hideLogo?: boolean = false
 
     // Obsolate

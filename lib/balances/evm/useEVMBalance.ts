@@ -1,22 +1,23 @@
 import { useSettingsState } from "../../../context/settings"
-import { Balance, BalanceProps, BalanceProvider, GasProps } from "../../../Models/Balance"
-import { NetworkType } from "../../../Models/CryptoNetwork"
-import NetworkSettings, { GasCalculation } from "../../NetworkSettings"
+import { Balance, BalanceProps, BalanceProvider, GasProps, NetworkBalancesProps } from "../../../Models/Balance"
+import { NetworkType } from "../../../Models/Network"
 
 export default function useEVMBalance(): BalanceProvider {
-    const { layers } = useSettingsState()
-    const supportedNetworks = layers
+    const { networks } = useSettingsState()
+    const supportedNetworks = networks
         .filter(l =>
             l.type === NetworkType.EVM
-            && NetworkSettings.KnownSettings[l.internal_name]
-                ?.GasCalculationType !== GasCalculation.OptimismType
-            && l.assets.some(a => a.is_native))
-        .map(l => l.internal_name)
+            && l.token)
+        .map(l => l.name)
 
-    const getBalance = async ({ layer, address }: BalanceProps) => {
+    const getNetworkBalances = async ({ networkName, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === networkName)
+
+        if (!network) return
+
         try {
             const resolveChain = (await import("../../resolveChain")).default
-            const chain = resolveChain(layer)
+            const chain = resolveChain(network)
             if (!chain) return
 
             const { createPublicClient, http } = await import("viem")
@@ -27,73 +28,106 @@ export default function useEVMBalance(): BalanceProvider {
 
             const {
                 getErc20Balances,
-                getNativeBalance,
+                getTokenBalance,
                 resolveERC20Balances,
-                resolveNativeBalance
-            } = await import("./getBalance")
+                resolveBalance
+            } = await import("./balance")
 
             const erc20BalancesContractRes = await getErc20Balances({
                 address: address,
-                chainId: Number(layer?.chain_id),
-                assets: layer.assets,
+                assets: network.tokens,
+                network,
                 publicClient,
-                hasMulticall: !!layer.metadata?.multicall3
+                hasMulticall: !!network.metadata?.evm_multicall_contract
             });
 
             const erc20Balances = (erc20BalancesContractRes && await resolveERC20Balances(
                 erc20BalancesContractRes,
-                layer
+                network
             )) || [];
 
-            const nativeBalanceContractRes = await getNativeBalance(address as `0x${string}`, Number(layer.chain_id))
-            const nativeBalance = (nativeBalanceContractRes
-                && await resolveNativeBalance(layer, nativeBalanceContractRes)) || []
+            const nativeTokens = network.tokens.filter(t => !t.contract)
+            const nativeBalances: Balance[] = []
 
-            let balances: Balance[] = []
+            for (let i = 0; i < nativeTokens.length; i++) {
+                const token = nativeTokens[i]
+                const nativeBalanceData = await getTokenBalance(address as `0x${string}`, network)
+                const nativeBalance = (nativeBalanceData
+                    && await resolveBalance(network, token, nativeBalanceData))
+                if (nativeBalance)
+                    nativeBalances.push(nativeBalance)
+            }
 
-            return balances.concat(erc20Balances, nativeBalance)
+            let res: Balance[] = []
+            return res.concat(erc20Balances, nativeBalances)
         }
         catch (e) {
             console.log(e)
         }
-
     }
 
-    const getGas = async ({ layer, address, currency, userDestinationAddress }: GasProps) => {
 
-        if (!layer || !address) {
+    const getBalance = async ({ network, token, address }: BalanceProps) => {
+        try {
+            const resolveChain = (await import("../../resolveChain")).default
+            const chain = resolveChain(network)
+            if (!chain) return
+
+            const {
+                getTokenBalance,
+                resolveBalance,
+                resolveERC20Balance
+            } = await import("./balance")
+
+            const balanceData = await getTokenBalance(address as `0x${string}`, network, token.contract as `0x${string}`)
+            const balance = (balanceData
+                && (network.token?.symbol === token.symbol ? await resolveBalance(network, token, balanceData) : await resolveERC20Balance(network, token, balanceData)))
+
+            return balance
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
+
+    const getGas = async ({ network, address, token, isSweeplessTx, recipientAddress = '0x2fc617e933a52713247ce25730f6695920b3befe' }: GasProps) => {
+
+        const chainId = Number(network?.chain_id)
+
+        if (!network || !address || isSweeplessTx === undefined || !chainId || !recipientAddress) {
             return
         }
-        const chainId = Number(layer?.chain_id)
-        const nativeToken = layer?.assets
-            .find(a => a.is_native)
 
-        if (!nativeToken || !chainId || !layer)
-            return
-
-        const contract_address = layer?.assets?.find(a => a?.asset === currency?.asset)?.contract_address as `0x${string}`
-        const destination_address = layer?.managed_accounts?.[0]?.address as `0x${string}`
+        const contract_address = token.contract as `0x${string}`
 
         try {
 
             const { createPublicClient, http } = await import("viem")
-            const resolveChain = (await import("../../resolveChain")).default
+            const resolveNetworkChain = (await import("../../resolveChain")).default
             const publicClient = createPublicClient({
-                chain: resolveChain(layer),
+                chain: resolveNetworkChain(network),
                 transport: http(),
             })
 
-            const getEthereumGas = (await import("./ethereum/getGas")).default
-            const gasProvider = new getEthereumGas(
-                publicClient,
-                chainId,
-                contract_address,
-                address,
-                layer,
-                currency,
-                destination_address,
-                nativeToken,
-                address !== userDestinationAddress,
+            const getEthereumGas = (await import("./gas/ethereum")).default
+            const getOptimismGas = (await import("./gas/optimism")).default
+
+            const getGas = network?.metadata?.evm_oracle_contract ? getOptimismGas : getEthereumGas
+
+            const gasProvider = new getGas(
+                {
+
+                    publicClient,
+                    chainId,
+                    contract_address,
+                    account: address,
+                    from: network,
+                    currency: token,
+                    destination: recipientAddress as `0x${string}`,
+                    nativeToken: token,
+                    isSweeplessTx,
+                }
             )
 
             const gas = await gasProvider.resolveGas()
@@ -108,6 +142,7 @@ export default function useEVMBalance(): BalanceProvider {
     }
 
     return {
+        getNetworkBalances,
         getBalance,
         getGas,
         supportedNetworks

@@ -1,31 +1,35 @@
 import KnownInternalNames from "../../knownIds"
 import formatAmount from "../../formatAmount";
-import { BalanceProps, BalanceProvider, GasProps } from "../../../Models/Balance";
+import { BalanceProps, BalanceProvider, NetworkBalancesProps } from "../../../Models/Balance";
+import { useSettingsState } from "../../../context/settings";
 
 export default function useImxBalance(): BalanceProvider {
+
+    const { networks } = useSettingsState()
 
     const supportedNetworks = [
         KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli
     ]
 
-    const getBalance = async ({ layer, address }: BalanceProps) => {
+    const getNetworkBalances = async ({ networkName, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === networkName)
 
         const axios = (await import("axios")).default
 
-        if (!layer.assets) return
+        if (!network?.tokens) return
 
-        const res: BalancesResponse = await axios.get(`${layer?.nodes[0].url}/v2/balances/${address}`).then(r => r.data)
+        const res: BalancesResponse = await axios.get(`${network?.node_url}/v2/balances/${address}`).then(r => r.data)
 
-        const balances = layer?.assets?.map(asset => {
-            const balance = res.result.find(r => r.symbol === asset.asset)
+        const balances = network?.tokens?.map(asset => {
+            const balance = res.result.find(r => r.symbol === asset.symbol)
 
             return {
-                network: layer.internal_name,
+                network: network.name,
                 amount: formatAmount(balance?.balance, asset.decimals),
                 decimals: asset.decimals,
                 isNativeCurrency: false,
-                token: asset.asset,
+                token: asset.symbol,
                 request_time: new Date().toJSON(),
             }
         })
@@ -34,7 +38,27 @@ export default function useImxBalance(): BalanceProvider {
 
     }
 
+    const getBalance = async ({ network, token, address }: BalanceProps) => {
+
+        const axios = (await import("axios")).default
+
+        const res: BalancesResponse = await axios.get(`${network?.node_url}/v2/balances/${address}`).then(r => r.data)
+
+        const balance = res.result.find(r => r.symbol === token.symbol)
+
+        return {
+            network: network.name,
+            amount: formatAmount(balance?.balance, token.decimals),
+            decimals: token.decimals,
+            isNativeCurrency: false,
+            token: token.symbol,
+            request_time: new Date().toJSON(),
+        }
+
+    }
+
     return {
+        getNetworkBalances,
         getBalance,
         supportedNetworks
     }

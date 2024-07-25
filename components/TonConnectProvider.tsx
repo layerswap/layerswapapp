@@ -1,7 +1,7 @@
 import { THEME, TonConnectUIProvider } from "@tonconnect/ui-react"
 import { ThemeData } from "../Models/Theme";
 
-const TonConnectProvider = ({ children, basePath, themeData }: { children: JSX.Element | JSX.Element[], basePath: string, themeData: ThemeData }) => {
+const TonConnectProvider = ({ children, basePath, themeData, appName }: { children: JSX.Element | JSX.Element[], basePath: string, themeData: ThemeData, appName: string | undefined }) => {
 
     const rgbToHex = (rgb: string) => {
         const rgbArray = rgb.match(/\d+/g)
@@ -54,7 +54,11 @@ const TonConnectProvider = ({ children, basePath, themeData }: { children: JSX.E
                     }
                 }
             }
-            manifestUrl={`https://${process.env.NEXT_PUBLIC_VERCEL_URL}${basePath ? `/${basePath}` : ''}/tonconnect-manifest.json`}>
+            manifestUrl={`https://${process.env.NEXT_PUBLIC_VERCEL_URL}${basePath ? `/${basePath}` : ''}/tonconnect-manifest.json`}
+            actionsConfiguration={{
+                twaReturnUrl: appName === '4233c46e96e44017afae91537841cb46' ? 'https://t.me/layerswap_bridge_bot/bridge' : undefined
+            }}
+        >
             {children}
         </TonConnectUIProvider>
     )

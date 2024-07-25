@@ -1,55 +1,39 @@
 import { FC, useEffect, useState } from "react";
 import {
     useAccount,
-    useSwitchNetwork,
-    useNetwork,
 } from "wagmi";
+import { useSwitchChain } from 'wagmi'
+
 import { PublishedSwapTransactions } from "../../../../../lib/layerSwapApiClient";
-import TransferNativeTokenButton from "./TransferNativeToken";
 import { ChangeNetworkButton, ConnectWalletButton } from "./buttons";
-import TransferErc20Button from "./TransferErc20";
+import TransferTokenButton from "./TransferToken";
+import { WithdrawPageProps } from "../WalletTransferContent";
 
-
-type Props = {
-    sequenceNumber: number,
-    chainId: number,
-    depositAddress?: `0x${string}`,
-    tokenContractAddress?: `0x${string}` | null,
-    userDestinationAddress: `0x${string}`,
-    amount: number,
-    tokenDecimals: number,
-    networkDisplayName: string,
-    swapId: string;
-}
-
-const TransferFromWallet: FC<Props> = ({ networkDisplayName,
-    chainId,
+const TransferFromWallet: FC<WithdrawPageProps> = ({
+    network,
     depositAddress,
     userDestinationAddress,
     amount,
-    tokenContractAddress,
-    tokenDecimals,
     sequenceNumber,
     swapId,
 }) => {
-    const { isConnected } = useAccount();
-    const networkChange = useSwitchNetwork({
-        chainId: chainId,
-    });
 
-    const { chain: activeChain } = useNetwork();
+
+    const { isConnected, chain: activeChain } = useAccount();
+    const networkChainId = Number(network?.chain_id) ?? undefined
+    const { switchChain } = useSwitchChain();
 
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
 
     useEffect(() => {
-        if (activeChain?.id === chainId)
-            networkChange.reset()
-    }, [activeChain, chainId])
+        if (activeChain?.id === networkChainId)
+            switchChain({ chainId: networkChainId })
+    }, [activeChain, networkChainId])
 
     useEffect(() => {
         try {
             const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-            const hash = data.state.swapTransactions?.[swapId]?.hash;
+            const hash = data?.[swapId!]?.hash
             if (hash)
                 setSavedTransactionHash(hash)
         }
@@ -58,6 +42,7 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
             console.error(e.message)
         }
     }, [swapId])
+    if (!swapId || !sequenceNumber) return
 
     const hexed_sequence_number = sequenceNumber?.toString(16)
     const sequence_number_even = (hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number)
@@ -65,33 +50,20 @@ const TransferFromWallet: FC<Props> = ({ networkDisplayName,
     if (!isConnected) {
         return <ConnectWalletButton />
     }
-    else if (activeChain?.id !== chainId) {
+    else if (activeChain?.id !== networkChainId && network) {
         return <ChangeNetworkButton
-            chainId={chainId}
-            network={networkDisplayName}
-        />
-    }
-    else if (tokenContractAddress) {
-        return <TransferErc20Button
-            swapId={swapId}
-            sequenceNumber={sequence_number_even}
-            amount={amount}
-            depositAddress={depositAddress}
-            userDestinationAddress={userDestinationAddress}
-            savedTransactionHash={savedTransactionHash as `0x${string}`}
-            tokenContractAddress={tokenContractAddress}
-            tokenDecimals={tokenDecimals}
+            chainId={networkChainId}
+            network={network.display_name}
         />
     }
     else {
-        return <TransferNativeTokenButton
+        return <TransferTokenButton
             swapId={swapId}
             sequenceNumber={sequence_number_even}
             amount={amount}
-            depositAddress={depositAddress}
-            userDestinationAddress={userDestinationAddress}
+            depositAddress={depositAddress as `0x${string}`}
+            userDestinationAddress={userDestinationAddress as `0x${string}`}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
-            chainId={chainId}
         />
     }
 }

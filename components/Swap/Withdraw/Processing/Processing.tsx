@@ -1,54 +1,77 @@
 import { ExternalLink } from 'lucide-react';
-import { FC, useEffect } from 'react'
+import { FC, useCallback, useEffect, useRef } from 'react'
 import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
-import { GetDefaultAsset } from '../../../../helpers/settingsHelper';
-import AverageCompletionTime from '../../../Common/AverageCompletionTime';
-import LayerSwapApiClient, { SwapItem, BackendTransactionStatus, TransactionType, TransactionStatus, Transaction } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapResponse, Transaction } from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
-import { LayerSwapAppSettings } from '../../../../Models/LayerSwapAppSettings';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { SwapFailReasons } from '../../../../Models/RangeError';
 import { Gauge } from '../../../gauge';
 import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
-import { useFee } from '../../../../context/feeContext';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
+import FormattedAverageCompletionTime from '../../../Common/FormattedAverageCompletionTime';
+import CountdownTimer from '../../../Common/CountDownTimer';
 import useSWR from 'swr';
 import { ApiResponse } from '../../../../Models/ApiResponse';
 import { datadogRum } from '@datadog/browser-rum';
+import { useIntercom } from 'react-use-intercom';
+import { useAuthState } from '../../../../context/authContext';
+import logError from '../../../../lib/logError';
 
 type Props = {
-    settings: LayerSwapAppSettings;
-    swap: SwapItem;
+    swapResponse: SwapResponse;
 }
 
-const Processing: FC<Props> = ({ settings, swap }) => {
+const Processing: FC<Props> = ({ swapResponse }) => {
 
+    const { swap, refuel, quote } = swapResponse
+    const { boot, show, update } = useIntercom();
+    const { email, userId } = useAuthState();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
-    const { fee } = useFee()
 
-    const source_layer = settings.layers?.find(e => e.internal_name === swap.source_network)
-    const destination_layer = settings.layers?.find(e => e.internal_name === swap.destination_network)
+    const {
+        source_network,
+        destination_network
+    } = swap
 
-    const input_tx_explorer = source_layer?.transaction_explorer_template
-    const output_tx_explorer = destination_layer?.transaction_explorer_template
+    const updateWithProps = () => update({ userId, customAttributes: { swapId: swap.id, email: email, } });
+    const startIntercom = useCallback(() => {
+        boot();
+        show();
+        updateWithProps();
+    }, [boot, show, updateWithProps]);
 
-    const destinationNetworkCurrency = destination_layer ? GetDefaultAsset(destination_layer, swap?.destination_network_asset) : null
+    const input_tx_explorer = source_network?.transaction_explorer_template
+    const output_tx_explorer = destination_network?.transaction_explorer_template
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const storedWalletTransaction = swapTransactions?.[swap?.id]
 
-    const transactionHash = swapInputTransaction?.transaction_id || storedWalletTransaction?.hash
+    const transactionHash = swapInputTransaction?.transaction_hash || storedWalletTransaction?.hash
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refuel)
 
     const apiClient = new LayerSwapApiClient()
-    const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_layer?.internal_name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
-    
+    const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_network?.name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
+
     const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
+
+    const loggedNotDetectedTxAt = useRef<number | null>(null);
+
+    useEffect(() => {
+        if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
+            if (swap?.transactions?.find(t => t.type === TransactionType.Input) || !swap) {
+                return
+            }
+            if (Date.now() - (loggedNotDetectedTxAt.current || storedWalletTransaction.timestamp) > 60000) {
+                loggedNotDetectedTxAt.current = Date.now();
+                logError(`Transaction not detected in ${swap.source_network.name}. Tx hash: ${transactionHash}. Tx status: ${inputTxStatus}. Swap id: ${swap.id}. ${source_network.display_name} explorer: ${source_network?.transaction_explorer_template?.replace("{0}", transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);
+            }
+        }
+    }, [swap, storedWalletTransaction]);
 
     useEffect(() => {
         if (storedWalletTransaction?.status !== inputTxStatus) setSwapTransaction(swap?.id, inputTxStatus, storedWalletTransaction?.hash)
@@ -64,16 +87,21 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         }
     }, [inputTxStatus])
 
-    const nativeCurrency = destination_layer?.assets?.find(c => c.asset === destination_layer?.assets.find(a => a.is_native)?.asset)
-    const truncatedRefuelAmount = swapRefuelTransaction?.amount ? truncateDecimals(swapRefuelTransaction?.amount, nativeCurrency?.precision) : null
+    const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 
-    const progressStatuses = getProgressStatuses(swap, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
+    const progressStatuses = getProgressStatuses(swapResponse, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
-    const outputPendingDetails = <div className='flex items-center space-x-1'>
-        <span>Estimated arrival after confirmation:</span>
+    const outputPendingDetails = quote?.avg_completion_time && <div className='flex items-center space-x-1'>
+        <span>Estimated time:</span>
         <div className='text-primary-text'>
-            <AverageCompletionTime avgCompletionTime={fee?.avgCompletionTime} />
+            <FormattedAverageCompletionTime avgCompletionTime={quote?.avg_completion_time} />
+        </div>
+    </div>
+
+    const countDownTimer = quote?.avg_completion_time && <div className='flex items-center space-x-1'>
+        <div className='text-primary-text'>
+            <CountdownTimer initialTime={String(quote?.avg_completion_time)} swap={swap} />
         </div>
     </div>
 
@@ -112,7 +140,6 @@ const Processing: FC<Props> = ({ settings, swap }) => {
             failed: {
                 name: `The transfer failed`,
                 description: <div className='flex space-x-1'>
-                    <span>Error: </span>
                     <div className='space-x-1 text-primary-text'>
                         {inputTxStatus === TransactionStatus.Failed ?
                             <div className="flex flex-col">
@@ -129,7 +156,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                                 swap?.fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
                                     "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
                                     :
-                                    "Something went wrong while processing the transfer. Please contact support"
+                                    <div><span className='text-secondary-text'>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</a></div>
                         }
                     </div>
                 </div>
@@ -141,20 +168,20 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         },
         "output_transfer": {
             upcoming: {
-                name: `Sending ${destinationNetworkCurrency?.asset} to your address`,
+                name: `Sending ${swap.destination_token.symbol} to your address`,
                 description: null
             },
             current: {
-                name: `Sending ${destinationNetworkCurrency?.asset} to your address`,
+                name: `Sending ${swap.destination_token.symbol} to your address`,
                 description: null
             },
             complete: {
-                name: `${swapOutputTransaction?.amount} ${swap?.destination_network_asset} was sent to your address`,
+                name: `${swapOutputTransaction?.amount} ${swap?.destination_token.symbol} was sent to your address`,
                 description: swapOutputTransaction ? <div className="flex flex-col">
                     <div className='flex items-center space-x-1'>
                         <span>Transaction: </span>
                         <div className='underline hover:no-underline flex items-center space-x-1'>
-                            <a target={"_blank"} href={output_tx_explorer?.replace("{0}", swapOutputTransaction.transaction_id)}>{shortenAddress(swapOutputTransaction.transaction_id)}</a>
+                            <a target={"_blank"} href={output_tx_explorer?.replace("{0}", swapOutputTransaction.transaction_hash)}>{shortenAddress(swapOutputTransaction.transaction_hash)}</a>
                             <ExternalLink className='h-4' />
                         </div>
                     </div>
@@ -170,7 +197,7 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                             swap?.fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
                                 "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
                                 :
-                                "Something went wrong while processing the transfer. Please contact support"
+                                <div><span className='text-secondary-text'>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</a></div>
                         }
                     </div>
                 </div>
@@ -182,20 +209,20 @@ const Processing: FC<Props> = ({ settings, swap }) => {
         },
         "refuel": {
             upcoming: {
-                name: `Sending ${nativeCurrency?.asset} to your address`,
+                name: `Sending ${refuel?.token?.symbol} to your address`,
                 description: null
             },
             current: {
-                name: `Sending ${nativeCurrency?.asset} to your address`,
+                name: `Sending ${refuel?.token?.symbol} to your address`,
                 description: null
             },
             complete: {
-                name: `${truncatedRefuelAmount} ${nativeCurrency?.asset} was sent to your address`,
+                name: `${truncatedRefuelAmount} ${refuel?.token?.symbol} was sent to your address`,
                 description: <div className='flex items-center space-x-1'>
                     <span>Transaction: </span>
                     <div className='underline hover:no-underline flex items-center space-x-1'>
                         {swapRefuelTransaction && <>
-                            <a target={"_blank"} href={output_tx_explorer?.replace("{0}", swapRefuelTransaction.transaction_id)}>{shortenAddress(swapRefuelTransaction?.transaction_id)}</a>
+                            <a target={"_blank"} href={output_tx_explorer?.replace("{0}", swapRefuelTransaction.transaction_hash)}>{shortenAddress(swapRefuelTransaction?.transaction_hash)}</a>
                             <ExternalLink className='h-4' />
                         </>}
                     </div>
@@ -253,9 +280,16 @@ const Processing: FC<Props> = ({ settings, swap }) => {
                                     <span className="font-medium text-primary-text">
                                         {progressStatuses.generalStatus.title}
                                     </span>
-                                    <span className='text-sm block space-x-1 text-secondary-text'>
-                                        <span>{progressStatuses.generalStatus.subTitle ?? outputPendingDetails}</span>
-                                    </span>
+                                    {!swapInputTransaction && (swap?.status !== SwapStatus.Cancelled && swap?.status !== SwapStatus.Expired && swap?.status !== SwapStatus.Failed) &&
+                                        <span className='text-sm block space-x-1 text-secondary-text'>
+                                            <span>{outputPendingDetails}</span>
+                                        </span>
+                                    }
+                                    {swapInputTransaction?.timestamp && swapOutputTransaction?.status != BackendTransactionStatus.Completed && (swap?.status !== SwapStatus.Cancelled && swap?.status !== SwapStatus.Expired && swap?.status !== SwapStatus.Failed) &&
+                                        <span className='text-sm block space-x-1 text-secondary-text'>
+                                            <span>{countDownTimer}</span>
+                                        </span>
+                                    }
                                 </div>
                             </div></div>
                         <div className='pt-4'>
@@ -277,10 +311,12 @@ const Processing: FC<Props> = ({ settings, swap }) => {
     )
 }
 
-
 const resolveSwapInputTxStatus = (swapInputTransaction: Transaction | undefined, inputTxStatusFromApi: TransactionStatus) => {
-    if (swapInputTransaction)
+    if (swapInputTransaction) {
+        if (swapInputTransaction.status === BackendTransactionStatus.Completed && swapInputTransaction.confirmations < swapInputTransaction.max_confirmations)
+            return TransactionStatus.Pending
         return swapInputTransaction?.status
+    }
     if (inputTxStatusFromApi === TransactionStatus.Failed)
         return inputTxStatusFromApi
     else
@@ -288,8 +324,9 @@ const resolveSwapInputTxStatus = (swapInputTransaction: Transaction | undefined,
         return TransactionStatus.Pending
 }
 
-const getProgressStatuses = (swap: SwapItem, inputTxStatusFromApi: TransactionStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
-    const swapStatus = swap.status;
+const getProgressStatuses = (swapResponse: SwapResponse, inputTxStatusFromApi: TransactionStatus): { stepStatuses: { [key in Progress]: ProgressStatus }, generalStatus: { title: string, subTitle: string | null } } => {
+    const { swap, refuel: swapRefuel } = swapResponse
+    const swapStatus = swap.status
     let generalTitle = "Transfer in progress";
     let subtitle: string | null = "";
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
@@ -313,7 +350,7 @@ const getProgressStatuses = (swap: SwapItem, inputTxStatusFromApi: TransactionSt
                 : ProgressStatus.Upcoming;
 
     let refuel_transfer =
-        (swap.has_refuel && !swapRefuelTransaction) ? ProgressStatus.Upcoming
+        (!!swapRefuel && !swapRefuelTransaction) ? ProgressStatus.Upcoming
             : swapRefuelTransaction?.status == BackendTransactionStatus.Pending ? ProgressStatus.Current
                 : swapRefuelTransaction?.status == BackendTransactionStatus.Initiated || swapRefuelTransaction?.status == BackendTransactionStatus.Completed ? ProgressStatus.Complete
                     : ProgressStatus.Removed;

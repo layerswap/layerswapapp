@@ -1,5 +1,5 @@
 
-import { InitializeInstance } from "./axiosInterceptor"
+import { InitializeAuthInstance } from "./axiosInterceptor"
 import axios, { AxiosInstance } from "axios";
 import { ApiResponse } from "../Models/ApiResponse";
 import TokenService from "./TokenService";
@@ -9,7 +9,7 @@ export default class InternalApiClient {
     authInterceptor: AxiosInstance;
 
     constructor() {
-        this.authInterceptor = InitializeInstance();
+        this.authInterceptor = InitializeAuthInstance();
     }
 
     async VerifyWallet(queryParams: string): Promise<ApiResponse<void>> {

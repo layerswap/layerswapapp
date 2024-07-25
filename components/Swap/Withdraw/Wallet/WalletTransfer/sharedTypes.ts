@@ -1,7 +1,7 @@
 export type ActionData = {
     error: Error | null;
     isError: boolean;
-    isLoading: boolean;
+    isPending: boolean;
 }
 
 export type BaseTransferButtonProps = {
@@ -9,6 +9,6 @@ export type BaseTransferButtonProps = {
     sequenceNumber: string,
     depositAddress?: `0x${string}`,
     userDestinationAddress: `0x${string}`,
-    amount: number,
+    amount?: number,
     savedTransactionHash: `0x${string}`,
 }

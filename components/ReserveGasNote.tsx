@@ -13,7 +13,7 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, netwo
         values,
     } = useFormikContext<SwapFormValues>();
     const { balances, gases } = useBalancesState()
-    const {minAllowedAmount } = useFee()
+    const { minAllowedAmount } = useFee()
 
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -22,13 +22,13 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, netwo
 
     const wallet = provider?.getConnectedWallet()
 
-    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === values?.from?.internal_name && b?.token === values?.fromCurrency?.asset)
-    const networkGas = values.from?.internal_name ?
-        gases?.[values.from?.internal_name]?.find(g => g?.token === values?.fromCurrency?.asset)
+    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === values?.from?.name && b?.token === values?.fromCurrency?.symbol)
+    const networkGas = values.from?.name ?
+        gases?.[values.from?.name]?.find(g => g?.token === values?.fromCurrency?.symbol)
         : null
 
-    const mightBeAutOfGas = !!(networkGas && walletBalance?.isNativeCurrency && Number(values.amount)
-        + networkGas?.gas > walletBalance.amount
+    const mightBeAutOfGas = !!(networkGas && walletBalance?.isNativeCurrency && (Number(values.amount)
+        + networkGas?.gas) > walletBalance.amount
         && minAllowedAmount
         && walletBalance.amount > minAllowedAmount
     )
@@ -42,7 +42,7 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, netwo
                     You might not be able to complete the transaction.
                 </div>
                 <div onClick={() => onSubmit(walletBalance, networkGas)} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
-                    <span>Reserve</span> <span>{gasToReserveFormatted}</span> <span>{values?.fromCurrency?.asset}</span> <span>for gas.</span>
+                    <span>Reserve</span> <span>{gasToReserveFormatted}</span> <span>{values?.fromCurrency?.symbol}</span> <span>for gas.</span>
                 </div>
             </div>
         </WarningMessage>

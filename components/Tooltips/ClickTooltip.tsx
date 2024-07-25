@@ -4,18 +4,18 @@ import { Popover, PopoverContent, PopoverTrigger } from '../shadcn/popover';
 import { classNames } from '../utils/classNames';
 
 type Props = {
-    children?: JSX.Element | JSX.Element[],
     text: string | JSX.Element | JSX.Element[];
-    moreClassNames?: string
+    moreClassNames?: string,
+    side?: 'left' | 'right' | 'top' | 'bottom'
 }
 
-const ClickTooltip: FC<Props> = (({ children, text, moreClassNames }) => {
+const ClickTooltip: FC<Props> = (({ text, moreClassNames, side }) => {
     return (
-        <Popover>
+        <Popover >
             <PopoverTrigger>
-                <Info className={classNames("h-4 hover:text-primary-text", moreClassNames)} aria-hidden="true" strokeWidth={2.5} />
+                <Info className={classNames("h-4 text-secondary-text hover:text-secondary-buttonTextColor", moreClassNames)} aria-hidden="true" strokeWidth={2.5} />
             </PopoverTrigger>
-            <PopoverContent className='text-sm'>{text}</PopoverContent>
+            <PopoverContent side={side} className='text-sm'>{text}</PopoverContent>
         </Popover>
     )
 })

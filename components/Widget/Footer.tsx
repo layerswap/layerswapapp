@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react"
+import GoHomeButton from "../utils/GoHome";
 
 const variants = {
     enter: () => {
@@ -64,8 +65,11 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         max-sm:px-6 
                         max-sm:w-full ${hidden ? 'adnimation-slide-out' : ''}`}>
                     {children}
+                    <div className="flex justify-center mt-2.5 text-primary-text-placeholder">
+                        <span className="text-xs content-center footerLogo">Powered by</span> <GoHomeButton className='footerLogo ml-1 fill-primary-text-placeholder h-5 w-auto cursor-pointer' />
+                    </div>
                 </motion.div>
-                
+
                 <div style={{ height: `${height}px` }}
                     className={`text-primary-text text-base mt-3        
                              max-sm:inset-x-0

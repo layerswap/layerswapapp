@@ -1,11 +1,11 @@
-import { FC, useEffect, useRef } from 'react';
+import { FC, useEffect } from 'react';
 import { SwapDataProvider } from '../context/swap';
 import { TimerProvider } from '../context/timerContext';
 import SwapForm from "./Swap/Form"
 import { BalancesDataProvider } from '../context/balances';
 import { SWRConfig, mutate } from 'swr';
-import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import { SwapStatus } from '../Models/SwapStatus';
+import { FeeProvider } from '../context/feeContext';
 
 const Swap: FC = () => {
   return (
@@ -14,7 +14,9 @@ const Swap: FC = () => {
         <SwapDataProvider >
           <TimerProvider>
             <BalancesDataProvider>
-              <SwapForm />
+              <FeeProvider>
+                <SwapForm />
+              </FeeProvider>
             </BalancesDataProvider>
           </TimerProvider>
         </SwapDataProvider >
@@ -35,7 +37,7 @@ function updatePendingCount(useSWRNext) {
       if (swapKeyPattern.test(key) && swap) {
         const status = swap.status
         if (swapsStatuses[swap.id] !== status) {
-          mutate(`/swaps/count?version=${LayerSwapApiClient.apiVersion}`)
+          mutate('/swaps/count')
         }
         swapsStatuses[swap.id] = status
       }

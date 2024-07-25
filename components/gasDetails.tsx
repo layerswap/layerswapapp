@@ -1,11 +1,9 @@
-import { NetworkCurrency } from "../Models/CryptoNetwork"
-import { Layer } from "../Models/Layer"
 import { useBalancesState } from "../context/balances"
 
-const GasDetails = ({ network, currency }: { network: Layer, currency: NetworkCurrency }) => {
+const GasDetails = ({ network, currency }: { network: string, currency: string }) => {
 
     const { gases } = useBalancesState()
-    const networkGas = gases?.[network?.internal_name]?.find(g => g?.token === currency?.asset)
+    const networkGas = gases?.[network]?.find(g => g?.token === currency)
 
     if (!networkGas?.gasDetails) return
 

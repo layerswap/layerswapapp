@@ -1,65 +1,46 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useMemo, useState } from 'react'
-import SubmitButton from '../../../buttons/submitButton';
-import { useSwapDataState } from '../../../../context/swap';
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { useSettingsState } from '../../../../context/settings';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
+import { WithdrawPageProps } from './WalletTransferContent';
+import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
 
-type Props = {
-    depositAddress?: string
-}
-
-const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
+const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { swap } = useSwapDataState()
-    const { layers } = useSettingsState()
     const { setSwapTransaction } = useSwapTransactionStore();
 
-    const { source_network: source_network_internal_name } = swap || {}
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name)
-    const source_layer = layers.find(n => n.internal_name === source_network_internal_name)
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
-        return source_layer && getProvider(source_layer)
-    }, [source_layer, getProvider])
+        return network && getProvider(network)
+    }, [network, getProvider])
 
     const imxAccount = provider?.getConnectedWallet()
 
-    const handleConnect = useCallback(async () => {
-        if (!provider)
-            throw new Error(`No provider from ${source_layer?.internal_name}`)
-
-        setLoading(true)
-        await provider?.connectWallet(source_layer?.chain_id)
-        setLoading(false)
-    }, [provider, source_layer])
-
     const handleTransfer = useCallback(async () => {
-        if (!source_network || !swap || !depositAddress)
+        if (!network || !depositAddress || !amount)
             return
         setLoading(true)
         try {
             const ImtblClient = (await import('../../../../lib/imtbl')).default;
-            const imtblClient = new ImtblClient(source_network?.internal_name)
-            const source_currency = source_network.assets.find(c => c.asset.toLocaleUpperCase() === swap.source_network_asset.toLocaleUpperCase())
-            if (!source_currency) {
+            const imtblClient = new ImtblClient(network?.name)
+
+            if (!token) {
                 throw new Error("No source currency could be found");
             }
-            const res = await imtblClient.Transfer(swap, source_currency, depositAddress)
+            const res = await imtblClient.Transfer(amount.toString(), token, depositAddress)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
                 toast('Transfer failed or terminated')
             else if (transactionRes.status == "error") {
                 toast(transactionRes.message)
             }
-            else if (transactionRes) {
-                setSwapTransaction(swap.id, BackendTransactionStatus.Pending, transactionRes.txId.toString());
+            else if (transactionRes && swapId) {
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, transactionRes.txId.toString());
                 setTransferDone(true)
             }
         }
@@ -68,7 +49,11 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [imxAccount, swap, source_network, depositAddress])
+    }, [imxAccount, swapId, network, depositAddress, token, amount])
+
+    if (!imxAccount) {
+        return <ConnectWalletButton icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} />
+    }
 
     return (
         <>
@@ -78,19 +63,13 @@ const ImtblxWalletWithdrawStep: FC<Props> = ({ depositAddress }) => {
                         <span className='flex-none'>
                             Learn how to send from
                         </span>
-                        <GuideLink text={source_network?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex' />
+                        <GuideLink text={network?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex' />
                     </WarningMessage>
                     {
-                        !imxAccount &&
-                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Connect
-                        </SubmitButton>
-                    }
-                    {
                         imxAccount &&
-                        <SubmitButton isDisabled={!!(loading || transferDone) || !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                        <ButtonWrapper isDisabled={!!(loading || transferDone) || !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                             Send from wallet
-                        </SubmitButton>
+                        </ButtonWrapper>
                     }
                 </div>
             </div>

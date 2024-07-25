@@ -1,5 +1,5 @@
 import { AnimatePresence } from "framer-motion";
-import React, { Dispatch, ReactNode, SetStateAction, useEffect, useRef } from "react";
+import React, { Dispatch, ReactNode, SetStateAction, useEffect, useRef, useState } from "react";
 import { FC } from "react"
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { Leaflet, LeafletHeight } from "./leaflet";
@@ -14,34 +14,35 @@ export interface ModalProps {
     show: boolean;
     setShow: Dispatch<SetStateAction<boolean>>;
     modalId: string;
+    onClose?: () => void;
 }
 
-const Modal: FC<ModalProps> = (({ header, modalId, height, className, children, subHeader, show, setShow }) => {
+const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow, modalId, onClose }) => {
     const { isMobile, isDesktop } = useWindowDimensions()
     const mobileModalRef = useRef(null)
+    //Fixes draggebles closing
+    const [delayedShow, setDelayedShow] = useState<boolean>()
 
     useEffect(() => {
-        if (isMobile && show) {
-            window.document.body.style.overflow = 'hidden'
-        }
-        return () => { window.document.body.style.overflow = '' }
-    }, [isMobile, show])
+        setDelayedShow(show)
+    }, [show])
 
     return (
         <>
             {isDesktop && (
                 <ReactPortal wrapperId="widget_root">
                     <AnimatePresence>
-                        {show &&
+                        {delayedShow &&
                             <Leaflet
                                 key={modalId}
                                 position="absolute"
                                 height={height ?? 'full'}
-                                ref={mobileModalRef} show={show}
+                                show={delayedShow}
                                 setShow={setShow}
                                 title={header}
                                 description={subHeader}
                                 className={className}
+                                onClose={onClose}
                             >
                                 {children}
                             </Leaflet>
@@ -51,17 +52,19 @@ const Modal: FC<ModalProps> = (({ header, modalId, height, className, children, 
             )}
             {isMobile && (
                 <AnimatePresence>
-                    {show &&
+                    {delayedShow &&
                         <Leaflet
                             position="fixed"
                             height={height == 'full' ? '80%' : height == 'fit' ? 'fit' : 'full'}
                             ref={mobileModalRef}
-                            show={show}
+                            show={delayedShow}
                             setShow={setShow}
                             title={header}
                             description={subHeader}
                             className={className}
-                            key={modalId}>
+                            key={modalId}
+                            onClose={onClose}
+                        >
                             {children}
                         </Leaflet>
                     }

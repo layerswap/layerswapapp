@@ -1,8 +1,9 @@
-import { Dispatch, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef } from 'react'
+import { Dispatch, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef, useState } from 'react'
 import { motion, useAnimation } from "framer-motion";
 import { forwardRef } from 'react';
 import IconButton from '../buttons/iconButton';
 import { X } from 'lucide-react';
+import useWindowDimensions from '../../hooks/useWindowDimensions';
 
 export type LeafletHeight = 'fit' | 'full' | '80%' | '90%';
 
@@ -17,12 +18,14 @@ export interface LeafletProps {
     className?: string;
     height?: LeafletHeight;
     position: LeafletPosition;
+    onClose?: () => void;
 }
 // TODO handle overflow when height is set to 'fit'
-export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, description, position }, topmostRef) {
+export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, position, onClose }, topmostRef) {
     const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 40 };
+    const { isMobile } = useWindowDimensions()
 
     const handleDragEnd = useCallback(async (_, info) => {
         const offset = info.offset.y;
@@ -30,11 +33,21 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
         const height = mobileModalRef.current?.getBoundingClientRect().height || 0;
         if (offset > height / 2 || velocity > 800) {
             await controls.start({ y: "100%", transition: transitionProps, });
-            setShow(false)
+            setShow(false);
+            onClose && onClose();
         } else {
             controls.start({ y: 0, transition: transitionProps });
         }
     }, [controls, setShow, transitionProps])
+
+    useEffect(() => {
+        if (isMobile && show) {
+            window.document.body.classList.add('overflow-hidden')
+        }
+        return () => {
+            window.document.body.classList.remove('overflow-hidden')
+        }
+    }, [isMobile, show])
 
     useEffect(() => {
         if (show) {
@@ -48,6 +61,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     const handleCloseModal = useCallback(async (e: React.MouseEvent<HTMLElement>) => {
         await controls.start({ y: "100%", transition: transitionProps, });
         setShow(false);
+        onClose && onClose();
     }, [setShow, controls, transitionProps])
 
     let wrapperHeightClass = ''
@@ -69,18 +83,19 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
         <div ref={topmostRef}>
             <motion.div
                 key="backdrop"
-                className={`${position} asdasdasdaasdsddd inset-0 z-40 bg-black/50 block`}
+                className={`${position} inset-0 z-40 bg-black/50 block`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={handleCloseModal}
             />
+
             <motion.div
                 key="mobile-modal"
                 ref={mobileModalRef}
-                className={`${wrapperHeightClass} max-h-full overflow-y-auto group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'rounded-t-2xl border-t border-secondary-500' : ''}  bg-secondary-900 ${className} shadow-lg`}
-                initial={{ y: "20%" }}
                 animate={controls}
+                className={`${wrapperHeightClass} max-h-full overflow-y-hidden group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'rounded-t-2xl border-t border-secondary-500' : ''}  bg-secondary-900 ${className} shadow-lg`}
+                initial={{ y: "20%" }}
                 exit={{ y: "100%" }}
                 transition={transitionProps}
                 drag={height != 'full' ? "y" : false}
@@ -89,9 +104,9 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
-                <div className={`py-3 flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
-                    <div className='px-6 flex justify-between items-center pb-2'>
-                        <div className="text-lg text-primary-text font-semibold">
+                <div className={`py-3 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
+                    <div className='px-6 flex justify-between items-center hover:cursor-grab'>
+                        <div className="text-lg text-secondary-text font-semibold">
                             <div>{title}</div>
                         </div>
                         <IconButton onClick={handleCloseModal} icon={
@@ -99,7 +114,8 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                         }>
                         </IconButton>
                     </div>
-                    <div className='select-text max-h-full overflow-y-auto styled-scroll px-6 h-full'>
+                    <div
+                        className='select-text max-h-full overflow-y-auto styled-scroll px-6 h-full'>
                         {children}
                     </div>
                 </div>

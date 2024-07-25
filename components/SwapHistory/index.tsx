@@ -1,10 +1,9 @@
 import { useRouter } from "next/router"
 import { useCallback, useEffect, useState } from "react"
-import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers, TransactionType } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapItem, SwapResponse, SwapStatusInNumbers, TransactionType } from "../../lib/layerSwapApiClient"
 import SpinIcon from "../icons/spinIcon"
 import { ArrowRight, ChevronRight, Eye, RefreshCcw, Scroll } from 'lucide-react';
 import SwapDetails from "./SwapDetailsComponent"
-import { useSettingsState } from "../../context/settings"
 import Image from 'next/image'
 import { classNames } from "../utils/classNames"
 import SubmitButton from "../buttons/submitButton"
@@ -21,16 +20,13 @@ import { truncateDecimals } from "../utils/RoundDecimals";
 
 function TransactionsHistory() {
   const [page, setPage] = useState(0)
-  const settings = useSettingsState()
-  const { layers, resolveImgSrc, exchanges } = settings
   const [isLastPage, setIsLastPage] = useState(false)
-  const [swaps, setSwaps] = useState<SwapItem[]>()
+  const [swaps, setSwaps] = useState<SwapResponse[]>()
   const [loading, setLoading] = useState(false)
   const router = useRouter();
   const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
   const [showAllSwaps, setShowAllSwaps] = useState(false)
-  const [showToggleButton, setShowToggleButton] = useState(false)
 
   const PAGE_SIZE = 20
 
@@ -43,23 +39,14 @@ function TransactionsHistory() {
       })
   }, [router])
 
-
-  useEffect(() => {
-    (async () => {
-      const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
-      const { data } = await layerswapApiClient.GetSwapsAsync(1, SwapStatusInNumbers.Cancelled)
-      if (Number(data?.length) > 0) setShowToggleButton(true)
-    })()
-  }, [])
-
   useEffect(() => {
     (async () => {
       setIsLastPage(false)
       setLoading(true)
-      const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
+      const layerswapApiClient = new LayerSwapApiClient()
 
       if (showAllSwaps) {
-        const { data, error } = await layerswapApiClient.GetSwapsAsync(1)
+        const { data, error } = await layerswapApiClient.GetSwapsAsync(1, showAllSwaps)
 
         if (error) {
           toast.error(error.message);
@@ -75,7 +62,7 @@ function TransactionsHistory() {
 
       } else {
 
-        const { data, error } = await layerswapApiClient.GetSwapsAsync(1, SwapStatusInNumbers.SwapsWithoutCancelledAndExpired)
+        const { data, error } = await layerswapApiClient.GetSwapsAsync(1, showAllSwaps)
 
         if (error) {
           toast.error(error.message);
@@ -95,9 +82,9 @@ function TransactionsHistory() {
     //TODO refactor page change
     const nextPage = page + 1
     setLoading(true)
-    const layerswapApiClient = new LayerSwapApiClient(router, '/transactions')
+    const layerswapApiClient = new LayerSwapApiClient()
     if (showAllSwaps) {
-      const { data, error } = await layerswapApiClient.GetSwapsAsync(nextPage)
+      const { data, error } = await layerswapApiClient.GetSwapsAsync(nextPage, showAllSwaps)
 
       if (error) {
         toast.error(error.message);
@@ -111,7 +98,7 @@ function TransactionsHistory() {
 
       setLoading(false)
     } else {
-      const { data, error } = await layerswapApiClient.GetSwapsAsync(nextPage, SwapStatusInNumbers.SwapsWithoutCancelledAndExpired)
+      const { data, error } = await layerswapApiClient.GetSwapsAsync(nextPage, showAllSwaps)
 
       if (error) {
         toast.error(error.message);
@@ -147,15 +134,15 @@ function TransactionsHistory() {
               Number(swaps?.length) > 0 ?
                 <div className="w-full flex flex-col justify-between h-full px-6 space-y-5 text-secondary-text">
                   <div className="mt-4">
-                    {showToggleButton && <div className="flex justify-end mb-2">
+                    <div className="flex justify-end mb-2">
                       <div className='flex space-x-2'>
                         <p className='flex items-center text-xs md:text-sm font-medium'>
                           Show all swaps
                         </p>
                         <ToggleButton onChange={handleToggleChange} value={showAllSwaps} />
                       </div>
-                    </div>}
-                    <div className="max-h-[450px] styled-scroll overflow-y-auto ">
+                    </div>
+                    <div className=" sm:max-h-[450px] styled-scroll overflow-y-auto ">
                       <table className="w-full divide-y divide-secondary-500">
                         <thead className="text-secondary-text">
                           <tr>
@@ -179,25 +166,18 @@ function TransactionsHistory() {
                           </tr>
                         </thead>
                         <tbody>
-                          {swaps?.map((swap, index) => {
-
-                            const { source_exchange: source_exchange_internal_name,
-                              destination_network: destination_network_internal_name,
-                              source_network: source_network_internal_name,
-                              destination_exchange: destination_exchange_internal_name,
-                              source_network_asset,
-                              destination_network_asset
+                          {swaps?.map((swapData, index) => {
+                            const swap = swapData.swap
+                            const {
+                              source_network,
+                              destination_network,
+                              source_exchange,
+                              destination_exchange,
+                              source_token,
+                              destination_token
                             } = swap
 
-                            const sourceNetwork = layers.find(e => e.internal_name === source_network_internal_name)
-                            const sourceCurrency = sourceNetwork?.assets?.find(c => c.asset === source_network_asset)
-                            const destinationNetwork = layers.find(n => n.internal_name === destination_network_internal_name)
-                            const destinationCurrency = destinationNetwork?.assets.find(a => a.asset === destination_network_asset)
                             const output_transaction = swap.transactions.find(t => t.type === TransactionType.Output)
-
-                            const sourceExchange = exchanges.find(e => e.internal_name === source_exchange_internal_name)
-                            const destExchange = exchanges.find(e => e.internal_name === destination_exchange_internal_name)
-
 
                             return <tr onClick={() => handleopenSwapDetails(swap)} key={swap.id}>
 
@@ -209,9 +189,9 @@ function TransactionsHistory() {
                               >
                                 <div className="text-primary-text flex items-center">
                                   <div className="flex-shrink-0 h-5 w-5 relative">
-                                    {sourceNetwork &&
+                                    {source_network &&
                                       <Image
-                                        src={resolveImgSrc(sourceExchange || sourceNetwork)}
+                                        src={source_exchange?.logo || source_network.logo}
                                         alt="Source Logo"
                                         height="60"
                                         width="60"
@@ -221,9 +201,9 @@ function TransactionsHistory() {
                                   </div>
                                   <ArrowRight className="h-4 w-4 mx-2" />
                                   <div className="flex-shrink-0 h-5 w-5 relative block">
-                                    {destinationNetwork &&
+                                    {destination_network &&
                                       <Image
-                                        src={resolveImgSrc(destExchange || destinationNetwork)}
+                                        src={destination_exchange?.logo || destination_network.logo}
                                         alt="Destination Logo"
                                         height="60"
                                         width="60"
@@ -253,17 +233,17 @@ function TransactionsHistory() {
                                   <div>
                                     <div className="text text-secondary-text text-left">
                                       <span>
-                                        {truncateDecimals(swap.requested_amount, sourceCurrency?.precision)}
+                                        {truncateDecimals(swap.requested_amount, source_token?.precision)}
                                       </span>
-                                      <span className="ml-1">{sourceCurrency?.display_asset ?? sourceCurrency?.asset}</span>
+                                      <span className="ml-1">{source_token?.symbol}</span>
                                     </div>
                                     {
                                       output_transaction ?
                                         <div className="text-secprimary-text text-left text-base">
                                           <span>
-                                            {truncateDecimals(output_transaction?.amount, sourceCurrency?.precision)}
+                                            {truncateDecimals(output_transaction?.amount, source_token?.precision)}
                                           </span>
-                                          <span className="ml-1">{destinationCurrency?.display_asset ?? destinationCurrency?.asset}</span>
+                                          <span className="ml-1">{destination_token?.symbol}</span>
                                         </div>
                                         : <div className="text-left text-base">-</div>
                                     }

@@ -43,7 +43,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
         setShow(false)
     }, [setValue])
     return (
-        <Modal height={modalHeight} show={show} setShow={setShow} modalId='comandSelect' >
+        <Modal height={modalHeight} show={show} setShow={setShow} modalId='comandSelect'>
             {show ?
                 <CommandWrapper>
                     {searchHint && <CommandInput autoFocus={isDesktop} placeholder={searchHint} />}

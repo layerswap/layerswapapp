@@ -6,36 +6,26 @@ import Processing from './Withdraw/Processing';
 import { BackendTransactionStatus, TransactionType } from '../../lib/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
 import GasDetails from '../gasDetails';
-import { useSettingsState } from '../../context/settings';
 
 type Props = {
     type: "widget" | "contained",
 }
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
-import { useRouter } from 'next/router';
-import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import SubmitButton from '../buttons/submitButton';
 
 const SwapDetails: FC<Props> = ({ type }) => {
-    const { swap } = useSwapDataState()
-    const settings = useSettingsState()
+    const { swapResponse } = useSwapDataState()
+
+    const { swap } = swapResponse || {}
     const swapStatus = swap?.status;
     const storedWalletTransactions = useSwapTransactionStore()
-    const router = useRouter();
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id || '']
 
-    const sourceNetwork = settings.layers.find(l => l.internal_name === swap?.source_network)
-    const currency = sourceNetwork?.assets.find(c => c.asset === swap?.source_network_asset)
-
     const cancelSwap = useCallback(() => {
-        router.push({
-            pathname: "/",
-            query: resolvePersistantQueryParams(router.query)
-        })
         useSwapTransactionStore.getState().removeSwapTransaction(swap?.id || '');
-    }, [router])
+    }, [swap?.id, storedWalletTransactions])
 
     if (!swap) return <>
         <div className="w-full h-[430px]">
@@ -59,7 +49,8 @@ const SwapDetails: FC<Props> = ({ type }) => {
                         :
                         <>
                             <Processing />
-                            {storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
+                            {
+                                storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
                                 <SubmitButton isDisabled={false} isSubmitting={false} onClick={cancelSwap}>
                                     Try again
                                 </SubmitButton>
@@ -69,9 +60,8 @@ const SwapDetails: FC<Props> = ({ type }) => {
             </Container>
             {
                 process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
-                && sourceNetwork
-                && currency &&
-                <GasDetails network={sourceNetwork} currency={currency} />
+                && swap &&
+                <GasDetails network={swap.source_network.name} currency={swap.source_token.symbol} />
             }
         </>
     )

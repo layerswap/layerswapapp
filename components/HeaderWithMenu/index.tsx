@@ -6,14 +6,11 @@ import { ArrowLeft, ScrollText } from 'lucide-react'
 import ChatIcon from "../icons/ChatIcon"
 import dynamic from "next/dynamic"
 import LayerswapMenu from "../LayerswapMenu"
-import Modal from "../modal/modal"
-import { useCallback, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import useSWR from "swr"
-import LayerSwapApiClient, { SwapItem, SwapStatusInNumbers } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapStatusInNumbers } from "../../lib/layerSwapApiClient"
 import { ApiResponse } from "../../Models/ApiResponse"
 import { useRouter } from "next/router"
-import { SwapDataProvider } from "../../context/swap"
 import SwapsListModal from "../SwapHistory/Modal"
 import { useQueryState } from "../../context/query"
 
@@ -24,9 +21,9 @@ const WalletsHeader = dynamic(() => import("../ConnectedWallets").then((comp) =>
 function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null }) {
    const { email, userId } = useAuthState()
    const { boot, show, update } = useIntercom()
-   const updateWithProps = () => update({ email: email, userId: userId })
-   const router = useRouter()
+   const updateWithProps = () => update({ userId, customAttributes: { email: email, } })
    const query = useQueryState()
+   const router = useRouter()
 
    return (
       <div className="w-full grid grid-cols-5 px-6 mt-3" >
@@ -46,7 +43,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
             </AnimatePresence>
          }
          {
-            !query.hideLogo && <div className='justify-self-center self-center col-start-2 col-span-3 mx-auto overflow-hidden md:hidden'>
+            !query.hideLogo && <div className='justify-self-center self-center col-start-2 col-span-3 mx-auto overflow-hidden md:hidden headerLogo'>
                <GoHomeButton />
             </div>
          }
@@ -73,7 +70,7 @@ const PendingSwapsModal = () => {
    const apiClient = new LayerSwapApiClient()
    const { data, mutate } =
       useSWR<ApiResponse<{ count: number }>>(
-         `/swaps/count?version=${LayerSwapApiClient.apiVersion}`,
+         '/swaps/count',
          apiClient.fetcher)
 
    const pendingSwapsCount = Number(data?.data?.count)

@@ -1,107 +1,70 @@
 import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect } from "react";
-import { useSettingsState } from "../../context/settings";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
+import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import CurrencySettings from "../../lib/CurrencySettings";
-import { SortingByAvailability } from "../../lib/sorting";
+import { ResolveCEXCurrencyOrder, SortAscending } from "../../lib/sorting";
 import { useQueryState } from "../../context/query";
+import { Exchange, ExchangeToken } from "../../Models/Exchange";
+import { LSAPIKnownErrorCode } from "../../Models/ApiError";
+import { resolveExchangesURLForSelectedToken } from "../../helpers/routes";
 import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 
-const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
+const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const { to, fromCurrency, toCurrency, from, currencyGroup, toExchange, fromExchange } = values
 
-    const { sourceRoutes: settingsSourceRoutes, destinationRoutes: settingsDestinationRoutes, assetGroups } = useSettingsState();
     const name = 'currencyGroup'
-
     const query = useQueryState()
+    const exchange = direction === 'from' ? fromExchange : toExchange
+    const network = direction === 'from' ? to : from
 
-    const routes = direction === 'from' ? settingsSourceRoutes : settingsDestinationRoutes
+    const exchangeRoutesURL = resolveExchangesURLForSelectedToken(direction, values)
+    const apiClient = new LayerSwapApiClient()
+    const {
+        data: exchanges,
+        error
+    } = useSWR<ApiResponse<Exchange[]>>(`${exchangeRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
-    const availableAssetGroups = assetGroups.filter(g => g.values.some(v => routes.some(r => r.asset === v.asset && r.network === v.network)))
+    const availableAssetGroups = exchanges?.data?.find(e => e.name === exchange?.name)?.token_groups
 
     const lockAsset = direction === 'from' ? query?.lockFromAsset : query?.lockToAsset
     const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
     const lockedCurrency = lockAsset
-        ? availableAssetGroups?.find(a => a.name.toUpperCase() === (asset)?.toUpperCase())
+        ? availableAssetGroups?.find(a => a.symbol.toUpperCase() === (asset)?.toUpperCase())
         : undefined
-
-    const apiClient = new LayerSwapApiClient()
-    const version = LayerSwapApiClient.apiVersion
-
-    const sourceRouteParams = new URLSearchParams({
-        version,
-        ...(toExchange && currencyGroup && currencyGroup?.groupedInBackend ?
-            {
-                destination_asset_group: currencyGroup?.name
-            }
-            : {
-                ...(to && toCurrency &&
-                {
-                    destination_network: to.internal_name,
-                    destination_asset: toCurrency?.asset
-                })
-            })
-    });
-
-    const destinationRouteParams = new URLSearchParams({
-        version,
-        ...(fromExchange && currencyGroup && currencyGroup?.groupedInBackend ?
-            {
-                source_asset_group: currencyGroup?.name
-            }
-            : {
-                ...(from && fromCurrency &&
-                {
-                    source_network: from.internal_name,
-                    source_asset: fromCurrency?.asset
-                })
-            })
-    });
-
-    const sourceRoutesURL = `/routes/sources?${sourceRouteParams}`
-    const destinationRoutesURL = `/routes/destinations?${destinationRouteParams}`
-
-    const {
-        data: sourceRoutes,
-        isLoading: sourceRoutesLoading,
-    } = useSWR<ApiResponse<{
-        network: string;
-        asset: string;
-    }[]>>(sourceRoutesURL, apiClient.fetcher)
-
-    const {
-        data: destinationRoutes,
-        isLoading: destRoutesLoading,
-    } = useSWR<ApiResponse<{
-        network: string;
-        asset: string;
-    }[]>>(destinationRoutesURL, apiClient.fetcher)
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : availableAssetGroups
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
         values,
-        direction === "from" ? sourceRoutes?.data : destinationRoutes?.data,
         lockedCurrency,
     )
 
-    const value = currencyMenuItems?.find(x => x.id == currencyGroup?.name);
+    const value = currencyMenuItems?.find(x => x.id == currencyGroup?.symbol);
+
+    useEffect(() => {
+        if (exchanges?.data
+            && !!exchanges?.data
+                ?.find(r => r.name === exchange?.name)?.token_groups
+                ?.find(r => r.symbol === currencyGroup?.symbol && r.status === 'not_found')) {
+            setFieldValue(name, null)
+        }
+    }, [toCurrency, fromCurrency, name, network, exchanges, error])
 
     useEffect(() => {
         if (value) return
-        setFieldValue(name, currencyMenuItems?.[0].baseObject)
+        setFieldValue(name, currencyMenuItems?.[0]?.baseObject)
     }, [])
 
-    const handleSelect = useCallback((item: SelectMenuItem<AssetGroup>) => {
+    const handleSelect = useCallback((item: SelectMenuItem<ExchangeToken>) => {
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
@@ -115,55 +78,43 @@ const CurrencyGroupFormField: FC<{ direction: string }> = ({ direction }) => {
 }
 
 export function GenerateCurrencyMenuItems(
-    currencies: AssetGroup[],
+    currencies: ExchangeToken[],
     values: SwapFormValues,
-    routes?: { network: string, asset: string }[],
-    lockedCurrency?: AssetGroup | undefined
-): SelectMenuItem<AssetGroup>[] {
-    const { fromExchange, toExchange } = values
-    let currencyIsAvailable = (currency: AssetGroup) => {
-        if (lockedCurrency) {
-            return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
-        }
-        else if ((fromExchange || toExchange) && !routes?.some(r => r.asset === currency.name)) {
-            return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
-        }
-        else {
-            return { value: true, disabledReason: null }
-        }
-    }
-
-    const storageUrl = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL
+    lockedCurrency?: ExchangeToken | undefined
+): SelectMenuItem<ExchangeToken>[] {
 
     return currencies?.map(c => {
         const currency = c
-        const displayName = lockedCurrency?.name ?? currency.name;
+        const displayName = lockedCurrency?.symbol ?? currency.symbol;
 
-        const res: SelectMenuItem<AssetGroup> = {
+        let currencyIsAvailable = (currency: ExchangeToken) => {
+            if (lockedCurrency) {
+                return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
+            }
+            else if (currency?.status !== "active") {
+                return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
+            }
+            else {
+                return { value: true, disabledReason: null }
+            }
+        }
+
+        const res: SelectMenuItem<ExchangeToken> = {
             baseObject: c,
-            id: c.name,
+            id: c.symbol,
             name: displayName || "-",
-            order: CurrencySettings.KnownSettings[c.name]?.Order ?? 5,
-            imgSrc: `${storageUrl}layerswap/currencies/${c.name.toLowerCase()}.png`,
+            order: ResolveCEXCurrencyOrder(c),
+            imgSrc: c.logo,
             isAvailable: currencyIsAvailable(c),
         };
         return res
-    }).sort(SortingByAvailability);
+    }).sort(SortAscending);
 }
 
 export enum CurrencyDisabledReason {
     LockAssetIsTrue = '',
     InsufficientLiquidity = 'Temporarily disabled. Please check later.',
     InvalidRoute = 'InvalidRoute'
-}
-
-export type AssetGroup = {
-    name: string;
-    values: {
-        network: string;
-        asset: string;
-    }[];
-    groupedInBackend: boolean
 }
 
 export default CurrencyGroupFormField

@@ -1,11 +1,8 @@
 import { ArrowLeftRight, Lock } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
-import SubmitButton from '../../../../buttons/submitButton';
-import { useSwapDataState } from '../../../../../context/swap';
 import toast from 'react-hot-toast';
-import { useSettingsState } from '../../../../../context/settings';
-import { useAccount, useNetwork } from 'wagmi';
-import { ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
+import { useAccount } from 'wagmi';
+import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
 import WalletMessage from '../WalletTransfer/message';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
 import SignatureIcon from '../../../../icons/SignatureIcon';
@@ -14,30 +11,23 @@ import { useActivationData, useLoopringAccount, useLoopringTokens } from './hook
 import { LoopringAPI } from '../../../../../lib/loopring/LoopringAPI';
 import { UnlockedAccount } from '../../../../../lib/loopring/defs';
 import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
+import { WithdrawPageProps } from '../WalletTransferContent';
+import { useConfig } from 'wagmi'
 
-type Props = {
-    depositAddress?: string,
-    amount?: number
-}
-
-const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
+const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId, callData, depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
     const [activationPubKey, setActivationPubKey] = useState<{ x: string; y: string }>()
     const [selectedActivationAsset, setSelectedActivationAsset] = useState<string>()
-    const { chain } = useNetwork()
-    const { swap } = useSwapDataState();
-    const { layers } = useSettingsState();
+
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { isConnected, address: fromAddress, connector } = useAccount();
-    const { source_network: source_network_internal_name } = swap || {}
-    const source_network = layers.find(n => n.internal_name === source_network_internal_name);
-    const token = layers?.find(n => swap?.source_network == n?.internal_name)?.assets.find(c => c.asset == swap?.source_network_asset);
+    const { isConnected, address: fromAddress, chain } = useAccount();
     const { account: accInfo, isLoading: loadingAccount, noAccount, mutate: refetchAccount } = useLoopringAccount({ address: fromAddress })
     const { availableBalances, defaultValue, loading: activationDataIsLoading, feeData } = useActivationData(accInfo?.accountId)
     const [unlockedAccount, setUnlockedAccount] = useState<UnlockedAccount | undefined>()
     const { tokens } = useLoopringTokens()
     const loopringToken = tokens?.find(t => t.symbol === selectedActivationAsset)
+    const config = useConfig()
 
     useEffect(() => {
         if (fromAddress) {
@@ -50,7 +40,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         try {
             if (!accInfo)
                 return
-            const res = await LoopringAPI.userAPI.unlockAccount(accInfo)
+            const res = await LoopringAPI.userAPI.unlockAccount(accInfo, config)
             setUnlockedAccount(res)
         }
         catch (e) {
@@ -59,7 +49,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         finally {
             setLoading(false)
         }
-    }, [accInfo])
+    }, [accInfo, config])
 
     const activateAccout = useCallback(async () => {
         setLoading(true)
@@ -67,7 +57,11 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
             if (!accInfo || !selectedActivationAsset || !loopringToken)
                 return
 
-            const publicKey = await LoopringAPI.userAPI.activateAccount({ accInfo, token: { id: loopringToken?.tokenId, symbol: loopringToken?.symbol } })
+            const publicKey = await LoopringAPI.userAPI.activateAccount(
+                {
+                    accInfo,
+                    token: { id: loopringToken?.tokenId, symbol: loopringToken?.symbol }
+                }, config)
             setActivationPubKey(publicKey)
             await refetchAccount()
         }
@@ -82,20 +76,19 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
     const handleTransfer = useCallback(async () => {
         setLoading(true)
         try {
-            
-            if (!swap || !accInfo || !unlockedAccount || !token)
+            if (!swapId || !accInfo || !unlockedAccount || !token || !amount)
                 return
 
             const transferResult = await LoopringAPI.userAPI.transfer({
                 accInfo,
-                amount: swap.requested_amount.toString(),
+                amount: amount.toString(),
                 depositAddress: depositAddress as `0x${string}`,
-                sequence_number: swap?.sequence_number.toString(),
+                call_data: callData,
                 token,
                 unlockedAccount
-            })
+            }, config)
             if (transferResult.hash) {
-                setSwapTransaction(swap.id, BackendTransactionStatus.Pending, transferResult.hash);
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, transferResult.hash);
                 setTransferDone(true)
             }
             else {
@@ -107,7 +100,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 toast(e.message)
         }
         setLoading(false)
-    }, [swap, source_network, depositAddress, accInfo, unlockedAccount, token])
+    }, [swapId, network, depositAddress, accInfo, unlockedAccount, token, amount, callData])
 
     if (noAccount) {
         //TODO fix text
@@ -137,11 +130,11 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
         return <ConnectWalletButton />
     }
 
-    if (source_network && chain?.id !== Number(source_network.chain_id)) {
+    if (network && chain?.id !== Number(network.chain_id)) {
         return (
             <ChangeNetworkButton
-                chainId={Number(source_network?.chain_id)}
-                network={source_network?.display_name}
+                chainId={Number(network?.chain_id)}
+                network={network?.display_name}
             />
         )
     }
@@ -161,9 +154,9 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                 <div className='space-y-4'>
                     {
                         (accInfo && unlockedAccount) ?
-                            <SubmitButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
+                            <ButtonWrapper isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
                                 Send from wallet
-                            </SubmitButton>
+                            </ButtonWrapper>
                             :
                             <>
                                 {shouldActivate &&
@@ -174,7 +167,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                                         feeData={feeData}
                                     />
                                 }
-                                <SubmitButton
+                                <ButtonWrapper
                                     isDisabled={loadingAccount || !accInfo || loading || activationDataIsLoading}
                                     isSubmitting={loadingAccount || loading}
                                     onClick={shouldActivate ? activateAccout : handleUnlockAccount}
@@ -184,7 +177,7 @@ const LoopringWalletWithdraw: FC<Props> = ({ depositAddress, amount }) => {
                                     }
                                 >
                                     {shouldActivate ? <>Activate account</> : <>Unlock account</>}
-                                </SubmitButton>
+                                </ButtonWrapper>
                             </>
                     }
                 </div>

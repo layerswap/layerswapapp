@@ -1,16 +1,14 @@
 import { FC } from 'react'
 import { useSwapDataState } from '../../../../context/swap';
-import { useSettingsState } from '../../../../context/settings';
 import Processing from './Processing';
 
 const Component: FC = () => {
 
-    const { swap } = useSwapDataState()
-    const settings = useSettingsState()
+    const { swapResponse: swap } = useSwapDataState()
 
     return (
         <>
-            {swap && <Processing settings={settings} swap={swap} />}
+            {swap && <Processing swapResponse={swap} />}
         </>
 
     )
