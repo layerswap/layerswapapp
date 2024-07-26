@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect } from "react"
+import { useEffect } from "react"
 import { Network } from "../Models/Network";
 import { useRouter } from "next/router";
 

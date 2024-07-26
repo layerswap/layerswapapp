@@ -76,10 +76,6 @@ export default function useEVM(): WalletProvider {
     const disconnectWallet = async () => {
         try {
             await disconnectAsync()
-            if (account?.connector?.name === 'Immutable Passport') {
-                if (passportInstance === undefined) await initilizePassport(router.basePath)
-                await passportInstance.logout()
-            }
         }
         catch (e) {
             console.log(e)

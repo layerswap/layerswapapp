@@ -20,7 +20,7 @@ const WalletTransferContent: FC = () => {
         return source_network && getProvider(source_network)
     }, [source_network, getProvider])
 
-    const wallet = provider?.getConnectedWallet()
+    const wallet = provider?.getConnectedWallet(source_network)
 
     const { balances, isBalanceLoading } = useBalancesState()
     const { fetchBalance, fetchGas } = useBalance()
