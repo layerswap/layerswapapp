@@ -18,7 +18,7 @@ export const RedeemUpcoming: FC<UpcomingProps> = (props) => {
     const { getWithdrawalProvider } = useWallet()
 
     const source_provider = source_network && getWithdrawalProvider(source_network)
-    const contract = source_asset?.symbol === source_network.token?.symbol ? source_network?.metadata.htlc_contract : source_network?.metadata.htlc_erc20_contract
+    const contract =  source_network?.metadata.htlc_contract
     console.log('redeem data' )
     useEffect(() => {
         let commitHandler: any = undefined
