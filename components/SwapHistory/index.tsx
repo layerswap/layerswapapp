@@ -24,7 +24,7 @@ function TransactionsHistory() {
   const [swaps, setSwaps] = useState<SwapResponse[]>()
   const [loading, setLoading] = useState(false)
   const router = useRouter();
-  const [selectedSwap, setSelectedSwap] = useState<SwapItem | undefined>()
+  const [selectedSwap, setSelectedSwap] = useState<SwapResponse | undefined>()
   const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
   const [showAllSwaps, setShowAllSwaps] = useState(false)
 
@@ -114,7 +114,7 @@ function TransactionsHistory() {
     }
   }, [page, setSwaps])
 
-  const handleopenSwapDetails = (swap: SwapItem) => {
+  const handleopenSwapDetails = (swap: SwapResponse) => {
     setSelectedSwap(swap)
     setOpenSwapDetailsModal(true)
   }
@@ -179,7 +179,7 @@ function TransactionsHistory() {
 
                             const output_transaction = swap.transactions.find(t => t.type === TransactionType.Output)
 
-                            return <tr onClick={() => handleopenSwapDetails(swap)} key={swap.id}>
+                            return <tr onClick={() => handleopenSwapDetails(swapData)} key={swap.id}>
 
                               <td
                                 className={classNames(
@@ -229,7 +229,7 @@ function TransactionsHistory() {
                                   'px-3 py-3.5 text-sm text-primary-text table-cell'
                                 )}
                               >
-                                <div className="flex justify-between items-center cursor-pointer" onClick={(e) => { handleopenSwapDetails(swap); e.preventDefault() }}>
+                                <div className="flex justify-between items-center cursor-pointer" onClick={(e) => { handleopenSwapDetails(swapData); e.preventDefault() }}>
                                   <div>
                                     <div className="text text-secondary-text text-left">
                                       <span>
@@ -280,7 +280,7 @@ function TransactionsHistory() {
                   <Modal height="fit" show={openSwapDetailsModal} setShow={setOpenSwapDetailsModal} header="Swap details" modalId="swapHistory">
                     <div className="mt-2">
                       {
-                        selectedSwap && <SwapDetails id={selectedSwap.id} />
+                        selectedSwap && <SwapDetails swapResponse={selectedSwap} />
                       }
                       {
                         selectedSwap &&
@@ -289,7 +289,7 @@ function TransactionsHistory() {
                             <SubmitButton
                               text_align="center"
                               onClick={() => router.push({
-                                pathname: `/swap/${selectedSwap.id}`,
+                                pathname: `/swap/${selectedSwap.swap.id}`,
                                 query: resolvePersistantQueryParams(router.query)
                               })}
                               isDisabled={false}

@@ -46,11 +46,11 @@ const Header = ({ statuses, title, loadExplorerSwaps, setRefreshing }: Props) =>
     }, [getKey, loadExplorerSwaps])
 
     return <div className="flex space-x-2 text-center">
-        <h2 className="font-normal text-center tracking-tight mt-1">
+        <h2 className="font-normal text-center tracking-tight mt-0.5">
             {title}
         </h2>
         <IconButton onClick={handleRefresh} icon={
-            <RefreshCcw className="h-6 w-6" />
+            <RefreshCcw className="h-5 w-5" />
         }>
         </IconButton>
     </div>

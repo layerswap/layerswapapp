@@ -1,6 +1,6 @@
 
 import useSWR from "swr"
-import LayerSwapApiClient, { SwapItem, TransactionType } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapItem, SwapResponse, TransactionType } from "../../lib/layerSwapApiClient"
 import { ApiResponse } from "../../Models/ApiResponse"
 import Image from 'next/image';
 import { useQueryState } from "../../context/query"
@@ -13,10 +13,10 @@ import { FC } from "react"
 import { truncateDecimals } from "../utils/RoundDecimals";
 
 type SwapInfoProps = {
-    swap: SwapItem,
+    swapResponse: SwapResponse,
 }
 const Summary: FC<SwapInfoProps> = ({
-    swap,
+    swapResponse,
 }) => {
 
     const {
@@ -30,6 +30,7 @@ const Summary: FC<SwapInfoProps> = ({
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = partnerData?.data
+    const { swap, quote } = swapResponse
 
     const { source_network, destination_network, source_token, destination_token, source_exchange, destination_exchange, destination_address, exchange_account_connected, exchange_account_name, requested_amount } = swap || {}
 
@@ -37,7 +38,10 @@ const Summary: FC<SwapInfoProps> = ({
     const destination = hideTo ? partner : (destination_exchange || destination_network)
 
     const sourceTransaction = swap.transactions?.find(t => t.type === TransactionType.Input)
+    const destinationTransaction = swap.transactions?.find(t => t.type === TransactionType.Input)
     const sourceAddressFromInput = sourceTransaction?.from;
+    const receiveAmount = quote?.receive_amount
+    const calculatedReceiveAmount = destinationTransaction?.amount ?? receiveAmount
 
     let sourceAccountAddress = ""
     if (sourceAddressFromInput) {
@@ -92,7 +96,7 @@ const Summary: FC<SwapInfoProps> = ({
                                     className="rounded-full" />
                             }
                             <div>
-                                <p className="font-semibold text-primary-text text-base leading-5">{truncateDecimals(10, destination_token.precision)} {destination_token.symbol}</p>
+                                <p className="font-semibold text-primary-text text-base leading-5">{truncateDecimals(calculatedReceiveAmount, destination_token.precision)} {destination_token.symbol}</p>
                                 <p className="text-sm text-secondary-text">{destination?.display_name}</p>
                             </div>
                         </div>

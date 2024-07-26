@@ -1,4 +1,4 @@
-import LayerSwapApiClient, { SwapItem, SwapResponse } from "../../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapResponse } from "../../../lib/layerSwapApiClient"
 import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
 import { SwapDataProvider } from "../../../context/swap"
 import WithdrawalPage from "../../Swap"
@@ -75,14 +75,16 @@ const getExplorerKey = (addresses: string[]) => (index) => {
     return `/explorer/${addresses[index]}`
 }
 
+type Swap = SwapResponse & { type: 'user' | 'explorer' }
+
 const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
     const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
-    const [selectedSwap, setSelectedSwap] = useState<SwapResponse | undefined>()
+    const [selectedSwap, setSelectedSwap] = useState<Swap | undefined>()
     const { wallets } = useWallet()
     const addresses = wallets.map(w => w.address)
     const [cachedSize, setCachedSize] = useState(1)
 
-    const handleopenSwapDetails = (swap: SwapResponse) => {
+    const handleopenSwapDetails = (swap: Swap) => {
         setSelectedSwap(swap)
         setOpenSwapDetailsModal(true)
     }
@@ -93,7 +95,7 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
     const apiClient = new LayerSwapApiClient()
 
     const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, mutate } =
-        useSWRInfinite<ApiResponse<SwapResponse[]>>(
+        useSWRInfinite<ApiResponse<Swap[]>>(
             getKey,
             apiClient.fetcher,
             { revalidateAll: true, dedupingInterval: 10000 }
@@ -107,7 +109,7 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
         return data
     }
 
-    const { data: explorerPages, error: explorerError, isLoading: explorerSwapsLoading, setSize: setExplorerSize, size: explorerSize } = useSWRInfinite<ApiResponse<SwapResponse[]>>(
+    const { data: explorerPages, error: explorerError, isLoading: explorerSwapsLoading, setSize: setExplorerSize, size: explorerSize } = useSWRInfinite<ApiResponse<Swap[]>>(
         loadExplorerSwaps ? getFromExplorerKey : () => null,
         explorerDataFetcher,
         { revalidateAll: true, dedupingInterval: 60000, parallel: true, initialSize: addresses?.length }
@@ -123,9 +125,19 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
             mutate()
     }, [])
 
-    const userSwaps = userSwapPages?.map(p => p.data).flat(1) || []
-    const explorerSwaps = explorerPages?.map(p => p?.data?.filter(s => s.swap.status === 'completed')).flat(1) || []
-console.log(explorerPages)
+    const userSwaps = userSwapPages?.map(p => {
+        p.data?.forEach(s => {
+            s.type = 'user'
+        })
+        return p?.data
+    }).flat(1) || []
+    const explorerSwaps = explorerPages?.map(p => {
+        p.data?.forEach(s => {
+            s.type = 'explorer'
+        })
+        return p?.data?.filter(s => s.swap.status === 'completed')
+    }).flat(1) || []
+
     const userSwapsisEmpty =
         (userSwapPages?.[0] instanceof EmptyApiResponse)
 
@@ -184,7 +196,7 @@ console.log(explorerPages)
                                 key={swap.swap.id}
                                 variants={item as any}
                             >
-                                <Summary swap={swap.swap} />
+                                <Summary swapResponse={swap} />
                             </motion.div>
                         })
                     }
@@ -219,10 +231,10 @@ console.log(explorerPages)
         >
             <SwapDataProvider>
                 {
-                    selectedSwap?.swap.id ?
+                    selectedSwap && (selectedSwap?.type === 'user' ?
                         <WithdrawalPage type="contained" />
                         :
-                        <SwapDetails id={selectedSwap?.swap?.id!} />
+                        <SwapDetails swapResponse={selectedSwap} />)
                 }
             </SwapDataProvider>
         </Modal>
