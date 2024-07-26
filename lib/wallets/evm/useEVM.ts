@@ -7,7 +7,6 @@ import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
-import { passportInstance, initilizePassport } from "../../../components/ImtblPassportProvider"
 import { useRouter } from "next/router"
 
 export default function useEVM(): WalletProvider {
