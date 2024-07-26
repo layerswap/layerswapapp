@@ -13,6 +13,7 @@ import { AssetLock, Commit } from "../../../Models/PHTLC";
 import Steps from "../StepsComponent";
 import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 import { UserLockCurrent, UserLockDone, UserLockUpcoming } from "./UserLock";
+import { RedeemCurrent, RedeemDone, RedeemUpcoming } from "./Redeem";
 
 type ContainerProps = {
     type: "widget" | "contained",
@@ -38,8 +39,11 @@ const Commitment: FC<Props> = (props) => {
     const { networks } = useSettingsState()
     const [commitment, setCommitment] = useState<Commit | undefined>(undefined)
     const [destinationLock, setDestinationLock] = useState<AssetLock | null>(null)
+    const [sourceLock, seSourceLock] = useState<AssetLock | null>(null)
     const [hashLock, setHashLock] = useState<string | null>(null)
     const [userLocked, setUserLocked] = useState<boolean>(false)
+    console.log('hashLock', hashLock)
+    console.log('destlock', destinationLock)
 
     const source_network = networks.find(n => n.name.toUpperCase() === source.toUpperCase())
     const destination_network = networks.find(n => n.name.toUpperCase() === destination.toUpperCase())
@@ -186,11 +190,17 @@ const Commitment: FC<Props> = (props) => {
         "redeem": {
             upcoming: {
                 name: `Sending assets to your address`,
-                description: <RedeemUpcoming />
+                description: null
             },
             current: {
                 name: `Sending assets to your address`,
-                description: <RedeemCurrent />
+                description: source_network && commitment && hashLock && <RedeemUpcoming
+                    source_network={source_network}
+                    commitment={commitment}
+                    hashLock={hashLock}
+                    setSourceLock={seSourceLock}
+                    source_asset={source_token}
+                />
             },
             complete: {
                 name: `Assets were sent to your address`,
@@ -242,8 +252,8 @@ const Commitment: FC<Props> = (props) => {
     const progress = ResolveProgress({
         commited: commitment ? true : false,
         lpLockDetected: destinationLock ? true : false,
-        assetsLocked: commitment?.locked ? true : false,
-        redeemCompleted: false,
+        assetsLocked: commitment?.locked && destinationLock ? true : false,
+        redeemCompleted: sourceLock?.redeemed ? true : false,
         refundCompleted: false,
         refundRequested: false
     })
@@ -319,47 +329,6 @@ const Container: FC<ContainerProps> = (props) => {
         </div>
 
 }
-
-const useCommitmentPolling = (network: Network | undefined, commitmentId: string, onSuccess?: (data: Commit | null, intervalhandler: any) => void) => {
-    const { getWithdrawalProvider } = useWallet()
-    const source_provider = network && getWithdrawalProvider(network)
-    const [commitment, setCommitment] = useState<Commit | null>(null)
-
-    useEffect(() => {
-        let commitHandler: any = undefined
-        commitHandler = setInterval((async () => {
-            if (source_provider) {
-                const details = NETWORKS_DETAILS[network.name]
-
-                if (!network.chain_id)
-                    throw Error("No chain id")
-
-                const data = await source_provider.getCommitment({
-                    abi: details.abi,
-                    chainId: network.chain_id,
-                    commitId: commitmentId as string,
-                    contractAddress: network.metadata.htlc_contract as `0x${string}`
-                })
-
-                if (data?.sender && data.sender != '0x0000000000000000000000000000000000000000') {
-                    setCommitment(data)
-                }
-                if (onSuccess) {
-                    onSuccess(data, commitHandler)
-                }
-                else {
-                    clearInterval(commitHandler)
-                }
-            }
-        }), 5000)
-        return () => {
-            clearInterval(commitHandler)
-        }
-    }, [source_provider])
-
-    return { commitment }
-}
-
 
 export type ProgressStates = {
     [key in Progress]?: {
@@ -514,18 +483,6 @@ const ResolveProgress = (props: ResolveProgressProps): ResolveProgressReturn => 
             }
         }
     }
-}
-
-const RedeemUpcoming = () => {
-    return <></>
-}
-
-const RedeemCurrent = () => {
-    return <></>
-}
-
-const RedeemDone = () => {
-    return <></>
 }
 
 export default Container
