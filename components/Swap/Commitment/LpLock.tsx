@@ -110,7 +110,7 @@ export const LpLockCurrent: FC<CurrentProps> = (props) => {
                             <div>
                                 <p className="text-primary-text text-sm leading-5">{destination_network?.display_name}</p>
                                 <div className="text-sm group/addressItem text-secondary-text">
-                                    <ExtendedAddress address={addressFormat(commitment.sender, destination_network)} network={destination_network} />
+                                    <ExtendedAddress address={addressFormat(address, destination_network)} network={destination_network} />
                                 </div>
                             </div>
                         </div>

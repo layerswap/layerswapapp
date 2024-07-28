@@ -134,8 +134,6 @@ export default function useEVM(): WalletProvider {
         return { hash, commitId: result.toString() }
     }
 
-
-
     const convertToHTLC = () => {
         throw new Error('Not implemented')
     }
@@ -237,7 +235,6 @@ export default function useEVM(): WalletProvider {
         convertToHTLC,
         claim,
         refund,
-        getPreHTLC,
         waitForLock,
         getLock,
         lockCommitment

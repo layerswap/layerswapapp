@@ -13,7 +13,7 @@ type WillReceiveProps = {
     isFeeLoading: boolean;
 }
 export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination_token, refuel, fee, onButtonClick, isFeeLoading }) => {
-    const receive_amount = fee?.quote.receive_amount
+    const receive_amount = fee?.quote?.receive_amount
     const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(destination_token?.precision) || "")
 
     const receiveAmountInUsd = receive_amount && destination_token ? (destination_token?.price_in_usd * receive_amount).toFixed(2) : undefined

@@ -23,7 +23,6 @@ type ConnectProps = SubmitButtonProps & {
 // TODO implement hifgher order component for different wallet providers
 export const ConnectWalletButton: FC<ConnectProps> = (props) => {
     const { network, defaultText } = props
-
     const [loading, setLoading] = useState(false)
 
     const { getWithdrawalProvider: getProvider } = useWallet()
@@ -74,16 +73,16 @@ export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = (
     }
 }
 type ChangeNetworkProps = {
-    chainId: number,
+    chainId: number | string,
     network: string,
     defaultText: string
 }
 export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
     const { chainId, network, defaultText } = props
     const { switchChain, error, isPending, isError } = useSwitchChain();
-
+    //TODO implement change network for useWallet providers
     const clickHandler = useCallback(() => {
-        return switchChain({ chainId })
+        return switchChain({ chainId: Number(chainId) })
     }, [switchChain, chainId])
 
     return <>
@@ -115,10 +114,6 @@ export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
 export const ButtonWrapper: FC<SubmitButtonProps> = ({
     ...props
 }) => {
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
-    const { source_network } = swap || {}
-
     return <div className="flex flex-col text-primary-text text-base space-y-2">
         <SubmitButton
             text_align='center'
@@ -133,7 +128,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
 
 type LockButtonProps = {
     isConnected: boolean,
-    networkChainId: number,
+    networkChainId: number | string,
     network: NetworkWithTokens,
     activeChain: any,
     onClick: () => Promise<void>,
@@ -162,7 +157,8 @@ export const WalletActionButton: FC<LockButtonProps> = (props) => {
         />
     }
 
-    if (activeChain !== networkChainId && network) {
+    if (activeChain != networkChainId && network) {
+        debugger
         return <ChangeNetworkButton
             chainId={networkChainId}
             network={network.display_name}

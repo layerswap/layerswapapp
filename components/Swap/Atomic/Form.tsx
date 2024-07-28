@@ -176,6 +176,13 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             <Address partner={partner} />
                             : <></>
                     }
+                    <div className="w-full">
+                        <FeeDetailsComponent values={values} />
+                        {
+                            values.amount &&
+                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                        }
+                    </div>
                     <div className="w-full hidden">
                         <FeeDetailsComponent values={values} />
                         {

@@ -39,7 +39,6 @@ const Commitment: FC<Props> = (props) => {
     const { networks } = useSettingsState()
     const [commitment, setCommitment] = useState<Commit | undefined>(undefined)
     const [destinationLock, setDestinationLock] = useState<AssetLock | null>(null)
-    const [sourceLock, seSourceLock] = useState<AssetLock | null>(null)
     const [hashLock, setHashLock] = useState<string | null>(null)
     const [userLocked, setUserLocked] = useState<boolean>(false)
     console.log('hashLock', hashLock)
@@ -194,12 +193,11 @@ const Commitment: FC<Props> = (props) => {
             },
             current: {
                 name: `Sending assets to your address`,
-                description: source_network && commitment && hashLock && <RedeemUpcoming
-                    source_network={source_network}
+                description: destination_network && commitment && hashLock && <RedeemUpcoming
+                    destination_network={destination_network}
                     commitment={commitment}
                     hashLock={hashLock}
-                    setSourceLock={seSourceLock}
-                    source_asset={source_token}
+                    setSourceLock={setDestinationLock}
                 />
             },
             complete: {
@@ -253,7 +251,7 @@ const Commitment: FC<Props> = (props) => {
         commited: commitment ? true : false,
         lpLockDetected: destinationLock ? true : false,
         assetsLocked: commitment?.locked && destinationLock ? true : false,
-        redeemCompleted: sourceLock?.redeemed ? true : false,
+        redeemCompleted: destinationLock?.redeemed ? true : false,
         refundCompleted: false,
         refundRequested: false
     })
