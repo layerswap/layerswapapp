@@ -24,7 +24,7 @@ const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, addressItem, 
                     addressItem={addressItem}
                     connectedWallet={connectedWallet}
                     partner={partner}
-                    destination={destination}
+                    network={destination}
                 />
                 :
                 <span className="text-primary-text-placeholder">Address</span>

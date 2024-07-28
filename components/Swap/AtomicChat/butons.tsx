@@ -129,7 +129,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
 type LockButtonProps = {
     isConnected: boolean,
     networkChainId: number | string,
-    network: NetworkWithTokens,
+    network: Network,
     activeChain: any,
     onClick: () => Promise<void>,
     children: JSX.Element | JSX.Element[] | string | undefined
