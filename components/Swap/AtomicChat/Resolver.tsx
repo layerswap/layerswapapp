@@ -9,6 +9,7 @@ import { motion, useAnimation } from "framer-motion";
 import { LpLockingAssets } from "./Actions/LpLock";
 import { RedeemAction } from "./Actions/Redeem";
 import ActionStatus from "./Actions/ActionStatus";
+import useWallet from "../../../hooks/useWallet";
 
 export type ProgressStates = {
     [key in Progress]?: {
@@ -45,12 +46,12 @@ type ResolveProgressReturn = {
     }
 }
 
-const Committed = () => <Message
+const Committed = ({ address }: { address: string | undefined }) => <Message
     title="Committed"
     description="You committedd assets on the source network"
     isLast={true}
     source="from"
-    sourceIcon={<AddressIcon className="scale-150 h-3 w-3" address={'0x3Cb9907aB2cCA160b1b0e940eA2732c7440655bb'} size={12} />}
+    sourceIcon={address && <AddressIcon className="scale-150 h-3 w-3" address={address} size={12} />}
 />
 const LPIsLocking = () => <Message
     title="Locking assets"
@@ -65,12 +66,12 @@ const AssetsLockedByLP = () => <Message
     source="to"
     sourceIcon={<LayerSwapLogoSmall className="w-4 h-4" />}
 />
-const AssetsLockedByUser = () => <Message
+const AssetsLockedByUser = ({ address }: { address: string | undefined }) => <Message
     title="Assets locked"
     description="You locked assets on the source network"
     isLast={true}
     source="from"
-    sourceIcon={<AddressIcon className="scale-150 h-3 w-3" address={'0x3Cb9907aB2cCA160b1b0e940eA2732c7440655bb'} size={12} />}
+    sourceIcon={address && <AddressIcon className="scale-150 h-3 w-3" address={address} size={12} />}
 />
 const AssetsSent = () => <Message
     title="Assets sent"
@@ -90,56 +91,61 @@ const LpPlng = () => <Message
     sourceIcon={<LayerSwapLogoSmall className="w-4 h-4" />}
 />
 
-const UserPlng = () => <Message
+const UserPlng = ({ address }: { address: string | undefined }) => <Message
     title={<div className="flex">
         Committing
     </div>}
     isLast={true}
     source="from"
-    sourceIcon={<AddressIcon className="scale-150 h-3 w-3" address={'0x3Cb9907aB2cCA160b1b0e940eA2732c7440655bb'} size={12} />}
+    sourceIcon={address && <AddressIcon className="scale-150 h-3 w-3" address={address} size={12} />}
 />
 
 //animate-bounce
 export const ResolveMessages: FC = (props) => {
 
-    const { committment, destinationLock, sourceLock, commitId } = useAtomicState()
+    const { committment, destinationLock, sourceLock, commitId, source_network } = useAtomicState()
     const commtting = commitId ? true : false;
     const commited = committment ? true : false;
     const lpLockDetected = destinationLock ? true : false;
     const assetsLocked = committment?.locked && destinationLock ? true : false;
     const redeemCompleted = sourceLock?.redeemed ? true : false;
+    const { getWithdrawalProvider } = useWallet()
+    const source_provider = source_network && getWithdrawalProvider(source_network)
+    const wallet = source_provider?.getConnectedWallet()
+
+    const address = committment?.sender || wallet?.address
 
     if (redeemCompleted) {
         return <div className="flex w-full grow flex-col space-y-2" >
-            <Committed />
+            <Committed address={address} />
             <AssetsLockedByLP />
-            <AssetsLockedByUser />
+            <AssetsLockedByUser address={address} />
             <AssetsSent />
         </div >
     }
     if (assetsLocked) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <LpPlng />
-            <Committed />
+            <Committed address={address} />
             <AssetsLockedByLP />
-            <AssetsLockedByUser />
+            <AssetsLockedByUser address={address} />
         </div >
     }
     if (lpLockDetected) {
         return <div className="flex w-full grow flex-col space-y-2" >
-            <Committed />
+            <Committed address={address} />
             <AssetsLockedByLP />
         </div >
     }
     if (commited) {
         return <div className="flex w-full grow flex-col space-y-2" >
-            <Committed />
+            <Committed address={address} />
             <LpPlng />
         </div >
     }
     if (commtting) {
         return <div className="flex w-full grow flex-col space-y-2" >
-            <UserPlng />
+            <UserPlng address={address} />
         </div >
     }
     return <></>
@@ -202,7 +208,7 @@ export const ActionsWithProgressbar: FC = () => {
                         </div>
                         :
                         <div className="text-secondary-text text-xs">
-                            Step {currentStep}/2 - {committment ? 'Lock' : 'Commit'}
+                            Step <>{currentStep}</>/2 - <>{committment ? 'Lock' : 'Commit'}</>
                         </div>
                 }
                 <div className="flex space-x-1">
