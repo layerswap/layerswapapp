@@ -91,7 +91,7 @@ const LpPlng = () => <Message
     sourceIcon={<LayerSwapLogoSmall className="w-4 h-4" />}
 />
 
-const UserPlng = ({ address }: { address: string | undefined }) => <Message
+const UserCommitting = ({ address }: { address: string | undefined }) => <Message
     title={<div className="flex">
         Committing
     </div>}
@@ -125,10 +125,10 @@ export const ResolveMessages: FC = (props) => {
     }
     if (assetsLocked) {
         return <div className="flex w-full grow flex-col space-y-2" >
-            <LpPlng />
             <Committed address={address} />
             <AssetsLockedByLP />
             <AssetsLockedByUser address={address} />
+            <LpPlng />
         </div >
     }
     if (lpLockDetected) {
@@ -145,7 +145,7 @@ export const ResolveMessages: FC = (props) => {
     }
     if (commtting) {
         return <div className="flex w-full grow flex-col space-y-2" >
-            <UserPlng address={address} />
+            <UserCommitting address={address} />
         </div >
     }
     return <></>
