@@ -1,7 +1,7 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import { NetworkWithTokens, Token } from "../../../../Models/Network";
 import Image from 'next/image';
-import { AssetLock, Commit } from "../../../../Models/PHTLC";
+import { AssetLock } from "../../../../Models/PHTLC";
 import { ExtendedAddress } from "../../../Input/Address/AddressPicker/AddressWithIcon";
 import { addressFormat } from "../../../../lib/address/formatter";
 import { truncateDecimals } from "../../../utils/RoundDecimals";
@@ -11,14 +11,11 @@ import { NETWORKS_DETAILS } from "../../Atomic";
 import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
 
-
-
 export const LpLockingAssets: FC = () => {
-    const { source_network, destination_network, amount, address, source_asset, destination_asset, committment, commitId, setDestinationLock, destinationLock, setHashLock } = useAtomicState()
+    const { destination_network, commitId, setDestinationLock, destinationLock, setHashLock } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
 
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
-
 
     useEffect(() => {
         let lockHandler: any = undefined

@@ -1,12 +1,8 @@
 import { FC, useEffect } from "react"
-import { NetworkWithTokens, Token } from "../../../../Models/Network";
-import { AssetLock, Commit } from "../../../../Models/PHTLC";
 import useWallet from "../../../../hooks/useWallet";
 import { NETWORKS_DETAILS } from "../../Atomic";
 import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
-
-
 
 export const RedeemAction: FC = () => {
     const { source_network, committment, hashLock, setSourceLock } = useAtomicState()

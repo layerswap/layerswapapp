@@ -1,17 +1,9 @@
 import { FC, useEffect, useRef, useState } from "react";
-import Image from 'next/image';
-import { ExtendedAddress } from "../../../Input/Address/AddressPicker/AddressWithIcon";
-import { addressFormat } from "../../../../lib/address/formatter";
 import useWallet from "../../../../hooks/useWallet";
-import { truncateDecimals } from "../../../utils/RoundDecimals";
-import { Commit } from "../../../../Models/PHTLC";
-import { NetworkWithTokens, Token } from "../../../../Models/Network";
 import { NETWORKS_DETAILS } from "../../Atomic";
 import { WalletActionButton } from "../butons";
 import toast from "react-hot-toast";
-import { ethers } from "ethers";
 import { useAtomicState } from "../../../../context/atomicContext";
-import WalletMessage from "../../Withdraw/Wallet/WalletTransfer/message";
 import ActionStatus from "./ActionStatus";
 
 export const UserCommitAction: FC = () => {

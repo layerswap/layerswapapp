@@ -5,7 +5,6 @@ import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import React from "react";
 import ConnectNetwork from "../../ConnectNetwork";
-import toast from "react-hot-toast";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "../../../lib/generateSwapInitialValues";
 import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
