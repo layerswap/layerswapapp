@@ -208,7 +208,7 @@ const ResolveAction: FC = () => {
 export const ActionsWithProgressbar: FC = () => {
     const { committment, destinationLock } = useAtomicState()
     let currentStep = 1
-
+    let actiontext = 'Commit'
     let firstStep = "5%"
     let secondStep = "0%"
     if (committment) {
@@ -218,6 +218,7 @@ export const ActionsWithProgressbar: FC = () => {
         firstStep = "100%"
         secondStep = "10%"
         currentStep = 2
+        actiontext = 'Lock'
     }
     if (committment?.locked) {
         firstStep = "100%"
@@ -238,7 +239,7 @@ export const ActionsWithProgressbar: FC = () => {
                         </div>
                         :
                         <div className="text-secondary-text text-xs">
-                            Step <>{currentStep}</>/2 - <>{committment ? 'Lock' : 'Commit'}</>
+                            Step <>{currentStep}</>/2 - <>{actiontext}</>
                         </div>
                 }
                 <div className="flex space-x-1">

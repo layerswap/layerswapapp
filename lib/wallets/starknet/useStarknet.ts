@@ -200,17 +200,15 @@ export default function useStarknet(): WalletProvider {
         if (!wallet?.metadata?.starknetAccount?.account) {
             throw new Error('Wallet not connected')
         }
-
         const args = [
             commitId,
-            lockId
         ]
-
         const atomicContract = new Contract(
             PHTLCAbi,
             contractAddress,
             wallet.metadata?.starknetAccount?.account,
         )
+
         const committmentCall: Call = atomicContract.populate("lockCommit", args)
 
         const trx = (await wallet?.metadata?.starknetAccount?.account?.execute(committmentCall))
@@ -242,19 +240,20 @@ export default function useStarknet(): WalletProvider {
             srcReceiver: ethers.utils.hexlify(result.srcReceiver as BigNumberish) as `0x${string}`,
             unlocked: result.unlocked
         }
-
+        debugger
         return parsedResult
     }
     const getLockIdByCommitId = async (params: CommitmentParams) => {
         const { abi, chainId, commitId, contractAddress } = params
-
+        debugger
         const atomicContract = new Contract(
             PHTLCAbi,
             contractAddress
         )
         const result = await atomicContract.functions.getLockIdByCommitId(commitId)
+        const hexedResult = ethers.utils.hexlify(result)
 
-        return result as `0x${string}`
+        return hexedResult
     }
 
 
