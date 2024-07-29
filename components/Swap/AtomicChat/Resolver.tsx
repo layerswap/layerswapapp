@@ -66,7 +66,7 @@ const LpPlng = ({ address }: { address: string | undefined }) => <Message
 
 const UserCommitting = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
     title={<div className="flex gap-2">
-        Committing your funds for bridging
+       <>Committing your funds for bridging</> 
         <div className="flex space-x-1 font-bold">
             <div className="animate-bounce delay-100">.</div>
             <div className="animate-bounce delay-150">.</div>
@@ -79,7 +79,7 @@ const UserCommitting = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Messag
 />
 const UserLocking = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
     title={<div className="flex gap-2">
-        Locking your funds for LP
+        <>Locking your funds for LP</>
         <div className="flex space-x-1 font-bold">
             <div className="animate-bounce delay-100">.</div>
             <div className="animate-bounce delay-150">.</div>
@@ -249,7 +249,7 @@ export const ActionsWithProgressbar: FC = () => {
                         </div>
                         :
                         <div className="text-secondary-text text-xs">
-                            Step <>{currentStep}</>/2 - <>{actiontext}</>
+                            <>Step </> <>{currentStep}</><>/2 - </><>{actiontext}</>
                         </div>
                 }
                 <div className="flex space-x-1">
