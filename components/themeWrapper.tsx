@@ -39,10 +39,8 @@ export default function ThemeWrapper({ children }: Props) {
                         </ToastBar>
                     )}
                 </Toaster>
-                <div className={`top-backdrop md:block hidden`}>
-
-                </div>
-                <div>
+                <div className='bottom-backdrop md:block hidden' />
+                {/* <div>
                     <svg
                         className="absolute inset-0 -z-10 h-full w-full stroke-secondary-500/60 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]"
                         aria-hidden="true"
@@ -67,7 +65,7 @@ export default function ThemeWrapper({ children }: Props) {
                         </svg>
                         <rect width="100%" height="100%" strokeWidth={0} fill="url(#983e3e4c-de6d-4c3f-8d64-b9761d1534cc)" />
                     </svg>
-                </div>
+                </div> */}
                 <Navbar />
                 <div className="w-full max-w-lg z-[1] mb-6">
                     <div className="flex content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg">

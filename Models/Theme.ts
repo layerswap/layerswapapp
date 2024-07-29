@@ -6,7 +6,9 @@ export type ThemeData = {
     logo: string,
     placeholderText: string,
     primary: ThemeColor,
-    secondary?: ThemeColor
+    secondary?: ThemeColor,
+    containerRoundness?: string,
+    componentRoundness?: string,
 }
 
 export type ThemeColor = {
@@ -32,6 +34,8 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         actionButtonText: '0, 0, 0',
         buttonTextColor: '255, 255, 255',
         placeholderText: '140, 152, 192',
+        containerRoundness: '12px',
+        componentRoundness: '8px',
         logo: '255, 255, 255',
         primary: {
             DEFAULT: '46, 236, 255',
@@ -69,6 +73,8 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         placeholderText: '198, 242, 246',
         actionButtonText: '0, 0, 0',
         buttonTextColor: '255, 255, 255',
+        containerRoundness: '12px',
+        componentRoundness: '8px',
         logo: '255, 255, 255',
         primary: {
             DEFAULT: '128, 226, 235',
@@ -102,10 +108,12 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             'text': '209, 251, 255',
         }
     },
-    "light": {
+    "layerswapLight": {
         placeholderText: '134, 134, 134',
         actionButtonText: '255, 255, 255',
         buttonTextColor: '17, 17, 17',
+        containerRoundness: '12px',
+        componentRoundness: '8px',
         logo: '255, 0, 147',
         primary: {
             DEFAULT: '228, 37, 117',
@@ -138,11 +146,13 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             'text': '108, 108, 108',
         },
     },
-    "default": {
+    "layerswap": {
         backdrop: "62, 18, 64",
         placeholderText: '140, 152, 192',
         actionButtonText: '254, 255, 254',
         buttonTextColor: '228, 229, 240',
+        containerRoundness: '12px',
+        componentRoundness: '8px',
         logo: '255, 0, 147',
         primary: {
             DEFAULT: '228, 37, 117',
@@ -175,10 +185,52 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             'text': '171, 181, 209',
         },
     },
+    "default": {
+        backdrop: "0, 121, 133",
+        placeholderText: '159, 194, 209',
+        actionButtonText: '0, 0, 0',
+        buttonTextColor: '182, 204, 216',
+        containerRoundness: '24px',
+        componentRoundness: '12px',
+        logo: '255, 255, 255',
+        primary: {
+            DEFAULT: '128, 226, 235',
+            '50': '255, 255, 255',
+            '100': '255, 255, 255',
+            '200': '234, 250, 252',
+            '300': '198, 242, 246',
+            '400': '163, 234, 241',
+            '500': '128, 226, 235',
+            '600': '80, 215, 227',
+            '700': '34, 201, 217',
+            '800': '26, 156, 168',
+            '900': '19, 111, 120',
+            '950': '15, 89, 96',
+            'text': '238, 243, 246',
+            'textMuted': '86, 97, 123',
+        },
+        secondary: {
+            DEFAULT: '32, 59, 70',
+            '50': '101, 160, 185',
+            '100': '87, 152, 178',
+            '200': '70, 130, 154',
+            '300': '58, 106, 126',
+            '400': '45, 83, 98',
+            '500': '32, 59, 70',
+            '600': '27, 52, 65',
+            '700': '22, 43, 54',
+            '800': '19, 37, 48',
+            '900': '15, 31, 39',
+            '950': '10, 20, 25',
+            'text': '109, 156, 176',
+        }
+    },
     "evmos": {
         placeholderText: '128, 110, 107',
         actionButtonText: '254, 255, 254',
         buttonTextColor: '74, 61, 59',
+        containerRoundness: '12px',
+        componentRoundness: '8px',
         logo: '226, 49, 115',
         primary: {
             DEFAULT: '237, 78, 51',
@@ -215,6 +267,8 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         placeholderText: '134, 134, 134',
         actionButtonText: '255, 255, 255',
         buttonTextColor: '15, 15, 15',
+        containerRoundness: '12px',
+        componentRoundness: '8px',
         logo: '15, 15, 15',
         primary: {
             DEFAULT: '51, 144, 236',

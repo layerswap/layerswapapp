@@ -29,7 +29,7 @@ const Widget = ({ children, className, hideMenu }: Props) => {
    const handleBack = router.pathname === "/" ? null : goBack
 
    return <>
-      <div className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
+      <div className='bg-secondary-900 md:shadow-card rounded-containerRoundness w-full sm:overflow-hidden relative'>
          <div className="relative z-20">
             {
                AppSettings.ApiVersion === 'sandbox' &&
@@ -45,8 +45,6 @@ const Widget = ({ children, className, hideMenu }: Props) => {
             !hideMenu &&
             <HeaderWithMenu goBack={handleBack} />
          }
-         <div className='text-center text-xl text-secondary-100'>
-         </div>
          <div className="relative px-6">
             <div className="flex items-start" ref={wrapper}>
                <div className={`flex flex-nowrap grow`}>

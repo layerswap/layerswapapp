@@ -3,16 +3,16 @@ import LinkWrapper from "../LinkWraapper"
 import { ReactNode } from "react"
 
 const Menu = ({ children }: { children: ReactNode }) => {
-    return <div className="flex flex-col gap-3 mt-3">
+    return <div className="flex flex-col gap-3 pt-3">
         {children}
-        <div style={{ height: '70px' }} />
+        {/* <div style={{ height: '70px' }} /> */}
     </div>
 }
 
 const Group = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     return (
         <div>
-            <div className="divide-y divide-secondary-500 rounded-md bg-secondary-700 overflow-hidden">
+            <div className="divide-y divide-secondary-500 rounded-componentRoundness bg-secondary-700 overflow-hidden">
                 {children}
             </div>
         </div>

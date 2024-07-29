@@ -8,7 +8,7 @@ type Props = {
 }
 const ActionStatus: FC<Props> = ({ title, status }) => {
 
-    return <div className="flex text-center space-x-2 bg-secondary-700 p-3 rounded-md">
+    return <div className="flex text-center space-x-2 bg-secondary-700 p-3 rounded-componentRoundness">
         <div className='relative'>
             {
                 status === "success" ?

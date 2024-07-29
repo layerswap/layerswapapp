@@ -8,9 +8,8 @@ import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
 import { CreatyePreHTLCParams, CommitmentParams, LockParams } from "../phtlc"
-import { writeContract, simulateContract, watchContractEvent, readContract } from '@wagmi/core'
+import { writeContract, simulateContract, readContract } from '@wagmi/core'
 import { ethers } from "ethers"
-import { sepolia } from "viem/chains"
 import { AssetLock, Commit } from "../../../Models/PHTLC"
 
 export default function useEVM(): WalletProvider {
