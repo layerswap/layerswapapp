@@ -21,7 +21,7 @@ export enum Progress {
 
 const Committed = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
     title="Committed"
-    description="You committedd assets on the source network"
+    description="You committed assets on the source network"
     isLast={true}
     source="from"
     sourceIcon={walletIcon}
