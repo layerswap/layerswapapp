@@ -35,7 +35,7 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
     const destinationLogo = to ? to.logo : toExchange?.logo
 
     return (
-        <div className="bg-secondary-700 rounded-lg px-2 py-1 border border-secondary-500 w-full relative z-10 space-y-4">
+        <div className="bg-secondary-700 rounded-lg px-2 py-1 border border-secondary-500 w-full relative z-10 mt-1">
             <div className="font-normal flex flex-col w-full relative z-10 space-y-4">
                 <div className="w-full">
                     <div className="flex items-center gap-3">
