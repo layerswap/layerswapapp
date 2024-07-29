@@ -18,7 +18,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { argentWallet, bitgetWallet, coinbaseWallet, metaMaskWallet, phantomWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
-import { mainnet, optimism, optimismSepolia, sepolia } from 'viem/chains';
+import { arbitrum, arbitrumSepolia, mainnet, optimism, optimismSepolia, sepolia } from 'viem/chains';
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -63,12 +63,14 @@ const connectors = connectorsForWallets(
 
 const config = createConfig({
     connectors,
-    chains: [sepolia, mainnet, optimism, optimismSepolia],
+    chains: [sepolia, mainnet, optimism, optimismSepolia, arbitrumSepolia, arbitrum],
     transports: {
         [sepolia.id]: http(),
         [mainnet.id]: http(),
         [optimism.id]: http(),
         [optimismSepolia.id]: http(),
+        [arbitrumSepolia.id]: http(),
+        [arbitrum.id]: http(),
     },
     ssr: true,
 });

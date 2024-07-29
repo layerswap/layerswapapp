@@ -122,9 +122,6 @@ export default function useStarknet(): WalletProvider {
         )
         const increaseAllowanceCall: Call = erc20Contract.populate("increaseAllowance", [atomicAddress, parsedAmount])
 
-
-        const myCallData = new CallData(PHTLCAbi);
-
         const args = [
             parsedAmount,
             destinationChain,
@@ -144,8 +141,7 @@ export default function useStarknet(): WalletProvider {
         )
         const committmentCall: Call = atomicContract.populate("commit1", args)
 
-        // const trx = (await wallet?.metadata?.starknetAccount?.account?.execute([increaseAllowanceCall, committmentCall]))
-        const trx = { transaction_hash: '0x10e96071cc558d956192ac13c6c615a9388bd6966221db4cab2239a24454d03' }
+        const trx = (await wallet?.metadata?.starknetAccount?.account?.execute([increaseAllowanceCall, committmentCall]))
         const commitTransactionData = await wallet.metadata.starknetAccount.provider.waitForTransaction(
             trx.transaction_hash
         );
