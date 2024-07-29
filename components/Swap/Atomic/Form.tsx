@@ -10,7 +10,7 @@ import { isValidAddress } from "../../../lib/address/validator";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
-import { ArrowUpDown, Loader2 } from 'lucide-react'
+import { ArrowUpDown, ExternalLink, Loader2 } from 'lucide-react'
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
@@ -129,68 +129,87 @@ const SwapForm: FC<Props> = ({ partner }) => {
     }, [values.amount])
 
     return <>
-        <Widget className="sm:min-h-[504px]">
+        <Widget className="sm:min-h-[450px]">
             <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-                <Widget.Content>
-                    <div className='flex-col relative flex justify-between w-full space-y-0.5 mb-3.5 leading-4'>
-                        {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="from" label="From" className="rounded-t-componentRoundness pb-5" />
-                        </div>}
-                        {!query?.hideFrom && !query?.hideTo &&
-                            <button
-                                type="button"
-                                aria-label="Reverse the source and destination"
-                                disabled={valuesSwapperDisabled || sourceLoading || destinationLoading}
-                                onClick={valuesSwapper}
-                                className={`${sourceLoading || destinationLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[86px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-[10px] disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
-                                <motion.div
-                                    animate={animate}
-                                    transition={{ duration: 0.3 }}
-                                    onTap={() => !valuesSwapperDisabled && cycle()}
-                                >
-                                    {sourceLoading || destinationLoading ?
-                                        <Loader2 className="opacity-50 w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-lg disabled:opacity-30 animate-spin" />
-                                        :
-                                        <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-lg disabled:opacity-30")} />
+                <ResizablePanel>
+                    <Widget.Content>
+                        <div className='flex-col relative flex justify-between w-full space-y-0.5 mb-3.5 leading-4'>
+                            {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
+                                <NetworkFormField direction="from" label="From" className="rounded-t-componentRoundness pb-5" />
+                            </div>}
+                            {!query?.hideFrom && !query?.hideTo &&
+                                <button
+                                    type="button"
+                                    aria-label="Reverse the source and destination"
+                                    disabled={valuesSwapperDisabled || sourceLoading || destinationLoading}
+                                    onClick={valuesSwapper}
+                                    className={`${sourceLoading || destinationLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[86px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-[10px] disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
+                                    <motion.div
+                                        animate={animate}
+                                        transition={{ duration: 0.3 }}
+                                        onTap={() => !valuesSwapperDisabled && cycle()}
+                                    >
+                                        {sourceLoading || destinationLoading ?
+                                            <Loader2 className="opacity-50 w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-lg disabled:opacity-30 animate-spin" />
+                                            :
+                                            <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-lg disabled:opacity-30")} />
+                                        }
+                                    </motion.div>
+                                </button>}
+                            {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
+                                <NetworkFormField direction="to" label="To" className="rounded-b-componentRoundness" />
+                            </div>}
+                        </div>
+                        {
+                            (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
+                                <div className="mb-6 leading-4">
+                                    <ResizablePanel>
+                                        <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
+                                    </ResizablePanel>
+                                </div>
+                                : <></>
+                        }
+                        {
+                            !(source || destination) ?
+                                <div className="pt-2">
+                                    <h1 className="mt-2 text-xl font-bold tracking-tight text-primary-text flex gap-1 items-center">New Atomic Bridging Protocol</h1>
+                                    <p className="mt-3 mb-5 text-md leading-1 text-secondary-text ">
+                                    Layerswap V8 is for networks what Uniswap is for tokens. Experience fully permissionless and trustless bridging without relying on any third party.
+                                    </p>
+                                    <a className="mt-6 text-sm  cursor-pointer leading-1 text-primary hover:underline flex items-center gap-1 w-fit"
+                                        href="https://layerswap.notion.site/" target="_blank" rel="noreferrer"
+                                    >
+                                        <span>Learn more about the protocol</span> <ExternalLink className="w-4 h-4" />
+                                    </a>
+                                </div>
+                                :
+                                <>
+                                    <div className="mb-6 leading-4">
+                                        <AmountField />
+                                    </div>
+                                    {
+                                        !hideAddress ?
+                                            <Address partner={partner} />
+                                            : <></>
                                     }
-                                </motion.div>
-                            </button>}
-                        {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="to" label="To" className="rounded-b-componentRoundness" />
-                        </div>}
-                    </div>
-                    {
-                        (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
-                            <div className="mb-6 leading-4">
-                                <ResizablePanel>
-                                    <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
-                                </ResizablePanel>
-                            </div>
-                            : <></>
-                    }
-                    <div className="mb-6 leading-4">
-                        <AmountField />
-                    </div>
-                    {
-                        !hideAddress ?
-                            <Address partner={partner} />
-                            : <></>
-                    }
-                    <div className="w-full">
-                        <FeeDetailsComponent values={values} />
-                        {
-                            values.amount &&
-                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                                    <div className="w-full">
+                                        <FeeDetailsComponent values={values} />
+                                        {
+                                            values.amount &&
+                                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                                        }
+                                    </div>
+                                    <div className="w-full hidden">
+                                        <FeeDetailsComponent values={values} />
+                                        {
+                                            values.amount &&
+                                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                                        }
+                                    </div>
+                                </>
                         }
-                    </div>
-                    <div className="w-full hidden">
-                        <FeeDetailsComponent values={values} />
-                        {
-                            values.amount &&
-                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
-                        }
-                    </div>
-                </Widget.Content>
+                    </Widget.Content>
+                </ResizablePanel>
                 <Widget.Footer>
                     <SwapButton
                         className="plausible-event-name=Swap+initiated"

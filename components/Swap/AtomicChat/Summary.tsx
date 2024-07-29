@@ -2,7 +2,6 @@ import Image from "next/image";
 import { FC } from "react";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { Network, Token } from "../../../Models/Network";
-import { Exchange } from "../../../Models/Exchange";
 import { addressFormat } from "../../../lib/address/formatter";
 import { ExtendedAddress } from "../../Input/Address/AddressPicker/AddressWithIcon";
 import { isValidAddress } from "../../../lib/address/validator";
