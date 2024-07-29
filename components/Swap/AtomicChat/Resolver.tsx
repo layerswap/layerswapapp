@@ -65,16 +65,26 @@ const LpPlng = ({ address }: { address: string | undefined }) => <Message
 />
 
 const UserCommitting = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
-    title={<div className="flex">
+    title={<div className="flex gap-2">
         Committing your funds for bridging
+        <div className="flex space-x-1 font-bold">
+            <div className="animate-bounce delay-100">.</div>
+            <div className="animate-bounce delay-150">.</div>
+            <div className="animate-bounce delay-300">.</div>
+        </div>
     </div>}
     isLast={true}
     source="from"
     sourceIcon={walletIcon}
 />
 const UserLocking = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
-    title={<div className="flex">
+    title={<div className="flex gap-2">
         Locking your funds for LP
+        <div className="flex space-x-1 font-bold">
+            <div className="animate-bounce delay-100">.</div>
+            <div className="animate-bounce delay-150">.</div>
+            <div className="animate-bounce delay-300">.</div>
+        </div>
     </div>}
     isLast={true}
     source="from"
@@ -99,7 +109,9 @@ export const ResolveMessages: FC = (props) => {
     const lp_address = source_network?.metadata.lp_address
 
     const WalletIcon = wallet && <wallet.icon className="w-5 h-5 rounded-full bg-secondary-800 border-secondary-400" />
-
+    return <div className="flex w-full grow flex-col space-y-2" >
+        <UserCommitting walletIcon={WalletIcon} />
+    </div >
     if (redeemCompleted) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <Committed walletIcon={WalletIcon} />
