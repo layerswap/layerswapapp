@@ -120,7 +120,7 @@ export default function Form() {
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useFee()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
-
+        
         const { destination_address, to } = values
         if (to &&
             destination_address &&
@@ -154,8 +154,6 @@ export default function Form() {
             const source_provider = values.from && getSourceProvider(values.from)
             const destination_provider = values.from && getSourceProvider(values.from)
 
-            const details = NETWORKS_DETAILS[values.from?.name]
-
             if (!source_provider) {
                 throw new Error("No source_provider")
             }
@@ -179,8 +177,8 @@ export default function Form() {
             // })
             // router.push(`/commitment/${commitId}?network=${values.from?.name}`)
 
-            router.push({
-                pathname: `/commitSwap`,
+            return await router.push({
+                pathname: `/atomic`,
                 query: {
                     amount: values.amount,
                     address: values.destination_address,

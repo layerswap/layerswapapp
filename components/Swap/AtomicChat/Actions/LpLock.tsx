@@ -1,65 +1,20 @@
 import { FC, useEffect, useState } from "react";
-import { NetworkWithTokens, Token } from "../../../Models/Network";
+import { NetworkWithTokens, Token } from "../../../../Models/Network";
 import Image from 'next/image';
-import { AssetLock, Commit } from "../../../Models/PHTLC";
-import { ExtendedAddress } from "../../Input/Address/AddressPicker/AddressWithIcon";
-import { addressFormat } from "../../../lib/address/formatter";
-import { truncateDecimals } from "../../utils/RoundDecimals";
+import { AssetLock, Commit } from "../../../../Models/PHTLC";
+import { ExtendedAddress } from "../../../Input/Address/AddressPicker/AddressWithIcon";
+import { addressFormat } from "../../../../lib/address/formatter";
+import { truncateDecimals } from "../../../utils/RoundDecimals";
 import { ethers } from "ethers";
-import useWallet from "../../../hooks/useWallet";
-import { NETWORKS_DETAILS } from "../Atomic";
-
-type UpcomingProps = {
-    source_network: NetworkWithTokens,
-    destination_network: NetworkWithTokens,
-    amount: number;
-    address: string;
-    source_asset: Token;
-    destination_asset: Token;
-}
+import useWallet from "../../../../hooks/useWallet";
+import { NETWORKS_DETAILS } from "../../Atomic";
+import { useAtomicState } from "../../../../context/atomicContext";
+import ActionStatus from "./ActionStatus";
 
 
-export const LpLockUpcoming: FC<UpcomingProps> = (props) => {
-    const { source_network, destination_network, amount, address, source_asset, destination_asset } = props
 
-    return <div>
-        <div className="font-normal flex flex-col w-full relative z-10 space-y-4 grow">
-            <div className='w-full grow'>
-                {
-                    destination_network && destination_asset &&
-                    <div className="flex items-center justify-between w-full grow">
-                        <div className="flex items-center gap-3">
-                            <Image src={destination_network.logo} alt={destination_network.display_name} width={32} height={32} className="rounded-lg" />
-                            <div>
-                                <p className="text-sm leading-5">{destination_network?.display_name}</p>
-                                <div className="text-sm group/addressItem text-secondary-text">
-                                    <ExtendedAddress address={addressFormat(address, destination_network)} network={destination_network} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-}
-
-type CurrentProps = {
-    source_network: NetworkWithTokens,
-    destination_network: NetworkWithTokens,
-    amount: number;
-    address: string;
-    source_asset: Token;
-    destination_asset: Token;
-    commitment: Commit
-    commitmentId: string;
-    setDestinationLock: (data: AssetLock) => void;
-    destinationLock: AssetLock | null;
-    setHashLock: (data: string) => void;
-}
-
-export const LpLockCurrent: FC<CurrentProps> = (props) => {
-    const { source_network, destination_network, amount, address, source_asset, destination_asset, commitment, commitmentId, setDestinationLock, destinationLock, setHashLock } = props
+export const LpLockingAssets: FC = () => {
+    const { source_network, destination_network, amount, address, source_asset, destination_asset, committment, commitId, setDestinationLock, destinationLock, setHashLock } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
 
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
@@ -67,7 +22,7 @@ export const LpLockCurrent: FC<CurrentProps> = (props) => {
 
     useEffect(() => {
         let lockHandler: any = undefined
-        if (destination_provider && destination_network && !destinationLock && commitmentId) {
+        if (destination_provider && destination_network && !destinationLock && commitId) {
             lockHandler = setInterval(async () => {
                 const details = NETWORKS_DETAILS[destination_network.name]
                 if (!destination_network.chain_id)
@@ -76,7 +31,7 @@ export const LpLockCurrent: FC<CurrentProps> = (props) => {
                 const destinationLockId = await destination_provider.getLockIdByCommitId({
                     abi: details.abi,
                     chainId: destination_network.chain_id,
-                    commitId: commitmentId,
+                    commitId: commitId,
                     contractAddress: destination_network.metadata.htlc_contract as `0x${string}`
                 })
 
@@ -99,26 +54,10 @@ export const LpLockCurrent: FC<CurrentProps> = (props) => {
         };
     }, [destination_provider, destination_network])
 
-    return <div>
-        <div className="font-normal flex flex-col w-full relative z-10 space-y-4 grow">
-            <div className='w-full grow'>
-                {
-                    commitment && destination_network && destination_asset &&
-                    <div className="flex items-center justify-between w-full grow">
-                        <div className="flex items-center gap-3">
-                            <Image src={destination_network.logo} alt={destination_network.display_name} width={32} height={32} className="rounded-lg" />
-                            <div>
-                                <p className="text-primary-text text-sm leading-5">{destination_network?.display_name}</p>
-                                <div className="text-sm group/addressItem text-secondary-text">
-                                    <ExtendedAddress address={addressFormat(address, destination_network)} network={destination_network} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
+    return <ActionStatus
+        status="pending"
+        title='We are locking your assets on destination network'
+    />
 }
 type DoneProps = {
     source_network: NetworkWithTokens,

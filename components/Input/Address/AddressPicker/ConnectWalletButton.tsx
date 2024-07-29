@@ -61,7 +61,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
             </div>
             <button type="button" onClick={onClick} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 ${addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && 'bg-secondary-800'}`}>
                 <div className={`flex items-center justify-between w-full`}>
-                    <AddressWithIcon addressItem={addressItem} connectedWallet={connectedWallet} destination={destination} />
+                    <AddressWithIcon addressItem={addressItem} connectedWallet={connectedWallet} network={destination} />
                     <div className="flex h-6 items-center px-1">
                         {
                             addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) &&

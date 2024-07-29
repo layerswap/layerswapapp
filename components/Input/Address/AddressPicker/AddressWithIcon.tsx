@@ -16,10 +16,10 @@ type Props = {
     addressItem: AddressItem;
     connectedWallet?: Wallet | undefined;
     partner?: Partner;
-    destination: Network;
+    network: Network;
 }
 
-const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, destination }) => {
+const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, network }) => {
 
     const difference_in_days = addressItem?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressItem.date).getTime()) / (1000 * 3600 * 24))) : undefined
 
@@ -77,7 +77,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, des
             </div>
             <div className="flex flex-col items-start">
 
-                <ExtendedAddress address={addressItem.address} network={destination} />
+                <ExtendedAddress address={addressItem.address} network={network} />
 
                 <div className="text-secondary-text">
                     <div className="inline-flex items-center gap-1.5">

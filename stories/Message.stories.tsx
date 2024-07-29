@@ -50,41 +50,41 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const PreparingTransactionMessage: Story = {
-    args: {
-        status: "pending",
-        header: 'Preparing the transaction',
-        details: 'Will be ready to sign in a couple of seconds'
-    } as WalletMessageProps,
-};
+// export const PreparingTransactionMessage: Story = {
+//     args: {
+//         status: "pending",
+//         header: 'Preparing the transaction',
+//         details: 'Will be ready to sign in a couple of seconds'
+//     } as WalletMessageProps,
+// };
 
-export const ConfirmTransactionMessage: Story = {
-    args: {
-        header: 'Confirm in wallet',
-        status: 'pending',
-        details: 'Please confirm the transaction in your wallet',
-        showInModal: true
-    } as WalletMessageProps
-};
-export const TransactionInProgressMessage: Story = {
-    args: {
-        header: 'Transaction in progress',
-        status: 'pending',
-        details: 'Waiting for your transaction to be published'
-    } as WalletMessageProps
-};
-export const InsufficientFundsMessage: Story = {
-    args: {
-        header: 'Insufficient funds',
-        status: 'error',
-        details: 'The balance of the connected wallet is not enough'
-    } as WalletMessageProps
-};
+// export const ConfirmTransactionMessage: Story = {
+//     args: {
+//         header: 'Confirm in wallet',
+//         status: 'pending',
+//         details: 'Please confirm the transaction in your wallet',
+//         showInModal: true
+//     } as WalletMessageProps
+// };
+// export const TransactionInProgressMessage: Story = {
+//     args: {
+//         header: 'Transaction in progress',
+//         status: 'pending',
+//         details: 'Waiting for your transaction to be published'
+//     } as WalletMessageProps
+// };
+// export const InsufficientFundsMessage: Story = {
+//     args: {
+//         header: 'Insufficient funds',
+//         status: 'error',
+//         details: 'The balance of the connected wallet is not enough'
+//     } as WalletMessageProps
+// };
 
-export const TransactionRejectedMessage: Story = {
-    args: {
-        status: "error",
-        header: "Transaction rejected",
-        details: "You've rejected the transaction in your wallet. Click “Try again” to open the prompt again."
-    } as WalletMessageProps
-}
+// export const TransactionRejectedMessage: Story = {
+//     args: {
+//         status: "error",
+//         header: "Transaction rejected",
+//         details: "You've rejected the transaction in your wallet. Click “Try again” to open the prompt again."
+//     } as WalletMessageProps
+// }

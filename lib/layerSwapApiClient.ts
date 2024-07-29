@@ -188,9 +188,9 @@ export type DepositAction = {
 }
 
 export type Quote = {
-    quote: SwapQuote,
-    refuel: Refuel,
-    reward: QuoteReward
+    quote?: SwapQuote,
+    refuel?: Refuel,
+    reward?: QuoteReward
 }
 
 export type QuoteReward = {

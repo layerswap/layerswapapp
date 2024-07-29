@@ -8,12 +8,9 @@ import { truncateDecimals } from "../../utils/RoundDecimals";
 import { Commit } from "../../../Models/PHTLC";
 import { NetworkWithTokens, Token } from "../../../Models/Network";
 import { NETWORKS_DETAILS } from "../Atomic";
-import SubmitButton from "../../buttons/submitButton";
-import { ChangeNetworkButton, ConnectWalletButton, WalletActionButton } from "./butons";
+import { WalletActionButton } from "./butons";
 import toast from "react-hot-toast";
-import { useRouter } from "next/router";
 import { ethers } from "ethers";
-import { clear } from "console";
 
 type CurrentProps = {
     source_network: NetworkWithTokens,
@@ -119,8 +116,6 @@ export const UserCommitCurrent: FC<CurrentProps> = (props) => {
             clearInterval(commitHandler)
         }
     }, [source_network])
-
-
     return <div>
         <div className="font-normal flex flex-col w-full relative z-10 space-y-4 grow">
             <div className='w-full grow'>
@@ -158,11 +153,11 @@ export const UserCommitCurrent: FC<CurrentProps> = (props) => {
                         </div>
                     </div>
                     :
-                    <WalletActionButton
+                    source_network.chain_id && <WalletActionButton
                         activeChain={wallet?.chainId}
                         isConnected={!!wallet}
                         network={source_network}
-                        networkChainId={Number(source_network.chain_id)}
+                        networkChainId={source_network.chain_id}
                         onClick={handleCommit}
                     >Commit</WalletActionButton>
             }

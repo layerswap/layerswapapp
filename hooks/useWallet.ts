@@ -23,7 +23,6 @@ export type WalletProvider = {
     claim: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
     refund: (args: RefundParams) => Promise<any> | undefined | void,
 
-    getPreHTLC: (id: string) => Promise<void> | undefined | void,
     waitForLock: (args: CommitmentParams, callback: (data: any) => void) => Promise<() => void>
     getCommitment: (args: CommitmentParams) => Promise<Commit | null>,
     getLock: (args: LockParams) => Promise<AssetLock>,
@@ -38,7 +37,7 @@ export default function useWallet() {
     const WalletProviders: WalletProvider[] = [
         // useTON(),
         useEVM(),
-        // useStarknet(),
+        useStarknet(),
         // useImmutableX(),
         // useSolana()
     ]
