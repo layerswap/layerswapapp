@@ -41,7 +41,7 @@ export default function useEVM(): WalletProvider {
     const name = 'evm'
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
-    
+
     useEffect(() => {
         if (shouldConnect) {
             connectWallet()
@@ -104,7 +104,12 @@ export default function useEVM(): WalletProvider {
         if (isNaN(Number(chainId))) {
             throw Error("Invalid source chain")
         }
-
+        if (!lpAddress) {
+            throw Error("No LP address")
+        }
+        if (!atomicContrcat) {
+            throw Error("No conteract address")
+        }
         const timeLockMS = Date.now() + LOCK_TIME
         const timeLock = Math.floor(timeLockMS / 1000)
         const parsedAmount = ethers.utils.parseUnits(amount.toString(), decimals).toBigInt()

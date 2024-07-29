@@ -4,14 +4,11 @@ import KnownInternalNames from "../../knownIds"
 import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
-import { Call, CallData, Contract, hash, transaction, shortString } from "starknet";
+import { Call, Contract, hash, shortString } from "starknet";
 import PHTLCAbi from "../../../lib/abis/atomic/STARKNET_PHTLC.json"
 import ETHABbi from "../../../lib/abis/STARKNET_ETH.json"
-
-import { call } from "viem/actions";
 import { CommitmentParams, CreatyePreHTLCParams, LockParams } from "../phtlc";
 import { BigNumberish, ethers } from "ethers";
-import { addressFormat } from "../../address/formatter";
 import { AssetLock, Commit } from "../../../Models/PHTLC";
 
 export default function useStarknet(): WalletProvider {
@@ -145,10 +142,11 @@ export default function useStarknet(): WalletProvider {
         const commitTransactionData = await wallet.metadata.starknetAccount.provider.waitForTransaction(
             trx.transaction_hash
         );
+        console.log('trx', trx.transaction_hash)
         const parsedEvents = atomicContract.parseEvents(commitTransactionData);
-        console.log(parsedEvents)
+        console.log('parsedEvents', parsedEvents)
         const tokenCommitedEvent = parsedEvents.find((event: any) => event.TokenCommitted)
-        const commitId = tokenCommitedEvent?.TokenCommitted.commit_id
+        const commitId = tokenCommitedEvent?.TokenCommitted.commitId
         if (!commitId) {
             throw new Error('No commit id')
         }
@@ -249,13 +247,13 @@ export default function useStarknet(): WalletProvider {
     }
     const getLockIdByCommitId = async (params: CommitmentParams) => {
         const { abi, chainId, commitId, contractAddress } = params
-        
+
         const atomicContract = new Contract(
             PHTLCAbi,
             contractAddress
         )
         const result = await atomicContract.functions.getLockIdByCommitId(commitId)
-        
+
         return result as `0x${string}`
     }
 

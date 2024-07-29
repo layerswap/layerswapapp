@@ -54,39 +54,12 @@ const SwapDetails = dynamicWithRetries(() => import(".."),
 export const NETWORKS_DETAILS = {
     'ETHEREUM_SEPOLIA': {
         abi: EthPhtlcAbi,
-        lockDataResolver: (data: any[]): AssetLock => {
-            return {
-                dstAddress: data[0],
-                dstChain: data[1],
-                dstAsset: data[2],
-                srcAsset: data[3],
-                sender: data[4],
-                srcReceiver: data[5],
-                hashlock: data[6],
-                secret: data[7],
-                amount: data[8],
-                timelock: data[9],
-                redeemed: data[10],
-                unlocked: data[11],
-            }
-        }
-
     },
     'ARBITRUM_SEPOLIA': {
         abi: ArbPhtlcAbi,
-        lockDataResolver: (data: any[]): AssetLock => {
-            console.log("dest data -----", data)
-            return {
-                hashlock: data[0],
-                secret: data[1],
-                amount: data[2],
-                timelock: data[3],
-                sender: data[4],
-                srcReceiver: data[5],
-                redeemed: data[6],
-                unlocked: data[7],
-            }
-        }
+    },
+    'OPTIMISM_SEPOLIA': {
+        abi: EthPhtlcAbi,
     },
     'STARKNET_SEPOLIA': {
         contract: '0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90',

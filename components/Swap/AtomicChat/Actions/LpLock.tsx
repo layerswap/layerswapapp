@@ -53,7 +53,7 @@ export const LpLockingAssets: FC = () => {
 
     return <ActionStatus
         status="pending"
-        title='We are locking your assets on destination network'
+        title='LP is locking your assets on destination network'
     />
 }
 type DoneProps = {
