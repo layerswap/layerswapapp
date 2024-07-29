@@ -7,7 +7,7 @@ import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
-import { CreatyePreHTLCParams, CommitmentParams, LockParams } from "../phtlc"
+import { CreatyePreHTLCParams, CommitmentParams, LockParams, RefundParams } from "../phtlc"
 import { writeContract, simulateContract, watchContractEvent, readContract } from '@wagmi/core'
 import { ethers } from "ethers"
 import { sepolia } from "viem/chains"
@@ -42,7 +42,7 @@ export default function useEVM(): WalletProvider {
     const name = 'evm'
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
-    
+
     useEffect(() => {
         if (shouldConnect) {
             connectWallet()
@@ -94,7 +94,8 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-    const LOCK_TIME = 1000 * 60 * 60 * 3 // 3 hours
+    // const LOCK_TIME = 1000 * 60 * 60 * 3 // 3 hours
+    const LOCK_TIME = 1000 * 60 * 0.5 // 30 seconds
     const messanger = "0x39c58617d355d8B432a3675714b93eC840872236"
 
     const createPreHTLC = async (params: CreatyePreHTLCParams) => {
@@ -140,9 +141,6 @@ export default function useEVM(): WalletProvider {
         throw new Error('Not implemented')
     }
     const claim = () => {
-        throw new Error('Not implemented')
-    }
-    const refund = () => {
         throw new Error('Not implemented')
     }
     const getPreHTLC = () => {
@@ -218,6 +216,27 @@ export default function useEVM(): WalletProvider {
         }
         console.log('lock result', result)
         return result as AssetLock
+    }
+
+    const refund = async (params: RefundParams) => {
+        const { abi, chainId, lockId, commitId, contractAddress } = params
+
+        const { request } = await simulateContract(config, {
+            abi,
+            address: contractAddress,
+            functionName: lockId ? 'unlock' : 'uncommit',
+            args: lockId ? [lockId] : [commitId],
+            chainId: Number(chainId),
+        })
+
+        const result = await writeContract(config, request)
+
+        if (!result) {
+            throw new Error("No result")
+        }
+        console.log('refund result', result)
+        return result
+
     }
 
     return {
