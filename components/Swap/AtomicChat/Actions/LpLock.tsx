@@ -34,7 +34,7 @@ export const LpLockingAssets: FC = () => {
                     contractAddress: destination_network.metadata.htlc_contract as `0x${string}`
                 })
 
-                if (destinationLockId && destinationLockId != '0x0000000000000000000000000000000000000000000000000000000000000000') {
+                if (destinationLockId && destinationLockId != '0x0000000000000000000000000000000000000000000000000000000000000000' || destinationLockId == '0x00') {
                     setHashLock(destinationLockId)
                     const data = await destination_provider.getLock({
                         abi: details.abi,
