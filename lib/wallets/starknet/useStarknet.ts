@@ -4,7 +4,7 @@ import KnownInternalNames from "../../knownIds"
 import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
-import { Call, Contract, hash, shortString } from "starknet";
+import { Call, Contract, RpcProvider, hash, shortString } from "starknet";
 import PHTLCAbi from "../../../lib/abis/atomic/STARKNET_PHTLC.json"
 import ETHABbi from "../../../lib/abis/STARKNET_ETH.json"
 import { CommitmentParams, CreatyePreHTLCParams, LockParams } from "../phtlc";
@@ -39,7 +39,6 @@ export default function useStarknet(): WalletProvider {
 
     const connectWallet = useCallback(async (chain: string) => {
         const constants = (await import('starknet')).constants
-        const RpcProvider = (await import('starknet')).RpcProvider
         const chainId = process.env.NEXT_PUBLIC_API_VERSION === "sandbox" ? constants.NetworkName.SN_SEPOLIA : constants.NetworkName.SN_MAIN
         const connect = (await import('starknetkit')).connect
         try {
@@ -174,7 +173,10 @@ export default function useStarknet(): WalletProvider {
 
         const atomicContract = new Contract(
             PHTLCAbi,
-            contractAddress
+            contractAddress,
+            new RpcProvider({
+                nodeUrl: 'https://starknet-sepolia.public.blastapi.io',
+            })
         )
 
         const result = await atomicContract.functions.getCommitDetails(commitId)
@@ -208,6 +210,7 @@ export default function useStarknet(): WalletProvider {
         }
         const args = [
             commitId,
+            lockId
         ]
         const atomicContract = new Contract(
             PHTLCAbi,
@@ -228,7 +231,10 @@ export default function useStarknet(): WalletProvider {
 
         const atomicContract = new Contract(
             PHTLCAbi,
-            contractAddress
+            contractAddress,
+            new RpcProvider({
+                nodeUrl: 'https://starknet-sepolia.public.blastapi.io',
+            })
         )
         const result = await atomicContract.functions.getLockDetails(lockId)
 
@@ -254,7 +260,10 @@ export default function useStarknet(): WalletProvider {
 
         const atomicContract = new Contract(
             PHTLCAbi,
-            contractAddress
+            contractAddress,
+            new RpcProvider({
+                nodeUrl: 'https://starknet-sepolia.public.blastapi.io',
+            })
         )
         const result = await atomicContract.functions.getLockIdByCommitId(commitId)
         const hexedResult = ethers.utils.hexlify(result)
