@@ -1,5 +1,4 @@
 import { FC } from "react";
-import SuccessIcon from "../../../icons/SuccessIcon";
 import { CheckCircle2 } from "lucide-react";
 
 type Props = {

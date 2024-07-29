@@ -22,12 +22,14 @@ type DataContextType = {
     hashLock?: string,
     userLocked?: boolean,
     sourceLock?: AssetLock,
+    completedRefundHash?: string,
     onCommit: (commitId: string) => void;
     setCommitment: (commitment: Commit) => void;
     setDestinationLock: (data: AssetLock) => void;
     setSourceLock: (data: AssetLock) => void;
     setHashLock: (data: string) => void;
     setUserLocked: (locked: boolean) => void,
+    setCompletedRefundHash: (hash: string) => void
 }
 
 export function AtomicProvider({ children }) {
@@ -50,6 +52,7 @@ export function AtomicProvider({ children }) {
     const [hashLock, setHashLock] = useState<string | undefined>(undefined)
     const [userLocked, setUserLocked] = useState<boolean>(false)
 
+    const [completedRefundHash, setCompletedRefundHash] = useState<string | undefined>(undefined)
 
     const source_network = networks.find(n => n.name.toUpperCase() === (source as string).toUpperCase())
     const destination_network = networks.find(n => n.name.toUpperCase() === (destination as string).toUpperCase())
@@ -80,10 +83,12 @@ export function AtomicProvider({ children }) {
             hashLock,
             userLocked,
             sourceLock,
+            completedRefundHash,
             setDestinationLock,
             setHashLock,
             setSourceLock,
-            setUserLocked
+            setUserLocked,
+            setCompletedRefundHash
         }}>
             {children}
         </AtomicStateContext.Provider>

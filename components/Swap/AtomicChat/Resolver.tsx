@@ -3,7 +3,7 @@ import { ProgressStatus } from "../Withdraw/Processing/types";
 import Message from "./Message";
 import AddressIcon from "../../AddressIcon";
 import LayerSwapLogoSmall from "../../icons/layerSwapLogoSmall";
-import { UserCommitAction, UserLockAction } from "./Actions/UserActions";
+import { UserCommitAction, UserLockAction, UserRefundAction } from "./Actions/UserActions";
 import { useAtomicState } from "../../../context/atomicContext";
 import { motion, useAnimation } from "framer-motion";
 import { LpLockingAssets } from "./Actions/LpLock";
@@ -109,6 +109,7 @@ export const ResolveMessages: FC = (props) => {
     const lpLockDetected = destinationLock ? true : false;
     const assetsLocked = committment?.locked && destinationLock ? true : false;
     const redeemCompleted = sourceLock?.redeemed ? true : false;
+    const isTimelockExpired = (Math.floor(Date.now() / 1000) - Number(committment?.timelock)) > 0
     const { getWithdrawalProvider } = useWallet()
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const wallet = source_provider?.getConnectedWallet()
@@ -121,7 +122,13 @@ export const ResolveMessages: FC = (props) => {
             <AssetsLockedByLP />
             <AssetsLockedByUser address={address} />
             <AssetsSent />
-        </div >
+        </div>
+    }
+    //Implement refund UI
+    if (isTimelockExpired) {
+        return <div className="flex w-full grow flex-col space-y-2" >
+            <Committed address={address} />
+        </div>
     }
     if (assetsLocked) {
         return <div className="flex w-full grow flex-col space-y-2" >
@@ -129,24 +136,24 @@ export const ResolveMessages: FC = (props) => {
             <AssetsLockedByLP />
             <AssetsLockedByUser address={address} />
             <LpPlng />
-        </div >
+        </div>
     }
     if (lpLockDetected) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <Committed address={address} />
             <AssetsLockedByLP />
-        </div >
+        </div>
     }
     if (commited) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <Committed address={address} />
             <LpPlng />
-        </div >
+        </div>
     }
     if (commtting) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <UserCommitting address={address} />
-        </div >
+        </div>
     }
     return <></>
 }
@@ -157,6 +164,7 @@ const ResolveAction: FC = () => {
     const lpLockDetected = destinationLock ? true : false;
     const assetsLocked = committment?.locked && destinationLock ? true : false;
     const redeemCompleted = sourceLock?.redeemed ? true : false;
+    const isTimelockExpired = (Math.floor(Date.now() / 1000) - Number(committment?.timelock)) > 0
 
     if (redeemCompleted) {
         return <div className="flex w-full grow flex-col space-y-2" >
@@ -164,26 +172,41 @@ const ResolveAction: FC = () => {
                 status="success"
                 title='Transaction Completed'
             />
-        </div >
+        </div>
+    }
+    if (isTimelockExpired) {
+        if (committment?.uncommitted || destinationLock?.unlocked) {
+            return <div className="flex w-full grow flex-col space-y-2" >
+                <ActionStatus
+                    status="success"
+                    title='Refund Completed'
+                />
+            </div>
+        }
+        else {
+            return <div className="flex w-full grow flex-col space-y-2" >
+                <UserRefundAction />
+            </div>
+        }
     }
     if (assetsLocked) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <RedeemAction />
-        </div >
+        </div>
     }
     if (lpLockDetected) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <UserLockAction />
-        </div >
+        </div>
     }
     if (commited) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <LpLockingAssets />
-        </div >
+        </div>
     }
     return <div className="flex w-full grow flex-col space-y-2" >
         <UserCommitAction />
-    </div >
+    </div>
 }
 
 

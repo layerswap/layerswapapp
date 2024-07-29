@@ -1,17 +1,9 @@
 import { FC, useEffect, useRef, useState } from "react";
-import Image from 'next/image';
-import { ExtendedAddress } from "../../../Input/Address/AddressPicker/AddressWithIcon";
-import { addressFormat } from "../../../../lib/address/formatter";
 import useWallet from "../../../../hooks/useWallet";
-import { truncateDecimals } from "../../../utils/RoundDecimals";
-import { Commit } from "../../../../Models/PHTLC";
-import { NetworkWithTokens, Token } from "../../../../Models/Network";
 import { NETWORKS_DETAILS } from "../../Atomic";
-import { WalletActionButton } from "../butons";
+import { WalletActionButton } from "../buttons";
 import toast from "react-hot-toast";
-import { ethers } from "ethers";
 import { useAtomicState } from "../../../../context/atomicContext";
-import WalletMessage from "../../Withdraw/Wallet/WalletTransfer/message";
 import ActionStatus from "./ActionStatus";
 
 export const UserCommitAction: FC = () => {
@@ -52,7 +44,7 @@ export const UserCommitAction: FC = () => {
             if (!destination_provider) {
                 throw new Error("No destination_provider")
             }
-            const { commitId, hash } = await source_provider.createPreHTLC({
+            const { commitId } = await source_provider.createPreHTLC({
                 abi: details.abi,
                 address,
                 amount: amount.toString(),
@@ -128,7 +120,7 @@ export const UserCommitAction: FC = () => {
 
 
 export const UserLockAction: FC = () => {
-    const { source_network, source_asset, commitId, hashLock, committment, setCommitment, setUserLocked, userLocked } = useAtomicState()
+    const { source_network, commitId, hashLock, committment, setCommitment, setUserLocked, userLocked } = useAtomicState()
     const [lockLoading, setLockLoading] = useState(false)
 
     const { getWithdrawalProvider } = useWallet()
@@ -217,4 +209,56 @@ export const UserLockAction: FC = () => {
         }
     </div>
 
+}
+
+export const UserRefundAction: FC = () => {
+    const { source_network, commitId, hashLock, setCompletedRefundHash } = useAtomicState()
+    const { getWithdrawalProvider } = useWallet()
+    const [requestedRefund, setRequestedRefund] = useState(false)
+
+    const source_provider = getWithdrawalProvider(source_network!)
+    const wallet = source_provider?.getConnectedWallet()
+
+    const handleRefundAssets = async () => {
+        try {
+            if (!source_network) throw new Error("No source network")
+            if (!commitId) throw new Error("No commitment details")
+            setRequestedRefund(true)
+
+            const details = NETWORKS_DETAILS[source_network.name]
+
+            const res = await source_provider?.refund({
+                commitId: commitId,
+                lockId: hashLock,
+                abi: details.abi,
+                chainId: source_network.chain_id ?? '',
+                contractAddress: source_network.metadata.htlc_contract as `0x${string}`
+            })
+            setCompletedRefundHash(res)
+        }
+        catch (e) {
+            toast(e.message)
+        }
+
+    }
+
+    return <div className="font-normal flex flex-col w-full relative z-10 space-y-4 grow">
+        {
+            requestedRefund ?
+                <ActionStatus
+                    status="pending"
+                    title='Please wait for refund'
+                />
+                :
+                <WalletActionButton
+                    activeChain={wallet?.chainId}
+                    isConnected={!!wallet}
+                    network={source_network!}
+                    networkChainId={Number(source_network?.chain_id)}
+                    onClick={handleRefundAssets}
+                >
+                    Refund
+                </WalletActionButton>
+        }
+    </div>
 }

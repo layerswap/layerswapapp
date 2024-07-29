@@ -21,13 +21,10 @@ type ContainerProps = {
     destination_asset: string;
 }
 
-type Props = ContainerProps & {
-
-}
 
 //TODO: implement user redeem current for handling LP did not redeem case
 
-const Commitment: FC<Props> = (props) => {
+const Commitment: FC<ContainerProps> = (props) => {
     const { source, destination, amount, address, source_asseet, destination_asset, type } = props;
     const router = useRouter()
     const [commitId, setCommitId] = useState<string | null>(router.query.commitId as string | null)
@@ -43,6 +40,7 @@ const Commitment: FC<Props> = (props) => {
     const destination_network = networks.find(n => n.name.toUpperCase() === destination.toUpperCase())
     const source_token = source_network?.tokens.find(t => t.symbol === source_asseet)
     const destination_token = destination_network?.tokens.find(t => t.symbol === destination_asset)
+
     const isTimelockExpired = (Math.floor(Date.now() / 1000) - Number(commitment?.timelock)) > 0
 
     const handleCommited = (commitId: string) => {

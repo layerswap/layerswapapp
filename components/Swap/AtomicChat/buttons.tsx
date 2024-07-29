@@ -1,19 +1,12 @@
-import { Plus, RefreshCw, WalletIcon } from "lucide-react";
+import { WalletIcon } from "lucide-react";
 import { FC, useCallback, useMemo, useState } from "react";
-import useWallet, { WalletProvider } from "../../../hooks/useWallet";
-import { Wallet } from "../../../stores/walletStore";
-import { Network, NetworkWithTokens } from "../../../Models/Network";
-import { AddressGroup } from "../../Input/Address/AddressPicker";
-import AddressWithIcon from "../../Input/Address/AddressPicker/AddressWithIcon";
-import { addressFormat } from "../../../lib/address/formatter";
-import FilledCheck from "../../icons/FilledCheck";
-import { ResolveConnectorIcon } from "../../icons/ConnectorIcons";
+import useWallet from "../../../hooks/useWallet";
+import { Network } from "../../../Models/Network";
 import toast from "react-hot-toast";
 import SubmitButton, { SubmitButtonProps } from "../../buttons/submitButton";
 import { ActionData } from "../Withdraw/Wallet/WalletTransfer/sharedTypes";
 import WalletMessage from "../Withdraw/Wallet/WalletTransfer/message";
 import { useSwitchChain } from "wagmi";
-import { useSwapDataState } from "../../../context/swap";
 
 type ConnectProps = SubmitButtonProps & {
     network: Network;

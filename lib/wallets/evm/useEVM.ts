@@ -232,7 +232,6 @@ export default function useEVM(): WalletProvider {
         if (!result) {
             throw new Error("No result")
         }
-        console.log('refund result', result)
         return result
 
     }

@@ -11,10 +11,8 @@ import { NETWORKS_DETAILS } from "../../Atomic";
 import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
 
-
-
 export const LpLockingAssets: FC = () => {
-    const { source_network, destination_network, amount, address, source_asset, destination_asset, committment, commitId, setDestinationLock, destinationLock, setHashLock } = useAtomicState()
+    const { destination_network, commitId, setDestinationLock, destinationLock, setHashLock } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
 
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
