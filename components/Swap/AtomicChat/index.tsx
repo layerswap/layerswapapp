@@ -1,13 +1,7 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect } from "react";
 import { Widget } from "../../Widget/Index";
-import { ProgressStatus, StatusStep } from "../Withdraw/Processing/types";
-import { User } from "lucide-react";
 import { useSettingsState } from "../../../context/settings";
-import { NextRouter, useRouter } from "next/router";
-import { Network } from "../../../Models/Network";
 import useWallet from "../../../hooks/useWallet";
-import { NETWORKS_DETAILS } from "../Atomic";
-import { AssetLock, Commit } from "../../../Models/PHTLC";
 import Summary from "./Summary";
 import { useFee } from "../../../context/feeContext";
 import ConnectedWallet from "./ConnectedWallet";

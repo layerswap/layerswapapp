@@ -1,13 +1,10 @@
-import { Context, useCallback, createContext, useContext, useState } from 'react'
-import { useInterval } from '../hooks/useInterval';
+import { Context, createContext, useContext, useState } from 'react'
 import { useRouter } from 'next/router';
 import { useSettingsState } from './settings';
 import { AssetLock, Commit } from '../Models/PHTLC';
-import useWallet from '../hooks/useWallet';
 import { Network, Token } from '../Models/Network';
 
 const AtomicStateContext = createContext<DataContextType | null>(null);
-
 
 type DataContextType = {
     source_network?: Network,
@@ -22,12 +19,14 @@ type DataContextType = {
     hashLock?: string,
     userLocked?: boolean,
     sourceLock?: AssetLock,
+    error: string | undefined,
     onCommit: (commitId: string) => void;
     setCommitment: (commitment: Commit) => void;
     setDestinationLock: (data: AssetLock) => void;
     setSourceLock: (data: AssetLock) => void;
     setHashLock: (data: string) => void;
     setUserLocked: (locked: boolean) => void,
+    setError(error: string | undefined): void
 }
 
 export function AtomicProvider({ children }) {
@@ -50,6 +49,7 @@ export function AtomicProvider({ children }) {
     const [hashLock, setHashLock] = useState<string | undefined>(undefined)
     const [userLocked, setUserLocked] = useState<boolean>(false)
 
+    const [error, setError] = useState<string | undefined>(undefined)
 
     const source_network = networks.find(n => n.name.toUpperCase() === (source as string).toUpperCase())
     const destination_network = networks.find(n => n.name.toUpperCase() === (destination as string).toUpperCase())
@@ -80,10 +80,12 @@ export function AtomicProvider({ children }) {
             hashLock,
             userLocked,
             sourceLock,
+            error,
             setDestinationLock,
             setHashLock,
             setSourceLock,
-            setUserLocked
+            setUserLocked,
+            setError
         }}>
             {children}
         </AtomicStateContext.Provider>

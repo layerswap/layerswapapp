@@ -1,26 +1,15 @@
 import { FC } from "react";
-import { ProgressStatus } from "../Withdraw/Processing/types";
 import Message from "./Message";
 import AddressIcon from "../../AddressIcon";
-import LayerSwapLogoSmall from "../../icons/layerSwapLogoSmall";
 import { UserCommitAction, UserLockAction } from "./Actions/UserActions";
 import { useAtomicState } from "../../../context/atomicContext";
-import { motion, useAnimation } from "framer-motion";
+import { motion } from "framer-motion";
 import { LpLockingAssets } from "./Actions/LpLock";
 import { RedeemAction } from "./Actions/Redeem";
 import ActionStatus from "./Actions/ActionStatus";
 import useWallet from "../../../hooks/useWallet";
-import { ExternalLink, Megaphone } from "lucide-react";
-
-export type ProgressStates = {
-    [key in Progress]?: {
-        [key in ProgressStatus]?: {
-            name?: string;
-            description?: JSX.Element | string | null | undefined,
-            hasSpinner?: boolean
-        }
-    }
-}
+import { ExternalLink } from "lucide-react";
+import SubmitButton from "../../buttons/submitButton";
 
 export enum Progress {
     Commit = 'commit',
@@ -28,23 +17,6 @@ export enum Progress {
     Lock = 'lock',
     Redeem = 'redeem',
     Refund = 'refund',
-}
-
-type ResolveProgressProps = {
-    commited: boolean;
-    lpLockDetected: boolean;
-    assetsLocked: boolean;
-    redeemCompleted: boolean;
-}
-
-type ResolveProgressReturn = {
-    stepStatuses: {
-        [key in Progress]: ProgressStatus
-    },
-    generalStatus: {
-        title: string,
-        subTitle: string | null
-    }
 }
 
 const Committed = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
@@ -172,24 +144,38 @@ export const ResolveMessages: FC = (props) => {
         <div>
             <h1 className="mt-2 text-xl font-bold tracking-tight text-primary-text flex gap-1 items-center">New Atomic Bridging Protocol</h1>
             <p className="mt-3 mb-5 text-md leading-1 text-secondary-text ">
-                Experience fully permissionless and trustless bridging without relying on any third party. For enhanced security, the bridging process uses <span className="font-bold">two transactions</span>
+                <span>Experience fully permissionless and trustless bridging without relying on any third party. For enhanced security, the bridging process uses</span> <span className="font-bold">two transactions</span>
             </p>
             <a className="mt-6 text-sm  cursor-pointer leading-1 text-primary hover:underline flex items-center gap-1"
                 href="https://layerswap.notion.site/" target="_blank" rel="noreferrer"
             >
-                Learn more about the protocol <ExternalLink className="w-4 h-4" />
+                <span>Learn more about the protocol</span> <ExternalLink className="w-4 h-4" />
             </a>
         </div>
     </>
 }
 const ResolveAction: FC = () => {
-    const { committment, destinationLock, sourceLock } = useAtomicState()
+    const { committment, destinationLock, sourceLock, error, setError } = useAtomicState()
 
     const commited = committment ? true : false;
     const lpLockDetected = destinationLock ? true : false;
     const assetsLocked = committment?.locked && destinationLock ? true : false;
     const redeemCompleted = sourceLock?.redeemed ? true : false;
 
+    if (error) {
+        return <div className="w-full flex flex-col gap-4">
+            <div className="flex w-full grow flex-col space-y-2" >
+                <ActionStatus
+                    status="error"
+                    title={error}
+                />
+            </div >
+            <SubmitButton onClick={() => setError(undefined)}>
+                Try again
+            </SubmitButton>
+        </div>
+
+    }
     if (redeemCompleted) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <ActionStatus
@@ -248,7 +234,7 @@ export const ActionsWithProgressbar: FC = () => {
                 {
                     allDone ?
                         <div className="text-secondary-text text-xs">
-                            Complited
+                            Completed
                         </div>
                         :
                         <div className="text-secondary-text text-xs">
