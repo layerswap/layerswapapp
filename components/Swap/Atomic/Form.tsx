@@ -134,7 +134,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                 <Widget.Content>
                     <div className='flex-col relative flex justify-between w-full space-y-0.5 mb-3.5 leading-4'>
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="from" label="From" className="rounded-t-lg pb-5" />
+                            <NetworkFormField direction="from" label="From" className="rounded-t-componentRoundness pb-5" />
                         </div>}
                         {!query?.hideFrom && !query?.hideTo &&
                             <button
@@ -156,7 +156,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                 </motion.div>
                             </button>}
                         {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="to" label="To" className="rounded-b-lg" />
+                            <NetworkFormField direction="to" label="To" className="rounded-b-componentRoundness" />
                         </div>}
                     </div>
                     {

@@ -4,7 +4,7 @@ import { ISelectMenuItem } from "./Props/selectMenuItem";
 import Image from 'next/image'
 
 export default function SelectItem({ item }: { item: ISelectMenuItem }) {
-    return (<div className={`flex items-center justify-between gap-4  w-full overflow-hidden`}>
+    return (<div className={`flex items-center justify-between gap-4 px-1 w-full overflow-hidden`}>
         <div className={`${(item?.isAvailable?.disabledReason == CurrencyDisabledReason.InvalidRoute || item?.isAvailable?.disabledReason == LayerDisabledReason.LockNetworkIsTrue) ? "opacity-40" : ""} flex items-center gap-4`}>
             <div className="flex-shrink-0 h-6 w-6 relative">
                 {item.imgSrc && <Image

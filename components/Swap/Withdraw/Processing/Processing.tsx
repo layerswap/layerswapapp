@@ -251,7 +251,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
             <div className={`w-full min-h-[422px] space-y-5 flex flex-col justify-between text-primary-text`}>
                 <div className='space-y-5'>
                     <div className="w-full flex flex-col h-full space-y-5">
-                        <div className="bg-secondary-700 font-normal px-3 py-4 rounded-lg flex flex-col border border-secondary-500 w-full relative z-10">
+                        <div className="bg-secondary-700 font-normal px-3 py-4 rounded-componentRoundness flex flex-col border border-secondary-500 w-full relative z-10">
                             <SwapSummary />
                         </div>
                     </div>

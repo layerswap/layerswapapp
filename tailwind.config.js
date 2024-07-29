@@ -51,9 +51,13 @@ module.exports = {
           '700': 'rgb(var(--ls-colors-secondary-700, 17, 29, 54), <alpha-value>)',
           '800': 'rgb(var(--ls-colors-secondary-800, 15, 25, 47), <alpha-value>)',
           '900': 'rgb(var(--ls-colors-secondary-900, 12, 21, 39), <alpha-value>)',
-          '950': 'rgb(var(--ls-colors-secondary-900, 11, 17, 35), <alpha-value>)',
+          '950': 'rgb(var(--ls-colors-secondary-950, 11, 17, 35), <alpha-value>)',
           'text': 'rgb(var(--ls-colors-secondary-text, 171, 181, 209), <alpha-value>)',
         },
+      },
+      borderRadius: {
+        'containerRoundness': 'var(--ls-border-radius-containerRoundness, 16px)',
+        'componentRoundness': 'var(--ls-border-radius-componentRoundness, 8px)',
       },
       opacity: {
         '35': '.35',

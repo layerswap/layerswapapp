@@ -4,8 +4,7 @@ import { useSettingsState } from "../../context/settings";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
-import ExchangeSettings from "../../lib/ExchangeSettings";
-import { ResolveExchangeOrder, ResolveNetworkOrder, SortAscending } from "../../lib/sorting"
+import { ResolveNetworkOrder, SortAscending } from "../../lib/sorting"
 import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
@@ -20,8 +19,7 @@ import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
 import { Info } from "lucide-react";
 import ClickTooltip from "../Tooltips/ClickTooltip";
-import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../../helpers/routes";
-
+import { resolveNetworkRoutesURL } from "../../helpers/routes";
 
 type Props = {
     direction: SwapDirection,
@@ -63,7 +61,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const query = useQueryState()
     const { lockFrom, lockTo } = query
 
-    const { sourceExchanges, destinationExchanges, destinationRoutes, sourceRoutes } = useSettingsState();
+    const { destinationRoutes, sourceRoutes } = useSettingsState();
     let placeholder = "";
     let searchHint = "";
     let menuItems: (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[];
@@ -78,18 +76,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     const [routesData, setRoutesData] = useState<RouteNetwork[] | undefined>(direction === 'from' ? sourceRoutes : destinationRoutes)
 
-    const exchangeRoutesURL = resolveExchangesURLForSelectedToken(direction, values)
-    const {
-        data: exchanges,
-        isLoading: exchnagesDataLoading,
-    } = useSWR<ApiResponse<Exchange[]>>(`${exchangeRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
-
-    const [exchangesData, setExchangesData] = useState<Exchange[]>(direction === 'from' ? sourceExchanges : destinationExchanges)
-
-    useEffect(() => {
-        if (!exchnagesDataLoading && exchanges?.data) setExchangesData(exchanges.data)
-    }, [exchanges])
-
     useEffect(() => {
         if (!isLoading && routes?.data) setRoutesData(routes.data)
     }, [routes])
@@ -97,12 +83,12 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
-        menuItems = GenerateMenuItems(routesData, toExchange ? [] : exchangesData, direction, !!(from && lockFrom), query);
+        menuItems = GenerateMenuItems(routesData, direction, !!(from && lockFrom), query);
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        menuItems = GenerateMenuItems(routesData, fromExchange ? [] : exchangesData, direction, !!(to && lockTo), query);
+        menuItems = GenerateMenuItems(routesData, direction, !!(to && lockTo), query);
     }
 
     const value = menuItems.find(x => !x.isExchange ?
@@ -139,7 +125,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         }
     </div>
 
-    return (<div className={`p-3 bg-secondary-700 border border-secondary-500 ${className}`}>
+    return (<div className={`p-3 bg-secondary-700 ${className}`}>
         <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
             {label}
         </label>
@@ -187,7 +173,7 @@ function groupByType(values: ISelectMenuItem[]) {
     return groups;
 }
 
-function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchange[], direction: SwapDirection, lock: boolean, query: QueryParams): (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[] {
+function GenerateMenuItems(routes: RouteNetwork[] | undefined, direction: SwapDirection, lock: boolean, query: QueryParams): (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[] {
 
     let layerIsAvailable = (route: RouteNetwork) => {
         if (lock) {
@@ -202,14 +188,6 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             }
         }
         else {
-            return { value: true, disabledReason: null }
-        }
-    }
-
-    let exchangeIsAvailable = (exchange: Exchange) => {
-        if (lock) {
-            return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
-        } else {
             return { value: true, disabledReason: null }
         }
     }
@@ -236,25 +214,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
         return res;
     }).sort(SortAscending) || [];
 
-    const mappedExchanges = exchanges?.map(e => {
-        let orderProp: keyof ExchangeSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
-        const order = ExchangeSettings.KnownSettings[e.name]?.[orderProp]
-
-        const res: SelectMenuItem<Exchange> & { isExchange: boolean } = {
-            baseObject: e,
-            id: e.name,
-            name: e.display_name,
-            order: ResolveExchangeOrder(e, direction),
-            imgSrc: e.logo,
-            isAvailable: exchangeIsAvailable(e),
-            group: getGroupName(e, 'cex'),
-            isExchange: true,
-        }
-        return res;
-    }).sort(SortAscending) || [];
-
-    const items = [...mappedExchanges, ...mappedLayers]
-    return items
+    return mappedLayers
 }
 
 export default NetworkFormField
