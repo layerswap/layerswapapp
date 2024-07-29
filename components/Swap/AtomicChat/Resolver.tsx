@@ -33,14 +33,14 @@ const LPIsLocking = ({ address }: { address: string | undefined }) => <Message
     sourceIcon={address && <AddressIcon className="scale-150 h-3 w-3" address={address} size={12} />}
 />
 const AssetsLockedByLP = ({ address }: { address: string | undefined }) => <Message
-    title="Assets locked"
-    description="Liqudity provider locked funds for you."
+    title="LP Assets Locked"
+    description="Liqudity provider locked funds for you"
     isLast={true}
     source="to"
     sourceIcon={address && <AddressIcon className="scale-150 h-3 w-3" address={address} size={12} />}
 />
 const AssetsLockedByUser = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
-    title="Assets locked"
+    title="Your Assets Locked"
     description="You locked assets on the source network"
     isLast={true}
     source="from"
@@ -48,7 +48,7 @@ const AssetsLockedByUser = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Me
 />
 const AssetsSent = ({ address }: { address: string | undefined }) => <Message
     title="Assets sent"
-    description="Your assets are sent to the destination address. Thank you for using LayerSwap"
+    description="Your assets are sent to the destination address"
     isLast={true}
     source="to"
     sourceIcon={address && <AddressIcon className="scale-150 h-3 w-3" address={address} size={12} />}
@@ -66,7 +66,7 @@ const LpPlng = ({ address }: { address: string | undefined }) => <Message
 
 const UserCommitting = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
     title={<div className="flex">
-        Committing your funds for bridging.
+        Committing your funds for bridging
     </div>}
     isLast={true}
     source="from"
@@ -74,7 +74,7 @@ const UserCommitting = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Messag
 />
 const UserLocking = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
     title={<div className="flex">
-        Locking your funds for LP.
+        Locking your funds for LP
     </div>}
     isLast={true}
     source="from"
@@ -117,7 +117,7 @@ export const ResolveMessages: FC = (props) => {
         </div >
     }
     if (userInitiatedLock) {
-        <div className="flex w-full grow flex-col space-y-2" >
+        return <div className="flex w-full grow flex-col space-y-2" >
             <Committed walletIcon={WalletIcon} />
             <AssetsLockedByLP address={lp_address} />
             <UserLocking walletIcon={WalletIcon} />

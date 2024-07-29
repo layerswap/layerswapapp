@@ -7,6 +7,7 @@ import { useFee } from "../../../context/feeContext";
 import ConnectedWallet from "./ConnectedWallet";
 import { ActionsWithProgressbar, ResolveMessages } from "./Resolver";
 import { useAtomicState } from "../../../context/atomicContext";
+import ResizablePanel from "../../ResizablePanel";
 
 
 type ContainerProps = {
@@ -53,8 +54,8 @@ const Commitment: FC<Props> = (props) => {
 
     return (
         <>
-            <>
-                <Widget.Content>
+            <Widget.Content>
+                <ResizablePanel>
                     <div className="w-full flex flex-col justify-between  text-secondary-text">
                         <div className='grid grid-cols-1 gap-4'>
                             {
@@ -81,15 +82,15 @@ const Commitment: FC<Props> = (props) => {
                             </div>
                         </div>
                     </div>
-                </Widget.Content>
-                {
-                    <Widget.Footer sticky={true}>
-                        <div>
-                            <ActionsWithProgressbar />
-                        </div>
-                    </Widget.Footer>
-                }
-            </>
+                </ResizablePanel>
+            </Widget.Content>
+            {
+                <Widget.Footer sticky={true}>
+                    <div>
+                        <ActionsWithProgressbar />
+                    </div>
+                </Widget.Footer>
+            }
         </>
     )
 }

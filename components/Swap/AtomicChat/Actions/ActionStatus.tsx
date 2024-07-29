@@ -1,8 +1,8 @@
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 import { CheckCircle2, CircleX } from "lucide-react";
 
 type Props = {
-    title: string;
+    title: ReactNode;
     status: "pending" | "success" | "error";
 }
 const ActionStatus: FC<Props> = ({ title, status }) => {
@@ -11,7 +11,7 @@ const ActionStatus: FC<Props> = ({ title, status }) => {
         <div className='relative'>
             {resolveIcon(status)}
         </div>
-        <p className="text-sm text-left self-center text-secondary-text">
+        <p className="text-md text-left self-center text-secondary-text">
             {title}
         </p>
     </div>

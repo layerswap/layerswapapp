@@ -10,6 +10,8 @@ import useWallet from "../../../../hooks/useWallet";
 import { NETWORKS_DETAILS } from "../../Atomic";
 import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
+import shortenAddress from "../../../utils/ShortenAddress";
+import { ExternalLink } from "lucide-react";
 
 export const LpLockingAssets: FC = () => {
     const { destination_network, commitId, setDestinationLock, destinationLock, setHashLock } = useAtomicState()
@@ -53,7 +55,11 @@ export const LpLockingAssets: FC = () => {
 
     return <ActionStatus
         status="pending"
-        title='LP is locking your assets on destination network'
+        title={
+            <span>
+                <span>LP</span> (<a target="_blank" className="inline-flex items-center gap-1" href={destination_network?.account_explorer_template.replace('{0}', destination_network.metadata.lp_address)}><span className="underline hover:no-underline">{destination_network?.metadata?.lp_address && shortenAddress(destination_network?.metadata?.lp_address)}</span> <ExternalLink className="h-3.5 w-3.5" />)</a> <span>is locking your assets on destination network</span>
+            </span>
+        }
     />
 }
 type DoneProps = {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import Head from "next/head"
 import { useRouter } from "next/router";
 import ThemeWrapper from "./themeWrapper";
@@ -99,28 +99,28 @@ export default function Layout({ children, settings, themeData }: Props) {
 
   return (<>
     <Head>
-      <title>Layerswap App</title>
+      <title>Layerswap V8</title>
       <link rel="apple-touch-icon" sizes="180x180" href={`${basePath}/favicon/apple-touch-icon.png`} />
       <link rel="icon" type="image/png" sizes="32x32" href={`${basePath}/favicon/favicon-32x32.png`} />
       <link rel="icon" type="image/png" sizes="16x16" href={`${basePath}/favicon/favicon-16x16.png`} />
       <link rel="manifest" href={`${basePath}/favicon/site.webmanifest`} />
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content={`rgb(${themeData.secondary?.[900]})`} />
-      <meta name="description" content="Streamline your asset transaction experience with Layerswap across 35+ blockchains" />
+      <meta name="description" content="Layerswap V8 - permisionless and trustless bridging protocol" />
 
       {/* Facebook Meta Tags */}
       <meta property="og:url" content={`https://www.layerswap.io/${basePath}`} />
       <meta property="og:type" content="website" />
-      <meta property="og:title" content="Layerswap App" />
-      <meta property="og:description" content="Streamline your asset transaction experience with Layerswap across 35+ blockchains" />
+      <meta property="og:title" content="Layerswap V8" />
+      <meta property="og:description" content="Layerswap V8 - permisionless and trustless bridging protocol" />
       <meta property="og:image" content={`https://layerswap.io/${basePath}/opengraph.jpg?v=2`} />
 
       {/* Twitter Meta Tags */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta property="twitter:domain" content="layerswap.io" />
       <meta property="twitter:url" content={`https://www.layerswap.io/${basePath}`} />
-      <meta name="twitter:title" content="Layerswap App" />
-      <meta name="twitter:description" content="Streamline your asset transaction experience with Layerswap across 35+ blockchains" />
+      <meta name="twitter:title" content="Layerswap V8" />
+      <meta name="twitter:description" content="Layerswap V8 - permisionless and trustless bridging protocol" />
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
     </Head>
     {
