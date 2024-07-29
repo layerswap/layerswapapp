@@ -65,12 +65,12 @@ const config = createConfig({
     connectors,
     chains: [sepolia, mainnet, optimism, optimismSepolia, arbitrumSepolia, arbitrum],
     transports: {
-        [sepolia.id]: http(),
+        [sepolia.id]: http("https://eth-sepolia.public.blastapi.io"),
         [mainnet.id]: http(),
         [optimism.id]: http(),
-        [optimismSepolia.id]: http(),
-        [arbitrumSepolia.id]: http(),
-        [arbitrum.id]: http(),
+        [optimismSepolia.id]: http("https://optimism-sepolia.public.blastapi.io"),
+        [arbitrumSepolia.id]: http("https://arbitrum-sepolia.public.blastapi.io"),
+        [arbitrum.id]: http("https://arbitrum-sepolia.public.blastapi.io"),
     },
     ssr: true,
 });
