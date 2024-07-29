@@ -39,6 +39,7 @@ export default function useStarknet(): WalletProvider {
 
     const connectWallet = useCallback(async (chain: string) => {
         const constants = (await import('starknet')).constants
+        const RpcProvider = (await import('starknet')).RpcProvider
         const chainId = process.env.NEXT_PUBLIC_API_VERSION === "sandbox" ? constants.NetworkName.SN_SEPOLIA : constants.NetworkName.SN_MAIN
         const connect = (await import('starknetkit')).connect
         try {
@@ -46,12 +47,15 @@ export default function useStarknet(): WalletProvider {
                 argentMobileOptions: {
                     dappName: 'Layerswap',
                     projectId: WALLETCONNECT_PROJECT_ID,
-                    url: 'https://www.layerswap.io/app',
+                    url: 'https://www.layerswap.io/v8',
                     description: 'Move crypto across exchanges, blockchains, and wallets.',
                     chainId: chainId as any
                 },
                 dappName: 'Layerswap',
-                modalMode: 'alwaysAsk'
+                modalMode: 'alwaysAsk',
+                provider: new RpcProvider({
+                    nodeUrl: 'https://starknet-sepolia.public.blastapi.io',
+                })
             })
             if (wallet && chain && ((wallet.provider?.chainId && wallet.provider?.chainId != constants.StarknetChainId[chainId]) || (wallet.provider?.provider?.chainId && wallet.provider?.provider?.chainId != constants.StarknetChainId[chainId]))) {
                 await disconnectWallet()
@@ -60,9 +64,11 @@ export default function useStarknet(): WalletProvider {
             }
 
             if (wallet && wallet.account && wallet.isConnected) {
+                const chainString = wallet.chainId
+                const chainid = constants.StarknetChainId[chainString]
                 addWallet({
                     address: wallet.account.address,
-                    chainId: wallet.provider?.chainId || wallet.provider?.provider?.chainId,
+                    chainId: chainid || wallet.provider?.chainId || wallet.provider?.provider?.chainId,
                     icon: resolveWalletConnectorIcon({ connector: wallet.name, address: wallet.account.address }),
                     connector: wallet.name,
                     providerName: name,
@@ -240,12 +246,12 @@ export default function useStarknet(): WalletProvider {
             srcReceiver: ethers.utils.hexlify(result.srcReceiver as BigNumberish) as `0x${string}`,
             unlocked: result.unlocked
         }
-        debugger
+
         return parsedResult
     }
     const getLockIdByCommitId = async (params: CommitmentParams) => {
         const { abi, chainId, commitId, contractAddress } = params
-        debugger
+
         const atomicContract = new Contract(
             PHTLCAbi,
             contractAddress

@@ -124,7 +124,7 @@ export const ResolveMessages: FC = (props) => {
             <AssetsLockedByLP address={lp_address} />
             <AssetsLockedByUser walletIcon={WalletIcon} />
             <LpPlng address={lp_address} />
-        </div >
+        </div>
     }
     if (userInitiatedLock) {
         return <div className="flex w-full grow flex-col space-y-2" >
