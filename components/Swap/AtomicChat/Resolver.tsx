@@ -109,9 +109,7 @@ export const ResolveMessages: FC = (props) => {
     const lp_address = source_network?.metadata.lp_address
 
     const WalletIcon = wallet && <wallet.icon className="w-5 h-5 rounded-full bg-secondary-800 border-secondary-400" />
-    return <div className="flex w-full grow flex-col space-y-2" >
-        <UserCommitting walletIcon={WalletIcon} />
-    </div >
+
     if (redeemCompleted) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <Committed walletIcon={WalletIcon} />
