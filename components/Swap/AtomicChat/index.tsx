@@ -1,13 +1,7 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect } from "react";
 import { Widget } from "../../Widget/Index";
-import { ProgressStatus, StatusStep } from "../Withdraw/Processing/types";
-import { User } from "lucide-react";
 import { useSettingsState } from "../../../context/settings";
-import { NextRouter, useRouter } from "next/router";
-import { Network } from "../../../Models/Network";
 import useWallet from "../../../hooks/useWallet";
-import { NETWORKS_DETAILS } from "../Atomic";
-import { AssetLock, Commit } from "../../../Models/PHTLC";
 import Summary from "./Summary";
 import { useFee } from "../../../context/feeContext";
 import ConnectedWallet from "./ConnectedWallet";
@@ -25,15 +19,11 @@ type ContainerProps = {
     destination_asset: string;
 }
 
-type Props = ContainerProps & {
-
-}
-
-const Commitment: FC<Props> = (props) => {
+const Commitment: FC<ContainerProps> = (props) => {
     const { source, destination, amount, address, source_asseet, destination_asset } = props;
     const { networks } = useSettingsState()
     const { getWithdrawalProvider } = useWallet()
-    const { fee, valuesChanger } = useFee()
+    const { fee, minAllowedAmount, valuesChanger } = useFee()
 
     const { commitId, committment } = useAtomicState()
 
@@ -55,6 +45,7 @@ const Commitment: FC<Props> = (props) => {
 
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const wallet = source_provider?.getConnectedWallet()
+    const requestedAmount = (!minAllowedAmount || amount > minAllowedAmount) ? amount : minAllowedAmount
     const receiveAmount = fee?.quote?.receive_amount
 
     return (
@@ -70,7 +61,7 @@ const Commitment: FC<Props> = (props) => {
                                     source={source_network}
                                     destinationAddress={committment?.dstAddress || address}
                                     destinationCurrency={destination_token}
-                                    requestedAmount={amount}
+                                    requestedAmount={requestedAmount}
                                     sourceCurrency={source_token}
                                     sourceAccountAddress={committment?.sender || wallet?.address}
                                     receiveAmount={receiveAmount}
@@ -99,13 +90,6 @@ const Commitment: FC<Props> = (props) => {
         </>
     )
 }
-
-
-
-const Footer: FC = () => {
-    return <></>
-}
-
 
 const Container: FC<ContainerProps> = (props) => {
     const { type } = props
