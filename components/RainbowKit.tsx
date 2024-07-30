@@ -18,6 +18,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { argentWallet, bitgetWallet, coinbaseWallet, metaMaskWallet, phantomWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
+import { arbitrum, arbitrumSepolia, mainnet, optimism, optimismSepolia, sepolia } from 'viem/chains';
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -60,6 +61,20 @@ const connectors = connectorsForWallets(
     }
 );
 
+const config = createConfig({
+    connectors,
+    chains: [sepolia, mainnet, optimism, optimismSepolia, arbitrumSepolia, arbitrum],
+    transports: {
+        [sepolia.id]: http("https://eth-sepolia.public.blastapi.io"),
+        [mainnet.id]: http(),
+        [optimism.id]: http(),
+        [optimismSepolia.id]: http("https://optimism-sepolia.public.blastapi.io"),
+        [arbitrumSepolia.id]: http("https://arbitrum-sepolia.public.blastapi.io"),
+        [arbitrum.id]: http("https://arbitrum-sepolia.public.blastapi.io"),
+    },
+    ssr: true,
+});
+
 function RainbowKitComponent({ children }: Props) {
 
     const settings = useSettingsState();
@@ -72,11 +87,6 @@ function RainbowKitComponent({ children }: Props) {
         .map(resolveChain).filter(isChain) as [Chain]
 
     const transports = settingsChains.reduce((acc, ch) => (acc[ch.id] = http(), acc), {});
-    const config = createConfig({
-        connectors,
-        chains: settingsChains,
-        transports
-    });
 
     const theme = darkTheme({
         accentColor: 'rgb(var(--ls-colors-primary-500))',

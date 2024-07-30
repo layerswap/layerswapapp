@@ -56,6 +56,19 @@ iframe body {
   background: theme('colors.primary.background');
 }
 
+.bottom-backdrop {
+  width: 1125px;
+  height: 1164px;
+  position: absolute;
+  filter: blur(133px);
+  transform: translate(-50%, -50%) translate3d(0, 0, 0);
+  left: 50%;
+  top: 110%;
+  border-radius: 50%;
+  z-index: -1;
+  opacity: 60%;
+  background: theme('colors.primary.background');
+}
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,

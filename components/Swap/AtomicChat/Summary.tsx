@@ -2,7 +2,6 @@ import Image from "next/image";
 import { FC } from "react";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { Network, Token } from "../../../Models/Network";
-import { Exchange } from "../../../Models/Exchange";
 import { addressFormat } from "../../../lib/address/formatter";
 import { ExtendedAddress } from "../../Input/Address/AddressPicker/AddressWithIcon";
 import { isValidAddress } from "../../../lib/address/validator";
@@ -29,7 +28,7 @@ const Summary: FC<AtomicSummaryProps> = ({ sourceAccountAddress, sourceCurrency,
     const destAddress = destinationAddress
 
     return (
-        <div className={`bg-secondary-700 rounded-lg px-4 py-4 border border-secondary-500 w-full relative z-10`}>
+        <div className={`bg-secondary-700 rounded-componentRoundness px-4 py-4 border border-secondary-500 w-full relative z-10`}>
             <div className="font-normal flex flex-col w-full relative z-10 space-y-4">
                 <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3">

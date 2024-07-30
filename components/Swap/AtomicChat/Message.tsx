@@ -17,7 +17,7 @@ type Props = {
 const Component: FC<Props> = (props) => {
     const { title, description, isLast, source, sourceIcon } = props
 
-    return <div className={`rounded-lg py-2 relative z-10`}>
+    return <div className={`rounded-componentRoundness py-2 relative z-10`}>
         <div className={`flex space-x-2 w-full relative grow ${source == 'from' ? 'justify-start' : 'justify-end flex-row-reverse space-x-reverse'}`}>
             <div className="rounded-lg bg-secondary-700 p-2 self-start">
                 {sourceIcon || <div className="w-4 h-4"></div>}
@@ -48,10 +48,6 @@ const Component: FC<Props> = (props) => {
             </motion.div >
         </div>
     </div>
-
-
-
-
 }
 
 

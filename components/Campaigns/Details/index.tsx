@@ -9,7 +9,6 @@ import { useAccount } from "wagmi"
 import RainbowKit from "../../Swap/Withdraw/Wallet/RainbowKit"
 import SubmitButton from "../../buttons/submitButton";
 import WalletIcon from "../../icons/WalletIcon";
-import Link from "next/link";
 import LinkWrapper from "../../LinkWraapper";
 import { Widget } from "../../Widget/Index";
 import Leaderboard from "./Leaderboard"

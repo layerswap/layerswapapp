@@ -63,7 +63,7 @@ export const WalletsMenu = () => {
     if (wallets.length > 0) {
         return (
             <>
-                <button onClick={() => setOpenDialog(true)} type="button" className="py-3 px-4 bg-secondary-700 flex items-center w-full rounded-md space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative font-semibold transform border border-secondary-500 hover:bg-secondary-600 transition duration-200 ease-in-out">
+                <button onClick={() => setOpenDialog(true)} type="button" className="py-3 px-4 bg-secondary-700 flex items-center w-full rounded-componentRoundness space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative font-semibold transform border border-secondary-500 hover:bg-secondary-600 transition duration-200 ease-in-out">
                     {
                         wallets.length === 1 ?
                             <div className="flex gap-4 items-start">
@@ -107,7 +107,7 @@ const ConnectedWalletsDialog = ({ openDialog, setOpenDialog }: { openDialog: boo
                 <div className="flex flex-col justify-start space-y-2">
                     {
                         wallets.map((wallet, index) => (
-                            <div key={index} className="w-full relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
+                            <div key={index} className="w-full relative items-center justify-between gap-2 flex rounded-componentRoundness outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
                                 <div className="flex space-x-4 items-center">
                                     {
                                         wallet.connector &&

@@ -7,7 +7,7 @@ import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
 
 export const UserCommitAction: FC = () => {
-    const { source_network, destination_network, amount, address, source_asset, destination_asset, onCommit, commitId, setCommitment } = useAtomicState();
+    const { source_network, destination_network, amount, address, source_asset, destination_asset, onCommit, commitId, setCommitment, setError } = useAtomicState();
     const { getWithdrawalProvider } = useWallet()
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
@@ -61,7 +61,7 @@ export const UserCommitAction: FC = () => {
             onCommit(commitId)
         }
         catch (e) {
-            toast(e.message)
+            setError(e.details || e.message)
         }
     }
 
@@ -120,7 +120,7 @@ export const UserCommitAction: FC = () => {
 
 
 export const UserLockAction: FC = () => {
-    const { source_network, commitId, hashLock, committment, setCommitment, setUserLocked, userLocked } = useAtomicState()
+    const { source_network, commitId, hashLock, committment, setCommitment, setUserLocked, userLocked, setError } = useAtomicState()
     const [lockLoading, setLockLoading] = useState(false)
 
     const { getWithdrawalProvider } = useWallet()
@@ -151,7 +151,7 @@ export const UserLockAction: FC = () => {
             setUserLocked(true)
         }
         catch (e) {
-            toast(e.message)
+            setError(e.details || e.message)
         }
         finally {
             setLockLoading(false)

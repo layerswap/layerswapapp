@@ -1,13 +1,10 @@
-import { Context, useCallback, createContext, useContext, useState } from 'react'
-import { useInterval } from '../hooks/useInterval';
+import { Context, createContext, useContext, useState } from 'react'
 import { useRouter } from 'next/router';
 import { useSettingsState } from './settings';
 import { AssetLock, Commit } from '../Models/PHTLC';
-import useWallet from '../hooks/useWallet';
 import { Network, Token } from '../Models/Network';
 
 const AtomicStateContext = createContext<DataContextType | null>(null);
-
 
 type DataContextType = {
     source_network?: Network,
@@ -23,6 +20,7 @@ type DataContextType = {
     userLocked?: boolean,
     sourceLock?: AssetLock,
     completedRefundHash?: string,
+    error: string | undefined,
     onCommit: (commitId: string) => void;
     setCommitment: (commitment: Commit) => void;
     setDestinationLock: (data: AssetLock) => void;
@@ -30,6 +28,7 @@ type DataContextType = {
     setHashLock: (data: string) => void;
     setUserLocked: (locked: boolean) => void,
     setCompletedRefundHash: (hash: string) => void
+    setError(error: string | undefined): void
 }
 
 export function AtomicProvider({ children }) {
@@ -53,6 +52,7 @@ export function AtomicProvider({ children }) {
     const [userLocked, setUserLocked] = useState<boolean>(false)
 
     const [completedRefundHash, setCompletedRefundHash] = useState<string | undefined>(undefined)
+    const [error, setError] = useState<string | undefined>(undefined)
 
     const source_network = networks.find(n => n.name.toUpperCase() === (source as string).toUpperCase())
     const destination_network = networks.find(n => n.name.toUpperCase() === (destination as string).toUpperCase())
@@ -84,11 +84,13 @@ export function AtomicProvider({ children }) {
             userLocked,
             sourceLock,
             completedRefundHash,
+            error,
             setDestinationLock,
             setHashLock,
             setSourceLock,
             setUserLocked,
-            setCompletedRefundHash
+            setCompletedRefundHash,
+            setError
         }}>
             {children}
         </AtomicStateContext.Provider>

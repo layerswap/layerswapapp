@@ -1,7 +1,7 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import { NetworkWithTokens, Token } from "../../../../Models/Network";
 import Image from 'next/image';
-import { AssetLock, Commit } from "../../../../Models/PHTLC";
+import { AssetLock } from "../../../../Models/PHTLC";
 import { ExtendedAddress } from "../../../Input/Address/AddressPicker/AddressWithIcon";
 import { addressFormat } from "../../../../lib/address/formatter";
 import { truncateDecimals } from "../../../utils/RoundDecimals";
@@ -10,13 +10,14 @@ import useWallet from "../../../../hooks/useWallet";
 import { NETWORKS_DETAILS } from "../../Atomic";
 import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
+import shortenAddress from "../../../utils/ShortenAddress";
+import { ExternalLink } from "lucide-react";
 
 export const LpLockingAssets: FC = () => {
     const { destination_network, commitId, setDestinationLock, destinationLock, setHashLock } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
 
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
-
 
     useEffect(() => {
         let lockHandler: any = undefined
@@ -33,7 +34,7 @@ export const LpLockingAssets: FC = () => {
                     contractAddress: destination_network.metadata.htlc_contract as `0x${string}`
                 })
 
-                if (destinationLockId && destinationLockId != '0x0000000000000000000000000000000000000000000000000000000000000000') {
+                if (destinationLockId && destinationLockId != '0x0000000000000000000000000000000000000000000000000000000000000000' && destinationLockId != '0x00') {
                     setHashLock(destinationLockId)
                     const data = await destination_provider.getLock({
                         abi: details.abi,
@@ -54,7 +55,11 @@ export const LpLockingAssets: FC = () => {
 
     return <ActionStatus
         status="pending"
-        title='We are locking your assets on destination network'
+        title={
+            <span>
+                <span>LP</span> <span>(</span><a target="_blank" className="inline-flex items-center gap-1" href={destination_network?.account_explorer_template.replace('{0}', destination_network.metadata.lp_address)}><span className="underline hover:no-underline">{destination_network?.metadata?.lp_address && shortenAddress(destination_network?.metadata?.lp_address)}</span> <ExternalLink className="h-3.5 w-3.5" /></a><span>)</span> <span>is locking your assets on the destination network</span>
+            </span>
+        }
     />
 }
 type DoneProps = {

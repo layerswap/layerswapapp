@@ -31,6 +31,8 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                     --ls-colors-primary-text: ${themeData.primary?.text};
                     --ls-colors-primary-text-muted: ${themeData.primary?.textMuted};
                     --ls-colors-primary-logoColor: ${themeData.logo};
+                    --ls-border-radius-containerRoundness: ${themeData.containerRoundness};
+                    --ls-border-radius-componentRoundness: ${themeData.componentRoundness};
 
                     --ls-colors-secondary: ${themeData.secondary?.DEFAULT};
                     --ls-colors-secondary-50: ${themeData.secondary?.[50]};

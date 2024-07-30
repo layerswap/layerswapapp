@@ -8,9 +8,8 @@ import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
 import { CreatyePreHTLCParams, CommitmentParams, LockParams, RefundParams } from "../phtlc"
-import { writeContract, simulateContract, watchContractEvent, readContract } from '@wagmi/core'
+import { writeContract, simulateContract, readContract } from '@wagmi/core'
 import { ethers } from "ethers"
-import { sepolia } from "viem/chains"
 import { AssetLock, Commit } from "../../../Models/PHTLC"
 
 export default function useEVM(): WalletProvider {
@@ -106,7 +105,12 @@ export default function useEVM(): WalletProvider {
         if (isNaN(Number(chainId))) {
             throw Error("Invalid source chain")
         }
-
+        if (!lpAddress) {
+            throw Error("No LP address")
+        }
+        if (!atomicContrcat) {
+            throw Error("No conteract address")
+        }
         const timeLockMS = Date.now() + LOCK_TIME
         const timeLock = Math.floor(timeLockMS / 1000)
         const parsedAmount = ethers.utils.parseUnits(amount.toString(), decimals).toBigInt()

@@ -52,7 +52,7 @@ const AddressNoteModal: FC<AddressNoteModalProps> = ({ openModal, setOpenModal, 
                     </p>
                 </div>
 
-                <div className="w-full rounded-lg bg-secondary-700 overflow-hidden px-4 py-3 space-y-2">
+                <div className="w-full rounded-componentRoundness bg-secondary-700 overflow-hidden px-4 py-3 space-y-2">
                     <div className="gap-4 flex relative items-center outline-none w-full text-primary-text">
                         <div className="flex items-center justify-between w-full">
                             <div className="text-secondary-text">
