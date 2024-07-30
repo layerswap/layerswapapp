@@ -8,7 +8,7 @@ type Props = {
 const ActionStatus: FC<Props> = ({ title, status }) => {
 
     return <div className="flex text-center space-x-2 bg-secondary-700 p-3 rounded-componentRoundness">
-        <div className='relative'>
+        <div className='relative self-center'>
             {resolveIcon(status)}
         </div>
         <p className="text-md text-left self-center text-secondary-text">
