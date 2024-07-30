@@ -7,7 +7,6 @@ import { addressFormat } from "../../../lib/address/formatter";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { ethers } from "ethers";
 import useWallet from "../../../hooks/useWallet";
-import { NETWORKS_DETAILS } from "../Atomic";
 
 type UpcomingProps = {
     source_network: NetworkWithTokens,
@@ -69,12 +68,10 @@ export const LpLockCurrent: FC<CurrentProps> = (props) => {
         let lockHandler: any = undefined
         if (destination_provider && destination_network && !destinationLock && commitmentId) {
             lockHandler = setInterval(async () => {
-                const details = NETWORKS_DETAILS[destination_network.name]
                 if (!destination_network.chain_id)
                     throw Error("No chain id")
 
                 const destinationLockId = await destination_provider.getLockIdByCommitId({
-                    abi: details.abi,
                     chainId: destination_network.chain_id,
                     commitId: commitmentId,
                     contractAddress: destination_network.metadata.htlc_contract as `0x${string}`
@@ -83,11 +80,9 @@ export const LpLockCurrent: FC<CurrentProps> = (props) => {
                 if (destinationLockId && destinationLockId != '0x0000000000000000000000000000000000000000000000000000000000000000') {
                     setHashLock(destinationLockId)
                     const data = await destination_provider.getLock({
-                        abi: details.abi,
                         chainId: destination_network.chain_id,
                         lockId: destinationLockId as string,
                         contractAddress: destination_network.metadata.htlc_contract as `0x${string}`,
-                        lockDataResolver: details.lockDataResolver
                     })
                     setDestinationLock(data)
                     clearInterval(lockHandler)

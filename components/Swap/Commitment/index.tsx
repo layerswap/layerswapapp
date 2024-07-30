@@ -1,19 +1,14 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useState } from "react";
 import { Widget } from "../../Widget/Index";
 import { ProgressStatus, StatusStep } from "../Withdraw/Processing/types";
-import { User } from "lucide-react";
 import { UserCommitCurrent, UserCommitDone } from "./UserCommit";
 import { LpLockCurrent, LpLockDone, LpLockUpcoming } from "./LpLock";
 import { useSettingsState } from "../../../context/settings";
-import { NextRouter, useRouter } from "next/router";
-import { Network } from "../../../Models/Network";
-import useWallet from "../../../hooks/useWallet";
-import { NETWORKS_DETAILS } from "../Atomic";
+import {  useRouter } from "next/router";
 import { AssetLock, Commit } from "../../../Models/PHTLC";
 import Steps from "../StepsComponent";
-import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 import { UserLockCurrent, UserLockDone, UserLockUpcoming } from "./UserLock";
-import { RedeemCurrent, RedeemDone, RedeemUpcoming } from "./Redeem";
+import { RedeemDone, RedeemUpcoming } from "./Redeem";
 
 type ContainerProps = {
     type: "widget" | "contained",

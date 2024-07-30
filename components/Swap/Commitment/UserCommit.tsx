@@ -7,7 +7,6 @@ import useWallet from "../../../hooks/useWallet";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { Commit } from "../../../Models/PHTLC";
 import { NetworkWithTokens, Token } from "../../../Models/Network";
-import { NETWORKS_DETAILS } from "../Atomic";
 import { WalletActionButton } from "./butons";
 import toast from "react-hot-toast";
 import { ethers } from "ethers";
@@ -55,9 +54,6 @@ export const UserCommitCurrent: FC<CurrentProps> = (props) => {
             if (!destination_asset) {
                 throw new Error("No destination asset")
             }
-
-            const details = NETWORKS_DETAILS[source_network.name]
-
             if (!source_provider) {
                 throw new Error("No source_provider")
             }
@@ -65,7 +61,6 @@ export const UserCommitCurrent: FC<CurrentProps> = (props) => {
                 throw new Error("No destination_provider")
             }
             const { commitId, hash } = await source_provider.createPreHTLC({
-                abi: details.abi,
                 address,
                 amount: amount.toString(),
                 destinationChain: destination_network.name,
@@ -95,12 +90,8 @@ export const UserCommitCurrent: FC<CurrentProps> = (props) => {
                         throw Error("No chain id")
                     if (!source_provider)
                         throw new Error("No source provider")
-                    const details = NETWORKS_DETAILS[source_network.name]
-                    if (!details)
-                        throw new Error("No source network details")
 
                     const data = await source_provider.getCommitment({
-                        abi: details.abi,
                         chainId: source_network.chain_id,
                         commitId: commitId,
                         contractAddress: source_network.metadata.htlc_contract as `0x${string}`

@@ -1,6 +1,5 @@
 import { FC, useEffect } from "react"
 import useWallet from "../../../../hooks/useWallet";
-import { NETWORKS_DETAILS } from "../../Atomic";
 import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
 
@@ -23,16 +22,11 @@ export const RedeemAction: FC = () => {
                         throw new Error("No destination provider")
                     if (!hashLock)
                         throw new Error("No destination hashlock")
-                    const details = NETWORKS_DETAILS[source_network.name]
-                    if (!details)
-                        throw new Error("No destination network details")
 
                     const data = await dsource_provider.getLock({
-                        abi: details.abi,
                         chainId: source_network.chain_id,
                         lockId: hashLock,
                         contractAddress: contract as `0x${string}`,
-                        lockDataResolver: details.lockDataResolver
                     })
                     console.log('redeem data', data)
                     if (data.redeemed) {

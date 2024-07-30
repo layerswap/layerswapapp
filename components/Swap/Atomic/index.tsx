@@ -30,9 +30,6 @@ import AddressNoteModal from "../../Input/Address/AddressNote";
 import { addressFormat } from "../../../lib/address/formatter";
 import { useAddressesStore } from "../../../stores/addressesStore";
 import { AddressGroup } from "../../Input/Address/AddressPicker";
-import EthPhtlcAbi from "../../../lib/abis/atomic/ETHEREUM_PHTLC.json"
-import ArbPhtlcAbi from "../../../lib/abis/atomic/ARBITRUM_PHTLC.json"
-import { AssetLock } from "../../../Models/PHTLC";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -49,23 +46,6 @@ const SwapDetails = dynamicWithRetries(() => import(".."),
         </div>
     </div>
 )
-
-
-export const NETWORKS_DETAILS = {
-    'ETHEREUM_SEPOLIA': {
-        abi: EthPhtlcAbi,
-    },
-    'ARBITRUM_SEPOLIA': {
-        abi: ArbPhtlcAbi,
-    },
-    'OPTIMISM_SEPOLIA': {
-        abi: EthPhtlcAbi,
-    },
-    'STARKNET_SEPOLIA': {
-        contract: '0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90',
-        lp: '0x0454aC1A4567D8128CDA1f23de531702E6c9c06476c705dEcC6c5faEF4714623'
-    }
-}
 
 export default function Form() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
