@@ -9,7 +9,6 @@ import { AssetLock, Commit } from "../../../Models/PHTLC";
 import Steps from "../StepsComponent";
 import { UserLockCurrent, UserLockDone, UserLockUpcoming } from "./UserLock";
 import { RedeemDone, RedeemUpcoming } from "./Redeem";
-import { UserRefundCurrent } from "./UserRefund";
 
 type ContainerProps = {
     type: "widget" | "contained",
@@ -214,13 +213,7 @@ const Commitment: FC<ContainerProps> = (props) => {
             },
             current: {
                 name: `Refunding assets to your address`,
-                description: <UserRefundCurrent
-                    commitId={commitId}
-                    source_network={source_network}
-                    lockId={hashLock}
-                    setRequestedRefund={setUserRefundRequested}
-                    setCompletedRefundHash={setCompletedRefundHash}
-                />
+                description: ''
             },
             complete: {
                 name: `Assets were sent to your address`,
