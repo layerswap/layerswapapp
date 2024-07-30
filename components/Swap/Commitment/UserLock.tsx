@@ -7,10 +7,8 @@ import { addressFormat } from "../../../lib/address/formatter";
 import { ExtendedAddress } from "../../Input/Address/AddressPicker/AddressWithIcon";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import useWallet from "../../../hooks/useWallet";
-import { NETWORKS_DETAILS } from "../Atomic";
 import toast from "react-hot-toast";
-import SubmitButton from "../../buttons/submitButton";
-import { ChangeNetworkButton, ConnectWalletButton, WalletActionButton } from "./butons";
+import { WalletActionButton } from "./butons";
 
 
 type UpcomingProps = {
@@ -91,12 +89,8 @@ export const UserLockCurrent: FC<CurrentProps> = (props) => {
                 throw new Error("No source provider")
             if (!hashLock)
                 throw new Error("No destination hashlock")
-            const details = NETWORKS_DETAILS[source_network.name]
-            if (!details)
-                throw new Error("No source network details")
 
             const { hash, result } = await source_provider.lockCommitment({
-                abi: details.abi,
                 chainId: source_network.chain_id,
                 commitId: commitId as string,
                 lockId: hashLock,
@@ -122,12 +116,8 @@ export const UserLockCurrent: FC<CurrentProps> = (props) => {
                         throw Error("No chain id")
                     if (!source_provider)
                         throw new Error("No source provider")
-                    const details = NETWORKS_DETAILS[source_network.name]
-                    if (!details)
-                        throw new Error("No source network details")
 
                     const data = await source_provider.getCommitment({
-                        abi: details.abi,
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
                         contractAddress: source_network.metadata.htlc_contract as `0x${string}`

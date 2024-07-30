@@ -108,7 +108,7 @@ export default function useStarknet(): WalletProvider {
     const messanger = "0x152747029e738c20a4ecde5ef869ea072642938d62f0aa7f3d0e9dfb5051cb9"
 
     const createPreHTLC = async (params: CreatyePreHTLCParams) => {
-        const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, tokenContractAddress, amount, decimals, abi, atomicContrcat: atomicAddress, } = params
+        const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, tokenContractAddress, amount, decimals, atomicContrcat: atomicAddress, } = params
         if (!wallet?.metadata?.starknetAccount?.account) {
             throw new Error('Wallet not connected')
         }
@@ -174,13 +174,13 @@ export default function useStarknet(): WalletProvider {
         throw new Error('Not implemented')
     }
     const getCommitment = async (params: CommitmentParams): Promise<Commit> => {
-        const { abi, chainId, commitId, contractAddress } = params
+        const { chainId, commitId, contractAddress } = params
 
         throw new Error('Not implemented')
     }
 
     const lockCommitment = async (params: CommitmentParams & LockParams) => {
-        const { abi, chainId, commitId, contractAddress, lockId } = params
+        const { commitId, contractAddress, lockId } = params
         if (!wallet?.metadata?.starknetAccount?.account) {
             throw new Error('Wallet not connected')
         }
@@ -203,7 +203,7 @@ export default function useStarknet(): WalletProvider {
 
     const getLock = async (params: LockParams): Promise<AssetLock> => {
 
-        const { abi, chainId, lockId, contractAddress, lockDataResolver } = params
+        const { lockId, contractAddress } = params
 
         const atomicContract = new Contract(
             PHTLCAbi,
@@ -232,7 +232,7 @@ export default function useStarknet(): WalletProvider {
         return parsedResult
     }
     const getLockIdByCommitId = async (params: CommitmentParams) => {
-        const { abi, chainId, commitId, contractAddress } = params
+        const { commitId, contractAddress } = params
 
         const atomicContract = new Contract(
             PHTLCAbi,

@@ -11,6 +11,7 @@ import { CreatyePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams } 
 import { writeContract, simulateContract, readContract } from '@wagmi/core'
 import { ethers } from "ethers"
 import { AssetLock, Commit } from "../../../Models/PHTLC"
+import PHTLCAbi from "../../../lib/abis/atomic/EVM_PHTLC.json"
 
 export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
@@ -97,7 +98,7 @@ export default function useEVM(): WalletProvider {
     const messanger = "0x39c58617d355d8B432a3675714b93eC840872236"
 
     const createPreHTLC = async (params: CreatyePreHTLCParams) => {
-        const { abi, destinationChain, sourceChain, destinationAsset, sourceAsset, lpAddress, address, amount, decimals, atomicContrcat, chainId } = params
+        const { destinationChain, sourceChain, destinationAsset, sourceAsset, lpAddress, address, amount, decimals, atomicContrcat, chainId } = params
         if (!account.address) {
             throw Error("Wallet not connected")
         }
@@ -114,7 +115,7 @@ export default function useEVM(): WalletProvider {
         const timeLock = Math.floor(timeLockMS / 1000)
         const parsedAmount = ethers.utils.parseUnits(amount.toString(), decimals).toBigInt()
         const { request, result } = await simulateContract(config, {
-            abi: abi,
+            abi: PHTLCAbi,
             address: atomicContrcat,
             functionName: 'commit',
             args: [
@@ -135,7 +136,7 @@ export default function useEVM(): WalletProvider {
 
         const hash = await writeContract(config, request)
         console.log('Hash:', hash, 'Result:', result)
-        return { hash, commitId: result.toString() }
+        return { hash, commitId: (result as string) }
     }
 
     const convertToHTLC = () => {
@@ -157,9 +158,9 @@ export default function useEVM(): WalletProvider {
     }
 
     const getCommitment = async (params: CommitmentParams): Promise<Commit> => {
-        const { abi, chainId, commitId, contractAddress } = params
+        const { chainId, commitId, contractAddress } = params
         const result = await readContract(config, {
-            abi,
+            abi: PHTLCAbi,
             address: contractAddress,
             functionName: 'getCommitDetails',
             args: [commitId],
@@ -173,10 +174,10 @@ export default function useEVM(): WalletProvider {
     }
 
     const getLockIdByCommitId = async (params: CommitmentParams) => {
-        const { abi, chainId, commitId, contractAddress } = params
+        const { chainId, commitId, contractAddress } = params
 
         const result = await readContract(config, {
-            abi,
+            abi: PHTLCAbi,
             address: contractAddress,
             functionName: 'getLockIdByCommitId',
             args: [commitId],
@@ -189,10 +190,10 @@ export default function useEVM(): WalletProvider {
     }
 
     const lockCommitment = async (params: CommitmentParams & LockParams) => {
-        const { abi, chainId, commitId, contractAddress, lockId } = params
+        const { chainId, commitId, contractAddress, lockId } = params
         console.log('params', params)
         const { request, result } = await simulateContract(config, {
-            abi,
+            abi: PHTLCAbi,
             address: contractAddress,
             functionName: 'lockCommitment',
             args: [commitId, lockId],
@@ -205,10 +206,10 @@ export default function useEVM(): WalletProvider {
     }
 
     const getLock = async (params: LockParams): Promise<AssetLock> => {
-        const { abi, chainId, lockId, contractAddress, lockDataResolver } = params
+        const { chainId, lockId, contractAddress, lockDataResolver } = params
 
         const result = await readContract(config, {
-            abi,
+            abi: PHTLCAbi,
             address: contractAddress,
             functionName: 'getLockDetails',
             args: [lockId],
