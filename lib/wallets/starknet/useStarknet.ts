@@ -174,9 +174,38 @@ export default function useStarknet(): WalletProvider {
         throw new Error('Not implemented')
     }
     const getCommitment = async (params: CommitmentParams): Promise<Commit> => {
-        const { chainId, commitId, contractAddress } = params
+        const { commitId, contractAddress } = params
 
-        throw new Error('Not implemented')
+        const atomicContract = new Contract(
+            PHTLCAbi,
+            contractAddress,
+            new RpcProvider({
+                nodeUrl: 'https://starknet-sepolia.public.blastapi.io',
+            })
+        )
+
+        const result = await atomicContract.functions.getCommitDetails(commitId)
+
+        if (!result) {
+            throw new Error("No result")
+        }
+
+        const parsedResult = {
+            dstAddress: ethers.utils.hexlify(result.dstAddress as BigNumberish),
+
+            dstChain: shortString.decodeShortString(ethers.utils.hexlify(result.dstChain as BigNumberish)),
+            dstAsset: shortString.decodeShortString(ethers.utils.hexlify(result.dstAsset as BigNumberish)),
+            srcAsset: shortString.decodeShortString(ethers.utils.hexlify(result.srcAsset as BigNumberish)),
+            sender: ethers.utils.hexlify(result.sender as BigNumberish),
+            srcReceiver: ethers.utils.hexlify(result.srcReceiver as BigNumberish),
+            timelock: Number(result.timelock),
+            amount: result.amount,
+            messenger: ethers.utils.hexlify(result.messenger as BigNumberish),
+            locked: result.locked,
+            uncommitted: result.uncommitted
+        }
+
+        return parsedResult
     }
 
     const lockCommitment = async (params: CommitmentParams & LockParams) => {
