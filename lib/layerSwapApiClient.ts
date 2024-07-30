@@ -109,6 +109,23 @@ export default class LayerSwapApiClient {
     }
 }
 
+export type CommitFromApi = {
+    source_netowrk: string,
+    source_asset: string,
+    destination_network: string,
+    destination_asset: string,
+    destination_address: string,
+    liquidity_provider_address: string,
+    locked_amount: number,
+    receive_amount: number,
+    fee_amount: number,
+    transactions: {
+        type: 'lock' | 'redeem',
+        hash: string,
+        network: string
+    }[]
+}
+
 export type DepositAddress = {
     type: string
     address: `0x${string}`;
