@@ -10,6 +10,7 @@ import ActionStatus from "./Actions/ActionStatus";
 import useWallet from "../../../hooks/useWallet";
 import { ExternalLink } from "lucide-react";
 import SubmitButton from "../../buttons/submitButton";
+import { Network } from "../../../Models/Network";
 
 export enum Progress {
     Commit = 'commit',
@@ -55,7 +56,7 @@ const LpPlng = ({ address }: { address: string | undefined }) => <Message
     </div>}
     isLast={true}
     source="to"
-    sourceIcon={address && <AddressIcon className="scale-150 h-4 w-4" address={address} size={12} />}
+    sourceIcon={address && <AddressIcon className="scale-150 h-3 w-3" address={address} size={12} />}
 />
 
 const UserCommitting = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
@@ -84,23 +85,36 @@ const UserLocking = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
     source="from"
     sourceIcon={walletIcon}
 />
-const RefundRequest = ({ address }: { address?: string }) => <Message
+const RefundCanClaim = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
+    title='Timelock expired - refund available.'
+    description='Claim your funds now.'
+    isLast={true}
+    source="from"
+    sourceIcon={walletIcon}
+/>
+const RefundRequested = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
     title={<div className="flex gap-2">
-        <p>Text 1</p>
-        <div>
-
+        <>Refunding</>
+        <div className="flex space-x-1 font-bold">
+            <div className="animate-bounce delay-100">.</div>
+            <div className="animate-bounce delay-150">.</div>
+            <div className="animate-bounce delay-300">.</div>
         </div>
     </div>}
     isLast={true}
-    source="to"
-    sourceIcon={address && <AddressIcon className="scale-150 h-4 w-4" address={address} size={12} />}
+    source="from"
+    sourceIcon={walletIcon}
 />
-const RefundCompleted = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
-    title={<div className="flex gap-2">
-        <p>Text 2</p>
-        <div>
-
-        </div>
+const RefundCompleted = ({ walletIcon, source_network, tx_id }: { walletIcon?: JSX.Element, source_network: Network | undefined, tx_id: string | undefined }) => <Message
+    title='Funds have been successfully refunded.'
+    description={<div>
+        {
+            source_network && tx_id &&
+            <a target="_blank" className="inline-flex items-center gap-1" href={source_network?.transaction_explorer_template.replace('{0}', tx_id)}>
+                <span className="underline hover:no-underline">(View transaction)</span>
+                <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+        }
     </div>}
     isLast={true}
     source="from"
@@ -110,7 +124,7 @@ const RefundCompleted = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Messa
 //animate-bounce
 export const ResolveMessages: FC = () => {
 
-    const { committment, destinationLock, sourceLock, commitId, source_network, userLocked: userInitiatedLock, isTimelockExpired } = useAtomicState()
+    const { committment, destinationLock, sourceLock, commitId, source_network, userLocked: userInitiatedLock, isTimelockExpired, completedRefundHash } = useAtomicState()
     const commtting = commitId ? true : false;
     const commited = committment ? true : false;
     const lpLockDetected = destinationLock ? true : false;
@@ -134,20 +148,23 @@ export const ResolveMessages: FC = () => {
             <AssetsSent address={lp_address} />
         </div >
     }
-    //Implement refund UI
     if (isTimelockExpired) {
         if (committment?.uncommitted || sourceLock?.unlocked) {
             return <div className="flex w-full grow flex-col space-y-2" >
                 <Committed walletIcon={WalletIcon} />
                 <AssetsLockedByLP address={lp_address} />
-                <RefundRequest address={lp_address} />
-                <RefundCompleted walletIcon={WalletIcon} />
+                <RefundCompleted walletIcon={WalletIcon} source_network={source_network} tx_id={completedRefundHash} />
             </div >
         }
         return <div className="flex w-full grow flex-col space-y-2" >
             <Committed walletIcon={WalletIcon} />
             <AssetsLockedByLP address={lp_address} />
-            <RefundRequest address={lp_address} />
+            {
+                completedRefundHash ?
+                    <RefundRequested walletIcon={WalletIcon} />
+                    :
+                    <RefundCanClaim walletIcon={WalletIcon} />
+            }
         </div>
     }
     if (assetsLocked) {
