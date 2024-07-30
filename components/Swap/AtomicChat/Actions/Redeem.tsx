@@ -34,7 +34,6 @@ export const RedeemAction: FC = () => {
                         contractAddress: contract as `0x${string}`,
                         lockDataResolver: details.lockDataResolver
                     })
-                    console.log('redeem data', data)
                     if (data.redeemed) {
                         setSourceLock(data)
                         clearInterval(commitHandler)

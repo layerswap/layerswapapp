@@ -4,7 +4,7 @@ import KnownInternalNames from "../../knownIds"
 import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
-import { Call, Contract, RpcProvider, hash, shortString } from "starknet";
+import { Call, Contract, RpcProvider, shortString } from "starknet";
 import PHTLCAbi from "../../../lib/abis/atomic/STARKNET_PHTLC.json"
 import ETHABbi from "../../../lib/abis/STARKNET_ETH.json"
 import { CommitmentParams, CreatyePreHTLCParams, LockParams } from "../phtlc";
@@ -108,7 +108,7 @@ export default function useStarknet(): WalletProvider {
     const messanger = "0x152747029e738c20a4ecde5ef869ea072642938d62f0aa7f3d0e9dfb5051cb9"
 
     const createPreHTLC = async (params: CreatyePreHTLCParams) => {
-        const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, tokenContractAddress, amount, decimals, abi, atomicContrcat: atomicAddress, } = params
+        const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, tokenContractAddress, amount, decimals, atomicContrcat: atomicAddress, } = params
         if (!wallet?.metadata?.starknetAccount?.account) {
             throw new Error('Wallet not connected')
         }
@@ -151,17 +151,13 @@ export default function useStarknet(): WalletProvider {
         const commitTransactionData = await wallet.metadata.starknetAccount.provider.waitForTransaction(
             trx.transaction_hash
         );
-
-        console.log('trx', trx.transaction_hash)
         const parsedEvents = atomicContract.parseEvents(commitTransactionData);
-        console.log('parsedEvents', parsedEvents)
         const tokenCommitedEvent = parsedEvents.find((event: any) => event.TokenCommitted)
         const commitId = tokenCommitedEvent?.TokenCommitted.commitId
         if (!commitId) {
             throw new Error('No commit id')
         }
         const res = ethers.utils.hexlify(commitId as BigNumberish)
-        console.log("result", res)
         return { hash: trx.transaction_hash as `0x${string}`, commitId: res as `0x${string}` }
     }
     const convertToHTLC = () => {
@@ -174,7 +170,7 @@ export default function useStarknet(): WalletProvider {
         throw new Error('Not implemented')
     }
     const getCommitment = async (params: CommitmentParams): Promise<Commit> => {
-        const { abi, chainId, commitId, contractAddress } = params
+        const { commitId, contractAddress } = params
 
         const atomicContract = new Contract(
             PHTLCAbi,
@@ -209,7 +205,7 @@ export default function useStarknet(): WalletProvider {
     }
 
     const lockCommitment = async (params: CommitmentParams & LockParams) => {
-        const { abi, chainId, commitId, contractAddress, lockId } = params
+        const { commitId, contractAddress, lockId } = params
         if (!wallet?.metadata?.starknetAccount?.account) {
             throw new Error('Wallet not connected')
         }
@@ -226,13 +222,12 @@ export default function useStarknet(): WalletProvider {
         const committmentCall: Call = atomicContract.populate("lockCommit", args)
 
         const trx = (await wallet?.metadata?.starknetAccount?.account?.execute(committmentCall))
-        console.log('Hash:', hash, 'Result:', trx)
         return { hash: trx.transaction_hash as `0x${string}`, result: trx.transaction_hash as `0x${string}` }
     }
 
     const getLock = async (params: LockParams): Promise<AssetLock> => {
 
-        const { abi, chainId, lockId, contractAddress, lockDataResolver } = params
+        const { lockId, contractAddress } = params
 
         const atomicContract = new Contract(
             PHTLCAbi,
@@ -261,7 +256,7 @@ export default function useStarknet(): WalletProvider {
         return parsedResult
     }
     const getLockIdByCommitId = async (params: CommitmentParams) => {
-        const { abi, chainId, commitId, contractAddress } = params
+        const { commitId, contractAddress } = params
 
         const atomicContract = new Contract(
             PHTLCAbi,

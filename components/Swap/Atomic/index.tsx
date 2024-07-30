@@ -32,7 +32,6 @@ import { useAddressesStore } from "../../../stores/addressesStore";
 import { AddressGroup } from "../../Input/Address/AddressPicker";
 import EthPhtlcAbi from "../../../lib/abis/atomic/ETHEREUM_PHTLC.json"
 import ArbPhtlcAbi from "../../../lib/abis/atomic/ARBITRUM_PHTLC.json"
-import { AssetLock } from "../../../Models/PHTLC";
 
 type NetworkToConnect = {
     DisplayName: string;

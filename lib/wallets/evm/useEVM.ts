@@ -135,7 +135,6 @@ export default function useEVM(): WalletProvider {
         })
 
         const hash = await writeContract(config, request)
-        console.log('Hash:', hash, 'Result:', result)
         return { hash, commitId: result.toString() }
     }
 
@@ -163,7 +162,6 @@ export default function useEVM(): WalletProvider {
             args: [commitId],
             chainId: Number(chainId),
         })
-        console.log('commitment result', result)
         if (!result) {
             throw new Error("No result")
         }
@@ -188,7 +186,6 @@ export default function useEVM(): WalletProvider {
 
     const lockCommitment = async (params: CommitmentParams & LockParams) => {
         const { abi, chainId, commitId, contractAddress, lockId } = params
-        console.log('params', params)
         const { request, result } = await simulateContract(config, {
             abi,
             address: contractAddress,
@@ -198,12 +195,11 @@ export default function useEVM(): WalletProvider {
         })
 
         const hash = await writeContract(config, request)
-        console.log('Hash:', hash, 'Result:', result)
         return { hash, result: result }
     }
 
     const getLock = async (params: LockParams): Promise<AssetLock> => {
-        const { abi, chainId, lockId, contractAddress, lockDataResolver } = params
+        const { abi, chainId, lockId, contractAddress } = params
 
         const result = await readContract(config, {
             abi,
@@ -216,7 +212,6 @@ export default function useEVM(): WalletProvider {
         if (!result) {
             throw new Error("No result")
         }
-        console.log('lock result', result)
         return result as AssetLock
     }
 

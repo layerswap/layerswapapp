@@ -1,4 +1,4 @@
-import { Context, createContext, useContext, useState } from 'react'
+import { Context, createContext, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/router';
 import { useSettingsState } from './settings';
 import { AssetLock, Commit } from '../Models/PHTLC';
@@ -19,6 +19,7 @@ type DataContextType = {
     hashLock?: string,
     userLocked?: boolean,
     sourceLock?: AssetLock,
+    isTimelockExpired?: boolean,
     completedRefundHash?: string,
     error: string | undefined,
     onCommit: (commitId: string) => void;
@@ -44,13 +45,14 @@ export function AtomicProvider({ children }) {
 
     const [commitId, setCommitId] = useState<string | undefined>(router.query.commitId as string | undefined)
     const { networks } = useSettingsState()
-    const [commitment, setCommitment] = useState<Commit | undefined>(undefined)
+    const [committment, setCommitment] = useState<Commit | undefined>(undefined)
     const [destinationLock, setDestinationLock] = useState<AssetLock | undefined>(undefined)
     const [sourceLock, setSourceLock] = useState<AssetLock | undefined>(undefined)
 
     const [hashLock, setHashLock] = useState<string | undefined>(undefined)
     const [userLocked, setUserLocked] = useState<boolean>(false)
 
+    const [isTimelockExpired, setIsTimelockExpired] = useState<boolean>(false)
     const [completedRefundHash, setCompletedRefundHash] = useState<string | undefined>(undefined)
     const [error, setError] = useState<string | undefined>(undefined)
 
@@ -58,6 +60,26 @@ export function AtomicProvider({ children }) {
     const destination_network = networks.find(n => n.name.toUpperCase() === (destination as string).toUpperCase())
     const source_token = source_network?.tokens.find(t => t.symbol === source_asseet)
     const destination_token = destination_network?.tokens.find(t => t.symbol === destination_asset)
+
+    useEffect(() => {
+        if (!committment || isTimelockExpired) return
+
+        const time = (Number(committment.timelock) * 1000) - Date.now()
+
+        if (time < 0) {
+            setIsTimelockExpired(true)
+            return
+        }
+        const timer = setInterval(() => {
+            if (!isTimelockExpired) {
+                setIsTimelockExpired(true)
+                clearInterval(timer)
+            }
+        }, time);
+
+        return () => clearInterval(timer)
+
+    }, [committment])
 
     const handleCommited = (commitId: string) => {
         setCommitId(commitId)
@@ -78,11 +100,12 @@ export function AtomicProvider({ children }) {
             amount: amount ? Number(amount) : undefined,
             destination_network,
             commitId,
-            committment: commitment,
+            committment: committment,
             destinationLock,
             hashLock,
             userLocked,
             sourceLock,
+            isTimelockExpired,
             completedRefundHash,
             error,
             setDestinationLock,

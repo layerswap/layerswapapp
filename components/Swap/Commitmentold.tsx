@@ -90,7 +90,6 @@ const SwapDetails: FC<Props> = (props) => {
                         setCommitment(data)
                         clearInterval(commitHandler)
                     }
-                    console.log("blaaah")
                 }, 2000)
             })()
             return () => {
@@ -103,8 +102,6 @@ const SwapDetails: FC<Props> = (props) => {
 
     useEffect(() => {
         let lockHandler: any = undefined
-        console.log('destinationLock', destinationLock)
-        console.log('commitment', commitment)
         if (destination_provider && destination_network && !destinationLock && commitment) {
             lockHandler = setInterval(async () => {
                 const details = NETWORKS_DETAILS[destination_network.name]
@@ -144,13 +141,11 @@ const SwapDetails: FC<Props> = (props) => {
 
     useEffect(() => {
         let commitHandler: any = undefined
-        console.log('lockTrx', lockTrx)
 
         if (lockTrx.isSuccess && !commitment?.locked) {
             (async () => {
 
                 commitHandler = setInterval(async () => {
-                    console.log('******** polling')
                     if (!source_network?.chain_id)
                         throw Error("No chain id")
                     if (!source_provider)

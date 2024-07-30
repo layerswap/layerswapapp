@@ -2,7 +2,6 @@ import { FC, useEffect, useRef, useState } from "react";
 import useWallet from "../../../../hooks/useWallet";
 import { NETWORKS_DETAILS } from "../../Atomic";
 import { WalletActionButton } from "../buttons";
-import toast from "react-hot-toast";
 import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
 
@@ -70,7 +69,6 @@ export const UserCommitAction: FC = () => {
         if (source_network && commitId && !requestingCommit.current) {
             (async () => {
                 commitHandler = setInterval(async () => {
-                    console.log('******** polling')
                     if (!source_network?.chain_id)
                         throw Error("No chain id")
                     if (!source_provider)
@@ -121,7 +119,6 @@ export const UserCommitAction: FC = () => {
 
 export const UserLockAction: FC = () => {
     const { source_network, commitId, hashLock, committment, setCommitment, setUserLocked, userLocked, setError } = useAtomicState()
-    const [lockLoading, setLockLoading] = useState(false)
 
     const { getWithdrawalProvider } = useWallet()
 
@@ -130,7 +127,6 @@ export const UserLockAction: FC = () => {
 
     const handleLockAssets = async () => {
         try {
-            setLockLoading(true)
             if (!source_network?.chain_id)
                 throw Error("No chain id")
             if (!source_provider)
@@ -141,7 +137,7 @@ export const UserLockAction: FC = () => {
             if (!details)
                 throw new Error("No source network details")
 
-            const { hash, result } = await source_provider.lockCommitment({
+            await source_provider.lockCommitment({
                 abi: details.abi,
                 chainId: source_network.chain_id,
                 commitId: commitId as string,
@@ -154,7 +150,6 @@ export const UserLockAction: FC = () => {
             setError(e.details || e.message)
         }
         finally {
-            setLockLoading(false)
         }
     }
 
@@ -163,7 +158,6 @@ export const UserLockAction: FC = () => {
         if (!committment?.locked) {
             (async () => {
                 commitHandler = setInterval(async () => {
-                    console.log('******** polling')
                     if (!source_network?.chain_id)
                         throw Error("No chain id")
                     if (!source_provider)
@@ -212,42 +206,96 @@ export const UserLockAction: FC = () => {
 }
 
 export const UserRefundAction: FC = () => {
-    const { source_network, commitId, hashLock, setCompletedRefundHash } = useAtomicState()
+    const { source_network, commitId, sourceLock, setCompletedRefundHash, committment, setCommitment, setError, setHashLock, setDestinationLock } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
     const [requestedRefund, setRequestedRefund] = useState(false)
 
-    const source_provider = getWithdrawalProvider(source_network!)
+    const source_provider = source_network && getWithdrawalProvider(source_network)
     const wallet = source_provider?.getConnectedWallet()
 
     const handleRefundAssets = async () => {
         try {
             if (!source_network) throw new Error("No source network")
             if (!commitId) throw new Error("No commitment details")
-            setRequestedRefund(true)
 
             const details = NETWORKS_DETAILS[source_network.name]
 
             const res = await source_provider?.refund({
                 commitId: commitId,
-                lockId: hashLock,
+                lockId: sourceLock?.hashlock,
                 abi: details.abi,
                 chainId: source_network.chain_id ?? '',
                 contractAddress: source_network.metadata.htlc_contract as `0x${string}`
             })
             setCompletedRefundHash(res)
+            setRequestedRefund(true)
         }
         catch (e) {
-            toast(e.message)
+            setError(e.details || e.message)
         }
-
     }
+
+    useEffect(() => {
+        let commitHandler: any = undefined
+        if (!committment?.uncommitted && !sourceLock) {
+            (async () => {
+                commitHandler = setInterval(async () => {
+                    if (!source_network?.chain_id)
+                        throw Error("No chain id")
+                    if (!source_provider)
+                        throw new Error("No source provider")
+                    const details = NETWORKS_DETAILS[source_network.name]
+                    if (!details)
+                        throw new Error("No source network details")
+
+                    const data = await source_provider.getCommitment({
+                        abi: details.abi,
+                        chainId: source_network.chain_id,
+                        commitId: commitId as string,
+                        contractAddress: source_network.metadata.htlc_contract as `0x${string}`
+                    })
+                    if (data?.uncommitted) {
+                        setCommitment(data)
+                        clearInterval(commitHandler)
+                    }
+                }, 5000)
+            })()
+        }
+        return () => clearInterval(commitHandler)
+    }, [source_provider])
+
+    useEffect(() => {
+        let lockHandler: any = undefined
+        if (source_provider && sourceLock && !sourceLock.unlocked) {
+            lockHandler = setInterval(async () => {
+                const details = NETWORKS_DETAILS[source_network.name]
+                if (!source_network.chain_id)
+                    throw Error("No chain id")
+
+                const data = await source_provider.getLock({
+                    abi: details.abi,
+                    chainId: source_network.chain_id,
+                    lockId: sourceLock.hashlock as string,
+                    contractAddress: source_network.metadata.htlc_contract as `0x${string}`,
+                    lockDataResolver: details.lockDataResolver
+                })
+                if (data.unlocked) {
+                    setDestinationLock(data)
+                    clearInterval(lockHandler)
+                }
+            }, 5000)
+        }
+        return () => {
+            lockHandler && clearInterval(lockHandler);
+        };
+    }, [source_provider])
 
     return <div className="font-normal flex flex-col w-full relative z-10 space-y-4 grow">
         {
             requestedRefund ?
                 <ActionStatus
                     status="pending"
-                    title='Please wait for refund'
+                    title={'Waiting for confirmations'}
                 />
                 :
                 <WalletActionButton

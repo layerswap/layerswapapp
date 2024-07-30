@@ -26,12 +26,6 @@ const Committed = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
     source="from"
     sourceIcon={walletIcon}
 />
-const LPIsLocking = ({ address }: { address: string | undefined }) => <Message
-    title="Locking assets"
-    isLast={true}
-    source="to"
-    sourceIcon={address && <AddressIcon className="scale-150 h-3 w-3" address={address} size={12} />}
-/>
 const AssetsLockedByLP = ({ address }: { address: string | undefined }) => <Message
     title="LP Assets Locked"
     description="Liqudity provider locked funds for you"
@@ -90,11 +84,33 @@ const UserLocking = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
     source="from"
     sourceIcon={walletIcon}
 />
+const RefundRequest = ({ address }: { address?: string }) => <Message
+    title={<div className="flex gap-2">
+        <p>Text 1</p>
+        <div>
+
+        </div>
+    </div>}
+    isLast={true}
+    source="to"
+    sourceIcon={address && <AddressIcon className="scale-150 h-4 w-4" address={address} size={12} />}
+/>
+const RefundCompleted = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
+    title={<div className="flex gap-2">
+        <p>Text 2</p>
+        <div>
+
+        </div>
+    </div>}
+    isLast={true}
+    source="from"
+    sourceIcon={walletIcon}
+/>
 
 //animate-bounce
-export const ResolveMessages: FC = (props) => {
+export const ResolveMessages: FC = () => {
 
-    const { committment, destinationLock, sourceLock, commitId, source_network, userLocked: userInitiatedLock } = useAtomicState()
+    const { committment, destinationLock, sourceLock, commitId, source_network, userLocked: userInitiatedLock, isTimelockExpired } = useAtomicState()
     const commtting = commitId ? true : false;
     const commited = committment ? true : false;
     const lpLockDetected = destinationLock ? true : false;
@@ -102,7 +118,6 @@ export const ResolveMessages: FC = (props) => {
     const assetsLocked = committment?.locked && destinationLock ? true : false;
 
     const redeemCompleted = sourceLock?.redeemed ? true : false;
-    const isTimelockExpired = (Math.floor(Date.now() / 1000) - Number(committment?.timelock)) > 0
     const { getWithdrawalProvider } = useWallet()
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const wallet = source_provider?.getConnectedWallet()
@@ -121,8 +136,18 @@ export const ResolveMessages: FC = (props) => {
     }
     //Implement refund UI
     if (isTimelockExpired) {
+        if (committment?.uncommitted || sourceLock?.unlocked) {
+            return <div className="flex w-full grow flex-col space-y-2" >
+                <Committed walletIcon={WalletIcon} />
+                <AssetsLockedByLP address={lp_address} />
+                <RefundRequest address={lp_address} />
+                <RefundCompleted walletIcon={WalletIcon} />
+            </div >
+        }
         return <div className="flex w-full grow flex-col space-y-2" >
-            <Committed address={address} />
+            <Committed walletIcon={WalletIcon} />
+            <AssetsLockedByLP address={lp_address} />
+            <RefundRequest address={lp_address} />
         </div>
     }
     if (assetsLocked) {
@@ -172,13 +197,12 @@ export const ResolveMessages: FC = (props) => {
     </>
 }
 const ResolveAction: FC = () => {
-    const { committment, destinationLock, sourceLock, error, setError } = useAtomicState()
+    const { committment, destinationLock, sourceLock, error, setError, isTimelockExpired } = useAtomicState()
 
     const commited = committment ? true : false;
     const lpLockDetected = destinationLock ? true : false;
     const assetsLocked = committment?.locked && destinationLock ? true : false;
     const redeemCompleted = sourceLock?.redeemed ? true : false;
-    const isTimelockExpired = (Math.floor(Date.now() / 1000) - Number(committment?.timelock)) > 0
 
     if (error) {
         return <div className="w-full flex flex-col gap-4">
@@ -203,7 +227,7 @@ const ResolveAction: FC = () => {
         </div>
     }
     if (isTimelockExpired) {
-        if (committment?.uncommitted || destinationLock?.unlocked) {
+        if (committment?.uncommitted || sourceLock?.unlocked) {
             return <div className="flex w-full grow flex-col space-y-2" >
                 <ActionStatus
                     status="success"
@@ -239,7 +263,8 @@ const ResolveAction: FC = () => {
 
 
 export const ActionsWithProgressbar: FC = () => {
-    const { committment, destinationLock } = useAtomicState()
+    const { committment, destinationLock, isTimelockExpired } = useAtomicState()
+
     let currentStep = 1
     let actiontext = 'Commit'
     let firstStep = "5%"
@@ -260,10 +285,11 @@ export const ActionsWithProgressbar: FC = () => {
     }
 
     const allDone = committment?.locked ? true : false
+    const showSteps = !allDone && !isTimelockExpired
 
     return <div className="space-y-4">
         {
-            !allDone &&
+            showSteps &&
             <div className="space-y-1 relative">
                 {
                     allDone ?
