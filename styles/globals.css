@@ -38,7 +38,8 @@
 iframe body {
   display: none;
 }
-.light .top-backdrop{
+
+.light .top-backdrop {
   display: none;
 }
 
@@ -273,6 +274,7 @@ input::-webkit-input-placeholder {
 body {
   overflow: overlay;
 }
+
 body::-webkit-scrollbar {
   --tw-bg-opacity: 1;
   background-color: rgb(var(--ls-colors-secondary-700));
@@ -314,4 +316,49 @@ textarea:disabled::placeholder {
 
 .space-y-reverse {
   --space-y-reverse: 1
+}
+
+.pendingAnim {
+  height: 4px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, transparent 50%, #fff, #fff);
+  position: absolute;
+  animation: animateTop 2s linear infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes animateTop {
+  0% {
+    left: 10%;
+    right: 100%;
+    width: 5%;
+    opacity: 1;
+  }
+  10% {
+    left: 0%;
+    right: 90%;
+    width: 20%;
+    opacity: 1;
+  }
+  40% {
+    opacity: 0;
+  }
+  60% {
+    opacity: 0;
+  }
+  66% {
+    opacity: 1;
+  }
+  90% {
+    left: 90%;
+    right: 0%;
+    width: 15%;
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    right: 0%;
+    width: 0%;
+    opacity: 0;
+  }
 }

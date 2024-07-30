@@ -25,7 +25,7 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
                     const nextIndex = (currentIndex + 1) % manuItems.length;
                     return manuItems[nextIndex];
                 });
-            }, 500);
+            }, 1500);
             return () => clearInterval(interval);
         }
     }, [manuItems, selectedItem]);
@@ -34,24 +34,27 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
     const sourceLogo = from ? from.logo : fromExchange?.logo
     const destinationLogo = to ? to.logo : toExchange?.logo
 
+    const cex = fromExchange ? fromExchange.display_name : toExchange?.display_name
+    const chain = from ? from.display_name : to?.display_name
+
     return (
         <div className="bg-secondary-700 rounded-lg px-2 py-1 border border-secondary-500 w-full relative z-10 mt-1">
             <div className="font-normal flex flex-col w-full relative z-10 space-y-4">
-                <div className="w-full">
-                    <div className="flex items-center gap-3">
+                <div className="w-full px-2.5">
+                    <div className="flex items-center mb-2">
                         <div>
                             {fromExchange ?
                                 <p className="text-primary-text-placeholder text-xs leading-5">
-                                    The network you select here will be used as an intermediary for the transfer from {"{CEX}"} to {"{chain}"}. Before selecting the network, please check which one is available on {"{CEX}"} for withdrawal.
+                                    The network you select here will be used as an intermediary for the transfer from {cex} to {chain}. Before selecting the network, please check which one is available on {cex} for withdrawal.
                                 </p>
                                 :
                                 <p className="text-primary-text-placeholder text-xs leading-5">
-                                    The network you select here will be used as an intermediary for the transfer from {"{chain}"} to {"{CEX}"}. Before selecting the network, please check which one is available on {"{CEX}"} for deposit.
+                                    The network you select here will be used as an intermediary for the transfer from {chain} to {cex}. Before selecting the network, please check which one is available on {cex} for deposit.
                                 </p>
                             }
                         </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="relative flex items-center space-x-2">
                         <div className="flex-shrink-0 h-4 w-4 relative">
                             {(values.from || values.fromExchange) && <Image
                                 src={sourceLogo!}
@@ -62,9 +65,9 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
                                 className="rounded-md object-contain"
                             />}
                         </div>
-                        <div className="w-full h-[2px] bg-gray-300 my-2" />
+                        <div className="w-full h-[2px] bg-transparent my-2 line line-left" />
                         <AnimatedImage src={currentValue?.imgSrc ?? ''} />
-                        <div className="w-full h-[1px] bg-gray-300 my-2" />
+                        <div className="w-full h-[2px] bg-transparent my-2 line line-right" />
                         <div className="flex-shrink-0 h-4 w-4 relative">
                             {(values.to || values.toExchange) && <Image
                                 src={destinationLogo!}
@@ -74,6 +77,9 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
                                 loading="eager"
                                 className="rounded-md object-contain"
                             />}
+                        </div>
+                        <div className="absolute top-1/2 transform -translate-y-1/2 w-10/12 h-[2px]">
+                            <span className="pendingAnim"></span>
                         </div>
                     </div>
                 </div>
@@ -85,7 +91,7 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
 export default TransferCEX;
 
 const AnimatedImage: FC<{ src: string }> = memo(({ src }) => (
-    <div className="flex-shrink-0 h-6 w-6 relative">
+    <div className="flex-shrink-0 h-6 w-6 relative z-10">
         <Image
             src={src}
             alt="Project Logo"
