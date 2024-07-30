@@ -4,7 +4,7 @@ import { ProgressStatus, StatusStep } from "../Withdraw/Processing/types";
 import { UserCommitCurrent, UserCommitDone } from "./UserCommit";
 import { LpLockCurrent, LpLockDone, LpLockUpcoming } from "./LpLock";
 import { useSettingsState } from "../../../context/settings";
-import {  useRouter } from "next/router";
+import { useRouter } from "next/router";
 import { AssetLock, Commit } from "../../../Models/PHTLC";
 import Steps from "../StepsComponent";
 import { UserLockCurrent, UserLockDone, UserLockUpcoming } from "./UserLock";
@@ -20,14 +20,10 @@ type ContainerProps = {
     destination_asset: string;
 }
 
-type Props = ContainerProps & {
-
-}
 
 //TODO: implement user redeem current for handling LP did not redeem case
-//TODO: implement refund]
 
-const Commitment: FC<Props> = (props) => {
+const Commitment: FC<ContainerProps> = (props) => {
     const { source, destination, amount, address, source_asseet, destination_asset, type } = props;
     const router = useRouter()
     const [commitId, setCommitId] = useState<string | null>(router.query.commitId as string | null)
@@ -36,13 +32,15 @@ const Commitment: FC<Props> = (props) => {
     const [destinationLock, setDestinationLock] = useState<AssetLock | null>(null)
     const [hashLock, setHashLock] = useState<string | null>(null)
     const [userLocked, setUserLocked] = useState<boolean>(false)
-    console.log('hashLock', hashLock)
-    console.log('destlock', destinationLock)
+    const [userRefundRequested, setUserRefundRequested] = useState<boolean>(false)
+    const [completedRefundHash, setCompletedRefundHash] = useState<string | null>(null)
 
     const source_network = networks.find(n => n.name.toUpperCase() === source.toUpperCase())
     const destination_network = networks.find(n => n.name.toUpperCase() === destination.toUpperCase())
     const source_token = source_network?.tokens.find(t => t.symbol === source_asseet)
     const destination_token = destination_network?.tokens.find(t => t.symbol === destination_asset)
+
+    const isTimelockExpired = (Math.floor(Date.now() / 1000) - Number(commitment?.timelock)) > 0
 
     const handleCommited = (commitId: string) => {
         setCommitId(commitId)
@@ -214,8 +212,8 @@ const Commitment: FC<Props> = (props) => {
                 description: null
             },
             current: {
-                name: `Sending assets to your address`,
-                description: null
+                name: `Refunding assets to your address`,
+                description: ''
             },
             complete: {
                 name: `Assets were sent to your address`,
@@ -233,22 +231,16 @@ const Commitment: FC<Props> = (props) => {
             }
         }
     }
-    // const progress = ResolveProgress({
-    //     commited: false,
-    //     lpLockDetected: false,
-    //     assetsLocked: false,
-    //     redeemCompleted: false,
-    //     refundCompleted: false,
-    //     refundRequested: false
-    // })
+
 
     const progress = ResolveProgress({
         commited: commitment ? true : false,
         lpLockDetected: destinationLock ? true : false,
         assetsLocked: commitment?.locked && destinationLock ? true : false,
         redeemCompleted: destinationLock?.redeemed ? true : false,
-        refundCompleted: false,
-        refundRequested: false
+        refundCanBeRequested: isTimelockExpired ? true : false,
+        refundRequested: userRefundRequested ? true : false,
+        refundCompleted: commitment?.uncommitted ? true : false,
     })
 
     const allSteps: StatusStep[] = [
@@ -279,6 +271,13 @@ const Commitment: FC<Props> = (props) => {
             description: progressStates?.redeem?.[progress.stepStatuses?.redeem]?.description,
             hasSpinner: true,
             index: 4
+        },
+        {
+            name: progressStates.refund?.[progress.stepStatuses?.refund]?.name,
+            status: progress.stepStatuses.refund,
+            description: progressStates?.refund?.[progress.stepStatuses?.refund]?.description,
+            hasSpinner: progressStates?.refund?.[progress.stepStatuses?.refund]?.hasSpinner,
+            index: 5
         }
     ]
     return (
@@ -346,6 +345,7 @@ type ResolveProgressProps = {
     lpLockDetected: boolean;
     assetsLocked: boolean;
     redeemCompleted: boolean;
+    refundCanBeRequested: boolean;
     refundRequested: boolean;
     refundCompleted: boolean;
 }
@@ -366,6 +366,7 @@ const ResolveProgress = (props: ResolveProgressProps): ResolveProgressReturn => 
         assetsLocked,
         lpLockDetected,
         redeemCompleted,
+        refundCanBeRequested,
         refundRequested,
         refundCompleted
     } = props
@@ -374,9 +375,9 @@ const ResolveProgress = (props: ResolveProgressProps): ResolveProgressReturn => 
         return {
             stepStatuses: {
                 [Progress.Commit]: ProgressStatus.Complete,
-                [Progress.LpLock]: ProgressStatus.Complete,
-                [Progress.Lock]: ProgressStatus.Complete,
-                [Progress.Redeem]: ProgressStatus.Complete,
+                [Progress.LpLock]: ProgressStatus.Failed,
+                [Progress.Lock]: ProgressStatus.Failed,
+                [Progress.Redeem]: ProgressStatus.Failed,
                 [Progress.Refund]: ProgressStatus.Complete,
             },
             generalStatus: {
@@ -389,13 +390,28 @@ const ResolveProgress = (props: ResolveProgressProps): ResolveProgressReturn => 
         return {
             stepStatuses: {
                 [Progress.Commit]: ProgressStatus.Complete,
-                [Progress.LpLock]: ProgressStatus.Complete,
-                [Progress.Lock]: ProgressStatus.Complete,
-                [Progress.Redeem]: ProgressStatus.Complete,
+                [Progress.LpLock]: ProgressStatus.Failed,
+                [Progress.Lock]: ProgressStatus.Failed,
+                [Progress.Redeem]: ProgressStatus.Failed,
                 [Progress.Refund]: ProgressStatus.Current,
             },
             generalStatus: {
                 title: "Refund requested",
+                subTitle: null
+            }
+        }
+    }
+    else if (refundCanBeRequested) {
+        return {
+            stepStatuses: {
+                [Progress.Commit]: ProgressStatus.Complete,
+                [Progress.LpLock]: ProgressStatus.Failed,
+                [Progress.Lock]: ProgressStatus.Failed,
+                [Progress.Redeem]: ProgressStatus.Failed,
+                [Progress.Refund]: ProgressStatus.Current,
+            },
+            generalStatus: {
+                title: "Refund available",
                 subTitle: null
             }
         }

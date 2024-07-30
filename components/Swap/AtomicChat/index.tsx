@@ -9,7 +9,6 @@ import { ActionsWithProgressbar, ResolveMessages } from "./Resolver";
 import { useAtomicState } from "../../../context/atomicContext";
 import ResizablePanel from "../../ResizablePanel";
 
-
 type ContainerProps = {
     type: "widget" | "contained",
     source: string;
@@ -20,11 +19,7 @@ type ContainerProps = {
     destination_asset: string;
 }
 
-type Props = ContainerProps & {
-
-}
-
-const Commitment: FC<Props> = (props) => {
+const Commitment: FC<ContainerProps> = (props) => {
     const { source, destination, amount, address, source_asseet, destination_asset } = props;
     const { networks } = useSettingsState()
     const { getWithdrawalProvider } = useWallet()

@@ -26,6 +26,14 @@ export type LockParams = {
     contractAddress: `0x${string}`,
     lockDataResolver?: (data: any[]) => AssetLock
 }
+
+export type RefundParams = {
+    chainId: string,
+    contractAddress: `0x${string}`,
+    commitId: string
+    lockId?: string | null,
+}
+
 export type GetCommitsParams = {
     contractAddress: `0x${string}`,
     chainId: string,

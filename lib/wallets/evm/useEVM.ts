@@ -7,7 +7,7 @@ import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
-import { CreatyePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams } from "../phtlc"
+import { CreatyePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams } from "../phtlc"
 import { writeContract, simulateContract, readContract } from '@wagmi/core'
 import { ethers } from "ethers"
 import { AssetLock, Commit } from "../../../Models/PHTLC"
@@ -94,7 +94,8 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-    const LOCK_TIME = 1000 * 60 * 60 * 3 // 3 hours
+    // const LOCK_TIME = 1000 * 60 * 60 * 3 // 3 hours
+    const LOCK_TIME = 1000 * 60 * 30 // 30 minutes
     const messanger = "0x39c58617d355d8B432a3675714b93eC840872236"
 
     const createPreHTLC = async (params: CreatyePreHTLCParams) => {
@@ -135,7 +136,6 @@ export default function useEVM(): WalletProvider {
         })
 
         const hash = await writeContract(config, request)
-        console.log('Hash:', hash, 'Result:', result)
         return { hash, commitId: (result as string) }
     }
 
@@ -143,9 +143,6 @@ export default function useEVM(): WalletProvider {
         throw new Error('Not implemented')
     }
     const claim = () => {
-        throw new Error('Not implemented')
-    }
-    const refund = () => {
         throw new Error('Not implemented')
     }
     const getPreHTLC = () => {
@@ -166,7 +163,6 @@ export default function useEVM(): WalletProvider {
             args: [commitId],
             chainId: Number(chainId),
         })
-        console.log('commitment result', result)
         if (!result) {
             throw new Error("No result")
         }
@@ -191,7 +187,6 @@ export default function useEVM(): WalletProvider {
 
     const lockCommitment = async (params: CommitmentParams & LockParams) => {
         const { chainId, commitId, contractAddress, lockId } = params
-        console.log('params', params)
         const { request, result } = await simulateContract(config, {
             abi: PHTLCAbi,
             address: contractAddress,
@@ -201,12 +196,11 @@ export default function useEVM(): WalletProvider {
         })
 
         const hash = await writeContract(config, request)
-        console.log('Hash:', hash, 'Result:', result)
         return { hash, result: result }
     }
 
     const getLock = async (params: LockParams): Promise<AssetLock> => {
-        const { chainId, lockId, contractAddress, lockDataResolver } = params
+        const { chainId, lockId, contractAddress } = params
 
         const result = await readContract(config, {
             abi: PHTLCAbi,
@@ -219,10 +213,27 @@ export default function useEVM(): WalletProvider {
         if (!result) {
             throw new Error("No result")
         }
-        console.log('lock result', result)
         return result as AssetLock
     }
 
+    const refund = async (params: RefundParams) => {
+        const { chainId, lockId, commitId, contractAddress } = params
+
+        const { request } = await simulateContract(config, {
+            abi: PHTLCAbi,
+            address: contractAddress,
+            functionName: lockId ? 'unlock' : 'uncommit',
+            args: lockId ? [lockId] : [commitId],
+            chainId: Number(chainId),
+        })
+
+        const result = await writeContract(config, request)
+
+        if (!result) {
+            throw new Error("No result")
+        }
+        return result
+    }
     const getCommits = async (params: GetCommitsParams) => {
         throw new Error('Not implemented')
     }

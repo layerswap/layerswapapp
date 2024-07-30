@@ -51,7 +51,7 @@ export function FeeProvider({ children }) {
         `/limits?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&refuel=${!!refuel}` : null, apiClient.fetcher, {
         refreshInterval: poll ? 20000 : 0,
     })
-    console.log(amountRange)
+
     const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<SwapQuote>>((from && fromCurrency && to && toCurrency && debouncedAmount) ?
         `/quote?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&amount=${debouncedAmount}&refuel=${!!refuel}` : null, apiClient.fetcher, {
         refreshInterval: poll ? 42000 : 0,
