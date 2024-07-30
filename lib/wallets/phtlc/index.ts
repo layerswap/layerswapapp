@@ -21,11 +21,16 @@ export type CommitmentParams = {
     chainId: string,
     contractAddress: `0x${string}`
 }
-    
+
 export type LockParams = {
     abi: any,
     lockId: string,
     chainId: string,
     contractAddress: `0x${string}`,
     lockDataResolver?: (data: any[]) => AssetLock
+}
+export type GetCommitsParams = {
+    contractAddress: `0x${string}`,
+    abi: any,
+    chainId: string,
 }

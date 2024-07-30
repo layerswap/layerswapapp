@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { Call, Contract, RpcProvider, hash, shortString } from "starknet";
 import PHTLCAbi from "../../../lib/abis/atomic/STARKNET_PHTLC.json"
 import ETHABbi from "../../../lib/abis/STARKNET_ETH.json"
-import { CommitmentParams, CreatyePreHTLCParams, LockParams } from "../phtlc";
+import { CommitmentParams, CreatyePreHTLCParams, GetCommitsParams, LockParams } from "../phtlc";
 import { BigNumberish, ethers } from "ethers";
 import { AssetLock, Commit } from "../../../Models/PHTLC";
 
@@ -176,36 +176,7 @@ export default function useStarknet(): WalletProvider {
     const getCommitment = async (params: CommitmentParams): Promise<Commit> => {
         const { abi, chainId, commitId, contractAddress } = params
 
-        const atomicContract = new Contract(
-            PHTLCAbi,
-            contractAddress,
-            new RpcProvider({
-                nodeUrl: 'https://starknet-sepolia.public.blastapi.io',
-            })
-        )
-
-        const result = await atomicContract.functions.getCommitDetails(commitId)
-
-        if (!result) {
-            throw new Error("No result")
-        }
-
-        const parsedResult = {
-            dstAddress: ethers.utils.hexlify(result.dstAddress as BigNumberish),
-
-            dstChain: shortString.decodeShortString(ethers.utils.hexlify(result.dstChain as BigNumberish)),
-            dstAsset: shortString.decodeShortString(ethers.utils.hexlify(result.dstAsset as BigNumberish)),
-            srcAsset: shortString.decodeShortString(ethers.utils.hexlify(result.srcAsset as BigNumberish)),
-            sender: ethers.utils.hexlify(result.sender as BigNumberish),
-            srcReceiver: ethers.utils.hexlify(result.srcReceiver as BigNumberish),
-            timelock: Number(result.timelock),
-            amount: result.amount,
-            messenger: ethers.utils.hexlify(result.messenger as BigNumberish),
-            locked: result.locked,
-            uncommitted: result.uncommitted
-        }
-
-        return parsedResult
+        throw new Error('Not implemented')
     }
 
     const lockCommitment = async (params: CommitmentParams & LockParams) => {
@@ -276,6 +247,47 @@ export default function useStarknet(): WalletProvider {
         return hexedResult
     }
 
+    const getCommits = async (params: GetCommitsParams) => {
+
+        throw new Error('Not implemented')
+
+        // const { contractAddress } = params
+
+        // const atomicContract = new Contract(
+        //     PHTLCAbi,
+        //     contractAddress,
+        //     new RpcProvider({
+        //         nodeUrl: 'https://starknet-sepolia.public.blastapi.io',
+        //     })
+        // )
+
+        // if(!wallet?.address){
+        //     throw new Error('No connected wallet')
+        // }
+
+        // const result = await atomicContract.functions.getCommits(wallet?.address)
+
+        // if (!result) {
+        //     throw new Error("No result")
+        // }
+
+        // const parsedResult = {
+        //     dstAddress: ethers.utils.hexlify(result.dstAddress as BigNumberish),
+
+        //     dstChain: shortString.decodeShortString(ethers.utils.hexlify(result.dstChain as BigNumberish)),
+        //     dstAsset: shortString.decodeShortString(ethers.utils.hexlify(result.dstAsset as BigNumberish)),
+        //     srcAsset: shortString.decodeShortString(ethers.utils.hexlify(result.srcAsset as BigNumberish)),
+        //     sender: ethers.utils.hexlify(result.sender as BigNumberish),
+        //     srcReceiver: ethers.utils.hexlify(result.srcReceiver as BigNumberish),
+        //     timelock: Number(result.timelock),
+        //     amount: result.amount,
+        //     messenger: ethers.utils.hexlify(result.messenger as BigNumberish),
+        //     locked: result.locked,
+        //     uncommitted: result.uncommitted
+        // }
+
+        // return parsedResult
+    }
 
     return {
         getConnectedWallet: getWallet,
@@ -298,5 +310,6 @@ export default function useStarknet(): WalletProvider {
         getLock,
         lockCommitment,
         getLockIdByCommitId,
+        getCommits
     }
 }

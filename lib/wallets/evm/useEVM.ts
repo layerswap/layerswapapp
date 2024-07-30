@@ -7,7 +7,7 @@ import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
-import { CreatyePreHTLCParams, CommitmentParams, LockParams } from "../phtlc"
+import { CreatyePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams } from "../phtlc"
 import { writeContract, simulateContract, readContract } from '@wagmi/core'
 import { ethers } from "ethers"
 import { AssetLock, Commit } from "../../../Models/PHTLC"
@@ -222,6 +222,10 @@ export default function useEVM(): WalletProvider {
         return result as AssetLock
     }
 
+    const getCommits = async (params: GetCommitsParams) => {
+        throw new Error('Not implemented')
+    }
+
     return {
         getConnectedWallet: getWallet,
         connectWallet,
@@ -241,6 +245,8 @@ export default function useEVM(): WalletProvider {
         refund,
         waitForLock,
         getLock,
-        lockCommitment
+        lockCommitment,
+
+        getCommits
     }
 }
