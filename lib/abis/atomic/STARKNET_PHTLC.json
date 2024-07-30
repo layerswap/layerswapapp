@@ -169,7 +169,7 @@
     "type": "interface",
     "items": [
       {
-        "name": "commit",
+        "name": "commit_hop",
         "type": "function",
         "inputs": [
           {
@@ -229,7 +229,7 @@
         "state_mutability": "external"
       },
       {
-        "name": "commit1",
+        "name": "commit",
         "type": "function",
         "inputs": [
           {

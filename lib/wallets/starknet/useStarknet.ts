@@ -142,12 +142,16 @@ export default function useStarknet(): WalletProvider {
             atomicAddress,
             wallet.metadata?.starknetAccount?.account,
         )
-        const committmentCall: Call = atomicContract.populate("commit1", args)
+        const committmentCall: Call = atomicContract.populate("commit", args)
 
         const trx = (await wallet?.metadata?.starknetAccount?.account?.execute([increaseAllowanceCall, committmentCall]))
+
+
+
         const commitTransactionData = await wallet.metadata.starknetAccount.provider.waitForTransaction(
             trx.transaction_hash
         );
+
         console.log('trx', trx.transaction_hash)
         const parsedEvents = atomicContract.parseEvents(commitTransactionData);
         console.log('parsedEvents', parsedEvents)
