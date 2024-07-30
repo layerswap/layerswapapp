@@ -63,11 +63,12 @@ export default function useStarknet(): WalletProvider {
             }
 
             if (wallet && wallet.account && wallet.isConnected) {
+                //TODO fix this
                 const chainString = wallet.chainId
-                const chainid = constants.StarknetChainId[chainString]
+                const chainid = constants.StarknetChainId[chainString] || chainString
                 addWallet({
                     address: wallet.account.address,
-                    chainId: chainid || wallet.provider?.chainId || wallet.provider?.provider?.chainId,
+                    chainId: chainid || wallet.provider?.chainId || wallet.provider?.provider?.chainId || constants.StarknetChainId.SN_SEPOLIA,
                     icon: resolveWalletConnectorIcon({ connector: wallet.name, address: wallet.account.address }),
                     connector: wallet.name,
                     providerName: name,
