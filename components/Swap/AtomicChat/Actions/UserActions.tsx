@@ -1,9 +1,8 @@
 import { FC, useEffect, useRef, useState } from "react";
 import useWallet from "../../../../hooks/useWallet";
-import { NETWORKS_DETAILS } from "../../Atomic";
-import { WalletActionButton } from "../buttons";
 import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
+import { WalletActionButton } from "../buttons";
 
 export const UserCommitAction: FC = () => {
     const { source_network, destination_network, amount, address, source_asset, destination_asset, onCommit, commitId, setCommitment, setError } = useAtomicState();
@@ -35,7 +34,6 @@ export const UserCommitAction: FC = () => {
                 throw new Error("No destination asset")
             }
 
-            const details = NETWORKS_DETAILS[source_network.name]
 
             if (!source_provider) {
                 throw new Error("No source_provider")
@@ -44,7 +42,6 @@ export const UserCommitAction: FC = () => {
                 throw new Error("No destination_provider")
             }
             const { commitId } = await source_provider.createPreHTLC({
-                abi: details.abi,
                 address,
                 amount: amount.toString(),
                 destinationChain: destination_network.name,
@@ -73,12 +70,8 @@ export const UserCommitAction: FC = () => {
                         throw Error("No chain id")
                     if (!source_provider)
                         throw new Error("No source provider")
-                    const details = NETWORKS_DETAILS[source_network.name]
-                    if (!details)
-                        throw new Error("No source network details")
 
                     const data = await source_provider.getCommitment({
-                        abi: details.abi,
                         chainId: source_network.chain_id,
                         commitId: commitId,
                         contractAddress: source_network.metadata.htlc_contract as `0x${string}`
@@ -133,12 +126,8 @@ export const UserLockAction: FC = () => {
                 throw new Error("No source provider")
             if (!hashLock)
                 throw new Error("No destination hashlock")
-            const details = NETWORKS_DETAILS[source_network.name]
-            if (!details)
-                throw new Error("No source network details")
 
             await source_provider.lockCommitment({
-                abi: details.abi,
                 chainId: source_network.chain_id,
                 commitId: commitId as string,
                 lockId: hashLock,
@@ -162,12 +151,8 @@ export const UserLockAction: FC = () => {
                         throw Error("No chain id")
                     if (!source_provider)
                         throw new Error("No source provider")
-                    const details = NETWORKS_DETAILS[source_network.name]
-                    if (!details)
-                        throw new Error("No source network details")
 
                     const data = await source_provider.getCommitment({
-                        abi: details.abi,
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
                         contractAddress: source_network.metadata.htlc_contract as `0x${string}`
@@ -218,12 +203,9 @@ export const UserRefundAction: FC = () => {
             if (!source_network) throw new Error("No source network")
             if (!commitId) throw new Error("No commitment details")
 
-            const details = NETWORKS_DETAILS[source_network.name]
-
             const res = await source_provider?.refund({
                 commitId: commitId,
                 lockId: sourceLock?.hashlock,
-                abi: details.abi,
                 chainId: source_network.chain_id ?? '',
                 contractAddress: source_network.metadata.htlc_contract as `0x${string}`
             })
@@ -244,12 +226,8 @@ export const UserRefundAction: FC = () => {
                         throw Error("No chain id")
                     if (!source_provider)
                         throw new Error("No source provider")
-                    const details = NETWORKS_DETAILS[source_network.name]
-                    if (!details)
-                        throw new Error("No source network details")
 
                     const data = await source_provider.getCommitment({
-                        abi: details.abi,
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
                         contractAddress: source_network.metadata.htlc_contract as `0x${string}`
@@ -268,16 +246,13 @@ export const UserRefundAction: FC = () => {
         let lockHandler: any = undefined
         if (source_provider && sourceLock && !sourceLock.unlocked) {
             lockHandler = setInterval(async () => {
-                const details = NETWORKS_DETAILS[source_network.name]
                 if (!source_network.chain_id)
                     throw Error("No chain id")
 
                 const data = await source_provider.getLock({
-                    abi: details.abi,
                     chainId: source_network.chain_id,
                     lockId: sourceLock.hashlock as string,
                     contractAddress: source_network.metadata.htlc_contract as `0x${string}`,
-                    lockDataResolver: details.lockDataResolver
                 })
                 if (data.unlocked) {
                     setDestinationLock(data)

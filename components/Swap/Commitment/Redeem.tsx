@@ -2,7 +2,6 @@ import { FC, useEffect } from "react"
 import { NetworkWithTokens, Token } from "../../../Models/Network";
 import { AssetLock, Commit } from "../../../Models/PHTLC";
 import useWallet from "../../../hooks/useWallet";
-import { NETWORKS_DETAILS } from "../Atomic";
 
 type UpcomingProps = {
     destination_network: NetworkWithTokens,
@@ -30,16 +29,11 @@ export const RedeemUpcoming: FC<UpcomingProps> = (props) => {
                         throw new Error("No destination provider")
                     if (!hashLock)
                         throw new Error("No destination hashlock")
-                    const details = NETWORKS_DETAILS[destination_network.name]
-                    if (!details)
-                        throw new Error("No destination network details")
 
                     const data = await destination_provider.getLock({
-                        abi: details.abi,
                         chainId: destination_network.chain_id,
                         lockId: hashLock,
                         contractAddress: contract as `0x${string}`,
-                        lockDataResolver: details.lockDataResolver
                     })
                     console.log('redeem data', data)
                     if (data.redeemed) {

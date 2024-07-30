@@ -1,7 +1,6 @@
 import { AssetLock } from "../../../Models/PHTLC";
 
 export type CreatyePreHTLCParams = {
-    abi: any,
     destinationChain: string,
     sourceChain: string,
     amount: string,
@@ -16,14 +15,12 @@ export type CreatyePreHTLCParams = {
 }
 
 export type CommitmentParams = {
-    abi: any,
     commitId: string,
     chainId: string,
     contractAddress: `0x${string}`
 }
-    
+
 export type LockParams = {
-    abi: any,
     lockId: string,
     chainId: string,
     contractAddress: `0x${string}`,
@@ -31,9 +28,13 @@ export type LockParams = {
 }
 
 export type RefundParams = {
-    abi: any,
     chainId: string,
     contractAddress: `0x${string}`,
     commitId: string
     lockId?: string | null,
+}
+
+export type GetCommitsParams = {
+    contractAddress: `0x${string}`,
+    chainId: string,
 }

@@ -4,7 +4,6 @@ import SubmitButton from '../buttons/submitButton';
 import { useSettingsState } from '../../context/settings';
 import { useRouter } from 'next/router';
 import useWallet from '../../hooks/useWallet';
-import { NETWORKS_DETAILS } from './Atomic';
 import { Commit, AssetLock } from '../../Models/PHTLC';
 import { ethers } from 'ethers';
 import Steps from './StepsComponent';
@@ -75,13 +74,11 @@ const SwapDetails: FC<Props> = (props) => {
         if (source_provider && source_network && commitId) {
             (async () => {
                 commitHandler = setInterval(async () => {
-                    const details = NETWORKS_DETAILS[source_network.name]
 
                     if (!source_network.chain_id)
                         throw Error("No chain id")
 
                     const data = await source_provider.getCommitment({
-                        abi: details.abi,
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
                         contractAddress: source_network.metadata.htlc_contract as `0x${string}`
@@ -104,12 +101,10 @@ const SwapDetails: FC<Props> = (props) => {
         let lockHandler: any = undefined
         if (destination_provider && destination_network && !destinationLock && commitment) {
             lockHandler = setInterval(async () => {
-                const details = NETWORKS_DETAILS[destination_network.name]
                 if (!destination_network.chain_id)
                     throw Error("No chain id")
 
                 const destinationLockId = await destination_provider.getLockIdByCommitId({
-                    abi: details.abi,
                     chainId: destination_network.chain_id,
                     commitId: commitId as string,
                     contractAddress: destination_network.metadata.htlc_contract as `0x${string}`
@@ -117,11 +112,9 @@ const SwapDetails: FC<Props> = (props) => {
                 if (destinationLockId && destinationLockId != '0x0000000000000000000000000000000000000000000000000000000000000000') {
                     setHashLock(destinationLockId)
                     const data = await destination_provider.getLock({
-                        abi: details.abi,
                         chainId: destination_network.chain_id,
                         lockId: destinationLockId as string,
                         contractAddress: destination_network.metadata.htlc_contract as `0x${string}`,
-                        lockDataResolver: details.lockDataResolver
                     })
                     setDestinationLock(data)
                     clearInterval(lockHandler)
@@ -150,12 +143,8 @@ const SwapDetails: FC<Props> = (props) => {
                         throw Error("No chain id")
                     if (!source_provider)
                         throw new Error("No source provider")
-                    const details = NETWORKS_DETAILS[source_network.name]
-                    if (!details)
-                        throw new Error("No source network details")
 
                     const data = await source_provider.getCommitment({
-                        abi: details.abi,
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
                         contractAddress: source_network.metadata.htlc_contract as `0x${string}`
@@ -182,16 +171,10 @@ const SwapDetails: FC<Props> = (props) => {
                         throw new Error("No source provider")
                     if (!hashLock)
                         throw new Error("No destination hashlock")
-                    const details = NETWORKS_DETAILS[destination_network.name]
-                    if (!details)
-                        throw new Error("No source network details")
-
                     const data = await destination_provider.getLock({
-                        abi: details.abi,
                         chainId: destination_network.chain_id,
                         lockId: hashLock,
                         contractAddress: destination_network.metadata.htlc_contract as `0x${string}`,
-                        lockDataResolver: details.lockDataResolver
                     })
                     setDestinationLock(data)
                     clearInterval(commitHandler)
@@ -210,12 +193,8 @@ const SwapDetails: FC<Props> = (props) => {
                 throw new Error("No source provider")
             if (!hashLock)
                 throw new Error("No destination hashlock")
-            const details = NETWORKS_DETAILS[source_network.name]
-            if (!details)
-                throw new Error("No source network details")
 
             const { hash, result } = await source_provider.lockCommitment({
-                abi: details.abi,
                 chainId: source_network.chain_id,
                 commitId: commitId as string,
                 lockId: hashLock,

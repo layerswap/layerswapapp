@@ -4,7 +4,7 @@ import { Wallet } from "../stores/walletStore"
 import useEVM from "../lib/wallets/evm/useEVM"
 import useStarknet from "../lib/wallets/starknet/useStarknet"
 import { Network, RouteNetwork } from "../Models/Network"
-import { CreatyePreHTLCParams, CommitmentParams, LockParams, RefundParams } from "../lib/wallets/phtlc"
+import { CreatyePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams } from "../lib/wallets/phtlc"
 import { AssetLock, Commit } from "../Models/PHTLC"
 
 
@@ -30,6 +30,7 @@ export type WalletProvider = {
     lockCommitment: (args: CommitmentParams & LockParams) => Promise<{ hash: `0x${string}`, result: any }>,
     getLockIdByCommitId: (args: CommitmentParams) => Promise<string>,
 
+    getCommits(params: GetCommitsParams): Promise<Commit[]>,
 }
 
 export default function useWallet() {
