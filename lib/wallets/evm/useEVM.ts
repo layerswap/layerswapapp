@@ -224,7 +224,23 @@ export default function useEVM(): WalletProvider {
     }
 
     const getCommits = async (params: GetCommitsParams) => {
-        throw new Error('Not implemented')
+        const { chainId, contractAddress } = params
+
+        if (!account.address) {
+            throw Error("Wallet not connected")
+        }
+
+        const result = await readContract(config, {
+            abi: PHTLCAbi,
+            address: contractAddress,
+            functionName: 'getCommits',
+            args: [account.address],
+            chainId: Number(chainId),
+        })
+        if (!result) {
+            throw new Error("No result")
+        }
+        return result as Commit[]
     }
 
     return {
@@ -236,7 +252,6 @@ export default function useEVM(): WalletProvider {
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
         name,
-
 
         getLockIdByCommitId,
         getCommitment,

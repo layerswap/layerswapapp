@@ -52,10 +52,24 @@ const Commitment: FC<Props> = (props) => {
     const wallet = source_provider?.getConnectedWallet()
     const receiveAmount = fee?.quote?.receive_amount
 
+    const handleGetCommits = async () => {
+        if(!source_provider) return
+        if(!source_network?.chain_id) return
+        if(!source_network?.metadata.htlc_contract) return
+
+        const commits = await source_provider?.getCommits(
+            {
+                chainId: source_network?.chain_id,
+                contractAddress: source_network?.metadata.htlc_contract as `0x${string}`,
+            }
+        )
+    }
+
     return (
         <>
             <Widget.Content>
                 <ResizablePanel>
+                    <button onClick={handleGetCommits}>get commits</button>
                     <div className="w-full flex flex-col justify-between  text-secondary-text">
                         <div className='grid grid-cols-1 gap-4'>
                             {

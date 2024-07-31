@@ -1,7 +1,7 @@
 import Layout from '../components/layout'
 import { InferGetServerSidePropsType } from 'next'
 import { SwapDataProvider } from '../context/swap'
-import TransfersWrapper from '../components/SwapHistory/TransfersWrapper'
+import CommitmentsHostory from '../components/Swap/CommitmentsHistory'
 import { getServerSideProps } from '../helpers/getSettings'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 
@@ -11,7 +11,7 @@ export default function Transactions({ settings, themeData, apiKey }: InferGetSe
     <>
       <Layout settings={settings} themeData={themeData}>
         <SwapDataProvider >
-          <TransfersWrapper />
+          <CommitmentsHostory />
         </SwapDataProvider >
       </Layout>
     </>
