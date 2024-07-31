@@ -34,14 +34,14 @@ export var passportInstance: any = undefined
 export function ImtblPassportProvider({ children, from, to }: { children: JSX.Element | JSX.Element[], from: Network | undefined, to?: Network | undefined }) {
     const router = useRouter();
 
-    useEffect(() => {
-        if (from?.name.startsWith('IMMUTABLE') || to?.name.startsWith('IMMUTABLE')) {
-            (async () => {
-                await initilizePassport(router.basePath)
-                passportInstance.connectEvm() // EIP-6963
-            })()
-        }
-    }, [from, to])
+    // useEffect(() => {
+    //     if (from?.name.startsWith('IMMUTABLE') || to?.name.startsWith('IMMUTABLE')) {
+    //         (async () => {
+    //             await initilizePassport(router.basePath)
+    //             passportInstance.connectEvm() // EIP-6963
+    //         })()
+    //     }
+    // }, [from, to])
 
     return (
         <>
