@@ -100,7 +100,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         setFieldValue("destination_address", connectedWalletAddress)
         previouslyAutofilledAddress.current = connectedWalletAddress
         if (showAddressModal && connectedWallet) setShowAddressModal(false)
-    }, [setFieldValue, setShowAddressModal, showAddressModal, destination, connectedWallet])
+    }, [setFieldValue, setShowAddressModal, showAddressModal, destination, connectedWallet, connectedWalletAddress])
 
     useEffect(() => {
         if (isConnecting && connectedWalletAddress) {
