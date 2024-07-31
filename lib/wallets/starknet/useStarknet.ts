@@ -4,7 +4,7 @@ import KnownInternalNames from "../../knownIds"
 import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
-import { Call, Contract, RpcProvider, hash, shortString } from "starknet";
+import { Call, Contract, RpcProvider, shortString } from "starknet";
 import PHTLCAbi from "../../../lib/abis/atomic/STARKNET_PHTLC.json"
 import ETHABbi from "../../../lib/abis/STARKNET_ETH.json"
 import { CommitmentParams, CreatyePreHTLCParams, GetCommitsParams, LockParams } from "../phtlc";
@@ -151,17 +151,13 @@ export default function useStarknet(): WalletProvider {
         const commitTransactionData = await wallet.metadata.starknetAccount.provider.waitForTransaction(
             trx.transaction_hash
         );
-
-        console.log('trx', trx.transaction_hash)
         const parsedEvents = atomicContract.parseEvents(commitTransactionData);
-        console.log('parsedEvents', parsedEvents)
         const tokenCommitedEvent = parsedEvents.find((event: any) => event.TokenCommitted)
         const commitId = tokenCommitedEvent?.TokenCommitted.commitId
         if (!commitId) {
             throw new Error('No commit id')
         }
         const res = ethers.utils.hexlify(commitId as BigNumberish)
-        console.log("result", res)
         return { hash: trx.transaction_hash as `0x${string}`, commitId: res as `0x${string}` }
     }
     const convertToHTLC = () => {
@@ -226,7 +222,6 @@ export default function useStarknet(): WalletProvider {
         const committmentCall: Call = atomicContract.populate("lockCommit", args)
 
         const trx = (await wallet?.metadata?.starknetAccount?.account?.execute(committmentCall))
-        console.log('Hash:', hash, 'Result:', trx)
         return { hash: trx.transaction_hash as `0x${string}`, result: trx.transaction_hash as `0x${string}` }
     }
 

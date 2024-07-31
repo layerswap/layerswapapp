@@ -28,7 +28,6 @@ export const RedeemAction: FC = () => {
                         lockId: hashLock,
                         contractAddress: contract as `0x${string}`,
                     })
-                    console.log('redeem data', data)
                     if (data.redeemed) {
                         setSourceLock(data)
                         clearInterval(commitHandler)

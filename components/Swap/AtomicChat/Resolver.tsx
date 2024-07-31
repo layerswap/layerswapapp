@@ -1,7 +1,7 @@
 import { FC } from "react";
 import Message from "./Message";
 import AddressIcon from "../../AddressIcon";
-import { UserCommitAction, UserLockAction } from "./Actions/UserActions";
+import { UserCommitAction, UserLockAction, UserRefundAction } from "./Actions/UserActions";
 import { useAtomicState } from "../../../context/atomicContext";
 import { motion } from "framer-motion";
 import { LpLockingAssets } from "./Actions/LpLock";
@@ -10,6 +10,10 @@ import ActionStatus from "./Actions/ActionStatus";
 import useWallet from "../../../hooks/useWallet";
 import { ExternalLink } from "lucide-react";
 import SubmitButton from "../../buttons/submitButton";
+import { Network } from "../../../Models/Network";
+import useSWR from "swr";
+import { ApiResponse } from "../../../Models/ApiResponse";
+import { CommitFromApi } from "../../../lib/layerSwapApiClient";
 
 export enum Progress {
     Commit = 'commit',
@@ -26,15 +30,22 @@ const Committed = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
     source="from"
     sourceIcon={walletIcon}
 />
-const LPIsLocking = ({ address }: { address: string | undefined }) => <Message
-    title="Locking assets"
-    isLast={true}
-    source="to"
-    sourceIcon={address && <AddressIcon className="scale-150 h-3 w-3" address={address} size={12} />}
-/>
-const AssetsLockedByLP = ({ address }: { address: string | undefined }) => <Message
+const AssetsLockedByLP = ({ address, destination_network, tx_id }: { address: string | undefined, destination_network: Network | undefined, tx_id: string | undefined }) => <Message
     title="LP Assets Locked"
-    description="Liqudity provider locked funds for you"
+    description={
+        <div>
+            <p>
+                Liqudity provider locked funds for you
+            </p>
+            {
+                destination_network && tx_id &&
+                <a target="_blank" className="inline-flex items-center gap-1" href={destination_network?.transaction_explorer_template.replace('{0}', tx_id)}>
+                    <span className="underline hover:no-underline">(View transaction)</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+            }
+        </div>
+    }
     isLast={true}
     source="to"
     sourceIcon={address && <AddressIcon className="scale-150 h-3 w-3" address={address} size={12} />}
@@ -46,9 +57,22 @@ const AssetsLockedByUser = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Me
     source="from"
     sourceIcon={walletIcon}
 />
-const AssetsSent = ({ address }: { address: string | undefined }) => <Message
+const AssetsSent = ({ address, destination_network, tx_id }: { address: string | undefined, destination_network: Network | undefined, tx_id: string | undefined }) => <Message
     title="Assets sent"
-    description="Your assets are sent to the destination address"
+    description={
+        <div>
+            <p>
+                Your assets are sent to the destination address
+            </p>
+            {
+                destination_network && tx_id &&
+                <a target="_blank" className="inline-flex items-center gap-1" href={destination_network?.transaction_explorer_template.replace('{0}', tx_id)}>
+                    <span className="underline hover:no-underline">(View transaction)</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+            }
+        </div>
+    }
     isLast={true}
     source="to"
     sourceIcon={address && <AddressIcon className="scale-150 h-3 w-3" address={address} size={12} />}
@@ -61,12 +85,12 @@ const LpPlng = ({ address }: { address: string | undefined }) => <Message
     </div>}
     isLast={true}
     source="to"
-    sourceIcon={address && <AddressIcon className="scale-150 h-4 w-4" address={address} size={12} />}
+    sourceIcon={address && <AddressIcon className="scale-150 h-3 w-3" address={address} size={12} />}
 />
 
 const UserCommitting = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
     title={<div className="flex gap-2">
-       <>Committing your funds for bridging</> 
+        <>Committing your funds for bridging</>
         <div className="flex space-x-1 font-bold">
             <div className="animate-bounce delay-100">.</div>
             <div className="animate-bounce delay-150">.</div>
@@ -90,11 +114,46 @@ const UserLocking = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
     source="from"
     sourceIcon={walletIcon}
 />
+const RefundCanClaim = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
+    title='Timelock expired - refund available.'
+    description='Claim your funds now.'
+    isLast={true}
+    source="from"
+    sourceIcon={walletIcon}
+/>
+const RefundRequested = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
+    title={<div className="flex gap-2">
+        <>Refunding</>
+        <div className="flex space-x-1 font-bold">
+            <div className="animate-bounce delay-100">.</div>
+            <div className="animate-bounce delay-150">.</div>
+            <div className="animate-bounce delay-300">.</div>
+        </div>
+    </div>}
+    isLast={true}
+    source="from"
+    sourceIcon={walletIcon}
+/>
+const RefundCompleted = ({ walletIcon, source_network, tx_id }: { walletIcon?: JSX.Element, source_network: Network | undefined, tx_id: string | undefined }) => <Message
+    title='Funds have been successfully refunded.'
+    description={<div>
+        {
+            source_network && tx_id &&
+            <a target="_blank" className="inline-flex items-center gap-1" href={source_network?.transaction_explorer_template.replace('{0}', tx_id)}>
+                <span className="underline hover:no-underline">(View transaction)</span>
+                <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+        }
+    </div>}
+    isLast={true}
+    source="from"
+    sourceIcon={walletIcon}
+/>
 
 //animate-bounce
-export const ResolveMessages: FC = (props) => {
+export const ResolveMessages: FC = () => {
 
-    const { committment, destinationLock, sourceLock, commitId, source_network, userLocked: userInitiatedLock } = useAtomicState()
+    const { committment, destinationLock, sourceLock, commitId, source_network, userLocked: userInitiatedLock, isTimelockExpired, completedRefundHash, destination_network } = useAtomicState()
     const commtting = commitId ? true : false;
     const commited = committment ? true : false;
     const lpLockDetected = destinationLock ? true : false;
@@ -108,20 +167,44 @@ export const ResolveMessages: FC = (props) => {
 
     const lp_address = source_network?.metadata.lp_address
 
+    const fetcher = (args) => fetch(args).then(res => res.json())
+    const url = process.env.NEXT_PUBLIC_LS_API
+    const { data } = useSWR<ApiResponse<CommitFromApi>>(commitId ? `${url}/api/swap/${commitId}` : null, fetcher, { refreshInterval: 10000 })
+    const commitFromApi = data?.data
+
     const WalletIcon = wallet && <wallet.icon className="w-5 h-5 rounded-full bg-secondary-800 border-secondary-400" />
 
     if (redeemCompleted) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <Committed walletIcon={WalletIcon} />
-            <AssetsLockedByLP address={lp_address} />
+            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} />
             <AssetsLockedByUser walletIcon={WalletIcon} />
-            <AssetsSent address={lp_address} />
+            <AssetsSent address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)?.hash} />
         </div >
+    }
+    if (isTimelockExpired) {
+        if (committment?.uncommitted || sourceLock?.unlocked) {
+            return <div className="flex w-full grow flex-col space-y-2" >
+                <Committed walletIcon={WalletIcon} />
+                <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} />
+                <RefundCompleted walletIcon={WalletIcon} source_network={source_network} tx_id={completedRefundHash} />
+            </div >
+        }
+        return <div className="flex w-full grow flex-col space-y-2" >
+            <Committed walletIcon={WalletIcon} />
+            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} />
+            {
+                completedRefundHash ?
+                    <RefundRequested walletIcon={WalletIcon} />
+                    :
+                    <RefundCanClaim walletIcon={WalletIcon} />
+            }
+        </div>
     }
     if (assetsLocked) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <Committed walletIcon={WalletIcon} />
-            <AssetsLockedByLP address={lp_address} />
+            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} />
             <AssetsLockedByUser walletIcon={WalletIcon} />
             <LpPlng address={lp_address} />
         </div>
@@ -129,14 +212,14 @@ export const ResolveMessages: FC = (props) => {
     if (userInitiatedLock) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <Committed walletIcon={WalletIcon} />
-            <AssetsLockedByLP address={lp_address} />
+            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} />
             <UserLocking walletIcon={WalletIcon} />
         </div >
     }
     if (lpLockDetected) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <Committed walletIcon={WalletIcon} />
-            <AssetsLockedByLP address={lp_address} />
+            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} />
         </div >
     }
     if (commited) {
@@ -165,7 +248,7 @@ export const ResolveMessages: FC = (props) => {
     </>
 }
 const ResolveAction: FC = () => {
-    const { committment, destinationLock, sourceLock, error, setError } = useAtomicState()
+    const { committment, destinationLock, sourceLock, error, setError, isTimelockExpired } = useAtomicState()
 
     const commited = committment ? true : false;
     const lpLockDetected = destinationLock ? true : false;
@@ -192,31 +275,47 @@ const ResolveAction: FC = () => {
                 status="success"
                 title='Transaction Completed'
             />
-        </div >
+        </div>
+    }
+    if (isTimelockExpired) {
+        if (committment?.uncommitted || sourceLock?.unlocked) {
+            return <div className="flex w-full grow flex-col space-y-2" >
+                <ActionStatus
+                    status="success"
+                    title='Refund Completed'
+                />
+            </div>
+        }
+        else {
+            return <div className="flex w-full grow flex-col space-y-2" >
+                <UserRefundAction />
+            </div>
+        }
     }
     if (assetsLocked) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <RedeemAction />
-        </div >
+        </div>
     }
     if (lpLockDetected) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <UserLockAction />
-        </div >
+        </div>
     }
     if (commited) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <LpLockingAssets />
-        </div >
+        </div>
     }
     return <div className="flex w-full grow flex-col space-y-2" >
         <UserCommitAction />
-    </div >
+    </div>
 }
 
 
 export const ActionsWithProgressbar: FC = () => {
-    const { committment, destinationLock } = useAtomicState()
+    const { committment, destinationLock, isTimelockExpired } = useAtomicState()
+
     let currentStep = 1
     let actiontext = 'Commit'
     let firstStep = "5%"
@@ -237,10 +336,11 @@ export const ActionsWithProgressbar: FC = () => {
     }
 
     const allDone = committment?.locked ? true : false
+    const showSteps = !allDone && !isTimelockExpired
 
     return <div className="space-y-4">
         {
-            !allDone &&
+            showSteps &&
             <div className="space-y-1 relative">
                 {
                     allDone ?

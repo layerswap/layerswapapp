@@ -1,8 +1,8 @@
 import { FC, useEffect, useRef, useState } from "react";
 import useWallet from "../../../../hooks/useWallet";
-import { WalletActionButton } from "../butons";
 import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
+import { WalletActionButton } from "../buttons";
 
 export const UserCommitAction: FC = () => {
     const { source_network, destination_network, amount, address, source_asset, destination_asset, onCommit, commitId, setCommitment, setError } = useAtomicState();
@@ -41,7 +41,7 @@ export const UserCommitAction: FC = () => {
             if (!destination_provider) {
                 throw new Error("No destination_provider")
             }
-            const { commitId, hash } = await source_provider.createPreHTLC({
+            const { commitId } = await source_provider.createPreHTLC({
                 address,
                 amount: amount.toString(),
                 destinationChain: destination_network.name,
@@ -66,7 +66,6 @@ export const UserCommitAction: FC = () => {
         if (source_network && commitId && !requestingCommit.current) {
             (async () => {
                 commitHandler = setInterval(async () => {
-                    console.log('******** polling')
                     if (!source_network?.chain_id)
                         throw Error("No chain id")
                     if (!source_provider)
@@ -113,7 +112,6 @@ export const UserCommitAction: FC = () => {
 
 export const UserLockAction: FC = () => {
     const { source_network, commitId, hashLock, committment, setCommitment, setUserLocked, userLocked, setError } = useAtomicState()
-    const [lockLoading, setLockLoading] = useState(false)
 
     const { getWithdrawalProvider } = useWallet()
 
@@ -122,7 +120,6 @@ export const UserLockAction: FC = () => {
 
     const handleLockAssets = async () => {
         try {
-            setLockLoading(true)
             if (!source_network?.chain_id)
                 throw Error("No chain id")
             if (!source_provider)
@@ -130,7 +127,7 @@ export const UserLockAction: FC = () => {
             if (!hashLock)
                 throw new Error("No destination hashlock")
 
-            const { hash, result } = await source_provider.lockCommitment({
+            await source_provider.lockCommitment({
                 chainId: source_network.chain_id,
                 commitId: commitId as string,
                 lockId: hashLock,
@@ -142,7 +139,6 @@ export const UserLockAction: FC = () => {
             setError(e.details || e.message)
         }
         finally {
-            setLockLoading(false)
         }
     }
 
@@ -151,7 +147,6 @@ export const UserLockAction: FC = () => {
         if (!committment?.locked) {
             (async () => {
                 commitHandler = setInterval(async () => {
-                    console.log('******** polling')
                     if (!source_network?.chain_id)
                         throw Error("No chain id")
                     if (!source_provider)
@@ -193,4 +188,100 @@ export const UserLockAction: FC = () => {
         }
     </div>
 
+}
+
+export const UserRefundAction: FC = () => {
+    const { source_network, commitId, sourceLock, setCompletedRefundHash, committment, setCommitment, setError, setHashLock, setDestinationLock } = useAtomicState()
+    const { getWithdrawalProvider } = useWallet()
+    const [requestedRefund, setRequestedRefund] = useState(false)
+
+    const source_provider = source_network && getWithdrawalProvider(source_network)
+    const wallet = source_provider?.getConnectedWallet()
+
+    const handleRefundAssets = async () => {
+        try {
+            if (!source_network) throw new Error("No source network")
+            if (!commitId) throw new Error("No commitment details")
+
+            const res = await source_provider?.refund({
+                commitId: commitId,
+                lockId: sourceLock?.hashlock,
+                chainId: source_network.chain_id ?? '',
+                contractAddress: source_network.metadata.htlc_contract as `0x${string}`
+            })
+            setCompletedRefundHash(res)
+            setRequestedRefund(true)
+        }
+        catch (e) {
+            setError(e.details || e.message)
+        }
+    }
+
+    useEffect(() => {
+        let commitHandler: any = undefined
+        if (!committment?.uncommitted && !sourceLock) {
+            (async () => {
+                commitHandler = setInterval(async () => {
+                    if (!source_network?.chain_id)
+                        throw Error("No chain id")
+                    if (!source_provider)
+                        throw new Error("No source provider")
+
+                    const data = await source_provider.getCommitment({
+                        chainId: source_network.chain_id,
+                        commitId: commitId as string,
+                        contractAddress: source_network.metadata.htlc_contract as `0x${string}`
+                    })
+                    if (data?.uncommitted) {
+                        setCommitment(data)
+                        clearInterval(commitHandler)
+                    }
+                }, 5000)
+            })()
+        }
+        return () => clearInterval(commitHandler)
+    }, [source_provider])
+
+    useEffect(() => {
+        let lockHandler: any = undefined
+        if (source_provider && sourceLock && !sourceLock.unlocked) {
+            lockHandler = setInterval(async () => {
+                if (!source_network.chain_id)
+                    throw Error("No chain id")
+
+                const data = await source_provider.getLock({
+                    chainId: source_network.chain_id,
+                    lockId: sourceLock.hashlock as string,
+                    contractAddress: source_network.metadata.htlc_contract as `0x${string}`,
+                })
+                if (data.unlocked) {
+                    setDestinationLock(data)
+                    clearInterval(lockHandler)
+                }
+            }, 5000)
+        }
+        return () => {
+            lockHandler && clearInterval(lockHandler);
+        };
+    }, [source_provider])
+
+    return <div className="font-normal flex flex-col w-full relative z-10 space-y-4 grow">
+        {
+            requestedRefund ?
+                <ActionStatus
+                    status="pending"
+                    title={'Waiting for confirmations'}
+                />
+                :
+                <WalletActionButton
+                    activeChain={wallet?.chainId}
+                    isConnected={!!wallet}
+                    network={source_network!}
+                    networkChainId={Number(source_network?.chain_id)}
+                    onClick={handleRefundAssets}
+                >
+                    Refund
+                </WalletActionButton>
+        }
+    </div>
 }

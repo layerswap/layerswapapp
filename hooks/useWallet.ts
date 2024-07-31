@@ -4,7 +4,7 @@ import { Wallet } from "../stores/walletStore"
 import useEVM from "../lib/wallets/evm/useEVM"
 import useStarknet from "../lib/wallets/starknet/useStarknet"
 import { Network, RouteNetwork } from "../Models/Network"
-import { CreatyePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams } from "../lib/wallets/phtlc"
+import { CreatyePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams } from "../lib/wallets/phtlc"
 import { AssetLock, Commit } from "../Models/PHTLC"
 
 
@@ -21,7 +21,7 @@ export type WalletProvider = {
     createPreHTLC: (args: CreatyePreHTLCParams) => Promise<{ hash: `0x${string}`, commitId: string }>,
     convertToHTLC: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
     claim: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
-    refund: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
+    refund: (args: RefundParams) => Promise<any> | undefined | void,
 
     waitForLock: (args: CommitmentParams, callback: (data: any) => void) => Promise<() => void>
     getCommitment: (args: CommitmentParams) => Promise<Commit | null>,
