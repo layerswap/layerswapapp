@@ -37,7 +37,7 @@ export default function useBalanceProvider() {
 
     const fetchNetworkBalances = async (network: NetworkWithTokens, address?: string) => {
         const provider = getAutofillProvider(network)
-        const wallet = provider?.getConnectedWallet()
+        const wallet = provider?.getConnectedWallet(network)
         address = address || query.account || wallet?.address
 
         const balance = balances[address || '']?.find(b => b?.network === network?.name)
@@ -65,7 +65,7 @@ export default function useBalanceProvider() {
 
     const fetchBalance = async (network: Network, token: Token, address?: string) => {
         const provider = getAutofillProvider(network)
-        const wallet = provider?.getConnectedWallet()
+        const wallet = provider?.getConnectedWallet(network)
         address = address || query.account || wallet?.address
 
         const balance = balances[address || '']?.find(b => b?.network === network?.name)
@@ -107,7 +107,7 @@ export default function useBalanceProvider() {
         const isGasOutDated = !gas || new Date().getTime() - (new Date(gas.request_time).getTime() || 0) > 10000
 
         const provider = getAutofillProvider(network)
-        const wallet = provider?.getConnectedWallet()
+        const wallet = provider?.getConnectedWallet(network)
 
         if (isGasOutDated
             && token

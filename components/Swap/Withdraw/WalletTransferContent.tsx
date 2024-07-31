@@ -20,22 +20,21 @@ const WalletTransferContent: FC = () => {
         return source_network && getProvider(source_network)
     }, [source_network, getProvider])
 
-    const wallet = provider?.getConnectedWallet()
+    const wallet = provider?.getConnectedWallet(source_network)
 
     const { balances, isBalanceLoading } = useBalancesState()
     const { fetchBalance, fetchGas } = useBalance()
 
-    const sourceNetworkWallet = provider?.getConnectedWallet()
-    const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
+    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
     useEffect(() => {
         source_network && source_token && fetchBalance(source_network, source_token);
-    }, [source_network, source_token, sourceNetworkWallet?.address])
+    }, [source_network, source_token, wallet?.address])
 
     useEffect(() => {
-        sourceNetworkWallet?.address && source_network && source_token && fetchGas(source_network, source_token, sourceNetworkWallet.address)
-    }, [source_network, source_token, sourceNetworkWallet?.address])
+        wallet?.address && source_network && source_token && fetchGas(source_network, source_token, wallet.address)
+    }, [source_network, source_token, wallet?.address])
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!wallet) return
