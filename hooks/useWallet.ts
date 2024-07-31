@@ -4,16 +4,15 @@ import { Wallet } from "../stores/walletStore"
 import useTON from "../lib/wallets/ton/useTON"
 import useEVM from "../lib/wallets/evm/useEVM"
 import useStarknet from "../lib/wallets/starknet/useStarknet"
-import useImmutableX from "../lib/wallets/immutableX/useIMX"
+import useImtblX from "../lib/wallets/imtblX/useImtblX"
 import useSolana from "../lib/wallets/solana/useSolana"
 import { Network, RouteNetwork } from "../Models/Network"
-
 
 export type WalletProvider = {
     connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
     disconnectWallet: () => Promise<void> | undefined | void,
     reconnectWallet: (props?: { chain?: string | number | undefined | null }) => Promise<void> | undefined | void,
-    getConnectedWallet: () => Wallet | undefined,
+    getConnectedWallet: (network?: Network) => Wallet | undefined,
     withdrawalSupportedNetworks: string[],
     autofillSupportedNetworks?: string[],
     asSourceSupportedNetworks?: string[],
@@ -26,7 +25,7 @@ export default function useWallet() {
         useTON(),
         useEVM(),
         useStarknet(),
-        useImmutableX(),
+        useImtblX(),
         useSolana()
     ]
 
@@ -66,11 +65,11 @@ export default function useWallet() {
         }
     }
 
-    const getConnectedWallets = () => {
+    const getConnectedWallets = (network?: Network) => {
         let connectedWallets: Wallet[] = []
 
         WalletProviders.forEach(wallet => {
-            const w = wallet.getConnectedWallet()
+            const w = wallet.getConnectedWallet(network)
             connectedWallets = w && [...connectedWallets, w] || [...connectedWallets]
         })
 
