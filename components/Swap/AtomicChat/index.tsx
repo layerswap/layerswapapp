@@ -90,13 +90,6 @@ const Commitment: FC<ContainerProps> = (props) => {
     )
 }
 
-
-
-const Footer: FC = () => {
-    return <></>
-}
-
-
 const Container: FC<ContainerProps> = (props) => {
     const { type } = props
 
