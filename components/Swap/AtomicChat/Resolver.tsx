@@ -186,13 +186,11 @@ export const ResolveMessages: FC = () => {
         if (committment?.uncommitted || sourceLock?.unlocked) {
             return <div className="flex w-full grow flex-col space-y-2" >
                 <Committed walletIcon={WalletIcon} />
-                <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} />
                 <RefundCompleted walletIcon={WalletIcon} source_network={source_network} tx_id={completedRefundHash} />
             </div >
         }
         return <div className="flex w-full grow flex-col space-y-2" >
             <Committed walletIcon={WalletIcon} />
-            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} />
             {
                 completedRefundHash ?
                     <RefundRequested walletIcon={WalletIcon} />
