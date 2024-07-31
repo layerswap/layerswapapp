@@ -68,8 +68,8 @@ const Commitment: FC<ContainerProps> = (props) => {
                                 />
                             }
                             {
-                                committment &&
-                                <TimelockTimer timelock={Number(committment?.timelock)} />
+                                committment?.timelock && Number(committment.timelock) - (Date.now() / 1000) > 0 &&
+                                <TimelockTimer timelock={Number(committment.timelock) - (Date.now() / 1000)} />
                             }
                             {
                                 !commitId && <ConnectedWallet

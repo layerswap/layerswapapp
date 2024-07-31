@@ -34,9 +34,9 @@ const TimelockTimer = ({ timelock }: { timelock: number }) => {
 
     const twoDigits = (num: number) => String(num).padStart(2, '0')
 
-    const secondsToDisplay = Number(secondsRemaining) % 60
+    const secondsToDisplay = Number(secondsRemaining?.toFixed()) % 60
     const minutesRemaining = (Number(secondsRemaining) - secondsToDisplay) / 60
-    const minutesToDisplay = minutesRemaining % 60
+    const minutesToDisplay = Number(minutesRemaining.toFixed()) % 60
 
     return (
         started &&
