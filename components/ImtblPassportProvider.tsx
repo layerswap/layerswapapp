@@ -12,8 +12,8 @@ if (!PUBLISHABLE_KEY || !CLIENT_ID) {
 export const initilizePassport = async (basePath: string) => {
     const passport = (await import('@imtbl/sdk')).passport
     const config = (await import('@imtbl/sdk')).config
-    const redirectUri = basePath ? `${window.location.origin}/${basePath}/imtblRedirect` : `${window.location.origin}/imtblRedirect`
-    const logoutRedirectUri = basePath ? `${window.location.origin}/${basePath}/` : `${window.location.origin}/`
+    const redirectUri = basePath ? `${window.location.origin}${basePath}/imtblRedirect` : `${window.location.origin}/imtblRedirect`
+    const logoutRedirectUri = basePath ? `${window.location.origin}${basePath}/` : `${window.location.origin}/`
 
     passportInstance = new passport.Passport({
         baseConfig: {
