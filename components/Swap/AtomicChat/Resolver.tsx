@@ -14,6 +14,7 @@ import { Network } from "../../../Models/Network";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { CommitFromApi } from "../../../lib/layerSwapApiClient";
+import formatAmount from "../../../lib/formatAmount";
 
 export enum Progress {
     Commit = 'commit',
@@ -23,24 +24,24 @@ export enum Progress {
     Refund = 'refund',
 }
 
-const Committed = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
+const Committed = ({ walletIcon, asset, amount }: { walletIcon?: JSX.Element, asset: string | undefined, amount: number | undefined }) => <Message
     title="Committed"
-    description="You committed assets on the source network"
+    description={<p><span>You committed</span> <span className="underline decoration-dotted"><span>{amount}</span> <span>{asset}</span></span> <span>on the source network</span></p>}
     isLast={true}
     source="from"
     sourceIcon={walletIcon}
 />
-const AssetsLockedByLP = ({ address, destination_network, tx_id }: { address: string | undefined, destination_network: Network | undefined, tx_id: string | undefined }) => <Message
+const AssetsLockedByLP = ({ address, destination_network, tx_id, asset, amount }: { address: string | undefined, destination_network: Network | undefined, tx_id: string | undefined, asset: string | undefined, amount: number | undefined }) => <Message
     title="LP Assets Locked"
     description={
         <div>
             <p>
-                Liqudity provider locked funds for you
+                <span>Liqudity provider locked</span> <span className="underline decoration-dotted"><span>{amount}</span> <span>{asset}</span></span> <span>for you.</span>
             </p>
             {
                 destination_network && tx_id &&
                 <a target="_blank" className="inline-flex items-center gap-1" href={destination_network?.transaction_explorer_template.replace('{0}', tx_id)}>
-                    <span className="underline hover:no-underline">(View transaction)</span>
+                    <span className="underline hover:no-underline">View transaction</span>
                     <ExternalLink className="h-3.5 w-3.5" />
                 </a>
             }
@@ -51,7 +52,7 @@ const AssetsLockedByLP = ({ address, destination_network, tx_id }: { address: st
     sourceIcon={address && <AddressIcon className="scale-150 h-3 w-3" address={address} size={12} />}
 />
 const AssetsLockedByUser = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Message
-    title="Your Assets Locked"
+    title="Locked"
     description="You locked assets on the source network"
     isLast={true}
     source="from"
@@ -62,12 +63,12 @@ const AssetsSent = ({ address, destination_network, tx_id }: { address: string |
     description={
         <div>
             <p>
-                Your assets are sent to the destination address
+                Your assets are sent to the destination address.
             </p>
             {
                 destination_network && tx_id &&
                 <a target="_blank" className="inline-flex items-center gap-1" href={destination_network?.transaction_explorer_template.replace('{0}', tx_id)}>
-                    <span className="underline hover:no-underline">(View transaction)</span>
+                    <span className="underline hover:no-underline">View transaction</span>
                     <ExternalLink className="h-3.5 w-3.5" />
                 </a>
             }
@@ -135,14 +136,17 @@ const RefundRequested = ({ walletIcon }: { walletIcon?: JSX.Element }) => <Messa
     sourceIcon={walletIcon}
 />
 const RefundCompleted = ({ walletIcon, source_network, tx_id }: { walletIcon?: JSX.Element, source_network: Network | undefined, tx_id: string | undefined }) => <Message
-    title='Funds have been successfully refunded.'
+    title='Refunded'
     description={<div>
         {
             source_network && tx_id &&
-            <a target="_blank" className="inline-flex items-center gap-1" href={source_network?.transaction_explorer_template.replace('{0}', tx_id)}>
-                <span className="underline hover:no-underline">(View transaction)</span>
-                <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+            <div>
+                <p>Funds have been successfully refunded.</p>
+                <a target="_blank" className="inline-flex items-center gap-1" href={source_network?.transaction_explorer_template.replace('{0}', tx_id)}>
+                    <span className="underline hover:no-underline">View transaction</span>
+                    <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+            </div>
         }
     </div>}
     isLast={true}
@@ -153,7 +157,7 @@ const RefundCompleted = ({ walletIcon, source_network, tx_id }: { walletIcon?: J
 //animate-bounce
 export const ResolveMessages: FC = () => {
 
-    const { committment, destinationLock, sourceLock, commitId, source_network, userLocked: userInitiatedLock, isTimelockExpired, completedRefundHash, destination_network } = useAtomicState()
+    const { committment, destinationLock, sourceLock, commitId, source_network, userLocked: userInitiatedLock, isTimelockExpired, completedRefundHash, destination_network, amount, source_asset, destination_asset } = useAtomicState()
     const commtting = commitId ? true : false;
     const commited = committment ? true : false;
     const lpLockDetected = destinationLock ? true : false;
@@ -176,53 +180,68 @@ export const ResolveMessages: FC = () => {
 
     if (redeemCompleted) {
         return <div className="flex w-full grow flex-col space-y-2" >
-            <Committed walletIcon={WalletIcon} />
-            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} />
+            <Committed walletIcon={WalletIcon} amount={formatAmount(committment?.amount, source_asset?.decimals!)} asset={source_asset?.symbol} />
+            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} amount={formatAmount(destinationLock?.amount, destination_asset?.decimals!)} asset={destination_asset?.symbol} />
             <AssetsLockedByUser walletIcon={WalletIcon} />
             <AssetsSent address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)?.hash} />
         </div >
     }
     if (isTimelockExpired) {
-        if (committment?.uncommitted || sourceLock?.unlocked) {
-            return <div className="flex w-full grow flex-col space-y-2" >
-                <Committed walletIcon={WalletIcon} />
-                <RefundCompleted walletIcon={WalletIcon} source_network={source_network} tx_id={completedRefundHash} />
-            </div >
+        if (sourceLock) {
+            return <div>
+                <Committed walletIcon={WalletIcon} amount={formatAmount(committment?.amount, source_asset?.decimals!)} asset={source_asset?.symbol} />
+                <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} amount={formatAmount(destinationLock?.amount, destination_asset?.decimals!)} asset={destination_asset?.symbol} />
+                <AssetsLockedByUser walletIcon={WalletIcon} />
+                {
+                    sourceLock.unlocked ?
+                        <RefundCompleted walletIcon={WalletIcon} source_network={source_network} tx_id={completedRefundHash} />
+                        :
+                        completedRefundHash ?
+                            <RefundRequested walletIcon={WalletIcon} />
+                            :
+                            <RefundCanClaim walletIcon={WalletIcon} />
+                }
+            </div>
         }
-        return <div className="flex w-full grow flex-col space-y-2" >
-            <Committed walletIcon={WalletIcon} />
-            {
-                completedRefundHash ?
-                    <RefundRequested walletIcon={WalletIcon} />
-                    :
-                    <RefundCanClaim walletIcon={WalletIcon} />
-            }
-        </div>
+        else {
+            return <div className="flex w-full grow flex-col space-y-2" >
+                <Committed walletIcon={WalletIcon} amount={formatAmount(committment?.amount, source_asset?.decimals!)} asset={source_asset?.symbol} />
+                {
+                    committment?.uncommitted ?
+                        <RefundCompleted walletIcon={WalletIcon} source_network={source_network} tx_id={completedRefundHash} />
+                        :
+                        completedRefundHash ?
+                            <RefundRequested walletIcon={WalletIcon} />
+                            :
+                            <RefundCanClaim walletIcon={WalletIcon} />
+                }
+            </div>
+        }
     }
     if (assetsLocked) {
         return <div className="flex w-full grow flex-col space-y-2" >
-            <Committed walletIcon={WalletIcon} />
-            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} />
+            <Committed walletIcon={WalletIcon} amount={formatAmount(committment?.amount, source_asset?.decimals!)} asset={source_asset?.symbol} />
+            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} amount={formatAmount(destinationLock?.amount, destination_asset?.decimals!)} asset={destination_asset?.symbol} />
             <AssetsLockedByUser walletIcon={WalletIcon} />
             <LpPlng address={lp_address} />
         </div>
     }
     if (userInitiatedLock) {
         return <div className="flex w-full grow flex-col space-y-2" >
-            <Committed walletIcon={WalletIcon} />
-            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} />
+            <Committed walletIcon={WalletIcon} amount={formatAmount(committment?.amount, source_asset?.decimals!)} asset={source_asset?.symbol} />
+            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} amount={formatAmount(destinationLock?.amount, destination_asset?.decimals!)} asset={destination_asset?.symbol} />
             <UserLocking walletIcon={WalletIcon} />
         </div >
     }
     if (lpLockDetected) {
         return <div className="flex w-full grow flex-col space-y-2" >
-            <Committed walletIcon={WalletIcon} />
-            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} />
+            <Committed walletIcon={WalletIcon} amount={formatAmount(committment?.amount, source_asset?.decimals!)} asset={source_asset?.symbol} />
+            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} amount={formatAmount(destinationLock?.amount, destination_asset?.decimals!)} asset={destination_asset?.symbol} />
         </div >
     }
     if (commited) {
         return <div className="flex w-full grow flex-col space-y-2" >
-            <Committed walletIcon={WalletIcon} />
+            <Committed walletIcon={WalletIcon} amount={formatAmount(committment?.amount, source_asset?.decimals!)} asset={source_asset?.symbol} />
             <LpPlng address={lp_address} />
         </div >
     }
