@@ -250,7 +250,7 @@ export default function useEVM(): WalletProvider {
         if (!result) {
             throw new Error("No result")
         }
-        return result as Commit[]
+        return result as string[]
     }
 
     return {

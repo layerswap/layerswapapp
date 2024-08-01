@@ -7,7 +7,6 @@ import { Network, RouteNetwork } from "../Models/Network"
 import { CreatyePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams } from "../lib/wallets/phtlc"
 import { AssetLock, Commit } from "../Models/PHTLC"
 
-
 export type WalletProvider = {
     connectWallet: (chain?: string | number | undefined | null, destination?: RouteNetwork) => Promise<void> | undefined | void,
     disconnectWallet: () => Promise<void> | undefined | void,
@@ -30,7 +29,7 @@ export type WalletProvider = {
     lockCommitment: (args: CommitmentParams & LockParams) => Promise<{ hash: `0x${string}`, result: any }>,
     getLockIdByCommitId: (args: CommitmentParams) => Promise<string>,
 
-    getCommits(params: GetCommitsParams): Promise<Commit[]>,
+    getCommits(params: GetCommitsParams): Promise<string[]>,
 }
 
 export default function useWallet() {

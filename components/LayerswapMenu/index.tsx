@@ -1,4 +1,4 @@
-import { BookOpen, MenuIcon, Map, Home, LibraryIcon, Shield } from "lucide-react";
+import { BookOpen, MenuIcon, Map, Home, LibraryIcon, Shield, ScrollText } from "lucide-react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useIntercom } from "react-use-intercom";
@@ -86,6 +86,14 @@ export default function LayerswapMenu() {
                                 <WalletsMenu />
 
                                 <Menu.Group>
+                                    <>
+                                        {
+                                            router.pathname != '/committments' &&
+                                            <Menu.Item pathname='/committments' icon={<ScrollText className="h-5 w-5" />} >
+                                                History
+                                            </Menu.Item>
+                                        }
+                                    </>
                                     <>
                                         {
                                             router.pathname != '/' &&
