@@ -212,6 +212,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                     <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
                                 }
                             </div>
+                        </div>
                     </Widget.Content>
                     <Widget.Footer>
                         <SwapButton
