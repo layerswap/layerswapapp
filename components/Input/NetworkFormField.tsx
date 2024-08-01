@@ -21,7 +21,8 @@ import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "..
 import useValidationErrorStore from "../validationError/validationErrorStore";
 import validationMessageResolver from "../utils/validationErrorResolver";
 import ClickTooltip from "../Tooltips/ClickTooltip";
-
+import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
+import RouteIcon from "../icons/RouteIcon";
 
 type Props = {
     direction: SwapDirection,
@@ -31,8 +32,8 @@ type Props = {
 
 const GROUP_ORDERS = { "Popular": 1, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
 export const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
-const getGroupName = (value: RouteNetwork | Exchange, type: 'cex' | 'network', isRouteNotFound?: boolean) => {
-    if (NetworkSettings.KnownSettings[value.name]?.isFeatured && !isRouteNotFound) {
+const getGroupName = (value: RouteNetwork | Exchange, type: 'cex' | 'network', canShowInPopular?: boolean) => {
+    if (NetworkSettings.KnownSettings[value.name]?.isFeatured && canShowInPopular) {
         return "Popular";
     }
     else if (type === 'network') {
@@ -88,7 +89,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     useEffect(() => {
         if (!isLoading && routes?.data) setRoutesData(routes.data)
     }, [routes])
-    console.log("exchangeData", exchangesData)
+    
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
@@ -184,7 +185,6 @@ function groupByType(values: ISelectMenuItem[]) {
 
 function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchange[], direction: SwapDirection, lock: boolean, query: QueryParams): (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[] {
     const mappedLayers = routes?.map(r => {
-        const details = !r.tokens?.some(r => r.status !== 'inactive') ? <ClickTooltip side="left" text={`Transfers ${direction} this network are not available at the moment. Please try later.`} /> : undefined
         const isNewlyListed = r?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
@@ -192,25 +192,42 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
 
         const isAvailable = !lock &&
             (
-                r.tokens?.some(r => r.status === 'active') ||
+                r.tokens?.some(r => r.status === 'active' || r.status === 'not_found') ||
                 !query.lockAsset && !query.lockFromAsset && !query.lockToAsset && !query.lockFrom && !query.lockTo && !query.lockNetwork && !query.lockExchange && r.tokens?.some(r => r.status !== 'inactive')
             );
 
-        const isInvalidRoute = !r.tokens?.some(r => r.status === 'active') &&
-            (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange || !r.tokens?.some(r => r.status !== 'inactive'));
+        const details = !isAvailable ? <ClickTooltip side="left" text={`Transfers ${direction} this network are not available at the moment. Please try later.`} /> : undefined
 
         const order = ResolveNetworkOrder(r, direction, isNewlyListed)
+
+        const routeNotFound = isAvailable && !r.tokens?.some(r => r.status === 'active') ;
+        const icon = routeNotFound ? (
+            <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild >
+                    <div className="absolute -left-0 z-50">
+                        <RouteIcon className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p className="max-w-72">
+                        Route unavailable
+                    </p>
+                </TooltipContent>
+            </Tooltip>
+        ) : undefined;
+
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
             baseObject: r,
             id: r.name,
             name: r.display_name,
             order,
             imgSrc: r.logo,
-            isAvailable,
-            group: getGroupName(r, 'network', isInvalidRoute),
+            isAvailable: isAvailable,
+            group: getGroupName(r, 'network', isAvailable && !routeNotFound),
             isExchange: false,
             details,
-            badge
+            badge,
+            icon
         }
         return res;
     }).sort(SortAscending) || [];
