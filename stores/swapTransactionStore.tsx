@@ -6,6 +6,7 @@ type SwapTransaction = {
     hash: string;
     status: BackendTransactionStatus | TransactionStatus;
     failReason?: string;
+    timestamp: number;
 };
 
 type SwapTransactionStore = {
@@ -31,7 +32,8 @@ export const useSwapTransactionStore = create(
                         [Id]: {
                             hash: txHash,
                             status: status,
-                            failReason: failReason
+                            failReason: failReason,
+                            timestamp: Date.now()
                         }
                     };
                     return { swapTransactions: txForSwap };

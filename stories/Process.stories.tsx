@@ -3,19 +3,16 @@ import { SwapItem, BackendTransactionStatus, TransactionType, SwapResponse } fro
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapData, SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
-import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { BalancesStateContext, BalancesStateUpdateContext } from '../context/balances';
-import { argentWallet, bitgetWallet, coinbaseWallet, metaMaskWallet, phantomWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 import { FC, useEffect, useRef } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
-import { swap, failedSwap, failedSwapOutOfRange, failedInputSwap, cancelled, expired } from './Data/swaps'
-import { SettingChains, Settings } from './Data/settings';
+import { swap } from './Data/swaps'
+import { Settings } from './Data/settings';
 import { initialValues } from './Data/initialValues';
 import { AuthDataUpdateContext, AuthStateContext, UserType } from '../context/authContext';
 import { IntercomProvider } from 'react-use-intercom';
 import { THEME_COLORS } from '../Models/Theme';
 import Layout from '../components/layout';
-import RainbowKitComponent from '../components/RainbowKit';
 import SwapDetails from '../components/Swap';
 import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
@@ -23,20 +20,13 @@ import WalletMockFunctions from './Mocks/context/BalancesMockFunctions';
 import BalancesStateMock from './Mocks/context/BalancesState';
 import { Formik, FormikProps } from 'formik';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import { useQueryState } from '../context/query';
 import MainStepValidation from '../lib/mainStepValidator';
 import { FeeProvider, useFee } from '../context/feeContext';
 import { useArgs } from '@storybook/preview-api';
-
-const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
-const settingsChains = SettingChains;
-
+import RainbowKitComponent from '../components/RainbowKit';
 
 window.plausible = () => { }
 const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ settings, swapData, theme, initialValues, timestamp }) => {
-    const query = useQueryState()
-
-
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const appSettings = new LayerSwapAppSettings(Settings)
     const swapContextInitialValues: SwapData = { codeRequested: false, swapResponse: swapData.swapResponse, depositAddressIsFromAccount: false, withdrawType: undefined, swapTransaction: undefined }
@@ -101,7 +91,7 @@ const DUMMY_TRANSACTION = {
     type: TransactionType,
     usd_value: 1.6916886,
     status: BackendTransactionStatus,
-    timestamp: "",
+    timestamp: "2024-07-09T09:09:40.725954+00:00",
 }
 
 const meta = {

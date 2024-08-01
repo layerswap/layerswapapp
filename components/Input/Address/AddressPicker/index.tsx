@@ -61,7 +61,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const provider = useMemo(() => {
         return values?.to && getProvider(values?.to)
     }, [values?.to, getProvider])
-    const connectedWallet = provider?.getConnectedWallet()
+    const connectedWallet = provider?.getConnectedWallet(values.to)
     const connectedWalletAddress = connectedWallet?.address
 
     const [isConnecting, setIsConnecting] = useState(false)
@@ -79,25 +79,47 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const addressBookAddresses = groupedAddresses?.filter(a => a.group !== AddressGroup.ConnectedWallet)
 
     const handleSelectAddress = useCallback((value: string) => {
-        const address = destination && groupedAddresses?.find(a => addressFormat(a.address, destination) === addressFormat(value, destination))?.address
+        const selected = destination && groupedAddresses?.find(a => addressFormat(a.address, destination) === addressFormat(value, destination))
+        const address = selected?.address
+
+        if (selected?.group === AddressGroup.ConnectedWallet) {
+            previouslyAutofilledAddress.current = address
+        }
+        else {
+            previouslyAutofilledAddress.current = undefined
+        }
+
         setFieldValue("destination_address", address)
         close()
+
     }, [close, setFieldValue, groupedAddresses])
 
-    const autofillConnectedWallet = useCallback(() => {
-        setFieldValue("destination_address", connectedWallet?.address)
-        if (showAddressModal && connectedWallet) setShowAddressModal(false)
+    const previouslyAutofilledAddress = useRef<string | undefined>(undefined)
 
-    }, [setFieldValue, setShowAddressModal, showAddressModal, destination, connectedWallet])
+    const autofillConnectedWallet = useCallback(() => {
+        setFieldValue("destination_address", connectedWalletAddress)
+        previouslyAutofilledAddress.current = connectedWalletAddress
+        if (showAddressModal && connectedWallet) setShowAddressModal(false)
+    }, [setFieldValue, setShowAddressModal, showAddressModal, destination, connectedWallet, connectedWalletAddress])
 
     useEffect(() => {
-        if (!destination_address && connectedWallet) {
-            autofillConnectedWallet()
-        } else if (isConnecting && connectedWallet) {
+        if (isConnecting && connectedWalletAddress) {
             setIsConnecting(false)
             autofillConnectedWallet()
         }
-    }, [destination_address, connectedWallet, isConnecting])
+    }, [connectedWalletAddress, isConnecting])
+
+    useEffect(() => {
+        if ((!destination_address || (previouslyAutofilledAddress.current && previouslyAutofilledAddress.current != connectedWalletAddress)) && connectedWallet) {
+            autofillConnectedWallet()
+        }
+    }, [connectedWallet, destination_address])
+
+    useEffect(() => {
+        if (previouslyAutofilledAddress.current === destination_address && !connectedWallet) {
+            setFieldValue("destination_address", undefined)
+        }
+    }, [connectedWallet, previouslyAutofilledAddress])
 
     useEffect(() => {
         if (canFocus) {

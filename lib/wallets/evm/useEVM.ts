@@ -1,14 +1,16 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { useAccount, useDisconnect } from "wagmi"
-import { NetworkType } from "../../../Models/Network"
+import { Network, NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/router"
 
 export default function useEVM(): WalletProvider {
+    const router = useRouter();
     const { networks } = useSettingsState()
     const [shouldConnect, setShouldConnect] = useState(false)
     const { disconnectAsync } = useDisconnect()
@@ -35,6 +37,7 @@ export default function useEVM(): WalletProvider {
     ]
 
     const name = 'evm'
+
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
 
@@ -45,10 +48,12 @@ export default function useEVM(): WalletProvider {
         }
     }, [shouldConnect])
 
-    const getWallet = () => {
+    const getWallet = (network?: Network) => {
         if (account && account.address && account.connector) {
             const connector = account.connector.id
-
+            if (connector == "com.immutable.passport" && network && !(network.name == KnownInternalNames.Networks.ImmutableZkEVM || network.name == KnownInternalNames.Networks.ImmutableXMainnet)) {
+                return undefined
+            }
             return {
                 address: account.address,
                 connector: account.connector.name || connector.charAt(0).toUpperCase() + connector.slice(1),
@@ -58,19 +63,17 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-
-    const connectWallet = () => {
-        try {
-            return openConnectModal && openConnectModal()
+    const connectWallet = async () => {
+        if (account && account.address && account.connector) {
+            await reconnectWallet()
         }
-        catch (e) {
-            console.log(e)
+        else {
+            return openConnectModal && openConnectModal()
         }
     }
 
     const disconnectWallet = async () => {
         try {
-            account.connector && await account.connector.disconnect()
             await disconnectAsync()
         }
         catch (e) {
@@ -80,14 +83,14 @@ export default function useEVM(): WalletProvider {
 
     const reconnectWallet = async () => {
         try {
-            account.connector && await account.connector.disconnect()
-            await disconnectAsync()
+            await disconnectWallet()
             setShouldConnect(true)
         }
         catch (e) {
             console.log(e)
         }
     }
+
 
 
     return {
