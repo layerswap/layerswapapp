@@ -94,8 +94,7 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-    // const LOCK_TIME = 1000 * 60 * 60 * 3 // 3 hours
-    const LOCK_TIME = 1000 * 60 * 30 // 30 minutes
+    const LOCK_TIME = 1000 * 60 * 20 // 20 minutes
     const messanger = "0x39c58617d355d8B432a3675714b93eC840872236"
 
     const createPreHTLC = async (params: CreatyePreHTLCParams) => {

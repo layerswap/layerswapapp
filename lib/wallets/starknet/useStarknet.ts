@@ -104,8 +104,7 @@ export default function useStarknet(): WalletProvider {
         await connectWallet(chain)
     }
 
-    // const LOCK_TIME = 1000 * 60 * 60 * 3 // 3 hours
-    const LOCK_TIME = 1000 * 60 * 30 // 30 minutes
+    const LOCK_TIME = 1000 * 60 * 20 // 20 minutes
     const messanger = "0x152747029e738c20a4ecde5ef869ea072642938d62f0aa7f3d0e9dfb5051cb9"
 
     const createPreHTLC = async (params: CreatyePreHTLCParams) => {
