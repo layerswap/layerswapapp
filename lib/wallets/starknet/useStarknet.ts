@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { Call, Contract, RpcProvider, shortString } from "starknet";
 import PHTLCAbi from "../../../lib/abis/atomic/STARKNET_PHTLC.json"
 import ETHABbi from "../../../lib/abis/STARKNET_ETH.json"
-import { CommitmentParams, CreatyePreHTLCParams, GetCommitsParams, LockParams } from "../phtlc";
+import { CommitmentParams, CreatyePreHTLCParams, GetCommitsParams, LockParams, RefundParams } from "../phtlc";
 import { BigNumberish, ethers } from "ethers";
 import { AssetLock, Commit } from "../../../Models/PHTLC";
 
@@ -104,7 +104,7 @@ export default function useStarknet(): WalletProvider {
         await connectWallet(chain)
     }
 
-    const LOCK_TIME = 1000 * 60 * 60 * 3 // 3 hours
+    const LOCK_TIME = 1000 * 60 * 20 // 20 minutes
     const messanger = "0x152747029e738c20a4ecde5ef869ea072642938d62f0aa7f3d0e9dfb5051cb9"
 
     const createPreHTLC = async (params: CreatyePreHTLCParams) => {
@@ -146,8 +146,6 @@ export default function useStarknet(): WalletProvider {
 
         const trx = (await wallet?.metadata?.starknetAccount?.account?.execute([increaseAllowanceCall, committmentCall]))
 
-
-
         const commitTransactionData = await wallet.metadata.starknetAccount.provider.waitForTransaction(
             trx.transaction_hash
         );
@@ -166,9 +164,29 @@ export default function useStarknet(): WalletProvider {
     const claim = () => {
         throw new Error('Not implemented')
     }
-    const refund = () => {
-        throw new Error('Not implemented')
+
+    const refund = async (params: RefundParams) => {
+        const { contractAddress: atomicAddress, commitId, lockId } = params
+
+        if (!wallet?.metadata?.starknetAccount?.account) {
+            throw new Error('Wallet not connected')
+        }
+
+        const atomicContract = new Contract(
+            PHTLCAbi,
+            atomicAddress,
+            wallet.metadata?.starknetAccount?.account,
+        )
+
+        const refundCall: Call = atomicContract.populate(lockId ? "unlock" : "uncommit", [lockId || commitId])
+        const trx = (await wallet?.metadata?.starknetAccount?.account?.execute(refundCall))
+
+        if (!trx) {
+            throw new Error("No result")
+        }
+        return trx.transaction_hash
     }
+
     const getCommitment = async (params: CommitmentParams): Promise<Commit> => {
         const { commitId, contractAddress } = params
 

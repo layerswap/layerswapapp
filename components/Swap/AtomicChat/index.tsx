@@ -8,6 +8,7 @@ import ConnectedWallet from "./ConnectedWallet";
 import { ActionsWithProgressbar, ResolveMessages } from "./Resolver";
 import { useAtomicState } from "../../../context/atomicContext";
 import ResizablePanel from "../../ResizablePanel";
+import TimelockTimer from "./TimelockTimer";
 
 type ContainerProps = {
     type: "widget" | "contained",
@@ -81,6 +82,10 @@ const Commitment: FC<ContainerProps> = (props) => {
                                 />
                             }
                             {
+                                committment?.timelock && Number(committment.timelock) - (Date.now() / 1000) > 0 &&
+                                <TimelockTimer timelock={Number(committment.timelock) - (Date.now() / 1000)} />
+                            }
+                            {
                                 !commitId && <ConnectedWallet
                                     source_network={source_network}
                                     source_token={source_token}
@@ -103,13 +108,6 @@ const Commitment: FC<ContainerProps> = (props) => {
         </>
     )
 }
-
-
-
-const Footer: FC = () => {
-    return <></>
-}
-
 
 const Container: FC<ContainerProps> = (props) => {
     const { type } = props
