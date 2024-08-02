@@ -8,7 +8,6 @@ import ConnectedWallet from "./ConnectedWallet";
 import { ActionsWithProgressbar, ResolveMessages } from "./Resolver";
 import { useAtomicState } from "../../../context/atomicContext";
 import ResizablePanel from "../../ResizablePanel";
-import TimelockTimer from "./TimelockTimer";
 
 type ContainerProps = {
     type: "widget" | "contained",
@@ -81,11 +80,7 @@ const Commitment: FC<ContainerProps> = (props) => {
                 </ResizablePanel>
             </Widget.Content>
             <Widget.Footer sticky={true}>
-                <div className="space-y-2">
-                    {
-                        committment?.timelock && Number(committment.timelock) - (Date.now() / 1000) > 0 && !sourceLock?.redeemed &&
-                        <TimelockTimer timelock={Number(committment.timelock) - (Date.now() / 1000)} />
-                    }
+                <div>
                     <ActionsWithProgressbar />
                 </div>
             </Widget.Footer>
