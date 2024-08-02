@@ -40,8 +40,7 @@ const TimelockTimer = ({ timelock }: { timelock: number }) => {
 
     return (
         started &&
-
-        <Tooltip>
+        <Tooltip delayDuration={150}>
             <TooltipTrigger>
                 <div className="px-2 py-0.5 rounded-md bg-secondary-700 text-sm text-secondary-text w-max">
                     <div className="flex items-center gap-1.5">
