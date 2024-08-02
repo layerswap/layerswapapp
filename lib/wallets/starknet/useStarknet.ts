@@ -26,6 +26,7 @@ export default function useStarknet(): WalletProvider {
 
     const name = 'starknet'
     const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
+    const nodeUrl = 'https://starknet-sepolia.public.blastapi.io'
     const wallets = useWalletStore((state) => state.connectedWallets)
 
     const addWallet = useWalletStore((state) => state.connectWallet)
@@ -53,7 +54,7 @@ export default function useStarknet(): WalletProvider {
                 dappName: 'Layerswap',
                 modalMode: 'alwaysAsk',
                 provider: new RpcProvider({
-                    nodeUrl: 'https://starknet-sepolia.public.blastapi.io',
+                    nodeUrl: nodeUrl,
                 })
             })
             if (wallet && chain && ((wallet.provider?.chainId && wallet.provider?.chainId != constants.StarknetChainId[chainId]) || (wallet.provider?.provider?.chainId && wallet.provider?.provider?.chainId != constants.StarknetChainId[chainId]))) {
@@ -194,7 +195,7 @@ export default function useStarknet(): WalletProvider {
             PHTLCAbi,
             contractAddress,
             new RpcProvider({
-                nodeUrl: 'https://starknet-sepolia.public.blastapi.io',
+                nodeUrl: nodeUrl,
             })
         )
 
@@ -251,7 +252,7 @@ export default function useStarknet(): WalletProvider {
             PHTLCAbi,
             contractAddress,
             new RpcProvider({
-                nodeUrl: 'https://starknet-sepolia.public.blastapi.io',
+                nodeUrl: nodeUrl,
             })
         )
         const result = await atomicContract.functions.getLockDetails(lockId)
@@ -280,7 +281,7 @@ export default function useStarknet(): WalletProvider {
             PHTLCAbi,
             contractAddress,
             new RpcProvider({
-                nodeUrl: 'https://starknet-sepolia.public.blastapi.io',
+                nodeUrl: nodeUrl,
             })
         )
         const result = await atomicContract.functions.getLockIdByCommitId(commitId)
@@ -290,45 +291,27 @@ export default function useStarknet(): WalletProvider {
     }
 
     const getCommits = async (params: GetCommitsParams) => {
+        const { contractAddress } = params
 
-        throw new Error('Not implemented')
+        const atomicContract = new Contract(
+            PHTLCAbi,
+            contractAddress,
+            new RpcProvider({
+                nodeUrl: nodeUrl,
+            })
+        )
 
-        // const { contractAddress } = params
+        if (!wallet?.address) {
+            throw new Error('No connected wallet')
+        }
 
-        // const atomicContract = new Contract(
-        //     PHTLCAbi,
-        //     contractAddress,
-        //     new RpcProvider({
-        //         nodeUrl: 'https://starknet-sepolia.public.blastapi.io',
-        //     })
-        // )
+        const result = await atomicContract.functions.getCommits(wallet?.address)
 
-        // if(!wallet?.address){
-        //     throw new Error('No connected wallet')
-        // }
+        if (!result) {
+            throw new Error("No result")
+        }
 
-        // const result = await atomicContract.functions.getCommits(wallet?.address)
-
-        // if (!result) {
-        //     throw new Error("No result")
-        // }
-
-        // const parsedResult = {
-        //     dstAddress: ethers.utils.hexlify(result.dstAddress as BigNumberish),
-
-        //     dstChain: shortString.decodeShortString(ethers.utils.hexlify(result.dstChain as BigNumberish)),
-        //     dstAsset: shortString.decodeShortString(ethers.utils.hexlify(result.dstAsset as BigNumberish)),
-        //     srcAsset: shortString.decodeShortString(ethers.utils.hexlify(result.srcAsset as BigNumberish)),
-        //     sender: ethers.utils.hexlify(result.sender as BigNumberish),
-        //     srcReceiver: ethers.utils.hexlify(result.srcReceiver as BigNumberish),
-        //     timelock: Number(result.timelock),
-        //     amount: result.amount,
-        //     messenger: ethers.utils.hexlify(result.messenger as BigNumberish),
-        //     locked: result.locked,
-        //     uncommitted: result.uncommitted
-        // }
-
-        // return parsedResult
+        return result
     }
 
     return {

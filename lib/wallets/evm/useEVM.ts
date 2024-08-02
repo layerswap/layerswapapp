@@ -18,6 +18,7 @@ export default function useEVM(): WalletProvider {
     const [shouldConnect, setShouldConnect] = useState(false)
     const { disconnectAsync } = useDisconnect()
     const config = useConfig()
+
     const asSourceSupportedNetworks = [
         ...networks.filter(network => network.type === NetworkType.EVM && network.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
@@ -235,11 +236,9 @@ export default function useEVM(): WalletProvider {
     }
     const getCommits = async (params: GetCommitsParams) => {
         const { chainId, contractAddress } = params
-
         if (!account.address) {
             throw Error("Wallet not connected")
         }
-
         const result = await readContract(config, {
             abi: PHTLCAbi,
             address: contractAddress,
@@ -250,7 +249,7 @@ export default function useEVM(): WalletProvider {
         if (!result) {
             throw new Error("No result")
         }
-        return result as string[]
+        return (result as string[]).reverse()
     }
 
     return {
@@ -261,6 +260,7 @@ export default function useEVM(): WalletProvider {
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
+        connectedWalletActiveChain: account.chainId,
         name,
 
         getLockIdByCommitId,

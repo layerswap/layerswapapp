@@ -13,7 +13,6 @@ import shortenAddress from "../../utils/ShortenAddress";
 import SpinIcon from "../../icons/spinIcon";
 import { SwapHistoryComponentSceleton } from "../../Sceletons";
 import Image from 'next/image'
-import { truncateDecimals } from "../../utils/RoundDecimals";
 import formatAmount from "../../../lib/formatAmount";
 
 function CommittmentsHistory() {
@@ -33,6 +32,8 @@ function CommittmentsHistory() {
     const provider = useMemo(() => {
         return activeNetwork && getWithdrawalProvider(activeNetwork)
     }, [activeNetwork, getWithdrawalProvider])
+    const activeChain = provider?.connectedWalletActiveChain
+
     const PAGE_SIZE = 5
 
     const goBack = useCallback(() => {
@@ -48,8 +49,7 @@ function CommittmentsHistory() {
         let commits: Commit[] = []
 
         for (let i = page * PAGE_SIZE; i < (page + 1) * PAGE_SIZE; i++) {
-
-            const commit = commitIds && await provider?.getCommitment({ commitId: commitIds[i], chainId: activeNetwork?.chain_id as string, contractAddress: activeNetwork?.metadata.htlc_contract as `0x${string}` })
+            const commit = commitIds[i] && await provider?.getCommitment({ commitId: commitIds[i], chainId: activeNetwork?.chain_id as string, contractAddress: activeNetwork?.metadata.htlc_contract as `0x${string}` })
             if (commit) {
                 commits.push(commit)
             }
@@ -66,17 +66,17 @@ function CommittmentsHistory() {
             setLoading(true)
 
             const commIds = await provider?.getCommits({ contractAddress: activeNetwork?.metadata.htlc_contract as `0x${string}`, chainId: activeNetwork.chain_id })
-            if (commIds) setCommitIds(commIds.reverse())
+            if (commIds) setCommitIds(commIds)
 
             const commits = commIds && await getCommitments(page, commIds)
-            setCommitments(old => [...(old ? old : []), ...(commits ? commits : [])])
+            if (commits) setCommitments(commits)
 
-            setPage(1)
+            setPage(0)
             if (Number(commIds?.length) < PAGE_SIZE)
                 setIsLastPage(true)
             setLoading(false)
         })()
-    }, [router.query, selectedWallet])
+    }, [router.query, selectedWallet, activeChain])
 
     const handleLoadMore = useCallback(async () => {
         const nextPage = page + 1
@@ -92,12 +92,17 @@ function CommittmentsHistory() {
         setLoading(false)
     }, [page, setCommitments, commitIds])
 
+    useEffect(() => {
+        if (!selectedWallet) {
+            setSelectedWallet(wallets?.[0]?.connector)
+        }
+    }, [wallets])
 
     return (
 
         <div className='bg-secondary-900 sm:shadow-card rounded-containerRoundness mb-6 w-full text-primary-text overflow-hidden relative min-h-[620px]'>
             <HeaderWithMenu goBack={goBack} />
-            <div className="px-6 space-y-5">
+            <div className="px-6 mt-3">
                 <WalletSelector wallets={wallets} selectedWallet={selectedWallet} setSelectedWallet={setSelectedWallet} />
                 {
                     page == 0 && loading ?
@@ -147,7 +152,6 @@ function CommittmentsHistory() {
                                                             const destination_network = networks.find(network => network.name === dstChain)
                                                             const source_token = source_network?.tokens.find(token => token.symbol === srcAsset)
 
-                                                            console.log(truncateDecimals(Number(amount), source_token?.decimals), amount, source_token?.decimals)
                                                             return <tr key={index}>
 
                                                                 <td
@@ -267,7 +271,7 @@ const WalletSelector: FC<WallectSelectorProps> = ({ wallets, selectedWallet, set
 
     return <Popover open={showModal} onOpenChange={setShowModal}>
         <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1">
-            <span> Transfer via </span> <span>{selectedWallet}</span> <div>
+            <span> Transfered via </span> <span>{selectedWallet}</span> <div>
                 <ChevronDown className=" w-4 h-4 " />
             </div>
         </PopoverTrigger>

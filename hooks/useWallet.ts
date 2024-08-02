@@ -16,6 +16,7 @@ export type WalletProvider = {
     autofillSupportedNetworks?: string[],
     asSourceSupportedNetworks?: string[],
     name: string,
+    connectedWalletActiveChain?: string | number | null,
 
     createPreHTLC: (args: CreatyePreHTLCParams) => Promise<{ hash: `0x${string}`, commitId: string }>,
     convertToHTLC: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
