@@ -14,8 +14,12 @@ import SpinIcon from "../../icons/spinIcon";
 import { SwapHistoryComponentSceleton } from "../../Sceletons";
 import Image from 'next/image'
 import formatAmount from "../../../lib/formatAmount";
+import Modal from "../../modal/modal";
+import CommitDetails from "./CommitDetailsComponent";
 
 function CommittmentsHistory() {
+    const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
+    const [selectedCommit, setSelectedCommit] = useState<Commit & { id: string } | undefined>()
     const [page, setPage] = useState(0)
     const [isLastPage, setIsLastPage] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -23,12 +27,11 @@ function CommittmentsHistory() {
     const router = useRouter();
     const { wallets, getWithdrawalProvider } = useWallet()
 
-    const [selectedWallet, setSelectedWallet] = useState<string | undefined>(wallets?.[0]?.connector)
-    const [commitments, setCommitments] = useState<Commit[]>([])
+    const [selectedWallet, setSelectedWallet] = useState<Wallet | undefined>(wallets?.[0])
+    const [commitments, setCommitments] = useState<(Commit & { id: string })[]>([])
 
-    const activeWallet = wallets.find(wallet => wallet.connector == selectedWallet)
     const { networks } = useSettingsState()
-    const activeNetwork = networks.find(network => network.chain_id == activeWallet?.chainId)
+    const activeNetwork = networks.find(network => network.chain_id == selectedWallet?.chainId)
     const provider = useMemo(() => {
         return activeNetwork && getWithdrawalProvider(activeNetwork)
     }, [activeNetwork, getWithdrawalProvider])
@@ -46,16 +49,24 @@ function CommittmentsHistory() {
     }, [router])
 
     const getCommitments = async (page: number, commitIds: string[]) => {
-        let commits: Commit[] = []
+        let commits: (Commit & { id: string })[] = []
 
         for (let i = page * PAGE_SIZE; i < (page + 1) * PAGE_SIZE; i++) {
             const commit = commitIds[i] && await provider?.getCommitment({ commitId: commitIds[i], chainId: activeNetwork?.chain_id as string, contractAddress: activeNetwork?.metadata.htlc_contract as `0x${string}` })
             if (commit) {
-                commits.push(commit)
+                commits.push({
+                    id: commitIds[i],
+                    ...commit
+                })
             }
         }
 
         return commits
+    }
+
+    const handleOpenCommitDetails = (commit: Commit & { id: string }) => {
+        setSelectedCommit(commit)
+        setOpenSwapDetailsModal(true)
     }
 
     useEffect(() => {
@@ -94,7 +105,7 @@ function CommittmentsHistory() {
 
     useEffect(() => {
         if (!selectedWallet) {
-            setSelectedWallet(wallets?.[0]?.connector)
+            setSelectedWallet(wallets?.[0])
         }
     }, [wallets])
 
@@ -152,7 +163,7 @@ function CommittmentsHistory() {
                                                             const destination_network = networks.find(network => network.name === dstChain)
                                                             const source_token = source_network?.tokens.find(token => token.symbol === srcAsset)
 
-                                                            return <tr key={index}>
+                                                            return <tr onClick={() => handleOpenCommitDetails(commit)} key={index}>
 
                                                                 <td
                                                                     className={classNames(
@@ -249,11 +260,16 @@ function CommittmentsHistory() {
                                         <p className="px-14 text-primary-text">You can find all your transactions by searching with address in</p>
                                     </div>
                             }
+                            <Modal height="fit" show={openSwapDetailsModal} setShow={setOpenSwapDetailsModal} header="Swap details" modalId="swapHistory">
+                                <div className="mt-2">
+                                    {
+                                        selectedCommit && selectedWallet && <CommitDetails commit={selectedCommit} selectedWallet={selectedWallet} />
+                                    }
+                                </div>
+                            </Modal>
                         </>
                 }
             </div>
-
-
             <div id="widget_root" />
         </div>
 
@@ -262,8 +278,8 @@ function CommittmentsHistory() {
 
 type WallectSelectorProps = {
     wallets: Wallet[]
-    selectedWallet: string | undefined
-    setSelectedWallet: (wallet: string) => void
+    selectedWallet: Wallet | undefined
+    setSelectedWallet: (wallet: Wallet) => void
 }
 
 const WalletSelector: FC<WallectSelectorProps> = ({ wallets, selectedWallet, setSelectedWallet }) => {
@@ -271,7 +287,7 @@ const WalletSelector: FC<WallectSelectorProps> = ({ wallets, selectedWallet, set
 
     return <Popover open={showModal} onOpenChange={setShowModal}>
         <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1">
-            <span> Transfered via </span> <span>{selectedWallet}</span> <div>
+            <span> Transfered via </span> <span>{selectedWallet?.connector}</span> <div>
                 <ChevronDown className=" w-4 h-4 " />
             </div>
         </PopoverTrigger>
@@ -279,7 +295,7 @@ const WalletSelector: FC<WallectSelectorProps> = ({ wallets, selectedWallet, set
             <div>
                 {
                     wallets.map(wallet => <div key={wallet.address} className={classNames("flex items-center justify-between p-2 rounded-lg cursor-pointer hover:bg-secondary-700", selectedWallet === wallet.connector && 'bg-secondary-700')} onClick={() => {
-                        wallet.connector && setSelectedWallet(wallet.connector)
+                        wallet.connector && setSelectedWallet(wallet)
                         setShowModal(false)
                     }}>
                         <wallet.icon className="w-6 h-6" />

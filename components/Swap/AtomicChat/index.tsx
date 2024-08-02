@@ -65,7 +65,6 @@ const Commitment: FC<ContainerProps> = (props) => {
         <>
             <Widget.Content>
                 <ResizablePanel>
-                    <button onClick={handleGetCommits}>get commits</button>
                     <div className="w-full flex flex-col justify-between  text-secondary-text">
                         <div className='grid grid-cols-1 gap-4'>
                             {
