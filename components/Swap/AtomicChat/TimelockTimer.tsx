@@ -40,7 +40,7 @@ const TimelockTimer = ({ timelock }: { timelock: number }) => {
 
     return (
         started &&
-        <div className="w-full flex justify-end">
+        <div className="w-full flex justify-end text-secondary-text">
             <div className="py-1 px-2 border-2 border-secondary-500 rounded-componentRoundness bg-secondary-700 w-fit text-sm">
                 <div className="flex items-center gap-1.5">
                     <p className="w-8">{twoDigits(minutesToDisplay)}:{twoDigits(secondsToDisplay)}</p>
