@@ -260,7 +260,6 @@ export default function useEVM(): WalletProvider {
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
-        connectedWalletActiveChain: account.chainId,
         name,
 
         getLockIdByCommitId,

@@ -46,16 +46,17 @@ function CommittmentsHistory() {
     const router = useRouter();
     const { wallets, getWithdrawalProvider, getProviderByName } = useWallet()
 
-    const [selectedWallet, setSelectedWallet] = useState<Wallet | undefined>(wallets?.[0])
+    const [selectedProvider, setSelectedProvider] = useState<string | undefined>(wallets?.[0].connector)
     const [commitments, setCommitments] = useState<(HistoryCommit)[]>([])
+
+    const selectedWallet = wallets.find(wallet => wallet.connector === selectedProvider)
 
     const source_provider = useMemo(() => {
         return selectedWallet && getProviderByName(selectedWallet?.providerName)
     }, [selectedWallet, getWithdrawalProvider])
-    const activeChain = source_provider?.connectedWalletActiveChain
 
     const { networks } = useSettingsState()
-    const activeNetwork = networks.find(network => network.chain_id == activeChain)
+    const activeNetwork = networks.find(network => network.chain_id == selectedWallet?.chainId)
 
     const PAGE_SIZE = 5
 
@@ -126,7 +127,7 @@ function CommittmentsHistory() {
             if (Number(commIds?.length) < PAGE_SIZE) setIsLastPage(true)
             setLoading(false)
         })()
-    }, [router.query, selectedWallet, activeChain])
+    }, [router.query, selectedWallet?.address, selectedWallet?.chainId])
 
     const handleLoadMore = useCallback(async () => {
         const nextPage = page + 1
@@ -144,7 +145,7 @@ function CommittmentsHistory() {
 
     useEffect(() => {
         if (!selectedWallet) {
-            setSelectedWallet(wallets?.[0])
+            setSelectedProvider(wallets?.[0].connector)
         }
     }, [wallets])
 
@@ -166,7 +167,7 @@ function CommittmentsHistory() {
 
     return (
         <HistoryWrapper>
-            <WalletSelector wallets={wallets} selectedWallet={selectedWallet} setSelectedWallet={setSelectedWallet} />
+            <WalletSelector wallets={wallets} selectedWallet={selectedProvider} setSelectedWallet={setSelectedProvider} />
             {
                 page == 0 && loading ?
                     <SwapHistoryComponentSceleton />
@@ -304,7 +305,7 @@ function CommittmentsHistory() {
                                 <div className="absolute top-1/4 right-0 text-center w-full">
                                     <Scroll className='h-40 w-40 text-secondary-700 mx-auto' />
                                     <p className="my-2 text-xl">It&apos;s empty here</p>
-                                    <p className="px-14 text-primary-text">You can find all your transactions by searching with address in</p>
+                                    <p className="px-14 text-primary-text">Please select the network in your wallet where you initiated the transfer.</p>
                                 </div>
                         }
                         <Modal height="fit" show={openSwapDetailsModal} setShow={setOpenSwapDetailsModal} header="Swap details" modalId="swapHistory">
@@ -323,8 +324,8 @@ function CommittmentsHistory() {
 
 type WallectSelectorProps = {
     wallets: Wallet[]
-    selectedWallet: Wallet | undefined
-    setSelectedWallet: (wallet: Wallet) => void
+    selectedWallet: string | undefined
+    setSelectedWallet: (wallet: string) => void
 }
 
 const WalletSelector: FC<WallectSelectorProps> = ({ wallets, selectedWallet, setSelectedWallet }) => {
@@ -332,7 +333,7 @@ const WalletSelector: FC<WallectSelectorProps> = ({ wallets, selectedWallet, set
 
     return <Popover open={showModal} onOpenChange={setShowModal}>
         <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1">
-            <span> Transfered via </span> <span>{selectedWallet?.connector}</span> <div>
+            <span> Transfered via </span> <span>{selectedWallet}</span> <div>
                 <ChevronDown className=" w-4 h-4 " />
             </div>
         </PopoverTrigger>
@@ -340,7 +341,7 @@ const WalletSelector: FC<WallectSelectorProps> = ({ wallets, selectedWallet, set
             <div>
                 {
                     wallets.map(wallet => <div key={wallet.address} className={classNames("flex items-center justify-between p-2 rounded-lg cursor-pointer hover:bg-secondary-700", selectedWallet === wallet.connector && 'bg-secondary-700')} onClick={() => {
-                        wallet.connector && setSelectedWallet(wallet)
+                        wallet.connector && setSelectedWallet(wallet.connector)
                         setShowModal(false)
                     }}>
                         <wallet.icon className="w-6 h-6" />

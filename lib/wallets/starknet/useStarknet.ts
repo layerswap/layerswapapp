@@ -314,7 +314,7 @@ export default function useStarknet(): WalletProvider {
             throw new Error("No result")
         }
 
-        return result
+        return result.reverse().map((commit: any) => ethers.utils.hexlify(commit))
     }
 
     return {
@@ -326,7 +326,6 @@ export default function useStarknet(): WalletProvider {
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
-        connectedWalletActiveChain: wallet?.chainId,
 
         createPreHTLC,
         convertToHTLC,
