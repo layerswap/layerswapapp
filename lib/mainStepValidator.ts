@@ -2,7 +2,7 @@ import { FormikErrors } from "formik";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { isValidAddress } from "./address/validator";
 
-export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount }: { minAllowedAmount: number | undefined, maxAllowedAmount: number | undefined }): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
+export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount, validationErrorMessage }: { minAllowedAmount: number | undefined, maxAllowedAmount: number | undefined, validationErrorMessage: string }): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
     return (values: SwapFormValues) => {
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = Number(values.amount);
@@ -55,6 +55,9 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount 
             else if (!isValidAddress(values.destination_address, values.to)) {
                 errors.destination_address = `Enter a valid ${values.to?.display_name} address`;
             }
+        }
+        if (values.fromCurrency?.status === 'not_found' || values.toCurrency?.status === 'not_found') {
+            errors.amount = `Route unavailable`;
         }
 
         if (Object.keys(errors).length === 0) return errors

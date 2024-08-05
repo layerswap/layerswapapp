@@ -24,6 +24,8 @@ import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
+import useValidationStore from "../../validationError/validationErrorStore";
+import ValidationError from "../../validationError";
 import { ImtblPassportProvider } from "../../ImtblPassportProvider";
 
 type Props = {
@@ -58,6 +60,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const { minAllowedAmount, valuesChanger } = useFee()
     const toAsset = values.toCurrency
     const fromAsset = values.fromCurrency
+
+    const { message } = useValidationStore();
 
     const layerswapApiClient = new LayerSwapApiClient()
     const query = useQueryState();
@@ -179,11 +183,35 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                 : <></>
                         }
                         <div className="w-full">
-                            <FeeDetailsComponent values={values} />
-                            {
-                                values.amount &&
-                                <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                            {message ?
+                                <ValidationError />
+                                :
+                                <FeeDetailsComponent values={values} />
                             }
+                            {
+                                (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
+                                    <div className="mb-6 leading-4">
+                                        <ResizablePanel>
+                                            <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
+                                        </ResizablePanel>
+                                    </div>
+                                    : <></>
+                            }
+                            <div className="mb-6 leading-4">
+                                <AmountField />
+                            </div>
+                            {
+                                !hideAddress ?
+                                    <Address partner={partner} />
+                                    : <></>
+                            }
+                            <div className="w-full">
+                                <FeeDetailsComponent values={values} />
+                                {
+                                    values.amount &&
+                                    <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                                }
+                            </div>
                         </div>
                     </Widget.Content>
                     <Widget.Footer>
