@@ -47,6 +47,19 @@ const Commitment: FC<ContainerProps> = (props) => {
     const wallet = source_provider?.getConnectedWallet()
     const receiveAmount = fee?.quote?.receive_amount
 
+    const handleGetCommits = async () => {
+        if(!source_provider) return
+        if(!source_network?.chain_id) return
+        if(!source_network?.metadata.htlc_contract) return
+
+        const commits = await source_provider?.getCommits(
+            {
+                chainId: source_network?.chain_id,
+                contractAddress: source_network?.metadata.htlc_contract as `0x${string}`,
+            }
+        )
+    }
+
     return (
         <>
             <Widget.Content>

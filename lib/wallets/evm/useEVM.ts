@@ -18,6 +18,7 @@ export default function useEVM(): WalletProvider {
     const [shouldConnect, setShouldConnect] = useState(false)
     const { disconnectAsync } = useDisconnect()
     const config = useConfig()
+
     const asSourceSupportedNetworks = [
         ...networks.filter(network => network.type === NetworkType.EVM && network.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
@@ -98,7 +99,7 @@ export default function useEVM(): WalletProvider {
     const messanger = "0x39c58617d355d8B432a3675714b93eC840872236"
 
     const createPreHTLC = async (params: CreatyePreHTLCParams) => {
-        const { destinationChain, sourceChain, destinationAsset, sourceAsset, lpAddress, address, amount, decimals, atomicContrcat, chainId } = params
+        const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, amount, decimals, atomicContrcat, chainId } = params
         if (!account.address) {
             throw Error("Wallet not connected")
         }
@@ -178,9 +179,9 @@ export default function useEVM(): WalletProvider {
             args: [commitId],
             chainId: Number(chainId),
         })
-        if (!result) {
-            throw new Error("No result")
-        }
+
+        if (!result || result === '0x0000000000000000000000000000000000000000000000000000000000000000') return null
+
         return result as `0x${string}`
     }
 
@@ -234,7 +235,21 @@ export default function useEVM(): WalletProvider {
         return result
     }
     const getCommits = async (params: GetCommitsParams) => {
-        throw new Error('Not implemented')
+        const { chainId, contractAddress } = params
+        if (!account.address) {
+            throw Error("Wallet not connected")
+        }
+        const result = await readContract(config, {
+            abi: PHTLCAbi,
+            address: contractAddress,
+            functionName: 'getCommits',
+            args: [account.address],
+            chainId: Number(chainId),
+        })
+        if (!result) {
+            throw new Error("No result")
+        }
+        return (result as string[]).reverse()
     }
 
     return {
@@ -246,7 +261,6 @@ export default function useEVM(): WalletProvider {
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
         name,
-
 
         getLockIdByCommitId,
         getCommitment,

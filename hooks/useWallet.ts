@@ -7,7 +7,6 @@ import { Network, RouteNetwork } from "../Models/Network"
 import { CreatyePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams } from "../lib/wallets/phtlc"
 import { AssetLock, Commit } from "../Models/PHTLC"
 
-
 export type WalletProvider = {
     connectWallet: (chain?: string | number | undefined | null, destination?: RouteNetwork) => Promise<void> | undefined | void,
     disconnectWallet: () => Promise<void> | undefined | void,
@@ -17,6 +16,7 @@ export type WalletProvider = {
     autofillSupportedNetworks?: string[],
     asSourceSupportedNetworks?: string[],
     name: string,
+    connectedWalletActiveChain?: string | number | null,
 
     createPreHTLC: (args: CreatyePreHTLCParams) => Promise<{ hash: `0x${string}`, commitId: string }>,
     convertToHTLC: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
@@ -28,9 +28,9 @@ export type WalletProvider = {
     getLock: (args: LockParams) => Promise<AssetLock>,
 
     lockCommitment: (args: CommitmentParams & LockParams) => Promise<{ hash: `0x${string}`, result: any }>,
-    getLockIdByCommitId: (args: CommitmentParams) => Promise<string>,
+    getLockIdByCommitId: (args: CommitmentParams) => Promise<string | null>,
 
-    getCommits(params: GetCommitsParams): Promise<Commit[]>,
+    getCommits(params: GetCommitsParams): Promise<string[]>,
 }
 
 export default function useWallet() {
@@ -90,6 +90,11 @@ export default function useWallet() {
         return connectedWallets
     }
 
+    const getProviderByName = (providerName: string) => {
+        const provider = WalletProviders.find(provider => provider.name === providerName)
+        return provider
+    }
+
     const getWithdrawalProvider = (network: Network) => {
         const provider = WalletProviders.find(provider => provider.withdrawalSupportedNetworks.includes(network.name))
         return provider
@@ -112,6 +117,7 @@ export default function useWallet() {
         reconnectWallet: handleReconnect,
         getWithdrawalProvider,
         getAutofillProvider,
-        getSourceProvider
+        getSourceProvider,
+        getProviderByName
     }
 }
