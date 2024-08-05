@@ -71,18 +71,22 @@ function CommittmentsHistory() {
 
             if (destination_network && destination_provider && destination_network.chain_id) {
 
-                const destinationLockId = destination_network && destination_provider && await destination_provider.getLockIdByCommitId({
-                    chainId: destination_network.chain_id,
-                    commitId: commitIds[i].toString(),
-                    contractAddress: destination_network.metadata.htlc_contract as `0x${string}`
-                })
-
-                if (destinationLockId) {
-                    destinationLock = destination_network && destination_provider && await destination_provider.getLock({
-                        lockId: destinationLockId,
+                try {
+                    const destinationLockId = await destination_provider.getLockIdByCommitId({
                         chainId: destination_network.chain_id,
+                        commitId: commitIds[i].toString(),
                         contractAddress: destination_network.metadata.htlc_contract as `0x${string}`
                     })
+
+                    if (destinationLockId) {
+                        destinationLock = await destination_provider.getLock({
+                            lockId: destinationLockId,
+                            chainId: destination_network.chain_id,
+                            contractAddress: destination_network.metadata.htlc_contract as `0x${string}`
+                        })
+                    }
+                } catch (e) {
+                    console.log(e)
                 }
             }
 
@@ -108,14 +112,14 @@ function CommittmentsHistory() {
     useEffect(() => {
         (async () => {
             if (wallets.length === 0 || !activeNetwork?.metadata.htlc_contract || !activeNetwork.chain_id) return
-
+            setPage(0)
             setIsLastPage(false)
             setLoading(true)
 
             const commIds = await source_provider?.getCommits({ contractAddress: activeNetwork?.metadata.htlc_contract as `0x${string}`, chainId: activeNetwork.chain_id })
             if (commIds) setCommitIds(commIds)
 
-            const commits = commIds && await getCommitments(page, commIds)
+            const commits = commIds && await getCommitments(0, commIds)
             if (commits) setCommitments(commits)
 
             setPage(1)
@@ -306,8 +310,8 @@ function CommittmentsHistory() {
                         <Modal height="fit" show={openSwapDetailsModal} setShow={setOpenSwapDetailsModal} header="Swap details" modalId="swapHistory">
                             <div className="mt-2">
                                 {
-                                    selectedCommit && selectedWallet &&
-                                    <CommitDetails commit={selectedCommit} selectedWallet={selectedWallet} />
+                                    selectedCommit && selectedWallet && activeNetwork &&
+                                    <CommitDetails commit={selectedCommit} source_network={activeNetwork} />
                                 }
                             </div>
                         </Modal>

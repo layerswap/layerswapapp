@@ -2,36 +2,29 @@ import { FC } from 'react'
 import Image from 'next/image'
 import CopyButton from '../../buttons/copyButton';
 import shortenAddress from '../../utils/ShortenAddress';
-import { Commit } from '../../../Models/PHTLC';
 import { useSettingsState } from '../../../context/settings';
-import { Wallet } from '../../../stores/walletStore';
 import formatAmount from '../../../lib/formatAmount';
 import SubmitButton from '../../buttons/submitButton';
 import { useRouter } from 'next/router';
 import { Eye } from 'lucide-react';
 import StatusIcon from './StatusIcons';
 import { HistoryCommit } from '.';
+import { NetworkWithTokens } from '../../../Models/Network';
 
 type Props = {
     commit: HistoryCommit,
-    selectedWallet: Wallet
+    source_network: NetworkWithTokens
 }
 
-const CommitDetails: FC<Props> = ({ commit, selectedWallet }) => {
+const CommitDetails: FC<Props> = ({ commit, source_network }) => {
     const router = useRouter()
 
-    const { amount, dstAddress, dstAsset, dstChain, locked, messenger, sender, srcAsset, srcReceiver, timelock, uncommitted, id } = commit
+    const { amount, dstAddress, dstAsset, dstChain, srcAsset, id } = commit
 
     const { networks } = useSettingsState()
-
-    const source_network = networks.find(n => n.chain_id == selectedWallet.chainId)
     const source_token = source_network?.tokens.find(t => t.symbol === srcAsset)
 
     const destination_network = networks.find(n => n.name.toUpperCase() === dstChain.toUpperCase())
-    const destination_token = destination_network?.tokens.find(t => t.symbol === dstAsset)
-
-    const input_tx_explorer_template = source_network?.transaction_explorer_template
-    const output_tx_explorer_template = destination_network?.transaction_explorer_template
 
     return (
         <>
@@ -114,38 +107,6 @@ const CommitDetails: FC<Props> = ({ commit, selectedWallet }) => {
                                 </div>
                             </span>
                         </div>
-                        {/* {swapInputTransaction?.transaction_hash &&
-                            <>
-                                <hr className='horizontal-gradient' />
-                                <div className="flex justify-between items-baseline">
-                                    <span className="text-left">Source Tx </span>
-                                    <span className="text-primary-text">
-                                        <div className='inline-flex items-center'>
-                                            <div className='underline hover:no-underline flex items-center space-x-1'>
-                                                <a target={"_blank"} href={input_tx_explorer_template?.replace("{0}", swapInputTransaction.transaction_hash)}>{shortenAddress(swapInputTransaction.transaction_hash)}</a>
-                                                <ExternalLink className='h-4' />
-                                            </div>
-                                        </div>
-                                    </span>
-                                </div>
-                            </>
-                        }
-                        {swapOutputTransaction?.transaction_hash &&
-                            <>
-                                <hr className='horizontal-gradient' />
-                                <div className="flex justify-between items-baseline">
-                                    <span className="text-left">Destination Tx </span>
-                                    <span className="text-primary-text">
-                                        <div className='inline-flex items-center'>
-                                            <div className='underline hover:no-underline flex items-center space-x-1'>
-                                                <a target={"_blank"} href={output_tx_explorer_template?.replace("{0}", swapOutputTransaction.transaction_hash)}>{shortenAddress(swapOutputTransaction.transaction_hash)}</a>
-                                                <ExternalLink className='h-4' />
-                                            </div>
-                                        </div>
-                                    </span>
-                                </div>
-                            </>
-                        } */}
                         <hr className='horizontal-gradient' />
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Committed amount</span>
@@ -153,40 +114,6 @@ const CommitDetails: FC<Props> = ({ commit, selectedWallet }) => {
                                 {source_token && formatAmount(amount, source_token?.decimals)} {source_token?.symbol}
                             </span>
                         </div>
-                        {/* {
-                            swapInputTransaction &&
-                            <>
-                                <hr className='horizontal-gradient' />
-                                <div className="flex justify-between items-baseline">
-                                    <span className="text-left">Transfered amount</span>
-                                    <span className='text-primary-text font-normal flex'>
-                                        {swapInputTransaction?.amount} {source_token?.symbol}
-                                    </span>
-                                </div>
-                            </>
-                        }
-                        {
-                            swapOutputTransaction &&
-                            <>
-                                <hr className='horizontal-gradient' />
-                                <div className="flex justify-between items-baseline">
-                                    <span className="text-left">Layerswap Fee </span>
-                                    <span className='text-primary-text font-normal'>{swapData?.quote.total_fee} {source_token?.symbol}</span>
-                                </div>
-                            </>
-                        }
-                        {
-                            swapOutputTransaction &&
-                            <>
-                                <hr className='horizontal-gradient' />
-                                <div className="flex justify-between items-baseline">
-                                    <span className="text-left">Amount You Received</span>
-                                    <span className='text-primary-text font-normal flex'>
-                                        {swapOutputTransaction?.amount} {destination_token?.symbol}
-                                    </span>
-                                </div>
-                            </>
-                        } */}
                     </div>
                 </div>
             </div>

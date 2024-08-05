@@ -326,6 +326,7 @@ export default function useStarknet(): WalletProvider {
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
+        connectedWalletActiveChain: wallet?.chainId,
 
         createPreHTLC,
         convertToHTLC,
