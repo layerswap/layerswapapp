@@ -62,24 +62,28 @@ export function AtomicProvider({ children }) {
     const destination_token = destination_network?.tokens.find(t => t.symbol === destination_asset)
 
     useEffect(() => {
-        if (!committment || isTimelockExpired) return
-
+        let timer: NodeJS.Timeout;
+        if (!committment || isTimelockExpired || (committment.locked && !destinationLock)) return
         const time = (Number(committment.timelock) * 1000) - Date.now()
 
-        if (time < 0) {
-            setIsTimelockExpired(true)
-            return
-        }
-        const timer = setInterval(() => {
-            if (!isTimelockExpired) {
+
+        if (!committment.locked || (destinationLock && !destinationLock.redeemed)) {
+            if (time < 0) {
                 setIsTimelockExpired(true)
-                clearInterval(timer)
+                return
             }
-        }, time);
+            timer = setInterval(() => {
+                if (!isTimelockExpired) {
+                    setIsTimelockExpired(true)
+                    clearInterval(timer)
+                }
+            }, time);
 
-        return () => clearInterval(timer)
+        }
 
-    }, [committment])
+        return () => timer && clearInterval(timer)
+
+    }, [committment, destinationLock])
 
     const handleCommited = (commitId: string) => {
         setCommitId(commitId)
