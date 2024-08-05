@@ -285,6 +285,9 @@ export default function useStarknet(): WalletProvider {
             })
         )
         const result = await atomicContract.functions.getLockIdByCommitId(commitId)
+
+        if (!result || result === '0x00') return null
+
         const hexedResult = ethers.utils.hexlify(result)
 
         return hexedResult

@@ -99,7 +99,7 @@ export default function useEVM(): WalletProvider {
     const messanger = "0x39c58617d355d8B432a3675714b93eC840872236"
 
     const createPreHTLC = async (params: CreatyePreHTLCParams) => {
-        const { destinationChain, sourceChain, destinationAsset, sourceAsset, lpAddress, address, amount, decimals, atomicContrcat, chainId } = params
+        const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, amount, decimals, atomicContrcat, chainId } = params
         if (!account.address) {
             throw Error("Wallet not connected")
         }
@@ -179,9 +179,9 @@ export default function useEVM(): WalletProvider {
             args: [commitId],
             chainId: Number(chainId),
         })
-        if (!result) {
-            throw new Error("No result")
-        }
+
+        if (!result || result === '0x0000000000000000000000000000000000000000000000000000000000000000') return null
+
         return result as `0x${string}`
     }
 

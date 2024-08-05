@@ -109,7 +109,7 @@ const SwapDetails: FC<Props> = (props) => {
                     commitId: commitId as string,
                     contractAddress: destination_network.metadata.htlc_contract as `0x${string}`
                 })
-                if (destinationLockId && destinationLockId != '0x0000000000000000000000000000000000000000000000000000000000000000') {
+                if (destinationLockId) {
                     setHashLock(destinationLockId)
                     const data = await destination_provider.getLock({
                         chainId: destination_network.chain_id,

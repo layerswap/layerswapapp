@@ -9,9 +9,11 @@ import formatAmount from '../../../lib/formatAmount';
 import SubmitButton from '../../buttons/submitButton';
 import { useRouter } from 'next/router';
 import { Eye } from 'lucide-react';
+import StatusIcon from './StatusIcons';
+import { HistoryCommit } from '.';
 
 type Props = {
-    commit: Commit & { id: string },
+    commit: HistoryCommit,
     selectedWallet: Wallet
 }
 
@@ -50,7 +52,7 @@ const CommitDetails: FC<Props> = ({ commit, selectedWallet }) => {
                         <div className="flex justify-between p items-baseline">
                             <span className="text-left">Status </span>
                             <span className="text-primary-text">
-                                {/* {swap && <StatusIcon swap={swap} />} */}
+                                {commit && <StatusIcon commit={commit} />}
                             </span>
                         </div>
                         <hr className='horizontal-gradient' />
