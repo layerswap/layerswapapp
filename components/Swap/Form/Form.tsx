@@ -189,29 +189,9 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                 <FeeDetailsComponent values={values} />
                             }
                             {
-                                (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
-                                    <div className="mb-6 leading-4">
-                                        <ResizablePanel>
-                                            <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
-                                        </ResizablePanel>
-                                    </div>
-                                    : <></>
+                                values.amount &&
+                                <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
                             }
-                            <div className="mb-6 leading-4">
-                                <AmountField />
-                            </div>
-                            {
-                                !hideAddress ?
-                                    <Address partner={partner} />
-                                    : <></>
-                            }
-                            <div className="w-full">
-                                <FeeDetailsComponent values={values} />
-                                {
-                                    values.amount &&
-                                    <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
-                                }
-                            </div>
                         </div>
                     </Widget.Content>
                     <Widget.Footer>
