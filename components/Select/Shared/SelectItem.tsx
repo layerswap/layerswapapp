@@ -6,7 +6,7 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
 
     return (<div className={`${isDisabled ? "opacity-50" : ""} flex items-center justify-between gap-4 w-full overflow-hidden`}>
         <div className="relative flex items-center gap-4 pl-4">
-            {item.icon && !isDisabled && item.icon}
+            {!isDisabled && item.icon}
             <div className="flex-shrink-0 h-6 w-6 relative">
                 {item.imgSrc && <Image
                     src={item.imgSrc}
