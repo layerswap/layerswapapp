@@ -18,7 +18,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { argentWallet, bitgetWallet, coinbaseWallet, metaMaskWallet, phantomWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
-import { arbitrum, arbitrumSepolia, lineaSepolia, mainnet, optimism, optimismSepolia, sepolia, zoraSepolia, baseSepolia, blastSepolia, zkSyncSepoliaTestnet, taikoTestnetSepolia, scrollSepolia, mantleSepoliaTestnet, taikoHekla } from 'viem/chains';
+import { arbitrum, arbitrumSepolia, immutableZkEvmTestnet, lineaSepolia, mainnet, optimism, optimismSepolia, sepolia, zoraSepolia, baseSepolia, blastSepolia, zkSyncSepoliaTestnet, taikoTestnetSepolia, scrollSepolia, mantleSepoliaTestnet, taikoHekla } from 'viem/chains';
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -63,7 +63,7 @@ const connectors = connectorsForWallets(
 
 const config = createConfig({
     connectors,
-    chains: [sepolia, mainnet, optimism, optimismSepolia, arbitrumSepolia, arbitrum, lineaSepolia, zoraSepolia, baseSepolia, blastSepolia, zkSyncSepoliaTestnet, taikoTestnetSepolia, scrollSepolia, mantleSepoliaTestnet, taikoHekla],
+    chains: [sepolia, mainnet, optimism, optimismSepolia, arbitrumSepolia, arbitrum, lineaSepolia, zoraSepolia, baseSepolia, blastSepolia, zkSyncSepoliaTestnet, taikoTestnetSepolia, scrollSepolia, mantleSepoliaTestnet, taikoHekla, immutableZkEvmTestnet],
     transports: {
         [sepolia.id]: http("https://eth-sepolia.public.blastapi.io"),
         [mainnet.id]: http(),
@@ -80,6 +80,7 @@ const config = createConfig({
         [scrollSepolia.id]: http(),
         [mantleSepoliaTestnet.id]: http(),
         [taikoHekla.id]: http(),
+        [immutableZkEvmTestnet.id]: http(),
     },
     ssr: true,
 });
