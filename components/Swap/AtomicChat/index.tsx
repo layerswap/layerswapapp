@@ -8,7 +8,6 @@ import ConnectedWallet from "./ConnectedWallet";
 import { ActionsWithProgressbar, ResolveMessages } from "./Resolver";
 import { useAtomicState } from "../../../context/atomicContext";
 import ResizablePanel from "../../ResizablePanel";
-import TimelockTimer from "./TimelockTimer";
 
 type ContainerProps = {
     type: "widget" | "contained",
@@ -26,7 +25,7 @@ const Commitment: FC<ContainerProps> = (props) => {
     const { getWithdrawalProvider } = useWallet()
     const { fee, valuesChanger } = useFee()
 
-    const { commitId, committment } = useAtomicState()
+    const { commitId, committment, sourceLock } = useAtomicState()
 
     const source_network = networks.find(n => n.name.toUpperCase() === source.toUpperCase())
     const destination_network = networks.find(n => n.name.toUpperCase() === destination.toUpperCase())
@@ -81,10 +80,6 @@ const Commitment: FC<ContainerProps> = (props) => {
                                 />
                             }
                             {
-                                committment?.timelock && Number(committment.timelock) - (Date.now() / 1000) > 0 &&
-                                <TimelockTimer timelock={Number(committment.timelock) - (Date.now() / 1000)} />
-                            }
-                            {
                                 !commitId && <ConnectedWallet
                                     source_network={source_network}
                                     source_token={source_token}
@@ -97,13 +92,11 @@ const Commitment: FC<ContainerProps> = (props) => {
                     </div>
                 </ResizablePanel>
             </Widget.Content>
-            {
-                <Widget.Footer sticky={true}>
-                    <div>
-                        <ActionsWithProgressbar />
-                    </div>
-                </Widget.Footer>
-            }
+            <Widget.Footer sticky={true}>
+                <div>
+                    <ActionsWithProgressbar />
+                </div>
+            </Widget.Footer>
         </>
     )
 }

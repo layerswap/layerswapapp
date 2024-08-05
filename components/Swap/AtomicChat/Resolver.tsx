@@ -15,6 +15,7 @@ import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { CommitFromApi } from "../../../lib/layerSwapApiClient";
 import formatAmount from "../../../lib/formatAmount";
+import TimelockTimer from "./TimelockTimer";
 
 export enum Progress {
     Commit = 'commit',
@@ -331,7 +332,7 @@ const ResolveAction: FC = () => {
 
 
 export const ActionsWithProgressbar: FC = () => {
-    const { committment, destinationLock, isTimelockExpired } = useAtomicState()
+    const { committment, destinationLock, isTimelockExpired, sourceLock } = useAtomicState()
 
     let currentStep = 1
     let actiontext = 'Commit'
@@ -358,17 +359,23 @@ export const ActionsWithProgressbar: FC = () => {
     return <div className="space-y-4">
         {
             showSteps &&
-            <div className="space-y-1 relative">
-                {
-                    allDone ?
-                        <div className="text-secondary-text text-xs">
-                            Completed
-                        </div>
-                        :
-                        <div className="text-secondary-text text-xs">
-                            <>Step </> <>{currentStep}</><>/2 - </><>{actiontext}</>
-                        </div>
-                }
+            <div className="space-y-1.5 relative">
+                <div className="flex w-full justify-between items-center">
+                    {
+                        allDone ?
+                            <div className="text-secondary-text text-xs">
+                                Completed
+                            </div>
+                            :
+                            <div className="text-secondary-text text-xs w-full">
+                                <>Step </> <>{currentStep}</><>/2 - </><>{actiontext}</>
+                            </div>
+                    }
+                    {
+                        committment?.timelock && Number(committment.timelock) - (Date.now() / 1000) > 0 && !sourceLock?.redeemed &&
+                        <TimelockTimer timelock={Number(committment.timelock) - (Date.now() / 1000)} />
+                    }
+                </div>
                 <div className="flex space-x-1">
                     <div className="w-full relative">
                         <div className="h-1 w-full bg-secondary-600 rounded-md"></div>
