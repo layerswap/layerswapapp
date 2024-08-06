@@ -134,7 +134,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             }
             setFieldValue(name, value)
         }
-    }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
+    }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading, validationErrorMessage])
 
     useEffect(() => {
         if (name === "fromCurrency" && fromCurrency && !isLoading && routes) {
@@ -149,7 +149,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             }
             setFieldValue(name, value)
         }
-    }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
+    }, [toCurrency, currencyGroup, name, from, routes, error, isLoading, validationErrorMessage])
 
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken>) => {
@@ -201,7 +201,7 @@ function GenerateCurrencyMenuItems(
                 (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
                 !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive')
             );
-
+            
         const showRouteIcon = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) || lockAsset;
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
