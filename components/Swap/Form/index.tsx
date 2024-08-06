@@ -34,7 +34,6 @@ import AddressNote from "../../Input/Address/AddressNote";
 import { addressFormat } from "../../../lib/address/formatter";
 import { useAddressesStore } from "../../../stores/addressesStore";
 import { AddressGroup } from "../../Input/Address/AddressPicker";
-import useValidationErrorStore from "../../validationError/validationErrorStore";
 import { useAsyncModal } from "../../../context/asyncModal";
 
 type NetworkToConnect = {
@@ -63,7 +62,6 @@ export default function Form() {
     const { updateAuthData, setUserType } = useAuthDataUpdate()
     const { getSourceProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
-    const { message: validationErrorMessage } = useValidationErrorStore()
     const { getConfirmation } = useAsyncModal();
 
     const settings = useSettingsState();
@@ -207,7 +205,7 @@ export default function Form() {
             innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
-            validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount, validationErrorMessage })}
+            validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
         >
             <SwapForm partner={partner} />
