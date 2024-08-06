@@ -22,7 +22,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const { to, fromCurrency, toCurrency, from, currencyGroup, toExchange, fromExchange } = values
-    const { setValidationMessage, clearValidationMessage } = useValidationErrorStore();
+    const { setValidationMessage, clearValidationMessage, message } = useValidationErrorStore();
 
     const name = 'currencyGroup'
     const query = useQueryState()
@@ -59,7 +59,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         } else {
             clearValidationMessage()
         }
-    }, [currencyGroup])
+    }, [currencyGroup, message])
 
     useEffect(() => {
         if (value) return
