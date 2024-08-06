@@ -2,7 +2,7 @@ import { create } from 'zustand'
 
 interface EVMAddressesState {
     EVMAddresses: EVMAddresses[];
-    setEVMAddresses: (addresses: EVMAddresses[]) => void;
+    addEVMAddresses: (addressItem: EVMAddresses | undefined) => void;
 }
 
 export type EVMAddresses = {
@@ -12,7 +12,10 @@ export type EVMAddresses = {
 
 export const useEVMAddressesStore = create<EVMAddressesState>()((set) => ({
     EVMAddresses: [],
-    setEVMAddresses: (addresses) => set({
-        EVMAddresses: addresses
-    })
+    addEVMAddresses: (addressItem) => set((state) => ({
+        EVMAddresses: [
+            ...state.EVMAddresses.filter((item) => item.connectorName !== addressItem?.connectorName),
+            ...(addressItem ? [addressItem] : [])
+        ]
+    }))
 }))

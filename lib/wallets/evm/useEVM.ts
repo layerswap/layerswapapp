@@ -6,10 +6,10 @@ import { NewWalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useWalletModal } from "../../../context/walletModalContext"
 import { Wallet } from "../../../stores/walletStore"
-import { useEVMAddressesStore } from "../../../stores/evmAddressesStore"
+import { EVMAddresses, useEVMAddressesStore } from "../../../stores/evmAddressesStore"
 
 export default function useEVM(): NewWalletProvider & { availableWalletsforConnect: Connector[] } {
     const name = 'EVM'
@@ -40,38 +40,49 @@ export default function useEVM(): NewWalletProvider & { availableWalletsforConne
     const { openConnectModal } = useConnectModal()
     const { setWalletModalIsOpen } = useWalletModal()
     const { disconnectAsync } = useDisconnect()
-    const { connectors: connectedWallets } = useSwitchAccount()
+    const { connectors: connectedWallets, switchAccount } = useSwitchAccount({ mutation: { onSuccess: () => { console.log("success") } } })
     const activeAccount = useAccount()
     const allConnectors = useConnectors()
-
+    
     const uniqueConnectors = connectedWallets.filter((value, index, array) => array.findIndex(a => a.name.toLowerCase() === value.name.toLowerCase()) === index)
 
     const EVMAddresses = useEVMAddressesStore((state) => state.EVMAddresses)
-    const setAddresses = useEVMAddressesStore((state) => state.setEVMAddresses)
+    const addEVMAddresses = useEVMAddressesStore((state) => state.addEVMAddresses)
     const [isLoading, setIsLoading] = useState(false)
+    const [fetchAddresses, setFetchAddresses] = useState(false)
+    const lastUniqueConnectors = useRef<Connector[] | null>(null)
 
     useEffect(() => {
-
-        if (EVMAddresses) return
+        if (!fetchAddresses || isLoading || (uniqueConnectors && lastUniqueConnectors.current && uniqueConnectors.toString() === lastUniqueConnectors.current.toString())) return
 
         setIsLoading(true)
 
-        let addresses: { connectorName: string, addresses: string[] }[] = []
-
-        uniqueConnectors.forEach(async (connector) => {
-            const res = connector.getAccounts && await connector.getAccounts()
-            addresses.push({ connectorName: connector.name, addresses: res as string[] || [] })
+        uniqueConnectors.forEach(async connector => {
+            if (connector.name.toLowerCase() === activeAccount?.connector?.name.toLowerCase()) {
+                const item: EVMAddresses = { connectorName: connector.name, addresses: [...activeAccount?.addresses || []] }
+                addEVMAddresses(item)
+            } else {
+                const res = connector.getAccounts && await connector.getAccounts()
+                if (res && res.length > 0) {
+                    const item = { connectorName: connector.name, addresses: res as string[] }
+                    addEVMAddresses(item)
+                }
+            }
+                  
         })
+  
+        lastUniqueConnectors.current = uniqueConnectors
 
-        setAddresses(addresses)
         setIsLoading(false)
-    }, [])
+        setFetchAddresses(false)
+    }, [uniqueConnectors])
 
     const getConnectedWallets = useCallback(() => {
 
         let wallets: Wallet[] = []
 
         if (uniqueConnectors) {
+            if (!fetchAddresses) setFetchAddresses(true)
 
             for (let i = 0; i < uniqueConnectors.length; i++) {
 
@@ -80,7 +91,7 @@ export default function useEVM(): NewWalletProvider & { availableWalletsforConne
 
                 const activeAddress = activeAccount?.address
 
-                const addresses = EVMAddresses.find(w => w.connectorName === account.name)?.addresses
+                const addresses = EVMAddresses?.find(w => w.connectorName.toLowerCase() === account.name.toLowerCase())?.addresses
 
                 let wallet: Wallet = {
                     isActive: accountIsActive,
@@ -93,7 +104,7 @@ export default function useEVM(): NewWalletProvider & { availableWalletsforConne
                     connect: connectWallet,
                     disconnect: () => disconnectWallet(account.name)
                 }
-
+                
                 wallets.push(wallet)
             }
         }
@@ -122,6 +133,7 @@ export default function useEVM(): NewWalletProvider & { availableWalletsforConne
             await disconnectAsync({
                 connector: connector
             })
+            addEVMAddresses(undefined)
         }
         catch (e) {
             console.log(e)
