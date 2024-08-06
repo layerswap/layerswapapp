@@ -111,6 +111,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         if (item.isExchange) {
             setFieldValue(`${name}Exchange`, item.baseObject, true)
         } else {
+            setFieldValue(`${name}Exchange`, null)
             setFieldValue(name, item.baseObject, true)
             const currency = name == "from" ? fromCurrency : toCurrency
             const assetSubstitute = (item.baseObject as RouteNetwork)?.tokens?.find(a => a.symbol === currency?.symbol)
