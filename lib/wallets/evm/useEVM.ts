@@ -110,7 +110,7 @@ export default function useEVM(): WalletProvider {
             throw Error("No LP address")
         }
         if (!atomicContrcat) {
-            throw Error("No conteract address")
+            throw Error("No contract address")
         }
         const timeLockMS = Date.now() + LOCK_TIME
         const timeLock = Math.floor(timeLockMS / 1000)

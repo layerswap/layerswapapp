@@ -53,5 +53,6 @@ export class Metadata {
     evm_multicall_contract?: string | null;
     listing_date: string;
     htlc_contract: string;
+    htlc_erc20_contract: string;
     lp_address: string;
 }
