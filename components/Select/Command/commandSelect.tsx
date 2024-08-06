@@ -22,7 +22,6 @@ export interface CommandSelectProps extends SelectProps {
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
     isLoading: boolean;
     modalHeight?: LeafletHeight;
-    modalContent?: React.ReactNode;
 }
 
 export class SelectMenuItemGroup {
@@ -34,7 +33,7 @@ export class SelectMenuItemGroup {
     items: ISelectMenuItem[];
 }
 
-export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading, modalHeight = 'full', modalContent }: CommandSelectProps) {
+export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading, modalHeight = 'full' }: CommandSelectProps) {
     const { isDesktop } = useWindowDimensions();
 
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
@@ -48,7 +47,6 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
             {show ?
                 <CommandWrapper>
                     {searchHint && <CommandInput autoFocus={isDesktop} placeholder={searchHint} />}
-                    {modalContent}
                     {!isLoading ?
                         <CommandList>
                             <CommandEmpty>No results found.</CommandEmpty>

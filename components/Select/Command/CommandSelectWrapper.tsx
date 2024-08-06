@@ -17,7 +17,6 @@ type CommandSelectWrapperProps = {
     modalHeight?: LeafletHeight;
     valueDetails?: React.ReactNode;
     exchangeDetails?: React.ReactNode;
-    modalContent?: React.ReactNode;
     direction?: string;
 }
 
@@ -31,8 +30,7 @@ export default function CommandSelectWrapper<T>({
     valueGrouper,
     isLoading,
     modalHeight,
-    valueDetails,
-    modalContent,
+    valueDetails
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -95,7 +93,6 @@ export default function CommandSelectWrapper<T>({
                 values={values}
                 isLoading={isLoading}
                 modalHeight={modalHeight}
-                modalContent={modalContent}
             />
         </>
     )
