@@ -46,7 +46,7 @@ function CommittmentsHistory() {
     const router = useRouter();
     const { wallets, getWithdrawalProvider, getProviderByName } = useWallet()
 
-    const [selectedProvider, setSelectedProvider] = useState<string | undefined>(wallets?.[0].connector)
+    const [selectedProvider, setSelectedProvider] = useState<string | undefined>(wallets?.[0]?.connector)
     const [commitments, setCommitments] = useState<(HistoryCommit)[]>([])
 
     const selectedWallet = wallets.find(wallet => wallet.connector === selectedProvider)
@@ -145,7 +145,7 @@ function CommittmentsHistory() {
 
     useEffect(() => {
         if (!selectedWallet) {
-            setSelectedProvider(wallets?.[0].connector)
+            setSelectedProvider(wallets?.[0]?.connector)
         }
     }, [wallets])
 
