@@ -4,12 +4,12 @@ import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
 
 export const RedeemAction: FC = () => {
-    const { source_network, committment, hashLock, setSourceLock } = useAtomicState()
+    const { source_network, committment, hashLock, setSourceLock, source_asset } = useAtomicState()
 
     const { getWithdrawalProvider } = useWallet()
 
     const dsource_provider = source_network && getWithdrawalProvider(source_network)
-    const contract = source_network?.metadata.htlc_contract
+    const contract = source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract
 
     useEffect(() => {
         let commitHandler: any = undefined

@@ -13,6 +13,8 @@ export const UserCommitAction: FC = () => {
     const wallet = source_provider?.getConnectedWallet()
     const requestingCommit = useRef(false)
 
+    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract)) as `0x${string}`
+
     const handleCommit = async () => {
         try {
             if (!amount) {
@@ -51,7 +53,7 @@ export const UserCommitAction: FC = () => {
                 lpAddress: source_network.metadata.lp_address,
                 tokenContractAddress: source_asset.contract as `0x${string}`,
                 decimals: source_asset.decimals,
-                atomicContrcat: (source_asset.contract ? source_network.metadata.htlc_erc20_contract : (source_asset?.contract ? source_network.metadata.htlc_erc20_contract : source_network.metadata.htlc_contract)) as `0x${string}`,
+                atomicContrcat: atomicContract,
                 chainId: source_network.chain_id,
             })
             onCommit(commitId)
@@ -74,7 +76,7 @@ export const UserCommitAction: FC = () => {
                     const data = await source_provider.getCommitment({
                         chainId: source_network.chain_id,
                         commitId: commitId,
-                        contractAddress: (source_asset?.contract ? source_network.metadata.htlc_erc20_contract : source_network.metadata.htlc_contract) as `0x${string}`
+                        contractAddress: atomicContract
                     })
                     if (data && data.sender != '0x0000000000000000000000000000000000000000') {
                         setCommitment(data)
@@ -118,6 +120,8 @@ export const UserLockAction: FC = () => {
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const wallet = source_provider?.getConnectedWallet()
 
+    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract)) as `0x${string}`
+
     const handleLockAssets = async () => {
         try {
             if (!source_network?.chain_id)
@@ -131,7 +135,7 @@ export const UserLockAction: FC = () => {
                 chainId: source_network.chain_id,
                 commitId: commitId as string,
                 lockId: hashLock,
-                contractAddress: (source_asset?.contract ? source_network.metadata.htlc_erc20_contract : source_network.metadata.htlc_contract) as `0x${string}`
+                contractAddress: atomicContract
             })
             setUserLocked(true)
         }
@@ -155,7 +159,7 @@ export const UserLockAction: FC = () => {
                     const data = await source_provider.getCommitment({
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
-                        contractAddress: (source_asset?.contract ? source_network.metadata.htlc_erc20_contract : source_network.metadata.htlc_contract) as `0x${string}`
+                        contractAddress: atomicContract
                     })
                     if (data?.locked) {
                         setCommitment(data)
@@ -197,6 +201,8 @@ export const UserRefundAction: FC = () => {
 
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const wallet = source_provider?.getConnectedWallet()
+    
+    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract)) as `0x${string}`
 
     const handleRefundAssets = async () => {
         try {
@@ -207,7 +213,7 @@ export const UserRefundAction: FC = () => {
                 commitId: commitId,
                 lockId: sourceLock?.hashlock,
                 chainId: source_network.chain_id ?? '',
-                contractAddress: (source_asset?.contract ? source_network.metadata.htlc_erc20_contract : source_network.metadata.htlc_contract) as `0x${string}`
+                contractAddress: atomicContract
             })
             setCompletedRefundHash(res)
             setRequestedRefund(true)
@@ -230,7 +236,7 @@ export const UserRefundAction: FC = () => {
                     const data = await source_provider.getCommitment({
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
-                        contractAddress: (source_asset?.contract ? source_network.metadata.htlc_erc20_contract : source_network.metadata.htlc_contract) as `0x${string}`
+                        contractAddress: atomicContract
                     })
                     if (data?.uncommitted) {
                         setCommitment(data)
@@ -252,7 +258,7 @@ export const UserRefundAction: FC = () => {
                 const data = await source_provider.getLock({
                     chainId: source_network.chain_id,
                     lockId: sourceLock.hashlock as string,
-                    contractAddress: (source_asset?.contract ? source_network.metadata.htlc_erc20_contract : source_network.metadata.htlc_contract) as `0x${string}`,
+                    contractAddress: atomicContract,
                 })
                 if (data.unlocked) {
                     setDestinationLock(data)
