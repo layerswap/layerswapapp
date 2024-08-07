@@ -262,14 +262,18 @@ export default function useEVM(): WalletProvider {
     }
 
     const refund = async (params: RefundParams) => {
-        const { chainId, lockId, commitId, contractAddress, type } = params
+        const { chainId, lockId, commit, commitId, contractAddress, type } = params
         const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
+
+        if(commit.locked && !lockId) {
+            throw new Error("No lockId")
+        }
 
         const { request } = await simulateContract(config, {
             abi: abi,
             address: contractAddress,
-            functionName: lockId ? 'unlock' : 'uncommit',
-            args: lockId ? [lockId] : [commitId],
+            functionName: commit.locked ? 'unlock' : 'uncommit',
+            args: commit.locked ? [lockId] : [commitId],
             chainId: Number(chainId),
         })
 

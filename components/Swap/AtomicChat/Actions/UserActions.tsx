@@ -198,26 +198,31 @@ export const UserLockAction: FC = () => {
 }
 
 export const UserRefundAction: FC = () => {
-    const { source_network, commitId, sourceLock, setCompletedRefundHash, committment, setCommitment, setError, setHashLock, setDestinationLock, source_asset } = useAtomicState()
+    const { source_network, commitId, sourceLock, setCompletedRefundHash, committment, setCommitment, setError, setSourceLock, setDestinationLock, source_asset, destination_network, destination_asset } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
     const [requestedRefund, setRequestedRefund] = useState(false)
 
     const source_provider = source_network && getWithdrawalProvider(source_network)
+    const destination_provider = destination_network && getWithdrawalProvider(destination_network)
+
     const wallet = source_provider?.getConnectedWallet()
 
-    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract) as `0x${string}`
+    const sourceAtomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract) as `0x${string}`
+    const destinationAtomicContract = (destination_asset?.contract ? destination_network?.metadata.htlc_erc20_contract : destination_network?.metadata.htlc_contract) as `0x${string}`
 
     const handleRefundAssets = async () => {
         try {
             if (!source_network) throw new Error("No source network")
             if (!commitId) throw new Error("No commitment details")
+            if (!committment) throw new Error("No commitment")
 
             const res = await source_provider?.refund({
                 type: source_asset?.contract ? 'erc20' : 'native',
                 commitId: commitId,
+                commit: committment,
                 lockId: sourceLock?.hashlock,
                 chainId: source_network.chain_id ?? '',
-                contractAddress: atomicContract
+                contractAddress: sourceAtomicContract
             })
             setCompletedRefundHash(res)
             setRequestedRefund(true)
@@ -226,6 +231,32 @@ export const UserRefundAction: FC = () => {
             setError(e.details || e.message)
         }
     }
+
+    useEffect(() => {
+        (async () => {
+            if (!source_network || !source_network.chain_id || !destination_network?.chain_id || !commitId || !source_provider || !destination_provider) return
+
+            const destinationLockId = await destination_provider.getLockIdByCommitId({
+                type: destination_asset?.contract ? 'erc20' : 'native',
+                chainId: destination_network.chain_id,
+                commitId: commitId,
+                contractAddress: destinationAtomicContract as `0x${string}`
+            })
+
+            if (destinationLockId) {
+                const sourceLock = await source_provider.getLock({
+                    type: source_asset?.contract ? 'erc20' : 'native',
+                    chainId: source_network.chain_id,
+                    lockId: destinationLockId as string,
+                    contractAddress: sourceAtomicContract as `0x${string}`
+                })
+
+                setSourceLock(sourceLock)
+            }
+
+        })()
+
+    }, [commitId])
 
     useEffect(() => {
         let commitHandler: any = undefined
@@ -241,7 +272,7 @@ export const UserRefundAction: FC = () => {
                         type: source_asset?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
-                        contractAddress: atomicContract
+                        contractAddress: sourceAtomicContract
                     })
                     if (data?.uncommitted) {
                         setCommitment(data)
@@ -264,7 +295,7 @@ export const UserRefundAction: FC = () => {
                     type: source_asset?.contract ? 'erc20' : 'native',
                     chainId: source_network.chain_id,
                     lockId: sourceLock.hashlock as string,
-                    contractAddress: atomicContract,
+                    contractAddress: sourceAtomicContract,
                 })
                 if (data.unlocked) {
                     setDestinationLock(data)
