@@ -155,7 +155,6 @@ const RefundCompleted = ({ walletIcon, source_network, tx_id }: { walletIcon?: J
     sourceIcon={walletIcon}
 />
 
-//animate-bounce
 export const ResolveMessages: FC = () => {
 
     const { committment, destinationLock, sourceLock, commitId, source_network, userLocked: userInitiatedLock, isTimelockExpired, completedRefundHash, destination_network, source_asset, destination_asset } = useAtomicState()
@@ -249,7 +248,7 @@ export const ResolveMessages: FC = () => {
     if (commtting) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <UserCommitting walletIcon={WalletIcon} />
-        </div >
+        </div > 
     }
     return <>
         <div>
@@ -278,7 +277,7 @@ const ResolveAction: FC = () => {
             <div className="flex w-full grow flex-col space-y-2" >
                 <ActionStatus
                     status="error"
-                    title={error}
+                    title={<p className="break-all">{error}</p>}
                 />
             </div >
             <SubmitButton onClick={() => setError(undefined)}>

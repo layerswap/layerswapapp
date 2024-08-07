@@ -8,10 +8,12 @@ import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
 import { CreatyePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams } from "../phtlc"
-import { writeContract, simulateContract, readContract } from '@wagmi/core'
+import { writeContract, simulateContract, readContract, waitForTransactionReceipt } from '@wagmi/core'
 import { ethers } from "ethers"
 import { AssetLock, Commit } from "../../../Models/PHTLC"
 import PHTLCAbi from "../../../lib/abis/atomic/EVM_PHTLC.json"
+import ERC20PHTLCAbi from "../../../lib/abis/atomic/EVMERC20_PHTLC.json"
+import IMTBLZKERC20 from "../../../lib/abis/IMTBLZKERC20.json"
 
 export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
@@ -110,13 +112,16 @@ export default function useEVM(): WalletProvider {
             throw Error("No LP address")
         }
         if (!atomicContrcat) {
-            throw Error("No conteract address")
+            throw Error("No contract address")
         }
         const timeLockMS = Date.now() + LOCK_TIME
         const timeLock = Math.floor(timeLockMS / 1000)
         const parsedAmount = ethers.utils.parseUnits(amount.toString(), decimals).toBigInt()
-        const { request, result } = await simulateContract(config, {
-            abi: PHTLCAbi,
+
+        const abi = sourceAsset.contract ? ERC20PHTLCAbi : PHTLCAbi
+
+        let simulationData: any = {
+            abi: abi,
             address: atomicContrcat,
             functionName: 'commit',
             args: [
@@ -126,14 +131,48 @@ export default function useEVM(): WalletProvider {
                 destinationChain,
                 destinationAsset,
                 address,
-                sourceAsset,
+                sourceAsset.symbol,
                 lpAddress,
                 timeLock,
                 messanger,
             ],
             chainId: Number(chainId),
-            value: parsedAmount,
-        })
+        }
+
+        if (sourceAsset.contract) {
+            simulationData.args = [
+                ...simulationData.args,
+                parsedAmount as any,
+                sourceAsset.contract
+            ]
+            const allowance = await readContract(config, {
+                abi: IMTBLZKERC20,
+                address: sourceAsset.contract as `0x${string}`,
+                functionName: 'allowance',
+                args: [account.address, atomicContrcat],
+                chainId: Number(chainId),
+            })
+
+            if (Number(allowance) < parsedAmount) {
+                const res = await writeContract(config, {
+                    abi: IMTBLZKERC20,
+                    address: sourceAsset.contract as `0x${string}`,
+                    functionName: 'approve',
+                    args: [atomicContrcat, parsedAmount],
+                    chainId: Number(chainId),
+                })
+
+                await waitForTransactionReceipt(config, {
+                    chainId: Number(chainId),
+                    hash: res,
+                })
+            }
+
+        } else {
+            simulationData.value = parsedAmount as any
+        }
+
+        const { request, result } = await simulateContract(config, simulationData)
 
         const hash = await writeContract(config, request)
         return { hash, commitId: (result as string) }
@@ -155,9 +194,11 @@ export default function useEVM(): WalletProvider {
     }
 
     const getCommitment = async (params: CommitmentParams): Promise<Commit> => {
-        const { chainId, commitId, contractAddress } = params
+        const { chainId, commitId, contractAddress, type } = params
+        const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
+
         const result = await readContract(config, {
-            abi: PHTLCAbi,
+            abi: abi,
             address: contractAddress,
             functionName: 'getCommitDetails',
             args: [commitId],
@@ -170,10 +211,11 @@ export default function useEVM(): WalletProvider {
     }
 
     const getLockIdByCommitId = async (params: CommitmentParams) => {
-        const { chainId, commitId, contractAddress } = params
+        const { chainId, commitId, contractAddress, type } = params
+        const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
 
         const result = await readContract(config, {
-            abi: PHTLCAbi,
+            abi: abi,
             address: contractAddress,
             functionName: 'getLockIdByCommitId',
             args: [commitId],
@@ -186,9 +228,11 @@ export default function useEVM(): WalletProvider {
     }
 
     const lockCommitment = async (params: CommitmentParams & LockParams) => {
-        const { chainId, commitId, contractAddress, lockId } = params
+        const { chainId, commitId, contractAddress, lockId, type } = params
+        const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
+
         const { request, result } = await simulateContract(config, {
-            abi: PHTLCAbi,
+            abi: abi,
             address: contractAddress,
             functionName: 'lockCommitment',
             args: [commitId, lockId],
@@ -200,10 +244,11 @@ export default function useEVM(): WalletProvider {
     }
 
     const getLock = async (params: LockParams): Promise<AssetLock> => {
-        const { chainId, lockId, contractAddress } = params
+        const { chainId, lockId, contractAddress, type } = params
+        const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
 
         const result = await readContract(config, {
-            abi: PHTLCAbi,
+            abi: abi,
             address: contractAddress,
             functionName: 'getLockDetails',
             args: [lockId],
@@ -217,13 +262,18 @@ export default function useEVM(): WalletProvider {
     }
 
     const refund = async (params: RefundParams) => {
-        const { chainId, lockId, commitId, contractAddress } = params
+        const { chainId, lockId, commit, commitId, contractAddress, type } = params
+        const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
+
+        if(commit.locked && !lockId) {
+            throw new Error("No lockId")
+        }
 
         const { request } = await simulateContract(config, {
-            abi: PHTLCAbi,
+            abi: abi,
             address: contractAddress,
-            functionName: lockId ? 'unlock' : 'uncommit',
-            args: lockId ? [lockId] : [commitId],
+            functionName: commit.locked ? 'unlock' : 'uncommit',
+            args: commit.locked ? [lockId] : [commitId],
             chainId: Number(chainId),
         })
 
@@ -235,12 +285,14 @@ export default function useEVM(): WalletProvider {
         return result
     }
     const getCommits = async (params: GetCommitsParams) => {
-        const { chainId, contractAddress } = params
+        const { chainId, contractAddress, type } = params
+        const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
+
         if (!account.address) {
             throw Error("Wallet not connected")
         }
         const result = await readContract(config, {
-            abi: PHTLCAbi,
+            abi: abi,
             address: contractAddress,
             functionName: 'getCommits',
             args: [account.address],

@@ -109,7 +109,7 @@ export default function useStarknet(): WalletProvider {
     const messanger = "0x152747029e738c20a4ecde5ef869ea072642938d62f0aa7f3d0e9dfb5051cb9"
 
     const createPreHTLC = async (params: CreatyePreHTLCParams) => {
-        const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, tokenContractAddress, amount, decimals, atomicContrcat: atomicAddress, } = params
+        const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, tokenContractAddress, amount, decimals, atomicContrcat: atomicAddress } = params
         if (!wallet?.metadata?.starknetAccount?.account) {
             throw new Error('Wallet not connected')
         }

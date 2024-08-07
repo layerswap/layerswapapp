@@ -25,7 +25,7 @@ const Commitment: FC<ContainerProps> = (props) => {
     const { getWithdrawalProvider } = useWallet()
     const { fee, valuesChanger } = useFee()
 
-    const { commitId, committment, sourceLock } = useAtomicState()
+    const { commitId, committment } = useAtomicState()
 
     const source_network = networks.find(n => n.name.toUpperCase() === source.toUpperCase())
     const destination_network = networks.find(n => n.name.toUpperCase() === destination.toUpperCase())
@@ -46,19 +46,6 @@ const Commitment: FC<ContainerProps> = (props) => {
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const wallet = source_provider?.getConnectedWallet()
     const receiveAmount = fee?.quote?.receive_amount
-
-    const handleGetCommits = async () => {
-        if(!source_provider) return
-        if(!source_network?.chain_id) return
-        if(!source_network?.metadata.htlc_contract) return
-
-        const commits = await source_provider?.getCommits(
-            {
-                chainId: source_network?.chain_id,
-                contractAddress: source_network?.metadata.htlc_contract as `0x${string}`,
-            }
-        )
-    }
 
     return (
         <>

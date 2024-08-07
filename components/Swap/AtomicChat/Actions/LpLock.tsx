@@ -13,10 +13,12 @@ import shortenAddress from "../../../utils/ShortenAddress";
 import { ExternalLink } from "lucide-react";
 
 export const LpLockingAssets: FC = () => {
-    const { destination_network, commitId, setDestinationLock, destinationLock, setHashLock } = useAtomicState()
+    const { destination_network, commitId, setDestinationLock, destinationLock, setHashLock, destination_asset } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
 
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
+
+    const atomicContract = (destination_asset?.contract ? destination_network?.metadata.htlc_erc20_contract : destination_network?.metadata.htlc_contract) as `0x${string}`
 
     useEffect(() => {
         let lockHandler: any = undefined
@@ -26,17 +28,19 @@ export const LpLockingAssets: FC = () => {
                     throw Error("No chain id")
 
                 const destinationLockId = await destination_provider.getLockIdByCommitId({
+                    type: destination_asset?.contract ? 'erc20' : 'native',
                     chainId: destination_network.chain_id,
                     commitId: commitId,
-                    contractAddress: destination_network.metadata.htlc_contract as `0x${string}`
+                    contractAddress: atomicContract
                 })
 
                 if (destinationLockId) {
                     setHashLock(destinationLockId)
                     const data = await destination_provider.getLock({
+                        type: destination_asset?.contract ? 'erc20' : 'native',
                         chainId: destination_network.chain_id,
                         lockId: destinationLockId as string,
-                        contractAddress: destination_network.metadata.htlc_contract as `0x${string}`,
+                        contractAddress: atomicContract,
                     })
                     setDestinationLock(data)
                     clearInterval(lockHandler)

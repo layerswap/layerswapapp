@@ -13,6 +13,8 @@ export const UserCommitAction: FC = () => {
     const wallet = source_provider?.getConnectedWallet()
     const requestingCommit = useRef(false)
 
+    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract) as `0x${string}`
+
     const handleCommit = async () => {
         try {
             if (!amount) {
@@ -47,11 +49,11 @@ export const UserCommitAction: FC = () => {
                 destinationChain: destination_network.name,
                 sourceChain: source_network.name,
                 destinationAsset: destination_asset.symbol,
-                sourceAsset: source_asset.symbol,
+                sourceAsset: source_asset,
                 lpAddress: source_network.metadata.lp_address,
                 tokenContractAddress: source_asset.contract as `0x${string}`,
                 decimals: source_asset.decimals,
-                atomicContrcat: source_network.metadata.htlc_contract as `0x${string}`,
+                atomicContrcat: atomicContract,
                 chainId: source_network.chain_id,
             })
             onCommit(commitId)
@@ -72,9 +74,10 @@ export const UserCommitAction: FC = () => {
                         throw new Error("No source provider")
 
                     const data = await source_provider.getCommitment({
+                        type: source_asset?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
                         commitId: commitId,
-                        contractAddress: source_network.metadata.htlc_contract as `0x${string}`
+                        contractAddress: atomicContract
                     })
                     if (data && data.sender != '0x0000000000000000000000000000000000000000') {
                         setCommitment(data)
@@ -111,12 +114,14 @@ export const UserCommitAction: FC = () => {
 
 
 export const UserLockAction: FC = () => {
-    const { source_network, commitId, hashLock, committment, setCommitment, setUserLocked, userLocked, setError } = useAtomicState()
+    const { source_network, commitId, hashLock, committment, setCommitment, setUserLocked, userLocked, setError, source_asset } = useAtomicState()
 
     const { getWithdrawalProvider } = useWallet()
 
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const wallet = source_provider?.getConnectedWallet()
+
+    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract) as `0x${string}`
 
     const handleLockAssets = async () => {
         try {
@@ -128,10 +133,11 @@ export const UserLockAction: FC = () => {
                 throw new Error("No destination hashlock")
 
             await source_provider.lockCommitment({
+                type: source_asset?.contract ? 'erc20' : 'native',
                 chainId: source_network.chain_id,
                 commitId: commitId as string,
                 lockId: hashLock,
-                contractAddress: source_network.metadata.htlc_contract as `0x${string}`
+                contractAddress: atomicContract
             })
             setUserLocked(true)
         }
@@ -153,9 +159,10 @@ export const UserLockAction: FC = () => {
                         throw new Error("No source provider")
 
                     const data = await source_provider.getCommitment({
+                        type: source_asset?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
-                        contractAddress: source_network.metadata.htlc_contract as `0x${string}`
+                        contractAddress: atomicContract
                     })
                     if (data?.locked) {
                         setCommitment(data)
@@ -191,23 +198,31 @@ export const UserLockAction: FC = () => {
 }
 
 export const UserRefundAction: FC = () => {
-    const { source_network, commitId, sourceLock, setCompletedRefundHash, committment, setCommitment, setError, setHashLock, setDestinationLock } = useAtomicState()
+    const { source_network, commitId, sourceLock, setCompletedRefundHash, committment, setCommitment, setError, setSourceLock, setDestinationLock, source_asset, destination_network, destination_asset } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
     const [requestedRefund, setRequestedRefund] = useState(false)
 
     const source_provider = source_network && getWithdrawalProvider(source_network)
+    const destination_provider = destination_network && getWithdrawalProvider(destination_network)
+
     const wallet = source_provider?.getConnectedWallet()
+
+    const sourceAtomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract) as `0x${string}`
+    const destinationAtomicContract = (destination_asset?.contract ? destination_network?.metadata.htlc_erc20_contract : destination_network?.metadata.htlc_contract) as `0x${string}`
 
     const handleRefundAssets = async () => {
         try {
             if (!source_network) throw new Error("No source network")
             if (!commitId) throw new Error("No commitment details")
+            if (!committment) throw new Error("No commitment")
 
             const res = await source_provider?.refund({
+                type: source_asset?.contract ? 'erc20' : 'native',
                 commitId: commitId,
+                commit: committment,
                 lockId: sourceLock?.hashlock,
                 chainId: source_network.chain_id ?? '',
-                contractAddress: source_network.metadata.htlc_contract as `0x${string}`
+                contractAddress: sourceAtomicContract
             })
             setCompletedRefundHash(res)
             setRequestedRefund(true)
@@ -216,6 +231,32 @@ export const UserRefundAction: FC = () => {
             setError(e.details || e.message)
         }
     }
+
+    useEffect(() => {
+        (async () => {
+            if (!source_network || !source_network.chain_id || !destination_network?.chain_id || !commitId || !source_provider || !destination_provider) return
+
+            const destinationLockId = await destination_provider.getLockIdByCommitId({
+                type: destination_asset?.contract ? 'erc20' : 'native',
+                chainId: destination_network.chain_id,
+                commitId: commitId,
+                contractAddress: destinationAtomicContract as `0x${string}`
+            })
+
+            if (destinationLockId) {
+                const sourceLock = await source_provider.getLock({
+                    type: source_asset?.contract ? 'erc20' : 'native',
+                    chainId: source_network.chain_id,
+                    lockId: destinationLockId as string,
+                    contractAddress: sourceAtomicContract as `0x${string}`
+                })
+
+                setSourceLock(sourceLock)
+            }
+
+        })()
+
+    }, [commitId])
 
     useEffect(() => {
         let commitHandler: any = undefined
@@ -228,9 +269,10 @@ export const UserRefundAction: FC = () => {
                         throw new Error("No source provider")
 
                     const data = await source_provider.getCommitment({
+                        type: source_asset?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
-                        contractAddress: source_network.metadata.htlc_contract as `0x${string}`
+                        contractAddress: sourceAtomicContract
                     })
                     if (data?.uncommitted) {
                         setCommitment(data)
@@ -250,9 +292,10 @@ export const UserRefundAction: FC = () => {
                     throw Error("No chain id")
 
                 const data = await source_provider.getLock({
+                    type: source_asset?.contract ? 'erc20' : 'native',
                     chainId: source_network.chain_id,
                     lockId: sourceLock.hashlock as string,
-                    contractAddress: source_network.metadata.htlc_contract as `0x${string}`,
+                    contractAddress: sourceAtomicContract,
                 })
                 if (data.unlocked) {
                     setDestinationLock(data)
