@@ -28,6 +28,7 @@ export const LpLockingAssets: FC = () => {
                     throw Error("No chain id")
 
                 const destinationLockId = await destination_provider.getLockIdByCommitId({
+                    type: destination_asset?.contract ? 'erc20' : 'native',
                     chainId: destination_network.chain_id,
                     commitId: commitId,
                     contractAddress: atomicContract
@@ -36,6 +37,7 @@ export const LpLockingAssets: FC = () => {
                 if (destinationLockId) {
                     setHashLock(destinationLockId)
                     const data = await destination_provider.getLock({
+                        type: destination_asset?.contract ? 'erc20' : 'native',
                         chainId: destination_network.chain_id,
                         lockId: destinationLockId as string,
                         contractAddress: atomicContract,

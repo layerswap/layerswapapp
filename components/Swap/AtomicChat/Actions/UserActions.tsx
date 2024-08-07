@@ -13,7 +13,7 @@ export const UserCommitAction: FC = () => {
     const wallet = source_provider?.getConnectedWallet()
     const requestingCommit = useRef(false)
 
-    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract)) as `0x${string}`
+    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract) as `0x${string}`
 
     const handleCommit = async () => {
         try {
@@ -49,7 +49,7 @@ export const UserCommitAction: FC = () => {
                 destinationChain: destination_network.name,
                 sourceChain: source_network.name,
                 destinationAsset: destination_asset.symbol,
-                sourceAsset: source_asset.symbol,
+                sourceAsset: source_asset,
                 lpAddress: source_network.metadata.lp_address,
                 tokenContractAddress: source_asset.contract as `0x${string}`,
                 decimals: source_asset.decimals,
@@ -74,6 +74,7 @@ export const UserCommitAction: FC = () => {
                         throw new Error("No source provider")
 
                     const data = await source_provider.getCommitment({
+                        type: source_asset?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
                         commitId: commitId,
                         contractAddress: atomicContract
@@ -120,7 +121,7 @@ export const UserLockAction: FC = () => {
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const wallet = source_provider?.getConnectedWallet()
 
-    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract)) as `0x${string}`
+    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract) as `0x${string}`
 
     const handleLockAssets = async () => {
         try {
@@ -132,6 +133,7 @@ export const UserLockAction: FC = () => {
                 throw new Error("No destination hashlock")
 
             await source_provider.lockCommitment({
+                type: source_asset?.contract ? 'erc20' : 'native',
                 chainId: source_network.chain_id,
                 commitId: commitId as string,
                 lockId: hashLock,
@@ -157,6 +159,7 @@ export const UserLockAction: FC = () => {
                         throw new Error("No source provider")
 
                     const data = await source_provider.getCommitment({
+                        type: source_asset?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
                         contractAddress: atomicContract
@@ -195,14 +198,14 @@ export const UserLockAction: FC = () => {
 }
 
 export const UserRefundAction: FC = () => {
-    const { source_network, commitId, sourceLock, setCompletedRefundHash, committment, setCommitment, setError, setHashLock, setDestinationLock, source_asset} = useAtomicState()
+    const { source_network, commitId, sourceLock, setCompletedRefundHash, committment, setCommitment, setError, setHashLock, setDestinationLock, source_asset } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
     const [requestedRefund, setRequestedRefund] = useState(false)
 
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const wallet = source_provider?.getConnectedWallet()
-    
-    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract)) as `0x${string}`
+
+    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract) as `0x${string}`
 
     const handleRefundAssets = async () => {
         try {
@@ -210,6 +213,7 @@ export const UserRefundAction: FC = () => {
             if (!commitId) throw new Error("No commitment details")
 
             const res = await source_provider?.refund({
+                type: source_asset?.contract ? 'erc20' : 'native',
                 commitId: commitId,
                 lockId: sourceLock?.hashlock,
                 chainId: source_network.chain_id ?? '',
@@ -234,6 +238,7 @@ export const UserRefundAction: FC = () => {
                         throw new Error("No source provider")
 
                     const data = await source_provider.getCommitment({
+                        type: source_asset?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
                         contractAddress: atomicContract
@@ -256,6 +261,7 @@ export const UserRefundAction: FC = () => {
                     throw Error("No chain id")
 
                 const data = await source_provider.getLock({
+                    type: source_asset?.contract ? 'erc20' : 'native',
                     chainId: source_network.chain_id,
                     lockId: sourceLock.hashlock as string,
                     contractAddress: atomicContract,

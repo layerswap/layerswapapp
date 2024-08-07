@@ -8,7 +8,7 @@ export const RedeemAction: FC = () => {
 
     const { getWithdrawalProvider } = useWallet()
 
-    const dsource_provider = source_network && getWithdrawalProvider(source_network)
+    const source_provider = source_network && getWithdrawalProvider(source_network)
     const contract = source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract
 
     useEffect(() => {
@@ -18,12 +18,13 @@ export const RedeemAction: FC = () => {
                 commitHandler = setInterval(async () => {
                     if (!source_network?.chain_id)
                         throw Error("No chain id")
-                    if (!dsource_provider)
+                    if (!source_provider)
                         throw new Error("No destination provider")
                     if (!hashLock)
                         throw new Error("No destination hashlock")
 
-                    const data = await dsource_provider.getLock({
+                    const data = await source_provider.getLock({
+                        type: source_asset?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
                         lockId: hashLock,
                         contractAddress: contract as `0x${string}`,

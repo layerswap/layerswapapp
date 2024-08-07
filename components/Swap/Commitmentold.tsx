@@ -79,6 +79,7 @@ const SwapDetails: FC<Props> = (props) => {
                         throw Error("No chain id")
 
                     const data = await source_provider.getCommitment({
+                        type: source_currency?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
                         contractAddress: source_network.metadata.htlc_contract as `0x${string}`
@@ -105,6 +106,7 @@ const SwapDetails: FC<Props> = (props) => {
                     throw Error("No chain id")
 
                 const destinationLockId = await destination_provider.getLockIdByCommitId({
+                    type: destination_currency?.contract ? 'erc20' : 'native',
                     chainId: destination_network.chain_id,
                     commitId: commitId as string,
                     contractAddress: destination_network.metadata.htlc_contract as `0x${string}`
@@ -112,6 +114,7 @@ const SwapDetails: FC<Props> = (props) => {
                 if (destinationLockId) {
                     setHashLock(destinationLockId)
                     const data = await destination_provider.getLock({
+                        type: destination_currency?.contract ? 'erc20' : 'native',
                         chainId: destination_network.chain_id,
                         lockId: destinationLockId as string,
                         contractAddress: destination_network.metadata.htlc_contract as `0x${string}`,
@@ -145,6 +148,7 @@ const SwapDetails: FC<Props> = (props) => {
                         throw new Error("No source provider")
 
                     const data = await source_provider.getCommitment({
+                        type: source_currency?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
                         contractAddress: source_network.metadata.htlc_contract as `0x${string}`
@@ -172,6 +176,7 @@ const SwapDetails: FC<Props> = (props) => {
                     if (!hashLock)
                         throw new Error("No destination hashlock")
                     const data = await destination_provider.getLock({
+                        type: destination_currency?.contract ? 'erc20' : 'native',
                         chainId: destination_network.chain_id,
                         lockId: hashLock,
                         contractAddress: destination_network.metadata.htlc_contract as `0x${string}`,
@@ -194,7 +199,8 @@ const SwapDetails: FC<Props> = (props) => {
             if (!hashLock)
                 throw new Error("No destination hashlock")
 
-            const { hash, result } = await source_provider.lockCommitment({
+            const { hash } = await source_provider.lockCommitment({
+                type: source_currency?.contract ? 'erc20' : 'native',
                 chainId: source_network.chain_id,
                 commitId: commitId as string,
                 lockId: hashLock,
