@@ -23,7 +23,7 @@ const Commitment: FC<ContainerProps> = (props) => {
     const { source, destination, amount, address, source_asseet, destination_asset } = props;
     const { networks } = useSettingsState()
     const { getWithdrawalProvider } = useWallet()
-    const { fee, valuesChanger } = useFee()
+    const { fee, minAllowedAmount, valuesChanger } = useFee()
 
     const { commitId, committment } = useAtomicState()
 
@@ -45,6 +45,7 @@ const Commitment: FC<ContainerProps> = (props) => {
 
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const wallet = source_provider?.getConnectedWallet()
+    const requestedAmount = (!minAllowedAmount || amount > minAllowedAmount) ? amount : minAllowedAmount
     const receiveAmount = fee?.quote?.receive_amount
 
     return (
@@ -60,7 +61,7 @@ const Commitment: FC<ContainerProps> = (props) => {
                                     source={source_network}
                                     destinationAddress={committment?.dstAddress || address}
                                     destinationCurrency={destination_token}
-                                    requestedAmount={amount}
+                                    requestedAmount={requestedAmount}
                                     sourceCurrency={source_token}
                                     sourceAccountAddress={committment?.sender || wallet?.address}
                                     receiveAmount={receiveAmount}
