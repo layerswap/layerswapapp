@@ -16,13 +16,9 @@ import { RouteNetwork } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
-import { Info } from "lucide-react";
+import { CircleAlert, Info, RouteOff } from "lucide-react";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../../helpers/routes";
-import useValidationErrorStore from "../validationError/validationErrorStore";
-import validationMessageResolver from "../utils/validationErrorResolver";
-import ClickTooltip from "../Tooltips/ClickTooltip";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
-import RouteIcon from "../icons/RouteIcon";
 
 type Props = {
     direction: SwapDirection,
@@ -57,7 +53,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const { from, to, fromCurrency, toCurrency, fromExchange, toExchange } = values
     const query = useQueryState()
     const { lockFrom, lockTo } = query
-    const { message: validationErrorMessage, directions, setValidationMessage, clearValidationMessage } = useValidationErrorStore()
 
     const { sourceExchanges, destinationExchanges, destinationRoutes, sourceRoutes } = useSettingsState();
     let placeholder = "";
@@ -89,7 +84,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     useEffect(() => {
         if (!isLoading && routes?.data) setRoutesData(routes.data)
     }, [routes])
-    
+
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
@@ -111,6 +106,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         if (item.isExchange) {
             setFieldValue(`${name}Exchange`, item.baseObject, true)
         } else {
+            setFieldValue(`${name}Exchange`, null)
             setFieldValue(name, item.baseObject, true)
             const currency = name == "from" ? fromCurrency : toCurrency
             const assetSubstitute = (item.baseObject as RouteNetwork)?.tokens?.find(a => a.symbol === currency?.symbol)
@@ -118,11 +114,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 setFieldValue(`${name}Currency`, assetSubstitute, true)
             }
         }
-        const message = validationMessageResolver(values, direction, query, error)
-        if (!!(from && lockFrom) || !!(to && lockTo))
-            setValidationMessage('Warning', message, 'warning', name);
-        else
-            clearValidationMessage()
+
     }, [name, value])
 
     const pickNetworkDetails = <div>
@@ -196,16 +188,27 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
                 !query.lockAsset && !query.lockFromAsset && !query.lockToAsset && !query.lockFrom && !query.lockTo && !query.lockNetwork && !query.lockExchange && r.tokens?.some(r => r.status !== 'inactive')
             );
 
-        const details = !isAvailable ? <ClickTooltip side="left" text={`Transfers ${direction} this network are not available at the moment. Please try later.`} /> : undefined
+        const details = !isAvailable ? <Tooltip delayDuration={200}>
+            <TooltipTrigger asChild >
+                <div className="absolute -left-0.5 top-0.5 z-50">
+                    <CircleAlert className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+                </div>
+            </TooltipTrigger>
+            <TooltipContent>
+                <p className="max-w-72">
+                    Transfers ${direction} this token are not available at the moment. Please try later.
+                </p>
+            </TooltipContent>
+        </Tooltip> : undefined
 
         const order = ResolveNetworkOrder(r, direction, isNewlyListed)
 
-        const routeNotFound = isAvailable && !r.tokens?.some(r => r.status === 'active') ;
+        const routeNotFound = isAvailable && !r.tokens?.some(r => r.status === 'active');
         const icon = routeNotFound ? (
             <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild >
-                    <div className="absolute -left-0 z-50">
-                        <RouteIcon className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+                    <div className="absolute -left-0.5 top-0.5 z-50">
+                        <RouteOff className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
                     </div>
                 </TooltipTrigger>
                 <TooltipContent>

@@ -34,8 +34,8 @@ import AddressNote from "../../Input/Address/AddressNote";
 import { addressFormat } from "../../../lib/address/formatter";
 import { useAddressesStore } from "../../../stores/addressesStore";
 import { AddressGroup } from "../../Input/Address/AddressPicker";
-import useValidationErrorStore from "../../validationError/validationErrorStore";
 import { useAsyncModal } from "../../../context/asyncModal";
+import { useValidationContext, ValidationProvider } from "../../../context/validationErrorContext";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -63,7 +63,6 @@ export default function Form() {
     const { updateAuthData, setUserType } = useAuthDataUpdate()
     const { getSourceProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
-    const { message: validationErrorMessage } = useValidationErrorStore()
     const { getConfirmation } = useAsyncModal();
 
     const settings = useSettingsState();
@@ -170,6 +169,10 @@ export default function Form() {
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
     }, [router, swap])
 
+    const { resolveValidationMessage } = useValidationContext();
+
+
+
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
@@ -207,10 +210,12 @@ export default function Form() {
             innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
-            validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount, validationErrorMessage })}
+            validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
         >
-            <SwapForm partner={partner} />
+            <ValidationProvider>
+                <SwapForm partner={partner} />
+            </ValidationProvider>
         </Formik>
     </DepositMethodProvider>
 }

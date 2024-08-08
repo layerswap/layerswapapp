@@ -3,7 +3,7 @@ import { FC, useCallback, useEffect } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
-import { ResolveCEXCurrencyOrder, SortAscending } from "../../lib/sorting";
+import { ResolveCEXCurrencyOrder } from "../../lib/sorting";
 import { useQueryState } from "../../context/query";
 import { Exchange, ExchangeToken } from "../../Models/Exchange";
 import { resolveExchangesURLForSelectedToken } from "../../helpers/routes";
@@ -11,10 +11,8 @@ import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
-import RouteIcon from "../icons/RouteIcon";
-import useValidationErrorStore from "../validationError/validationErrorStore";
-import validationMessageResolver from "../utils/validationErrorResolver";
-import ClickTooltip from "../Tooltips/ClickTooltip";
+import { CircleAlert, RouteOff } from "lucide-react";
+import { QueryParams } from "../../Models/QueryParams";
 
 const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -22,12 +20,10 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const { to, fromCurrency, toCurrency, from, currencyGroup, toExchange, fromExchange } = values
-    const { setValidationMessage, clearValidationMessage } = useValidationErrorStore();
 
     const name = 'currencyGroup'
     const query = useQueryState()
     const exchange = direction === 'from' ? fromExchange : toExchange
-
     const exchangeRoutesURL = resolveExchangesURLForSelectedToken(direction, values)
     const apiClient = new LayerSwapApiClient()
     const {
@@ -54,25 +50,12 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     const value = currencyMenuItems?.find(x => x.id == currencyGroup?.symbol);
 
     useEffect(() => {
-        if (currencyGroup?.status === 'not_found') {
-            setValidationMessage('Warning', 'Token not found in route.', 'warning', name);
-        } else {
-            clearValidationMessage()
-        }
-    }, [currencyGroup])
-
-    useEffect(() => {
         if (value) return
         setFieldValue(name, currencyMenuItems?.[0]?.baseObject)
     }, [])
 
     const handleSelect = useCallback((item: SelectMenuItem<ExchangeToken>) => {
         setFieldValue(name, item.baseObject, true)
-        const message = validationMessageResolver(values, direction, query, error)
-        if (!item.isAvailable)
-            setValidationMessage('Warning', message, 'warning', name);
-        else
-            clearValidationMessage()
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
     return <PopoverSelectWrapper
@@ -96,13 +79,24 @@ export function GenerateCurrencyMenuItems(
 
         const isAvailable = (lockedCurrency || (c?.status !== "active" && c.status !== "not_found")) ? false : true;
         const details = c.status === 'inactive' ?
-            <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> : <></>
+            <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild >
+                    <div className="absolute -left-0.5 top-1 z-50">
+                        <CircleAlert className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p className="max-w-72">
+                        Transfers ${direction} this token are not available at the moment. Please try later.
+                    </p>
+                </TooltipContent>
+            </Tooltip> : undefined
 
         const icon = c.status === "not_found" ? (
             <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild >
-                    <div className="absolute -left-0 z-50">
-                        <RouteIcon className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+                    <div className="absolute -left-0.5 top-1 z-50">
+                        <RouteOff className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
                     </div>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -128,3 +122,7 @@ export function GenerateCurrencyMenuItems(
 }
 
 export default CurrencyGroupFormField
+
+function resolveValidationMessage(values: SwapFormValues, direction: string, query: QueryParams, error: any) {
+    throw new Error("Function not implemented.");
+}
