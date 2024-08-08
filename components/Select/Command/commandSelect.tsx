@@ -34,7 +34,7 @@ export class SelectMenuItemGroup {
     items: ISelectMenuItem[];
 }
 
-export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading, modalHeight = 'full', modalContent }: CommandSelectProps) {
+export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading, modalHeight = 'full',modalContent  }: CommandSelectProps) {
     const { isDesktop } = useWindowDimensions();
 
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
