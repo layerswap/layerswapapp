@@ -18,6 +18,7 @@ import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
 import RainbowKit from "./RainbowKit";
 import { IsExtensionError } from "../helpers/errorHelper";
+import { AsyncModalProvider } from "../context/asyncModal";
 // import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
@@ -134,9 +135,11 @@ export default function Layout({ children, settings, themeData }: Props) {
               <ThemeWrapper>
                 <TonConnectProvider basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
                   <RainbowKit>
+                    <AsyncModalProvider>
                       {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
                         <MaintananceContent />
                         : children}
+                    </AsyncModalProvider>
                   </RainbowKit>
                 </TonConnectProvider>
               </ThemeWrapper>
