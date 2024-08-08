@@ -90,12 +90,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         if (!isLoading && routes?.data) setRoutesData(routes.data)
     }, [routes])
 
-    useEffect(() => {
-        if (toExchange && to) {
-            setFieldValue("to", null)
-        }
-    }, [toExchange])
-    
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
@@ -115,6 +109,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         if (item.baseObject.name === value?.baseObject.name)
             return
         if (item.isExchange) {
+            setFieldValue(name, null)
             setFieldValue(`${name}Exchange`, item.baseObject, true)
         } else {
             setFieldValue(`${name}Exchange`, null)
