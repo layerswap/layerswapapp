@@ -32,7 +32,6 @@ import { DepositMethodProvider } from "../../../context/depositMethodContext";
 import { Connector, useAccount, useConnect, useConnectors } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { useSwitchAccount } from 'wagmi'
-import { WalletButton, useConnectModal } from '@rainbow-me/rainbowkit';
 import QRCodeModal from "../../QRCodeWallet";
 import { dynamicWithRetries } from "../../../lib/dynamicWithRetries";
 import AddressNote from "../../Input/Address/AddressNote";
@@ -183,7 +182,6 @@ export default function Form() {
         setShowSwapModal(value)
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
     }, [router, swap])
-    const { openConnectModal } = useConnectModal();
     const { connectAsync } = useConnect();
 
 
@@ -282,40 +280,7 @@ export default function Form() {
             {qr && <QRCodeModal qrUrl={qr?.toLocaleString()} className=' text-secondary-text bg-secondary-text/10 p-1.5 hover:text-primary-text rounded' />}
         </>
 
-        <WalletButton.Custom wallet="bitget">
-            {({ ready, connect, connector }) => {
-                return (
-                    <button
-                        type="button"
-                        className="bg-primary-500 text-white px-4 py-2 rounded-lg block"
-                        onClick={() => {
-                            connect()
-                            // console.log("connector", connector)
-                            // console.log("connect", connect)
-
-                        }}
-                    >
-                        Connect bitget
-                    </button>
-                );
-            }}
-        </WalletButton.Custom>
-        <WalletButton.Custom wallet="MetaMask">
-            {({ ready, connect, connector, connected }) => {
-                return (
-                    <button
-                        type="button"
-                        className="bg-primary-500 text-white px-4 py-2 rounded-lg block"
-                        onClick={() => {
-                            connect()
-                            connector.connect()
-                        }}
-                    >
-                        Connect MetaMask
-                    </button>
-                );
-            }}
-        </WalletButton.Custom>
+ 
         {/* <div>
             {connectors.filter((value, index, array) => array.findIndex(a => a.id === value.id) === index).map((connector, index) => (
                 <div key={connector.id}><ConnectorRenderer connector={connector} /></div>

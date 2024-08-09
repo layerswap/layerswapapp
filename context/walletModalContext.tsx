@@ -15,12 +15,11 @@ type WalletModalContextType = {
 export function WalletModalProvider({ children }) {
     const [walletModalIsOpen, setWalletModalIsOpen] = useState<boolean>(false)
     const allConnectors = useConnectors()
-    const { connector } = useAccount()
     const { connectors: connectedWallets } = useSwitchAccount()
     const resolvedConnectros = resolveAvailableWallets(allConnectors, connectedWallets)
     const { connectAsync } = useConnect();
     const [qr, setqr] = useState<string>()
-
+    console.log(resolvedConnectros)
     return (
         <WalletModalContext.Provider value={{ walletModalIsOpen, setWalletModalIsOpen }}>
             {children}
@@ -33,32 +32,27 @@ export function WalletModalProvider({ children }) {
                         {
                             !qr &&
                             resolvedConnectros.map((connector) => {
-                                const name = connector?.['rkDetails']?.['id']
-                                return <WalletButton.Custom key={connector.uid} wallet={name}>
-                                    {({ ready, connect, connector, connected }) => {
-                                        return (
-                                            <button
-                                                type="button"
-                                                className="bg-primary-500 text-white px-4 py-2 rounded-lg block"
-                                                onClick={async () => {
-                                                    const result = connectAsync({
-                                                        chainId: mainnet.id,
-                                                        connector: connector,
-                                                    }, {
-                                                        onSuccess: (data) => {
-                                                            setWalletModalIsOpen(false)
-                                                        }
-                                                    });
+                                return (
+                                    <button
+                                        type="button"
+                                        className="bg-primary-500 text-white px-4 py-2 rounded-lg block"
+                                        onClick={async () => {
+                                            const result = connectAsync({
+                                                chainId: mainnet.id,
+                                                connector: connector,
+                                            }, {
+                                                onSuccess: (data) => {
+                                                    setWalletModalIsOpen(false)
+                                                }
+                                            });
+                                            // const uri = (await connector.getProvider()).signer.uri as any
 
-                                                    const bar = await getWalletConnectUri(connector, connector?.['rkDetails']?.['qrCode']?.['getUri']!)
-                                                    setqr(bar)
-                                                }}
-                                            >
-                                                Connect {connector?.['rkDetails']?.['name']}
-                                            </button>
-                                        );
-                                    }}
-                                </WalletButton.Custom>
+                                            // setqr(uri)
+                                        }}
+                                    >
+                                        Connect {connector?.name}
+                                    </button>
+                                );
                             })
                         }
                         {
@@ -107,10 +101,9 @@ const resolveAvailableWallets = (all_connectors: readonly Connector[], connected
     // console.log("connected", connected)
     // console.log("all_connectors", all_connectors)
     const available_connectors = all_connectors.filter((connector, index, array) => {
-        return connector.rkDetails
-            && array.findIndex(a => a?.['rkDetails']?.['id'] === connector?.['rkDetails']?.['id']) === index
+        return array.findIndex(a => a?.id === connector?.id) === index
             && !connected.some((connected_connector) => {
-                return connected_connector?.['rkDetails']?.['id'] === connector?.['rkDetails']?.['id']
+                return connected_connector.id === connector?.id
             })
     })
     return available_connectors

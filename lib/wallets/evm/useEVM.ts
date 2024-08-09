@@ -1,4 +1,3 @@
-import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { Connector, useAccount, useConnectors, useDisconnect, useSwitchAccount } from "wagmi"
 import { NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
@@ -37,7 +36,6 @@ export default function useEVM(): NewWalletProvider & { availableWalletsforConne
         KnownInternalNames.Networks.BrineMainnet,
     ]
 
-    const { openConnectModal } = useConnectModal()
     const { setWalletModalIsOpen } = useWalletModal()
     const { disconnectAsync } = useDisconnect()
     const { connectors: connectedWallets, switchAccount } = useSwitchAccount({ mutation: { onSuccess: () => { console.log("success") } } })
@@ -115,9 +113,6 @@ export default function useEVM(): NewWalletProvider & { availableWalletsforConne
 
     const connectWallet = () => {
         try {
-            if (openConnectModal) {
-                return openConnectModal()
-            }
             setWalletModalIsOpen(true)
         }
         catch (e) {
