@@ -392,6 +392,11 @@
                         "type": "address"
                     },
                     {
+                        "internalType": "bytes32",
+                        "name": "lockId",
+                        "type": "bytes32"
+                    },
+                    {
                         "internalType": "uint256",
                         "name": "timelock",
                         "type": "uint256"
