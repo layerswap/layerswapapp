@@ -1,5 +1,5 @@
 import { Plus, RefreshCw } from "lucide-react";
-import { NewWalletProvider } from "../../../../hooks/useWallet";
+import { WalletProvider } from "../../../../hooks/useWallet";
 import { addressFormat } from "../../../../lib/address/formatter";
 import { ResolveConnectorIcon } from "../../../icons/ConnectorIcons";
 import { Wallet } from "../../../../stores/walletStore";
@@ -10,7 +10,7 @@ import { AddressGroup } from ".";
 import { FC, useState } from "react";
 
 type Props = {
-    provider: NewWalletProvider,
+    provider: WalletProvider,
     onClick: () => void,
     onConnect?: () => void,
     connectedWallet: Wallet | undefined,
@@ -78,11 +78,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
                     connector={provider.name}
                     iconClassName="w-10 h-10 p-0.5 rounded-lg bg-secondary-800 border border-secondary-400"
                     className="grid grid-cols-2 gap-1 min-w-fit"
-                >
-                    <div className="w-10 h-10 bg-secondary-400 rounded-lg flex-col justify-center items-center inline-flex">
-                        <Plus className="h-6 w-6 text-secondary-text" />
-                    </div>
-                </ResolveConnectorIcon>
+                />
                 <div className="h-full space-y-2">
                     <p className="text-sm font-medium text-secondary-text text-start">Connect your wallet to select a destination address</p>
                     <div className="bg-primary-700/30 border-none !text-primary py-2 rounded-lg text-base font-semibold">

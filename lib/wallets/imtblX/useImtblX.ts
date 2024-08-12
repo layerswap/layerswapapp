@@ -11,13 +11,18 @@ export default function useImtblX(): WalletProvider {
         KnownInternalNames.Networks.ImmutableXSepolia,
     ]
 
-    const name = 'imx'
+    const name = 'ImmutableX'
+    const id = 'imx'
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
+    const wallet = wallets.find(wallet => wallet.providerName === name)
 
     const getWallet = () => {
-        return wallets.find(wallet => wallet.providerName === name)
+        if (wallet) {
+            return [wallet]
+        }
+        return undefined
     }
 
     const connectWallet = async ({ chain }: { chain: string | number }) => {
@@ -30,7 +35,10 @@ export default function useImtblX(): WalletProvider {
                 address: res.address,
                 connector: 'imx',
                 providerName: name,
-                icon: IMX
+                icon: IMX,
+                disconnect: () => disconnectWallet(),
+                connect: () => connectWallet({ chain }),
+                isActive: true,
             });
         }
         catch (e) {
@@ -48,12 +56,14 @@ export default function useImtblX(): WalletProvider {
     }
 
     return {
-        getConnectedWallet: getWallet,
+        connectedWallets: getWallet(),
+        activeWallet: wallet,
         connectWallet,
-        disconnectWallet,
+        disconnectWallets: disconnectWallet,
         reconnectWallet,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks: withdrawalSupportedNetworks,
-        name
+        name,
+        id
     }
 }

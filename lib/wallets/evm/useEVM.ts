@@ -1,7 +1,7 @@
 import { Connector, useAccount, useConnectors, useDisconnect, useSwitchAccount } from "wagmi"
 import { NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
-import { NewWalletProvider } from "../../../hooks/useWallet"
+import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
@@ -10,7 +10,7 @@ import { useWalletModal } from "../../../context/walletModalContext"
 import { Wallet } from "../../../stores/walletStore"
 import { EVMAddresses, useEVMAddressesStore } from "../../../stores/evmAddressesStore"
 
-export default function useEVM(): NewWalletProvider & { availableWalletsforConnect: Connector[] } {
+export default function useEVM(): WalletProvider & { availableWalletsforConnect: Connector[] } {
     const name = 'EVM'
     const id = 'evm'
     const { networks } = useSettingsState()

@@ -21,7 +21,7 @@ export const WalletsHeader = () => {
                     <WalletsIcons wallets={wallets} />
                 </button>
                 <Modal
-                    height='80%'
+                    height='fit'
                     show={openModal}
                     setShow={setOpenModal}
                     header={`Connected Wallets`}

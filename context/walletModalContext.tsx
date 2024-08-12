@@ -39,6 +39,7 @@ export function WalletModalProvider({ children }) {
                             resolvedConnectros.map((connector) => {
                                 return (
                                     <button
+                                        key={connector.id}
                                         type="button"
                                         className="bg-primary-500 text-white px-4 py-2 rounded-lg block"
                                         onClick={async () => {

@@ -67,7 +67,7 @@ function WagmiComponent({ children }: Props) {
         connectors: [
             injected(),
             walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false }),
-            metaMask(),
+            metaMask({ dappMetadata: { name: 'Layerswap', url: 'https://www.layerswap.io/', iconUrl: 'https://www.layerswap.io/app/symbol.png' } }),
             safe(),
             coinbaseWallet()
         ],

@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, SetStateAction, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import useWallet from "../../hooks/useWallet";
 import {
@@ -10,6 +10,7 @@ import {
 } from "../shadcn/dialog";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { ResolveConnectorIcon } from "../icons/ConnectorIcons";
+import Modal from "../modal/modal";
 
 const ConnectButton = ({
     children,
@@ -21,83 +22,52 @@ const ConnectButton = ({
     onClose?: () => void;
 }) => {
     const { providers } = useWallet();
-    const [open, setOpen] = useState<boolean>();
+    const [open, setOpen] = useState<boolean>(false);
     const { isMobile } = useWindowDimensions();
+    const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks)
 
-    return isMobile ? (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger aria-label="Connect wallet">{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] text-primary-text">
-                <DialogHeader>
-                    <DialogTitle className="text-center">
-                        Link a new wallet
-                    </DialogTitle>
-                </DialogHeader>
-                <div className="space-y-2">
-                    {providers.map((connector, index) => (
+    return (
+        <>
+            <button
+                onClick={() => setOpen(true)}
+                type="button"
+                aria-label="Connect wallet"
+                disabled={filteredProviders.length == 0}
+                className={`${className} disabled:opacity-50 disabled:cursor-not-allowed `}
+            >
+                {children}
+            </button>
+            <Modal height="fit" show={open} setShow={setOpen} modalId={"connectNewWallet"} header='Connect wallet'>
+                <div className="grid grid-cols-4 gap-2 text-primary-text mt-3">
+                    {filteredProviders.map((connector, index) => (
                         <button
                             type="button"
                             key={index}
-                            className="w-full h-fit bg-secondary-700 border border-secondary-500 rounded py-2 px-3"
-                            onClick={() => {
-                                connector.connectWallet();
+                            className="w-full h-fit bg-secondary-600 hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 p-3"
+                            onClick={async () => {
+                                await connector.connectWallet();
                                 setOpen(false);
                                 onClose && onClose();
                             }}
                         >
-                            <div className="flex space-x-2 items-center">
-                                {connector && (
-                                    <div className="inline-flex items-center relative">
-                                        <ResolveConnectorIcon
-                                            connector={connector.id}
-                                            iconClassName="w-7 h-7 p-0.5 rounded-full bg-secondary-800 border border-secondary-400"
-                                        />
-                                    </div>
-                                )}
+                            <div className="flex flex-col gap-3 items-center font-semibold">
                                 <p>{connector.name}</p>
+                                {
+                                    connector &&
+                                    <ResolveConnectorIcon
+                                        connector={connector.id}
+                                        iconClassName="w-8 h-8 rounded-md bg-secondary-900"
+                                    />
+                                }
                             </div>
                         </button>
                     ))}
                 </div>
-            </DialogContent>
-        </Dialog>
-    ) : (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger
-                aria-label="Connect wallet"
-                disabled={providers.length == 0}
-                className={`${className} disabled:opacity-50 disabled:cursor-not-allowed `}
-            >
-                {children}
-            </PopoverTrigger>
-            <PopoverContent className="flex flex-col items-start gap-2 w-fit">
-                {providers.map((connector, index) => (
-                    <button
-                        type="button"
-                        key={index}
-                        className="w-full h-full hover:bg-secondary-600 rounded py-2 px-3"
-                        onClick={() => {
-                            connector.connectWallet();
-                            setOpen(false);
-                            onClose && onClose();
-                        }}
-                    >
-                        <div className="flex space-x-2 items-center">
-                            {connector && (
-                                <div className="inline-flex items-center relative">
-                                    <ResolveConnectorIcon
-                                        connector={connector.id}
-                                        iconClassName="w-7 h-7 p-0.5 rounded-full bg-secondary-800 border border-secondary-400"
-                                    />
-                                </div>
-                            )}
-                            <p>{connector.name}</p>
-                        </div>
-                    </button>
-                ))}
-            </PopoverContent>
-        </Popover>
-    );
+            </Modal>
+        </>
+
+
+    )
 };
 
 export default ConnectButton;

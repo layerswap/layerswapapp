@@ -7,18 +7,16 @@ const WalletsList = () => {
     const { wallets } = useWallet()
 
     return (
-        <div className="space-y-1">
-            <div className="flex items-end justify-end w-full p-1">
-                <ConnectButton>
-                    <div className="flex items-center text-secondary-text hover:text-secondary-text/80 gap-1 px-3 py-1">
-                        <Plus className="h-4 w-4" />
-                        <span className="text-sm">
-                            Add wallet
-                        </span>
-                    </div>
-                </ConnectButton>
-            </div>
-            <div className="flex flex-col justify-start space-y-2">
+        <div className="space-y-3">
+            <ConnectButton className="w-full flex justify-center p-2 bg-secondary-700 rounded-md hover:bg-secondary-600">
+                <div className="flex items-center text-secondary-text hover:text-secondary-text/80 gap-1 px-3 py-1">
+                    <Plus className="h-4 w-4" />
+                    <span className="text-sm">
+                        Connect new wallet
+                    </span>
+                </div>
+            </ConnectButton>
+            <div className="flex flex-col justify-start space-y-3">
                 {
                     wallets.map((wallet, index) => (
                         <div key={index} className="w-full relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
