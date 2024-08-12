@@ -7,14 +7,13 @@ import {
     CommandList,
     CommandWrapper
 } from '../../shadcn/command'
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import useWindowDimensions from '../../../hooks/useWindowDimensions';
 import SelectItem from '../Shared/SelectItem';
 import { SelectProps } from '../Shared/Props/SelectProps'
 import Modal from '../../modal/modal';
 import SpinIcon from '../../icons/spinIcon';
 import { LeafletHeight } from '../../modal/leaflet';
-import SubmitButton from '../../buttons/submitButton';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
@@ -43,23 +42,10 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
 
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
     const handleSelectValue = useCallback((item: ISelectMenuItem) => {
-        if (!requireConfirmation) {
-            setValue(item);
-            setShow(false);
-        } else {
-            setSelectedItem!(selectedItem?.id === item.id ? null : item);
-        }
+        setValue(item);
+        setSelectedItem?.(selectedItem?.id === item.id ? null : item);
+        setShow(false);
     }, [setValue, setShow, requireConfirmation, selectedItem, setSelectedItem]);
-
-    const handleConfirm = () => {
-        if (selectedItem) {
-            setValue(selectedItem);
-            setShow(false);
-            if (setSelectedItem) {
-                setSelectedItem(null);
-            }
-        }
-    };
 
     return (
         <Modal height={modalHeight} show={show} setShow={setShow} modalId='comandSelect'>
@@ -89,11 +75,6 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                             <SpinIcon className="animate-spin h-5 w-5" />
                         </div>
                     }
-                    {requireConfirmation && selectedItem && (
-                        <SubmitButton type='button' className='mt-auto' onClick={handleConfirm}>
-                            Confirm
-                        </SubmitButton>
-                    )}
                 </CommandWrapper>
                 : <></>
             }

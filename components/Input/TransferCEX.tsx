@@ -12,16 +12,20 @@ type TransferCEXProps = {
 }
 
 const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedItem }) => {
-    const [currentValue, setCurrentImgSrc] = useState<ISelectMenuItem | null>(manuItems && manuItems.length > 0 ? manuItems[0] : null);
+    const [currentValue, setCurrentValue] = useState<ISelectMenuItem | null>(manuItems && manuItems.length > 0 ? manuItems[0] : null);
+
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const toggleExpand = () => setIsExpanded(!isExpanded);
 
     useEffect(() => {
-        if (selectedItem) {
-            setCurrentImgSrc(selectedItem);
+        if (value) {
+            setCurrentValue(value);
         } else if (manuItems && manuItems.length > 0) {
             const interval = setInterval(() => {
-                setCurrentImgSrc(prevImgSrc => {
-                    if (!prevImgSrc) return manuItems[0];
-                    const currentIndex = manuItems.indexOf(prevImgSrc);
+                setCurrentValue(prevValue => {
+                    if (!prevValue) return manuItems[0];
+                    const currentIndex = manuItems.indexOf(prevValue);
                     const nextIndex = (currentIndex + 1) % manuItems.length;
                     return manuItems[nextIndex];
                 });
@@ -42,17 +46,17 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
             <div className="font-normal flex flex-col w-full relative z-10 space-y-4">
                 <div className="w-full px-2.5">
                     <div className="flex items-center mb-2">
-                        <div>
-                            {fromExchange ?
-                                <p className="text-primary-text-placeholder text-xs leading-5">
-                                    The network you select here will be used as an intermediary for the transfer from {cex} to {chain}. Before selecting the network, please check which one is available on {cex} for withdrawal.
-                                </p>
-                                :
-                                <p className="text-primary-text-placeholder text-xs leading-5">
-                                    The network you select here will be used as an intermediary for the transfer from {chain} to {cex}. Before selecting the network, please check which one is available on {cex} for deposit.
-                                </p>
-                            }
-                        </div>
+                        <p className="text-primary-buttonTextColor text-xs leading-5">
+                            The network you select here will be used as an intermediary for the transfer from {fromExchange ? cex : chain} to {fromExchange ? chain : cex}.
+                            <span className={`transition-all duration-500 ease-out ${isExpanded ? 'hidden' : 'inline'}`}>
+                                {fromExchange ? (
+                                    <> Before selecting the network, please check which one is available on {cex} for withdrawal.</>
+                                ) : (
+                                    <> Before selecting the network, please check which one is available on {cex} for deposit.</>
+                                )}
+                            </span>
+                            <span className="underline cursor-pointer text-primary-text-placeholder ml-0.5" onClick={toggleExpand}>{isExpanded ? 'Show less' : 'Learn more'}</span>
+                        </p>
                     </div>
                     <div className="relative flex items-center space-x-2">
                         <div className="flex-shrink-0 h-4 w-4 relative">
