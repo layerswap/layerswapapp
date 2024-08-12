@@ -10,6 +10,7 @@ import ETHABbi from "../../../lib/abis/STARKNET_ETH.json"
 import { CommitmentParams, CreatyePreHTLCParams, GetCommitsParams, LockParams, RefundParams } from "../phtlc";
 import { BigNumberish, ethers } from "ethers";
 import { AssetLock, Commit } from "../../../Models/PHTLC";
+import { toHex } from "viem";
 
 export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
@@ -160,7 +161,8 @@ export default function useStarknet(): WalletProvider {
                 throw new Error('No commit id')
             }
 
-            const res = ethers.utils.hexlify(commitId as BigNumberish)
+
+            const res = toHex(commitId as bigint, { size: 32 })
             return { hash: trx.transaction_hash as `0x${string}`, commitId: res as `0x${string}` }
         }
         catch (e) {
@@ -324,7 +326,7 @@ export default function useStarknet(): WalletProvider {
             throw new Error("No result")
         }
 
-        return result.reverse().map((commit: any) => ethers.utils.hexlify(commit))
+        return result.reverse().map((commit: any) => toHex(commit, { size: 32 }))
     }
 
     return {
