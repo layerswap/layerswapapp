@@ -37,7 +37,7 @@ const DepositMethodComponent: FC = () => {
         }
     ]
 
-    const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods, appName)
+    const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods, !!fromExchange, appName,)
     const defaultMethod = menuItems?.find(i => i.id === defaultDepositMethod)
 
     useEffect(() => {
@@ -158,13 +158,13 @@ type DepositMethod = {
     display_name: string
 }
 
-function GenerateDepositMethodMenuItems(network: Network, depositMethods: DepositMethod[], appName?: string): DepositMethod[] {
+function GenerateDepositMethodMenuItems(network: Network, depositMethods: DepositMethod[], sourceIsExchange: boolean, appName?: string): DepositMethod[] {
 
     const sourceIsArbitrumOne = network.name?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
         || network.name === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
     const sourceIsSynquote = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
 
-    if (sourceIsSynquote) {
+    if (sourceIsSynquote || sourceIsExchange) {
         return depositMethods.filter(m => m.id === 'deposit_address')
     }
 
