@@ -1,7 +1,6 @@
-import { Context, createContext, useContext, useState } from 'react'
+import { Context, createContext, useContext, useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../components/shadcn/dialog';
-import { Connector, useAccount, useConnect, useConnectors, useSwitchAccount } from 'wagmi';
-import { WalletButton } from '@rainbow-me/rainbowkit';
+import { Connector, useConnect, useConnectors, useSwitchAccount } from 'wagmi';
 import { mainnet } from 'viem/chains';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -18,8 +17,14 @@ export function WalletModalProvider({ children }) {
     const { connectors: connectedWallets } = useSwitchAccount()
     const resolvedConnectros = resolveAvailableWallets(allConnectors, connectedWallets)
     const { connectAsync } = useConnect();
-    const [qr, setqr] = useState<string>()
-    console.log(resolvedConnectros)
+    const [qr, setQr] = useState<string>()
+
+    useEffect(() => {
+        if (!walletModalIsOpen) {
+            setQr(undefined)
+        }
+    }, [walletModalIsOpen])
+
     return (
         <WalletModalContext.Provider value={{ walletModalIsOpen, setWalletModalIsOpen }}>
             {children}
@@ -37,17 +42,24 @@ export function WalletModalProvider({ children }) {
                                         type="button"
                                         className="bg-primary-500 text-white px-4 py-2 rounded-lg block"
                                         onClick={async () => {
-                                            const result = connectAsync({
-                                                chainId: mainnet.id,
-                                                connector: connector,
-                                            }, {
-                                                onSuccess: (data) => {
-                                                    setWalletModalIsOpen(false)
-                                                }
-                                            });
-                                            // const uri = (await connector.getProvider()).signer.uri as any
+                                            try {
+                                                connectAsync({
+                                                    chainId: mainnet.id,
+                                                    connector: connector,
+                                                }, {
+                                                    onSuccess: (data) => {
+                                                        setWalletModalIsOpen(false)
+                                                    },
+                                                    onError: (error) => {
+                                                        console.error(error)
+                                                    }
+                                                });
+                                            } catch (e) {
+                                                console.log(e)
+                                            }
 
-                                            // setqr(uri)
+                                            const uri = await getWalletConnectUri(connector)
+                                            setQr(uri)
                                         }}
                                     >
                                         Connect {connector?.name}
@@ -77,7 +89,6 @@ export function WalletModalProvider({ children }) {
 
 const getWalletConnectUri = async (
     connector: Connector,
-    uriConverter: (uri: string) => string,
 ): Promise<string> => {
     const provider = await connector.getProvider();
 
@@ -89,8 +100,8 @@ const getWalletConnectUri = async (
     return new Promise<string>((resolve) =>
         // Wagmi v2 doesn't have a return type for provider yet
         // @ts-expect-error
-        provider.once('display_uri', (uri) => {
-            resolve(uriConverter(uri));
+        provider.once('display_uri', () => {
+            resolve((provider as any).signer.uri);
         }),
     );
 };
@@ -98,8 +109,6 @@ const getWalletConnectUri = async (
 
 
 const resolveAvailableWallets = (all_connectors: readonly Connector[], connected: readonly Connector[]) => {
-    // console.log("connected", connected)
-    // console.log("all_connectors", all_connectors)
     const available_connectors = all_connectors.filter((connector, index, array) => {
         return array.findIndex(a => a?.id === connector?.id) === index
             && !connected.some((connected_connector) => {

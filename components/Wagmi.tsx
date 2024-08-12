@@ -3,7 +3,6 @@ import { useSettingsState } from "../context/settings";
 import { NetworkType } from "../Models/Network";
 import resolveChain from "../lib/resolveChain";
 import React from "react";
-import AddressIcon from "./AddressIcon";
 import NetworkSettings from "../lib/NetworkSettings";
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -11,8 +10,7 @@ import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
 import { WalletModalProvider } from '../context/walletModalContext';
 import Solana from "./SolanaProvider";
-import { injected, metaMask, safe, walletConnect } from 'wagmi/connectors'
-import { base, mainnet, optimism } from 'wagmi/chains'
+import { injected, metaMask, safe, walletConnect, coinbaseWallet } from 'wagmi/connectors'
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -20,14 +18,6 @@ type Props = {
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
 
 const queryClient = new QueryClient()
-// const CustomAvatar: AvatarComponent = ({ address, size }) => {
-//     return <AddressIcon address={address} size={size} />
-// };
-// const disclaimer: DisclaimerComponent = ({ Text }) => (
-//     <Text>
-//         Thanks for choosing Layerswap!
-//     </Text>
-// );
 
 // export const connectors = connectorsForWallets(
 //     [
@@ -56,7 +46,7 @@ const queryClient = new QueryClient()
 //     }
 // );
 
-function RainbowKitComponent({ children }: Props) {
+function WagmiComponent({ children }: Props) {
 
     const settings = useSettingsState();
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
@@ -76,49 +66,26 @@ function RainbowKitComponent({ children }: Props) {
     const config = createConfig({
         connectors: [
             injected(),
-            walletConnect({ projectId: WALLETCONNECT_PROJECT_ID }),
+            walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false }),
             metaMask(),
             safe(),
+            coinbaseWallet()
         ],
         chains: settingsChains,
         transports: transports,
     });
 
-    // const theme = darkTheme({
-    //     accentColor: 'rgb(var(--ls-colors-primary-500))',
-    //     accentColorForeground: 'rgb(var(--ls-colors-primary-text))',
-    //     borderRadius: 'small',
-    //     fontStack: 'system',
-    //     overlayBlur: 'small',
-    // })
-
-    // theme.colors.modalBackground = 'rgb(var(--ls-colors-secondary-900))'
-    // theme.colors.modalText = 'rgb(var(--ls-colors-primary-text))'
-    // theme.colors.modalTextSecondary = 'rgb(var(--ls-colors-secondary-text))'
-    // theme.colors.actionButtonBorder = 'rgb(var(--ls-colors-secondary-500))'
-    // theme.colors.actionButtonBorderMobile = 'rgb(var(--ls-colors-secondary-500))'
-    // theme.colors.closeButton = 'rgb(var(--ls-colors-secondary-text))'
-    // theme.colors.closeButtonBackground = 'rgb(var(--ls-colors-secondary-500))'
-    // theme.colors.generalBorder = 'rgb(var(--ls-colors-secondary-500))'
-
     return (
         <WagmiProvider config={config}>
             <QueryClientProvider client={queryClient}>
-                {/* <RainbowKitProvider avatar={CustomAvatar} modalSize="compact" theme={theme}
-                    appInfo={{
-                        appName: 'Layerswap',
-                        learnMoreUrl: 'https://docs.layerswap.io/',
-                        disclaimer: disclaimer
-                    }}> */}
                 <Solana>
                     <WalletModalProvider>
                         {children}
                     </WalletModalProvider>
                 </Solana>
-                {/* </RainbowKitProvider> */}
             </QueryClientProvider>
         </WagmiProvider>
     )
 }
 
-export default RainbowKitComponent
+export default WagmiComponent

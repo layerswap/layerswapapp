@@ -16,7 +16,7 @@ import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
-import RainbowKit from "./RainbowKit";
+import RainbowKit from "./Wagmi";
 import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
 // import { datadogRum } from '@datadog/browser-rum';
