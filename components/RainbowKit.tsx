@@ -15,7 +15,7 @@ import AddressIcon from "./AddressIcon";
 import NetworkSettings from "../lib/NetworkSettings";
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { argentWallet, bitgetWallet, coinbaseWallet, metaMaskWallet, phantomWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
+import { argentWallet, bitgetWallet, coinbaseWallet, injectedWallet, metaMaskWallet, phantomWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 import { createConfig } from 'wagmi';
 import { Chain } from 'viem';
 
@@ -39,6 +39,7 @@ const connectors = connectorsForWallets(
         {
             groupName: 'Popular',
             wallets: [
+                injectedWallet,
                 metaMaskWallet,
                 walletConnectWallet,
             ],
@@ -74,7 +75,7 @@ function RainbowKitComponent({ children }: Props) {
     const config = createConfig({
         connectors,
         chains: settingsChains,
-        transports:[]
+        transports: []
     });
 
     const theme = darkTheme({

@@ -21,6 +21,7 @@ type CommandSelectWrapperProps = {
     requireConfirmation?: boolean;
     selectedItem?: ISelectMenuItem | null;
     setSelectedItem?: (item: ISelectMenuItem | null) => void;
+    direction?: string;
 }
 
 export default function CommandSelectWrapper<T>({

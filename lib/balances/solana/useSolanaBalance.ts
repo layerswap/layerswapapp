@@ -9,14 +9,20 @@ import {
     GasProps,
     NetworkBalancesProps
 } from "../../../Models/Balance";
+import { useSettingsState } from "../../../context/settings";
 
 export default function useSolanaBalance(): BalanceProvider {
+
+    const { networks } = useSettingsState()
+
     const supportedNetworks = [
         KnownInternalNames.Networks.SolanaMainnet
     ]
-    const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
 
-        if(!address) return
+    const getNetworkBalances = async ({ networkName, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === networkName)
+
+        if (!address) return
 
         const SolanaWeb3 = await import("@solana/web3.js");
         const { PublicKey, Connection } = SolanaWeb3
@@ -25,7 +31,7 @@ export default function useSolanaBalance(): BalanceProvider {
         const walletPublicKey = new PublicKey(address)
         let balances: Balance[] = []
 
-        if (!network.tokens || !walletPublicKey) return
+        if (!network?.tokens || !walletPublicKey) return
 
         const connection = new SolanaConnection(
             `${network.node_url}`,
@@ -40,12 +46,20 @@ export default function useSolanaBalance(): BalanceProvider {
         for (let i = 0; i < network.tokens.length; i++) {
             try {
                 const asset = network.tokens[i]
-                const sourceToken = new PublicKey(asset?.contract!);
-                const associatedTokenFrom = await getAssociatedTokenAddress(
-                    sourceToken,
-                    walletPublicKey
-                );
-                const result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
+
+                let result: number | null = null
+
+                if (asset.contract) {
+                    const sourceToken = new PublicKey(asset?.contract!);
+                    const associatedTokenFrom = await getAssociatedTokenAddress(
+                        sourceToken,
+                        walletPublicKey
+                    );
+                    if (!associatedTokenFrom) return
+                    result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
+                } else {
+                    result = await connection.getBalance(walletPublicKey)
+                }
 
                 if (result != null && !isNaN(result)) {
                     const balance = {
@@ -90,12 +104,19 @@ export default function useSolanaBalance(): BalanceProvider {
             return info?.value?.uiAmount;
         }
 
-        const sourceToken = new PublicKey(token?.contract!);
-        const associatedTokenFrom = await getAssociatedTokenAddress(
-            sourceToken,
-            walletPublicKey
-        );
-        const result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
+        let result: number | null = null
+
+        if (token.contract) {
+            const sourceToken = new PublicKey(token?.contract);
+            const associatedTokenFrom = await getAssociatedTokenAddress(
+                sourceToken,
+                walletPublicKey
+            );
+            if (!associatedTokenFrom) return
+            result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
+        } else {
+            result = await connection.getBalance(walletPublicKey)
+        }
 
         if (result != null && !isNaN(result)) {
             return {

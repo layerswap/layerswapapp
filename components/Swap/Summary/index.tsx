@@ -25,7 +25,7 @@ const SwapSummary: FC = () => {
         return source_network && getProvider(source_network)
     }, [source_network, getProvider])
 
-    const wallet = provider?.getConnectedWallet()
+    const wallet = provider?.getConnectedWallet(source_network)
 
     if (!swap || !source_network || !source_token || !destination_token || !destination_network) {
         return <></>
