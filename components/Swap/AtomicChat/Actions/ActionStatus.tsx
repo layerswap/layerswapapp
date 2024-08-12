@@ -11,9 +11,9 @@ const ActionStatus: FC<Props> = ({ title, status }) => {
         <div className='relative self-center'>
             {resolveIcon(status)}
         </div>
-        <p className="text-md text-left self-center text-secondary-text">
+        <div className="text-md text-left self-center text-secondary-text">
             {title}
-        </p>
+        </div>
     </div>
 }
 

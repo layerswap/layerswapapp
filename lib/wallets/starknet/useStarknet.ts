@@ -116,48 +116,58 @@ export default function useStarknet(): WalletProvider {
         if (!tokenContractAddress) {
             throw new Error('No token contract address')
         }
-        const timeLock = Math.floor((Date.now() + LOCK_TIME) / 1000)
-        const parsedAmount = ethers.utils.parseUnits(amount.toString(), decimals).toNumber().toString()
 
-        const erc20Contract = new Contract(
-            ETHABbi,
-            tokenContractAddress,
-            wallet.metadata?.starknetAccount?.account,
-        )
-        const increaseAllowanceCall: Call = erc20Contract.populate("increaseAllowance", [atomicAddress, parsedAmount])
+        try {
+            const timeLock = Math.floor((Date.now() + LOCK_TIME) / 1000)
+            const parsedAmount = ethers.utils.parseUnits(amount.toString(), decimals).toNumber().toString()
 
-        const args = [
-            parsedAmount,
-            destinationChain,
-            destinationAsset,
-            address,
-            sourceAsset,
-            lpAddress,
-            timeLock,
-            messanger,
-            tokenContractAddress,
-        ]
+            const erc20Contract = new Contract(
+                ETHABbi,
+                tokenContractAddress,
+                wallet.metadata?.starknetAccount?.account,
+            )
+            const increaseAllowanceCall: Call = erc20Contract.populate("increaseAllowance", [atomicAddress, parsedAmount])
 
-        const atomicContract = new Contract(
-            PHTLCAbi,
-            atomicAddress,
-            wallet.metadata?.starknetAccount?.account,
-        )
-        const committmentCall: Call = atomicContract.populate("commit", args)
+            const args = [
+                parsedAmount,
+                destinationChain,
+                destinationAsset,
+                address,
+                sourceAsset.symbol,
+                lpAddress,
+                timeLock,
+                messanger,
+                tokenContractAddress,
+            ]
 
-        const trx = (await wallet?.metadata?.starknetAccount?.account?.execute([increaseAllowanceCall, committmentCall]))
+            const atomicContract = new Contract(
+                PHTLCAbi,
+                atomicAddress,
+                wallet.metadata?.starknetAccount?.account,
+            )
 
-        const commitTransactionData = await wallet.metadata.starknetAccount.provider.waitForTransaction(
-            trx.transaction_hash
-        );
-        const parsedEvents = atomicContract.parseEvents(commitTransactionData);
-        const tokenCommitedEvent = parsedEvents.find((event: any) => event.TokenCommitted)
-        const commitId = tokenCommitedEvent?.TokenCommitted.commitId
-        if (!commitId) {
-            throw new Error('No commit id')
+            const committmentCall: Call = atomicContract.populate("commit", args)
+
+            const trx = (await wallet?.metadata?.starknetAccount?.account?.execute([increaseAllowanceCall, committmentCall]))
+
+            const commitTransactionData = await wallet.metadata.starknetAccount.provider.waitForTransaction(
+                trx.transaction_hash
+            );
+            const parsedEvents = atomicContract.parseEvents(commitTransactionData);
+            const tokenCommitedEvent = parsedEvents.find((event: any) => event.TokenCommitted)
+            const commitId = tokenCommitedEvent?.TokenCommitted.commitId
+            if (!commitId) {
+                throw new Error('No commit id')
+            }
+
+            const res = ethers.utils.hexlify(commitId as BigNumberish)
+            return { hash: trx.transaction_hash as `0x${string}`, commitId: res as `0x${string}` }
         }
-        const res = ethers.utils.hexlify(commitId as BigNumberish)
-        return { hash: trx.transaction_hash as `0x${string}`, commitId: res as `0x${string}` }
+        catch (e) {
+            console.log(e)
+            throw new Error(e)
+        }
+
     }
     const convertToHTLC = () => {
         throw new Error('Not implemented')
