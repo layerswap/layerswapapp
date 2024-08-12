@@ -8,14 +8,12 @@ import { BalanceProvider } from "../Models/Balance"
 import useWallet from "./useWallet"
 import { useBalancesState, useBalancesUpdate } from "../context/balances"
 import { Network, NetworkWithTokens, Token } from "../Models/Network"
-import useQueryBalances from "../lib/balances/query/useQueryBalances"
 import { useQueryState } from "../context/query"
 import useTonBalance from "../lib/balances/ton/useTonBalance"
 
 export default function useBalanceProvider() {
 
     const BalanceProviders: BalanceProvider[] = [
-        useQueryBalances(),
         useEVMBalance(),
         useStarknetBalance(),
         useLoopringBalance(),
@@ -52,7 +50,7 @@ export default function useBalanceProvider() {
 
             const provider = getBalanceProvider(network)
             const networkBalances = await provider?.getNetworkBalances({
-                network: network,
+                networkName: network.name,
                 address: address,
             }) || []
 
@@ -65,10 +63,10 @@ export default function useBalanceProvider() {
         }
     }
 
-    const fetchBalance = async (network: Network, token: Token) => {
+    const fetchBalance = async (network: Network, token: Token, address?: string) => {
         const provider = getProvider(network, 'autofil')
         const wallet = provider?.activeWallet
-        const address = query.account || wallet?.address
+        address = address || query.account || wallet?.address
 
         const balance = balances[address || '']?.find(b => b?.network === network?.name)
         const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
@@ -83,15 +81,19 @@ export default function useBalanceProvider() {
                 network: network,
                 address: address,
                 token
-            }) || []
+            })
 
             setAllBalances((data) => {
                 const walletBalances = data[address]
                 const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
-                return { ...data, [address]: filteredBalances?.concat(balance) }
+                return { ...data, [address]: filteredBalances?.concat(balance || []) }
             })
             setIsBalanceLoading(false)
+
+            return balance
         }
+
+        return balance
     }
 
     const fetchGas = async (network: Network, token: Token, userDestinationAddress: string, recipientAddress?: string) => {

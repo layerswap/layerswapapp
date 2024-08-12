@@ -1,5 +1,5 @@
 import { Plus, RefreshCw } from "lucide-react";
-import { NewWalletProvider } from "../../../../hooks/useWallet";
+import { WalletProvider } from "../../../../hooks/useWallet";
 import { addressFormat } from "../../../../lib/address/formatter";
 import { ResolveConnectorIcon } from "../../../icons/ConnectorIcons";
 import { Wallet } from "../../../../stores/walletStore";
@@ -10,7 +10,7 @@ import { AddressGroup } from ".";
 import { FC, useState } from "react";
 
 type Props = {
-    provider: NewWalletProvider,
+    provider: WalletProvider,
     onClick: () => void,
     onConnect?: () => void,
     connectedWallet: Wallet | undefined,
@@ -72,7 +72,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
             </button>
         </div>
         :
-        <button typeof="button" onClick={connect} type="button" className="py-5 px-6 bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl">
+        <button typeof="button" onClick={connect} type="button" className={`py-5 px-6 bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl ${isLoading && 'cursor-progress opacity-80'}`}>
             <div className="flex flex-row justify-between gap-9 items-stretch">
                 <ResolveConnectorIcon
                     connector={provider.name}
@@ -86,7 +86,15 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
                 <div className="h-full space-y-2">
                     <p className="text-sm font-medium text-secondary-text text-start">Connect your wallet to select a destination address</p>
                     <div className="bg-primary-700/30 border-none !text-primary py-2 rounded-lg text-base font-semibold">
-                        Connect Now
+                        {
+                            isLoading ?
+                                <div className="flex items-center gap-1 justify-center">
+                                    <RefreshCw className="h-3 w-auto animate-spin" />
+                                    <span className="ml-1">Connecting...</span>
+                                </div>
+                                :
+                                <>Connect Now</>
+                        }
                     </div>
                 </div>
             </div>

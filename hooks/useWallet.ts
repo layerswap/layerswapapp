@@ -2,7 +2,7 @@ import { Network, RouteNetwork } from "../Models/Network"
 import useEVM from "../lib/wallets/evm/useEVM";
 import { Wallet } from "../stores/walletStore";
 
-export type NewWalletProvider = {
+export type WalletProvider = {
     connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
     disconnectWallets: () => Promise<void> | undefined | void,
     reconnectWallet: (props?: { chain?: string | number | undefined | null }) => Promise<void> | undefined | void,
@@ -19,7 +19,7 @@ type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 
 export default function useWallet(network?: Network | undefined, purpose?: WalletPurpose) {
 
-    const walletProviders: NewWalletProvider[] = [
+    const walletProviders: WalletProvider[] = [
         useEVM(),
     ]
     const provider = network && resolveProvider(network, walletProviders, purpose)
@@ -54,7 +54,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
 }
 
 
-const resolveProvider = (network: Network, walletProviders: NewWalletProvider[], purpose?: WalletPurpose) => {
+const resolveProvider = (network: Network, walletProviders: WalletProvider[], purpose?: WalletPurpose) => {
     if (!purpose) return
     switch (purpose) {
         case "withdrawal":
