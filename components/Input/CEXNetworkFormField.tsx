@@ -164,7 +164,7 @@ function GenerateMenuItems(
                     loading="eager"
                     className="rounded-full object-contain" />
             </div>
-            <p className="text-primary-text-placeholder text-xs">
+            <p className="text-secondary-text text-xs">
                 {e.token.symbol}
                 {e.token.contract && network && (
                     <>
@@ -172,7 +172,7 @@ function GenerateMenuItems(
                         <Link
                             target="_blank"
                             href={network.account_explorer_template.replace("{0}", e.token.contract)}
-                            className="underline text-primary-text-placeholder hover:no-underline w-fit"
+                            className="underline text-secondary-text hover:no-underline w-fit"
                         >
                             {shortenAddress(e.token.contract)}
                         </Link>

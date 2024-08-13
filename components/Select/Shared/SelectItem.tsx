@@ -16,7 +16,7 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                     loading="eager"
                     className="rounded-md object-contain" />}
             </div>
-            <p className='text-md font-medium flex w-full justify-between space-x-2 '>
+            <p className='text-md font-medium flex w-full justify-between space-x-2'>
                 <div className="flex flex-col">
                     <span className="flex items-center pb-0.5">{item.displayName ? item.displayName : item.name}</span>
                     {item.details}
