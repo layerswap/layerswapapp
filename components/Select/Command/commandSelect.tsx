@@ -50,7 +50,9 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
 
     return (
         <Modal height={modalHeight} show={show} setShow={setShow} modalId='comandSelect'>
-            {header ? <h1 className='absolute top-4 left-8 text-lg text-primary-text-placeholder font-semibold'>{header}</h1> : <></>}
+            {header ? <div className="absolute top-4 left-8 text-lg text-secondary-text font-semibold">
+                <div>{header}</div>
+            </div> : <></>}
             {show ?
                 <CommandWrapper>
                     {searchHint && <CommandInput autoFocus={isDesktop} placeholder={searchHint} />}
