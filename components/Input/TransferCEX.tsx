@@ -47,7 +47,7 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
                 <div className="w-full px-2.5">
                     <div className="flex items-center mb-2">
                         <p className="text-primary-buttonTextColor text-xs leading-5">
-                            The network you select here will be used as an intermediary for the transfer from {fromExchange ? cex : chain} to {fromExchange ? chain : cex}.
+                            <span>The network you select here will be used as an intermediary for the transfer from {fromExchange ? cex : chain} to {fromExchange ? chain : cex}.</span>
                             <span className={`transition-all duration-500 ease-out ${isExpanded ? 'inline' : 'hidden'}`}>
                                 {fromExchange ? (
                                     <> Before selecting the network, please check which one is available on {cex} for withdrawal.</>
