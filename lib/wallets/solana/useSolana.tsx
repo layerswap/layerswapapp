@@ -58,6 +58,6 @@ export default function useSolana(): WalletProvider {
         autofillSupportedNetworks: withdrawalSupportedNetworks,
         asSourceSupportedNetworks: withdrawalSupportedNetworks,
         name,
-        id
+        id,
     }
 }

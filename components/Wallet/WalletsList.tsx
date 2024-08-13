@@ -9,7 +9,7 @@ const WalletsList = () => {
     return (
         <div className="space-y-3">
             <ConnectButton className="w-full flex justify-center p-2 bg-secondary-700 rounded-md hover:bg-secondary-600">
-                <div className="flex items-center text-secondary-text hover:text-secondary-text/80 gap-1 px-3 py-1">
+                <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
                     <Plus className="h-4 w-4" />
                     <span className="text-sm">
                         Connect new wallet
@@ -24,12 +24,20 @@ const WalletsList = () => {
                                 {
                                     wallet.connector &&
                                     <div className="inline-flex items-center relative">
-                                        <wallet.icon className="w-8 h-8 p-0.5 rounded-full bg-secondary-800 border border-secondary-400" />
+                                        <wallet.icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
                                     </div>
                                 }
-                                {!wallet.isLoading && wallet.address && <p>{shortenAddress(wallet.address)}</p>}
+                                <div>
+                                    {
+                                        !wallet.isLoading && wallet.address && 
+                                        <p className="text-sm">{shortenAddress(wallet.address)}</p>
+                                    }
+                                    <p className="text-xs text-secondary-text">
+                                        {wallet.connector}
+                                    </p>
+                                </div>
                             </div>
-                            <button onClick={wallet.disconnect} className="p-1 hover:bg-secondary-700 text-xs text-secondary-text hover:opacity-75">
+                            <button onClick={wallet.disconnect} className="text-xs text-secondary-text hover:opacity-75">
                                 Disconnect
                             </button>
                         </div>

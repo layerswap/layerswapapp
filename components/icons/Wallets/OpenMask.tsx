@@ -3,7 +3,7 @@ import { SVGProps } from "react"
 const OpenMask = (props: SVGProps<SVGSVGElement>) => {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="30" viewBox="0 0 32 30" fill="none" {...props}>
-            <g clip-path="url(#clip0_1761_866)">
+            <g clipPath="url(#clip0_1761_866)">
                 <path d="M10.2852 1.15381L15.9994 24.2307L21.7137 1.15381H10.2852Z" fill="#A0DDFE" stroke="#A0DDFE" />
                 <path d="M21.9429 1.15381L16 24.2307L29.7143 8.99996L21.9429 1.15381Z" fill="#88D3FF" stroke="#88D3FF" />
                 <path d="M29.7143 9.23096L16 24.231L29.7143 21.0491V9.23096Z" fill="#73CBFF" stroke="#73CBFF" />

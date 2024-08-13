@@ -1,7 +1,6 @@
 import { WalletProvider } from "../../../hooks/useWallet";
 import { useWalletStore } from "../../../stores/walletStore"
 import KnownInternalNames from "../../knownIds"
-import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
 
@@ -35,10 +34,12 @@ export default function useStarknet(): WalletProvider {
         return undefined
     }
 
-    const connectWallet = useCallback(async ({ chain }: { chain: string | undefined }) => {
+    const connectWallet = async (props?: { chain?: string | undefined }) => {
+        const { chain } = props || {}
         const constants = (await import('starknet')).constants
         const connect = (await import('starknetkit')).connect
         const chainId = chain === constants.StarknetChainId.SN_SEPOLIA ? constants.NetworkName.SN_SEPOLIA : constants.NetworkName.SN_MAIN
+
         try {
             const { wallet } = await connect({
                 argentMobileOptions: {
@@ -81,7 +82,7 @@ export default function useStarknet(): WalletProvider {
             console.log(e)
             toast.error(e.message, { duration: 30000 })
         }
-    }, [addWallet])
+    }
 
     const disconnectWallets = async () => {
         const disconnect = (await import('starknetkit')).disconnect
@@ -101,6 +102,7 @@ export default function useStarknet(): WalletProvider {
 
     return {
         connectedWallets: getWallet(),
+        activeWallet,
         connectWallet,
         disconnectWallets,
         reconnectWallet,
@@ -109,6 +111,5 @@ export default function useStarknet(): WalletProvider {
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
-        activeWallet
     }
 }

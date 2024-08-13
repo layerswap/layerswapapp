@@ -1,14 +1,5 @@
-import { ReactNode, SetStateAction, useState } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
+import { ReactNode, useState } from "react";
 import useWallet from "../../hooks/useWallet";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "../shadcn/dialog";
-import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { ResolveConnectorIcon } from "../icons/ConnectorIcons";
 import Modal from "../modal/modal";
 
@@ -23,7 +14,6 @@ const ConnectButton = ({
 }) => {
     const { providers } = useWallet();
     const [open, setOpen] = useState<boolean>(false);
-    const { isMobile } = useWindowDimensions();
     const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks)
 
     return (
@@ -65,8 +55,6 @@ const ConnectButton = ({
                 </div>
             </Modal>
         </>
-
-
     )
 };
 

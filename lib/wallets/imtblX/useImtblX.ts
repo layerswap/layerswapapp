@@ -64,6 +64,6 @@ export default function useImtblX(): WalletProvider {
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks: withdrawalSupportedNetworks,
         name,
-        id
+        id,
     }
 }
