@@ -19,12 +19,12 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
 
     const cex = fromExchange ? fromExchange.display_name : toExchange?.display_name
     const chain = from ? from.display_name : to?.display_name
-console.log(value,"lol")
+
     return (<div className="font-normal flex flex-col w-full relative z-10 my-3 pb-4 border-b-2 border-b-secondary">
         <div className="w-full px-2.5 space-y-2">
             <div className="flex items-center mb-">
                 <p className="text-primary-text-placeholder text-base leading-5">
-                    <span>Please selectan intermediary network available on </span>
+                    <span>Please select an intermediary network available on </span>
                     <span>{fromExchange ? cex : chain}&nbsp;</span>
                     <span>to be used for </span>
                     <span>{fromExchange ? 'withdrawal' : 'deposit'}</span><span>.</span>
