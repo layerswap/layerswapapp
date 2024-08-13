@@ -31,8 +31,8 @@ export default function CommandSelectWrapper<T>({
     valueGrouper,
     isLoading,
     modalHeight,
-    valueDetails,
     modalContent,
+    valueDetails
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
