@@ -14,15 +14,15 @@ type TransferCEXProps = {
 
 const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedItem }) => {
     const { from, to, fromExchange, toExchange } = values
-    const sourceLogo = from ? from.logo : fromExchange?.logo
-    const destinationLogo = to ? to.logo : toExchange?.logo
+    const sourceLogo = fromExchange ? fromExchange.logo : from?.logo
+    const destinationLogo = toExchange ? toExchange.logo : to?.logo
 
     const cex = fromExchange ? fromExchange.display_name : toExchange?.display_name
     const chain = from ? from.display_name : to?.display_name
-
-    return (<div className="font-normal flex flex-col w-full relative z-10 pb-3 mb-3 border-b-2 border-b-secondary">
-        <div className="w-full px-2.5">
-            <div className="flex items-center mb-2 ">
+console.log(value,"lol")
+    return (<div className="font-normal flex flex-col w-full relative z-10 my-3 pb-4 border-b-2 border-b-secondary">
+        <div className="w-full px-2.5 space-y-2">
+            <div className="flex items-center mb-">
                 <p className="text-primary-text-placeholder text-base leading-5">
                     <span>Please selectan intermediary network available on </span>
                     <span>{fromExchange ? cex : chain}&nbsp;</span>
@@ -31,7 +31,7 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
                     <a target='_blank' href='https://docs.layerswap.io/user-docs/layerswap-app/your-first-swap/transfers-to-cex' className='text-primary-text-placeholder underline hover:no-underline decoration-primary-text-placeholder ml-1 cursor-pointer'>Learn more</a>
                 </p>
             </div>
-            <div className="relative flex items-center space-x-2">
+            <div className="relative flex items-center space-x-2 space-y-2">
                 <div className="flex-shrink-0 h-6 w-6 relative">
                     {(values.from || values.fromExchange) && <Image
                         src={sourceLogo!}
@@ -45,7 +45,7 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
                 <div className="w-full h-[2px] bg-primary-text-placeholder my-2 line line-left" />
                 <div className="flex-shrink-0 h-9 w-9 relative">
                     {value ? <Image
-                        src={destinationLogo!}
+                        src={value?.imgSrc}
                         alt="Project Logo"
                         height="40"
                         width="40"
