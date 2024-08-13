@@ -32,7 +32,7 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
             }, 1500);
             return () => clearInterval(interval);
         }
-    }, [manuItems, selectedItem]);
+    }, [value, manuItems, selectedItem]);
 
     const { from, to, fromExchange, toExchange } = values
     const sourceLogo = from ? from.logo : fromExchange?.logo
@@ -47,13 +47,13 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
                 <div className="w-full px-2.5">
                     <div className="flex items-center mb-2">
                         <p className="text-primary-buttonTextColor text-xs leading-5">
-                            <span>The network you select here will be used as an intermediary for the transfer from {fromExchange ? cex : chain} to {fromExchange ? chain : cex}.</span>
+                            <span>The network you select here will be used as an intermediary for the transfer from</span>
+                            <span>{fromExchange ? cex : chain}&nbsp;</span>
+                            <span>to</span>
+                            <span>{fromExchange ? chain : cex}</span><span>.</span>
                             <span className={`transition-all duration-500 ease-out ${isExpanded ? 'inline' : 'hidden'}`}>
-                                {fromExchange ? (
-                                    <> Before selecting the network, please check which one is available on {cex} for withdrawal.</>
-                                ) : (
-                                    <> Before selecting the network, please check which one is available on {cex} for deposit.</>
-                                )}
+                                <span> Before selecting the network, please check which one is available on</span>
+                                <span>{cex}</span> <span>for</span> <span>{fromExchange ? 'withdrawal' : 'deposit'}</span><span>.</span>
                             </span>
                             <span className="underline cursor-pointer text-primary-text-placeholder ml-0.5" onClick={toggleExpand}>{isExpanded ? 'Show less' : 'Learn more'}</span>
                         </p>
@@ -88,7 +88,7 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 
