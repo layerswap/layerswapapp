@@ -59,7 +59,7 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
                         </p>
                     </div>
                     <div className="relative flex items-center space-x-2">
-                        <div className="flex-shrink-0 h-4 w-4 relative">
+                        <div className="flex-shrink-0 h-6 w-6 relative">
                             {(values.from || values.fromExchange) && <Image
                                 src={sourceLogo!}
                                 alt="Project Logo"
@@ -72,7 +72,7 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
                         <div className="w-full h-[2px] bg-transparent my-2 line line-left" />
                         <AnimatedImage src={currentValue?.imgSrc ?? ''} />
                         <div className="w-full h-[2px] bg-transparent my-2 line line-right" />
-                        <div className="flex-shrink-0 h-4 w-4 relative">
+                        <div className="flex-shrink-0 h-6 w-6 relative">
                             {(values.to || values.toExchange) && <Image
                                 src={destinationLogo!}
                                 alt="Project Logo"
@@ -95,7 +95,7 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
 export default TransferCEX;
 
 const AnimatedImage: FC<{ src: string }> = memo(({ src }) => (
-    <div className="flex-shrink-0 h-6 w-6 relative z-10">
+    <div className="flex-shrink-0 h-8 w-8 relative z-10">
         <Image
             src={src}
             alt="Project Logo"

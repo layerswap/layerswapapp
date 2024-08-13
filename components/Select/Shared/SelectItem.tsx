@@ -5,9 +5,9 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
     const isDisabled = !item.isAvailable;
 
     return (<div className={`${isDisabled ? "opacity-50" : ""} flex items-center justify-between gap-4 w-full overflow-hidden`}>
-        <div className="relative flex items-center gap-4 pl-4">
-            {!isDisabled && item.leftIcon}
-            <div className={`${item.details ? "h-9 w-9" : "h-6 w-6"} flex-shrink-0 relative`}>
+        <div className={`${item?.details ? "gap-2" : "gap-4"} relative flex items-center pl-4`}>
+            {!isDisabled && item?.leftIcon}
+            <div className={`${item?.details ? "h-9 w-9" : "h-6 w-6"} flex-shrink-0 relative`}>
                 {item.imgSrc && <Image
                     src={item.imgSrc}
                     alt="Project Logo"
