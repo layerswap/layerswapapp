@@ -28,8 +28,11 @@ export default function useStarknet(): WalletProvider {
     const getWallet = () => {
         return wallets.find(wallet => wallet.providerName === name)
     }
-
-    const connectWallet = useCallback(async ({ chain }: { chain: string }) => {
+    type ConnectProps = {
+        chain?: string
+    }
+    const connectWallet = useCallback(async (props?: ConnectProps) => {
+        const { chain } = props || {}
         const constants = (await import('starknet')).constants
         const connect = (await import('starknetkit')).connect
         try {
