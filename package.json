@@ -103,7 +103,6 @@
     "autoprefixer": "^10.4.5",
     "chromatic": "^6.24.1",
     "cross-env": "^7.0.3",
-    "dotenv": "^16.4.5",
     "eslint": "8.49.0",
     "eslint-config-next": "^14.0.4",
     "eslint-plugin-no-conditional-literals-in-jsx": "file:eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx",
