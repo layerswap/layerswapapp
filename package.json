@@ -5,7 +5,7 @@
   "scripts": {
     "debug": "next dev",
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && if test \"$NEXT_PUBLIC_VERCEL_ENV\" = \"production\"; then  datadog-ci sourcemaps upload .next/static/chunks/ --service=layerswapuiapp --release-version=$NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA --minified-path-prefix=https://$NEXT_PUBLIC_VERCEL_URL$APP_BASE_PATH/_next/static/chunks/; fi",
     "start": "next start",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
