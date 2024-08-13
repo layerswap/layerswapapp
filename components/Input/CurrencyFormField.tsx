@@ -206,13 +206,13 @@ function GenerateCurrencyMenuItems(
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
-        const details = c.status === 'inactive' ?
+        const rightIcon = c.status === 'inactive' ?
             <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> :
             <p className="text-primary-text-muted">
                 {formatted_balance_amount}
             </p>
 
-        const icon = showRouteIcon ? (
+        const leftIcon = showRouteIcon ? (
             <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild >
                     <div className="absolute -left-0 z-50">
@@ -234,9 +234,9 @@ function GenerateCurrencyMenuItems(
             order: ResolveCurrencyOrder(c, isNewlyListed),
             imgSrc: c.logo,
             isAvailable: currencyIsAvailable,
-            details,
+            rightIcon,
             badge,
-            icon
+            leftIcon
         };
 
         return res

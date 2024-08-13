@@ -12,6 +12,7 @@ import { NetworkWithTokens, RouteNetwork } from "../../Models/Network";
 import { ExchangeNetwork } from "../../Models/Exchange";
 import { isValidAddress } from "../../lib/address/validator";
 import TransferCEX from "./TransferCEX";
+import Image from 'next/image'
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -105,6 +106,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     </>
 
     const networkDetails = <div>
+        <TransferCEX values={values} manuItems={menuItems} selectedItem={selectedItem} value={value} />
         <div className="relative z-20 mb-3 ml-3 text-primary-buttonTextColor text-sm">
             <p className="text-sm mt-2 flex space-x-1">
                 <span>Please make sure that the exchange supports the token and network you select here.</span>
@@ -154,9 +156,32 @@ function GenerateMenuItems(
     const menuItems = historicalNetworks.map((e, index) => {
 
         const network = routes?.find(l => l.name == e.network.name);
-        const details = <p className="text-primary-text-muted">
-            {e.token.symbol}
-        </p>
+        const details = <div className="flex items-center space-x-1">
+            <div className="w-3.5 h-3.5">
+                <Image
+                    src={e.token.logo}
+                    alt="Project Logo"
+                    height="20"
+                    width="20"
+                    loading="eager"
+                    className="rounded-full object-contain" />
+            </div>
+            <p className="text-primary-text-placeholder text-xs">
+                {e.token.symbol}
+                {e.token.contract && network && (
+                    <>
+                        {' - '}
+                        <Link
+                            target="_blank"
+                            href={network.account_explorer_template.replace("{0}", e.token.contract)}
+                            className="underline text-primary-text-placeholder hover:no-underline w-fit"
+                        >
+                            {shortenAddress(e.token.contract)}
+                        </Link>
+                    </>
+                )}
+            </p>
+        </div>
 
         const item: SelectMenuItem<ExchangeNetwork> = {
             baseObject: e,

@@ -6,8 +6,8 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
 
     return (<div className={`${isDisabled ? "opacity-50" : ""} flex items-center justify-between gap-4 w-full overflow-hidden`}>
         <div className="relative flex items-center gap-4 pl-4">
-            {!isDisabled && item.icon}
-            <div className="flex-shrink-0 h-6 w-6 relative">
+            {!isDisabled && item.leftIcon}
+            <div className={`${item.details ? "h-9 w-9" : "h-6 w-6"} flex-shrink-0 relative`}>
                 {item.imgSrc && <Image
                     src={item.imgSrc}
                     alt="Project Logo"
@@ -17,14 +17,17 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                     className="rounded-md object-contain" />}
             </div>
             <p className='text-md font-medium flex w-full justify-between space-x-2 '>
-                <span className="flex items-center justify-center pb-0.5">{item.displayName ? item.displayName : item.name}</span>
+                <div className="flex flex-col">
+                    <span className="flex items-center pb-0.5">{item.displayName ? item.displayName : item.name}</span>
+                    {item.details}
+                </div>
                 {item.badge}
             </p>
         </div>
         {
-            item.details &&
+            item.rightIcon &&
             <>
-                {item.details}
+                {item.rightIcon}
             </>
         }
     </div>);

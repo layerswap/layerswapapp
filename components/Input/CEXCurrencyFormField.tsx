@@ -95,10 +95,10 @@ export function GenerateCurrencyMenuItems(
         const displayName = lockedCurrency?.symbol ?? currency.symbol;
 
         const isAvailable = (lockedCurrency || (c?.status !== "active" && c.status !== "not_found")) ? false : true;
-        const details = c.status === 'inactive' ?
+        const rightIcon = c.status === 'inactive' ?
             <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> : <></>
 
-        const icon = c.status === "not_found" ? (
+        const leftIcon = c.status === "not_found" ? (
             <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild >
                     <div className="absolute -left-0 z-50">
@@ -120,8 +120,8 @@ export function GenerateCurrencyMenuItems(
             order: ResolveCEXCurrencyOrder(c),
             imgSrc: c.logo,
             isAvailable: isAvailable,
-            details,
-            icon
+            rightIcon,
+            leftIcon
         };
         return res
     });

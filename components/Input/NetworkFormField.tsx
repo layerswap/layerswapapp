@@ -109,8 +109,10 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         if (item.baseObject.name === value?.baseObject.name)
             return
         if (item.isExchange) {
+            setFieldValue(name, null)
             setFieldValue(`${name}Exchange`, item.baseObject, true)
         } else {
+            setFieldValue(`${name}Exchange`, null)
             setFieldValue(name, item.baseObject, true)
             const currency = name == "from" ? fromCurrency : toCurrency
             const assetSubstitute = (item.baseObject as RouteNetwork)?.tokens?.find(a => a.symbol === currency?.symbol)
@@ -196,12 +198,12 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
                 !query.lockAsset && !query.lockFromAsset && !query.lockToAsset && !query.lockFrom && !query.lockTo && !query.lockNetwork && !query.lockExchange && r.tokens?.some(r => r.status !== 'inactive')
             );
 
-        const details = !isAvailable ? <ClickTooltip side="left" text={`Transfers ${direction} this network are not available at the moment. Please try later.`} /> : undefined
+        const rightIcon = !isAvailable ? <ClickTooltip side="left" text={`Transfers ${direction} this network are not available at the moment. Please try later.`} /> : undefined
 
         const order = ResolveNetworkOrder(r, direction, isNewlyListed)
 
         const routeNotFound = isAvailable && !r.tokens?.some(r => r.status === 'active') ;
-        const icon = routeNotFound ? (
+        const leftIcon = routeNotFound ? (
             <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild >
                     <div className="absolute -left-0 z-50">
@@ -225,9 +227,9 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             isAvailable: isAvailable,
             group: getGroupName(r, 'network', isAvailable && !routeNotFound),
             isExchange: false,
-            details,
+            rightIcon,
             badge,
-            icon
+            leftIcon
         }
         return res;
     }).sort(SortAscending) || [];
