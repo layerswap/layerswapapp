@@ -26,6 +26,7 @@ export interface CommandSelectProps extends SelectProps {
     requireConfirmation?: boolean;
     selectedItem?: ISelectMenuItem | null;
     setSelectedItem?: (item: ISelectMenuItem | null) => void;
+    header?: string;
 }
 
 export class SelectMenuItemGroup {
@@ -37,7 +38,7 @@ export class SelectMenuItemGroup {
     items: ISelectMenuItem[];
 }
 
-export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading, modalHeight = 'full', modalContent, requireConfirmation = false, selectedItem, setSelectedItem }: CommandSelectProps) {
+export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, isLoading, modalHeight = 'full', modalContent, requireConfirmation = false, selectedItem, setSelectedItem, header }: CommandSelectProps) {
     const { isDesktop } = useWindowDimensions();
 
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
@@ -49,6 +50,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
 
     return (
         <Modal height={modalHeight} show={show} setShow={setShow} modalId='comandSelect'>
+            {header ? <h1 className='absolute top-4 left-8 text-lg text-primary-text-placeholder font-semibold'>{header}</h1> : <></>}
             {show ?
                 <CommandWrapper>
                     {searchHint && <CommandInput autoFocus={isDesktop} placeholder={searchHint} />}

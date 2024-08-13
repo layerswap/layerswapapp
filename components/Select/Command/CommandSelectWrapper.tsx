@@ -22,6 +22,7 @@ type CommandSelectWrapperProps = {
     selectedItem?: ISelectMenuItem | null;
     setSelectedItem?: (item: ISelectMenuItem | null) => void;
     direction?: string;
+    header?: string;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -38,7 +39,8 @@ export default function CommandSelectWrapper<T>({
     modalContent,
     requireConfirmation,
     selectedItem,
-    setSelectedItem
+    setSelectedItem,
+    header
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -105,6 +107,7 @@ export default function CommandSelectWrapper<T>({
                 requireConfirmation={requireConfirmation}
                 selectedItem={selectedItem}
                 setSelectedItem={setSelectedItem}
+                header={header}
             />
         </>
     )

@@ -107,17 +107,14 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     const networkDetails = <div>
         <TransferCEX values={values} manuItems={menuItems} selectedItem={selectedItem} value={value} />
-        <div className="relative z-20 mb-3 ml-3 text-primary-buttonTextColor text-sm">
-            <p className="text-sm mt-2 flex space-x-1">
-                <span>Please make sure that the exchange supports the token and network you select here.</span>
-            </p>
-        </div>
     </div>
+
+    const header = direction === 'from' ? 'Withdrawal network' : 'Deposit network'
 
     return (<div className={`p-2 rounded-lg bg-secondary-700 border border-secondary-500`}>
         <label htmlFor={name} className="font-semibold flex justify-between text-secondary-text text-xs mb-1.5">
             <div className="flex space-x-1">
-                <span>{direction === 'from' ? 'Withdrawal network' : 'Deposit network'}</span>
+                <span>{header}</span>
             </div>
             {
                 currency?.contract && isValidAddress(currency.contract, network) && network &&
@@ -145,6 +142,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             requireConfirmation={true}
             selectedItem={selectedItem}
             setSelectedItem={setSelectedItem}
+            header={header}
         />
     </div>)
 })

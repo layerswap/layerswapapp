@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { ExchangeNetwork } from "../../Models/Exchange";
+import Link from "next/link";
 
 type TransferCEXProps = {
     values: SwapFormValues;
@@ -13,10 +14,6 @@ type TransferCEXProps = {
 
 const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedItem }) => {
     const [currentValue, setCurrentValue] = useState<ISelectMenuItem | null>(manuItems && manuItems.length > 0 ? manuItems[0] : null);
-
-    const [isExpanded, setIsExpanded] = useState(false);
-
-    const toggleExpand = () => setIsExpanded(!isExpanded);
 
     useEffect(() => {
         if (value) {
@@ -41,54 +38,47 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
     const cex = fromExchange ? fromExchange.display_name : toExchange?.display_name
     const chain = from ? from.display_name : to?.display_name
 
-    return (
-        <div className="bg-secondary-700 rounded-lg px-2 py-1 border border-secondary-500 w-full relative z-10 mt-1">
-            <div className="font-normal flex flex-col w-full relative z-10 space-y-4">
-                <div className="w-full px-2.5">
-                    <div className="flex items-center mb-2">
-                        <p className="text-primary-buttonTextColor text-xs leading-5">
-                            <span>The network you select here will be used as an intermediary for the transfer from</span>
-                            <span>{fromExchange ? cex : chain}&nbsp;</span>
-                            <span>to</span>
-                            <span>{fromExchange ? chain : cex}</span><span>.</span>
-                            <span className={`transition-all duration-500 ease-out ${isExpanded ? 'inline' : 'hidden'}`}>
-                                <span> Before selecting the network, please check which one is available on</span>
-                                <span>{cex}</span> <span>for</span> <span>{fromExchange ? 'withdrawal' : 'deposit'}</span><span>.</span>
-                            </span>
-                            <span className="underline cursor-pointer text-primary-text-placeholder ml-0.5" onClick={toggleExpand}>{isExpanded ? 'Show less' : 'Learn more'}</span>
-                        </p>
-                    </div>
-                    <div className="relative flex items-center space-x-2">
-                        <div className="flex-shrink-0 h-6 w-6 relative">
-                            {(values.from || values.fromExchange) && <Image
-                                src={sourceLogo!}
-                                alt="Project Logo"
-                                height="40"
-                                width="40"
-                                loading="eager"
-                                className="rounded-md object-contain"
-                            />}
-                        </div>
-                        <div className="w-full h-[2px] bg-transparent my-2 line line-left" />
-                        <AnimatedImage src={currentValue?.imgSrc ?? ''} />
-                        <div className="w-full h-[2px] bg-transparent my-2 line line-right" />
-                        <div className="flex-shrink-0 h-6 w-6 relative">
-                            {(values.to || values.toExchange) && <Image
-                                src={destinationLogo!}
-                                alt="Project Logo"
-                                height="40"
-                                width="40"
-                                loading="eager"
-                                className="rounded-md object-contain"
-                            />}
-                        </div>
-                        <div className="absolute top-1/2 transform -translate-y-1/2 w-10/12 h-[2px]">
-                            <span className="pendingAnim"></span>
-                        </div>
-                    </div>
+    return (<div className="font-normal flex flex-col w-full relative z-10 pb-3 mb-3 border-b-2 border-b-secondary">
+        <div className="w-full px-2.5">
+            <div className="flex items-center mb-2 ">
+                <p className="text-primary-buttonTextColor text-sm leading-5">
+                    <span>Please selectan intermediary network available on </span>
+                    <span>{fromExchange ? cex : chain}&nbsp;</span>
+                    <span>to be used for </span>
+                    <span>{fromExchange ? 'withdrawal' : 'deposit'}</span><span>.</span>
+                    <a target='_blank' href='https://docs.layerswap.io/user-docs/layerswap-app/your-first-swap/transfers-to-cex' className='text-primary-text-placeholder underline hover:no-underline decoration-primary-text-placeholder ml-1 cursor-pointer'>Learn more</a>
+                </p>
+            </div>
+            <div className="relative flex items-center space-x-2">
+                <div className="flex-shrink-0 h-6 w-6 relative">
+                    {(values.from || values.fromExchange) && <Image
+                        src={sourceLogo!}
+                        alt="Project Logo"
+                        height="40"
+                        width="40"
+                        loading="eager"
+                        className="rounded-md object-contain"
+                    />}
+                </div>
+                <div className="w-full h-[2px] bg-transparent my-2 line line-left" />
+                <AnimatedImage src={currentValue?.imgSrc ?? ''} />
+                <div className="w-full h-[2px] bg-transparent my-2 line line-right" />
+                <div className="flex-shrink-0 h-6 w-6 relative">
+                    {(values.to || values.toExchange) && <Image
+                        src={destinationLogo!}
+                        alt="Project Logo"
+                        height="40"
+                        width="40"
+                        loading="eager"
+                        className="rounded-md object-contain"
+                    />}
+                </div>
+                <div className="absolute top-1/2 transform -translate-y-1/2 w-10/12 h-[2px]">
+                    <span className="pendingAnim"></span>
                 </div>
             </div>
-        </div >
+        </div>
+    </div>
     );
 }
 
