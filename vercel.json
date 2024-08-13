@@ -1,3 +1,3 @@
 {
-    "buildCommand": "next build && datadog-ci sourcemaps upload .next/static/chunks/ --service=layerswapuiapp --release-version=$NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA --minified-path-prefix=$NEXT_PUBLIC_VERCEL_URL$APP_BASE_PATH/_next/static/chunks/"
+    "buildCommand": "next build && datadog-ci sourcemaps upload .next/static/chunks/ --service=layerswapuiapp --release-version=$NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA --minified-path-prefix=https://$NEXT_PUBLIC_VERCEL_URL$APP_BASE_PATH/_next/static/chunks/"
 }
