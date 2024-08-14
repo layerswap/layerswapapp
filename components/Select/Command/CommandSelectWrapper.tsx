@@ -35,7 +35,6 @@ export default function CommandSelectWrapper<T>({
     valueGrouper,
     isLoading,
     modalHeight,
-    valueDetails,
     modalContent,
     requireConfirmation,
     selectedItem,

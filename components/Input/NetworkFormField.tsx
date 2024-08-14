@@ -89,7 +89,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     useEffect(() => {
         if (!isLoading && routes?.data) setRoutesData(routes.data)
     }, [routes])
-    
+
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
@@ -127,14 +127,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             clearValidationMessage()
     }, [name, value])
 
-    const pickNetworkDetails = <div>
-        {
-            !!(from && lockFrom) || !!(to && lockTo) &&
-            <div className='text-xs text-left text-secondary-text mb-2'>
-                <Info className='h-3 w-3 inline-block mb-0.5' /><span>&nbsp;You&apos;re accessing Layerswap from a partner&apos;s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.</span>
-            </div>
-        }
-    </div>
+    const networkLocked = direction === "from" ? !!(from && lockFrom) : !!(to && lockTo)
 
     return (<div className={`p-3 bg-secondary-700 border border-secondary-500 ${className}`}>
         <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
@@ -143,7 +136,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         <div ref={ref} className="mt-1.5 grid grid-flow-row-dense grid-cols-8 md:grid-cols-6 items-center pr-2">
             <div className="col-span-5 md:col-span-4">
                 <CommandSelectWrapper
-                    disabled={isLoading || error}
+                    disabled={isLoading || error || networkLocked}
                     valueGrouper={groupByType}
                     placeholder={placeholder}
                     setValue={handleSelect}
@@ -151,7 +144,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     values={menuItems}
                     searchHint={searchHint}
                     isLoading={isLoading}
-                    modalContent={pickNetworkDetails}
                     direction={direction}
                 />
             </div>

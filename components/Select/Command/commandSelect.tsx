@@ -7,7 +7,7 @@ import {
     CommandList,
     CommandWrapper
 } from '../../shadcn/command'
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import useWindowDimensions from '../../../hooks/useWindowDimensions';
 import SelectItem from '../Shared/SelectItem';
 import { SelectProps } from '../Shared/Props/SelectProps'

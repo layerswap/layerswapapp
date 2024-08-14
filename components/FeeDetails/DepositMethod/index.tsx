@@ -37,24 +37,31 @@ const DepositMethodComponent: FC = () => {
         }
     ]
 
+
+
     const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods, appName)
     const defaultMethod = menuItems?.find(i => i.id === defaultDepositMethod)
 
+
+    //TODO: Refactor this
     useEffect(() => {
-        if (defaultMethod && (depositMethod !== defaultMethod?.id))
+        if(fromExchange){
+            setFieldValue(name, 'deposit_address', true)
+        }
+        else if (defaultMethod && (depositMethod !== defaultMethod?.id))
             setFieldValue(name, defaultMethod?.id, true)
         else if (!depositMethod)
             setFieldValue(name, menuItems?.find(i => i.id === 'wallet')?.id, true)
         else if (!menuItems?.find(i => i.id === depositMethod))
             setFieldValue(name, menuItems?.[0]?.id, true)
-    }, [menuItems])
+    }, [from, appName, fromExchange])
 
     useEffect(() => {
         if (fromExchange)
             setFieldValue(name, 'deposit_address', true)
         else if (!fromExchange && !defaultMethod)
             setFieldValue(name, 'wallet', true)
-    }, [fromExchange])
+    }, [fromExchange, from])
 
     const handleSelect = useCallback((item: string) => {
         setFieldValue(name, item, true)
@@ -162,9 +169,8 @@ function GenerateDepositMethodMenuItems(network: Network, depositMethods: Deposi
 
     const sourceIsArbitrumOne = network.name?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
         || network.name === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
-    const sourceIsSynquote = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
-
-    if (sourceIsSynquote) {
+    const sourceIsSynquoteArbitrumOne = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
+    if (sourceIsSynquoteArbitrumOne) {
         return depositMethods.filter(m => m.id === 'deposit_address')
     }
 
