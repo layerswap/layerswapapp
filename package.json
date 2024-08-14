@@ -116,7 +116,7 @@
     "typescript": "^5.1"
   },
   "resolutions": {
-    "rpc-websockets": "7.10.0"
+    "rpc-websockets": "7.11.0"
   },
   "engines": {
     "node": ">=20.9.0"
