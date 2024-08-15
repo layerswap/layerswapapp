@@ -20,8 +20,6 @@ export async function getServerSideProps(context) {
     const { data: sourceRoutes } = await apiClient.GetLSNetworksAsync()
     const { data: destinationRoutes } = await apiClient.GetLSNetworksAsync()
 
-
-
     if (!networkData) return
 
     const settings = {
