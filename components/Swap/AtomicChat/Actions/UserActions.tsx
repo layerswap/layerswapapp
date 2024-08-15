@@ -53,7 +53,7 @@ export const UserCommitAction: FC = () => {
                 lpAddress: source_network.metadata.lp_address,
                 tokenContractAddress: source_asset.contract as `0x${string}`,
                 decimals: source_asset.decimals,
-                atomicContrcat: atomicContract,
+                atomicContract: atomicContract,
                 chainId: source_network.chain_id,
             })
             onCommit(commitId)

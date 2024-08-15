@@ -9,7 +9,7 @@ export type CreatyePreHTLCParams = {
     destinationAsset: string,
     sourceAsset: Token;
     lpAddress: string;
-    atomicContrcat: `0x${string}`;
+    atomicContract: `0x${string}`;
     address: string;
     tokenContractAddress?: string | undefined | null;
     chainId: string;

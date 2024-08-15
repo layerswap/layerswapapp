@@ -14,6 +14,7 @@ import { AssetLock, Commit } from "../../../Models/PHTLC"
 import PHTLCAbi from "../../../lib/abis/atomic/EVM_PHTLC.json"
 import ERC20PHTLCAbi from "../../../lib/abis/atomic/EVMERC20_PHTLC.json"
 import IMTBLZKERC20 from "../../../lib/abis/IMTBLZKERC20.json"
+import { toHex } from "viem"
 
 export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
@@ -97,11 +98,12 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-    const LOCK_TIME = 1000 * 60 * 20 // 20 minutes
-    const messanger = "0x39c58617d355d8B432a3675714b93eC840872236"
+    const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
+    const timeLockMS = Date.now() + LOCK_TIME
+    const timeLock = Math.floor(timeLockMS / 1000)
 
     const createPreHTLC = async (params: CreatyePreHTLCParams) => {
-        const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, amount, decimals, atomicContrcat, chainId } = params
+        const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, amount, decimals, atomicContract, chainId } = params
         if (!account.address) {
             throw Error("Wallet not connected")
         }
@@ -111,18 +113,18 @@ export default function useEVM(): WalletProvider {
         if (!lpAddress) {
             throw Error("No LP address")
         }
-        if (!atomicContrcat) {
+        if (!atomicContract) {
             throw Error("No contract address")
         }
-        const timeLockMS = Date.now() + LOCK_TIME
-        const timeLock = Math.floor(timeLockMS / 1000)
+        const messenger = toHex(0, { size: 32 })
+
         const parsedAmount = ethers.utils.parseUnits(amount.toString(), decimals).toBigInt()
 
         const abi = sourceAsset.contract ? ERC20PHTLCAbi : PHTLCAbi
 
         let simulationData: any = {
             abi: abi,
-            address: atomicContrcat,
+            address: atomicContract,
             functionName: 'commit',
             args: [
                 [destinationChain],
@@ -134,7 +136,7 @@ export default function useEVM(): WalletProvider {
                 sourceAsset.symbol,
                 lpAddress,
                 timeLock,
-                messanger,
+                messenger,
             ],
             chainId: Number(chainId),
         }
@@ -149,7 +151,7 @@ export default function useEVM(): WalletProvider {
                 abi: IMTBLZKERC20,
                 address: sourceAsset.contract as `0x${string}`,
                 functionName: 'allowance',
-                args: [account.address, atomicContrcat],
+                args: [account.address, atomicContract],
                 chainId: Number(chainId),
             })
 
@@ -158,7 +160,7 @@ export default function useEVM(): WalletProvider {
                     abi: IMTBLZKERC20,
                     address: sourceAsset.contract as `0x${string}`,
                     functionName: 'approve',
-                    args: [atomicContrcat, parsedAmount],
+                    args: [atomicContract, parsedAmount],
                     chainId: Number(chainId),
                 })
 
@@ -184,11 +186,6 @@ export default function useEVM(): WalletProvider {
     const claim = () => {
         throw new Error('Not implemented')
     }
-    const getPreHTLC = () => {
-        throw new Error('Not implemented')
-    }
-
-
     const waitForLock = async (params: CommitmentParams, onLog: (data: any) => void) => {
         throw new Error('Not implemented')
     }
@@ -235,7 +232,7 @@ export default function useEVM(): WalletProvider {
             abi: abi,
             address: contractAddress,
             functionName: 'lockCommitment',
-            args: [commitId, lockId],
+            args: [commitId, lockId, timeLock],
             chainId: Number(chainId),
         })
 
@@ -265,7 +262,7 @@ export default function useEVM(): WalletProvider {
         const { chainId, lockId, commit, commitId, contractAddress, type } = params
         const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
 
-        if(commit.locked && !lockId) {
+        if (commit.locked && !lockId) {
             throw new Error("No lockId")
         }
 

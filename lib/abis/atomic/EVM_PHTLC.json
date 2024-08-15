@@ -638,6 +638,11 @@
                 "internalType": "bytes32",
                 "name": "hashlock",
                 "type": "bytes32"
+            },
+            {
+                "internalType": "uint256",
+                "name": "timelock",
+                "type": "uint256"
             }
         ],
         "name": "lockCommitment",

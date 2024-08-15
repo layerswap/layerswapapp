@@ -395,6 +395,10 @@
           {
             "name": "hashlock",
             "type": "core::integer::u256"
+          },
+          {
+            "name": "timelock",
+            "type": "core::integer::u256"
           }
         ],
         "outputs": [
