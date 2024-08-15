@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import React, { FC, useCallback, useEffect, useRef, useState } from "react";
+import React, { FC, useCallback, useEffect, useState } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Network } from "../../../Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
@@ -41,29 +41,26 @@ const DepositMethodComponent: FC = () => {
 
     const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods, appName)
     const defaultMethod = menuItems?.find(i => i.id === defaultDepositMethod)
-    const menuItemsRef = useRef<DepositMethod[] | undefined>()
-    menuItemsRef.current = menuItems
-    console.log('menuItems', menuItems)
-    console.log('depositMethod', depositMethod)
+
+
+    //TODO: Refactor this
     useEffect(() => {
-        const first = menuItems?.[0]?.id
-        console.log('first', first)
-        if (fromExchange) {
+        if(fromExchange){
             setFieldValue(name, 'deposit_address', true)
         }
-        else if (defaultMethod && (depositMethod !== defaultMethod?.id)){
-            console.log('setting default method')
+        else if (defaultMethod && (depositMethod !== defaultMethod?.id))
             setFieldValue(name, defaultMethod?.id, true)
-        }
-        else if (!menuItems?.find(i => i.id === depositMethod)){
-            console.log('setting first')
-            setFieldValue(name, first, true)
-        }
-    }, [from, appName, fromExchange, menuItems])
+        else if (!depositMethod)
+            setFieldValue(name, menuItems?.find(i => i.id === 'wallet')?.id, true)
+        else if (!menuItems?.find(i => i.id === depositMethod))
+            setFieldValue(name, menuItems?.[0]?.id, true)
+    }, [from, appName, fromExchange])
 
     useEffect(() => {
         if (fromExchange)
             setFieldValue(name, 'deposit_address', true)
+        else if (!fromExchange && !defaultMethod)
+            setFieldValue(name, 'wallet', true)
     }, [fromExchange, from])
 
     const handleSelect = useCallback((item: string) => {
@@ -177,7 +174,11 @@ function GenerateDepositMethodMenuItems(network: Network, depositMethods: Deposi
         return depositMethods.filter(m => m.id === 'deposit_address')
     }
 
-    return depositMethods.filter(m => network.deposit_methods.some(dm => dm === m.id))
+    return network.deposit_methods.map(m => ({
+        id: m,
+        display_name: depositMethods.find(dp => dp.id === m)?.display_name!
+    }));
+
 }
 
 export default DepositMethodComponent
