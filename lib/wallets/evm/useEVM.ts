@@ -116,7 +116,7 @@ export default function useEVM(): WalletProvider {
         if (!atomicContract) {
             throw Error("No contract address")
         }
-        const messenger = toHex(0, { size: 32 })
+        const messenger = toHex(0, { size: 20 })
 
         const parsedAmount = ethers.utils.parseUnits(amount.toString(), decimals).toBigInt()
 
