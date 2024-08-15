@@ -219,7 +219,6 @@ export default function useStarknet(): WalletProvider {
 
         const parsedResult = {
             dstAddress: ethers.utils.hexlify(result.dstAddress as BigNumberish),
-
             dstChain: shortString.decodeShortString(ethers.utils.hexlify(result.dstChain as BigNumberish)),
             dstAsset: shortString.decodeShortString(ethers.utils.hexlify(result.dstAsset as BigNumberish)),
             srcAsset: shortString.decodeShortString(ethers.utils.hexlify(result.srcAsset as BigNumberish)),
