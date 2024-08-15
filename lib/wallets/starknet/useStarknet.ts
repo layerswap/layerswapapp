@@ -106,7 +106,8 @@ export default function useStarknet(): WalletProvider {
         await connectWallet(chain)
     }
 
-    const LOCK_TIME = 1000 * 60 * 20 // 20 minutes
+    const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
+    const timeLock = Math.floor((Date.now() + LOCK_TIME) / 1000)
     const messanger = "0x152747029e738c20a4ecde5ef869ea072642938d62f0aa7f3d0e9dfb5051cb9"
 
     const createPreHTLC = async (params: CreatyePreHTLCParams) => {
@@ -119,7 +120,6 @@ export default function useStarknet(): WalletProvider {
         }
 
         try {
-            const timeLock = Math.floor((Date.now() + LOCK_TIME) / 1000)
             const parsedAmount = ethers.utils.parseUnits(amount.toString(), decimals).toNumber().toString()
 
             const erc20Contract = new Contract(
@@ -237,12 +237,14 @@ export default function useStarknet(): WalletProvider {
 
     const lockCommitment = async (params: CommitmentParams & LockParams) => {
         const { commitId, contractAddress, lockId } = params
+
         if (!wallet?.metadata?.starknetAccount?.account) {
             throw new Error('Wallet not connected')
         }
         const args = [
             commitId,
-            lockId
+            lockId,
+            timeLock
         ]
         const atomicContract = new Contract(
             PHTLCAbi,
