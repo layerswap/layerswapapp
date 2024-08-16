@@ -14,7 +14,7 @@ const DetailedEstimates: FC = () => {
 
     const parsedFee = fee && parseFloat(Number(fee_amount).toFixed(fromCurrency?.precision))
     const currencyName = fromCurrency?.symbol || " "
-    const feeAmountInUsd = parsedFee && fromCurrency ? (fromCurrency?.price_in_usd * parsedFee) : undefined
+    const feeAmountInUsd = fee?.quote.total_fee_in_usd
 
     const displayFee = parsedFee?.toFixed(fromCurrency?.precision)
     const displayFeeInUsd = feeAmountInUsd ? (feeAmountInUsd < 0.01 ? '<$0.01' : `$${feeAmountInUsd?.toFixed(2)}`) : null
