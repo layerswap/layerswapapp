@@ -19,6 +19,7 @@ import CommitDetails from "./CommitDetailsComponent";
 import ConnectButton from "../../buttons/connectButton";
 import WalletIcon from "../../icons/WalletIcon";
 import StatusIcon from "./StatusIcons";
+import AppSettings from "../../../lib/AppSettings";
 
 type CommitStatus = 'committed' | 'user_locked' | 'lp_locked' | 'completed' | 'refunded' | 'timelock_expired'
 
@@ -378,7 +379,13 @@ const HistoryWrapper: FC<{ children: ReactNode }> = ({ children }) => {
     }, [router])
 
     return (
-        <div className="bg-secondary-900 sm:shadow-card rounded-containerRoundness mb-6 w-full text-primary-text overflow-hidden relative min-h-[620px]">
+        <div className={`bg-secondary-900 sm:shadow-card rounded-containerRoundness mb-6 w-full text-primary-text overflow-hidden relative min-h-[620px] ${AppSettings.ApiVersion === 'sandbox' && 'border-t-[2px] border-[#D95E1B]'}`}>
+            {
+                AppSettings.ApiVersion === 'sandbox' &&
+                <div className="absolute -top-1 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75">
+                    TESTNET
+                </div>
+            }
             <HeaderWithMenu goBack={goBack} />
             <div className="px-6 mt-3">
                 {children}
