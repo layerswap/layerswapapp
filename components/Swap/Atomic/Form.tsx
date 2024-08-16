@@ -174,7 +174,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                 <div className="pt-2">
                                     <h1 className="mt-2 text-xl font-bold tracking-tight text-primary-text flex gap-1 items-center">New Atomic Bridging Protocol</h1>
                                     <p className="mt-3 mb-5 text-md leading-1 text-secondary-text ">
-                                    Layerswap V8 is for networks what Uniswap is for tokens. Experience fully permissionless and trustless bridging without relying on any third party.
+                                        Experience fully permissionless and trustless bridging without relying on any third party.
                                     </p>
                                     <a className="mt-6 text-sm  cursor-pointer leading-1 text-primary hover:underline flex items-center gap-1 w-fit"
                                         href="https://layerswap.notion.site/" target="_blank" rel="noreferrer"
