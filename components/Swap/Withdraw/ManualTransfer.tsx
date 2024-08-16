@@ -6,18 +6,18 @@ import KnownInternalNames from "../../../lib/knownIds";
 import BackgroundField from "../../backgroundField";
 import SubmitButton from "../../buttons/submitButton";
 import shortenAddress from "../../utils/ShortenAddress";
-import { isValidAddress } from "../../../lib/addressValidator";
+import { isValidAddress } from "../../../lib/address/validator";
 import { useSwapDepositHintClicked } from "../../../stores/swapTransactionStore";
 import { Exchange } from "../../../Models/Exchange";
 import Link from "next/link";
 
 const ManualTransfer: FC = () => {
-    const { swapResponse } = useSwapDataState()
+    const { swapResponse, depositActionsResponse } = useSwapDataState()
 
-    const { swap, deposit_actions } = swapResponse || {}
+    const { swap } = swapResponse || {}
     const hintsStore = useSwapDepositHintClicked()
     const hintClicked = hintsStore.swapTransactions[swap?.id || ""]
-    const trasnsferACtionData = deposit_actions?.find(a => true)
+    const trasnsferACtionData = depositActionsResponse?.find(a => true)
 
     let generatedDepositAddress = trasnsferACtionData?.to_address
 

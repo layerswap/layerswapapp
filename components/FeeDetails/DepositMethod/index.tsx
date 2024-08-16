@@ -6,7 +6,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
 import WalletIcon from "../../icons/WalletIcon";
 import { AlignLeft, ChevronDown, ChevronUp } from "lucide-react"
 import { motion } from "framer-motion";
+import { useDepositMethod } from "../../../context/depositMethodContext";
 import { useQueryState } from "../../../context/query";
+import KnownInternalNames from "../../../lib/knownIds";
 
 const variants = {
     open: { rotate: 180 },
@@ -18,9 +20,9 @@ const DepositMethodComponent: FC = () => {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
-    const [open, setOpen] = useState<boolean>();
+    const { setShowModal, showModal } = useDepositMethod()
 
-    const { depositMethod: defaultDepositMethod, hideDepositMethod } = useQueryState()
+    const { depositMethod: defaultDepositMethod, hideDepositMethod, appName } = useQueryState()
     const { from, depositMethod, fromExchange } = values
     const name = 'depositMethod'
 
@@ -35,28 +37,35 @@ const DepositMethodComponent: FC = () => {
         }
     ]
 
-    const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods)
+
+
+    const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods, appName)
     const defaultMethod = menuItems?.find(i => i.id === defaultDepositMethod)
 
+
+    //TODO: Refactor this
     useEffect(() => {
-        if (defaultMethod && (depositMethod !== defaultMethod?.id))
+        if(fromExchange){
+            setFieldValue(name, 'deposit_address', true)
+        }
+        else if (defaultMethod && (depositMethod !== defaultMethod?.id))
             setFieldValue(name, defaultMethod?.id, true)
         else if (!depositMethod)
             setFieldValue(name, menuItems?.find(i => i.id === 'wallet')?.id, true)
         else if (!menuItems?.find(i => i.id === depositMethod))
             setFieldValue(name, menuItems?.[0]?.id, true)
-    }, [menuItems])
+    }, [from, appName, fromExchange])
 
     useEffect(() => {
         if (fromExchange)
             setFieldValue(name, 'deposit_address', true)
         else if (!fromExchange && !defaultMethod)
             setFieldValue(name, 'wallet', true)
-    }, [fromExchange])
+    }, [fromExchange, from])
 
     const handleSelect = useCallback((item: string) => {
         setFieldValue(name, item, true)
-        setOpen(false)
+        setShowModal(false)
     }, [name, depositMethod, menuItems])
 
     const selectedMethod = menuItems?.find(i => i.id === depositMethod)?.display_name
@@ -68,10 +77,10 @@ const DepositMethodComponent: FC = () => {
 
     return (
         <div className="relative w-full mb-1.5">
-            <Popover open={open} onOpenChange={setOpen}>
+            <Popover open={showModal} onOpenChange={setShowModal}>
                 <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1">
                     <span> Transfer via </span> <span>{selectedMethod?.toLowerCase()}</span> <motion.div
-                        animate={open ? "open" : "closed"}
+                        animate={showModal ? "open" : "closed"}
                         variants={variants}
                     >
                         <ChevronDown className=" w-4 h-4 " />
@@ -156,7 +165,14 @@ type DepositMethod = {
     display_name: string
 }
 
-function GenerateDepositMethodMenuItems(network: Network, depositMethods: DepositMethod[]): DepositMethod[] {
+function GenerateDepositMethodMenuItems(network: Network, depositMethods: DepositMethod[], appName?: string): DepositMethod[] {
+
+    const sourceIsArbitrumOne = network.name?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
+        || network.name === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
+    const sourceIsSynquoteArbitrumOne = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
+    if (sourceIsSynquoteArbitrumOne) {
+        return depositMethods.filter(m => m.id === 'deposit_address')
+    }
 
     return network.deposit_methods.map(m => ({
         id: m,

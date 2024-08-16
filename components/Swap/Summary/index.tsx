@@ -2,7 +2,7 @@ import { FC, useMemo } from "react"
 import { useSwapDataState } from "../../../context/swap"
 import Summary from "./Summary"
 import { TransactionType } from "../../../lib/layerSwapApiClient"
-import shortenAddress, { shortenEmail } from "../../utils/ShortenAddress"
+import { shortenEmail } from "../../utils/ShortenAddress"
 import KnownInternalNames from "../../../lib/knownIds"
 import useWallet from "../../../hooks/useWallet"
 import { useQueryState } from "../../../context/query"
@@ -10,7 +10,7 @@ import { useQueryState } from "../../../context/query"
 const SwapSummary: FC = () => {
     const { swapResponse } = useSwapDataState()
     const { swap, quote: swapQuote, refuel: swapRefuel } = swapResponse || {}
-    const { getWithdrawalProvider: getProvider } = useWallet()
+    const { getSourceProvider: getProvider } = useWallet()
     const {
         hideFrom,
         account,
@@ -25,7 +25,7 @@ const SwapSummary: FC = () => {
         return source_network && getProvider(source_network)
     }, [source_network, getProvider])
 
-    const wallet = provider?.getConnectedWallet()
+    const wallet = provider?.getConnectedWallet(source_network)
 
     if (!swap || !source_network || !source_token || !destination_token || !destination_network) {
         return <></>
@@ -41,13 +41,13 @@ const SwapSummary: FC = () => {
 
     let sourceAccountAddress = ""
     if (hideFrom && account) {
-        sourceAccountAddress = shortenAddress(account);
+        sourceAccountAddress = account;
     }
     else if (swapInputTransaction?.from) {
-        sourceAccountAddress = shortenAddress(swapInputTransaction?.from);
+        sourceAccountAddress = swapInputTransaction?.from;
     }
     else if (wallet) {
-        sourceAccountAddress = shortenAddress(wallet.address);
+        sourceAccountAddress = wallet.address;
     }
     else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && swap?.exchange_account_connected) {
         sourceAccountAddress = shortenEmail(swap?.exchange_account_name, 10);

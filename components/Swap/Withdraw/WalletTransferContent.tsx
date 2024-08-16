@@ -1,55 +1,49 @@
-import { X } from 'lucide-react';
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import WalletIcon from '../../icons/WalletIcon';
-import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
-import { useAccountModal } from '@rainbow-me/rainbowkit';
-import Image from 'next/image';
-import SpinIcon from '../../icons/spinIcon';
-import { NetworkType } from '../../../Models/Network';
 import useWallet from '../../../hooks/useWallet';
 import { useBalancesState } from '../../../context/balances';
-import { truncateDecimals } from '../../utils/RoundDecimals';
 import useBalance from '../../../hooks/useBalance';
+import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
+import { AddressGroup } from '../../Input/Address/AddressPicker';
+import { RefreshCw } from 'lucide-react';
+import { truncateDecimals } from '../../utils/RoundDecimals';
 
 const WalletTransferContent: FC = () => {
-    const { openAccountModal } = useAccountModal();
     const { getWithdrawalProvider: getProvider, disconnectWallet } = useWallet()
     const { swapResponse } = useSwapDataState()
-    const { swap, deposit_actions } = swapResponse || {}
-    const { source_exchange, source_token, destination_token, destination_address, requested_amount, source_network, destination_network } = swap || {}
+    const { swap } = swapResponse || {}
+    const { source_exchange, source_token, source_network } = swap || {}
     const [isLoading, setIsloading] = useState(false);
     const { mutateSwap } = useSwapDataUpdate()
     const provider = useMemo(() => {
         return source_network && getProvider(source_network)
     }, [source_network, getProvider])
 
-    const wallet = provider?.getConnectedWallet()
-    const depositAddress = deposit_actions?.find(da => true)?.to_address
+    const wallet = provider?.getConnectedWallet(source_network)
 
     const { balances } = useBalancesState()
     const { fetchBalance, fetchGas } = useBalance()
 
-    const sourceNetworkWallet = provider?.getConnectedWallet()
-    const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
+    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
     useEffect(() => {
         source_network && source_token && fetchBalance(source_network, source_token);
-    }, [source_network, source_token, sourceNetworkWallet?.address])
+    }, [source_network, source_token, wallet?.address])
 
     useEffect(() => {
-        sourceNetworkWallet?.address && source_network && source_token && destination_token && destination_network && requested_amount && depositAddress && fetchGas(source_network, source_token, destination_address || sourceNetworkWallet.address)
-    }, [source_network, source_token, sourceNetworkWallet?.address])
+        wallet?.address && source_network && source_token && fetchGas(source_network, source_token, wallet.address)
+    }, [source_network, source_token, wallet?.address])
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!wallet) return
         setIsloading(true);
-        await disconnectWallet(wallet.providerName, swap)
+        if (provider?.reconnectWallet) await provider.reconnectWallet({ chain: source_network?.chain_id })
+        else await disconnectWallet(wallet.providerName, swap)
         if (source_exchange) await mutateSwap()
         setIsloading(false);
-        e?.stopPropagation();
-    }, [source_network?.type, swap?.source_exchange, disconnectWallet])
+    }, [source_network?.type, swap?.source_exchange, disconnectWallet, setIsloading, isLoading])
 
     let accountAddress: string | undefined = ""
     if (swap?.source_exchange) {
@@ -58,13 +52,6 @@ const WalletTransferContent: FC = () => {
     else if (wallet) {
         accountAddress = wallet.address || "";
     }
-
-    const canOpenAccount = source_network?.type === NetworkType.EVM && !swap?.source_exchange
-
-    const handleOpenAccount = useCallback(() => {
-        if (canOpenAccount && openAccountModal)
-            openAccountModal()
-    }, [canOpenAccount, openAccountModal])
 
     if (!accountAddress || (swap?.source_exchange && !swap.exchange_account_connected)) {
         return <>
@@ -75,53 +62,36 @@ const WalletTransferContent: FC = () => {
     }
 
     return <div className="grid content-end">
-        <div className='flex w-full items-center text-sm justify-between mb-1 '>
-            <span className='ml-1'>{swap?.source_exchange ? "Connected account" : "Connected wallet"}</span>
-            {
-                walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
-                    <div className="text-right">
-                        <div>
-                            <span>Balance:&nbsp;</span>
-                            <span>{walletBalanceAmount}</span>
-                        </div>
-                    </div>
-                    :
-                    <></>
-            }
-        </div>
-        <div onClick={handleOpenAccount} className={`${canOpenAccount ? 'cursor-pointer' : 'cursor-auto'} text-left min-h-12  space-x-2 border border-secondary-600 bg-secondary-700/70 flex text-sm rounded-md items-center w-full pl-4 pr-2 py-1.5`}>
-            <div className='flex text-secondary-text bg-secondary-400 flex-row items-left rounded-md p-1'>
+        <div className='flex w-full items-center text-sm justify-between'>
+            <span className='ml-1'>{swap?.source_exchange ? "Connected account" : "Send from"}</span>
+            <div onClick={handleDisconnect} className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200 hover:cursor-pointer">
                 {
-                    !swap?.source_exchange
-                    && wallet?.connector
-                    && <wallet.icon
-                        className="w-6 h-6 rounded-full"
-                    />
+                    isLoading ?
+                        <RefreshCw className="h-3 w-auto animate-spin" />
+                        :
+                        <RefreshCw className="h-3 w-auto" />
                 }
-                {
-                    source_exchange
-                    && <Image
-                        className="w-6 h-6 rounded-full p-0"
-                        src={source_exchange.logo}
-                        alt={accountAddress}
-                        width={25}
-                        height={25} />
-                }
+                <p>Switch Wallet</p>
             </div>
-            <div className="flex flex-col grow">
-                <div className="block text-md font-medium text-primary-text">
-                    {!swap?.source_exchange && <span>
-                        {shortenAddress(accountAddress)}
-                    </span>}
-                    {swap?.source_exchange && <span>
-                        {shortenEmail(swap?.exchange_account_name)}
-                    </span>}
+        </div>
+        {
+            provider &&
+            wallet &&
+            source_network &&
+            <div className="group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
+                <AddressWithIcon addressItem={{ address: wallet?.address, group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} destination={source_network} />
+                <div>
+                    {
+                        walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
+                            <div className="text-right text-secondary-text font-normal text-sm">
+                                <span>{walletBalanceAmount}</span> <span>{source_token?.symbol}</span>
+                            </div>
+                            :
+                            <></>
+                    }
                 </div>
             </div>
-            <div onClick={handleDisconnect} className='cursor-pointer flex text-secondary-text flex-row items-left p-2 rounded-md transform hover:bg-secondary-500 transition duration-200 hover:border-secondary-500 hover:shadow-xl'>
-                {isLoading ? <SpinIcon className="animate-spin h-5 w-5" /> : <X className='h-5' />}
-            </div>
-        </div>
+        }
     </div>
 }
 

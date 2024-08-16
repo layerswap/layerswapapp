@@ -15,7 +15,7 @@ const WalletsHeader = dynamic(() => import("../ConnectedWallets").then((comp) =>
 function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null }) {
    const { email, userId } = useAuthState()
    const { boot, show, update } = useIntercom()
-   const updateWithProps = () => update({ customAttributes: { email: email, userId: userId, } })
+   const updateWithProps = () => update({ userId, customAttributes: { email: email, } })
    const query = useQueryState()
 
    return (
@@ -30,7 +30,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
             </IconButton>
          }
          {
-            !query.hideLogo && <div className='justify-self-center self-center col-start-2 col-span-3 mx-auto overflow-hidden md:hidden'>
+            !query.hideLogo && <div className='justify-self-center self-center col-start-2 col-span-3 mx-auto overflow-hidden md:hidden headerLogo'>
                <GoHomeButton />
             </div>
          }

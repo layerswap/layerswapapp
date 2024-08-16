@@ -4,20 +4,24 @@ import axios from "axios";
 import { Balance, BalanceProps, BalanceProvider, Gas, GasProps, NetworkBalancesProps } from "../../../Models/Balance";
 import { LoopringAPI } from "../../loopring/LoopringAPI";
 import { LOOPRING_URLs, LpFee } from "../../loopring/defs";
+import { useSettingsState } from "../../../context/settings";
 
 export default function useLoopringBalance(): BalanceProvider {
+
+    const { networks } = useSettingsState()
+
     const supportedNetworks = [
         KnownInternalNames.Networks.LoopringMainnet,
         KnownInternalNames.Networks.LoopringGoerli
     ]
 
-
-
-    const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
+    const getNetworkBalances = async ({ networkName, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === networkName)
 
         let balances: Balance[] = [];
 
-        if (!network.tokens) return
+        if (!network?.tokens) return
+
         try {
 
             const account: { data: AccountInfo } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`)
@@ -72,7 +76,7 @@ export default function useLoopringBalance(): BalanceProvider {
         }
     }
 
-    const getGas = async ({ network: layer, token, address }: GasProps) => {
+    const getGas = async ({ token, address }: GasProps) => {
         let gas: Gas[] = [];
         try {
 

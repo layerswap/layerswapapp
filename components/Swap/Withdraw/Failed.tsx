@@ -13,7 +13,7 @@ const Failed: FC = () => {
     const { swap } = swapResponse || {}
     const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ customAttributes: { swapId: swap?.id, email: email, userId: userId } })
+    const updateWithProps = () => update({ userId, customAttributes: { swapId: swap?.id, email: email } })
 
     useEffect(() => {
         window.plausible && plausible(TrackEvent.SwapFailed)

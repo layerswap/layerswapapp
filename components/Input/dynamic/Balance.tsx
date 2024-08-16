@@ -1,14 +1,15 @@
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { useBalancesState } from "../../../context/balances";
 import useWallet from "../../../hooks/useWallet";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import useBalance from "../../../hooks/useBalance";
 import { useSettingsState } from "../../../context/settings";
+import { isValidAddress } from "../../../lib/address/validator";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
-    const { to, fromCurrency, toCurrency, from } = values
+    const { to, fromCurrency, toCurrency, from, destination_address } = values
     const { balances } = useBalancesState()
     const { getAutofillProvider: getProvider } = useWallet()
 
@@ -28,36 +29,47 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
         return chain;
     });
 
-    const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet()
-    const destinationNetworkWallet = destinationWalletProvider?.getConnectedWallet()
+    const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet(values.from)
+    const destinationNetworkWallet = destinationWalletProvider?.getConnectedWallet(values.to)
 
     const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
-    const destinationBalance = destinationNetworkWallet && balances[destinationNetworkWallet.address]?.find(b => b?.network === to?.name && b?.token === toCurrency?.symbol)
+    const destinationBalance = balances[destination_address || (destinationNetworkWallet?.address || '')]?.find(b => b?.network === to?.name && b?.token === toCurrency?.symbol)
 
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
     const destinationBalanceAmount = destinationBalance?.amount && truncateDecimals(destinationBalance?.amount, toCurrency?.precision)
     const balanceAmount = direction === 'from' ? walletBalanceAmount : destinationBalanceAmount
 
-    useEffect(() => {
-        direction === 'from' && values.from && fetchNetworkBalances(values.from);
-    }, [values.from, values.destination_address, sourceNetworkWallet?.address])
+    const previouslySelectedSource = useRef(from);
 
     useEffect(() => {
-        direction === 'to' && values.to && fetchNetworkBalances(values.to);
-    }, [values.to, values.destination_address, sourceNetworkWallet?.address])
+        if (((previouslySelectedSource.current && (from?.type == previouslySelectedSource.current?.type))
+            || (from && isValidAddress(sourceNetworkWallet?.address, from)))
+            && from
+            && direction === 'from') {
+            fetchNetworkBalances(from, sourceNetworkWallet?.address);
+        }
+        previouslySelectedSource.current = from
+    }, [from, sourceNetworkWallet?.address])
 
-    const contract_address = values?.from?.tokens.find(a => a.symbol === values?.fromCurrency?.symbol)?.contract
+    const previouslySelectedDestination = useRef(to);
+
+    useEffect(() => {
+        const destinationAddress = destination_address || destinationNetworkWallet?.address
+        if (((previouslySelectedDestination.current && (to?.type == previouslySelectedDestination.current?.type))
+            || (to && isValidAddress(destinationAddress, to)))
+            && to
+            && direction === 'to') fetchNetworkBalances(to, destinationAddress);
+        previouslySelectedDestination.current = to
+    }, [to, destination_address, destinationNetworkWallet?.address])
 
     useEffect(() => {
         direction === 'from'
             && sourceNetworkWallet?.address
-            && values.from
-            && values.fromCurrency
-            && values.to
-            && values.toCurrency
-            && values.amount
-            && fetchGas(values.from, values.fromCurrency, values.destination_address || sourceNetworkWallet.address)
-    }, [contract_address, values.from, values.fromCurrency, sourceNetworkWallet?.address])
+            && from
+            && fromCurrency
+            && fetchGas(from, fromCurrency, destination_address || sourceNetworkWallet.address)
+
+    }, [from, fromCurrency, sourceNetworkWallet?.address])
 
     return (
         (direction === 'from' ? (from && fromCurrency) : (to && toCurrency)) && balanceAmount != undefined && !isNaN(balanceAmount) &&

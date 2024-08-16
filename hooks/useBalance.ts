@@ -8,19 +8,19 @@ import { BalanceProvider } from "../Models/Balance"
 import useWallet from "./useWallet"
 import { useBalancesState, useBalancesUpdate } from "../context/balances"
 import { Network, NetworkWithTokens, Token } from "../Models/Network"
-import useQueryBalances from "../lib/balances/query/useQueryBalances"
 import { useQueryState } from "../context/query"
+import useTonBalance from "../lib/balances/ton/useTonBalance"
 
 export default function useBalanceProvider() {
 
     const BalanceProviders: BalanceProvider[] = [
-        useQueryBalances(),
         useEVMBalance(),
         useStarknetBalance(),
         useLoopringBalance(),
         useZkSyncBalance(),
         useSolanaBalance(),
-        useImxBalance()
+        useImxBalance(),
+        useTonBalance()
     ]
 
     const { balances, gases } = useBalancesState()
@@ -34,18 +34,21 @@ export default function useBalanceProvider() {
 
     const { getAutofillProvider } = useWallet()
 
-    const fetchNetworkBalances = async (network: NetworkWithTokens) => {
-        const provider = getAutofillProvider(network);
-        const wallet = provider?.getConnectedWallet();
-        const address = query.account || wallet?.address;
+    const fetchNetworkBalances = async (network: NetworkWithTokens, address?: string) => {
+        const provider = getAutofillProvider(network)
+        const wallet = provider?.getConnectedWallet(network)
+        address = address || query.account || wallet?.address
 
         const balance = balances[address || '']?.find(b => b?.network === network?.name);
         const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance?.request_time).getTime() || 0) > 10000;
 
-        if (network && isBalanceOutDated && address) {
-            const balanceProvider = getBalanceProvider(network);
-            const networkBalances = await balanceProvider?.getNetworkBalances({
-                network: network,
+        if (network
+            && isBalanceOutDated
+            && address) {
+
+            const provider = getBalanceProvider(network)
+            const networkBalances = await provider?.getNetworkBalances({
+                networkName: network.name,
                 address: address,
             }) || [];
 
@@ -60,29 +63,28 @@ export default function useBalanceProvider() {
         }
     }
 
-    const fetchBalance = async (network: Network, token: Token) => {
+    const fetchBalance = async (network: Network, token: Token, address?: string) => {
         const provider = getAutofillProvider(network)
-        const wallet = provider?.getConnectedWallet()
-        const address = query.account || wallet?.address
+        const wallet = provider?.getConnectedWallet(network)
+        address = address || query.account || wallet?.address
 
-        const balance = balances[address || '']?.find(b => b?.network === network?.name)
-        const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance.request_time).getTime() || 0) > 10000
+        const currentBalance = balances[address || '']?.find(b => b?.network === network?.name)
+        const isBalanceOutDated = !currentBalance || new Date().getTime() - (new Date(currentBalance.request_time).getTime() || 0) > 10000
 
         if (network
             && isBalanceOutDated
             && address) {
-
-            const walletBalances = balances[address]
-            const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
 
             const provider = getBalanceProvider(network)
             const balance = await provider?.getBalance({
                 network: network,
                 address: address,
                 token
-            }) || []
+            })
+            const walletBalances = balances[address]
+            const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
 
-            setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(balance) }))
+            if (balance) setAllBalances((data) => ({ ...data, [address]: filteredBalances?.concat(balance) }))
         }
     }
 
@@ -92,7 +94,7 @@ export default function useBalanceProvider() {
         }
     }
 
-    const fetchGas = async (network: Network, token: Token, userDestinationAddress: string) => {
+    const fetchGas = async (network: Network, token: Token, userDestinationAddress: string, recipientAddress?: string) => {
 
         if (!network) {
             return
@@ -103,7 +105,7 @@ export default function useBalanceProvider() {
         const isGasOutDated = !gas || new Date().getTime() - (new Date(gas.request_time).getTime() || 0) > 10000
 
         const provider = getAutofillProvider(network)
-        const wallet = provider?.getConnectedWallet()
+        const wallet = provider?.getConnectedWallet(network)
 
         if (isGasOutDated
             && token
@@ -116,13 +118,17 @@ export default function useBalanceProvider() {
                     address: wallet?.address as `0x${string}`,
                     network,
                     token,
-                    userDestinationAddress,
+                    recipientAddress,
+                    isSweeplessTx: wallet.address !== userDestinationAddress,
                     wallet
                 }) || []
 
                 if (gas) {
-                    const filteredGases = gases[network.name]?.some(b => b?.token === token?.symbol) ? gases[network.name].filter(g => g.token !== token.symbol) : gases[network.name] || []
-                    setAllGases((data) => ({ ...data, [network.name]: filteredGases.concat(gas) }))
+                    setAllGases((data) => {
+                        const networkGases = data[network.name]
+                        const filteredGases = networkGases?.some(b => b?.token === token?.symbol) ? networkGases.filter(g => g.token !== token.symbol) : networkGases || []
+                        return { ...data, [network.name]: filteredGases.concat(gas) }
+                    })
                 }
             }
             catch (e) { console.log(e) }

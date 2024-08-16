@@ -8,6 +8,7 @@ import External from './External';
 import { useQueryState } from '../../../context/query';
 import { Widget } from '../../Widget/Index';
 import WalletTransferContent from './WalletTransferContent';
+import ParadexTransferContent from './Wallet/paradex/TransferContent';
 
 const Withdraw: FC = () => {
     const { swapResponse } = useSwapDataState()
@@ -16,9 +17,6 @@ const Withdraw: FC = () => {
 
     const sourceIsImmutableX = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swap?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-    const sourceIsStarknet = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.StarkNetMainnet?.toUpperCase()
-        || swap?.source_network.name === KnownInternalNames.Networks.StarkNetGoerli?.toUpperCase()
-        || swap?.source_network.name === KnownInternalNames.Networks.StarkNetSepolia?.toUpperCase()
     const sourceIsArbitrumOne = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
         || swap?.source_network.name === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
 
@@ -30,7 +28,13 @@ const Withdraw: FC = () => {
         footer?: JSX.Element | JSX.Element[],
     } = {}
 
-    if (swap?.use_deposit_address === false) {
+    if(swap?.source_network.name === KnownInternalNames.Networks.ParadexMainnet || swap?.source_network.name === KnownInternalNames.Networks.ParadexTestnet) {
+        withdraw = {
+            content: <ParadexTransferContent />,
+            footer: <WalletTransfer />
+        }
+    }
+    else if (swap?.use_deposit_address === false) {
         withdraw = {
             content: <WalletTransferContent />,
             footer: <WalletTransfer />
@@ -39,13 +43,6 @@ const Withdraw: FC = () => {
         withdraw = {
             footer: <ManualTransfer />,
             content: <></>
-        }
-    }
-    
-    if (sourceIsStarknet || sourceIsImmutableX) {
-        withdraw = {
-            content: <WalletTransferContent />,
-            footer: <WalletTransfer />
         }
     }
 

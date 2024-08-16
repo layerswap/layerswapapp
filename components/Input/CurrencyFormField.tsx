@@ -1,9 +1,9 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
-import CurrencySettings from "../../lib/CurrencySettings";
-import { SortingByAvailability } from "../../lib/sorting";
+import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
+import { ResolveCurrencyOrder, SortAscending } from "../../lib/sorting";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useQueryState } from "../../context/query";
@@ -15,13 +15,16 @@ import { Balance } from "../../Models/Balance";
 import dynamic from "next/dynamic";
 import { QueryParams } from "../../Models/QueryParams";
 import { ApiError, LSAPIKnownErrorCode } from "../../Models/ApiError";
-import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import Image from 'next/image'
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import useWallet from "../../hooks/useWallet";
 import { Wallet } from "../../stores/walletStore";
 import { resolveNetworkRoutesURL } from "../../helpers/routes";
-import { useSettingsState } from "../../context/settings";
+import { ONE_WEEK } from "./NetworkFormField";
+import useValidationErrorStore from "../validationError/validationErrorStore";
+import validationMessageResolver from "../utils/validationErrorResolver";
+import RouteIcon from "../icons/RouteIcon";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -37,12 +40,23 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
-    const { to, fromCurrency, toCurrency, from, currencyGroup } = values;
-    const { destinationRoutes, sourceRoutes } = useSettingsState()
+    const { to, fromCurrency, toCurrency, from, currencyGroup, destination_address } = values
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { balances } = useBalancesState()
-    const { wallets } = useWallet()
+
+    const { getAutofillProvider: getProvider, wallets } = useWallet()
+    const { message: validationErrorMessage, directions, setValidationMessage, clearValidationMessage } = useValidationErrorStore()
+
+    const sourceWalletProvider = useMemo(() => {
+        return from && getProvider(from)
+    }, [from, getProvider])
+
+    const destinationWalletProvider = useMemo(() => {
+        return to && getProvider(to)
+    }, [to, getProvider])
+
+    const address = direction === 'from' ? sourceWalletProvider?.getConnectedWallet(from)?.address : destination_address || destinationWalletProvider?.getConnectedWallet(to)?.address
 
     const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
     const apiClient = new LayerSwapApiClient()
@@ -52,12 +66,9 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         error
     } = useSWR<ApiResponse<RouteNetwork[]>>(`${networkRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
-    const allCurrencies: ((RouteToken & { network_name: string, network_display_name: string, network_logo: string })[] | undefined) = direction === 'from' ?
-        sourceRoutes?.map(route =>
+    const allCurrencies: ((RouteToken & { network_name: string, network_display_name: string, network_logo: string })[] | undefined) =  routes?.data?.map(route =>
             route.tokens.map(asset => ({ ...asset, network_display_name: route.display_name, network_name: route.name, network_logo: route.logo }))).flat()
-        :
-        destinationRoutes?.map(route =>
-            route.tokens.map(asset => ({ ...asset, network_display_name: route.display_name, network_name: route.name, network_logo: route.logo }))).flat();
+
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
         allCurrencies!,
@@ -70,7 +81,8 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     )
     const currencyAsset = direction === 'from' ? fromCurrency?.symbol : toCurrency?.symbol;
     const currencyNetwork = allCurrencies?.find(c => c.symbol === currencyAsset && c.network_name === from?.name)?.network_name
-
+    const value = currencyMenuItems?.find(x => x.baseObject.symbol == currencyAsset && x.baseObject.network_name === currencyNetwork);
+    
     useEffect(() => {
         if (direction !== "to") return
 
@@ -86,12 +98,12 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
 
         if (selected_currency && routes?.data?.find(r => r.name === to?.name)?.tokens?.some(r => r.symbol === selected_currency.name && r.status === 'active')) {
-            setFieldValue(name, selected_currency.baseObject)
+            setFieldValue(name, selected_currency.baseObject, true)
         }
         else if (default_currency) {
-            setFieldValue(name, default_currency.baseObject)
+            setFieldValue(name, default_currency.baseObject, true)
         }
-    }, [to, query])
+    }, [to, query, routes])
 
 
     useEffect(() => {
@@ -112,55 +124,66 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             && routes?.data
                 ?.find(r => r.name === from?.name)?.tokens
                 ?.some(r => r.symbol === selected_currency.name && r.status === 'active')) {
-            setFieldValue(name, selected_currency.baseObject)
+            setFieldValue(name, selected_currency.baseObject, true)
         }
         else if (default_currency) {
-            setFieldValue(name, default_currency.baseObject)
+            setFieldValue(name, default_currency.baseObject, true)
         }
-    }, [from, query])
+    }, [from, query, routes])
 
     useEffect(() => {
-        if (name === "toCurrency" && toCurrency && !isLoading) {
-            if (routes?.data
-                && !!routes?.data
-                    ?.find(r => r.name === to?.name)?.tokens
-                    ?.some(r => r.symbol === toCurrency?.symbol && r.status === 'route_not_found')) {
-                setFieldValue(name, null)
+        if (name === "toCurrency" && toCurrency && !isLoading && routes) {
+            const value = routes.data?.find(r => r.name === to?.name)?.tokens?.find(r => r.symbol === toCurrency?.symbol)
+            if (!value) return
+
+            if (value?.status === 'not_found') {
+                const message = validationMessageResolver(values, direction, query, error)
+                setValidationMessage('Route Unavailable', message, 'warning', name);
+            } else {
+                clearValidationMessage()
             }
+            setFieldValue(name, value)
         }
-    }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
+    }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading, validationErrorMessage])
 
     useEffect(() => {
-        if (name === "fromCurrency" && fromCurrency && !isLoading) {
-            if (routes?.data
-                && !!routes?.data
-                    ?.find(r => r.name === from?.name)?.tokens
-                    ?.find(r => (r.symbol === fromCurrency?.symbol) && r.status === 'route_not_found')) {
-                setFieldValue(name, null)
-            }
-        }
-    }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
+        if (name === "fromCurrency" && fromCurrency && !isLoading && routes) {
+            const value = routes.data?.find(r => r.name === from?.name)?.tokens?.find(r => r.symbol === fromCurrency?.symbol)
+            if (!value) return
 
-    const value = currencyMenuItems?.find(x => x.baseObject.symbol == currencyAsset && x.baseObject.network_name === currencyNetwork);
+            if (value?.status === 'not_found') {
+                const message = validationMessageResolver(values, direction, query, error)
+                setValidationMessage('Route Unavailable', message, 'warning', name);
+            } else {
+                clearValidationMessage()
+            }
+            setFieldValue(name, value)
+        }
+    }, [toCurrency, currencyGroup, name, from, routes, error, isLoading, validationErrorMessage])
+
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }>) => {
-        const network = (direction === 'from' ? sourceRoutes : destinationRoutes)?.find(r => r.name === item.baseObject.network_name)
-        setFieldValue(name, item.baseObject, true)
-        setFieldValue(direction, network, true)
-    }, [name, direction, toCurrency, fromCurrency, from, to, sourceRoutes, destinationRoutes])
+        const network = routes?.data?.find(r => r.name === item.baseObject.network_name)
+        setFieldValue(name, network, true)
+        const message = validationMessageResolver(values, direction, query, error)
+        if (!item.isAvailable)
+            setValidationMessage('Warning', message, 'warning', name);
+        else
+            clearValidationMessage()
+
+    }, [name, direction, toCurrency, fromCurrency, from, to])
+
 
     return (
         <div className="relative">
             <BalanceComponent values={values} direction={direction} />
-            <CommandSelectWrapper
-                disabled={(value && !value?.isAvailable?.value) || isLoading}
-                valueGrouper={groupByType}
+            <PopoverSelectWrapper
                 placeholder="Asset"
                 setValue={handleSelect}
                 value={value}
                 values={currencyMenuItems}
                 searchHint='Search'
-                isLoading={isLoading}
+                disabled={!value?.isAvailable || isLoading}
             />
         </div>
     )
@@ -192,21 +215,6 @@ function GenerateCurrencyMenuItems(
     const { to, from } = values
     const lockAsset = direction === 'from' ? query?.lockFromAsset
         : query?.lockToAsset
-
-    let currencyIsAvailable = (currency: RouteToken) => {
-        if (lockAsset) {
-            return { value: false, disabledReason: CurrencyDisabledReason.LockAssetIsTrue }
-        }
-        else if (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) {
-            if (query?.lockAsset || query?.lockFromAsset || query?.lockToAsset || currency.status === 'daily_limit_reached') {
-                return { value: false, disabledReason: CurrencyDisabledReason.InvalidRoute }
-            }
-            return { value: true, disabledReason: CurrencyDisabledReason.InvalidRoute }
-        }
-        else {
-            return { value: true, disabledReason: null }
-        }
-    }
 
     return currencies?.map(c => {
         const currency = c
@@ -257,6 +265,38 @@ function GenerateCurrencyMenuItems(
                 <span className="text-sm">$0.00</span>
             }
         </p>
+        const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
+
+        const currencyIsAvailable = !lockAsset &&
+            (
+                (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
+                !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive')
+            );
+            
+        const showRouteIcon = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) || lockAsset;
+        const badge = isNewlyListed ? (
+            <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
+        ) : undefined;
+        // const details = c.status === 'inactive' ?
+        //     <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> :
+        //     <p className="text-primary-text-muted">
+        //         {formatted_balance_amount}
+        //     </p>
+
+        const icon = showRouteIcon ? (
+            <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild >
+                    <div className="absolute -left-0 z-50">
+                        <RouteIcon className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p className="max-w-72">
+                        Route unavailable
+                    </p>
+                </TooltipContent>
+            </Tooltip>
+        ) : undefined;
 
         const res: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
             baseObject: c,
@@ -265,21 +305,18 @@ function GenerateCurrencyMenuItems(
             menuItemLabel: DisplayNameComponent,
             menuItemImage: NetworkImage,
             balanceAmount: Number(formatted_balance_amount),
-            order: CurrencySettings.KnownSettings[c.symbol]?.Order ?? 5,
             imgSrc: c.logo,
-            isAvailable: currencyIsAvailable(c),
             group: getGroupName(c.network_display_name === (direction === "from" ? from?.display_name : to?.display_name) ? c.network_display_name : "All networks"),
             menuItemDetails: details,
+            order: ResolveCurrencyOrder(c, isNewlyListed),
+            isAvailable: currencyIsAvailable,
+            details,
+            badge,
+            icon
         };
 
         return res
-    }).sort(SortingByAvailability);
-}
-
-export enum CurrencyDisabledReason {
-    LockAssetIsTrue = '',
-    InsufficientLiquidity = 'Temporarily disabled. Please check later.',
-    InvalidRoute = 'InvalidRoute'
+    }).sort(SortAscending);
 }
 
 export default CurrencyFormField

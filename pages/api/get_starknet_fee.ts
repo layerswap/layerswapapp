@@ -1,11 +1,4 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import {
-    CallData,
-    cairo,
-    Account,
-    EstimateFee,
-    RpcProvider
-} from 'starknet';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const query: StarknetFeeProps = req.query;
@@ -38,12 +31,13 @@ class StarknetFeeProps {
     watchDogContract?: string = ""
 }
 
-const getStarknetFee = async ({ nodeUrl, contractAddress, recipient, watchDogContract }: StarknetFeeProps): Promise<EstimateFee | undefined> => {
+const getStarknetFee = async ({ nodeUrl, contractAddress, recipient, watchDogContract }: StarknetFeeProps) => {
 
     const { BigNumber } = await import("ethers");
 
     if (!nodeUrl || !contractAddress || !recipient || !watchDogContract) return
 
+    const { CallData, cairo, Account, RpcProvider } = await import("starknet");
     const amountToWithdraw = BigNumber.from(1);
 
     const provider = new RpcProvider({
@@ -52,7 +46,7 @@ const getStarknetFee = async ({ nodeUrl, contractAddress, recipient, watchDogCon
 
     const configs = JSON.parse(process.env.NEXT_PUBLIC_STARKNET_FEE_CONFIGS || '')
 
-    const account = new Account(provider, configs.address, configs.private_key);
+    const account = new Account(provider, configs.address, configs.private_key, '1');
 
     const transferCall = {
         contractAddress: contractAddress.toLowerCase(),
@@ -75,4 +69,5 @@ const getStarknetFee = async ({ nodeUrl, contractAddress, recipient, watchDogCon
     const feeEstimateResponse = await account.estimateFee([transferCall, watch]);
 
     return feeEstimateResponse;
+
 }

@@ -45,11 +45,11 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward }) => {
     return <FeeDetails.Item>
         <div className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700 relative text-right'>
             <div className='flex items-center text-primary-buttonTextColor'>
-                <p>Est. {token?.symbol} reward</p>
+                <p>{token?.symbol} reward</p>
                 <ClickTooltip text={<span className="!text-start">The amount of onboarding reward that you’ll earn.</span>} />
             </div>
             <div className="flex items-center space-x-1 text-secondary-text">
-                <span>+</span>
+                <p>{reward.amount}</p>
                 <div className="h-5 w-5 relative">
                     <Image
                         src={token?.logo || ''}
@@ -60,7 +60,7 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward }) => {
                         className="rounded-md object-contain" />
                 </div>
                 <p>
-                    {reward.amount} {token?.symbol}
+                    {token?.symbol}
                 </p>
             </div>
         </div>

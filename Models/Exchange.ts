@@ -10,7 +10,6 @@ export class Exchange {
             connect_url: string,
             authorize_url: string
         } | null
-        listing_date: string
     }
 }
 
@@ -26,5 +25,5 @@ export class ExchangeNetwork {
 export class ExchangeToken {
     symbol: string;
     logo: string;
-    status: string;
+    status: "active" | "inactive" | "not_found";
 }

@@ -1,64 +1,106 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit"
-import { disconnect } from '@wagmi/core'
-import { useAccount } from "wagmi"
-import { NetworkType } from "../../../Models/Network"
+import { useAccount, useDisconnect } from "wagmi"
+import { Network, NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/router"
 
 export default function useEVM(): WalletProvider {
+    const router = useRouter();
     const { networks } = useSettingsState()
-    const withdrawalSupportedNetworks = [
-        ...networks.filter(layer => layer.type === NetworkType.EVM && layer.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
+    const [shouldConnect, setShouldConnect] = useState(false)
+    const { disconnectAsync } = useDisconnect()
+
+    const asSourceSupportedNetworks = [
+        ...networks.filter(network => network.type === NetworkType.EVM && network.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
         KnownInternalNames.Networks.LoopringGoerli,
-        KnownInternalNames.Networks.LoopringMainnet
+        KnownInternalNames.Networks.LoopringMainnet,
+        KnownInternalNames.Networks.LoopringSepolia
+    ]
+
+    const withdrawalSupportedNetworks = [
+        ...asSourceSupportedNetworks,
+        KnownInternalNames.Networks.ParadexMainnet,
+        KnownInternalNames.Networks.ParadexTestnet,
     ]
 
     const autofillSupportedNetworks = [
-        ...withdrawalSupportedNetworks,
+        ...asSourceSupportedNetworks,
         KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli,
         KnownInternalNames.Networks.BrineMainnet,
-        KnownInternalNames.Networks.LoopringGoerli,
-        KnownInternalNames.Networks.LoopringMainnet
     ]
+
     const name = 'evm'
+
     const account = useAccount()
     const { openConnectModal } = useConnectModal()
 
-    const getWallet = () => {
+    useEffect(() => {
+        if (shouldConnect) {
+            connectWallet()
+            setShouldConnect(false)
+        }
+    }, [shouldConnect])
+
+    const getWallet = (network?: Network) => {
         if (account && account.address && account.connector) {
+            const connector = account.connector.id
+            if (connector == "com.immutable.passport" && network && !(network.name == KnownInternalNames.Networks.ImmutableZkEVM || network.name == KnownInternalNames.Networks.ImmutableXMainnet)) {
+                return undefined
+            }
             return {
                 address: account.address,
-                connector: (account.connector as any)?._wallets?.[0]?.id || account.connector.id,
+                connector: account.connector.name || connector.charAt(0).toUpperCase() + connector.slice(1),
                 providerName: name,
                 icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account.connector), address: account.address })
             }
         }
     }
 
-    const connectWallet = () => {
-        return openConnectModal && openConnectModal()
+    const connectWallet = async () => {
+        if (account && account.address && account.connector) {
+            await reconnectWallet()
+        }
+        else {
+            return openConnectModal && openConnectModal()
+        }
     }
 
     const disconnectWallet = async () => {
         try {
-            await disconnect()
+            await disconnectAsync()
         }
         catch (e) {
             console.log(e)
         }
     }
 
+    const reconnectWallet = async () => {
+        try {
+            await disconnectWallet()
+            setShouldConnect(true)
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
+
+
     return {
         getConnectedWallet: getWallet,
         connectWallet,
         disconnectWallet,
+        reconnectWallet,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
+        asSourceSupportedNetworks,
         name
     }
 }

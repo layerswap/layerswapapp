@@ -1,13 +1,12 @@
-import { FC, useEffect, useState } from "react";
-import {
-    useAccount,
-    useSwitchNetwork,
-    useNetwork,
-} from "wagmi";
+import { FC, useEffect, useMemo, useState } from "react";
+import { useAccount } from "wagmi";
+import { useSwitchChain } from 'wagmi'
+
 import { PublishedSwapTransactions } from "../../../../../lib/layerSwapApiClient";
 import { ChangeNetworkButton, ConnectWalletButton } from "./buttons";
 import TransferTokenButton from "./TransferToken";
 import { WithdrawPageProps } from "../WalletTransferContent";
+import useWallet from "../../../../../hooks/useWallet";
 
 const TransferFromWallet: FC<WithdrawPageProps> = ({
     network,
@@ -19,20 +18,24 @@ const TransferFromWallet: FC<WithdrawPageProps> = ({
 }) => {
 
 
-    const { isConnected } = useAccount();
-    const chainId = Number(network?.chain_id) ?? undefined
-    const networkChange = useSwitchNetwork({
-        chainId: chainId,
-    });
+    const { isConnected, chain: activeChain } = useAccount();
+    const { getWithdrawalProvider } = useWallet()
 
-    const { chain: activeChain } = useNetwork();
+    const provider = useMemo(() => {
+        return network && getWithdrawalProvider(network)
+    }, [network, getWithdrawalProvider])
+
+    const wallet = provider?.getConnectedWallet(network)
+
+    const networkChainId = Number(network?.chain_id) ?? undefined
+    const { switchChain } = useSwitchChain();
 
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
 
     useEffect(() => {
-        if (activeChain?.id === chainId)
-            networkChange.reset()
-    }, [activeChain, chainId])
+        if (activeChain?.id === networkChainId)
+            switchChain({ chainId: networkChainId })
+    }, [activeChain, networkChainId])
 
     useEffect(() => {
         try {
@@ -51,12 +54,12 @@ const TransferFromWallet: FC<WithdrawPageProps> = ({
     const hexed_sequence_number = sequenceNumber?.toString(16)
     const sequence_number_even = (hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number)
 
-    if (!isConnected) {
+    if (!isConnected || !wallet) {
         return <ConnectWalletButton />
     }
-    else if (activeChain?.id !== chainId && network) {
+    else if (activeChain?.id !== networkChainId && network) {
         return <ChangeNetworkButton
-            chainId={chainId}
+            chainId={networkChainId}
             network={network.display_name}
         />
     }

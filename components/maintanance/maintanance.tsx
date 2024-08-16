@@ -8,8 +8,8 @@ import TwitterLogo from "../icons/TwitterLogo";
 
 function MaintananceContent(props) {
     const { email, userId } = useAuthState()
-    const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ customAttributes: { email: email, userId: userId, } })
+    const { boot, update } = useIntercom()
+    const updateWithProps = () => update({ userId, customAttributes: { email: email, } })
 
     useEffect(() => {
         boot()

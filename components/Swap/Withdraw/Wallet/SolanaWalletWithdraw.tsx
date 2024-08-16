@@ -1,42 +1,28 @@
 import { FC, useCallback, useState } from 'react'
-import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { Transaction, Connection, PublicKey, TransactionInstruction } from '@solana/web3.js';
+import { Transaction, Connection } from '@solana/web3.js';
 import useWallet from '../../../../hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
-import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
+import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
 
-const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId }) => {
+const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId }) => {
     const [loading, setLoading] = useState(false);
     const { getWithdrawalProvider } = useWallet()
     const { setSwapTransaction } = useSwapTransactionStore();
 
     const provider = getWithdrawalProvider(network!);
-    const wallet = provider?.getConnectedWallet();
+    const wallet = provider?.getConnectedWallet(network);
     const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
     const solanaNode = network?.node_url
 
-    const handleConnect = useCallback(async () => {
-        setLoading(true)
-        try {
-            await provider?.connectWallet()
-        }
-        catch (e) {
-            toast(e.message)
-        }
-        finally {
-            setLoading(false)
-        }
-    }, [provider])
-
     const handleTransfer = useCallback(async () => {
 
-        if (!swapId || !walletPublicKey || !signTransaction || !depositAddress || !amount) return
+        if (!signTransaction || !callData || !swapId) return
 
         setLoading(true)
         try {
@@ -45,44 +31,12 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
                 "confirmed"
             );
 
-            const sourceToken = new PublicKey(token?.contract!);
-            const recipientAddress = new PublicKey(depositAddress);
+            const arrayBufferCallData = Uint8Array.from(atob(callData), c => c.charCodeAt(0))
 
-            const transactionInstructions: TransactionInstruction[] = [];
-            const associatedTokenFrom = await getAssociatedTokenAddress(
-                sourceToken,
-                walletPublicKey
-            );
-            const fromAccount = await getAccount(connection, associatedTokenFrom);
-            const associatedTokenTo = await getAssociatedTokenAddress(
-                sourceToken,
-                recipientAddress
-            );
-
-            if (!(await connection.getAccountInfo(associatedTokenTo))) {
-                transactionInstructions.push(
-                    createAssociatedTokenAccountInstruction(
-                        walletPublicKey,
-                        associatedTokenTo,
-                        recipientAddress,
-                        sourceToken
-                    )
-                );
-            }
-            transactionInstructions.push(
-                createTransferInstruction(
-                    fromAccount.address,
-                    associatedTokenTo,
-                    walletPublicKey,
-                    amount * Math.pow(10, Number(token?.decimals))
-                )
-            );
-
-            const transaction = new Transaction().add(...transactionInstructions);
+            const transaction = Transaction.from(arrayBufferCallData)
             const signature = await configureAndSendCurrentTransaction(
                 transaction,
                 connection,
-                walletPublicKey,
                 signTransaction
             );
 
@@ -100,27 +54,21 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
         finally {
             setLoading(false)
         }
-    }, [swapId, depositAddress, network, token, walletPublicKey, amount, signTransaction])
+    }, [swapId, callData, walletPublicKey, signTransaction])
+
+    if (!wallet) {
+        return <ConnectWalletButton />
+    }
 
     return (
-        <>
-            <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
-                <div className='space-y-4'>
-                    {
-                        !wallet &&
-                        <SubmitButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
-                            Connect a wallet
-                        </SubmitButton>
-                    }
-                    {
-                        wallet &&
-                        <SubmitButton isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
-                            Send from wallet
-                        </SubmitButton>
-                    }
-                </div>
-            </div>
-        </>
+        <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
+            {
+                wallet &&
+                <ButtonWrapper isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
+                    Send from wallet
+                </ButtonWrapper>
+            }
+        </div>
     )
 }
 
@@ -129,18 +77,23 @@ export default SolanaWalletWithdrawStep;
 export const configureAndSendCurrentTransaction = async (
     transaction: Transaction,
     connection: Connection,
-    feePayer: PublicKey,
     signTransaction: SignerWalletAdapterProps['signTransaction']
 ) => {
     const blockHash = await connection.getLatestBlockhash();
-    transaction.feePayer = feePayer;
     transaction.recentBlockhash = blockHash.blockhash;
+    transaction.lastValidBlockHeight = blockHash.lastValidBlockHeight;
+
     const signed = await signTransaction(transaction);
     const signature = await connection.sendRawTransaction(signed.serialize());
-    await connection.confirmTransaction({
-        blockhash: blockHash.blockhash,
-        lastValidBlockHeight: blockHash.lastValidBlockHeight,
+    const res = await connection.confirmTransaction({
+        blockhash: transaction.recentBlockhash,
+        lastValidBlockHeight: transaction.lastValidBlockHeight,
         signature
     });
+
+    if (res.value.err) {
+        throw new Error(res.value.err.toString())
+    }
+
     return signature;
 };

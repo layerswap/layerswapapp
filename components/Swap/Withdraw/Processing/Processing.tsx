@@ -1,5 +1,5 @@
 import { ExternalLink } from 'lucide-react';
-import { FC, useCallback, useEffect } from 'react'
+import { FC, useCallback, useEffect, useRef } from 'react'
 import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
@@ -19,6 +19,7 @@ import { ApiResponse } from '../../../../Models/ApiResponse';
 import { datadogRum } from '@datadog/browser-rum';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../../context/authContext';
+import logError from '../../../../lib/logError';
 
 type Props = {
     swapResponse: SwapResponse;
@@ -36,7 +37,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
         destination_network
     } = swap
 
-    const updateWithProps = () => update({ customAttributes: { swapId: swap.id, email: email, userId: userId, } });
+    const updateWithProps = () => update({ userId, customAttributes: { swapId: swap.id, email: email, } });
     const startIntercom = useCallback(() => {
         boot();
         show();
@@ -58,6 +59,20 @@ const Processing: FC<Props> = ({ swapResponse }) => {
 
     const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
 
+    const loggedNotDetectedTxAt = useRef<number | null>(null);
+
+    useEffect(() => {
+        if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
+            if (swap?.transactions?.find(t => t.type === TransactionType.Input) || !swap) {
+                return
+            }
+            if (Date.now() - (loggedNotDetectedTxAt.current || storedWalletTransaction.timestamp) > 60000) {
+                loggedNotDetectedTxAt.current = Date.now();
+                logError(`Transaction not detected in ${swap.source_network.name}. Tx hash: ${transactionHash}. Tx status: ${inputTxStatus}. Swap id: ${swap.id}. ${source_network.display_name} explorer: ${source_network?.transaction_explorer_template?.replace("{0}", transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);
+            }
+        }
+    }, [swap, storedWalletTransaction]);
+
     useEffect(() => {
         if (storedWalletTransaction?.status !== inputTxStatus) setSwapTransaction(swap?.id, inputTxStatus, storedWalletTransaction?.hash)
     }, [inputTxStatus])
@@ -65,12 +80,12 @@ const Processing: FC<Props> = ({ swapResponse }) => {
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Failed) {
             const err = new Error("Transaction failed")
-            const renderingError = new Error("Transaction failed test");
+            const renderingError = new Error(`Swap:${swap?.id} transaction:${transactionHash} failed`);
             renderingError.name = `TransactionFailed`;
             renderingError.cause = err;
             datadogRum.addError(renderingError);
         }
-    }, [inputTxStatus])
+    }, [inputTxStatus, transactionHash, swap?.id])
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 
@@ -125,7 +140,6 @@ const Processing: FC<Props> = ({ swapResponse }) => {
             failed: {
                 name: `The transfer failed`,
                 description: <div className='flex space-x-1'>
-                    <span>Error: </span>
                     <div className='space-x-1 text-primary-text'>
                         {inputTxStatus === TransactionStatus.Failed ?
                             <div className="flex flex-col">
@@ -142,7 +156,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
                                 swap?.fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
                                     "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
                                     :
-                                    <div><span>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer' onClick={() => startIntercom()}> please contact our support.</a></div>
+                                    <div><span className='text-secondary-text'>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</a></div>
                         }
                     </div>
                 </div>
@@ -183,7 +197,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
                             swap?.fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
                                 "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
                                 :
-                                <div><span>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer' onClick={() => startIntercom()}> please contact our support.</a></div>
+                                <div><span className='text-secondary-text'>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</a></div>
                         }
                     </div>
                 </div>

@@ -11,6 +11,7 @@ type ContextType = {
     maxAllowedAmount: number | undefined,
     fee: Quote | undefined,
     mutateFee: () => void,
+    mutateLimits: () => void,
     valuesChanger: (values: SwapFormValues) => void,
     isFeeLoading: boolean,
     updatePolling: (value: boolean) => void
@@ -42,7 +43,7 @@ export function FeeProvider({ children }) {
 
     const use_deposit_address = depositMethod === 'wallet' ? false : true
 
-    const { data: amountRange } = useSWR<ApiResponse<{
+    const { data: amountRange, mutate: mutateLimits } = useSWR<ApiResponse<{
         min_amount: number
         min_amount_in_usd: number
         max_amount: number
@@ -68,6 +69,7 @@ export function FeeProvider({ children }) {
             maxAllowedAmount: amountRange?.data?.max_amount,
             fee: lsFee?.data,
             mutateFee,
+            mutateLimits,
             valuesChanger,
             isFeeLoading,
             updatePolling

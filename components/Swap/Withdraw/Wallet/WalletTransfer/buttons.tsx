@@ -1,41 +1,56 @@
-import { FC, ReactNode, useCallback, useMemo } from "react";
-import {
-    useSwitchNetwork,
-} from "wagmi";
+import { FC, useCallback, useMemo, useState } from "react";
+import { useSwitchChain } from "wagmi";
 import WalletIcon from "../../../../icons/WalletIcon";
 import WalletMessage from "./message";
 import { ActionData } from "./sharedTypes";
-import SubmitButton from "../../../../buttons/submitButton";
+import SubmitButton, { SubmitButtonProps } from "../../../../buttons/submitButton";
 import useWallet from "../../../../../hooks/useWallet";
 import { useSwapDataState } from "../../../../../context/swap";
+import ManualTransferNote from "./manualTransferNote";
+import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
-export const ConnectWalletButton: FC = () => {
+export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
     const { source_network } = swap || {}
+    const [loading, setLoading] = useState(false)
 
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
         return source_network && getProvider(source_network)
     }, [source_network, getProvider])
 
-    const clickHandler = useCallback(() => {
-        if (!provider)
-            throw new Error(`No provider from ${source_network?.name}`)
+    const clickHandler = useCallback(async () => {
+        try {
+            setLoading(true)
 
-        return provider.connectWallet(provider?.name)
+            if (!provider) throw new Error(`No provider from ${source_network?.name}`)
+
+            await provider.connectWallet({ chain: source_network?.chain_id })
+        }
+        catch (e) {
+            toast.error(e.message)
+        }
+        finally {
+            setLoading(false)
+        }
+
     }, [provider])
 
     return <ButtonWrapper
-        clcikHandler={clickHandler}
-        icon={<WalletIcon className="stroke-2 w-6 h-6" />}
+        onClick={props.onClick ?? clickHandler}
+        icon={loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (props.icon ?? <WalletIcon className="stroke-2 w-6 h-6" />)}
+        isDisabled={loading || props.isDisabled}
+        isSubmitting={loading || props.isSubmitting}
+        {...props}
     >
-        Connect a wallet
+        Send from wallet
     </ButtonWrapper>
 }
 
 export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = ({ data, network }) => {
-    if (data.isLoading) {
+    if (data.isPending) {
         return <WalletMessage
             status="pending"
             header='Network switch required'
@@ -52,29 +67,31 @@ export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = (
 }
 
 export const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ chainId, network }) => {
-    const networkChange = useSwitchNetwork({
-        chainId: chainId,
-    });
+    const { switchChain, error, isPending, isError } = useSwitchChain();
 
     const clickHandler = useCallback(() => {
-        return networkChange?.switchNetwork && networkChange?.switchNetwork()
-    }, [networkChange])
+        return switchChain({ chainId })
+    }, [switchChain, chainId])
 
     return <>
         {
             <ChangeNetworkMessage
-                data={networkChange}
+                data={{
+                    isPending: isPending,
+                    isError: isError,
+                    error
+                }}
                 network={network}
             />
         }
         {
-            !networkChange.isLoading &&
+            !isPending &&
             <ButtonWrapper
-                clcikHandler={clickHandler}
+                onClick={clickHandler}
                 icon={<WalletIcon className="stroke-2 w-6 h-6" />}
             >
                 {
-                    networkChange.isError ? <span>Try again</span>
+                    error ? <span>Try again</span>
                         : <span>Send from wallet</span>
                 }
             </ButtonWrapper>
@@ -82,29 +99,25 @@ export const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ 
     </>
 }
 
-type ButtonWrapperProps = {
-    icon?: ReactNode,
-    clcikHandler: () => void,
-    disabled?: boolean,
-    children: ReactNode
-}
-export const ButtonWrapper: FC<ButtonWrapperProps> = ({
-    icon,
-    clcikHandler,
-    disabled,
-    children
+export const ButtonWrapper: FC<SubmitButtonProps> = ({
+    ...props
 }) => {
-    return <div>
-        <div className="flex flex-row text-primary-text text-base space-x-2">
-            <SubmitButton icon={icon}
-                text_align='center'
-                isDisabled={!!disabled}
-                isSubmitting={false}
-                onClick={clcikHandler}
-                buttonStyle='filled'
-                size="medium">
-                {children}
-            </SubmitButton>
-        </div>
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
+    const { source_network } = swap || {}
+
+    return <div className="flex flex-col text-primary-text text-base space-y-2">
+        <SubmitButton
+            text_align='center'
+            buttonStyle='filled'
+            size="medium"
+            {...props}
+        >
+            {props.children}
+        </SubmitButton>
+        {
+            source_network?.deposit_methods.some(m => m === 'deposit_address') &&
+            <ManualTransferNote />
+        }
     </div>
 }

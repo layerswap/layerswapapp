@@ -7,12 +7,11 @@ import useBalance from "../../../hooks/useBalance";
 import { useFee } from "../../../context/feeContext";
 import { useBalancesState } from "../../../context/balances";
 import { useQueryState } from "../../../context/query";
-import upperCaseKeys from "../../utils/upperCaseKeys";
 
 const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) => {
 
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
-    const { fromCurrency, from, to, toCurrency, destination_address, amount } = values || {};
+    const { fromCurrency, from, destination_address } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
     const { balances, gases } = useBalancesState()
     const query = useQueryState()
@@ -24,7 +23,7 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
 
     const { fetchNetworkBalances, fetchGas } = useBalance()
 
-    const wallet = provider?.getConnectedWallet()
+    const wallet = provider?.getConnectedWallet(values.from)
 
     const handleSetMinAmount = () => {
         setFieldValue('amount', minAllowedAmount);
@@ -56,14 +55,11 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
         maxAllowedAmount = Number(maxAmountFromApi) || 0
     }
 
-
     const handleSetMaxAmount = useCallback(async () => {
         setFieldValue('amount', maxAllowedAmount);
         from && fetchNetworkBalances(from);
 
-        from &&
-            fromCurrency &&
-            amount && fetchGas(from, fromCurrency, destination_address || "");
+        from && fromCurrency && fetchGas(from, fromCurrency, wallet?.address || destination_address || "");
 
     }, [from, fromCurrency, destination_address, maxAllowedAmount])
 

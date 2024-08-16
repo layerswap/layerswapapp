@@ -86,6 +86,8 @@ export default class KnownInternalNames {
 
         public static readonly LoopringGoerli: string = "LOOPRING_GOERLI";
 
+        public static readonly LoopringSepolia: string = "LOOPRING_SEPOLIA";
+
         public static readonly MoonbeamMainnet: string = "MOONBEAM_MAINNET";
 
         public static readonly StarkNetGoerli: string = "STARKNET_GOERLI";
@@ -99,6 +101,8 @@ export default class KnownInternalNames {
         public static readonly ImmutableXGoerli: string = "IMMUTABLEX_GOERLI";
 
         public static readonly ImmutableXSepolia: string = "IMMUTABLEX_SEPOLIA";
+
+        public static readonly ImmutableZkEVM: string = "IMMUTABLEZK_MAINNET";
 
         public static readonly AstarMainnet: string = "ASTAR_MAINNET";
 
@@ -157,6 +161,10 @@ export default class KnownInternalNames {
         public static readonly BlastSepolia: string = "BLAST_SEPOLIA";
 
         public static readonly BlastMainnet: string = "BLAST_MAINNET";
+
+        public static readonly ParadexTestnet: string = "PARADEX_TESTNET"
+
+        public static readonly ParadexMainnet: string = "PARADEX_MAINNET"
 
     }
 

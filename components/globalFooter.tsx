@@ -59,7 +59,7 @@ const GLobalFooter = () => {
                     </Link>
                 </div>
                 <p className="text-center text-xs text-primary-text-muted leading-6">
-                    &copy; {new Date().getFullYear()} Bransfer, Inc. All rights reserved.
+                    &copy; {new Date().getFullYear()} Layerswap Labs, Inc. All rights reserved.
                 </p>
             </div>
             <div className="flex space-x-6">

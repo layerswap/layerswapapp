@@ -19,6 +19,7 @@ import TonConnectProvider from "./TonConnectProvider";
 import RainbowKit from "./RainbowKit";
 import Solana from "./SolanaProvider";
 import { IsExtensionError } from "../helpers/errorHelper";
+import { AsyncModalProvider } from "../context/asyncModal";
 // import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
@@ -66,7 +67,6 @@ export default function Layout({ children, settings, themeData }: Props) {
 
   const query: QueryParams = {
     ...router.query,
-    ...(router.query.lockAddress === 'true' ? { lockAddress: true } : {}),
     ...(router.query.lockNetwork === 'true' ? { lockNetwork: true } : {}),
     ...(router.query.lockExchange === 'true' ? { lockExchange: true } : {}),
     ...(router.query.hideRefuel === 'true' ? { hideRefuel: true } : {}),
@@ -100,28 +100,28 @@ export default function Layout({ children, settings, themeData }: Props) {
 
   return (<>
     <Head>
-      <title>Layerswap</title>
+      <title>Layerswap App</title>
       <link rel="apple-touch-icon" sizes="180x180" href={`${basePath}/favicon/apple-touch-icon.png`} />
       <link rel="icon" type="image/png" sizes="32x32" href={`${basePath}/favicon/favicon-32x32.png`} />
       <link rel="icon" type="image/png" sizes="16x16" href={`${basePath}/favicon/favicon-16x16.png`} />
       <link rel="manifest" href={`${basePath}/favicon/site.webmanifest`} />
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content={`rgb(${themeData.secondary?.[900]})`} />
-      <meta name="description" content="Move crypto across exchanges, blockchains, and wallets." />
+      <meta name="description" content="Streamline your asset transaction experience with Layerswap across 35+ blockchains" />
 
       {/* Facebook Meta Tags */}
       <meta property="og:url" content={`https://www.layerswap.io/${basePath}`} />
       <meta property="og:type" content="website" />
-      <meta property="og:title" content="Layerswap" />
-      <meta property="og:description" content="Move crypto across exchanges, blockchains, and wallets." />
+      <meta property="og:title" content="Layerswap App" />
+      <meta property="og:description" content="Streamline your asset transaction experience with Layerswap across 35+ blockchains" />
       <meta property="og:image" content={`https://layerswap.io/${basePath}/opengraph.jpg?v=2`} />
 
       {/* Twitter Meta Tags */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta property="twitter:domain" content="layerswap.io" />
       <meta property="twitter:url" content={`https://www.layerswap.io/${basePath}`} />
-      <meta name="twitter:title" content="Layerswap" />
-      <meta name="twitter:description" content="Move crypto across exchanges, blockchains, and wallets." />
+      <meta name="twitter:title" content="Layerswap App" />
+      <meta name="twitter:description" content="Streamline your asset transaction experience with Layerswap across 35+ blockchains" />
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
     </Head>
     {
@@ -137,9 +137,11 @@ export default function Layout({ children, settings, themeData }: Props) {
                 <TonConnectProvider basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
                   <RainbowKit>
                     <Solana>
-                      {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                        <MaintananceContent />
-                        : children}
+                      <AsyncModalProvider>
+                        {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                          <MaintananceContent />
+                          : children}
+                      </AsyncModalProvider>
                     </Solana>
                   </RainbowKit>
                 </TonConnectProvider>

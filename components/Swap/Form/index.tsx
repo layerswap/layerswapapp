@@ -1,5 +1,5 @@
 import { Formik, FormikProps } from "formik";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSettingsState } from "../../../context/settings";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
@@ -25,18 +25,24 @@ import StatusIcon from "../../SwapHistory/StatusIcons";
 import Image from 'next/image';
 import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import dynamic from "next/dynamic";
 import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
 import BalancesFetcher from "./BalancesFetcher";
+import { DepositMethodProvider } from "../../../context/depositMethodContext";
+import { dynamicWithRetries } from "../../../lib/dynamicWithRetries";
+import AddressNote from "../../Input/Address/AddressNote";
+import { addressFormat } from "../../../lib/address/formatter";
+import { useAddressesStore } from "../../../stores/addressesStore";
+import { AddressGroup } from "../../Input/Address/AddressPicker";
+import { useAsyncModal } from "../../../context/asyncModal";
 
 type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
-const SwapDetails = dynamic(() => import(".."), {
-    loading: () => <div className="w-full h-[450px]">
+const SwapDetails = dynamicWithRetries(() => import(".."),
+    <div className="w-full h-[450px]">
         <div className="animate-pulse flex space-x-4">
             <div className="flex-1 space-y-6 py-1">
                 <div className="h-32 bg-secondary-700 rounded-lg"></div>
@@ -45,30 +51,55 @@ const SwapDetails = dynamic(() => import(".."), {
             </div>
         </div>
     </div>
-})
+)
 
 export default function Form() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [showSwapModal, setShowSwapModal] = useState(false);
+    const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
-    const { getWithdrawalProvider } = useWallet()
+    const { getSourceProvider } = useWallet()
+    const addresses = useAddressesStore(state => state.addresses)
+    const { getConfirmation } = useAsyncModal();
 
     const settings = useSettingsState();
     const query = useQueryState()
     const { createSwap, setSwapId } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.appName && `/apps?name=${query?.appName}`, layerswapApiClient.fetcher)
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.appName && `/internal/apps?name=${query?.appName}`, layerswapApiClient.fetcher)
     const partner = query?.appName && partnerData?.data?.client_id?.toLowerCase() === (query?.appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
-    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee } = useFee()
+    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useFee()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
+        const { destination_address, to } = values
+
+        if (to &&
+            destination_address &&
+            (query.destAddress) &&
+            (addressFormat(query.destAddress?.toString(), to) === addressFormat(destination_address, to)) &&
+            !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
+
+            const confirmed = await getConfirmation({
+                content: <AddressNote partner={partner} values={values} />,
+                submitText: 'Confirm address',
+                dismissText: 'Cancel address'
+            })
+
+            if (confirmed) {
+                setIsAddressFromQueryConfirmed(true)
+            }
+            else if (!confirmed) {
+                return
+            }
+
+        }
         try {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken) {
@@ -83,7 +114,7 @@ export default function Form() {
                     return;
                 }
             }
-            const provider = values.from && getWithdrawalProvider(values.from)
+            const provider = values.from && getSourceProvider(values.from)
             const wallet = provider?.getConnectedWallet()
 
             const swapId = await createSwap(values, wallet?.address, query, partner);
@@ -93,6 +124,7 @@ export default function Form() {
             setShowSwapModal(true)
         }
         catch (error) {
+            mutateLimits()
             const data: ApiError = error?.response?.data?.error
             if (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS) {
                 toast.error("You can't transfer to that address. Please double check.")
@@ -106,7 +138,7 @@ export default function Form() {
                     AppURL: data.message
                 })
                 setShowConnectNetworkModal(true);
-            } else if (data.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
+            } else if (data?.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
                 const time = data.metadata.RemainingLimitPeriod?.split(':');
                 const hours = Number(time[0])
                 const minutes = Number(time[1])
@@ -119,19 +151,17 @@ export default function Form() {
                 }
             }
             else {
-                toast.error(data.message || error.message)
+                toast.error(data?.message || error?.message)
             }
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getWithdrawalProvider])
-
-    const destAddress: string = query?.destAddress as string;
-
-    const isPartnerAddress = partner && destAddress;
-
-    const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
+    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getSourceProvider])
 
     const initialValues: SwapFormValues = swapResponse ? generateSwapInitialValuesFromSwap(swapResponse, settings)
         : generateSwapInitialValues(settings, query)
+
+    useEffect(() => {
+        formikRef.current?.validateForm();
+    }, [minAllowedAmount, maxAllowedAmount]);
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         pollFee(!value)
@@ -141,44 +171,49 @@ export default function Form() {
 
     return <>
         <BalancesFetcher />
-        <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
-            <AnimatePresence mode='wait'>
+        <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
+            <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
+                <AnimatePresence mode='wait'>
+                    {
+                        swap &&
+                        !showSwapModal &&
+                        <PendingSwap key="pendingSwap" onClick={() => handleShowSwapModal(true)} />
+                    }
+                </AnimatePresence>
+            </div>
+            <Modal
+                height="fit"
+                show={showConnectNetworkModal}
+                setShow={setShowConnectNetworkModal}
+                header={`${networkToConnect?.DisplayName} connect`}
+                modalId="showNetwork"
+            >
                 {
-                    swap &&
-                    !showSwapModal &&
-                    <PendingSwap key="pendingSwap" onClick={() => handleShowSwapModal(true)} />
+                    networkToConnect &&
+                    <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
                 }
-            </AnimatePresence>
-        </div>
-        <Modal
-            height="fit"
-            show={showConnectNetworkModal}
-            setShow={setShowConnectNetworkModal}
-            header={`${networkToConnect?.DisplayName} connect`}
-            modalId="showNetwork"
-        >
-            {networkToConnect && <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />}
-        </Modal>
-        <Modal
-            height='fit'
-            show={showSwapModal}
-            setShow={handleShowSwapModal}
-            header={`Complete the swap`}
-            modalId="showSwap"
-        >
-            <ResizablePanel>
-                <SwapDetails type="contained" />
-            </ResizablePanel>
-        </Modal>
-        <Formik
-            innerRef={formikRef}
-            initialValues={initialValues}
-            validateOnMount={true}
-            validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
-            onSubmit={handleSubmit}
-        >
-            <SwapForm isPartnerWallet={!!isPartnerWallet} partner={partner} />
-        </Formik>
+            </Modal>
+            <Modal
+                height='fit'
+                show={showSwapModal}
+                setShow={handleShowSwapModal}
+                header={`Complete the swap`}
+                modalId="showSwap"
+            >
+                <ResizablePanel>
+                    <SwapDetails type="contained" />
+                </ResizablePanel>
+            </Modal>
+            <Formik
+                innerRef={formikRef}
+                initialValues={initialValues}
+                validateOnMount={true}
+                validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
+                onSubmit={handleSubmit}
+            >
+                <SwapForm partner={partner} />
+            </Formik>
+        </DepositMethodProvider>
     </>
 }
 
@@ -212,8 +247,6 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
         source_network,
         destination_network
     } = swap || {}
-
-    const settings = useSettingsState()
 
     if (!swap)
         return <></>

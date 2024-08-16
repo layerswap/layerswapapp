@@ -3,21 +3,16 @@ import { SwapItem, BackendTransactionStatus, TransactionType, SwapResponse } fro
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapData, SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
-import { WagmiConfig, configureChains, createConfig } from 'wagmi';
-import { publicProvider } from 'wagmi/providers/public';
-import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { BalancesStateContext, BalancesStateUpdateContext } from '../context/balances';
-import { walletConnectWallet, rainbowWallet, metaMaskWallet, bitgetWallet, argentWallet } from '@rainbow-me/rainbowkit/wallets';
 import { FC, useEffect, useRef } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
-import { swap, failedSwap, failedSwapOutOfRange, failedInputSwap, cancelled, expired } from './Data/swaps'
-import { SettingChains, Settings } from './Data/settings';
+import { swap } from './Data/swaps'
+import { Settings } from './Data/settings';
 import { initialValues } from './Data/initialValues';
 import { AuthDataUpdateContext, AuthStateContext, UserType } from '../context/authContext';
 import { IntercomProvider } from 'react-use-intercom';
 import { THEME_COLORS } from '../Models/Theme';
 import Layout from '../components/layout';
-import RainbowKitComponent from '../components/RainbowKit';
 import SwapDetails from '../components/Swap';
 import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
@@ -25,90 +20,53 @@ import WalletMockFunctions from './Mocks/context/BalancesMockFunctions';
 import BalancesStateMock from './Mocks/context/BalancesState';
 import { Formik, FormikProps } from 'formik';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import { useQueryState } from '../context/query';
 import MainStepValidation from '../lib/mainStepValidator';
 import { FeeProvider, useFee } from '../context/feeContext';
 import { useArgs } from '@storybook/preview-api';
+import RainbowKitComponent from '../components/RainbowKit';
 
-const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
-const settingsChains = SettingChains;
-
-const { chains, publicClient } = configureChains(
-    settingsChains,
-    [
-        publicProvider()
-    ]
-);
-
-const projectId = WALLETCONNECT_PROJECT_ID;
-const connectors = connectorsForWallets([
-    {
-        groupName: 'Popular',
-        wallets: [
-            metaMaskWallet({ projectId, chains }),
-            walletConnectWallet({ projectId, chains }),
-        ],
-    },
-    {
-        groupName: 'Wallets',
-        wallets: [
-            argentWallet({ projectId, chains }),
-            bitgetWallet({ projectId, chains }),
-            rainbowWallet({ projectId, chains }),
-        ],
-    },
-]);
 window.plausible = () => { }
 const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ settings, swapData, theme, initialValues, timestamp }) => {
-    const query = useQueryState()
-    const wagmiConfig = createConfig({
-        autoConnect: true,
-        connectors,
-        publicClient,
-    })
-
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const appSettings = new LayerSwapAppSettings(Settings)
-    const swapContextInitialValues: SwapData = { codeRequested: false, swapResponse: swapData.swapResponse, addressConfirmed: false, depositeAddressIsfromAccount: false, withdrawType: undefined, swapTransaction: undefined }
+    const swapContextInitialValues: SwapData = { codeRequested: false, swapResponse: swapData.swapResponse, depositAddressIsFromAccount: false, withdrawType: undefined, swapTransaction: undefined }
 
     if (!appSettings) {
         return <div>Loading...</div>
     }
     const themeData = theme ? THEME_COLORS[theme] : THEME_COLORS["default"];
 
-    return <WagmiConfig config={wagmiConfig}>
-        <IntercomProvider appId='123'>
-            <SettingsStateContext.Provider value={appSettings}>
-                <Layout settings={Settings} themeData={themeData}>
-                    <RainbowKitComponent>
-                        <SwapDataStateContext.Provider value={swapContextInitialValues}>
-                            <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
-                                <AuthDataUpdateContext.Provider value={AuthMockFunctions}>
-                                    <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
-                                        <BalancesStateContext.Provider value={BalancesStateMock}>
-                                            <BalancesStateUpdateContext.Provider value={WalletMockFunctions}>
-                                                <Formik
-                                                    innerRef={formikRef}
-                                                    initialValues={initialValues!}
-                                                    validateOnMount={true}
-                                                    validate={MainStepValidation({ minAllowedAmount: 8, maxAllowedAmount: 10 })}
-                                                    onSubmit={() => { }}
-                                                >
-                                                    <FeeProvider>
-                                                        <Component initialValues={initialValues} />
-                                                    </FeeProvider>
-                                                </Formik>
-                                            </BalancesStateUpdateContext.Provider>
-                                        </BalancesStateContext.Provider>
-                                    </SwapDataUpdateContext.Provider>
-                                </AuthDataUpdateContext.Provider>
-                            </AuthStateContext.Provider>
-                        </SwapDataStateContext.Provider >
-                    </RainbowKitComponent>
-                </Layout>
-            </SettingsStateContext.Provider>
-        </IntercomProvider>
-    </WagmiConfig >
+    return <IntercomProvider appId='123'>
+        <SettingsStateContext.Provider value={appSettings}>
+            <Layout settings={Settings} themeData={themeData}>
+                <RainbowKitComponent>
+                    <SwapDataStateContext.Provider value={swapContextInitialValues}>
+                        <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
+                            <AuthDataUpdateContext.Provider value={AuthMockFunctions}>
+                                <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
+                                    <BalancesStateContext.Provider value={BalancesStateMock}>
+                                        <BalancesStateUpdateContext.Provider value={WalletMockFunctions}>
+                                            <Formik
+                                                innerRef={formikRef}
+                                                initialValues={initialValues!}
+                                                validateOnMount={true}
+                                                validate={MainStepValidation({ minAllowedAmount: 8, maxAllowedAmount: 10 })}
+                                                onSubmit={() => { }}
+                                            >
+                                                <FeeProvider>
+                                                    <Component initialValues={initialValues} />
+                                                </FeeProvider>
+                                            </Formik>
+                                        </BalancesStateUpdateContext.Provider>
+                                    </BalancesStateContext.Provider>
+                                </SwapDataUpdateContext.Provider>
+                            </AuthDataUpdateContext.Provider>
+                        </AuthStateContext.Provider>
+                    </SwapDataStateContext.Provider >
+                </RainbowKitComponent>
+            </Layout>
+        </SettingsStateContext.Provider>
+    </IntercomProvider>
 }
 
 const Component = ({ initialValues }: { initialValues: SwapFormValues | undefined }) => {
@@ -133,7 +91,7 @@ const DUMMY_TRANSACTION = {
     type: TransactionType,
     usd_value: 1.6916886,
     status: BackendTransactionStatus,
-    timestamp: "",
+    timestamp: "2024-07-09T09:09:40.725954+00:00",
 }
 
 const meta = {
@@ -393,6 +351,10 @@ export const FailedInput: Story = {
                 swap: {
                     ...(swap.swapResponse.swap as SwapItem),
                     status: SwapStatus.UserTransferPending,
+                    transactions: [
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Failed, type: TransactionType.Input },
+                        { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Output },
+                    ]
                 }
             }
         }

@@ -4,17 +4,18 @@ import { Wallet } from "../stores/walletStore"
 import useTON from "../lib/wallets/ton/useTON"
 import useEVM from "../lib/wallets/evm/useEVM"
 import useStarknet from "../lib/wallets/starknet/useStarknet"
-import useImmutableX from "../lib/wallets/immutableX/useIMX"
+import useImtblX from "../lib/wallets/imtblX/useImtblX"
 import useSolana from "../lib/wallets/solana/useSolana"
-import { Network } from "../Models/Network"
-
+import { Network, RouteNetwork } from "../Models/Network"
 
 export type WalletProvider = {
-    connectWallet: (chain?: string | number | undefined | null) => Promise<void> | undefined | void,
+    connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
     disconnectWallet: () => Promise<void> | undefined | void,
-    getConnectedWallet: () => Wallet | undefined,
-    autofillSupportedNetworks?: string[],
+    reconnectWallet: (props?: { chain?: string | number | undefined | null }) => Promise<void> | undefined | void,
+    getConnectedWallet: (network?: Network) => Wallet | undefined,
     withdrawalSupportedNetworks: string[],
+    autofillSupportedNetworks?: string[],
+    asSourceSupportedNetworks?: string[],
     name: string,
 }
 
@@ -24,21 +25,21 @@ export default function useWallet() {
         useTON(),
         useEVM(),
         useStarknet(),
-        useImmutableX(),
+        useImtblX(),
         useSolana()
     ]
 
-    async function handleConnect(providerName: string, chain?: string | number) {
+    async function connectWallet({ providerName, chain }: { providerName: string, chain?: string | number | null }) {
         const provider = WalletProviders.find(provider => provider.name === providerName)
         try {
-            await provider?.connectWallet(chain)
+            await provider?.connectWallet({ chain })
         }
-        catch {
+        catch (e) {
             toast.error("Couldn't connect the account")
         }
     }
 
-    const handleDisconnect = async (providerName: string, swap?: SwapItem) => {
+    const disconnectWallet = async (providerName: string, swap?: SwapItem) => {
         const provider = WalletProviders.find(provider => provider.name === providerName)
         try {
             if (swap?.source_exchange) {
@@ -49,19 +50,27 @@ export default function useWallet() {
                 await provider?.disconnectWallet()
             }
         }
-        catch {
+        catch (e) {
             toast.error("Couldn't disconnect the account")
         }
     }
 
-    const getConnectedWallets = () => {
-        const connectedWallets: Wallet[] = []
+    const reconnectWallet = async (providerName: string, chain?: string | number) => {
+        const provider = WalletProviders.find(provider => provider.name === providerName)
+        try {
+            await provider?.reconnectWallet({ chain })
+        }
+        catch {
+            toast.error("Couldn't reconnect the account")
+        }
+    }
 
-        WalletProviders.forEach(provider => {
-            const wallet = provider.getConnectedWallet()
-            if (wallet) {
-                connectedWallets.push(wallet)
-            }
+    const getConnectedWallets = (network?: Network) => {
+        let connectedWallets: Wallet[] = []
+
+        WalletProviders.forEach(wallet => {
+            const w = wallet.getConnectedWallet(network)
+            connectedWallets = w && [...connectedWallets, w] || [...connectedWallets]
         })
 
         return connectedWallets
@@ -81,12 +90,19 @@ export default function useWallet() {
         return provider
     }
 
+    const getSourceProvider = (network: Network) => {
+        const provider = WalletProviders.find(provider => provider?.asSourceSupportedNetworks?.includes(network.name))
+        return provider
+    }
+
     return {
         wallets: getConnectedWallets(),
-        connectWallet: handleConnect,
-        disconnectWallet: handleDisconnect,
         connectedWalletProviders,
+        connectWallet,
+        disconnectWallet,
+        reconnectWallet,
         getWithdrawalProvider,
         getAutofillProvider,
+        getSourceProvider
     }
 }

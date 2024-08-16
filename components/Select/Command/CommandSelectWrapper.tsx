@@ -13,11 +13,12 @@ type CommandSelectWrapperProps = {
     searchHint: string;
     disabled: boolean;
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
-    isLoading: boolean;
+    isLoading?: boolean | undefined;
     modalHeight?: LeafletHeight;
     valueDetails?: React.ReactNode;
     exchangeDetails?: React.ReactNode;
     modalContent?: React.ReactNode;
+    direction?: string;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -30,7 +31,7 @@ export default function CommandSelectWrapper<T>({
     valueGrouper,
     isLoading,
     modalHeight,
-    modalContent
+    modalContent,
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 

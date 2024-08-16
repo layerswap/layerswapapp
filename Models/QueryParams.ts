@@ -2,7 +2,6 @@
 export class PersistantQueryParams {
     from?: string = "";
     to?: string = "";
-    lockAddress?: boolean = false;
     lockFrom?: boolean = false;
     lockTo?: boolean = false;
 

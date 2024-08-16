@@ -8,11 +8,13 @@ import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw";
 import SolanaWalletWithdrawStep from "./SolanaWalletWithdraw";
 import LoopringWalletWithdraw from "./Loopring";
 import { Network, Token } from "../../../../Models/Network";
+import TonWalletWithdrawStep from "./TonWalletWithdraw";
+import ParadexWalletWithdrawStep from "./paradex/index";
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
-    const { swapResponse } = useSwapDataState();
-    const { swap, deposit_actions } = swapResponse || {};
+    const { swapResponse, depositActionsResponse } = useSwapDataState();
+    const { swap } = swapResponse || {};
 
     const { source_network } = swap || {};
     const source_network_internal_name = source_network?.name;
@@ -28,15 +30,20 @@ export const WalletTransferContent: FC = () => {
         || swap?.source_network.name === KnownInternalNames.Networks.StarkNetSepolia?.toUpperCase();
 
     const sourceIsLoopring = swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.LoopringMainnet?.toUpperCase()
-        || swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.LoopringGoerli?.toUpperCase();
+        || swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.LoopringGoerli?.toUpperCase()
+        || swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.LoopringSepolia?.toUpperCase();
 
     const sourceIsSolana = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
         || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaDevnet?.toUpperCase();
 
-    const depositAddress = deposit_actions?.find(da => true)?.to_address;
-    const amount = deposit_actions?.find(da => true)?.amount || 0;
-    const callData = deposit_actions?.find(da => true)?.call_data;
+    const sourceIsTon = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.TONMainnet?.toUpperCase()
 
+    const sourceIsParadex = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ParadexMainnet?.toUpperCase()
+        || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.ParadexTestnet?.toUpperCase();
+
+    const depositAddress = depositActionsResponse?.find(da => true)?.to_address;
+    const amount = depositActionsResponse?.find(da => true)?.amount || 0;
+    const callData = depositActionsResponse?.find(da => true)?.call_data;
     if (sourceIsImmutableX)
         return <ImtblxWalletWithdrawStep
             amount={amount}
@@ -77,6 +84,25 @@ export const WalletTransferContent: FC = () => {
             network={swap?.source_network}
             token={swap?.source_token}
             swapId={swap?.id}
+            callData={callData}
+        />;
+    else if (sourceIsTon)
+        return <TonWalletWithdrawStep
+            amount={amount}
+            depositAddress={depositAddress}
+            network={swap?.source_network}
+            token={swap?.source_token}
+            swapId={swap?.id}
+            callData={callData}
+        />;
+    else if (sourceIsParadex)
+        return <ParadexWalletWithdrawStep
+            amount={amount}
+            depositAddress={depositAddress}
+            network={swap?.source_network}
+            token={swap?.source_token}
+            swapId={swap?.id}
+            callData={callData}
         />;
     else
         return <>

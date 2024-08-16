@@ -13,6 +13,7 @@ export const initialValues: SwapFormValues = {
         "tokens": [
             {
                 "symbol": "USDC.e",
+                "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.e.png",
                 "contract": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
                 "decimals": 6,
@@ -21,6 +22,7 @@ export const initialValues: SwapFormValues = {
             },
             {
                 "symbol": "USDC",
+                "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.png",
                 "contract": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
                 "decimals": 6,
@@ -29,6 +31,7 @@ export const initialValues: SwapFormValues = {
             },
             {
                 "symbol": "ETH",
+                "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                 "contract": null,
                 "decimals": 18,
@@ -46,6 +49,7 @@ export const initialValues: SwapFormValues = {
         "account_explorer_template": "https://arbiscan.io/address/{0}",
         "token": {
             "symbol": "ETH",
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
             "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
             "contract": null,
             "decimals": 18,
@@ -62,6 +66,7 @@ export const initialValues: SwapFormValues = {
     },
     "fromCurrency": {
         "symbol": "ETH",
+        "listing_date": "2023-12-27T16:46:50.617075+00:00",
         "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
         "contract": null,
         "decimals": 18,
@@ -74,6 +79,7 @@ export const initialValues: SwapFormValues = {
             {
                 "status": "active",
                 "symbol": "USDC",
+                "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.png",
                 "contract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
                 "decimals": 6,
@@ -83,6 +89,7 @@ export const initialValues: SwapFormValues = {
             {
                 "status": "active",
                 "symbol": "ETH",
+                "listing_date": "2023-12-27T16:46:50.617075+00:00",
                 "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
                 "contract": null,
                 "decimals": 18,
@@ -100,6 +107,7 @@ export const initialValues: SwapFormValues = {
         "account_explorer_template": "https://etherscan.io/address/{0}",
         "token": {
             "symbol": "ETH",
+            "listing_date": "2023-12-27T16:46:50.617075+00:00",
             "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
             "contract": null,
             "decimals": 18,
@@ -117,6 +125,7 @@ export const initialValues: SwapFormValues = {
     "toCurrency": {
         "status": "active",
         "symbol": "ETH",
+        "listing_date": "2023-12-27T16:46:50.617075+00:00",
         "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
         "contract": null,
         "decimals": 18,

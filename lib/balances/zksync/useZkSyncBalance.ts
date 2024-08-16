@@ -2,17 +2,22 @@ import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
 import { Balance, BalanceProps, BalanceProvider, Gas, GasProps, NetworkBalancesProps } from "../../../Models/Balance";
 import ZkSyncLiteRPCClient from "./zksyncLiteRpcClient";
+import { useSettingsState } from "../../../context/settings";
 
 export default function useZkSyncBalance(): BalanceProvider {
+    const { networks } = useSettingsState()
+
     const supportedNetworks = [
         KnownInternalNames.Networks.ZksyncMainnet
     ]
     const client = new ZkSyncLiteRPCClient();
 
-    const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
+    const getNetworkBalances = async ({ networkName, address }: NetworkBalancesProps) => {
+        const network = networks.find(n => n.name === networkName)
+
         let balances: Balance[] = []
 
-        if (!network.tokens) return
+        if (!network?.tokens) return
 
         try {
             const result = await client.getAccountInfo(network.node_url, address);
@@ -26,7 +31,7 @@ export default function useZkSyncBalance(): BalanceProvider {
                     amount: formatAmount(amount, Number(currency?.decimals)),
                     request_time: new Date().toJSON(),
                     decimals: Number(currency?.decimals),
-                    isNativeCurrency: false
+                    isNativeCurrency: true
                 })
             });
 
@@ -54,7 +59,7 @@ export default function useZkSyncBalance(): BalanceProvider {
                 amount: formatAmount(amount, Number(token?.decimals)),
                 request_time: new Date().toJSON(),
                 decimals: Number(token?.decimals),
-                isNativeCurrency: false
+                isNativeCurrency: true
             })
         }
         catch (e) {
@@ -62,15 +67,14 @@ export default function useZkSyncBalance(): BalanceProvider {
         }
     }
 
-    const getGas = async ({ network, token, address }: GasProps) => {
+    const getGas = async ({ network, token, recipientAddress = '0x2fc617e933a52713247ce25730f6695920b3befe' }: GasProps) => {
 
         let gas: Gas[] = [];
-        if (!address) return
 
         try {
-            const result = await client.getTransferFee(network.node_url, address, token.symbol);
+            const result = await client.getTransferFee(network.node_url, recipientAddress as `0x${string}`, token.symbol);
             const currencyDec = token.decimals;
-            const formatedGas = formatAmount(result.totalFee, Number(currencyDec))
+            const formatedGas = formatAmount(Number(result.totalFee) * 1.5, Number(currencyDec))
 
             gas = [{
                 token: token.symbol,

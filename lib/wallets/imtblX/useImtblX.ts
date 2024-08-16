@@ -4,13 +4,13 @@ import KnownInternalNames from "../../knownIds"
 import { WalletProvider } from "../../../hooks/useWallet"
 import IMX from "../../../components/icons/Wallets/IMX"
 
-export default function useImmutableX(): WalletProvider {
+export default function useImtblX(): WalletProvider {
     const withdrawalSupportedNetworks = [
-        KnownInternalNames.Networks.ImmutableXMainnet, 
+        KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli,
         KnownInternalNames.Networks.ImmutableXSepolia,
     ]
-    
+
     const name = 'imx'
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
@@ -19,10 +19,13 @@ export default function useImmutableX(): WalletProvider {
     const getWallet = () => {
         return wallets.find(wallet => wallet.providerName === name)
     }
-
-    const connectWallet = async (chain: string | number) => {
+    type ConnectProps = {
+        chain?: string | number
+    }
+    const connectWallet = async (props?: ConnectProps) => {
+        const { chain } = props || {}
         if (!chain) throw new Error('No chain id for imx connect wallet')
-        const networkName = chain == 1 ? KnownInternalNames.Networks.ImmutableXMainnet : KnownInternalNames.Networks.ImmutableXGoerli
+        const networkName = chain == 'testnet' ? KnownInternalNames.Networks.ImmutableXGoerli : KnownInternalNames.Networks.ImmutableXMainnet
         try {
             const imtblClient = new ImtblClient(networkName)
             const res = await imtblClient.ConnectWallet();
@@ -42,11 +45,18 @@ export default function useImmutableX(): WalletProvider {
         return removeWallet(name)
     }
 
+    const reconnectWallet = async ({ chain }: { chain: string | number }) => {
+        disconnectWallet()
+        await connectWallet({ chain })
+    }
+
     return {
         getConnectedWallet: getWallet,
         connectWallet,
         disconnectWallet,
-        withdrawalSupportedNetworks: withdrawalSupportedNetworks,
+        reconnectWallet,
+        withdrawalSupportedNetworks,
+        asSourceSupportedNetworks: withdrawalSupportedNetworks,
         name
     }
 }

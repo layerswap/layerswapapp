@@ -1,9 +1,14 @@
 import { PublicClient } from "viem"
 import formatAmount from "../../../formatAmount"
-import { erc20ABI } from "wagmi"
-import { multicall, fetchBalance, FetchBalanceResult } from '@wagmi/core'
+import { http, createConfig } from '@wagmi/core'
+import { erc20Abi } from 'viem'
+import { multicall } from '@wagmi/core'
+import { getBalance, GetBalanceReturnType } from '@wagmi/core'
+
 import { Network, NetworkWithTokens, Token } from "../../../../Models/Network"
 import { Balance } from "../../../../Models/Balance"
+import { datadogRum } from "@datadog/browser-rum"
+import resolveChain from "../../../resolveChain"
 
 export type ERC20ContractRes = ({
     error: Error;
@@ -38,7 +43,7 @@ export const resolveERC20Balances = async (
 
 type GetBalanceArgs = {
     address: string,
-    chainId: number,
+    network: Network,
     assets: Token[],
     publicClient: PublicClient,
     hasMulticall: boolean
@@ -46,7 +51,7 @@ type GetBalanceArgs = {
 
 export const getErc20Balances = async ({
     address,
-    chainId,
+    network,
     assets,
     publicClient,
     hasMulticall = false
@@ -54,15 +59,25 @@ export const getErc20Balances = async ({
 
     const contracts = assets?.filter(a => a.contract).map(a => ({
         address: a?.contract as `0x${string}`,
-        abi: erc20ABI,
+        abi: erc20Abi,
         functionName: 'balanceOf',
         args: [address],
     }))
 
     try {
         if (hasMulticall) {
-            const contractRes = await multicall({
-                chainId: chainId,
+            const chain = resolveChain(network)
+            if (!chain) throw new Error("Could not resolve chain")
+
+            const config = createConfig({
+                chains: [chain],
+                transports: {
+                    [chain.id]: http()
+                }
+            })
+
+            const contractRes = await multicall(config, {
+                chainId: chain.id,
                 contracts: contracts
             })
             return contractRes
@@ -74,7 +89,7 @@ export const getErc20Balances = async ({
                     const contract = contracts[i]
                     const balance = await publicClient.readContract({
                         address: contract?.address as `0x${string}`,
-                        abi: erc20ABI,
+                        abi: erc20Abi,
                         functionName: 'balanceOf',
                         args: [address as `0x${string}`]
                     })
@@ -96,25 +111,37 @@ export const getErc20Balances = async ({
         }
     }
     catch (e) {
-        //TODO: log the error to our logging service
-        console.log(e);
+        const error = new Error(e)
+        error.name = "ERC20BalanceError"
+        error.cause = e
+        datadogRum.addError(error);
         return null;
     }
 
 }
 
-export const getTokenBalance = async (address: `0x${string}`, chainId: number, contract?: `0x${string}` | null): Promise<FetchBalanceResult | null> => {
+export const getTokenBalance = async (address: `0x${string}`, network: Network, contract?: `0x${string}` | null): Promise<GetBalanceReturnType | null> => {
 
     try {
-        const res = await fetchBalance({
+        const chain = resolveChain(network)
+        if (!chain) throw new Error("Could not resolve chain")
+        const config = createConfig({
+            chains: [chain],
+            transports: {
+                [chain.id]: http()
+            }
+        })
+        const res = await getBalance(config, {
             address,
-            chainId,
+            chainId: chain.id,
             ...(contract ? { token: contract } : {})
         })
         return res
     } catch (e) {
-        //TODO: log the error to our logging service
-        console.log(e)
+        const error = new Error(e)
+        error.name = "TokenBalanceError"
+        error.cause = e
+        datadogRum.addError(error);
         return null
     }
 
@@ -123,7 +150,7 @@ export const getTokenBalance = async (address: `0x${string}`, chainId: number, c
 export const resolveBalance = async (
     network: Network,
     token: Token,
-    balanceData: FetchBalanceResult
+    balanceData: GetBalanceReturnType
 ) => {
 
     const nativeBalance: Balance = {
@@ -141,7 +168,7 @@ export const resolveBalance = async (
 export const resolveERC20Balance = async (
     network: Network,
     token: Token,
-    balanceData: FetchBalanceResult
+    balanceData: GetBalanceReturnType
 ) => {
 
     const nativeBalance: Balance = {
