@@ -62,16 +62,17 @@ function CommittmentsHistory() {
 
     const PAGE_SIZE = 5
 
-    const getCommitments = async (page: number, commitIds: string[], sourceAtomicContract: string, type: 'native' | 'erc20') => {
+    const getCommitments = async (page: number, commitIds: string[], sourceAtomicContract: string, sourceType: 'native' | 'erc20') => {
         let commits: (HistoryCommit)[] = []
 
         for (let i = page * PAGE_SIZE; i < (page + 1) * PAGE_SIZE; i++) {
-            const commit = commitIds[i] && await source_provider?.getCommitment({ commitId: commitIds[i], chainId: activeNetwork?.chain_id as string, contractAddress: sourceAtomicContract as `0x${string}`, type: type })
+            const commit = commitIds[i] && await source_provider?.getCommitment({ commitId: commitIds[i], chainId: activeNetwork?.chain_id as string, contractAddress: sourceAtomicContract as `0x${string}`, type: sourceType })
 
             const destination_network = commit && networks.find(network => network.name === commit.dstChain) || null
             const destination_provider = destination_network && getWithdrawalProvider(destination_network)
             const destination_asset = commit && destination_network && destination_network?.tokens.find(token => token.symbol === commit.dstAsset) || null
             const destinationAtomicContract = destination_asset?.contract ? destination_network?.metadata.htlc_erc20_contract : destination_network?.metadata.htlc_contract
+            const destinationType = destination_asset?.contract ? 'erc20' : 'native'
 
             let destinationLock: AssetLock | undefined = undefined
 
@@ -79,7 +80,7 @@ function CommittmentsHistory() {
 
                 try {
                     const destinationLockId = await destination_provider.getLockIdByCommitId({
-                        type,
+                        type: destinationType,
                         chainId: destination_network.chain_id,
                         commitId: commitIds[i].toString(),
                         contractAddress: destinationAtomicContract as `0x${string}`
@@ -87,7 +88,7 @@ function CommittmentsHistory() {
 
                     if (destinationLockId) {
                         destinationLock = await destination_provider.getLock({
-                            type,
+                            type: destinationType,
                             lockId: destinationLockId,
                             chainId: destination_network.chain_id,
                             contractAddress: destinationAtomicContract as `0x${string}`
@@ -97,7 +98,6 @@ function CommittmentsHistory() {
                     console.log(e)
                 }
             }
-
 
             if (commit) {
                 const status = commitStatusResolver(commit, destinationLock)
@@ -119,12 +119,12 @@ function CommittmentsHistory() {
 
     useEffect(() => {
         (async () => {
-            if (wallets.length === 0 || !activeNetwork?.metadata.htlc_contract || !activeNetwork.chain_id) return
+            if (wallets.length === 0 || !activeNetwork || !activeNetwork.chain_id) return
             setPage(0)
             setIsLastPage(false)
             setLoading(true)
 
-            const commIds = await source_provider?.getCommits({ contractAddress: activeNetwork?.metadata.htlc_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'native' })
+            const commIds = activeNetwork?.metadata.htlc_contract && await source_provider?.getCommits({ contractAddress: activeNetwork?.metadata.htlc_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'native' })
             if (commIds) setCommitIds(commIds)
             const erc20CommIds = await source_provider?.getCommits({ contractAddress: activeNetwork?.metadata.htlc_erc20_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'erc20' })
             if (erc20CommIds) setErc20CommIds(erc20CommIds)
@@ -134,7 +134,7 @@ function CommittmentsHistory() {
             setCommitments([...commits, ...erc20Commits])
 
             setPage(1)
-            if (Number(commIds?.length) < PAGE_SIZE) setIsLastPage(true)
+            if ((commIds ? (Number(commIds?.length) <= PAGE_SIZE) : true) && (erc20CommIds ? (Number(erc20CommIds?.length) <= PAGE_SIZE) : true)) setIsLastPage(true)
             setLoading(false)
         })()
     }, [router.query, selectedWallet?.address, selectedWallet?.chainId])
@@ -149,8 +149,7 @@ function CommittmentsHistory() {
         setCommitments(old => [...(old ? old : []), ...commits, ...erc20Commits])
 
         setPage(nextPage)
-        if (Number(commitIds?.length) < PAGE_SIZE && Number(erc20CommIds?.length) < PAGE_SIZE)
-            setIsLastPage(true)
+        if ((commitIds ? (Number(commitIds?.length) <= PAGE_SIZE) : true) && (erc20CommIds ? Number(erc20CommIds?.length) <= PAGE_SIZE : true)) setIsLastPage(true)
 
         setLoading(false)
     }, [page, setCommitments, commitIds, erc20CommIds])
