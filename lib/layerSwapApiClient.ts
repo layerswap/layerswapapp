@@ -214,6 +214,10 @@ export type GetQuoteParams = {
 }
 
 export type SwapQuote = {
+    source_network: Network,
+    source_token: Token,
+    destination_network: Network,
+    destination_token: Token,
     receive_amount: number,
     min_receive_amount: number,
     total_fee: number,

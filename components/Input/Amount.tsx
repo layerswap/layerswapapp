@@ -17,7 +17,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromCurrency, from, to, amount, toCurrency, fromExchange, toExchange } = values || {};
-    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
+    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee } = useFee()
     const [isFocused, setIsFocused] = useState(false);
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const [walletAddress, setWalletAddress] = useState<string>()
@@ -56,12 +56,12 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const diasbled = Boolean((fromExchange && !toCurrency) || (toExchange && !fromCurrency))
 
     const updateRequestedAmountInUsd = useCallback((requestedAmount: number) => {
-        if (fromCurrency?.price_in_usd && !isNaN(requestedAmount)) {
-            setRequestedAmountInUsd((fromCurrency?.price_in_usd * requestedAmount).toFixed(2));
+        if (fee?.quote.source_token?.price_in_usd && !isNaN(requestedAmount)) {
+            setRequestedAmountInUsd((fee?.quote.source_token?.price_in_usd * requestedAmount).toFixed(2));
         } else {
             setRequestedAmountInUsd(undefined);
         }
-    }, [requestedAmountInUsd, fromCurrency]);
+    }, [requestedAmountInUsd, fee]);
 
     useEffect(() => {
         amount && updateRequestedAmountInUsd(Number(amount))
