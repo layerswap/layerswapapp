@@ -26,7 +26,7 @@ export const RedeemAction: FC = () => {
                     const data = await source_provider.getLock({
                         type: source_asset?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
-                        lockId: hashLock,
+                        lockId: committment.lockId,
                         contractAddress: contract as `0x${string}`,
                     })
                     if (data.redeemed) {

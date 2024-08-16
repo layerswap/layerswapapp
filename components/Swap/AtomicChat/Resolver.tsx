@@ -248,7 +248,7 @@ export const ResolveMessages: FC = () => {
     if (commtting) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <UserCommitting walletIcon={WalletIcon} />
-        </div > 
+        </div >
     }
     return <>
         <div>
@@ -352,8 +352,9 @@ export const ActionsWithProgressbar: FC = () => {
         currentStep = 2
     }
 
-    const allDone = committment?.locked ? true : false
+    const allDone = (committment?.locked && sourceLock?.redeemed) ? true : false
     const showSteps = !allDone && !isTimelockExpired
+    const timelock = sourceLock?.timelock || committment?.timelock
 
     return <div className="space-y-4">
         {
@@ -371,8 +372,8 @@ export const ActionsWithProgressbar: FC = () => {
                             </div>
                     }
                     {
-                        committment?.timelock && Number(committment.timelock) - (Date.now() / 1000) > 0 && !sourceLock?.redeemed &&
-                        <TimelockTimer timelock={Number(committment.timelock) - (Date.now() / 1000)} />
+                        timelock && Number(timelock) - (Date.now() / 1000) > 0 && !sourceLock?.redeemed &&
+                        <TimelockTimer timelock={Number(timelock) - (Date.now() / 1000)} />
                     }
                 </div>
                 <div className="flex space-x-1">
