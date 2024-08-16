@@ -17,7 +17,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination
     const receive_amount = fee?.quote.receive_amount
     const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(destination_token?.precision) || "")
 
-    const receiveAmountInUsd = receive_amount && destination_token ? (fee.quote.receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2) : undefined
+    const receiveAmountInUsd = receive_amount && destination_token && fee.quote?.destination_token?.price_in_usd ? (receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2) : undefined
 
     return <div className="w-full h-full">
         <div className="flex items-center justify-between w-full">

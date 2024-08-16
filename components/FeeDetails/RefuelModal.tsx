@@ -32,7 +32,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
 
     const nativeAsset = to?.token
 
-    const token_usd_price = fee?.quote?.destination_network.token?.price_in_usd || nativeAsset?.price_in_usd
+    const token_usd_price = fee?.quote?.destination_network?.token?.price_in_usd || nativeAsset?.price_in_usd
 
     const connectedWallet = provider?.getConnectedWallet()
     const destNativeTokenBalance = balances[destination_address || (connectedWallet?.address || '')]?.find(b => b.token === nativeAsset?.symbol && b.network === to?.name)
