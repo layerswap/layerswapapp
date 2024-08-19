@@ -33,7 +33,7 @@ export function ImtblPassportProvider({ children, from, to }: { children: JSX.El
     const router = useRouter();
 
     useEffect(() => {
-        if ((from?.name.startsWith('IMMUTABLE') || to?.name.startsWith('IMMUTABLE')) && passportInstance) {
+        if ((from?.name.startsWith('IMMUTABLE') || to?.name.startsWith('IMMUTABLE')) && !passportInstance) {
             (async () => {
                 await initilizePassport(router.basePath)
                 passportInstance.connectEvm() // EIP-6963
