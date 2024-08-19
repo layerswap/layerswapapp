@@ -17,15 +17,12 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                     className="rounded-md object-contain" />}
                 {item.menuItemImage && item.menuItemImage}
             </div>
-            <p className='text-md font-medium flex w-full justify-between space-x-2 '>
-                <span className="flex items-center justify-center pb-0.5">{item.displayName ? item.displayName : item.name}</span>
-                {item.badge}
-            </p>
+
         </div>
-        <div className="ml-4 flex items-center gap-3 justify-between w-full">
-            <div className='text-md font-medium'>
-                {item.menuItemLabel || item.name}
-            </div>
+        <div className="flex items-center gap-3 justify-between w-full">
+            <p className='text-md font-medium flex w-full justify-between space-x-2 '>
+                <span className="flex items-center justify-center pb-0.5">{item.menuItemLabel || item.name}{item.badge}</span>
+            </p>
             <>
                 {item.menuItemDetails}
             </>

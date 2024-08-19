@@ -2,8 +2,7 @@ import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useMemo } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
-import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
-import { ResolveCurrencyOrder, SortAscending } from "../../lib/sorting";
+import CurrencySettings from "../../lib/CurrencySettings";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useQueryState } from "../../context/query";
@@ -15,16 +14,20 @@ import { Balance } from "../../Models/Balance";
 import dynamic from "next/dynamic";
 import { QueryParams } from "../../Models/QueryParams";
 import { ApiError, LSAPIKnownErrorCode } from "../../Models/ApiError";
+import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import Image from 'next/image'
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import useWallet from "../../hooks/useWallet";
 import { Wallet } from "../../stores/walletStore";
 import { resolveNetworkRoutesURL } from "../../helpers/routes";
+import { useSettingsState } from "../../context/settings";
+import ClickTooltip from "../Tooltips/ClickTooltip";
 import { ONE_WEEK } from "./NetworkFormField";
 import useValidationErrorStore from "../validationError/validationErrorStore";
 import validationMessageResolver from "../utils/validationErrorResolver";
 import RouteIcon from "../icons/RouteIcon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
+import { SortAscending } from "../../lib/sorting";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -40,12 +43,14 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
+    const { destinationRoutes, sourceRoutes } = useSettingsState()
+    const { wallets } = useWallet()
     const { to, fromCurrency, toCurrency, from, currencyGroup, destination_address } = values
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { balances } = useBalancesState()
 
-    const { getAutofillProvider: getProvider, wallets } = useWallet()
+    const { getAutofillProvider: getProvider } = useWallet()
     const { message: validationErrorMessage, directions, setValidationMessage, clearValidationMessage } = useValidationErrorStore()
 
     const sourceWalletProvider = useMemo(() => {
@@ -66,9 +71,12 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         error
     } = useSWR<ApiResponse<RouteNetwork[]>>(`${networkRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
-    const allCurrencies: ((RouteToken & { network_name: string, network_display_name: string, network_logo: string })[] | undefined) =  routes?.data?.map(route =>
+    const allCurrencies: ((RouteToken & { network_name: string, network_display_name: string, network_logo: string })[] | undefined) = direction === 'from' ?
+        sourceRoutes?.map(route =>
             route.tokens.map(asset => ({ ...asset, network_display_name: route.display_name, network_name: route.name, network_logo: route.logo }))).flat()
-
+        :
+        destinationRoutes?.map(route =>
+            route.tokens.map(asset => ({ ...asset, network_display_name: route.display_name, network_name: route.name, network_logo: route.logo }))).flat();
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
         allCurrencies!,
@@ -81,8 +89,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     )
     const currencyAsset = direction === 'from' ? fromCurrency?.symbol : toCurrency?.symbol;
     const currencyNetwork = allCurrencies?.find(c => c.symbol === currencyAsset && c.network_name === from?.name)?.network_name
-    const value = currencyMenuItems?.find(x => x.baseObject.symbol == currencyAsset && x.baseObject.network_name === currencyNetwork);
-    
+
     useEffect(() => {
         if (direction !== "to") return
 
@@ -91,11 +98,11 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         if (currencyIsAvailable) return
 
         const default_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.symbol?.toUpperCase() === (query?.toAsset)?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
-            || currencyMenuItems?.find(c => c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
+            c.baseObject?.symbol?.toUpperCase() === (query?.toAsset)?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === to?.name)
+            || currencyMenuItems?.find(c => c.baseObject.status === "active" && c.baseObject.network_name === to?.name)
 
         const selected_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
+            c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === to?.name)
 
         if (selected_currency && routes?.data?.find(r => r.name === to?.name)?.tokens?.some(r => r.symbol === selected_currency.name && r.status === 'active')) {
             setFieldValue(name, selected_currency.baseObject, true)
@@ -161,10 +168,12 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         }
     }, [toCurrency, currencyGroup, name, from, routes, error, isLoading, validationErrorMessage])
 
+    const value = currencyMenuItems?.find(x => x.baseObject.symbol == currencyAsset && x.baseObject.network_name === currencyNetwork);
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }>) => {
-        const network = routes?.data?.find(r => r.name === item.baseObject.network_name)
-        setFieldValue(name, network, true)
+        const network = (direction === 'from' ? sourceRoutes : destinationRoutes)?.find(r => r.name === item.baseObject.network_name)
+        setFieldValue(name, item.baseObject, true)
+        setFieldValue(direction, network, true)
         const message = validationMessageResolver(values, direction, query, error)
         if (!item.isAvailable)
             setValidationMessage('Warning', message, 'warning', name);
@@ -173,17 +182,18 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
-
     return (
         <div className="relative">
             <BalanceComponent values={values} direction={direction} />
-            <PopoverSelectWrapper
+            <CommandSelectWrapper
+                disabled={(value && !value?.isAvailable) || isLoading}
+                valueGrouper={groupByType}
                 placeholder="Asset"
                 setValue={handleSelect}
                 value={value}
                 values={currencyMenuItems}
                 searchHint='Search'
-                disabled={!value?.isAvailable || isLoading}
+                isLoading={isLoading}
             />
         </div>
     )
@@ -232,7 +242,6 @@ function GenerateCurrencyMenuItems(
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
         const balanceAmountInUsd = formatted_balance_amount ? (currency?.price_in_usd * formatted_balance_amount).toFixed(2) : undefined
 
-
         const DisplayNameComponent = <div>
             {displayName}
             <span className="text-primary-text-muted text-xs block">
@@ -253,18 +262,6 @@ function GenerateCurrencyMenuItems(
             }
         </div>
 
-        const details = balance && <p className="text-primary-text-placeholder flex flex-col items-end">
-            {Number(formatted_balance_amount) ?
-                <span className="text-primary-text text-sm">{formatted_balance_amount}</span>
-                :
-                <span className="text-primary-text text-sm">0.00</span>
-            }
-            {balanceAmountInUsd ?
-                <span className="text-sm">${balanceAmountInUsd}</span>
-                :
-                <span className="text-sm">$0.00</span>
-            }
-        </p>
         const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
 
         const currencyIsAvailable = !lockAsset &&
@@ -277,11 +274,20 @@ function GenerateCurrencyMenuItems(
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
-        // const details = c.status === 'inactive' ?
-        //     <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> :
-        //     <p className="text-primary-text-muted">
-        //         {formatted_balance_amount}
-        //     </p>
+        const details = c.status === 'inactive' ?
+            <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> : 
+            <p className="text-primary-text-placeholder flex flex-col items-end">
+                {Number(formatted_balance_amount) ?
+                <span className="text-primary-text text-sm">{formatted_balance_amount}</span>
+                :
+                <span className="text-primary-text text-sm">0.00</span>
+            }
+            {balanceAmountInUsd ?
+                <span className="text-sm">${balanceAmountInUsd}</span>
+                :
+                <span className="text-sm">$0.00</span>
+            }
+            </p>
 
         const icon = showRouteIcon ? (
             <Tooltip delayDuration={200}>
@@ -305,12 +311,11 @@ function GenerateCurrencyMenuItems(
             menuItemLabel: DisplayNameComponent,
             menuItemImage: NetworkImage,
             balanceAmount: Number(formatted_balance_amount),
+            order: CurrencySettings.KnownSettings[c.symbol]?.Order ?? 5,
             imgSrc: c.logo,
+            isAvailable: currencyIsAvailable,
             group: getGroupName(c.network_display_name === (direction === "from" ? from?.display_name : to?.display_name) ? c.network_display_name : "All networks"),
             menuItemDetails: details,
-            order: ResolveCurrencyOrder(c, isNewlyListed),
-            isAvailable: currencyIsAvailable,
-            details,
             badge,
             icon
         };

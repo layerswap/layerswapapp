@@ -16,7 +16,6 @@ import { RouteNetwork } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
-import { Info } from "lucide-react";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../../helpers/routes";
 import useValidationErrorStore from "../validationError/validationErrorStore";
 import validationMessageResolver from "../utils/validationErrorResolver";
@@ -194,7 +193,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
 
         const order = ResolveNetworkOrder(r, direction, isNewlyListed)
 
-        const routeNotFound = isAvailable && !r.tokens?.some(r => r.status === 'active') ;
+        const routeNotFound = isAvailable && !r.tokens?.some(r => r.status === 'active');
         const icon = routeNotFound ? (
             <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild >
@@ -219,7 +218,6 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             isAvailable: isAvailable,
             group: getGroupName(r, 'network', isAvailable && !routeNotFound),
             isExchange: false,
-            menuItemDetails: details,
             details,
             badge,
             icon

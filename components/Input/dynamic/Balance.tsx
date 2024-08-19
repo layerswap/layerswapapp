@@ -20,7 +20,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     const destinationWalletProvider = useMemo(() => {
         return to && getProvider(to)
     }, [to, getProvider])
-    const { fetchNetworkBalances, fetchGas, fetchAllBalances } = useBalance()
+    const { fetchNetworkBalances, fetchGas } = useBalance()
     const { networks, sourceRoutes } = useSettingsState()
 
     const filteredNetworks = networks.filter(l => sourceRoutes.some(sr => sr.name.includes(l.name) && l.tokens))
@@ -46,7 +46,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
             || (from && isValidAddress(sourceNetworkWallet?.address, from)))
             && from
             && direction === 'from') {
-            fetchNetworkBalances(from, sourceNetworkWallet?.address);
+            fetchNetworkBalances(from);
         }
         previouslySelectedSource.current = from
     }, [from, sourceNetworkWallet?.address])
@@ -58,7 +58,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
         if (((previouslySelectedDestination.current && (to?.type == previouslySelectedDestination.current?.type))
             || (to && isValidAddress(destinationAddress, to)))
             && to
-            && direction === 'to') fetchNetworkBalances(to, destinationAddress);
+            && direction === 'to') fetchNetworkBalances(to);
         previouslySelectedDestination.current = to
     }, [to, destination_address, destinationNetworkWallet?.address])
 

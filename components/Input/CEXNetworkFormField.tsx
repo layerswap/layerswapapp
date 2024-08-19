@@ -155,7 +155,7 @@ function GenerateMenuItems(
         const item: SelectMenuItem<ExchangeNetwork> = {
             baseObject: e,
             id: index.toString(),
-            name: `${e.network.name}_${e.token.symbol}`,
+            name: `${e.network.display_name}`,
             displayName: network?.display_name,
             order: 1,
             imgSrc: network?.logo || '',

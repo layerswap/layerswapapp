@@ -18,7 +18,7 @@ export default function useBalanceProvider() {
         useStarknetBalance(),
         useLoopringBalance(),
         useZkSyncBalance(),
-        useSolanaBalance(),
+        //useSolanaBalance(),
         useImxBalance(),
         useTonBalance()
     ]
@@ -34,10 +34,10 @@ export default function useBalanceProvider() {
 
     const { getAutofillProvider } = useWallet()
 
-    const fetchNetworkBalances = async (network: NetworkWithTokens, address?: string) => {
-        const provider = getAutofillProvider(network)
-        const wallet = provider?.getConnectedWallet(network)
-        address = address || query.account || wallet?.address
+    const fetchNetworkBalances = async (network: NetworkWithTokens) => {
+        const provider = getAutofillProvider(network);
+        const wallet = provider?.getConnectedWallet();
+        const address = query.account || wallet?.address;
 
         const balance = balances[address || '']?.find(b => b?.network === network?.name);
         const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance?.request_time).getTime() || 0) > 10000;
