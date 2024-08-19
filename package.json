@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@badrap/bar-of-progress": "^0.2.2",
+    "@coral-xyz/anchor": "^0.30.1",
     "@datadog/browser-rum": "^5.9.0",
     "@eth-optimism/contracts-ts": "^0.15.0",
     "@headlessui/react": "^1.7.3",
