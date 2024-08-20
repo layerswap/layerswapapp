@@ -1,4 +1,6 @@
 
+'use client'
+
 import KnownInternalNames from "../../knownIds";
 import formatAmount from "../../formatAmount";
 import {

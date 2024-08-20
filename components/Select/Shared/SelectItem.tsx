@@ -8,6 +8,7 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
         <div className="relative flex items-center gap-4 pl-4">
             {!isDisabled && item.icon}
             <div className="flex-shrink-0 h-6 w-6 relative">
+                {item.details}
                 {item.imgSrc && <Image
                     src={item.imgSrc}
                     alt="Project Logo"
@@ -23,9 +24,6 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
             <p className='text-md font-medium flex w-full justify-between space-x-2 '>
                 <span className="flex items-center justify-center pb-0.5">{item.menuItemLabel || item.name}{item.badge}</span>
             </p>
-            <>
-                {item.menuItemDetails}
-            </>
         </div>
     </div>);
 }

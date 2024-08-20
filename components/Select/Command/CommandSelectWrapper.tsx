@@ -15,7 +15,6 @@ type CommandSelectWrapperProps = {
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
     isLoading?: boolean | undefined;
     modalHeight?: LeafletHeight;
-    valueDetails?: React.ReactNode;
     exchangeDetails?: React.ReactNode;
     modalContent?: React.ReactNode;
     direction?: string;

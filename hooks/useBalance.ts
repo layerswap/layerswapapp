@@ -18,7 +18,7 @@ export default function useBalanceProvider() {
         useStarknetBalance(),
         useLoopringBalance(),
         useZkSyncBalance(),
-        //useSolanaBalance(),
+        useSolanaBalance(),
         useImxBalance(),
         useTonBalance()
     ]
