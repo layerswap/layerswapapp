@@ -79,7 +79,7 @@ export default function CommandSelectWrapper<T>({
                         }
                         {value ?
                             <span className="ml-3 flex font-medium flex-auto space-x-1 text-primary-buttonTextColor items-center">
-                                {valueDetails || value.name}
+                                {value.name}
                             </span>
                             :
                             <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
