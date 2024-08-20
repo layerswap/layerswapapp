@@ -4,13 +4,15 @@ import { NetworkType } from "../Models/Network";
 import resolveChain from "../lib/resolveChain";
 import React from "react";
 import NetworkSettings from "../lib/NetworkSettings";
-import { WagmiProvider } from 'wagmi'
+import { createConnector, WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
 import { WalletModalProvider } from '../context/walletModalContext';
 import Solana from "./SolanaProvider";
-import { injected, metaMask, safe, walletConnect, coinbaseWallet } from 'wagmi/connectors'
+import { argentWallet, bitgetWallet, coinbaseWallet, injectedWallet, metaMaskWallet, phantomWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets'
+import { connectorsForWallets } from '@rainbow-me/rainbowkit';
+
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -19,32 +21,32 @@ const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_
 
 const queryClient = new QueryClient()
 
-// export const connectors = connectorsForWallets(
-//     [
-//         {
-//             groupName: 'Popular',
-//             wallets: [
-//                 injectedWallet,
-//                 metaMaskWallet,
-//                 walletConnectWallet,
-//             ],
-//         },
-//         {
-//             groupName: 'Wallets',
-//             wallets: [
-//                 coinbaseWallet,
-//                 argentWallet,
-//                 bitgetWallet,
-//                 rainbowWallet,
-//                 phantomWallet
-//             ],
-//         }
-//     ],
-//     {
-//         appName: 'Layerswap',
-//         projectId: WALLETCONNECT_PROJECT_ID,
-//     }
-// );
+export const connectors = connectorsForWallets(
+    [
+        {
+            groupName: 'Popular',
+            wallets: [
+                injectedWallet,
+                metaMaskWallet,
+                walletConnectWallet,
+            ],
+        },
+        {
+            groupName: 'Wallets',
+            wallets: [
+                coinbaseWallet,
+                argentWallet,
+                bitgetWallet,
+                rainbowWallet,
+                phantomWallet
+            ],
+        }
+    ],
+    {
+        appName: 'Layerswap',
+        projectId: WALLETCONNECT_PROJECT_ID,
+    }
+);
 
 function WagmiComponent({ children }: Props) {
 
@@ -60,16 +62,11 @@ function WagmiComponent({ children }: Props) {
     const transports = {}
 
     settingsChains.forEach(chain => {
-        transports[chain.id] = chain.rpcUrls.default.http[0] ? http(chain.rpcUrls.default.http[0]) : http()
+        transports[chain.id] = chain.rpcUrls.default.http[0] || http()
     })
-
+    
     const config = createConfig({
-        connectors: [
-            injected(),
-            walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false }),
-            metaMask({ dappMetadata: { name: 'Layerswap', url: 'https://www.layerswap.io/', iconUrl: 'https://www.layerswap.io/app/symbol.png' } }),
-            coinbaseWallet()
-        ],
+        connectors: connectors,
         chains: settingsChains,
         transports: transports,
     });

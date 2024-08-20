@@ -8,7 +8,6 @@ export default class ImtblClient {
     link: Link
 
     constructor(network_internal_name: string) {
-        debugger
         const url = NetworkSettings.ImmutableXSettings[network_internal_name].linkUri
         this.link = new Link(url)
     }

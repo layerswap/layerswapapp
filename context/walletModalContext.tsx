@@ -5,7 +5,6 @@ import { QRCodeSVG } from 'qrcode.react';
 import Modal from '../components/modal/modal';
 import ResizablePanel from '../components/ResizablePanel';
 import resolveWalletConnectorIcon from '../lib/wallets/utils/resolveWalletIcon';
-import { evmConnectorNameResolver } from '../lib/wallets/evm/KnownEVMConnectors';
 
 const WalletModalContext = createContext<WalletModalContextType | null>(null);
 
@@ -37,7 +36,9 @@ export function WalletModalProvider({ children }) {
                         !qr ?
                             <div className="flex flex-col gap-1 w-full max-h-[40vh] overflow-y-auto styled-scroll">
                                 {availableWalletsForConnection.map((connector, index) => {
-                                    const Icon = resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
+                                    const connectorName = connector?.['rkDetails']?.['name']
+
+                                    const Icon = resolveWalletConnectorIcon({ connector: connectorName })
                                     return (
                                         <div key={index}>
                                             <button
@@ -53,20 +54,21 @@ export function WalletModalProvider({ children }) {
                                                                 setWalletModalIsOpen(false)
                                                             },
                                                             onError: (error) => {
-                                                                console.error(error)
+                                                                console.log(error)
                                                             }
                                                         });
                                                     } catch (e) {
                                                         console.log(e)
                                                     }
-
-                                                    const uri = await getWalletConnectUri(connector)
+                                                    console.log(connector?.['rkDetails']?.['qrCode']?.['getUri']())
+                                                    const uri = await getWalletConnectUri(connector, connector?.['rkDetails']?.['qrCode']?.['getUri'])
+                                                    debugger
                                                     setQr(uri)
                                                 }}
                                             >
                                                 <div className="flex gap-3 items-center font-semibold">
                                                     <Icon className="w-8 h-8 rounded-md bg-secondary-900" />
-                                                    <p>{connector.name}</p>
+                                                    <p>{connectorName}</p>
                                                 </div>
                                             </button>
                                         </div>
@@ -90,9 +92,9 @@ export function WalletModalProvider({ children }) {
     )
 }
 
-
 const getWalletConnectUri = async (
     connector: Connector,
+    uriConverter: (uri: string) => string,
 ): Promise<string> => {
     const provider = await connector.getProvider();
 
@@ -100,12 +102,11 @@ const getWalletConnectUri = async (
         // @ts-expect-error
         return provider.qrUrl;
     }
-
     return new Promise<string>((resolve) =>
         // Wagmi v2 doesn't have a return type for provider yet
         // @ts-expect-error
-        provider.once('display_uri', () => {
-            resolve((provider as any).signer.uri);
+        provider.once('display_uri', (uri) => {
+            resolve(uriConverter(uri));
         }),
     );
 };

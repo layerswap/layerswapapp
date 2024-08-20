@@ -127,7 +127,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             clearValidationMessage()
     }, [name, value])
 
-    const pickNetworkDetails = <div>
+    const pickNetwodetails = <div>
         {
             !!(from && lockFrom) || !!(to && lockTo) &&
             <div className='text-xs text-left text-secondary-text mb-2'>
@@ -151,7 +151,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     values={menuItems}
                     searchHint={searchHint}
                     isLoading={isLoading}
-                    modalContent={pickNetworkDetails}
+                    modalContent={pickNetwodetails}
                     direction={direction}
                 />
             </div>

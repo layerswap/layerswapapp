@@ -60,7 +60,7 @@ export default function Form() {
     const [allConnectors, setAllConnectors] = useState<any>()
     const _connectors = useConnectors()
     useEffect(() => {
-        setAllConnectors(_connectors.filter((value, index, array) => value.rkDetails))
+        setAllConnectors(_connectors.filter((value, index, array) => value.details))
     }, [_connectors])
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);

@@ -175,10 +175,12 @@ export default function useEVM(): WalletProvider {
 }
 
 const resolveAvailableWallets = (all_connectors: readonly Connector[], connected: readonly Connector[]) => {
+
     const available_connectors = all_connectors.filter((connector, index, array) => {
-        return array.findIndex(a => a?.name === connector?.name) === index
+        return connector?.['rkDetails']
+            && array.findIndex(a => a?.['rkDetails']?.['id'] === connector?.['rkDetails']?.['id']) === index
             && !connected.some((connected_connector) => {
-                return connected_connector.name === connector?.name
+                return connected_connector?.['rkDetails']?.['id'] === connector?.['rkDetails']?.['id']
             })
     })
     return available_connectors
