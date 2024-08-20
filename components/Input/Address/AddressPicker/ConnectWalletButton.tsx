@@ -59,12 +59,12 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
                     <p>Switch Wallet</p>
                 </button>
             </div>
-            <button type="button" onClick={onClick} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 ${addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && 'bg-secondary-800'}`}>
+            <button type="button" onClick={onClick} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 ${connectedWallet.address && addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && 'bg-secondary-800'}`}>
                 <div className={`flex items-center justify-between w-full`}>
                     <AddressWithIcon addressItem={addressItem} connectedWallet={connectedWallet} destination={destination} />
                     <div className="flex h-6 items-center px-1">
                         {
-                            addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) &&
+                            connectedWallet.address && addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) &&
                             <FilledCheck className="text-primary" />
                         }
                     </div>
@@ -78,11 +78,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
                     connector={provider.name}
                     iconClassName="w-10 h-10 p-0.5 rounded-lg bg-secondary-800 border border-secondary-400"
                     className="grid grid-cols-2 gap-1 min-w-fit"
-                >
-                    <div className="w-10 h-10 bg-secondary-400 rounded-lg flex-col justify-center items-center inline-flex">
-                        <Plus className="h-6 w-6 text-secondary-text" />
-                    </div>
-                </ResolveConnectorIcon>
+                />
                 <div className="h-full space-y-2">
                     <p className="text-sm font-medium text-secondary-text text-start">Connect your wallet to select a destination address</p>
                     <div className="bg-primary-700/30 border-none !text-primary py-2 rounded-lg text-base font-semibold">

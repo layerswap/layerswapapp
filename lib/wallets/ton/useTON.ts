@@ -1,18 +1,18 @@
 import { useTonConnectUI, useTonWallet } from "@tonconnect/ui-react"
 import { Address } from "@ton/core";
 import KnownInternalNames from "../../knownIds";
-import { Wallet } from "../../../stores/walletStore";
 import { WalletProvider } from "../../../hooks/useWallet";
 import TON from "../../../components/icons/Wallets/TON";
 import { useEffect, useState } from "react";
 
 export default function useTON(): WalletProvider {
     const withdrawalSupportedNetworks = [KnownInternalNames.Networks.TONMainnet]
-    const name = 'ton'
-    const wallet = useTonWallet();
+    const name = 'TON'
+    const id = 'ton'
+    const tonWallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
     const [shouldConnect, setShouldConnect] = useState(false)
-    
+
     useEffect(() => {
         if (shouldConnect) {
             connectWallet()
@@ -20,16 +20,21 @@ export default function useTON(): WalletProvider {
         }
     }, [shouldConnect])
 
+    const wallet = tonWallet ? {
+        address: Address.parse(tonWallet.account.address).toString({ bounceable: false }),
+        connector: name,
+        providerName: id,
+        isActive: true,
+        icon: TON,
+        disconnect: () => disconnectWallet(),
+        connect: () => connectWallet(),
+    } : undefined
+
     const getWallet = () => {
         if (wallet) {
-            const w: Wallet = {
-                address: Address.parse(wallet.account.address).toString({ bounceable: false }),
-                connector: 'TON',
-                providerName: name,
-                icon: TON
-            }
-            return w
+            return [wallet]
         }
+        return undefined
     }
 
     const connectWallet = () => {
@@ -56,13 +61,15 @@ export default function useTON(): WalletProvider {
     }
 
     return {
-        getConnectedWallet: getWallet,
+        connectedWallets: getWallet(),
+        activeWallet: wallet,
         connectWallet,
-        disconnectWallet,
+        disconnectWallets: disconnectWallet,
         reconnectWallet,
         withdrawalSupportedNetworks,
         autofillSupportedNetworks: withdrawalSupportedNetworks,
         asSourceSupportedNetworks: withdrawalSupportedNetworks,
-        name
+        name,
+        id,
     }
 }

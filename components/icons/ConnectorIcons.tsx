@@ -9,60 +9,64 @@ import TonKeeper from "../icons/Wallets/TonKeeper";
 import OpenMask from "../icons/Wallets/OpenMask";
 import Phantom from "../icons/Wallets/Phantom";
 import CoinbaseIcon from "../icons/Wallets/Coinbase";
-import GlowIcon from "../icons/Wallets/Glow";
+import { Mail } from "lucide-react";
+import MyTonWallet from "./Wallets/MyTonWallet";
+import GlowIcon from "./Wallets/Glow";
 
 export const ResolveConnectorIcon = ({
     connector,
     iconClassName,
     className,
-    children
 }: {
     connector: string;
     iconClassName: string;
     className?: string;
-    children?: React.ReactNode;
 }) => {
     switch (connector.toLowerCase()) {
         case KnownConnectors.EVM:
             return (
-                <div className={className ?? "-space-x-2 flex"}>
-                    <RainbowIcon className={iconClassName} />
-                    <WalletConnectIcon className={iconClassName} />
+                <IconsWrapper className={className}>
                     <MetaMaskIcon className={iconClassName} />
-                    {children}
-                </div>
+                    <WalletConnectIcon className={iconClassName} />
+                    <RainbowIcon className={iconClassName} />
+                    <Phantom className={iconClassName} />
+                </IconsWrapper>
             );
         case KnownConnectors.Starknet:
             return (
-                <div className={className ?? "-space-x-2 flex"}>
+                <IconsWrapper className={className}>
                     <Braavos className={iconClassName} />
                     <Argent className={iconClassName} />
                     <ArgentX className={iconClassName} />
-                    {children}
-                </div>
+                    <Mail className={`p-1.5 ${iconClassName}`} />
+                </IconsWrapper>
             );
         case KnownConnectors.TON:
             return (
-                <div className={className ?? "-space-x-2 flex"}>
+                <IconsWrapper className={className}>
                     <TonKeeper className={iconClassName} />
                     <OpenMask className={iconClassName} />
                     <TON className={iconClassName} />
-                    {children}
-                </div>
+                    <MyTonWallet className={iconClassName} />
+                </IconsWrapper>
             );
         case KnownConnectors.Solana:
             return (
-                <div className={className ?? "-space-x-2 flex"}>
+                <IconsWrapper className={className}>
                     <CoinbaseIcon className={iconClassName} />
-                    <GlowIcon className={iconClassName} />
+                    <WalletConnectIcon className={iconClassName} />
                     <Phantom className={iconClassName} />
-                    {children}
-                </div>
+                    <GlowIcon className={iconClassName} />
+                </IconsWrapper>
             );
         default:
             return <></>;
     }
 };
+
+const IconsWrapper = ({ children, className }: { children: React.ReactNode, className?: string }) => {
+    return <div className={`grid grid-cols-2 gap-1.5 ${className}`}>{children}</div>;
+}
 
 const KnownConnectors = {
     Starknet: "starknet",

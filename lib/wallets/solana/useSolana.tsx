@@ -3,23 +3,31 @@ import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import { useWallet } from "@solana/wallet-adapter-react"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
+import { Wallet } from "../../../stores/walletStore"
 
 export default function useSolana(): WalletProvider {
     const withdrawalSupportedNetworks = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet]
 
-    const name = 'solana'
-    const { publicKey, disconnect, wallet } = useWallet();
+    const name = 'Solana'
+    const id = 'solana'
+    const { publicKey, disconnect, wallet: solanaWallet } = useWallet();
     const { setVisible } = useWalletModal();
 
+    const wallet: Wallet | undefined = publicKey ? {
+        address: publicKey.toBase58(),
+        connector: solanaWallet?.adapter?.name,
+        providerName: name,
+        icon: resolveWalletConnectorIcon({ connector: String(solanaWallet?.adapter.name), address: publicKey?.toBase58() }),
+        disconnect,
+        connect: () => connectWallet(),
+        isActive: true,
+    } : undefined
+
     const getWallet = () => {
-        if (publicKey) {
-            return {
-                address: publicKey?.toBase58(),
-                connector: wallet?.adapter?.name,
-                providerName: name,
-                icon: resolveWalletConnectorIcon({ connector: String(wallet?.adapter.name), address: publicKey?.toBase58() })
-            }
+        if (wallet) {
+            return [wallet]
         }
+        return undefined
     }
 
     const connectWallet = () => {
@@ -41,13 +49,15 @@ export default function useSolana(): WalletProvider {
     }
 
     return {
-        getConnectedWallet: getWallet,
+        connectedWallets: getWallet(),
+        activeWallet: wallet,
         connectWallet,
-        disconnectWallet,
+        disconnectWallets: disconnectWallet,
         reconnectWallet,
         withdrawalSupportedNetworks,
         autofillSupportedNetworks: withdrawalSupportedNetworks,
         asSourceSupportedNetworks: withdrawalSupportedNetworks,
-        name
+        name,
+        id,
     }
 }

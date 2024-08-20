@@ -1,16 +1,7 @@
 import { ReactNode, useState } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import useWallet from "../../hooks/useWallet";
-import { NetworkType } from "../../Models/Network";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "../shadcn/dialog";
-import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { ResolveConnectorIcon } from "../icons/ConnectorIcons";
+import Modal from "../modal/modal";
 
 const ConnectButton = ({
     children,
@@ -21,109 +12,50 @@ const ConnectButton = ({
     className?: string;
     onClose?: () => void;
 }) => {
-    const { connectWallet, wallets } = useWallet();
-    const [open, setOpen] = useState<boolean>();
-    const { isMobile } = useWindowDimensions();
+    const { providers } = useWallet();
+    const [open, setOpen] = useState<boolean>(false);
+    const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks)
 
-    const knownConnectors = [
-        {
-            name: "EVM",
-            id: "evm",
-            type: NetworkType.EVM,
-        },
-        {
-            name: "Starknet",
-            id: "starknet",
-            type: NetworkType.Starknet,
-        },
-        {
-            name: "TON",
-            id: "ton",
-            type: NetworkType.TON,
-        },
-        {
-            name: "Solana",
-            id: "solana",
-            type: NetworkType.Solana,
-        },
-    ];
-    const filteredConnectors = knownConnectors.filter(
-        (c) => !wallets.map((w) => w?.providerName).includes(c.id)
-    );
-    return isMobile ? (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger aria-label="Connect wallet">{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] text-primary-text">
-                <DialogHeader>
-                    <DialogTitle className="text-center">
-                        Link a new wallet
-                    </DialogTitle>
-                </DialogHeader>
-                <div className="space-y-2">
-                    {filteredConnectors.map((connector, index) => (
+    return (
+        <>
+            <button
+                onClick={() => setOpen(true)}
+                type="button"
+                aria-label="Connect wallet"
+                disabled={filteredProviders.length == 0}
+                className={`${className} disabled:opacity-50 disabled:cursor-not-allowed `}
+            >
+                {children}
+            </button>
+            <Modal height="fit" show={open} setShow={setOpen} modalId={"connectNewWallet"} header='Connect wallet'>
+                <div className="grid grid-cols-4 gap-2 text-primary-text mt-3">
+                    {filteredProviders.map((connector, index) => (
                         <button
                             type="button"
                             key={index}
-                            className="w-full h-fit bg-secondary-700 border border-secondary-500 rounded py-2 px-3"
-                            onClick={() => {
-                                connectWallet({ providerName: connector.id });
+                            className="w-full h-fit bg-secondary-600 hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 p-3"
+                            onClick={async () => {
+                                await connector.connectWallet();
                                 setOpen(false);
                                 onClose && onClose();
                             }}
                         >
-                            <div className="flex space-x-2 items-center">
-                                {connector && (
-                                    <div className="inline-flex items-center relative">
-                                        <ResolveConnectorIcon
-                                            connector={connector.id}
-                                            iconClassName="w-7 h-7 p-0.5 rounded-full bg-secondary-800 border border-secondary-400"
-                                        />
-                                    </div>
-                                )}
+                            <div className="flex flex-col gap-3 items-center font-semibold">
                                 <p>{connector.name}</p>
+                                {
+                                    connector &&
+                                    <ResolveConnectorIcon
+                                        connector={connector.id}
+                                        iconClassName="w-8 h-8 rounded-md bg-secondary-900"
+                                    />
+                                }
                             </div>
                         </button>
                     ))}
                 </div>
-            </DialogContent>
-        </Dialog>
-    ) : (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger
-                aria-label="Connect wallet"
-                disabled={filteredConnectors.length == 0}
-                className={`${className} disabled:opacity-50 disabled:cursor-not-allowed `}
-            >
-                {children}
-            </PopoverTrigger>
-            <PopoverContent className="flex flex-col items-start gap-2 w-fit">
-                {filteredConnectors.map((connector, index) => (
-                    <button
-                        type="button"
-                        key={index}
-                        className="w-full h-full hover:bg-secondary-600 rounded py-2 px-3"
-                        onClick={() => {
-                            connectWallet({ providerName: connector.id });
-                            setOpen(false);
-                            onClose && onClose();
-                        }}
-                    >
-                        <div className="flex space-x-2 items-center">
-                            {connector && (
-                                <div className="inline-flex items-center relative">
-                                    <ResolveConnectorIcon
-                                        connector={connector.id}
-                                        iconClassName="w-7 h-7 p-0.5 rounded-full bg-secondary-800 border border-secondary-400"
-                                    />
-                                </div>
-                            )}
-                            <p>{connector.name}</p>
-                        </div>
-                    </button>
-                ))}
-            </PopoverContent>
-        </Popover>
-    );
+            </Modal>
+        </>
+    )
 };
 
 export default ConnectButton;

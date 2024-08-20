@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { AddressBookItem } from "../../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../../DTOs/SwapFormValues";
 import { isValidAddress } from "../../../../lib/address/validator";
@@ -57,11 +57,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const groupedAddresses = useAddressesStore(state => state.addresses)
     const setAddresses = useAddressesStore(state => state.setAddresses)
 
-    const { getAutofillProvider: getProvider } = useWallet()
-    const provider = useMemo(() => {
-        return values?.to && getProvider(values?.to)
-    }, [values?.to, getProvider])
-    const connectedWallet = provider?.getConnectedWallet(values.to)
+    const { provider } = useWallet(destination, 'autofil')
+    const connectedWallet = provider?.activeWallet
     const connectedWalletAddress = connectedWallet?.address
 
     const [isConnecting, setIsConnecting] = useState(false)
@@ -171,7 +168,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                         && destination
                                         && provider
                                         && !manualAddress &&
-                                        <ConnectWalletButton provider={provider} connectedWallet={connectedWallet} onClick={() => { connectedWallet && handleSelectAddress(connectedWallet.address) }} onConnect={() => setIsConnecting(true)} destination={destination} destination_address={destination_address} />
+                                        <ConnectWalletButton provider={provider} connectedWallet={connectedWallet} onClick={() => { connectedWallet?.address && handleSelectAddress(connectedWallet.address) }} onConnect={() => setIsConnecting(true)} destination={destination} destination_address={destination_address} />
                                 }
 
                                 {

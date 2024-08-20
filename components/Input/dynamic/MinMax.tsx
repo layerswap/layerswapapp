@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect } from "react"
 import useWallet from "../../../hooks/useWallet"
 import SecondaryButton from "../../buttons/secondaryButton"
 import { useFormikContext } from "formik";
@@ -16,21 +16,18 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
     const { balances, gases } = useBalancesState()
     const query = useQueryState()
 
-    const { getAutofillProvider: getProvider } = useWallet()
-    const provider = useMemo(() => {
-        return from && getProvider(from)
-    }, [from, getProvider])
+    const { provider } = useWallet(from, 'autofil')
 
     const { fetchNetworkBalances, fetchGas } = useBalance()
 
-    const wallet = provider?.getConnectedWallet(values.from)
+    const wallet = provider?.activeWallet
 
     const handleSetMinAmount = () => {
         setFieldValue('amount', minAllowedAmount);
     }
 
     const gasAmount = gases[from?.name || '']?.find(g => g?.token === fromCurrency?.symbol)?.gas || 0
-    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+    const walletBalance = wallet && balances[wallet.address || '']?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     const native_currency = from?.token
 
     let maxAllowedAmount: number | null = maxAmountFromApi || 0

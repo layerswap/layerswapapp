@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
 import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
 import useWallet from '../../../../../hooks/useWallet';
 import { WithdrawPageProps } from '../WalletTransferContent';
@@ -22,13 +22,10 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callD
 
     const { setSwapTransaction } = useSwapTransactionStore();
 
-    const { getWithdrawalProvider: getProvider } = useWallet()
-    const provider = useMemo(() => {
-        return l1Network && getProvider(l1Network)
-    }, [l1Network, getProvider])
+    const { provider } = useWallet(l1Network, 'withdrawal')
     const { chain } = useAccount();
 
-    const wallet = provider?.getConnectedWallet()
+    const wallet = provider?.activeWallet
 
     const ethersSigner = useEthersSigner()
 

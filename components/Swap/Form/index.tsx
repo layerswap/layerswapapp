@@ -29,11 +29,15 @@ import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
 import { DepositMethodProvider } from "../../../context/depositMethodContext";
+import { Connector, useAccount, useConnect, useConnectors } from "wagmi";
+import { mainnet } from "wagmi/chains";
+import { useSwitchAccount } from 'wagmi'
+import QRCodeModal from "../../QRCodeWallet";
 import { dynamicWithRetries } from "../../../lib/dynamicWithRetries";
 import AddressNote from "../../Input/Address/AddressNote";
 import { addressFormat } from "../../../lib/address/formatter";
-import { useAddressesStore } from "../../../stores/addressesStore";
 import { AddressGroup } from "../../Input/Address/AddressPicker";
+import { useAddressesStore } from "../../../stores/addressesStore";
 import { useAsyncModal } from "../../../context/asyncModal";
 
 type NetworkToConnect = {
@@ -53,6 +57,11 @@ const SwapDetails = dynamicWithRetries(() => import(".."),
 )
 
 export default function Form() {
+    const [allConnectors, setAllConnectors] = useState<any>()
+    const _connectors = useConnectors()
+    useEffect(() => {
+        setAllConnectors(_connectors.filter((value, index, array) => value.rkDetails))
+    }, [_connectors])
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [showSwapModal, setShowSwapModal] = useState(false);
@@ -60,7 +69,7 @@ export default function Form() {
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
-    const { getSourceProvider } = useWallet()
+    const { getProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
     const { getConfirmation } = useAsyncModal();
 
@@ -113,8 +122,8 @@ export default function Form() {
                     return;
                 }
             }
-            const provider = values.from && getSourceProvider(values.from)
-            const wallet = provider?.getConnectedWallet()
+            const provider = values.from && getProvider(values.from, 'asSource')
+            const wallet = provider?.activeWallet
 
             const swapId = await createSwap(values, wallet?.address, query, partner);
             setSwapId(swapId)
@@ -153,7 +162,13 @@ export default function Form() {
                 toast.error(data?.message || error?.message)
             }
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getSourceProvider])
+    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getProvider])
+
+    const destAddress: string = query?.destAddress as string;
+
+    const isPartnerAddress = partner && destAddress;
+
+    const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
     const initialValues: SwapFormValues = swapResponse ? generateSwapInitialValuesFromSwap(swapResponse, settings)
         : generateSwapInitialValues(settings, query)
@@ -167,8 +182,37 @@ export default function Form() {
         setShowSwapModal(value)
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
     }, [router, swap])
+    const { connectAsync } = useConnect();
 
+
+    async function connectWallet(connector: Connector) {
+        const result = await connectAsync({
+            chainId: mainnet.id,
+            connector,
+        });
+        return result;
+    }
+
+
+    async function connectToWalletConnectModal(
+        walletConnectModalConnector: Connector,
+    ) {
+        try {
+            await connectWallet(walletConnectModalConnector);
+        } catch (err) {
+            const isUserRejection =
+                err.name === 'UserRejectedRequestError' ||
+                err.message === 'Connection request reset. Please try again.';
+
+            if (!isUserRejection) {
+                throw err;
+            }
+        }
+    }
+    const c = allConnectors?.[5];
+  
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
+
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
                 {
@@ -210,7 +254,7 @@ export default function Form() {
         >
             <SwapForm partner={partner} />
         </Formik>
-    </DepositMethodProvider>
+    </DepositMethodProvider >
 }
 
 const textMotion = {
