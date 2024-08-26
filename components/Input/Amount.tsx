@@ -17,7 +17,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromCurrency, from, to, amount, toCurrency, fromExchange, toExchange } = values || {};
-    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee } = useFee()
+    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee, isFeeLoading } = useFee()
     const [isFocused, setIsFocused] = useState(false);
     const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const [walletAddress, setWalletAddress] = useState<string>()
@@ -55,7 +55,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const diasbled = Boolean((fromExchange && !toCurrency) || (toExchange && !fromCurrency))
 
-    const updateRequestedAmountInUsd = useCallback((requestedAmount: number) => {
+    const updateRequestedAmountInUsd = useCallback((requestedAmount: number, fee) => {
         if (fee?.quote.source_token?.price_in_usd && !isNaN(requestedAmount)) {
             setRequestedAmountInUsd((fee?.quote.source_token?.price_in_usd * requestedAmount).toFixed(2));
         } else {
@@ -64,8 +64,9 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     }, [requestedAmountInUsd, fee]);
 
     useEffect(() => {
-        amount && updateRequestedAmountInUsd(Number(amount))
-    }, [amount, fromCurrency])
+        if (isFeeLoading) setRequestedAmountInUsd(undefined)
+        else if (fee && amount) updateRequestedAmountInUsd(Number(amount), fee)
+    }, [amount, fromCurrency, fee, isFeeLoading])
 
     return (<>
         <p className="block font-semibold text-secondary-text text-xs mb-1">Amount</p>
@@ -85,7 +86,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     className="text-primary-text pr-0 w-full"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-                        updateRequestedAmountInUsd(parseFloat(e.target.value));
+                        updateRequestedAmountInUsd(parseFloat(e.target.value), fee);
                     }}
                 >
                     {requestedAmountInUsd && Number(requestedAmountInUsd) > 0 && !isFocused ? (
