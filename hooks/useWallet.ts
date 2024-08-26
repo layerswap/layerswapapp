@@ -6,6 +6,7 @@ import useStarknet from "../lib/wallets/starknet/useStarknet"
 import { Network, RouteNetwork } from "../Models/Network"
 import { CreatyePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams } from "../lib/wallets/phtlc"
 import { AssetLock, Commit } from "../Models/PHTLC"
+import useSolana from "../lib/wallets/solana/useSolana"
 
 export type WalletProvider = {
     connectWallet: (chain?: string | number | undefined | null, destination?: RouteNetwork) => Promise<void> | undefined | void,
@@ -40,7 +41,7 @@ export default function useWallet() {
         useEVM(),
         useStarknet(),
         // useImmutableX(),
-        // useSolana()
+        useSolana()
     ]
 
     async function handleConnect(providerName: string, chain?: string | number | null) {

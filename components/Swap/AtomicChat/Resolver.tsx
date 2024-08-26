@@ -248,7 +248,7 @@ export const ResolveMessages: FC = () => {
     if (commtting) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <UserCommitting walletIcon={WalletIcon} />
-        </div > 
+        </div>
     }
     return <>
         <div>

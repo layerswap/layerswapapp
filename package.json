@@ -116,6 +116,7 @@
     "typescript": "^5.1"
   },
   "resolutions": {
-    "rpc-websockets": "7.10.0"
+    "rpc-websockets": "7.10.0",
+    "@solana/web3.js": "1.66.0"
   }
 }
