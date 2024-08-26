@@ -22,7 +22,7 @@ const CopyButton: FC<CopyButtonProps> = ({ className, toCopy, children, iconSize
             {isCopied && (
               <div className="flex items-center gap-1 cursor-pointer">
                 <Check className={iconClassName} width={iconSize ? iconSize : 16} height={iconSize ? iconSize : 16} />
-                {children}
+                <p>Copied</p>
               </div>
             )}
 
