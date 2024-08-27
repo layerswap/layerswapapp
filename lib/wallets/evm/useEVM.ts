@@ -15,6 +15,7 @@ import PHTLCAbi from "../../../lib/abis/atomic/EVM_PHTLC.json"
 import ERC20PHTLCAbi from "../../../lib/abis/atomic/EVMERC20_PHTLC.json"
 import IMTBLZKERC20 from "../../../lib/abis/IMTBLZKERC20.json"
 import { toHex } from "viem"
+import formatAmount from "../../formatAmount"
 
 export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
@@ -185,20 +186,29 @@ export default function useEVM(): WalletProvider {
     }
 
     const getCommitment = async (params: CommitmentParams): Promise<Commit> => {
-        const { chainId, commitId, contractAddress, type } = params
+        const { chainId, commitId, contractAddress, type, } = params
         const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
 
-        const result = await readContract(config, {
+        const result: any = await readContract(config, {
             abi: abi,
             address: contractAddress,
             functionName: 'getCommitDetails',
             args: [commitId],
             chainId: Number(chainId),
         })
+
+        const networkToken = networks.find(network => account?.chain && Number(network.chain_id) == account.chain.id)?.tokens.find(token => token.symbol === result.srcAsset)
+
+        const parsedResult = {
+            ...result,
+            amount: formatAmount(Number(result.amount), networkToken?.precision),
+            timelock: Number(result.timelock)
+        }
+
         if (!result) {
             throw new Error("No result")
         }
-        return result as Commit
+        return parsedResult as Commit
     }
 
     const getLockIdByCommitId = async (params: CommitmentParams) => {

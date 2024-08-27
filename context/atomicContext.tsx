@@ -60,7 +60,7 @@ export function AtomicProvider({ children }) {
     const destination_network = networks.find(n => n.name.toUpperCase() === (destination as string).toUpperCase())
     const source_token = source_network?.tokens.find(t => t.symbol === source_asseet)
     const destination_token = destination_network?.tokens.find(t => t.symbol === destination_asset)
-console.log(committment)
+
     useEffect(() => {
         let timer: NodeJS.Timeout;
         if (!committment || isTimelockExpired || (committment.locked && !destinationLock)) return
