@@ -62,9 +62,9 @@ function WagmiComponent({ children }: Props) {
     const transports = {}
 
     settingsChains.forEach(chain => {
-        transports[chain.id] = chain.rpcUrls.default.http[0] || http()
+        transports[chain.id] = chain.rpcUrls.default.http[0] ? http(chain.rpcUrls.default.http[0]) : http()
     })
-    
+
     const config = createConfig({
         connectors: connectors,
         chains: settingsChains,

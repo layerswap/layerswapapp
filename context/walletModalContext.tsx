@@ -60,7 +60,7 @@ export function WalletModalProvider({ children }) {
                                                     } catch (e) {
                                                         console.log(e)
                                                     }
-                                                    console.log(connector?.['rkDetails']?.['qrCode']?.['getUri']())
+
                                                     const uri = await getWalletConnectUri(connector, connector?.['rkDetails']?.['qrCode']?.['getUri'])
                                                     debugger
                                                     setQr(uri)
