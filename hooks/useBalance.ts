@@ -85,7 +85,8 @@ export default function useBalanceProvider() {
 
             setAllBalances((data) => {
                 const walletBalances = data[address]
-                const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b?.network !== network.name) : walletBalances || []
+                const dataToReplace = walletBalances?.find(b => b?.network === network?.name && b?.token === token?.symbol)
+                const filteredBalances = walletBalances?.some(b => b?.network === network?.name) ? walletBalances?.filter(b => b !== dataToReplace) : walletBalances || []
                 return { ...data, [address]: filteredBalances?.concat(balance || []) }
             })
             setIsBalanceLoading(false)

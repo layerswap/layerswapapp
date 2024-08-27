@@ -19,7 +19,7 @@ export default function useStarknet(): WalletProvider {
 
     const name = 'Starknet'
     const id = 'starknet'
-    const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
+    const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
     const wallets = useWalletStore((state) => state.connectedWallets)
 
     const addWallet = useWalletStore((state) => state.connectWallet)
@@ -33,8 +33,10 @@ export default function useStarknet(): WalletProvider {
         }
         return undefined
     }
-
-    const connectWallet = async (props?: { chain?: string | undefined }) => {
+    type ConnectProps = {
+        chain?: string
+    }
+    const connectWallet = async (props?: ConnectProps) => {
         const { chain } = props || {}
         const constants = (await import('starknet')).constants
         const connect = (await import('starknetkit')).connect

@@ -51,10 +51,10 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
                     setEstimatedGas(gasEstimate)
                 }
                 catch (e) {
-                    const renderingError = new Error("Transaction is taking longer than expected");
-                    renderingError.name = `LongTransactionError`;
-                    renderingError.cause = renderingError;
-                    datadogRum.addError(renderingError);
+                    const error = e;
+                    error.name = `EstimateGasError`;
+                    error.cause = error;
+                    datadogRum.addError(error);
                     console.error(e)
                 }
             }

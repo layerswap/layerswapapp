@@ -24,8 +24,11 @@ export default function useImtblX(): WalletProvider {
         }
         return undefined
     }
-
-    const connectWallet = async ({ chain }: { chain: string | number }) => {
+    type ConnectProps = {
+        chain?: string | number
+    }
+    const connectWallet = async (props?: ConnectProps) => {
+        const { chain } = props || {}
         if (!chain) throw new Error('No chain id for imx connect wallet')
         const networkName = chain == 'testnet' ? KnownInternalNames.Networks.ImmutableXGoerli : KnownInternalNames.Networks.ImmutableXMainnet
         try {
