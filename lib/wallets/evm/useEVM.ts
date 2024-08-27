@@ -180,13 +180,7 @@ export default function useEVM(): WalletProvider {
         return { hash, commitId: (result as string) }
     }
 
-    const convertToHTLC = () => {
-        throw new Error('Not implemented')
-    }
     const claim = () => {
-        throw new Error('Not implemented')
-    }
-    const waitForLock = async (params: CommitmentParams, onLog: (data: any) => void) => {
         throw new Error('Not implemented')
     }
 
@@ -314,10 +308,8 @@ export default function useEVM(): WalletProvider {
         getLockIdByCommitId,
         getCommitment,
         createPreHTLC,
-        convertToHTLC,
         claim,
         refund,
-        waitForLock,
         getLock,
         lockCommitment,
 

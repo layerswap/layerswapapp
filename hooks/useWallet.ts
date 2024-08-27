@@ -20,11 +20,9 @@ export type WalletProvider = {
     connectedWalletActiveChain?: string | number | null,
 
     createPreHTLC: (args: CreatyePreHTLCParams) => Promise<{ hash: `0x${string}`, commitId: string }>,
-    convertToHTLC: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
     claim: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
     refund: (args: RefundParams) => Promise<any> | undefined | void,
 
-    waitForLock: (args: CommitmentParams, callback: (data: any) => void) => Promise<() => void>
     getCommitment: (args: CommitmentParams) => Promise<Commit | null>,
     getLock: (args: LockParams) => Promise<AssetLock>,
 
