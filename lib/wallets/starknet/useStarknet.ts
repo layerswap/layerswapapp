@@ -52,7 +52,7 @@ export default function useStarknet(): WalletProvider {
                 modalMode: 'alwaysAsk'
             })
             const walletChain = wallet && (wallet.provider?.chainId || wallet.provider?.provider?.chainId)
-            const wrongChanin = (walletChain == constants.StarknetChainId.SN_GOERLI || walletChain == constants.StarknetChainId.SN_SEPOLIA) ? isMainnet : !isMainnet
+            const wrongChanin = walletChain == constants.StarknetChainId.SN_MAIN? !isMainnet : isMainnet
 
             if (wallet && wrongChanin) {
                 await disconnectWallet()
