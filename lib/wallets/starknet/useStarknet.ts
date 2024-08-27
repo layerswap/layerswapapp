@@ -171,9 +171,7 @@ export default function useStarknet(): WalletProvider {
         }
 
     }
-    const convertToHTLC = () => {
-        throw new Error('Not implemented')
-    }
+
     const claim = () => {
         throw new Error('Not implemented')
     }
@@ -341,12 +339,8 @@ export default function useStarknet(): WalletProvider {
         name,
 
         createPreHTLC,
-        convertToHTLC,
         claim,
         refund,
-        waitForLock(props: { commitId: string, chainId: string, contractAddress: `0x${string}` }) {
-            throw new Error('Not implemented')
-        },
         getCommitment,
         getLock,
         lockCommitment,

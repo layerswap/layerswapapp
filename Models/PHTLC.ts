@@ -6,7 +6,7 @@ export type Commit = {
     sender: string,
     srcReceiver: string,
     timelock: number,
-    amount: string,
+    amount: number,
     messenger: string,
     locked: boolean,
     uncommitted: boolean

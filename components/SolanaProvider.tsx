@@ -11,11 +11,12 @@ import {
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { ReactNode, useMemo } from "react";
 import { CoinbaseWalletAdapter } from "@solana/wallet-adapter-coinbase";
+import AppSettings from "../lib/AppSettings";
 require("@solana/wallet-adapter-react-ui/styles.css");
 const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
 
 function SolanaProvider({ children }: { children: ReactNode }) {
-    const solNetwork = WalletAdapterNetwork.Mainnet;
+    const solNetwork = AppSettings.ApiVersion === 'sandbox' ? WalletAdapterNetwork.Devnet : WalletAdapterNetwork.Mainnet;
     const endpoint = useMemo(() => clusterApiUrl(solNetwork), [solNetwork]);
     const wallets = useMemo(
         () => [
@@ -24,7 +25,7 @@ function SolanaProvider({ children }: { children: ReactNode }) {
             new SolflareWalletAdapter(),
             new GlowWalletAdapter(),
             new WalletConnectWalletAdapter({
-                network: solNetwork, 
+                network: solNetwork,
                 options: {
                     projectId: WALLETCONNECT_PROJECT_ID,
                     metadata: {
