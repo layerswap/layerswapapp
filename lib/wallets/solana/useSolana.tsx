@@ -7,13 +7,13 @@ import { CommitmentParams, CreatyePreHTLCParams, LockParams, RefundParams } from
 import { AnchorHtlc } from "./anchorHTLC"
 import { AssetLock, Commit } from "../../../Models/PHTLC"
 import { Address, AnchorProvider, BN, Program, setProvider } from '@coral-xyz/anchor'
-import { PublicKey } from "@solana/web3.js"
+import { PublicKey, Transaction } from "@solana/web3.js"
 import { useSettingsState } from "../../../context/settings"
 
 export default function useSolana(): WalletProvider {
     const withdrawalSupportedNetworks = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet]
     const name = 'solana'
-    const { publicKey, disconnect, wallet } = useWallet();
+    const { publicKey, disconnect, wallet, signTransaction } = useWallet();
     const { setVisible } = useWalletModal();
     const { connection } = useConnection();
     const anchorWallet = useAnchorWallet();
@@ -55,7 +55,7 @@ export default function useSolana(): WalletProvider {
     }
 
 
-    const createPreHTLC = async (params: CreatyePreHTLCParams) => {
+    const createPreHTLC = async (params: CreatyePreHTLCParams): Promise<{ hash: `0x${string}`; commitId: string; } | null> => {
         const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, amount, atomicContract, chainId } = params
 
         if (!program || !sourceAsset.contract || !publicKey) return null
@@ -64,12 +64,16 @@ export default function useSolana(): WalletProvider {
             [Buffer.from("commitCounter")],
             program.programId
         );
-        let [phtlcTokenAccount, bump3] = commitCounter && PublicKey.findProgramAddressSync(
+        let [phtlcTokenAccount] = commitCounter && PublicKey.findProgramAddressSync(
             [Buffer.from("phtlc_token_account"), commitCounter.toBuffer()],
             program.programId
         );
         let [phtlc, phtlcBump] = commitCounter && PublicKey.findProgramAddressSync(
             [commitCounter.toBuffer()],
+            program.programId
+        );
+        let [commits] = PublicKey.findProgramAddressSync(
+            [Buffer.from("commits"), publicKey.toBuffer()],
             program.programId
         );
         const hopChains = [destinationChain]
@@ -78,7 +82,7 @@ export default function useSolana(): WalletProvider {
 
         const getAssociatedTokenAddress = (await import('@solana/spl-token')).getAssociatedTokenAddress;
 
-        const tokenAddress = await getAssociatedTokenAddress(new PublicKey(sourceAsset.contract), publicKey);
+        const senderTokenAddress = await getAssociatedTokenAddress(new PublicKey(sourceAsset.contract), publicKey);
 
         if (!wallet || !publicKey) {
             throw Error("Wallet not connected")
@@ -98,18 +102,44 @@ export default function useSolana(): WalletProvider {
         const TIMELOCK = new BN(TIMELOC);
         const commitCounterArray = Array.from(new Uint8Array(commitCounter.toBuffer()));
 
-        const tx1 = await program.methods
+        const initCommitTx = await program.methods.initCommits().
+            accountsPartial({
+                sender: publicKey,
+                commits: commits,
+            })
+            .transaction();
+
+        const commitTx = await program.methods
             .commit(commitCounterArray, hopChains, hopAssets, hopAddresses, destinationChain, destinationAsset, address, sourceAsset.symbol, new PublicKey(lpAddress), TIMELOCK, publicKey, new BN(amount), phtlcBump)
             .accountsPartial({
                 sender: publicKey,
                 phtlc: phtlc,
-                phtlcTokenAccount: phtlcTokenAccount,
+                phtlc_token_account: phtlcTokenAccount,
                 commitCounter: commitCounter,
-                senderTokenAccount: tokenAddress
+                commits: commits,
+                token_contract: sourceAsset.contract,
+                sender_token_account: senderTokenAddress
             })
-            .rpc();
+            .transaction();
 
-        return tx1 as any
+        let initAndCommit = new Transaction();
+        initAndCommit.add(initCommitTx);
+        initAndCommit.add(commitTx);
+
+
+        const signed = signTransaction && await signTransaction(initAndCommit);
+        const signature = signed && await connection.sendRawTransaction(signed.serialize());
+
+        const blockHash = await connection.getLatestBlockhash();
+
+        const res = signature && await connection.confirmTransaction({
+            blockhash: blockHash.blockhash,
+            lastValidBlockHeight: blockHash.lastValidBlockHeight,
+            signature
+        });
+
+        return res as any
+
     }
 
     const getCommitment = async (params: CommitmentParams): Promise<Commit> => {
@@ -187,9 +217,9 @@ export default function useSolana(): WalletProvider {
                 messenger: publicKey,
                 phtlc: phtlc,
                 htlc: htlc,
-                phtlcTokenAccount: phtlcTokenAccount,
-                htlcTokenAccount: htlcTokenAccount,
-                tokenContract: new PublicKey(token.contract),
+                phtlc_token_account: phtlcTokenAccount,
+                htlc_token_account: htlcTokenAccount,
+                token_contract: new PublicKey(token.contract),
             }).rpc();
 
         return { hash: `0x${toHexString(result)}` as `0x${string}`, result: result } as any
@@ -278,10 +308,19 @@ export default function useSolana(): WalletProvider {
         throw new Error('Not implemented')
     }
 
-    const claim = () => {
-        throw new Error('Not implemented')
+    const getCommits = async () => {
+        if (!program || !publicKey) return null
+        let [commits] = PublicKey.findProgramAddressSync(
+            [Buffer.from("commits"), publicKey.toBuffer()],
+            program.programId
+        );
+
+        const res = await program.methods.getCommits(publicKey).accountsPartial({ commits: commits }).view();
+
+        return res
     }
-    const getCommits = () => {
+
+    const claim = () => {
         throw new Error('Not implemented')
     }
 
