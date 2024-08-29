@@ -35,14 +35,13 @@ export const UserCommitAction: FC = () => {
             if (!destination_asset) {
                 throw new Error("No destination asset")
             }
-
-
             if (!source_provider) {
                 throw new Error("No source_provider")
             }
             if (!destination_provider) {
                 throw new Error("No destination_provider")
             }
+            
             const { commitId } = await source_provider.createPreHTLC({
                 address,
                 amount: amount.toString(),
@@ -55,8 +54,8 @@ export const UserCommitAction: FC = () => {
                 decimals: source_asset.decimals,
                 atomicContract: atomicContract,
                 chainId: source_network.chain_id,
-            })
-            onCommit(commitId)
+            }) || {}
+            if (commitId) onCommit(commitId)
         }
         catch (e) {
             setError(e.details || e.message)

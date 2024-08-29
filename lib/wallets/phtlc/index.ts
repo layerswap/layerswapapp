@@ -25,6 +25,7 @@ export type CommitmentParams = {
 export type LockParams = {
     type: 'erc20' | 'native';
     lockId: string,
+    lockData?: AssetLock,
     chainId: string,
     contractAddress: `0x${string}`,
     lockDataResolver?: (data: any[]) => AssetLock

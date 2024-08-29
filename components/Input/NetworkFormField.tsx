@@ -13,7 +13,7 @@ import CurrencyFormField from "./CurrencyFormField";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { RouteNetwork } from "../../Models/Network";
+import { NetworkType, RouteNetwork } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
@@ -179,8 +179,8 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, direction: SwapDi
         if (lock) {
             return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
         }
-        else if (!route.tokens?.some(r => r.status === 'active')) {
-            if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange || !route.tokens?.some(r => r.status !== 'inactive')) {
+        else if (!route.tokens?.some(r => r.status === 'active') || route.type === NetworkType.Solana) {
+            if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange || !route.tokens?.some(r => r.status !== 'inactive') || route.type === NetworkType.Solana) {
                 return { value: false, disabledReason: LayerDisabledReason.InvalidRoute }
             }
             else {
