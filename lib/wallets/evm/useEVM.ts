@@ -201,7 +201,7 @@ export default function useEVM(): WalletProvider {
 
         const parsedResult = {
             ...result,
-            amount: formatAmount(Number(result.amount), networkToken?.precision),
+            amount: formatAmount(Number(result.amount), networkToken?.decimals),
             timelock: Number(result.timelock)
         }
 
@@ -248,18 +248,26 @@ export default function useEVM(): WalletProvider {
         const { chainId, lockId, contractAddress, type } = params
         const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
 
-        const result = await readContract(config, {
+        const result: any = await readContract(config, {
             abi: abi,
             address: contractAddress,
             functionName: 'getLockDetails',
             args: [lockId],
             chainId: Number(chainId),
         })
+        const networkToken = networks.find(network => chainId && Number(network.chain_id) == Number(chainId))?.tokens.find(token => token.symbol === result.dstAsset)
+
+        const parsedResult = {
+            ...result,
+            amount: formatAmount(Number(result.amount), networkToken?.decimals),
+            timelock: Number(result.timelock),
+            secret: Number(result.secret)
+        }
 
         if (!result) {
             throw new Error("No result")
         }
-        return result as AssetLock
+        return parsedResult as AssetLock
     }
 
     const refund = async (params: RefundParams) => {
