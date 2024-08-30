@@ -1,10 +1,13 @@
 import { Context, createContext, useContext, useEffect, useState } from 'react'
-import { Connector, useConnect } from 'wagmi';
+import { Connector, useConnect, useDisconnect, useSwitchAccount } from 'wagmi';
 import { mainnet } from 'viem/chains';
 import { QRCodeSVG } from 'qrcode.react';
 import Modal from '../components/modal/modal';
 import ResizablePanel from '../components/ResizablePanel';
 import resolveWalletConnectorIcon from '../lib/wallets/utils/resolveWalletIcon';
+import { Loader } from 'lucide-react';
+import { WalletButton } from '@rainbow-me/rainbowkit';
+import { isMobile } from '../lib/isMobile';
 
 const WalletModalContext = createContext<WalletModalContextType | null>(null);
 
@@ -19,11 +22,15 @@ export function WalletModalProvider({ children }) {
     const [walletModalIsOpen, setWalletModalIsOpen] = useState<boolean>(false)
     const [availableWalletsForConnection, setAvailableWalletsForConnection] = useState<readonly Connector[]>([])
     const { connectAsync } = useConnect();
+    const { disconnectAsync } = useDisconnect()
+    const { connectors: connectedWallets } = useSwitchAccount()
     const [qr, setQr] = useState<string>()
+    const [connectorLoading, setConnectorLoading] = useState<string | undefined>(undefined)
 
     useEffect(() => {
         if (!walletModalIsOpen) {
             setQr(undefined)
+            setConnectorLoading(undefined)
         }
     }, [walletModalIsOpen])
 
@@ -39,39 +46,73 @@ export function WalletModalProvider({ children }) {
                                     const connectorName = connector?.['rkDetails']?.['name']
 
                                     const Icon = resolveWalletConnectorIcon({ connector: connectorName })
-                                    return (
-                                        <div key={index}>
-                                            <button
-                                                type="button"
-                                                className="w-full hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 py-2"
-                                                onClick={async () => {
-                                                    try {
-                                                        connectAsync({
-                                                            chainId: mainnet.id,
-                                                            connector: connector,
-                                                        }, {
-                                                            onSuccess: (data) => {
-                                                                setWalletModalIsOpen(false)
-                                                            },
-                                                            onError: (error) => {
-                                                                console.log(error)
-                                                            }
-                                                        });
-                                                    } catch (e) {
-                                                        console.log(e)
-                                                    }
+                                    const isLoading = connectorLoading === connectorName
+                                    const name = connector?.['rkDetails']?.['id']
+                                    const alreadyConnectedConnectors = connectedWallets.filter((c) => c.id === connector.id)
 
-                                                    const uri = await getWalletConnectUri(connector, connector?.['rkDetails']?.['qrCode']?.['getUri'])
-                                                    debugger
-                                                    setQr(uri)
-                                                }}
-                                            >
-                                                <div className="flex gap-3 items-center font-semibold">
-                                                    <Icon className="w-8 h-8 rounded-md bg-secondary-900" />
-                                                    <p>{connectorName}</p>
-                                                </div>
-                                            </button>
-                                        </div>
+                                    return (
+                                        <WalletButton.Custom key={connector.uid} wallet={name}>
+                                            {({ ready, connect, connector, connected }) => {
+                                                return (
+                                                    <div key={index}>
+                                                        <button
+                                                            type="button"
+                                                            disabled={!!connectorLoading}
+                                                            className="w-full flex items-center justify-between hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 py-2"
+                                                            onClick={async () => {
+
+                                                                try {
+                                                                    setConnectorLoading(connectorName)
+
+                                                                    if (alreadyConnectedConnectors.length > 0) {
+                                                                        for (const alreadyConnectedConnector of alreadyConnectedConnectors) {
+                                                                            await disconnectAsync({
+                                                                                connector: alreadyConnectedConnector,
+                                                                            })
+                                                                        }
+                                                                    }
+
+                                                                    connectAsync({
+                                                                        chainId: mainnet.id,
+                                                                        connector: connector,
+                                                                    }, {
+                                                                        onSuccess: (data) => {
+                                                                            setWalletModalIsOpen(false)
+                                                                            setConnectorLoading(undefined)
+                                                                        },
+                                                                        onError: (error) => {
+                                                                            console.log(error)
+                                                                            setConnectorLoading(undefined)
+                                                                        }
+                                                                    });
+                                                                } catch (e) {
+                                                                    console.log(e)
+                                                                }
+
+                                                                if (isMobile()) {
+                                                                    const uri = await getWalletConnectUri(connector, connector?.['rkDetails']?.['mobile']?.['getUri'])
+                                                                    window.location.href = uri
+                                                                }
+                                                                else {
+                                                                    const uri = await getWalletConnectUri(connector, connector?.['rkDetails']?.['qrCode']?.['getUri'])
+                                                                    setQr(uri)
+                                                                }
+
+                                                            }}
+                                                        >
+                                                            <div className="flex gap-3 items-center font-semibold">
+                                                                <Icon className="w-8 h-8 rounded-md bg-secondary-900" />
+                                                                <p>{connectorName}</p>
+                                                            </div>
+                                                            {
+                                                                isLoading &&
+                                                                <Loader className='h-4 w-4 animate-spin' />
+                                                            }
+                                                        </button>
+                                                    </div>
+                                                );
+                                            }}
+                                        </WalletButton.Custom>
                                     )
                                 })}
                             </div>
@@ -121,4 +162,3 @@ export function useWalletModal() {
 
     return data;
 }
-

@@ -16,8 +16,10 @@ export type WalletProvider = {
     withdrawalSupportedNetworks: string[],
     asSourceSupportedNetworks?: string[],
     name: string,
-    id: string
-} 
+    id: string,
+    availableWalletsForConnect: []
+}
+
 
 type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 
@@ -30,7 +32,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         useSolana(),
         useImtblX()
     ]
-    
+
     const provider = network && resolveProvider(network, walletProviders, purpose)
 
     const resolveConnectedWallets = () => {
