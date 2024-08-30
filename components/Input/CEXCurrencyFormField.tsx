@@ -122,7 +122,3 @@ export function GenerateCurrencyMenuItems(
 }
 
 export default CurrencyGroupFormField
-
-function resolveValidationMessage(values: SwapFormValues, direction: string, query: QueryParams, error: any) {
-    throw new Error("Function not implemented.");
-}
