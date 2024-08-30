@@ -100,13 +100,11 @@ const ConnectButton = ({
 
 const WalletsList = ({ provider, onFinish }: { provider: WalletProvider, onFinish: () => void }) => {
 
-    const [qr, setQr] = useState<string>()
+    const [qr, setQr] = useState<{ qr: string, iconUrl: string } | undefined>(undefined)
     const [selectedConnector, setSelectedConnector] = useState<string | undefined>(undefined)
     const { connect } = useConnect();
     const { disconnectAsync } = useDisconnect()
     const { connectors: connectedWallets } = useSwitchAccount()
-
-    const iconUrl = (provider.availableWalletsForConnect as Connector[]).find((c) => c?.['rkDetails']?.['name'] === selectedConnector)?.['rkDetails']?.['iconUrl']
 
     if (provider.id === 'evm') {
         return <>
@@ -166,7 +164,8 @@ const WalletsList = ({ provider, onFinish }: { provider: WalletProvider, onFinis
                                                         }
                                                         else {
                                                             const uri = await getWalletConnectUri(connector, connector?.['rkDetails']?.['qrCode']?.['getUri'])
-                                                            setQr(uri)
+                                                            const iconUrl = await (provider.availableWalletsForConnect as Connector[]).find((c) => c?.['rkDetails']?.['name'] === connectorName)?.['rkDetails']?.['iconUrl']()
+                                                            setQr({ qr: uri, iconUrl })
                                                         }
 
                                                     }}
@@ -191,18 +190,19 @@ const WalletsList = ({ provider, onFinish }: { provider: WalletProvider, onFinis
                     <div className='w-full flex justify-center pt-2'>
                         <QRCodeSVG
                             className="rounded-lg"
-                            value={qr}
+                            value={qr.qr}
                             includeMargin={true}
                             size={350}
                             level={"H"}
                             imageSettings={{
-                                src: iconUrl,
+                                src: qr.iconUrl,
                                 x: undefined,
                                 y: undefined,
                                 height: 50,
                                 width: 50,
                                 excavate: true,
                             }}
+                            
                         />
                     </div>
             }
