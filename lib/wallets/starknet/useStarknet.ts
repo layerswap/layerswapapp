@@ -11,6 +11,8 @@ import { CommitmentParams, CreatyePreHTLCParams, GetCommitsParams, LockParams, R
 import { BigNumberish, ethers } from "ethers";
 import { AssetLock, Commit } from "../../../Models/PHTLC";
 import { toHex } from "viem";
+import formatAmount from "../../formatAmount";
+import { useSettingsState } from "../../../context/settings";
 
 export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
@@ -29,7 +31,7 @@ export default function useStarknet(): WalletProvider {
     const WALLETCONNECT_PROJECT_ID = '28168903b2d30c75e5f7f2d71902581b';
     const nodeUrl = 'https://starknet-sepolia.public.blastapi.io'
     const wallets = useWalletStore((state) => state.connectedWallets)
-
+    const { networks } = useSettingsState()
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
 
@@ -199,7 +201,7 @@ export default function useStarknet(): WalletProvider {
     }
 
     const getCommitment = async (params: CommitmentParams): Promise<Commit> => {
-        const { commitId, contractAddress } = params
+        const { commitId, contractAddress, chainId } = params
 
         const atomicContract = new Contract(
             PHTLCAbi,
@@ -214,6 +216,7 @@ export default function useStarknet(): WalletProvider {
         if (!result) {
             throw new Error("No result")
         }
+        const networkToken = networks.find(network => chainId && Number(network.chain_id) == Number(chainId))?.tokens.find(token => token.symbol === shortString.decodeShortString(ethers.utils.hexlify(result.srcAsset as BigNumberish)))
 
         const parsedResult = {
             dstAddress: ethers.utils.hexlify(result.dstAddress as BigNumberish),
@@ -223,7 +226,7 @@ export default function useStarknet(): WalletProvider {
             sender: ethers.utils.hexlify(result.sender as BigNumberish),
             srcReceiver: ethers.utils.hexlify(result.srcReceiver as BigNumberish),
             timelock: Number(result.timelock),
-            amount: result.amount,
+            amount: formatAmount(Number(result.amount), networkToken?.decimals),
             messenger: ethers.utils.hexlify(result.messenger as BigNumberish),
             locked: result.locked,
             uncommitted: result.uncommitted
@@ -257,7 +260,7 @@ export default function useStarknet(): WalletProvider {
 
     const getLock = async (params: LockParams): Promise<AssetLock> => {
 
-        const { lockId, contractAddress } = params
+        const { lockId, contractAddress, chainId } = params
 
         const atomicContract = new Contract(
             PHTLCAbi,
@@ -267,6 +270,7 @@ export default function useStarknet(): WalletProvider {
             })
         )
         const result = await atomicContract.functions.getLockDetails(lockId)
+        const networkToken = networks.find(network => chainId && Number(network.chain_id) == Number(chainId))?.tokens.find(token => token.symbol === shortString.decodeShortString(ethers.utils.hexlify(result.dstAsset as BigNumberish)))
 
         const parsedResult: AssetLock = {
             dstAddress: ethers.utils.hexlify(result.dstAddress as BigNumberish),
@@ -274,7 +278,7 @@ export default function useStarknet(): WalletProvider {
             dstAsset: shortString.decodeShortString(ethers.utils.hexlify(result.dstAsset as BigNumberish)),
             srcAsset: shortString.decodeShortString(ethers.utils.hexlify(result.srcAsset as BigNumberish)),
             timelock: Number(result.timelock),
-            amount: result.amount,
+            amount: formatAmount(Number(result.amount), networkToken?.decimals),
             hashlock: ethers.utils.hexlify(result.hashlock as BigNumberish),
             redeemed: result.redeemed,
             secret: Number(result.secret),
