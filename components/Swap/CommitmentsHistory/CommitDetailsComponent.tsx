@@ -3,13 +3,13 @@ import Image from 'next/image'
 import CopyButton from '../../buttons/copyButton';
 import shortenAddress from '../../utils/ShortenAddress';
 import { useSettingsState } from '../../../context/settings';
-import formatAmount from '../../../lib/formatAmount';
 import SubmitButton from '../../buttons/submitButton';
 import { useRouter } from 'next/router';
 import { Eye } from 'lucide-react';
 import StatusIcon from './StatusIcons';
 import { HistoryCommit } from '.';
 import { NetworkWithTokens } from '../../../Models/Network';
+import { truncateDecimals } from '../../utils/RoundDecimals';
 
 type Props = {
     commit: HistoryCommit,
@@ -111,7 +111,7 @@ const CommitDetails: FC<Props> = ({ commit, source_network }) => {
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Committed amount</span>
                             <span className='text-primary-text font-normal flex'>
-                                {source_token && formatAmount(amount, source_token?.decimals)} {source_token?.symbol}
+                                {source_token && truncateDecimals(amount, source_token?.precision)} {source_token?.symbol}
                             </span>
                         </div>
                     </div>
@@ -124,7 +124,7 @@ const CommitDetails: FC<Props> = ({ commit, source_network }) => {
                         onClick={() => router.push({
                             pathname: `/atomic`,
                             query: {
-                                amount: source_token && formatAmount(amount, source_token?.decimals),
+                                amount: source_token && truncateDecimals(amount, source_token?.precision),
                                 address: dstAddress,
                                 source: source_network?.name,
                                 destination: destination_network?.name,

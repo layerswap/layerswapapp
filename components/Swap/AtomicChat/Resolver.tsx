@@ -177,7 +177,7 @@ export const ResolveMessages: FC = () => {
     const commitFromApi = data?.data
 
     const WalletIcon = wallet && <wallet.icon className="w-5 h-5 rounded-full bg-secondary-800 border-secondary-400" />
-console.log(destinationLock?.amount, destination_asset?.precision)
+
     if (redeemCompleted) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <Committed walletIcon={WalletIcon} amount={truncateDecimals(committment?.amount, source_asset?.precision)} asset={source_asset?.symbol} />

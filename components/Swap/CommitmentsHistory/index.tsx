@@ -13,13 +13,13 @@ import shortenAddress from "../../utils/ShortenAddress";
 import SpinIcon from "../../icons/spinIcon";
 import { SwapHistoryComponentSceleton } from "../../Sceletons";
 import Image from 'next/image'
-import formatAmount from "../../../lib/formatAmount";
 import Modal from "../../modal/modal";
 import CommitDetails from "./CommitDetailsComponent";
 import ConnectButton from "../../buttons/connectButton";
 import WalletIcon from "../../icons/WalletIcon";
 import StatusIcon from "./StatusIcons";
 import AppSettings from "../../../lib/AppSettings";
+import { truncateDecimals } from "../../utils/RoundDecimals";
 
 type CommitStatus = 'committed' | 'user_locked' | 'lp_locked' | 'completed' | 'refunded' | 'timelock_expired'
 
@@ -276,7 +276,7 @@ function CommittmentsHistory() {
                                                                     <div>
                                                                         <div className="text text-secondary-text text-left">
                                                                             <span>
-                                                                                {formatAmount(amount, source_token?.decimals!)}
+                                                                                {truncateDecimals(amount, source_token?.precision)}
                                                                             </span>
                                                                             <span className="ml-1">{source_token?.symbol}</span>
                                                                         </div>
