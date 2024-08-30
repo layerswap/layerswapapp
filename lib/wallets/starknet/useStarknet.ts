@@ -51,8 +51,8 @@ export default function useStarknet(): WalletProvider {
                 dappName: 'Layerswap',
                 modalMode: 'alwaysAsk'
             })
-            const walletChain = wallet && (wallet.provider?.chainId || wallet.provider?.provider?.chainId)
-            const wrongChanin = walletChain == constants.StarknetChainId.SN_MAIN? !isMainnet : isMainnet
+            const walletChain = wallet && extractChainId(wallet)
+            const wrongChanin = walletChain == constants.StarknetChainId.SN_MAIN || wallet?.chainId == constants.NetworkName.SN_MAIN ? !isMainnet : isMainnet
 
             if (wallet && wrongChanin) {
                 await disconnectWallet()
@@ -108,4 +108,10 @@ export default function useStarknet(): WalletProvider {
         asSourceSupportedNetworks: commonSupportedNetworks,
         name
     }
+}
+
+function extractChainId(wallet) {
+    return wallet.provider?.chainId // Braavos
+        || wallet.provider?.provider?.chainId // ArgentX 
+        || wallet.provider?.channel?.chainId // Argent mobile
 }
