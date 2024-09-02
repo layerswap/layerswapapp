@@ -1,5 +1,5 @@
 import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import SwapButton from "../../buttons/swapButton";
 import React from "react";
 import NetworkFormField from "../../Input/NetworkFormField";
@@ -10,7 +10,7 @@ import { isValidAddress } from "../../../lib/address/validator";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
-import { ArrowUpDown, Loader2 } from 'lucide-react'
+import { ArrowUpDown, Loader2, Plus } from 'lucide-react'
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import GasDetails from "../../gasDetails";
@@ -27,6 +27,10 @@ import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import useValidationStore from "../../validationError/validationErrorStore";
 import ValidationError from "../../validationError";
 import { ImtblPassportProvider } from "../../ImtblPassportProvider";
+import Modal from "../../modal/modal";
+import useWallet from "../../../hooks/useWallet";
+import shortenAddress from "../../utils/ShortenAddress";
+import ConnectButton from "../../buttons/connectButton";
 
 type Props = {
     partner?: Partner,
@@ -54,9 +58,11 @@ const SwapForm: FC<Props> = ({ partner }) => {
         from: source,
         fromExchange,
         toExchange,
-        currencyGroup
+        currencyGroup,
+        source_wallet,
+        without_source_wallet
     } = values
-
+    const [showConnectWalletModal, setShowConnectWalletModal] = useState(false);
     const { minAllowedAmount, valuesChanger } = useFee()
     const toAsset = values.toCurrency
     const fromAsset = values.fromCurrency
@@ -133,9 +139,34 @@ const SwapForm: FC<Props> = ({ partner }) => {
             setFieldValue('amount', walletBalance?.amount - networkGas?.gas)
     }, [values.amount])
 
+    const shoouldConnectWallet = !values.without_source_wallet && !values.source_wallet
+    const { wallets } = useWallet()
+
+
+
+    useEffect(() => {
+
+
+        setFieldValue('source_wallet', {})
+
+    }, [])
+
+
+
     return <ImtblPassportProvider from={source} to={destination}>
         <>
             <Widget className="sm:min-h-[504px]">
+                <Modal
+                    height='80%'
+                    show={showConnectWalletModal}
+                    setShow={setShowConnectWalletModal}
+                    header={`Connect wallet`}
+                    modalId="connectwallet"
+                >
+                    <ResizablePanel>
+                        <Wallets />
+                    </ResizablePanel>
+                </Modal>
                 <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
                     <Widget.Content>
                         <div className='flex-col relative flex justify-between w-full space-y-0.5 mb-3.5 leading-4'>
@@ -195,13 +226,27 @@ const SwapForm: FC<Props> = ({ partner }) => {
                         </div>
                     </Widget.Content>
                     <Widget.Footer>
-                        <SwapButton
-                            className="plausible-event-name=Swap+initiated"
-                            type='submit'
-                            isDisabled={!isValid}
-                            isSubmitting={isSubmitting}>
-                            {ActionText(errors, actionDisplayName)}
-                        </SwapButton>
+                        {
+                            shoouldConnectWallet ?
+                                <SwapButton
+                                    className="plausible-event-name=Swap+initiated"
+                                    type='button'
+                                    isDisabled={false}
+                                    isSubmitting={isSubmitting}
+                                    onClick={() => { setShowConnectWalletModal(true) }}
+                                >
+                                    Connect Wallet
+                                </SwapButton>
+                                :
+                                <SwapButton
+                                    className="plausible-event-name=Swap+initiated"
+                                    type='submit'
+                                    isDisabled={!isValid}
+                                    isSubmitting={isSubmitting}>
+                                    {ActionText(errors, actionDisplayName)}
+                                </SwapButton>
+                        }
+
                     </Widget.Footer>
                 </Form>
             </Widget>
@@ -214,6 +259,55 @@ const SwapForm: FC<Props> = ({ partner }) => {
         </>
     </ImtblPassportProvider>
 }
+
+const Wallets = () => {
+    const { wallets } = useWallet()
+    const {
+        values,
+        setFieldValue,
+    } = useFormikContext<SwapFormValues>();
+
+    useEffect(() => {
+        console.log(wallets)
+
+    }, [wallets])
+
+
+    const habndleSelectWallet = useCallback((wallet) => {
+        setFieldValue('source_wallet', wallet)
+    }, [])
+
+    return <div className="space-y-4">
+        <div className="flex flex-col justify-start space-y-2">
+            {
+                wallets.map((wallet, index) => (
+                    <div key={index} className="w-full relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
+                        <div className="flex space-x-4 items-center">
+                            {
+                                wallet.connector &&
+                                <div className="inline-flex items-center relative">
+                                    <wallet.icon className="w-8 h-8 p-0.5 rounded-full bg-secondary-800 border border-secondary-400" />
+                                </div>
+                            }
+                            <p>{wallet.address && shortenAddress(wallet.address)}</p>
+                        </div>
+
+                    </div>
+                ))
+            }
+        </div>
+        <ConnectButton onClose={() => { }}>
+            <div className="text-secondary-text hover:text-secondary-text/80 flex items-center gap-1 justify-end w-fit">
+                <Plus className="h-4 w-4" />
+                <span className="text-sm">
+                    Link a new wallet
+                </span>
+            </div>
+        </ConnectButton>
+    </div>
+}
+
+
 
 function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: string): string {
     return errors.from?.toString()

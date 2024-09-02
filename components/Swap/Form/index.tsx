@@ -106,7 +106,6 @@ export default function Form() {
             else if (!confirmed) {
                 return
             }
-
         }
         try {
             const accessToken = TokenService.getAuthData()?.access_token
@@ -344,7 +343,6 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                         }
                     </div>
                 </div>
-
             </motion.div>
         </motion.div>
     </motion.div>
