@@ -83,7 +83,7 @@ export function AtomicProvider({ children }) {
 
         return () => timer && clearInterval(timer)
 
-    }, [committment, destinationLock])
+    }, [committment, destinationLock, sourceLock])
 
     const handleCommited = (commitId: string) => {
         setCommitId(commitId)

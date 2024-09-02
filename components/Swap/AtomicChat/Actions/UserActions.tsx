@@ -41,7 +41,7 @@ export const UserCommitAction: FC = () => {
             if (!destination_provider) {
                 throw new Error("No destination_provider")
             }
-            
+
             const { commitId } = await source_provider.createPreHTLC({
                 address,
                 amount: amount.toString(),
@@ -241,8 +241,8 @@ export const UserRefundAction: FC = () => {
                     lockId: committment?.lockId,
                     contractAddress: sourceAtomicContract as `0x${string}`
                 })
+                if (sourceLock) setSourceLock(sourceLock)
 
-                setSourceLock(sourceLock)
             }
 
         })()
@@ -277,19 +277,20 @@ export const UserRefundAction: FC = () => {
 
     useEffect(() => {
         let lockHandler: any = undefined
-        if (source_provider && sourceLock && !sourceLock.unlocked) {
+        if (destination_provider && sourceLock && !sourceLock.unlocked) {
             lockHandler = setInterval(async () => {
-                if (!source_network.chain_id)
+                if (!destination_network?.chain_id)
                     throw Error("No chain id")
 
-                const data = await source_provider.getLock({
-                    type: source_asset?.contract ? 'erc20' : 'native',
-                    chainId: source_network.chain_id,
-                    lockId: sourceLock.hashlock as string,
+                const data = await destination_provider.getLock({
+                    type: destination_asset?.contract ? 'erc20' : 'native',
+                    chainId: destination_network.chain_id,
+                    lockId: committment?.lockId as string,
                     contractAddress: sourceAtomicContract,
                 })
-                if (data.unlocked) {
-                    setDestinationLock(data)
+
+                if (data) setDestinationLock(data)
+                if (data?.unlocked) {
                     clearInterval(lockHandler)
                 }
             }, 5000)

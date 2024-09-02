@@ -1,7 +1,7 @@
 import { Idl } from "@coral-xyz/anchor"
 
 export const AnchorHtlc: Idl = {
-  "address": "9GKpxBRPqXo8zQPp9QZYbQjqcnNHn6sRjb6tEsPhxTnh",
+  "address": "3QTpqp1xEShUnBia7qAR2C6UHuM75PhjRh9wi9mMvSSj",
   "metadata": {
     "name": "anchor_htlc",
     "version": "0.1.0",

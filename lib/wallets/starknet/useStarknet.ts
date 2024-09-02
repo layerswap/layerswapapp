@@ -4,7 +4,7 @@ import KnownInternalNames from "../../knownIds"
 import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
-import { Call, Contract, RpcProvider, shortString } from "starknet";
+import { ByteArray, byteArray, Call, Contract, RpcProvider, shortString } from "starknet";
 import PHTLCAbi from "../../../lib/abis/atomic/STARKNET_PHTLC.json"
 import ETHABbi from "../../../lib/abis/STARKNET_ETH.json"
 import { CommitmentParams, CreatyePreHTLCParams, GetCommitsParams, LockParams, RefundParams } from "../phtlc";
@@ -142,7 +142,6 @@ export default function useStarknet(): WalletProvider {
                 messanger,
                 tokenContractAddress,
             ]
-
             const atomicContract = new Contract(
                 PHTLCAbi,
                 atomicAddress,
@@ -229,7 +228,7 @@ export default function useStarknet(): WalletProvider {
             amount: formatAmount(Number(result.amount), networkToken?.decimals),
             messenger: ethers.utils.hexlify(result.messenger as BigNumberish),
             locked: result.locked,
-            lockId: toHex(result.lockId, { size: 32 }),
+            lockId: result.locked && toHex(result.lockId, { size: 32 }),
             uncommitted: result.uncommitted
         }
 

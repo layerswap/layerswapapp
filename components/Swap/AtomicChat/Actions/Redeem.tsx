@@ -29,8 +29,8 @@ export const RedeemAction: FC = () => {
                         lockId: committment.lockId,
                         contractAddress: contract as `0x${string}`,
                     })
-                    if (data.redeemed) {
-                        setSourceLock(data)
+                    if (data) setSourceLock(data)
+                    if (data?.redeemed) {
                         clearInterval(commitHandler)
                     }
                 }, 5000)

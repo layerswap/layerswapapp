@@ -119,7 +119,7 @@ const SwapDetails: FC<Props> = (props) => {
                         lockId: destinationLockId as string,
                         contractAddress: destination_network.metadata.htlc_contract as `0x${string}`,
                     })
-                    setDestinationLock(data)
+                    if (data) setDestinationLock(data)
                     clearInterval(lockHandler)
                 }
 
@@ -181,7 +181,7 @@ const SwapDetails: FC<Props> = (props) => {
                         lockId: hashLock,
                         contractAddress: destination_network.metadata.htlc_contract as `0x${string}`,
                     })
-                    setDestinationLock(data)
+                    if(data) setDestinationLock(data)
                     clearInterval(commitHandler)
                 }, 2000)
             })()

@@ -197,7 +197,7 @@ export default function useEVM(): WalletProvider {
             chainId: Number(chainId),
         })
 
-        const networkToken = networks.find(network => account?.chain && Number(network.chain_id) == account.chain.id)?.tokens.find(token => token.symbol === result.srcAsset)
+        const networkToken = networks.find(network => chainId && network.chain_id == chainId)?.tokens.find(token => token.symbol === result.srcAsset)
 
         const parsedResult = {
             ...result,
@@ -223,7 +223,7 @@ export default function useEVM(): WalletProvider {
             chainId: Number(chainId),
         })
 
-        if (!result || result === '0x0000000000000000000000000000000000000000000000000000000000000000') return null
+        if (!result || result === '0x0000000000000000000000000000000000000000') return null
 
         return result as `0x${string}`
     }
@@ -244,7 +244,7 @@ export default function useEVM(): WalletProvider {
         return { hash, result: result }
     }
 
-    const getLock = async (params: LockParams): Promise<AssetLock> => {
+    const getLock = async (params: LockParams): Promise<AssetLock | undefined> => {
         const { chainId, lockId, contractAddress, type } = params
         const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
 
@@ -257,17 +257,20 @@ export default function useEVM(): WalletProvider {
         })
         const networkToken = networks.find(network => chainId && Number(network.chain_id) == Number(chainId))?.tokens.find(token => token.symbol === result.dstAsset)
 
-        const parsedResult = {
-            ...result,
-            amount: formatAmount(Number(result.amount), networkToken?.decimals),
-            timelock: Number(result.timelock),
-            secret: Number(result.secret)
+        if (result.sender !== '0x0000000000000000000000000000000000000000') {
+            const parsedResult = {
+                ...result,
+                amount: formatAmount(Number(result.amount), networkToken?.decimals),
+                timelock: Number(result.timelock),
+                secret: Number(result.secret)
+            }
+
+            if (!result) {
+                throw new Error("No result")
+            }
+            return parsedResult as AssetLock
         }
 
-        if (!result) {
-            throw new Error("No result")
-        }
-        return parsedResult as AssetLock
     }
 
     const refund = async (params: RefundParams) => {

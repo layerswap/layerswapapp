@@ -348,7 +348,7 @@ export const ActionsWithProgressbar: FC = () => {
     }
     if (committment?.locked) {
         firstStep = "100%"
-        secondStep = "100%"
+        secondStep = "80%"
         currentStep = 2
     }
 
