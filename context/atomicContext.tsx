@@ -64,7 +64,7 @@ export function AtomicProvider({ children }) {
     useEffect(() => {
         let timer: NodeJS.Timeout;
         if (!committment || isTimelockExpired || (committment.locked && !destinationLock)) return
-        const time = (Number(committment.timelock) * 1000) - Date.now()
+        const time = (Number(sourceLock?.timelock || committment.timelock) * 1000) - Date.now()
 
 
         if (!committment.locked || (destinationLock && !destinationLock.redeemed)) {
@@ -133,4 +133,3 @@ export function useAtomicState() {
 
     return data;
 }
-

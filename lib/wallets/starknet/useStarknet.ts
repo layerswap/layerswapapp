@@ -229,6 +229,7 @@ export default function useStarknet(): WalletProvider {
             amount: formatAmount(Number(result.amount), networkToken?.decimals),
             messenger: ethers.utils.hexlify(result.messenger as BigNumberish),
             locked: result.locked,
+            lockId: toHex(result.lockId, { size: 32 }),
             uncommitted: result.uncommitted
         }
 
