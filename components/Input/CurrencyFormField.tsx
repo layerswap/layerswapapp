@@ -18,8 +18,7 @@ import { ApiError, LSAPIKnownErrorCode } from "../../Models/ApiError";
 import { resolveNetworkRoutesURL } from "../../helpers/routes";
 import useWallet from "../../hooks/useWallet";
 import { ONE_WEEK } from "./NetworkFormField";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
-import { CircleAlert, RouteOff } from "lucide-react";
+import RouteIcon from "./RouteIcon";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -157,7 +156,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 function GenerateCurrencyMenuItems(
     currencies: RouteToken[],
     values: SwapFormValues,
-    direction?: string,
+    direction: string,
     balances?: Balance[],
     query?: QueryParams,
     error?: ApiError
@@ -179,42 +178,15 @@ function GenerateCurrencyMenuItems(
                 !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive')
             );
 
-        const showRouteIcon = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) || lockAsset;
+        const routeNotFound = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) || lockAsset;
+
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
-        const details = c.status === 'inactive' ?
-            <Tooltip delayDuration={200}>
-                <TooltipTrigger asChild >
-                    <div className="absolute -left-0.5 top-1 z-50">
-                        <CircleAlert className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p className="max-w-72">
-                        Transfers ${direction} this token are not available at the moment. Please try later.
-                    </p>
-                </TooltipContent>
-            </Tooltip>
-            :
-            <p className="text-primary-text-muted">
-                {formatted_balance_amount}
-            </p>
 
-        const icon = showRouteIcon ? (
-            <Tooltip delayDuration={200}>
-                <TooltipTrigger asChild >
-                    <div className="absolute -left-0.5 top-1 z-50">
-                        <RouteOff className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p className="max-w-72">
-                        Route unavailable
-                    </p>
-                </TooltipContent>
-            </Tooltip>
-        ) : undefined;
+        const details = <p className="text-primary-text-muted">
+            {formatted_balance_amount}
+        </p>
 
         const res: SelectMenuItem<RouteToken> = {
             baseObject: c,
@@ -223,9 +195,9 @@ function GenerateCurrencyMenuItems(
             order: ResolveCurrencyOrder(c, isNewlyListed),
             imgSrc: c.logo,
             isAvailable: currencyIsAvailable,
-            details,
             badge,
-            icon
+            details,
+            icon: <RouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={!!routeNotFound} />
         };
 
         return res

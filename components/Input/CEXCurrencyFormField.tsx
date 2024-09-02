@@ -13,6 +13,7 @@ import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 import { CircleAlert, RouteOff } from "lucide-react";
 import { QueryParams } from "../../Models/QueryParams";
+import RouteIcon from "./RouteIcon";
 
 const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -43,8 +44,8 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
-        lockedCurrency,
-        direction
+        direction,
+        lockedCurrency
     )
 
     const value = currencyMenuItems?.find(x => x.id == currencyGroup?.symbol);
@@ -69,8 +70,8 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
 
 export function GenerateCurrencyMenuItems(
     currencies: ExchangeToken[],
+    direction: string,
     lockedCurrency?: ExchangeToken | undefined,
-    direction?: string
 ): SelectMenuItem<ExchangeToken>[] {
 
     return currencies?.map(c => {
@@ -78,34 +79,8 @@ export function GenerateCurrencyMenuItems(
         const displayName = lockedCurrency?.symbol ?? currency.symbol;
 
         const isAvailable = (lockedCurrency || (c?.status !== "active" && c.status !== "not_found")) ? false : true;
-        const details = c.status === 'inactive' ?
-            <Tooltip delayDuration={200}>
-                <TooltipTrigger asChild >
-                    <div className="absolute -left-0.5 top-1 z-50">
-                        <CircleAlert className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p className="max-w-72">
-                        Transfers ${direction} this token are not available at the moment. Please try later.
-                    </p>
-                </TooltipContent>
-            </Tooltip> : undefined
-
-        const icon = c.status === "not_found" ? (
-            <Tooltip delayDuration={200}>
-                <TooltipTrigger asChild >
-                    <div className="absolute -left-0.5 top-1 z-50">
-                        <RouteOff className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p className="max-w-72">
-                        Route unavailable
-                    </p>
-                </TooltipContent>
-            </Tooltip>
-        ) : undefined;
+        
+        const routeNotFound = c.status === "not_found"
 
         const res: SelectMenuItem<ExchangeToken> = {
             baseObject: c,
@@ -114,8 +89,7 @@ export function GenerateCurrencyMenuItems(
             order: ResolveCEXCurrencyOrder(c),
             imgSrc: c.logo,
             isAvailable: isAvailable,
-            details,
-            icon
+            icon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} />
         };
         return res
     });

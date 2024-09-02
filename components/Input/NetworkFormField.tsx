@@ -16,9 +16,9 @@ import { RouteNetwork } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
-import { CircleAlert, Info, RouteOff } from "lucide-react";
+import { Info } from "lucide-react";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../../helpers/routes";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
+import RouteIcon from "./RouteIcon";
 
 type Props = {
     direction: SwapDirection,
@@ -188,36 +188,8 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
                 !query.lockAsset && !query.lockFromAsset && !query.lockToAsset && !query.lockFrom && !query.lockTo && !query.lockNetwork && !query.lockExchange && r.tokens?.some(r => r.status !== 'inactive')
             );
 
-        const details = !isAvailable ? <Tooltip delayDuration={200}>
-            <TooltipTrigger asChild >
-                <div className="absolute -left-0.5 top-0.5 z-50">
-                    <CircleAlert className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
-                </div>
-            </TooltipTrigger>
-            <TooltipContent>
-                <p className="max-w-72">
-                    Transfers ${direction} this token are not available at the moment. Please try later.
-                </p>
-            </TooltipContent>
-        </Tooltip> : undefined
-
         const order = ResolveNetworkOrder(r, direction, isNewlyListed)
-
         const routeNotFound = isAvailable && !r.tokens?.some(r => r.status === 'active');
-        const icon = routeNotFound ? (
-            <Tooltip delayDuration={200}>
-                <TooltipTrigger asChild >
-                    <div className="absolute -left-0.5 top-0.5 z-50">
-                        <RouteOff className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p className="max-w-72">
-                        Route unavailable
-                    </p>
-                </TooltipContent>
-            </Tooltip>
-        ) : undefined;
 
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
             baseObject: r,
@@ -228,9 +200,8 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             isAvailable: isAvailable,
             group: getGroupName(r, 'network', isAvailable && !routeNotFound),
             isExchange: false,
-            details,
             badge,
-            icon
+            icon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} />
         }
         return res;
     }).sort(SortAscending) || [];
