@@ -17,17 +17,14 @@ import { ApiError, LSAPIKnownErrorCode } from "../../Models/ApiError";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import Image from 'next/image'
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
+import { resolveNetworkRoutesURL } from "../../helpers/routes";
 import useWallet from "../../hooks/useWallet";
 import { Wallet } from "../../stores/walletStore";
-import { resolveNetworkRoutesURL } from "../../helpers/routes";
 import { useSettingsState } from "../../context/settings";
-import ClickTooltip from "../Tooltips/ClickTooltip";
 import { ONE_WEEK } from "./NetworkFormField";
-import useValidationErrorStore from "../validationError/validationErrorStore";
-import validationMessageResolver from "../utils/validationErrorResolver";
-import RouteIcon from "../icons/RouteIcon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
-import { SortAscending } from "../../lib/sorting";
+import { SortingByAvailability } from "../../lib/sorting";
+import { CircleAlert, RouteOff } from "lucide-react";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -51,7 +48,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const { balances } = useBalancesState()
 
     const { getAutofillProvider: getProvider } = useWallet()
-    const { message: validationErrorMessage, directions, setValidationMessage, clearValidationMessage } = useValidationErrorStore()
 
     const sourceWalletProvider = useMemo(() => {
         return from && getProvider(from)
@@ -143,30 +139,18 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             const value = routes.data?.find(r => r.name === to?.name)?.tokens?.find(r => r.symbol === toCurrency?.symbol)
             if (!value) return
 
-            if (value?.status === 'not_found') {
-                const message = validationMessageResolver(values, direction, query, error)
-                setValidationMessage('Route Unavailable', message, 'warning', name);
-            } else {
-                clearValidationMessage()
-            }
             setFieldValue(name, value)
         }
-    }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading, validationErrorMessage])
+    }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
 
     useEffect(() => {
         if (name === "fromCurrency" && fromCurrency && !isLoading && routes) {
             const value = routes.data?.find(r => r.name === from?.name)?.tokens?.find(r => r.symbol === fromCurrency?.symbol)
             if (!value) return
 
-            if (value?.status === 'not_found') {
-                const message = validationMessageResolver(values, direction, query, error)
-                setValidationMessage('Route Unavailable', message, 'warning', name);
-            } else {
-                clearValidationMessage()
-            }
             setFieldValue(name, value)
         }
-    }, [toCurrency, currencyGroup, name, from, routes, error, isLoading, validationErrorMessage])
+    }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
 
     const value = currencyMenuItems?.find(x => x.baseObject.symbol == currencyAsset && x.baseObject.network_name === currencyNetwork);
 
@@ -174,12 +158,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         const network = (direction === 'from' ? sourceRoutes : destinationRoutes)?.find(r => r.name === item.baseObject.network_name)
         setFieldValue(name, item.baseObject, true)
         setFieldValue(direction, network, true)
-        const message = validationMessageResolver(values, direction, query, error)
-        if (!item.isAvailable)
-            setValidationMessage('Warning', message, 'warning', name);
-        else
-            clearValidationMessage()
-
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
     return (
@@ -250,7 +228,7 @@ function GenerateCurrencyMenuItems(
         </div>
 
         const NetworkImage = <div>
-            {c.network_logo && <div className="absolute w-2.5 -right-1 -bottom-1">
+            {c.network_logo && <div className="absolute w-2.5 -right-1 -bottom-0.5">
                 <Image
                     src={c.network_logo}
                     alt="Project Logo"
@@ -269,31 +247,43 @@ function GenerateCurrencyMenuItems(
                 (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
                 !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive')
             );
-            
+
         const showRouteIcon = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) || lockAsset;
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
         const details = c.status === 'inactive' ?
-            <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> : 
+            <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild >
+                    <div className="absolute -left-0.5 top-1 z-50">
+                        <CircleAlert className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p className="max-w-72">
+                        Transfers ${direction} this token are not available at the moment. Please try later.
+                    </p>
+                </TooltipContent>
+            </Tooltip>
+            :
             <p className="text-primary-text-placeholder flex flex-col items-end">
                 {Number(formatted_balance_amount) ?
-                <span className="text-primary-text text-sm">{formatted_balance_amount}</span>
-                :
-                <span className="text-primary-text text-sm">0.00</span>
-            }
-            {balanceAmountInUsd ?
-                <span className="text-sm">${balanceAmountInUsd}</span>
-                :
-                <span className="text-sm">$0.00</span>
-            }
+                    <span className="text-primary-text text-sm">{formatted_balance_amount}</span>
+                    :
+                    <span className="text-primary-text text-sm">0.00</span>
+                }
+                {balanceAmountInUsd ?
+                    <span className="text-sm">${balanceAmountInUsd}</span>
+                    :
+                    <span className="text-sm">$0.00</span>
+                }
             </p>
 
         const icon = showRouteIcon ? (
             <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild >
-                    <div className="absolute -left-0 z-50">
-                        <RouteIcon className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+                    <div className="absolute -left-0.5 top-1 z-50">
+                        <RouteOff className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
                     </div>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -321,7 +311,7 @@ function GenerateCurrencyMenuItems(
         };
 
         return res
-    }).sort(SortAscending);
+    }).sort(SortingByAvailability);
 }
 
 export default CurrencyFormField

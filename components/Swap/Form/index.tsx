@@ -36,6 +36,7 @@ import { addressFormat } from "../../../lib/address/formatter";
 import { useAddressesStore } from "../../../stores/addressesStore";
 import { AddressGroup } from "../../Input/Address/AddressPicker";
 import { useAsyncModal } from "../../../context/asyncModal";
+import { useValidationContext, ValidationProvider } from "../../../context/validationErrorContext";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -169,52 +170,51 @@ export default function Form() {
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
     }, [router, swap])
 
-    return <>
+    return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
         <BalancesFetcher />
-        <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
-            <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
-                <AnimatePresence mode='wait'>
-                    {
-                        swap &&
-                        !showSwapModal &&
-                        <PendingSwap key="pendingSwap" onClick={() => handleShowSwapModal(true)} />
-                    }
-                </AnimatePresence>
-            </div>
-            <Modal
-                height="fit"
-                show={showConnectNetworkModal}
-                setShow={setShowConnectNetworkModal}
-                header={`${networkToConnect?.DisplayName} connect`}
-                modalId="showNetwork"
-            >
+        <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
+            <AnimatePresence mode='wait'>
                 {
                     networkToConnect &&
                     <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
                 }
-            </Modal>
-            <Modal
-                height='fit'
-                show={showSwapModal}
-                setShow={handleShowSwapModal}
-                header={`Complete the swap`}
-                modalId="showSwap"
-            >
-                <ResizablePanel>
-                    <SwapDetails type="contained" />
-                </ResizablePanel>
-            </Modal>
-            <Formik
-                innerRef={formikRef}
-                initialValues={initialValues}
-                validateOnMount={true}
-                validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
-                onSubmit={handleSubmit}
-            >
+            </AnimatePresence>
+        </div>
+        <Modal
+            height="fit"
+            show={showConnectNetworkModal}
+            setShow={setShowConnectNetworkModal}
+            header={`${networkToConnect?.DisplayName} connect`}
+            modalId="showNetwork"
+        >
+            {
+                networkToConnect &&
+                <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
+            }
+        </Modal>
+        <Modal
+            height='fit'
+            show={showSwapModal}
+            setShow={handleShowSwapModal}
+            header={`Complete the swap`}
+            modalId="showSwap"
+        >
+            <ResizablePanel>
+                <SwapDetails type="contained" />
+            </ResizablePanel>
+        </Modal>
+        <Formik
+            innerRef={formikRef}
+            initialValues={initialValues}
+            validateOnMount={true}
+            validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
+            onSubmit={handleSubmit}
+        >
+            <ValidationProvider>
                 <SwapForm partner={partner} />
-            </Formik>
-        </DepositMethodProvider>
-    </>
+            </ValidationProvider>
+        </Formik>
+    </DepositMethodProvider>
 }
 
 const textMotion = {

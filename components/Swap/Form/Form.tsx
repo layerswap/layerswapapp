@@ -24,9 +24,9 @@ import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
-import useValidationStore from "../../validationError/validationErrorStore";
 import ValidationError from "../../validationError";
 import { ImtblPassportProvider } from "../../ImtblPassportProvider";
+import { useValidationContext } from "../../../context/validationErrorContext";
 
 type Props = {
     partner?: Partner,
@@ -61,7 +61,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const toAsset = values.toCurrency
     const fromAsset = values.fromCurrency
 
-    const { message } = useValidationStore();
+    const { validationMessage } = useValidationContext();
 
     const layerswapApiClient = new LayerSwapApiClient()
     const query = useQueryState();
@@ -183,7 +183,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                 : <></>
                         }
                         <div className="w-full">
-                            {message ?
+                            {validationMessage ?
                                 <ValidationError />
                                 :
                                 <FeeDetailsComponent values={values} />
