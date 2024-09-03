@@ -58,8 +58,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         return to && getProvider(to)
     }, [to, getProvider])
 
-    const address = direction === 'from' ? sourceWalletProvider?.getConnectedWallet(from)?.address : destination_address || destinationWalletProvider?.getConnectedWallet(to)?.address
-
     const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
     const apiClient = new LayerSwapApiClient()
     const {

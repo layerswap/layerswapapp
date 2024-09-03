@@ -94,13 +94,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         else if (value) return
     }, [currencyGroup])
 
-    const valueDetails = <>
-        <div className="flex">{network?.display_name}</div>
-        <div className="text-primary-text-placeholder inline-flex items-center justify-self-end gap-1">
-            ({currency?.symbol})
-        </div>
-    </>
-
     const networkDetails = <div>
         <div className="relative z-20 mb-3 ml-3 text-primary-buttonTextColor text-sm">
             <p className="text-sm mt-2 flex space-x-1">
@@ -134,7 +127,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             searchHint=''
             isLoading={isRoutesLoading || isHistoricalNetworsLoading}
             modalHeight="80%"
-            valueDetails={valueDetails}
             modalContent={networkDetails}
             key={value?.id}
         />
