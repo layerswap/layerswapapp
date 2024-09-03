@@ -22,7 +22,7 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                     )}
                     {item.menuItemImage && item.menuItemImage}
                 </div>
-                <p className="text-md font-medium flex w-full justify-between space-x-2">
+                <p className="text-md font-medium flex w-full justify-between space-x-2 items-center">
                     <span className="flex items-center justify-center pb-0.5">
                         {item.menuItemLabel ? item.menuItemLabel : item.name}
                     </span>

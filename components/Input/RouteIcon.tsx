@@ -15,7 +15,7 @@ const RouteIcon: FC<Props> = (props) => {
         return <Tooltip delayDuration={200}>
             <TooltipTrigger asChild >
                 <div className="absolute -left-0.5 top-0.5 z-50">
-                    <CircleAlert className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+                    <CircleAlert className="!w-3 text-primary-text-placeholder hover:text-primary-text icoooooooooon" />
                 </div>
             </TooltipTrigger>
             <TooltipContent>
@@ -29,7 +29,7 @@ const RouteIcon: FC<Props> = (props) => {
         return <Tooltip delayDuration={200}>
             <TooltipTrigger asChild >
                 <div className="absolute -left-0.5 top-0.5 z-50">
-                    <RouteOff className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+                    <RouteOff className="!w-3 text-primary-text-placeholder hover:text-primary-text icoooooooooon" />
                 </div>
             </TooltipTrigger>
             <TooltipContent>

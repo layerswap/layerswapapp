@@ -250,13 +250,23 @@ function GenerateCurrencyMenuItems(
             );
 
         const routeNotFound = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) || lockAsset;
-
+        if (currency?.network_name === "SOLANA_MAINNET")
+            console.log(currency,"solana")
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
 
-        const details = <p className="text-primary-text-muted">
-            {formatted_balance_amount}
+        const details = <p className="text-primary-text-placeholder flex flex-col items-end">
+            {Number(formatted_balance_amount) ?
+                <span className="text-primary-text text-sm">{formatted_balance_amount}</span>
+                :
+                <span className="text-primary-text text-sm">0.00</span>
+            }
+            {balanceAmountInUsd ?
+                <span className="text-sm">${balanceAmountInUsd}</span>
+                :
+                <span className="text-sm">$0.00</span>
+            }
         </p>
 
         const res: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
@@ -272,7 +282,6 @@ function GenerateCurrencyMenuItems(
             group: getGroupName(c.network_display_name === (direction === "from" ? from?.display_name : to?.display_name) ? c.network_display_name : "All networks"),
             menuItemDetails: details,
             badge,
-            details,
             icon: <RouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={!!routeNotFound} />
         };
 
