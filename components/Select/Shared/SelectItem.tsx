@@ -7,7 +7,7 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
         <div className="flex items-center justify-between gap-3 w-full overflow-hidden px-0.5">
             <div className="relative flex items-center gap-3 pl-1">
                 <div className="flex-shrink-0">
-                    <div>{item.icon}</div>
+                        {item.icon}
                 </div>
                 <div className="flex-shrink-0 h-6 w-6 relative">
                     {item.imgSrc && (

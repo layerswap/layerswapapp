@@ -14,7 +14,7 @@ const RouteIcon: FC<Props> = (props) => {
     if (!isAvailable)
         return <Tooltip delayDuration={200}>
             <TooltipTrigger asChild >
-                <div className="absolute -left-0.5 top-0.5 z-50">
+                <div className="absolute -left-0.5 top-0.5 z-50 inset-0 flex items-center">
                     <CircleAlert className="!w-3.5 text-primary-text-placeholder hover:text-primary-text icoooooooooon" />
                 </div>
             </TooltipTrigger>
@@ -28,7 +28,7 @@ const RouteIcon: FC<Props> = (props) => {
     if (routeNotFound)
         return <Tooltip delayDuration={200}>
             <TooltipTrigger asChild >
-                <div className="absolute -left-0 top-0.5 z-50">
+                <div className="absolute -left-0.5 top-0.5 z-50 inset-0 flex items-center">
                     <RouteOff className="!w-3 text-primary-text-placeholder hover:text-primary-text icoooooooooon" />
                 </div>
             </TooltipTrigger>

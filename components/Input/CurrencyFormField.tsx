@@ -48,16 +48,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const query = useQueryState()
     const { balances } = useBalancesState()
 
-    const { getAutofillProvider: getProvider } = useWallet()
-
-    const sourceWalletProvider = useMemo(() => {
-        return from && getProvider(from)
-    }, [from, getProvider])
-
-    const destinationWalletProvider = useMemo(() => {
-        return to && getProvider(to)
-    }, [to, getProvider])
-
     const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
     const apiClient = new LayerSwapApiClient()
     const {
@@ -66,12 +56,8 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         error
     } = useSWR<ApiResponse<RouteNetwork[]>>(`${networkRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
-    const allCurrencies: ((RouteToken & { network_name: string, network_display_name: string, network_logo: string })[] | undefined) = direction === 'from' ?
-        sourceRoutes?.map(route =>
+    const allCurrencies: ((RouteToken & { network_name: string, network_display_name: string, network_logo: string })[] | undefined) = routes?.data?.map(route =>
             route.tokens.map(asset => ({ ...asset, network_display_name: route.display_name, network_name: route.name, network_logo: route.logo }))).flat()
-        :
-        destinationRoutes?.map(route =>
-            route.tokens.map(asset => ({ ...asset, network_display_name: route.display_name, network_name: route.name, network_logo: route.logo }))).flat();
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
         allCurrencies!,
@@ -249,7 +235,7 @@ function GenerateCurrencyMenuItems(
 
         const routeNotFound = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) || lockAsset;
         if (currency?.network_name === "SOLANA_MAINNET")
-            console.log(currency,"solana")
+            console.log(currency, "solana")
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
