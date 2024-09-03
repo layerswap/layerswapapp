@@ -71,7 +71,7 @@ function CommittmentsHistory() {
             const destination_network = commit && networks.find(network => network.name === commit.dstChain) || null
             const destination_provider = destination_network && getWithdrawalProvider(destination_network)
             const destination_asset = commit && destination_network && destination_network?.tokens.find(token => token.symbol === commit.dstAsset) || null
-            const destinationAtomicContract = destination_asset?.contract ? destination_network?.metadata.htlc_erc20_contract : destination_network?.metadata.htlc_contract
+            const destinationAtomicContract = destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract
             const destinationType = destination_asset?.contract ? 'erc20' : 'native'
 
             let destinationLock: AssetLock | undefined = undefined
@@ -124,13 +124,13 @@ function CommittmentsHistory() {
             setIsLastPage(false)
             setLoading(true)
 
-            const commIds = activeNetwork?.metadata.htlc_contract && await source_provider?.getCommits({ contractAddress: activeNetwork?.metadata.htlc_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'native' })
+            const commIds = activeNetwork?.metadata.htlc_native_contract && await source_provider?.getCommits({ contractAddress: activeNetwork?.metadata.htlc_native_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'native' })
             if (commIds) setCommitIds(commIds)
-            const erc20CommIds = await source_provider?.getCommits({ contractAddress: activeNetwork?.metadata.htlc_erc20_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'erc20' })
+            const erc20CommIds = await source_provider?.getCommits({ contractAddress: activeNetwork?.metadata.htlc_token_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'erc20' })
             if (erc20CommIds) setErc20CommIds(erc20CommIds)
 
-            const commits = commIds && await getCommitments(0, commIds, activeNetwork?.metadata.htlc_contract, 'native') || []
-            const erc20Commits = erc20CommIds && activeNetwork?.metadata.htlc_erc20_contract && await getCommitments(0, erc20CommIds, activeNetwork?.metadata.htlc_erc20_contract, 'erc20') || []
+            const commits = commIds && await getCommitments(0, commIds, activeNetwork?.metadata.htlc_native_contract, 'native') || []
+            const erc20Commits = erc20CommIds && activeNetwork?.metadata.htlc_token_contract && await getCommitments(0, erc20CommIds, activeNetwork?.metadata.htlc_token_contract, 'erc20') || []
             setCommitments([...commits, ...erc20Commits])
 
             setPage(1)
@@ -143,8 +143,8 @@ function CommittmentsHistory() {
         const nextPage = page + 1
         setLoading(true)
 
-        const commits = commitIds && activeNetwork?.metadata.htlc_contract && await getCommitments(nextPage, commitIds, activeNetwork?.metadata.htlc_contract, 'native') || []
-        const erc20Commits = erc20CommIds && activeNetwork?.metadata.htlc_erc20_contract && await getCommitments(nextPage, erc20CommIds, activeNetwork?.metadata.htlc_erc20_contract, 'erc20') || []
+        const commits = commitIds && activeNetwork?.metadata.htlc_native_contract && await getCommitments(nextPage, commitIds, activeNetwork?.metadata.htlc_native_contract, 'native') || []
+        const erc20Commits = erc20CommIds && activeNetwork?.metadata.htlc_token_contract && await getCommitments(nextPage, erc20CommIds, activeNetwork?.metadata.htlc_token_contract, 'erc20') || []
 
         setCommitments(old => [...(old ? old : []), ...commits, ...erc20Commits])
 

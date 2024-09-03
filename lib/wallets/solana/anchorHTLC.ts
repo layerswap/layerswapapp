@@ -1,7 +1,7 @@
 import { Idl } from "@coral-xyz/anchor"
 
-export const AnchorHtlc: Idl = {
-  "address": "3QTpqp1xEShUnBia7qAR2C6UHuM75PhjRh9wi9mMvSSj",
+export const AnchorHtlc = (address: string): Idl => ({
+  "address": address,
   "metadata": {
     "name": "anchor_htlc",
     "version": "0.1.0",
@@ -2043,4 +2043,4 @@ export const AnchorHtlc: Idl = {
       }
     }
   ]
-}
+})

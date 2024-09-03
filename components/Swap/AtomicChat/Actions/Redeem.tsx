@@ -9,7 +9,7 @@ export const RedeemAction: FC = () => {
     const { getWithdrawalProvider } = useWallet()
 
     const source_provider = source_network && getWithdrawalProvider(source_network)
-    const contract = source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract
+    const contract = source_asset?.contract ? source_network?.metadata.htlc_token_contract : source_network?.metadata.htlc_native_contract
 
     useEffect(() => {
         let commitHandler: any = undefined

@@ -13,7 +13,7 @@ export const UserCommitAction: FC = () => {
     const wallet = source_provider?.getConnectedWallet()
     const requestingCommit = useRef(false)
 
-    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract) as `0x${string}`
+    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_token_contract : source_network?.metadata.htlc_native_contract) as `0x${string}`
 
     const handleCommit = async () => {
         try {
@@ -120,7 +120,7 @@ export const UserLockAction: FC = () => {
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const wallet = source_provider?.getConnectedWallet()
 
-    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract) as `0x${string}`
+    const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_token_contract : source_network?.metadata.htlc_native_contract) as `0x${string}`
 
     const handleLockAssets = async () => {
         try {
@@ -206,20 +206,21 @@ export const UserRefundAction: FC = () => {
 
     const wallet = source_provider?.getConnectedWallet()
 
-    const sourceAtomicContract = (source_asset?.contract ? source_network?.metadata.htlc_erc20_contract : source_network?.metadata.htlc_contract) as `0x${string}`
+    const sourceAtomicContract = (source_asset?.contract ? source_network?.metadata.htlc_token_contract : source_network?.metadata.htlc_native_contract) as `0x${string}`
 
     const handleRefundAssets = async () => {
         try {
             if (!source_network) throw new Error("No source network")
             if (!commitId) throw new Error("No commitment details")
             if (!committment) throw new Error("No commitment")
+            if (!source_network.chain_id) throw new Error("No chain id")
 
             const res = await source_provider?.refund({
                 type: source_asset?.contract ? 'erc20' : 'native',
                 commitId: commitId,
                 commit: committment,
                 lockId: sourceLock?.hashlock,
-                chainId: source_network.chain_id ?? '',
+                chainId: source_network.chain_id,
                 contractAddress: sourceAtomicContract
             })
             setCompletedRefundHash(res)

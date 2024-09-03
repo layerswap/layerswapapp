@@ -17,7 +17,7 @@ export type Wallet = {
     metadata?: {
         starknetAccount?: StarknetWindowObject,
     }
-    chainId: string | number | undefined
+    chainId: string | number | undefined | null
 }
 
 export const useWalletStore = create<WalletState>()((set) => ({

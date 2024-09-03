@@ -49,7 +49,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": "0x420000000000000000000000000000000000000F",
                 "evm_multicall_contract": "",
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -113,7 +113,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": null,
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -147,7 +147,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": "",
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -181,7 +181,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": null,
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -225,7 +225,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": "",
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -259,7 +259,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": "",
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -293,7 +293,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": null,
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -337,7 +337,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": null,
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -371,7 +371,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": "",
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -415,7 +415,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": null,
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -479,7 +479,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": "",
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -512,7 +512,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": null,
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -546,7 +546,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": null,
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -580,7 +580,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": "",
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -614,7 +614,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": "",
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -648,7 +648,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": "",
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -692,7 +692,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": "",
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -736,7 +736,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": null,
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [
@@ -770,7 +770,7 @@ export const Settings: LayerSwapSettings = {
                 "evm_oracle_contract": null,
                 "evm_multicall_contract": "",
                 //TODO these are not the correct values
-                htlc_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
+                htlc_native_contract: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
                 lp_address: "0x05ebf5ca9020e2c34cb0edbee42ceaf61404a2bbd269837f5fe4cca0c6bf5b90",
             },
             "deposit_methods": [

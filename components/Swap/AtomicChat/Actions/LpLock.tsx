@@ -18,7 +18,7 @@ export const LpLockingAssets: FC = () => {
 
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
 
-    const atomicContract = (destination_asset?.contract ? destination_network?.metadata.htlc_erc20_contract : destination_network?.metadata.htlc_contract) as `0x${string}`
+    const atomicContract = (destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract) as `0x${string}`
 
     useEffect(() => {
         let lockHandler: any = undefined

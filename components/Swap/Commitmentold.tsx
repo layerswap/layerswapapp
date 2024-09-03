@@ -82,7 +82,7 @@ const SwapDetails: FC<Props> = (props) => {
                         type: source_currency?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
-                        contractAddress: source_network.metadata.htlc_contract as `0x${string}`
+                        contractAddress: source_network.metadata.htlc_native_contract as `0x${string}`
                     })
                     if (data && data.sender != '0x0000000000000000000000000000000000000000') {
                         setCommitment(data)
@@ -109,7 +109,7 @@ const SwapDetails: FC<Props> = (props) => {
                     type: destination_currency?.contract ? 'erc20' : 'native',
                     chainId: destination_network.chain_id,
                     commitId: commitId as string,
-                    contractAddress: destination_network.metadata.htlc_contract as `0x${string}`
+                    contractAddress: destination_network.metadata.htlc_native_contract as `0x${string}`
                 })
                 if (destinationLockId) {
                     setHashLock(destinationLockId)
@@ -117,7 +117,7 @@ const SwapDetails: FC<Props> = (props) => {
                         type: destination_currency?.contract ? 'erc20' : 'native',
                         chainId: destination_network.chain_id,
                         lockId: destinationLockId as string,
-                        contractAddress: destination_network.metadata.htlc_contract as `0x${string}`,
+                        contractAddress: destination_network.metadata.htlc_native_contract as `0x${string}`,
                     })
                     if (data) setDestinationLock(data)
                     clearInterval(lockHandler)
@@ -151,7 +151,7 @@ const SwapDetails: FC<Props> = (props) => {
                         type: source_currency?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
                         commitId: commitId as string,
-                        contractAddress: source_network.metadata.htlc_contract as `0x${string}`
+                        contractAddress: source_network.metadata.htlc_native_contract as `0x${string}`
                     })
                     setCommitment(data)
                     if (commitment?.locked) {
@@ -179,7 +179,7 @@ const SwapDetails: FC<Props> = (props) => {
                         type: destination_currency?.contract ? 'erc20' : 'native',
                         chainId: destination_network.chain_id,
                         lockId: hashLock,
-                        contractAddress: destination_network.metadata.htlc_contract as `0x${string}`,
+                        contractAddress: destination_network.metadata.htlc_native_contract as `0x${string}`,
                     })
                     if(data) setDestinationLock(data)
                     clearInterval(commitHandler)
@@ -204,7 +204,7 @@ const SwapDetails: FC<Props> = (props) => {
                 chainId: source_network.chain_id,
                 commitId: commitId as string,
                 lockId: hashLock,
-                contractAddress: source_network.metadata.htlc_contract as `0x${string}`
+                contractAddress: source_network.metadata.htlc_native_contract as `0x${string}`
             })
             setLockTxhash(hash)
 
