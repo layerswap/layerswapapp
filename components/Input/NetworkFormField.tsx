@@ -179,8 +179,8 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, direction: SwapDi
         if (lock) {
             return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
         }
-        else if (!route.tokens?.some(r => r.status === 'active') || route.type === NetworkType.Solana) {
-            if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange || !route.tokens?.some(r => r.status !== 'inactive') || route.type === NetworkType.Solana) {
+        else if (!route.tokens?.some(r => r.status === 'active') || route.type === NetworkType.Solana || route.type === NetworkType.TON) {
+            if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange || !route.tokens?.some(r => r.status !== 'inactive') || route.type === NetworkType.Solana || route.type === NetworkType.TON) {
                 return { value: false, disabledReason: LayerDisabledReason.InvalidRoute }
             }
             else {
@@ -188,33 +188,33 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, direction: SwapDi
             }
         }
         else {
-            return { value: true, disabledReason: null }
-        }
+        return { value: true, disabledReason: null }
     }
+}
 
-    const mappedLayers = routes?.map(r => {
-        const details = !r.tokens?.some(r => r.status !== 'inactive') ? <ClickTooltip side="left" text={`Transfers ${direction} this network are not available at the moment. Please try later.`} /> : undefined
-        const isNewlyListed = r?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
-        const badge = isNewlyListed ? (
-            <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
-        ) : undefined;
+const mappedLayers = routes?.map(r => {
+    const details = !r.tokens?.some(r => r.status !== 'inactive') ? <ClickTooltip side="left" text={`Transfers ${direction} this network are not available at the moment. Please try later.`} /> : undefined
+    const isNewlyListed = r?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
+    const badge = isNewlyListed ? (
+        <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
+    ) : undefined;
 
-        const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
-            baseObject: r,
-            id: r.name,
-            name: r.display_name,
-            order: ResolveNetworkOrder(r, direction, isNewlyListed),
-            imgSrc: r.logo,
-            isAvailable: layerIsAvailable(r),
-            group: getGroupName(r, 'network', layerIsAvailable(r)),
-            isExchange: false,
-            details,
-            badge
-        }
-        return res;
-    }).sort(SortAscending) || [];
+    const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
+        baseObject: r,
+        id: r.name,
+        name: r.display_name,
+        order: ResolveNetworkOrder(r, direction, isNewlyListed),
+        imgSrc: r.logo,
+        isAvailable: layerIsAvailable(r),
+        group: getGroupName(r, 'network', layerIsAvailable(r)),
+        isExchange: false,
+        details,
+        badge
+    }
+    return res;
+}).sort(SortAscending) || [];
 
-    return mappedLayers
+return mappedLayers
 }
 
 export default NetworkFormField
