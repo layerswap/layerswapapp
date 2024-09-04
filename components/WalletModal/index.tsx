@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect } from 'react'
 import Modal from '../modal/modal';
 import ResizablePanel from '../ResizablePanel';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Loader } from 'lucide-react';
 import IconButton from '../buttons/iconButton';
 import { ResolveConnectorIcon } from '../icons/ConnectorIcons';
 import useWallet, { WalletProvider } from '../../hooks/useWallet';
@@ -107,5 +107,12 @@ const WalletsList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, prov
     if (provider?.id === 'evm') {
         return <EVMConnectList modalWalletProvider={modalWalletProvider} providers={providers} onFinish={onFinish} setSelectedProvider={setSelectedProvider} />
     }
-
+    else {
+        return <div className='h-40 w-full flex flex-col justify-center items-center'>
+            <div className='flex items-center gap-2'>
+                <Loader className='h-6 w-6 animate-spin' />
+                <p><span>Connecting</span> <span>{provider?.name}</span></p>
+            </div>
+        </div>
+    }
 }

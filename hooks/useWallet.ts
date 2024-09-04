@@ -16,7 +16,7 @@ export type WalletProvider = {
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,
-    availableWalletsForConnect?: []
+    availableWalletsForConnect?: any[]
 }
 
 

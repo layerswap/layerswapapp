@@ -80,7 +80,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     }
 
     return (
-        <div ref={topmostRef}>
+        <div className='absolute' ref={topmostRef}>
             <motion.div
                 key="backdrop"
                 className={`${position} inset-0 z-40 bg-black/50 block`}
