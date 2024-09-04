@@ -53,7 +53,7 @@ const SwapDetails: FC<Props> = (props) => {
     const [destinationLock, setDestinationLock] = useState<AssetLock | null>(null)
     const [hashLock, setHashLock] = useState<string | null>(null)
     const [lockLoading, setLockLoading] = useState(false)
-    const [lockTXhash, setLockTxhash] = useState<`0x${string}` | undefined>(undefined)
+    const [lockTXhash, setLockTxhash] = useState<string | undefined>(undefined)
 
     const dest = "ARBITRUM_SEPOLIA"
     const dest_curr = "ETH"
@@ -131,7 +131,7 @@ const SwapDetails: FC<Props> = (props) => {
     }, [destination_provider, commitment, destination_network])
 
     const lockTrx = useTransaction({
-        hash: lockTXhash,
+        hash: lockTXhash as `0x${string}`,
         chainId: (Number(source_network?.chain_id) || undefined),
     })
 
@@ -181,7 +181,7 @@ const SwapDetails: FC<Props> = (props) => {
                         lockId: hashLock,
                         contractAddress: destination_network.metadata.htlc_native_contract as `0x${string}`,
                     })
-                    if(data) setDestinationLock(data)
+                    if (data) setDestinationLock(data)
                     clearInterval(commitHandler)
                 }, 2000)
             })()
@@ -205,8 +205,8 @@ const SwapDetails: FC<Props> = (props) => {
                 commitId: commitId as string,
                 lockId: hashLock,
                 contractAddress: source_network.metadata.htlc_native_contract as `0x${string}`
-            })
-            setLockTxhash(hash)
+            }) || {}
+            if (hash) setLockTxhash(hash)
 
         }
         catch (e) {
