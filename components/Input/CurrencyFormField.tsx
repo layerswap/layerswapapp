@@ -234,8 +234,7 @@ function GenerateCurrencyMenuItems(
             );
 
         const routeNotFound = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) || lockAsset;
-        if (currency?.network_name === "SOLANA_MAINNET")
-            console.log(currency, "solana")
+        
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
