@@ -116,7 +116,7 @@ export const UserCommitAction: FC = () => {
 
 
 export const UserLockAction: FC = () => {
-    const { source_network, commitId, hashLock, committment, setCommitment, setUserLocked, userLocked, setError, source_asset } = useAtomicState()
+    const { source_network, commitId, hashLock, committment, setCommitment, setUserLocked, userLocked, setError, source_asset, destinationLock } = useAtomicState()
 
     const { getWithdrawalProvider } = useWallet()
 
@@ -139,7 +139,8 @@ export const UserLockAction: FC = () => {
                 chainId: source_network.chain_id,
                 commitId: commitId as string,
                 lockId: hashLock,
-                contractAddress: atomicContract
+                contractAddress: atomicContract,
+                lockData: destinationLock
             })
             setUserLocked(true)
         }

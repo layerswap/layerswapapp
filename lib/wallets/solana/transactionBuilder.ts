@@ -1,7 +1,7 @@
 import { Connection, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
 import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
-import { CreatyePreHTLCParams } from "../phtlc";
+import { CommitmentParams, CreatyePreHTLCParams, LockParams } from "../phtlc";
 import { BN, Idl, Program } from "@coral-xyz/anchor";
 
 export const transactionBuilder = async (network: Network, token: Token, walletPublicKey: PublicKey) => {
@@ -142,4 +142,65 @@ export const phtlcTransactionBuilder = async (params: CreatyePreHTLCParams & { p
     initAndCommit.feePayer = walletPublicKey;
 
     return { initAndCommit, commitId: commitIdArray }
+}
+
+export const lockTransactionBuilder = async (params: CommitmentParams & LockParams & { program: Program<Idl>, connection: Connection, walletPublicKey: PublicKey, network: NetworkWithTokens }) => {
+    const { walletPublicKey, commitId, connection, lockId, network, program, lockData } = params
+    const token = network?.tokens.find(t => t.symbol === lockData?.dstAsset)
+
+    if (!program) {
+        throw Error("No program")
+    }
+    if (!token?.contract) {
+        throw Error("No token contract")
+    }
+    if (!walletPublicKey) {
+        throw Error("No Wallet public key")
+    }
+
+    const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
+    const timeLockMS = Date.now() + LOCK_TIME
+    const timeLock = Math.floor(timeLockMS / 1000)
+    const TIMELOCK = new BN(timeLock);
+
+    const commitIdBuffer = Buffer.from(commitId.replace('0x', ''), 'hex');
+    const lockIdBuffer = Buffer.from(lockId.replace('0x', ''), 'hex');
+    let [htlc, htlcBump]: any = lockId && PublicKey.findProgramAddressSync(
+        [lockIdBuffer],
+        program.programId
+    );
+    let [phtlc, phtlcBump]: any = commitId && PublicKey.findProgramAddressSync(
+        [commitIdBuffer],
+        program.programId
+    );
+    let [htlcTokenAccount, bump2]: any = lockId && PublicKey.findProgramAddressSync(
+        [Buffer.from("htlc_token_account"), lockIdBuffer],
+        program.programId
+    );
+    let [phtlcTokenAccount, bump3]: any = commitId && PublicKey.findProgramAddressSync(
+        [Buffer.from("phtlc_token_account"), commitIdBuffer],
+        program.programId
+    );
+
+    const lockTx = await program.methods.lockCommit(commitIdBuffer, lockIdBuffer, TIMELOCK, htlcBump)
+        .accountsPartial({
+            messenger: walletPublicKey,
+            phtlc: phtlc,
+            htlc: htlc,
+            phtlcTokenAccount: phtlcTokenAccount,
+            htlcTokenAccount: htlcTokenAccount,
+            tokenContract: new PublicKey(token.contract),
+        })
+        .transaction();
+
+    let lockCommit = new Transaction();
+    lockCommit.add(lockTx);
+
+    const blockHash = await connection.getLatestBlockhash();
+
+    lockCommit.recentBlockhash = blockHash.blockhash;
+    lockCommit.lastValidBlockHeight = blockHash.lastValidBlockHeight;
+    lockCommit.feePayer = walletPublicKey;
+
+    return { lockCommit, lockId: lockIdBuffer }
 }

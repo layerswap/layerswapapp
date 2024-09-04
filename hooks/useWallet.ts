@@ -19,17 +19,17 @@ export type WalletProvider = {
     name: string,
     connectedWalletActiveChain?: string | number | null,
 
-    createPreHTLC: (args: CreatyePreHTLCParams) => Promise<{ hash:string, commitId: string } | null | undefined>,
+    createPreHTLC: (args: CreatyePreHTLCParams) => Promise<{ hash: string, commitId: string } | null | undefined>,
     claim: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
     refund: (args: RefundParams) => Promise<any> | undefined | void,
 
     getCommitment: (args: CommitmentParams) => Promise<Commit | null>,
     getLock: (args: LockParams) => Promise<AssetLock | undefined>,
 
-    lockCommitment: (args: CommitmentParams & LockParams) => Promise<{ hash: `0x${string}`, result: any }>,
+    lockCommitment: (args: CommitmentParams & LockParams) => Promise<{ hash: string, result: any } | null>,
     getLockIdByCommitId: (args: CommitmentParams) => Promise<string | null>,
 
-    getCommits(params: GetCommitsParams): Promise<string[]>,
+    getCommits?: (params: GetCommitsParams) => Promise<string[]>,
 }
 
 export default function useWallet() {

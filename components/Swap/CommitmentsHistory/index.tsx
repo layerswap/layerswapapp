@@ -48,10 +48,12 @@ function CommittmentsHistory() {
     const router = useRouter();
     const { wallets, getWithdrawalProvider, getProviderByName } = useWallet()
 
-    const [selectedProvider, setSelectedProvider] = useState<string | undefined>(wallets?.[0]?.connector)
+    const providers = wallets.filter(wallet => wallet.providerName !== 'solana')
+
+    const [selectedProvider, setSelectedProvider] = useState<string | undefined>(providers?.[0]?.connector)
     const [commitments, setCommitments] = useState<(HistoryCommit)[]>([])
 
-    const selectedWallet = wallets.find(wallet => wallet.connector === selectedProvider)
+    const selectedWallet = providers.find(wallet => wallet.connector === selectedProvider)
 
     const source_provider = useMemo(() => {
         return selectedWallet && getProviderByName(selectedWallet?.providerName)
@@ -119,7 +121,7 @@ function CommittmentsHistory() {
 
     useEffect(() => {
         (async () => {
-            if (wallets.length === 0 || !activeNetwork || !activeNetwork.chain_id) return
+            if (providers.length === 0 || !activeNetwork || !activeNetwork.chain_id || !source_provider?.getCommits) return
             setPage(0)
             setIsLastPage(false)
             setLoading(true)
@@ -156,11 +158,11 @@ function CommittmentsHistory() {
 
     useEffect(() => {
         if (!selectedWallet) {
-            setSelectedProvider(wallets?.[0]?.connector)
+            setSelectedProvider(providers?.[0]?.connector)
         }
-    }, [wallets])
+    }, [providers])
 
-    if (wallets.length === 0) return <HistoryWrapper>
+    if (providers.length === 0) return <HistoryWrapper>
         <div className="absolute top-1/4 right-0 text-center w-full px-6">
             <Scroll className='h-40 w-40 text-secondary-700 mx-auto' />
             <p className="my-2 text-xl">It&apos;s empty here</p>
@@ -178,7 +180,7 @@ function CommittmentsHistory() {
 
     return (
         <HistoryWrapper>
-            <WalletSelector wallets={wallets} selectedWallet={selectedProvider} setSelectedWallet={setSelectedProvider} />
+            <WalletSelector wallets={providers} selectedWallet={selectedProvider} setSelectedWallet={setSelectedProvider} />
             {
                 page == 0 && loading ?
                     <SwapHistoryComponentSceleton />
