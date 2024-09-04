@@ -9,7 +9,6 @@ import { Wallet } from "../stores/walletStore";
 export type WalletProvider = {
     connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
     disconnectWallets: () => Promise<void> | undefined | void,
-    reconnectWallet: (props?: { chain?: string | number | undefined | null }) => Promise<void> | undefined | void,
     connectedWallets: Wallet[] | undefined,
     activeWallet: Wallet | undefined,
     autofillSupportedNetworks?: string[],
@@ -17,7 +16,7 @@ export type WalletProvider = {
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,
-    availableWalletsForConnect: []
+    availableWalletsForConnect?: []
 }
 
 

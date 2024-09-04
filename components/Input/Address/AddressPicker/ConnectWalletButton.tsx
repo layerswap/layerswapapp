@@ -1,4 +1,4 @@
-import { Plus, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { WalletProvider } from "../../../../hooks/useWallet";
 import { addressFormat } from "../../../../lib/address/formatter";
 import { ResolveConnectorIcon } from "../../../icons/ConnectorIcons";
@@ -29,9 +29,9 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
         setIsLoading(false)
     }
 
-    const reconnect = async () => {
+    const disconnect = async () => {
         setIsLoading(true)
-        await provider.reconnectWallet({ chain: destination.chain_id })
+        await provider.disconnectWallets()
         if (onConnect) onConnect()
         setIsLoading(false)
     }
@@ -46,7 +46,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
             <div className="flex items-center justify-between w-full">
                 <p className="text-sm font-medium text-secondary-text">Connected Wallet</p>
                 <button
-                    onClick={reconnect}
+                    onClick={disconnect}
                     disabled={isLoading}
                     className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200"
                 >

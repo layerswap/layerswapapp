@@ -4,11 +4,11 @@ import { NetworkType } from "../Models/Network";
 import resolveChain from "../lib/resolveChain";
 import React from "react";
 import NetworkSettings from "../lib/NetworkSettings";
-import { createConnector, WagmiProvider } from 'wagmi'
+import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
-import { WalletModalProvider } from '../context/walletModalContext';
+import { WalletModalProvider } from './WalletModal';
 import Solana from "./SolanaProvider";
 import { argentWallet, bitgetWallet, coinbaseWallet, injectedWallet, metaMaskWallet, phantomWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets'
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
