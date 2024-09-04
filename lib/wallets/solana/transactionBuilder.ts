@@ -65,20 +65,22 @@ export const phtlcTransactionBuilder = async (params: CreatyePreHTLCParams & { p
         program.programId
     );
 
-    const commitId = new BN(await program?.methods.getCommitId().accountsPartial({ commitCounter }).view()).toArray('be', 32) as any;
+    const commitId = await program?.methods.getCommitId().accountsPartial({ commitCounter }).view();
+    const commitIdArray = Buffer.from(new BN(commitId).toArray('be', 32))
 
-    let [phtlcTokenAccount, b] = commitId && PublicKey.findProgramAddressSync(
-        [Buffer.from("phtlc_token_account"), commitId],
+    let [phtlcTokenAccount, b] = commitIdArray && PublicKey.findProgramAddressSync(
+        [Buffer.from("phtlc_token_account"), commitIdArray],
         program.programId
     );
-    let [phtlc, phtlcBump] = commitId && PublicKey.findProgramAddressSync(
-        [commitId],
+    let [phtlc, phtlcBump] = commitIdArray && PublicKey.findProgramAddressSync(
+        [commitIdArray],
         program.programId
     );
     let [commits, b2] = PublicKey.findProgramAddressSync(
         [Buffer.from("commits"), walletPublicKey.toBuffer()],
         program.programId
     );
+
     const hopChains = [destinationChain]
     const hopAssets = [destinationAsset]
     const hopAddresses = [lpAddress]
@@ -103,21 +105,21 @@ export const phtlcTransactionBuilder = async (params: CreatyePreHTLCParams & { p
     const timeLock = Math.floor(timeLockMS / 1000)
     const TIMELOCK = new BN(timeLock);
 
-    const lamports = tokenToLamports(Number(amount), sourceAsset.price_in_usd / network.token?.price_in_usd)
     const bnAmount = new BN(Number(amount) * Math.pow(10, 6));
     const lpAddressPublicKey = new PublicKey(lpAddress);
 
     const tokenContract = new PublicKey(sourceAsset.contract);
 
-    const initCommitTx = await program.methods.initCommits().
-        accountsPartial({
+    const initCommitTx = await program.methods
+        .initCommits()
+        .accountsPartial({
             sender: walletPublicKey,
             commits: commits,
         })
         .transaction();
 
     const commitTx = await program.methods
-        .commit(commitId, hopChains, hopAssets, hopAddresses, destinationChain, destinationAsset, destination_address, sourceAsset.symbol, lpAddressPublicKey, TIMELOCK, walletPublicKey, bnAmount, phtlcBump)
+        .commit(commitIdArray, hopChains, hopAssets, hopAddresses, destinationChain, destinationAsset, destination_address, sourceAsset.symbol, lpAddressPublicKey, TIMELOCK, walletPublicKey, bnAmount, phtlcBump)
         .accountsPartial({
             sender: walletPublicKey,
             phtlc: phtlc,
@@ -138,20 +140,6 @@ export const phtlcTransactionBuilder = async (params: CreatyePreHTLCParams & { p
     initAndCommit.recentBlockhash = blockHash.blockhash;
     initAndCommit.lastValidBlockHeight = blockHash.lastValidBlockHeight;
     initAndCommit.feePayer = walletPublicKey;
-    debugger
 
-    return { initAndCommit, commitId }
-}
-
-function tokenToLamports(usdcAmount: number, usdcToSolRate: number) {
-    // USDC has 6 decimals, so multiply by 10^6
-    const usdcInMicro = usdcAmount * Math.pow(10, 6);
-
-    // Convert USDC to SOL using the provided rate (1 USDC = rate SOL)
-    const solAmount = usdcInMicro * usdcToSolRate;
-
-    // Convert SOL to lamports (1 SOL = 10^9 lamports)
-    const lamports = solAmount * Math.pow(10, 9);
-
-    return lamports;
+    return { initAndCommit, commitId: commitIdArray }
 }

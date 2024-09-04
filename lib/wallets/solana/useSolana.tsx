@@ -59,11 +59,7 @@ export default function useSolana(): WalletProvider {
     }
 
     const createPreHTLC = useCallback(async (params: CreatyePreHTLCParams): Promise<{ hash: string; commitId: string; } | null | undefined> => {
-        debugger
-        const provider = anchorWallet && new AnchorProvider(connection, anchorWallet, {});
-        const program = (provider && solana?.metadata?.htlc_native_contract) ? new Program(AnchorHtlc(solana?.metadata?.htlc_native_contract), provider) : null;
         if (!program || !publicKey || !solana) return null
-
 
         const transaction = await phtlcTransactionBuilder({ connection, program, walletPublicKey: publicKey, ...params, network: solana })
 
@@ -102,7 +98,7 @@ export default function useSolana(): WalletProvider {
         const parsedResult = {
             ...result,
             lockId: result.locked && `0x${toHexString(result.lockId)}`,
-            amount: Number(result.amount),
+            amount: Number(result.amount) / Math.pow(10, 6),
             timelock: Number(result.timelock),
             sender: new PublicKey(result.sender).toString(),
             srcReceiver: new PublicKey(result.srcReceiver).toString(),
@@ -176,9 +172,9 @@ export default function useSolana(): WalletProvider {
                 messenger: publicKey,
                 phtlc: phtlc,
                 htlc: htlc,
-                phtlc_token_account: phtlcTokenAccount,
-                htlc_token_account: htlcTokenAccount,
-                token_contract: new PublicKey(token.contract),
+                phtlcTokenAccount: phtlcTokenAccount,
+                htlcTokenAccount: htlcTokenAccount,
+                tokenContract: new PublicKey(token.contract),
             }).rpc();
 
         return { hash: `0x${toHexString(result)}` as `0x${string}`, result: result } as any
