@@ -34,9 +34,9 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
 
     const availableAssetGroups = exchanges?.data?.find(e => e.name === exchange?.name)?.token_groups
 
-    const lockAsset = direction === 'from' ? query?.lockFromAsset : query?.lockToAsset
+    const isLocked = direction === 'from' ? query?.lockFromAsset : query?.lockToAsset
     const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
-    const lockedCurrency = lockAsset
+    const lockedCurrency = isLocked
         ? availableAssetGroups?.find(a => a.symbol.toUpperCase() === (asset)?.toUpperCase())
         : undefined
 
@@ -64,7 +64,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         values={currencyMenuItems}
         value={value}
         setValue={handleSelect}
-        disabled={!value?.isAvailable}
+        disabled={isLocked}
     />;
 }
 
@@ -79,7 +79,7 @@ export function GenerateCurrencyMenuItems(
         const displayName = lockedCurrency?.symbol ?? currency.symbol;
 
         const isAvailable = (lockedCurrency || (c?.status !== "active" && c.status !== "not_found")) ? false : true;
-        
+
         const routeNotFound = c.status === "not_found"
 
         const res: SelectMenuItem<ExchangeToken> = {

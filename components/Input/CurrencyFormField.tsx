@@ -75,9 +75,12 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
         if (currencyIsAvailable) return
 
-        const default_currency = currencyMenuItems?.find(c =>
+        const assetFromQuery = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === (query?.toAsset)?.toUpperCase())
-            || currencyMenuItems?.[0]
+
+        const isLocked = query?.lockToAsset
+
+        const default_currency = assetFromQuery || (!isLocked && currencyMenuItems?.[0])
 
         const selected_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase())
@@ -98,9 +101,12 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
         if (currencyIsAvailable) return
 
-        const default_currency = currencyMenuItems?.find(c =>
+        const assetFromQuery = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === (query?.fromAsset)?.toUpperCase())
-            || currencyMenuItems?.[0]
+
+        const isLocked = query?.lockFromAsset
+
+        const default_currency = assetFromQuery || (!isLocked && currencyMenuItems?.[0])
 
         const selected_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === toCurrency?.symbol?.toUpperCase())
@@ -139,6 +145,9 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
+    const isLocked = direction === 'from' ? query?.lockFromAsset
+        : query?.lockToAsset
+
     return (
         <div className="relative">
             <BalanceComponent values={values} direction={direction} />
@@ -147,7 +156,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 values={currencyMenuItems}
                 value={value}
                 setValue={handleSelect}
-                disabled={!value?.isAvailable || isLoading}
+                disabled={isLoading || isLocked}
             />
         </div>
     )
@@ -162,8 +171,6 @@ function GenerateCurrencyMenuItems(
     error?: ApiError
 ): SelectMenuItem<RouteToken>[] {
     const { to, from } = values
-    const lockAsset = direction === 'from' ? query?.lockFromAsset
-        : query?.lockToAsset
 
     return currencies?.map(c => {
         const currency = c
@@ -172,13 +179,10 @@ function GenerateCurrencyMenuItems(
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
         const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
 
-        const currencyIsAvailable = !lockAsset &&
-            (
-                (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
-                !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive')
-            );
+        const currencyIsAvailable = (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
+            !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive')
 
-        const routeNotFound = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) || lockAsset;
+        const routeNotFound = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR);
 
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>

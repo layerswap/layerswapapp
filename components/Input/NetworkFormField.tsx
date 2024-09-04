@@ -114,9 +114,10 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 setFieldValue(`${name}Currency`, assetSubstitute, true)
             }
         }
-
     }, [name, value])
 
+    const isLocked = direction === 'from' ? !!lockFrom : !!lockTo
+    
     const pickNetworkDetails = <div>
         {
             !!(from && lockFrom) || !!(to && lockTo) &&
@@ -133,7 +134,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         <div ref={ref} className="mt-1.5 grid grid-flow-row-dense grid-cols-8 md:grid-cols-6 items-center pr-2">
             <div className="col-span-5 md:col-span-4">
                 <CommandSelectWrapper
-                    disabled={isLoading || error}
+                    disabled={isLocked || isLoading}
                     valueGrouper={groupByType}
                     placeholder={placeholder}
                     setValue={handleSelect}
