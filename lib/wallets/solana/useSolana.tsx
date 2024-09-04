@@ -7,7 +7,7 @@ import { CommitmentParams, CreatyePreHTLCParams, LockParams, RefundParams } from
 import { AnchorHtlc } from "./anchorHTLC"
 import { AssetLock } from "../../../Models/PHTLC"
 import { Address, AnchorProvider, BN, Program, setProvider } from '@coral-xyz/anchor'
-import { PublicKey, Transaction } from "@solana/web3.js"
+import { PublicKey } from "@solana/web3.js"
 import { useSettingsState } from "../../../context/settings"
 import { NetworkType } from "../../../Models/Network"
 import { useCallback } from "react"
@@ -23,13 +23,13 @@ export default function useSolana(): WalletProvider {
     const { networks } = useSettingsState()
     const solana = networks.find(n => n.type === NetworkType.Solana)
 
-    const provider = anchorWallet && new AnchorProvider(connection, anchorWallet, {});
+    const provider = anchorWallet && new AnchorProvider(connection, anchorWallet);
     if (provider) setProvider(provider);
 
     const program = (provider && solana?.metadata?.htlc_native_contract) ? new Program(AnchorHtlc(solana?.metadata?.htlc_native_contract), provider) : null;
 
     const getWallet = () => {
-        if (publicKey) {
+        if (publicKey && program) {
             return {
                 address: publicKey?.toBase58(),
                 connector: wallet?.adapter?.name,
@@ -84,7 +84,7 @@ export default function useSolana(): WalletProvider {
 
     }, [program, connection, signTransaction, publicKey, solana])
 
-    const getCommitment = useCallback(async (params: CommitmentParams) => {
+    const getCommitment = async (params: CommitmentParams) => {
         if (!program) return null
         const { commitId } = params
         const commitIdBuffer = Buffer.from(commitId.replace('0x', ''), 'hex');
@@ -111,7 +111,7 @@ export default function useSolana(): WalletProvider {
             throw new Error("No result")
         }
         return parsedResult
-    }, [program])
+    }
 
     const getLockIdByCommitId = async (params: CommitmentParams) => {
         const { commitId } = params
@@ -262,7 +262,6 @@ export default function useSolana(): WalletProvider {
                 tokenContract: tokenContract,
                 senderTokenAccount: senderTokenAddress,
             }).rpc();
-            debugger
             return { result: result }
         }
     }
