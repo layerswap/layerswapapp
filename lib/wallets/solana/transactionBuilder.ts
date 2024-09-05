@@ -168,7 +168,7 @@ export const lockTransactionBuilder = async (params: CommitmentParams & LockPara
         program.programId
     );
 
-    const lockTx = await program.methods.lockCommit(commitIdBuffer, lockIdBuffer, TIMELOCK, htlcBump)
+    const lockTx = await program.methods.lockCommit(commitIdBuffer, lockIdBuffer, TIMELOCK, phtlcBump)
         .accountsPartial({
             messenger: walletPublicKey,
             phtlc: phtlc,

@@ -6,7 +6,7 @@ import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { CommitmentParams, CreatyePreHTLCParams, LockParams, RefundParams } from "../phtlc"
 import { AnchorHtlc } from "./anchorHTLC"
 import { AssetLock } from "../../../Models/PHTLC"
-import { Address, AnchorProvider, BN, Program, setProvider } from '@coral-xyz/anchor'
+import { Address, AnchorProvider, Program, setProvider } from '@coral-xyz/anchor'
 import { PublicKey } from "@solana/web3.js"
 import { useSettingsState } from "../../../context/settings"
 import { NetworkType } from "../../../Models/Network"
@@ -179,12 +179,12 @@ export default function useSolana(): WalletProvider {
 
         const parsedResult = {
             ...result,
-            amount: Number(result.amount),
+            amount: Number(result.amount) / Math.pow(10, 6),
             hashlock: `0x${toHexString(result.hashlock)}`,
             timelock: Number(result.timelock),
             sender: new PublicKey(result.sender).toString(),
             srcReceiver: new PublicKey(result.srcReceiver).toString(),
-            secret: new TextDecoder().decode(result.secret),
+            secret: `0x${toHexString(result.secret)}`,
             tokenContract: new PublicKey(result.tokenContract).toString(),
             tokenWallet: new PublicKey(result.tokenWallet).toString(),
         }
