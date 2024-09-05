@@ -223,7 +223,7 @@ export default function useEVM(): WalletProvider {
             chainId: Number(chainId),
         })
 
-        if (!result || result === '0x0000000000000000000000000000000000000000') return null
+        if (!result || result === '0x0000000000000000000000000000000000000000000000000000000000000000') return null
 
         return result as `0x${string}`
     }
@@ -257,7 +257,7 @@ export default function useEVM(): WalletProvider {
         })
         const networkToken = networks.find(network => chainId && Number(network.chain_id) == Number(chainId))?.tokens.find(token => token.symbol === result.dstAsset)
 
-        if (result.sender !== '0x0000000000000000000000000000000000000000') {
+        if (result.sender !== '0x0000000000000000000000000000000000000000' || result.sender !== '0x0000000000000000000000000000000000000000000000000000000000000000') {
             const parsedResult = {
                 ...result,
                 amount: formatAmount(Number(result.amount), networkToken?.decimals),

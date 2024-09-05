@@ -42,8 +42,10 @@ export const LpLockingAssets: FC = () => {
                         lockId: destinationLockId as string,
                         contractAddress: atomicContract,
                     })
-                    if (data) setDestinationLock(data)
-                    clearInterval(lockHandler)
+                    if (data) {
+                        setDestinationLock(data)
+                        clearInterval(lockHandler)
+                    }
                 }
             }, 5000)
         }
