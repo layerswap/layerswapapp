@@ -80,7 +80,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     }
 
     return (
-        <div className='absolute' ref={topmostRef}>
+        <div ref={topmostRef}>
             <motion.div
                 key="backdrop"
                 className={`${position} inset-0 z-40 bg-black/50 block`}
@@ -114,8 +114,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                         }>
                         </IconButton>
                     </div>
-                    <div
-                        className='select-text max-h-full overflow-y-auto styled-scroll px-6 h-full'>
+                    <div className='select-text max-h-full overflow-y-auto styled-scroll px-6 h-full'>
                         {children}
                     </div>
                 </div>

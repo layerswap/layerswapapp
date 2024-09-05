@@ -115,7 +115,7 @@ export default function useEVM(): WalletProvider {
 
     const connectWallet = () => {
         try {
-            setSelectedProvider({ name: id })
+            setSelectedProvider(provider)
             setWalletModalIsOpen(true)
         }
         catch (e) {
@@ -152,7 +152,7 @@ export default function useEVM(): WalletProvider {
     const availableWalletsforConnect = resolveAvailableWallets(allConnectors, connectedWallets)
     const resolvedConnectedWallets = getConnectedWallets()
 
-    return {
+    const provider = {
         connectWallet,
         disconnectWallets,
         connectedWallets: resolvedConnectedWallets,
@@ -164,6 +164,8 @@ export default function useEVM(): WalletProvider {
         name,
         id,
     }
+
+    return provider
 }
 
 const resolveAvailableWallets = (all_connectors: readonly Connector[], connected: readonly Connector[]) => {

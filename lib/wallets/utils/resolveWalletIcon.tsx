@@ -11,7 +11,7 @@ const connectors = [
 ]
 
 const resolveWalletConnectorIcon = ({ connector, address }: { connector?: string, address?: string }) => {
-    const knownConnector = connectors.find(c => c.id === connector?.toLowerCase())
+    const knownConnector = connectors.find(c => c.id.toLowerCase() === connector?.toLowerCase())
 
     if (knownConnector) return knownConnector.icon
     else if (!knownConnector && address) return AddressIconWrapper(address)

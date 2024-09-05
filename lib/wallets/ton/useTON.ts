@@ -41,7 +41,7 @@ export default function useTON(): WalletProvider {
         }
     }
 
-    return {
+    const provider = {
         connectedWallets: getWallet(),
         activeWallet: wallet,
         connectWallet,
@@ -52,4 +52,6 @@ export default function useTON(): WalletProvider {
         name,
         id,
     }
+
+    return provider
 }

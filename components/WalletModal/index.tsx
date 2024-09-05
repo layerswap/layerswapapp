@@ -4,7 +4,7 @@ import ResizablePanel from '../ResizablePanel';
 import { ChevronLeft, Loader } from 'lucide-react';
 import IconButton from '../buttons/iconButton';
 import { ResolveConnectorIcon } from '../icons/ConnectorIcons';
-import useWallet, { WalletProvider } from '../../hooks/useWallet';
+import useWallet from '../../hooks/useWallet';
 import { ModalWalletProvider, useWalletModalState } from '../../stores/walletModalStateStore';
 import EVMConnectList from './WalletsList/evm';
 
@@ -53,7 +53,6 @@ export function WalletModalProvider({ children }) {
                             <div>
                                 <WalletsList
                                     modalWalletProvider={selectedProvider}
-                                    providers={providers}
                                     onFinish={() => setOpen(false)}
                                     setSelectedProvider={setSelectedProvider}
                                 />
@@ -67,7 +66,7 @@ export function WalletModalProvider({ children }) {
                                         className="w-full h-fit bg-secondary-600 hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 p-3"
                                         onClick={async () => {
                                             if (provider.availableWalletsForConnect) {
-                                                setSelectedProvider({ name: provider.id });
+                                                setSelectedProvider(provider);
                                                 return;
                                             }
                                             await provider.connectWallet();
@@ -96,22 +95,20 @@ export function WalletModalProvider({ children }) {
 
 export type WalletsListProps = {
     modalWalletProvider: ModalWalletProvider;
-    providers: WalletProvider[];
-    onFinish: () => void;
     setSelectedProvider: (value: ModalWalletProvider | undefined) => void;
+    onFinish: () => void;
 };
 
-const WalletsList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, providers, setSelectedProvider }) => {
-    const provider = providers.find(p => p.id === modalWalletProvider.name)
+const WalletsList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, setSelectedProvider }) => {
 
-    if (provider?.id === 'evm') {
-        return <EVMConnectList modalWalletProvider={modalWalletProvider} providers={providers} onFinish={onFinish} setSelectedProvider={setSelectedProvider} />
+    if (modalWalletProvider?.id === 'evm') {
+        return <EVMConnectList modalWalletProvider={modalWalletProvider} onFinish={onFinish} setSelectedProvider={setSelectedProvider} />
     }
     else {
         return <div className='h-40 w-full flex flex-col justify-center items-center'>
             <div className='flex items-center gap-2'>
                 <Loader className='h-6 w-6 animate-spin' />
-                <p><span>Connecting</span> <span>{provider?.name}</span></p>
+                <p><span>Connecting</span> <span>{modalWalletProvider?.name}</span></p>
             </div>
         </div>
     }

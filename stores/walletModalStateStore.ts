@@ -1,7 +1,7 @@
 import { create } from 'zustand'
+import { WalletProvider } from '../hooks/useWallet';
 
-export type ModalWalletProvider = {
-    name: string;
+export type ModalWalletProvider = WalletProvider & {
     connector?: {
         name: string;
         qr?: string;

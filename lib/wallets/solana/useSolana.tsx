@@ -43,7 +43,7 @@ export default function useSolana(): WalletProvider {
         }
     }
 
-    return {
+    const provider = {
         connectedWallets: getWallet(),
         activeWallet: wallet,
         connectWallet,
@@ -54,4 +54,6 @@ export default function useSolana(): WalletProvider {
         name,
         id,
     }
+
+    return provider
 }

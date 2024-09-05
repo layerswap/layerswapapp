@@ -101,7 +101,7 @@ export default function useStarknet(): WalletProvider {
         }
     }
 
-    return {
+    const provider = {
         connectedWallets: getWallet(),
         activeWallet,
         connectWallet,
@@ -112,4 +112,6 @@ export default function useStarknet(): WalletProvider {
         name,
         id,
     }
+
+    return provider
 }

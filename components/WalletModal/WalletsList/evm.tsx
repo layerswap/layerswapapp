@@ -8,21 +8,21 @@ import { WalletButton } from '@rainbow-me/rainbowkit';
 import { isMobile } from '../../../lib/isMobile';
 import { WalletsListProps } from '..';
 
-const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, providers, setSelectedProvider }) => {
+const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFinish, setSelectedProvider }) => {
 
-    const provider = providers.find(p => p.id === modalWalletProvider.name)
     const { connect } = useConnect();
     const { disconnectAsync } = useDisconnect()
     const { connectors: connectedWallets } = useSwitchAccount()
 
     return (
-        !modalWalletProvider?.connector?.qr ?
+        !provider?.connector?.qr ?
             <div className="flex flex-col gap-1 w-full max-h-[40vh] overflow-y-auto styled-scroll">
                 {provider?.availableWalletsForConnect?.map((connector: Connector, index) => {
                     const connectorName = connector?.['rkDetails']?.['name'] as string
+                    const connectorId = connector?.['rkDetails']?.['id'] as string
 
-                    const Icon = resolveWalletConnectorIcon({ connector: connectorName })
-                    const isLoading = modalWalletProvider.connector?.name === connectorName
+                    const Icon = resolveWalletConnectorIcon({ connector: connectorId })
+                    const isLoading = provider.connector?.name === connectorName
                     const name = connector?.['rkDetails']?.['id']
                     const alreadyConnectedConnectors = connectedWallets?.filter((c) => c.providerName === connector.id)
 
@@ -33,12 +33,12 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, p
                                     <div key={index}>
                                         <button
                                             type="button"
-                                            disabled={!!modalWalletProvider.connector}
+                                            disabled={!!provider.connector}
                                             className="w-full flex items-center justify-between hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 py-2"
                                             onClick={async () => {
 
                                                 try {
-                                                    setSelectedProvider({ ...modalWalletProvider, connector: { name: connectorName } })
+                                                    setSelectedProvider({ ...provider, connector: { name: connectorName } })
 
                                                     if (alreadyConnectedConnectors.length > 0) {
                                                         for (const alreadyConnectedConnector of alreadyConnectedConnectors) {
@@ -73,7 +73,7 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, p
                                                 else if (connector.type === 'walletConnect') {
                                                     const uri = await getWalletConnectUri(connector, connector?.['rkDetails']?.['qrCode']?.['getUri'])
                                                     const iconUrl = await (provider.availableWalletsForConnect as Connector[]).find((c) => c?.['rkDetails']?.['name'] === connectorName)?.['rkDetails']?.['iconUrl']()
-                                                    setSelectedProvider({ ...modalWalletProvider, connector: { name: connectorName, qr: uri, iconUrl } })
+                                                    if (provider.connector) setSelectedProvider({ ...provider, connector: { ...provider.connector, qr: uri, iconUrl } })
                                                 }
 
                                             }}
@@ -98,12 +98,12 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, p
             <div className='w-full flex justify-center pt-2'>
                 <QRCodeSVG
                     className="rounded-lg"
-                    value={modalWalletProvider.connector.qr}
+                    value={provider.connector.qr}
                     includeMargin={true}
                     size={350}
                     level={"H"}
                     imageSettings={{
-                        src: modalWalletProvider.connector.iconUrl!,
+                        src: provider.connector.iconUrl!,
                         x: undefined,
                         y: undefined,
                         height: 50,
