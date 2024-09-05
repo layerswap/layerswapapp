@@ -76,10 +76,6 @@ export const phtlcTransactionBuilder = async (params: CreatyePreHTLCParams & { p
         [commitIdArray],
         program.programId
     );
-    let [commits, b2] = PublicKey.findProgramAddressSync(
-        [Buffer.from("commits"), walletPublicKey.toBuffer()],
-        program.programId
-    );
 
     const hopChains = [destinationChain]
     const hopAssets = [destinationAsset]
@@ -110,14 +106,6 @@ export const phtlcTransactionBuilder = async (params: CreatyePreHTLCParams & { p
 
     const tokenContract = new PublicKey(sourceAsset.contract);
 
-    const initCommitTx = await program.methods
-        .initCommits()
-        .accountsPartial({
-            sender: walletPublicKey,
-            commits: commits,
-        })
-        .transaction();
-
     const commitTx = await program.methods
         .commit(commitIdArray, hopChains, hopAssets, hopAddresses, destinationChain, destinationAsset, destination_address, sourceAsset.symbol, lpAddressPublicKey, TIMELOCK, walletPublicKey, bnAmount, phtlcBump)
         .accountsPartial({
@@ -125,23 +113,21 @@ export const phtlcTransactionBuilder = async (params: CreatyePreHTLCParams & { p
             phtlc: phtlc,
             phtlcTokenAccount: phtlcTokenAccount,
             commitCounter: commitCounter,
-            commits: commits,
             tokenContract: tokenContract,
             senderTokenAccount: senderTokenAddress
         })
         .transaction();
 
-    let initAndCommit = new Transaction();
-    initAndCommit.add(initCommitTx);
-    initAndCommit.add(commitTx);
+    let commit = new Transaction();
+    commit.add(commitTx);
 
     const blockHash = await connection.getLatestBlockhash();
 
-    initAndCommit.recentBlockhash = blockHash.blockhash;
-    initAndCommit.lastValidBlockHeight = blockHash.lastValidBlockHeight;
-    initAndCommit.feePayer = walletPublicKey;
+    commit.recentBlockhash = blockHash.blockhash;
+    commit.lastValidBlockHeight = blockHash.lastValidBlockHeight;
+    commit.feePayer = walletPublicKey;
 
-    return { initAndCommit, commitId: commitIdArray }
+    return { initAndCommit: commit, commitId: commitIdArray }
 }
 
 export const lockTransactionBuilder = async (params: CommitmentParams & LockParams & { program: Program<Idl>, connection: Connection, walletPublicKey: PublicKey, network: NetworkWithTokens }) => {

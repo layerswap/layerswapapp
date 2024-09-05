@@ -110,30 +110,6 @@ export const AnchorHtlc = (address: string): Idl => ({
           }
         },
         {
-          "name": "commits",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  109,
-                  109,
-                  105,
-                  116,
-                  115
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "sender"
-              }
-            ]
-          }
-        },
-        {
           "name": "token_contract"
         },
         {
@@ -217,7 +193,13 @@ export const AnchorHtlc = (address: string): Idl => ({
           "name": "phtlc_bump",
           "type": "u8"
         }
-      ]
+      ],
+      "returns": {
+        "array": [
+          "u8",
+          32
+        ]
+      }
     },
     {
       "name": "getCommitDetails",
@@ -266,58 +248,6 @@ export const AnchorHtlc = (address: string): Idl => ({
       "returns": {
         "defined": {
           "name": "PHTLC"
-        }
-      }
-    },
-    {
-      "name": "getCommits",
-      "discriminator": [
-        98,
-        175,
-        186,
-        224,
-        165,
-        76,
-        177,
-        41
-      ],
-      "accounts": [
-        {
-          "name": "commits",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  109,
-                  109,
-                  105,
-                  116,
-                  115
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "user"
-              }
-            ]
-          }
-        }
-      ],
-      "args": [
-        {
-          "name": "user",
-          "type": "pubkey"
-        }
-      ],
-      "returns": {
-        "vec": {
-          "array": [
-            "u8",
-            32
-          ]
         }
       }
     },
@@ -477,55 +407,6 @@ export const AnchorHtlc = (address: string): Idl => ({
       ],
       "args": [],
       "returns": "u64"
-    },
-    {
-      "name": "initCommits",
-      "discriminator": [
-        248,
-        101,
-        16,
-        106,
-        122,
-        129,
-        84,
-        129
-      ],
-      "accounts": [
-        {
-          "name": "sender",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "commits",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  109,
-                  109,
-                  105,
-                  116,
-                  115
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "sender"
-              }
-            ]
-          }
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
     },
     {
       "name": "initLockIdByCommitId",
@@ -827,7 +708,13 @@ export const AnchorHtlc = (address: string): Idl => ({
           "name": "htlc_bump",
           "type": "u8"
         }
-      ]
+      ],
+      "returns": {
+        "array": [
+          "u8",
+          32
+        ]
+      }
     },
     {
       "name": "lockCommit",
@@ -994,7 +881,13 @@ export const AnchorHtlc = (address: string): Idl => ({
           "name": "phtlc_bump",
           "type": "u8"
         }
-      ]
+      ],
+      "returns": {
+        "array": [
+          "u8",
+          32
+        ]
+      }
     },
     {
       "name": "redeem",
@@ -1206,7 +1099,12 @@ export const AnchorHtlc = (address: string): Idl => ({
         },
         {
           "name": "secret",
-          "type": "bytes"
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
         },
         {
           "name": "htlc_bump",
@@ -1469,19 +1367,6 @@ export const AnchorHtlc = (address: string): Idl => ({
       ]
     },
     {
-      "name": "Commits",
-      "discriminator": [
-        15,
-        192,
-        96,
-        128,
-        141,
-        100,
-        78,
-        213
-      ]
-    },
-    {
       "name": "HTLC",
       "discriminator": [
         172,
@@ -1673,25 +1558,6 @@ export const AnchorHtlc = (address: string): Idl => ({
       }
     },
     {
-      "name": "Commits",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "commitIds",
-            "type": {
-              "vec": {
-                "array": [
-                  "u8",
-                  32
-                ]
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "HTLC",
       "type": {
         "kind": "struct",
@@ -1731,7 +1597,12 @@ export const AnchorHtlc = (address: string): Idl => ({
           },
           {
             "name": "secret",
-            "type": "bytes"
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
           },
           {
             "name": "amount",
