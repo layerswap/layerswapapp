@@ -134,7 +134,7 @@ export default function Form() {
             else if (data?.code === LSAPIKnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.to) {
                 setNetworkToConnect({
                     DisplayName: values.to.display_name,
-                    AppURL: data.message
+                    AppURL: data.metadata.ActivationUrl
                 })
                 setShowConnectNetworkModal(true);
             } else if (data?.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {

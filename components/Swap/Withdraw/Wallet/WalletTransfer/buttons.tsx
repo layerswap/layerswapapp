@@ -116,7 +116,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
             {props.children}
         </SubmitButton>
         {
-            source_network?.deposit_methods.some(m => m === 'deposit_address') &&
+            source_network?.deposit_methods?.some(m => m === 'deposit_address') &&
             <ManualTransferNote />
         }
     </div>
