@@ -164,7 +164,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 values={currencyMenuItems}
                 value={value}
                 setValue={handleSelect}
-                disabled={!value?.isAvailable || isLoading}
+                disabled={isLoading || (value && !value.isAvailable)}
             />
         </div>
     )
