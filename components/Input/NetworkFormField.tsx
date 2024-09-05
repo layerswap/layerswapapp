@@ -179,8 +179,8 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, direction: SwapDi
         if (lock) {
             return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
         }
-        else if (!route.tokens?.some(r => r.status === 'active') || route.type === NetworkType.Solana || route.type === NetworkType.TON) {
-            if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange || !route.tokens?.some(r => r.status !== 'inactive') || route.type === NetworkType.Solana || route.type === NetworkType.TON) {
+        else if (!route.tokens?.some(r => r.status === 'active') || route.type === NetworkType.TON || (direction === 'from' && route.type === NetworkType.Starknet)) {
+            if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange || !route.tokens?.some(r => r.status !== 'inactive') || route.type === NetworkType.TON || (direction === 'from' && route.type === NetworkType.Starknet)) {
                 return { value: false, disabledReason: LayerDisabledReason.InvalidRoute }
             }
             else {
