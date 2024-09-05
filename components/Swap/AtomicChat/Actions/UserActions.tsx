@@ -68,8 +68,6 @@ export const UserCommitAction: FC = () => {
         if (source_network && commitId && !requestingCommit.current && walletAddress) {
             (async () => {
                 commitHandler = setInterval(async () => {
-                    console.log('Checking commitment')
-
                     if (!source_network?.chain_id)
                         throw Error("No chain id")
                     if (!source_provider)

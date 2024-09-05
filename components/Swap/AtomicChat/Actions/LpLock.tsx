@@ -22,7 +22,7 @@ export const LpLockingAssets: FC = () => {
 
     useEffect(() => {
         let lockHandler: any = undefined
-        if (destination_provider && destination_network && !destinationLock && commitId) {
+        if (destination_provider && destination_network && commitId) {
             lockHandler = setInterval(async () => {
                 if (!destination_network.chain_id)
                     throw Error("No chain id")
@@ -50,7 +50,7 @@ export const LpLockingAssets: FC = () => {
         return () => {
             lockHandler && clearInterval(lockHandler);
         };
-    }, [destination_provider, destination_network])
+    }, [destination_provider, destination_network, commitId])
 
     return <ActionStatus
         status="pending"
