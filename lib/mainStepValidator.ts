@@ -59,6 +59,9 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount 
         if (values.fromCurrency?.status === 'not_found' || values.toCurrency?.status === 'not_found') {
             errors.amount = `Route unavailable`;
         }
+        if (values.fromCurrency?.status === 'inactive' || values.toCurrency?.status === 'inactive') {
+            errors.amount = `Route unavailable`;
+        }
 
         if (Object.keys(errors).length === 0) return errors
 
