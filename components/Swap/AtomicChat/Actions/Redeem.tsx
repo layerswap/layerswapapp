@@ -4,28 +4,26 @@ import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
 
 export const RedeemAction: FC = () => {
-    const { source_network, committment, hashLock, setSourceLock, source_asset } = useAtomicState()
+    const { destination_network, committment, setSourceLock, destination_asset } = useAtomicState()
 
     const { getWithdrawalProvider } = useWallet()
 
-    const source_provider = source_network && getWithdrawalProvider(source_network)
-    const contract = source_asset?.contract ? source_network?.metadata.htlc_token_contract : source_network?.metadata.htlc_native_contract
+    const destination_provider = destination_network && getWithdrawalProvider(destination_network)
+    const contract = destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract
 
     useEffect(() => {
         let commitHandler: any = undefined
         if (committment?.locked) {
             (async () => {
                 commitHandler = setInterval(async () => {
-                    if (!source_network?.chain_id)
+                    if (!destination_network?.chain_id)
                         throw Error("No chain id")
-                    if (!source_provider)
+                    if (!destination_provider)
                         throw new Error("No destination provider")
-                    if (!hashLock)
-                        throw new Error("No destination hashlock")
 
-                    const data = await source_provider.getLock({
-                        type: source_asset?.contract ? 'erc20' : 'native',
-                        chainId: source_network.chain_id,
+                    const data = await destination_provider.getLock({
+                        type: destination_asset?.contract ? 'erc20' : 'native',
+                        chainId: destination_network.chain_id,
                         lockId: committment.lockId,
                         contractAddress: contract as `0x${string}`,
                     })
@@ -37,7 +35,7 @@ export const RedeemAction: FC = () => {
             })()
         }
         return () => clearInterval(commitHandler)
-    }, [source_network, committment, hashLock])
+    }, [destination_network, committment])
 
     return <ActionStatus
         status="pending"
