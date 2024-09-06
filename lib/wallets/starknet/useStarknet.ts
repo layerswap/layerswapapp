@@ -131,13 +131,11 @@ export default function useStarknet(): WalletProvider {
             )
             const increaseAllowanceCall: Call = erc20Contract.populate("increaseAllowance", [atomicAddress, parsedAmount])
 
-            const byteArrayAddress = byteArray.byteArrayFromString(address)
-
             const args = [
                 parsedAmount,
                 destinationChain,
                 destinationAsset,
-                byteArrayAddress,
+                address,
                 sourceAsset.symbol,
                 lpAddress,
                 timeLock,
@@ -159,9 +157,9 @@ export default function useStarknet(): WalletProvider {
                 trx.transaction_hash
             );
             const parsedEvents = atomicContract.parseEvents(commitTransactionData);
-            const tokenCommitedEvent = parsedEvents.find((event: any) => event.TokenCommitted)
+            const tokenCommitedEvent = parsedEvents.find((event: any) => event.TokenCommitted || event?.['htlc::Erc20github::HashedTimelockERC20::TokenCommitted'] )
 
-            const commitId = tokenCommitedEvent?.TokenCommitted.commitId
+            const commitId = tokenCommitedEvent?.TokenCommitted?.commitId || tokenCommitedEvent?.['htlc::Erc20github::HashedTimelockERC20::TokenCommitted']?.commitId
             if (!commitId) {
                 throw new Error('No commit id')
             }
