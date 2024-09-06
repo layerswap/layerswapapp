@@ -5,7 +5,7 @@
   "scripts": {
     "debug": "next dev",
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && if test \"$NEXT_PUBLIC_VERCEL_ENV\" = \"production\"; then  datadog-ci sourcemaps upload .next/static/chunks/ --service=layerswapuiapp --release-version=$NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA --minified-path-prefix=https://layerswap.io/app/_next/static/chunks/; fi",
     "start": "next start",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -82,6 +82,7 @@
     "zustand": "^4.4.1"
   },
   "devDependencies": {
+    "@datadog/datadog-ci": "^2.41.0",
     "@next/bundle-analyzer": "^13.5.4",
     "@storybook/addon-essentials": "^7.4.5",
     "@storybook/addon-interactions": "^7.4.5",
@@ -115,7 +116,7 @@
     "typescript": "^5.1"
   },
   "resolutions": {
-    "rpc-websockets": "7.10.0"
+    "rpc-websockets": "7.11.0"
   },
   "engines": {
     "node": ">=20.9.0"
