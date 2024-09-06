@@ -23,7 +23,7 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import MainStepValidation from '../lib/mainStepValidator';
 import { FeeProvider, useFee } from '../context/feeContext';
 import { useArgs } from '@storybook/preview-api';
-import RainbowKitComponent from '../components/RainbowKit';
+import WagmiComponent from '../components/Wagmi';
 
 window.plausible = () => { }
 const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ settings, swapData, theme, initialValues, timestamp }) => {
@@ -39,7 +39,7 @@ const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme
     return <IntercomProvider appId='123'>
         <SettingsStateContext.Provider value={appSettings}>
             <Layout settings={Settings} themeData={themeData}>
-                <RainbowKitComponent>
+                <WagmiComponent>
                     <SwapDataStateContext.Provider value={swapContextInitialValues}>
                         <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
                             <AuthDataUpdateContext.Provider value={AuthMockFunctions}>
@@ -63,7 +63,7 @@ const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme
                             </AuthDataUpdateContext.Provider>
                         </AuthStateContext.Provider>
                     </SwapDataStateContext.Provider >
-                </RainbowKitComponent>
+                </WagmiComponent>
             </Layout>
         </SettingsStateContext.Provider>
     </IntercomProvider>

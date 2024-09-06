@@ -1,4 +1,4 @@
-import { Plus, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { WalletProvider } from "../../../../hooks/useWallet";
 import { addressFormat } from "../../../../lib/address/formatter";
 import { ResolveConnectorIcon } from "../../../icons/ConnectorIcons";
@@ -29,9 +29,9 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
         setIsLoading(false)
     }
 
-    const reconnect = async () => {
+    const disconnect = async () => {
         setIsLoading(true)
-        await provider.reconnectWallet({ chain: destination.chain_id })
+        await provider.disconnectWallets()
         if (onConnect) onConnect()
         setIsLoading(false)
     }
@@ -46,7 +46,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
             <div className="flex items-center justify-between w-full">
                 <p className="text-sm font-medium text-secondary-text">Connected Wallet</p>
                 <button
-                    onClick={reconnect}
+                    onClick={disconnect}
                     disabled={isLoading}
                     className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200"
                 >
@@ -78,11 +78,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
                     connector={provider.name}
                     iconClassName="w-10 h-10 p-0.5 rounded-lg bg-secondary-800 border border-secondary-400"
                     className="grid grid-cols-2 gap-1 min-w-fit"
-                >
-                    <div className="w-10 h-10 bg-secondary-400 rounded-lg flex-col justify-center items-center inline-flex">
-                        <Plus className="h-6 w-6 text-secondary-text" />
-                    </div>
-                </ResolveConnectorIcon>
+                />
                 <div className="h-full space-y-2">
                     <p className="text-sm font-medium text-secondary-text text-start">Connect your wallet to select a destination address</p>
                     <div className="bg-primary-700/30 border-none !text-primary py-2 rounded-lg text-base font-semibold">

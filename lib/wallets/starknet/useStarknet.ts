@@ -1,10 +1,10 @@
 import { WalletProvider } from "../../../hooks/useWallet";
 import { useWalletStore } from "../../../stores/walletStore"
 import KnownInternalNames from "../../knownIds"
-import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
 import { useSettingsState } from "../../../context/settings";
+import { useCallback } from "react";
 
 export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
@@ -19,7 +19,8 @@ export default function useStarknet(): WalletProvider {
         KnownInternalNames.Networks.ParadexTestnet,
     ]
 
-    const name = 'starknet'
+    const name = 'Starknet'
+    const id = 'starknet'
     const { networks } = useSettingsState()
 
     const isMainnet = networks?.some(network => network.name === KnownInternalNames.Networks.StarkNetMainnet)
@@ -30,16 +31,20 @@ export default function useStarknet(): WalletProvider {
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
 
+    const activeWallet = wallets.find(wallet => wallet.providerName === name)
+
     const getWallet = () => {
-        return wallets.find(wallet => wallet.providerName === name)
+        if (activeWallet) {
+            return [activeWallet]
+        }
+        return undefined
     }
-    type ConnectProps = {
-        chain?: string
-    }
+
     const connectWallet = useCallback(async () => {
         toast.dismiss('connect-wallet')
         const constants = (await import('starknet')).constants
         const connect = (await import('starknetkit')).connect
+
         try {
             const { wallet } = await connect({
                 argentMobileOptions: {
@@ -52,10 +57,10 @@ export default function useStarknet(): WalletProvider {
                 modalMode: 'alwaysAsk'
             })
             const walletChain = wallet && (wallet.provider?.chainId || wallet.provider?.provider?.chainId)
-            const wrongChanin = walletChain == constants.StarknetChainId.SN_MAIN? !isMainnet : isMainnet
+            const wrongChanin = walletChain == constants.StarknetChainId.SN_MAIN ? !isMainnet : isMainnet
 
             if (wallet && wrongChanin) {
-                await disconnectWallet()
+                await disconnectWallets()
                 const errorMessage = `Please switch the network in your wallet to ${isMainnet ? 'Mainnet' : 'Sepolia'} and click connect again`
                 throw new Error(errorMessage)
             }
@@ -69,10 +74,13 @@ export default function useStarknet(): WalletProvider {
                     providerName: name,
                     metadata: {
                         starknetAccount: wallet
-                    }
+                    },
+                    isActive: true,
+                    connect: () => connectWallet(),
+                    disconnect: () => disconnectWallets()
                 })
             } else if (wallet?.isConnected === false) {
-                await disconnectWallet()
+                await disconnectWallets()
                 connectWallet()
             }
         }
@@ -82,7 +90,7 @@ export default function useStarknet(): WalletProvider {
         }
     }, [addWallet, isMainnet])
 
-    const disconnectWallet = async () => {
+    const disconnectWallets = async () => {
         const disconnect = (await import('starknetkit')).disconnect
         try {
             await disconnect({ clearLastWallet: true })
@@ -93,19 +101,17 @@ export default function useStarknet(): WalletProvider {
         }
     }
 
-    const reconnectWallet = async ({ chain }: { chain: string }) => {
-        await disconnectWallet()
-        await connectWallet()
-    }
-
-    return {
-        getConnectedWallet: getWallet,
+    const provider = {
+        connectedWallets: getWallet(),
+        activeWallet,
         connectWallet,
-        disconnectWallet,
-        reconnectWallet,
+        disconnectWallets,
         withdrawalSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
-        name
+        name,
+        id,
     }
+
+    return provider
 }

@@ -7,6 +7,7 @@ import Phantom from "../../../components/icons/Wallets/Phantom"
 import { Connector } from "wagmi"
 import Argent from "../../../components/icons/Wallets/Argent"
 import ImtblPassportIcon from "../../../components/icons/Wallets/ImtblPassport"
+import BitGetIcon from "../../../components/icons/Wallets/Bitget"
 
 const KnownEVMConnectors = [
     {
@@ -26,7 +27,11 @@ const KnownEVMConnectors = [
         icon: BitKeep
     },
     {
-        id: 'coinbasewallet',
+        id: 'bitget',
+        icon: BitGetIcon
+    },
+    {
+        id: 'coinbasewalletsdk',
         icon: CoinbaseIcon
     },
     {

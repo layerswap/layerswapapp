@@ -1,7 +1,6 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { useSwitchChain } from 'wagmi'
-
 import { PublishedSwapTransactions } from "../../../../../lib/layerSwapApiClient";
 import { ChangeNetworkButton, ConnectWalletButton } from "./buttons";
 import TransferTokenButton from "./TransferToken";
@@ -16,7 +15,6 @@ const TransferFromWallet: FC<WithdrawPageProps> = ({
     sequenceNumber,
     swapId,
 }) => {
-
 
     const { isConnected, chain: activeChain } = useAccount();
     const { provider } = useWallet(network, 'withdrawal')

@@ -1,19 +1,24 @@
 import { Network, RouteNetwork } from "../Models/Network"
 import useEVM from "../lib/wallets/evm/useEVM";
+import useImtblX from "../lib/wallets/imtblX/useImtblX";
+import useSolana from "../lib/wallets/solana/useSolana";
+import useStarknet from "../lib/wallets/starknet/useStarknet";
+import useTON from "../lib/wallets/ton/useTON";
 import { Wallet } from "../stores/walletStore";
 
 export type WalletProvider = {
     connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
     disconnectWallets: () => Promise<void> | undefined | void,
-    reconnectWallet: (props?: { chain?: string | number | undefined | null }) => Promise<void> | undefined | void,
     connectedWallets: Wallet[] | undefined,
     activeWallet: Wallet | undefined,
     autofillSupportedNetworks?: string[],
     withdrawalSupportedNetworks: string[],
     asSourceSupportedNetworks?: string[],
     name: string,
-    id: string
+    id: string,
+    availableWalletsForConnect?: any[]
 }
+
 
 type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 
@@ -21,13 +26,13 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
 
     const walletProviders: WalletProvider[] = [
         useEVM(),
+        useStarknet(),
+        useTON(),
+        useSolana(),
+        useImtblX()
     ]
+
     const provider = network && resolveProvider(network, walletProviders, purpose)
-
-    //if available wallets count is 0, then connect function is undefined
-
-    //implement provider available and connected wallets
-
 
     const resolveConnectedWallets = () => {
         let connectedWallets: Wallet[] = []
@@ -51,8 +56,8 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         providers: walletProviders,
         getProvider
     }
-}
 
+}
 
 const resolveProvider = (network: Network, walletProviders: WalletProvider[], purpose?: WalletPurpose) => {
     if (!purpose) return

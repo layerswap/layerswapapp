@@ -8,7 +8,7 @@ import {
     ConnectionProvider,
     WalletProvider,
 } from "@solana/wallet-adapter-react";
-import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
+import { WalletModalProvider as SolanaWalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { ReactNode, useMemo } from "react";
 import { CoinbaseWalletAdapter } from "@solana/wallet-adapter-coinbase";
 require("@solana/wallet-adapter-react-ui/styles.css");
@@ -42,9 +42,9 @@ function SolanaProvider({ children }: { children: ReactNode }) {
     return (
         <ConnectionProvider endpoint={endpoint}>
             <WalletProvider wallets={wallets} autoConnect={true}>
-                <WalletModalProvider>
+                <SolanaWalletModalProvider>
                     {children}
-                </WalletModalProvider>
+                </SolanaWalletModalProvider>
             </WalletProvider>
         </ConnectionProvider>
     );

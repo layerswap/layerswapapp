@@ -38,7 +38,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { balances } = useBalancesState()
-    const { message: validationErrorMessage, directions, setValidationMessage, clearValidationMessage } = useValidationErrorStore()
+    const { message: validationErrorMessage, setValidationMessage, clearValidationMessage } = useValidationErrorStore()
 
     const { provider: destinationWalletProvider } = useWallet(to, 'autofil')
     const { provider: sourceWalletProvider } = useWallet(from, 'autofil')
