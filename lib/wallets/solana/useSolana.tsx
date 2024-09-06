@@ -1,7 +1,7 @@
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
-import { useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react"
+import { AnchorWallet, useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { CommitmentParams, CreatyePreHTLCParams, LockParams, RefundParams } from "../phtlc"
 import { AnchorHtlc } from "./anchorHTLC"
@@ -30,12 +30,13 @@ export default function useSolana(): WalletProvider {
 
     const getWallet = () => {
         if (publicKey && program) {
+            const address = publicKey?.toBase58()
             return {
-                address: publicKey?.toBase58(),
+                address: address,
                 connector: wallet?.adapter?.name,
                 providerName: name,
                 chainId: solana?.chain_id,
-                icon: resolveWalletConnectorIcon({ connector: String(wallet?.adapter.name), address: publicKey?.toBase58() })
+                icon: resolveWalletConnectorIcon({ connector: String(wallet?.adapter.name), address: address })
             }
         }
     }
@@ -116,15 +117,20 @@ export default function useSolana(): WalletProvider {
     const getLockIdByCommitId = async (params: CommitmentParams) => {
         const { commitId } = params
         const commitIdBuffer = Buffer.from(commitId.replace('0x', ''), 'hex');
-        if (!program) return null
+
+        const lpAnchorWallet = { publicKey: new PublicKey(solana?.metadata?.lp_address!) }
+        const provider = new AnchorProvider(connection, lpAnchorWallet as AnchorWallet);
+        const lpProgram = (provider && solana?.metadata?.htlc_token_contract) ? new Program(AnchorHtlc(solana?.metadata?.htlc_token_contract), provider) : null;
+
+        if (!lpProgram) return null
 
         try {
             let [lockIdStruct, _b] = commitIdBuffer && PublicKey.findProgramAddressSync(
                 [Buffer.from("commit_to_lock"), commitIdBuffer],
-                program.programId
+                lpProgram.programId
             );
 
-            const result = await program.methods.getLockIdByCommitId(Array.from(commitIdBuffer)).accountsPartial({ lockIdStruct: lockIdStruct as Address }).view();
+            const result = await lpProgram.methods.getLockIdByCommitId(Array.from(commitIdBuffer)).accountsPartial({ lockIdStruct: lockIdStruct as Address }).view();
             if (!result) return null
 
             const parsedResult = `0x${toHexString(result)}`
@@ -171,11 +177,15 @@ export default function useSolana(): WalletProvider {
         const { lockId } = params
         const lockIdBuffer = Buffer.from(lockId.replace('0x', ''), 'hex');
 
-        let [htlc, htlcBump]: any = program && lockIdBuffer && PublicKey.findProgramAddressSync(
+        const lpAnchorWallet = { publicKey: new PublicKey(solana?.metadata?.lp_address!) }
+        const provider = new AnchorProvider(connection, lpAnchorWallet as AnchorWallet);
+        const lpProgram = (provider && solana?.metadata?.htlc_token_contract) ? new Program(AnchorHtlc(solana?.metadata?.htlc_token_contract), provider) : null;
+
+        let [htlc, htlcBump]: any = lpProgram && lockIdBuffer && PublicKey.findProgramAddressSync(
             [lockIdBuffer],
-            program.programId
+            lpProgram.programId
         );
-        const result = await program?.methods.getLockDetails(Array.from(lockIdBuffer), Number(htlcBump)).accountsPartial({ htlc }).view();
+        const result = await lpProgram?.methods.getLockDetails(Array.from(lockIdBuffer), Number(htlcBump)).accountsPartial({ htlc }).view();
 
         const parsedResult = {
             ...result,
