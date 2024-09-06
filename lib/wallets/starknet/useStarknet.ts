@@ -4,7 +4,7 @@ import KnownInternalNames from "../../knownIds"
 import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
-import { Call, Contract, RpcProvider, shortString } from "starknet";
+import { Call, Contract, RpcProvider, shortString, byteArray } from "starknet";
 import PHTLCAbi from "../../../lib/abis/atomic/STARKNET_PHTLC.json"
 import ETHABbi from "../../../lib/abis/STARKNET_ETH.json"
 import { CommitmentParams, CreatyePreHTLCParams, GetCommitsParams, LockParams, RefundParams } from "../phtlc";
@@ -131,17 +131,20 @@ export default function useStarknet(): WalletProvider {
             )
             const increaseAllowanceCall: Call = erc20Contract.populate("increaseAllowance", [atomicAddress, parsedAmount])
 
+            const byteArrayAddress = byteArray.byteArrayFromString(address)
+
             const args = [
                 parsedAmount,
                 destinationChain,
                 destinationAsset,
-                address,
+                byteArrayAddress,
                 sourceAsset.symbol,
                 lpAddress,
                 timeLock,
                 messanger,
                 tokenContractAddress,
             ]
+
             const atomicContract = new Contract(
                 PHTLCAbi,
                 atomicAddress,
@@ -218,7 +221,7 @@ export default function useStarknet(): WalletProvider {
         const networkToken = networks.find(network => chainId && Number(network.chain_id) == Number(chainId))?.tokens.find(token => token.symbol === shortString.decodeShortString(ethers.utils.hexlify(result.srcAsset as BigNumberish)))
 
         const parsedResult = {
-            dstAddress: ethers.utils.hexlify(result.dstAddress as BigNumberish),
+            dstAddress: result.dstAddress,
             dstChain: shortString.decodeShortString(ethers.utils.hexlify(result.dstChain as BigNumberish)),
             dstAsset: shortString.decodeShortString(ethers.utils.hexlify(result.dstAsset as BigNumberish)),
             srcAsset: shortString.decodeShortString(ethers.utils.hexlify(result.srcAsset as BigNumberish)),
@@ -273,7 +276,7 @@ export default function useStarknet(): WalletProvider {
         const networkToken = networks.find(network => chainId && Number(network.chain_id) == Number(chainId))?.tokens.find(token => token.symbol === shortString.decodeShortString(ethers.utils.hexlify(result.dstAsset as BigNumberish)))
 
         const parsedResult: AssetLock = {
-            dstAddress: ethers.utils.hexlify(result.dstAddress as BigNumberish),
+            dstAddress: result.dstAddress,
             dstChain: shortString.decodeShortString(ethers.utils.hexlify(result.dstChain as BigNumberish)),
             dstAsset: shortString.decodeShortString(ethers.utils.hexlify(result.dstAsset as BigNumberish)),
             srcAsset: shortString.decodeShortString(ethers.utils.hexlify(result.srcAsset as BigNumberish)),

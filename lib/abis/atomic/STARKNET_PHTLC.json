@@ -29,6 +29,24 @@
     ]
   },
   {
+    "name": "core::byte_array::ByteArray",
+    "type": "struct",
+    "members": [
+      {
+        "name": "data",
+        "type": "core::array::Array::<core::bytes_31::bytes31>"
+      },
+      {
+        "name": "pending_word",
+        "type": "core::felt252"
+      },
+      {
+        "name": "pending_word_len",
+        "type": "core::integer::u32"
+      }
+    ]
+  },
+  {
     "name": "core::bool",
     "type": "enum",
     "variants": [
@@ -48,7 +66,7 @@
     "members": [
       {
         "name": "dstAddress",
-        "type": "core::felt252"
+        "type": "core::byte_array::ByteArray"
       },
       {
         "name": "dstChain",
@@ -106,7 +124,7 @@
     "members": [
       {
         "name": "dstAddress",
-        "type": "core::felt252"
+        "type": "core::byte_array::ByteArray"
       },
       {
         "name": "dstChain",
@@ -202,7 +220,7 @@
           },
           {
             "name": "dstAddress",
-            "type": "core::felt252"
+            "type": "core::byte_array::ByteArray"
           },
           {
             "name": "srcAsset",
@@ -250,7 +268,7 @@
           },
           {
             "name": "dstAddress",
-            "type": "core::felt252"
+            "type": "core::byte_array::ByteArray"
           },
           {
             "name": "srcAsset",
@@ -310,7 +328,7 @@
           },
           {
             "name": "dstAddress",
-            "type": "core::felt252"
+            "type": "core::byte_array::ByteArray"
           },
           {
             "name": "dstAsset",
@@ -516,7 +534,7 @@
       {
         "kind": "data",
         "name": "dstAddress",
-        "type": "core::felt252"
+        "type": "core::byte_array::ByteArray"
       },
       {
         "kind": "data",
@@ -578,7 +596,7 @@
       {
         "kind": "data",
         "name": "dstAddress",
-        "type": "core::felt252"
+        "type": "core::byte_array::ByteArray"
       },
       {
         "kind": "data",
