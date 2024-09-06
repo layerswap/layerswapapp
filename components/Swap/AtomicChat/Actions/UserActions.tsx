@@ -11,7 +11,6 @@ export const UserCommitAction: FC = () => {
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
 
     const wallet = source_provider?.getConnectedWallet()
-    const walletAddress = wallet?.address
     const requestingCommit = useRef(false)
 
     const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_token_contract : source_network?.metadata.htlc_native_contract) as `0x${string}`
@@ -65,7 +64,7 @@ export const UserCommitAction: FC = () => {
 
     useEffect(() => {
         let commitHandler: any = undefined
-        if (source_network && commitId && !requestingCommit.current && walletAddress) {
+        if (source_network && commitId && !requestingCommit.current ) {
             (async () => {
                 commitHandler = setInterval(async () => {
                     if (!source_network?.chain_id)
@@ -89,7 +88,7 @@ export const UserCommitAction: FC = () => {
         return () => {
             clearInterval(commitHandler)
         }
-    }, [source_network, walletAddress])
+    }, [source_network])
 
     if (!source_network) return <></>
 

@@ -29,7 +29,7 @@ export default function useSolana(): WalletProvider {
     const program = (provider && solana?.metadata?.htlc_token_contract) ? new Program(AnchorHtlc(solana?.metadata?.htlc_token_contract), provider) : null;
 
     const getWallet = () => {
-        if (publicKey && program) {
+        if (publicKey) {
             const address = publicKey?.toBase58()
             return {
                 address: address,
@@ -86,13 +86,21 @@ export default function useSolana(): WalletProvider {
     }, [program, connection, signTransaction, publicKey, solana])
 
     const getCommitment = async (params: CommitmentParams) => {
-        if (!program) return null
+
         const { commitId } = params
         const commitIdBuffer = Buffer.from(commitId.replace('0x', ''), 'hex');
 
+        const lpAnchorWallet = { publicKey: new PublicKey(solana?.metadata?.lp_address!) }
+        const provider = new AnchorProvider(connection, lpAnchorWallet as AnchorWallet);
+        const lpProgram = (provider && solana?.metadata?.htlc_token_contract) ? new Program(AnchorHtlc(solana?.metadata?.htlc_token_contract), provider) : null;
+
+        if(!lpProgram) {
+            throw new Error("Could not initiatea program")
+        }
+
         let [phtlc, phtlcBump] = commitIdBuffer && PublicKey.findProgramAddressSync(
             [commitIdBuffer],
-            program.programId
+            lpProgram.programId
         );
         const result = await program?.methods.getCommitDetails(Array.from(commitIdBuffer), phtlcBump).accountsPartial({ phtlc }).view();
 
