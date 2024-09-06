@@ -71,6 +71,10 @@
         "type": "core::starknet::contract_address::ContractAddress"
       },
       {
+        "name": "lockId",
+        "type": "core::integer::u256"
+      },
+      {
         "name": "amount",
         "type": "core::integer::u256"
       },
@@ -442,22 +446,6 @@
       },
       {
         "name": "getCommits",
-        "type": "function",
-        "inputs": [
-          {
-            "name": "sender",
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::array::Span::<core::integer::u256>"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "name": "getLocks",
         "type": "function",
         "inputs": [
           {
