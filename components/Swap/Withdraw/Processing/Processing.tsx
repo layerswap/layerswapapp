@@ -80,12 +80,12 @@ const Processing: FC<Props> = ({ swapResponse }) => {
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Failed) {
             const err = new Error("Transaction failed")
-            const renderingError = new Error("Transaction failed test");
+            const renderingError = new Error(`Swap:${swap?.id} transaction:${transactionHash} failed`);
             renderingError.name = `TransactionFailed`;
             renderingError.cause = err;
             datadogRum.addError(renderingError);
         }
-    }, [inputTxStatus])
+    }, [inputTxStatus, transactionHash, swap?.id])
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 

@@ -104,6 +104,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         if (item.baseObject.name === value?.baseObject.name)
             return
         if (item.isExchange) {
+            setFieldValue(name, null)
             setFieldValue(`${name}Exchange`, item.baseObject, true)
         } else {
             setFieldValue(`${name}Exchange`, null)
@@ -117,15 +118,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     }, [name, value])
 
     const isLocked = direction === 'from' ? !!lockFrom : !!lockTo
-    
-    const pickNetworkDetails = <div>
-        {
-            !!(from && lockFrom) || !!(to && lockTo) &&
-            <div className='text-xs text-left text-secondary-text mb-2'>
-                <Info className='h-3 w-3 inline-block mb-0.5' /><span>&nbsp;You&apos;re accessing Layerswap from a partner&apos;s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.</span>
-            </div>
-        }
-    </div>
 
     return (<div className={`p-3 bg-secondary-700 border border-secondary-500 ${className}`}>
         <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
@@ -142,7 +134,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     values={menuItems}
                     searchHint={searchHint}
                     isLoading={isLoading}
-                    modalContent={pickNetworkDetails}
                     direction={direction}
                 />
             </div>
