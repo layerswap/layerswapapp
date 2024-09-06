@@ -39,9 +39,6 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const query = useQueryState();
     const fromDisplayName = fromExchange ? fromExchange.display_name : from?.display_name;
     const toDisplayName = toExchange ? toExchange.display_name : to?.display_name;
-    const toUnavailable = toCurrency?.status === 'inactive';
-    const fromUnavailable = fromCurrency?.status === 'inactive';
-    const exchangeUnavailable = currencyGroup?.status === 'inactive';
 
     let validationMessage = '';
     let validationDetails: ValidationDetails = {};
@@ -85,18 +82,13 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         validationMessage = 'Please change one of the selected tokens';
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
     }
-    else if (currencyGroup?.status === 'inactive') {
-        const unavailableDirection = fromUnavailable ? `${fromDisplayName} ${fromCurrency.symbol}` : exchangeUnavailable ? `${fromExchange ? fromDisplayName : toDisplayName} ${currencyGroup?.symbol}` : `${toDisplayName} ${toCurrency?.symbol}`;
-        validationMessage = `Sorry, transfers ${fromUnavailable || (exchangeUnavailable && fromExchange) ? 'from' : 'to'} ${unavailableDirection} are not available at the moment. Please try later.`;
-        validationDetails = { title: 'Temporarily unavailable', type: 'warning', icon: <CircleAlert stroke='#f8974b' className='w-4 h-4 ' /> };
-    }
-    else if (toCurrency?.status === 'inactive' || fromCurrency?.status === 'inactive') {
-        if (sourceRoutes?.data?.some(r => r.tokens.some(t => t.status !== 'inactive'))) {
+    else if (toCurrency?.status === 'inactive' || fromCurrency?.status === 'inactive' || currencyGroup?.status === 'inactive') {
+        if (!destinationRoutes?.data?.some(r => r.tokens.some(t => t.status == 'active'))) {
             const unavailableDirection = `${toDisplayName} ${toCurrency?.symbol}`;
             validationMessage = `Sorry, transfers to ${unavailableDirection} are not available at the moment. Please try later.`;
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <CircleAlert stroke='#f8974b' className='w-4 h-4 ' /> };
         }
-        else if (destinationRoutes?.data?.some(r => r.tokens.some(t => t.status !== 'inactive'))) {
+        else if (!sourceRoutes?.data?.some(r => r.tokens.some(t => t.status == 'active'))) {
             const unavailableDirection = `${fromDisplayName} ${fromCurrency?.symbol}`;
             validationMessage = `Sorry, transfers from ${unavailableDirection} are not available at the moment. Please try later.`;
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <CircleAlert stroke='#f8974b' className='w-4 h-4 ' /> };
