@@ -29,8 +29,6 @@ import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
 import { DepositMethodProvider } from "../../../context/depositMethodContext";
-import { Connector, useConnect } from "wagmi";
-import { mainnet } from "wagmi/chains";
 import { dynamicWithRetries } from "../../../lib/dynamicWithRetries";
 import AddressNote from "../../Input/Address/AddressNote";
 import { addressFormat } from "../../../lib/address/formatter";
@@ -176,19 +174,8 @@ export default function Form() {
         setShowSwapModal(value)
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
     }, [router, swap])
-    const { connectAsync } = useConnect();
-
-
-    async function connectWallet(connector: Connector) {
-        const result = await connectAsync({
-            chainId: mainnet.id,
-            connector,
-        });
-        return result;
-    }
   
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
-
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
                 {
