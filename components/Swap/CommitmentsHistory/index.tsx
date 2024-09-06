@@ -43,15 +43,20 @@ function CommittmentsHistory() {
     const [page, setPage] = useState(0)
     const [isLastPage, setIsLastPage] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [commitIds, setCommitIds] = useState<string[]>([])
-    const [erc20CommIds, setErc20CommIds] = useState<string[]>([])
+    const [allCommitIds, setAllCommitIds] = useState<{ [provider: string]: string[] } | undefined>(undefined)
+    const [allErc20CommIds, setAllErc20CommIds] = useState<{ [provider: string]: string[] } | undefined>(undefined)
+    const [allCommitments, setAllCommitments] = useState<{ [provider: string]: HistoryCommit[] } | undefined>(undefined)
+
     const router = useRouter();
     const { wallets, getWithdrawalProvider, getProviderByName } = useWallet()
 
     const providers = wallets.filter(wallet => wallet.providerName !== 'solana')
 
     const [selectedProvider, setSelectedProvider] = useState<string | undefined>(providers?.[0]?.connector)
-    const [commitments, setCommitments] = useState<(HistoryCommit)[]>([])
+
+    const commitIds = selectedProvider ? allCommitIds?.[selectedProvider] : null
+    const erc20CommIds = selectedProvider ? allErc20CommIds?.[selectedProvider] : null
+    const commitments = selectedProvider ? allCommitments?.[selectedProvider] : null
 
     const selectedWallet = providers.find(wallet => wallet.connector === selectedProvider)
 
@@ -121,19 +126,19 @@ function CommittmentsHistory() {
 
     useEffect(() => {
         (async () => {
-            if (providers.length === 0 || !activeNetwork || !activeNetwork.chain_id || !source_provider?.getCommits) return
+            if (providers.length === 0 || !activeNetwork || !activeNetwork.chain_id || !source_provider?.getCommits || !selectedProvider) return
             setPage(0)
             setIsLastPage(false)
             setLoading(true)
 
             const commIds = activeNetwork?.metadata.htlc_native_contract && await source_provider?.getCommits({ contractAddress: activeNetwork?.metadata.htlc_native_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'native' })
-            if (commIds) setCommitIds(commIds)
+            if (commIds) setAllCommitIds(ids => ({ ...ids, [selectedProvider]: commIds }))
             const erc20CommIds = await source_provider?.getCommits({ contractAddress: activeNetwork?.metadata.htlc_token_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'erc20' })
-            if (erc20CommIds) setErc20CommIds(erc20CommIds)
+            if (erc20CommIds) setAllErc20CommIds(ids => ({ ...ids, [selectedProvider]: erc20CommIds }))
 
             const commits = commIds && await getCommitments(0, commIds, activeNetwork?.metadata.htlc_native_contract, 'native') || []
             const erc20Commits = erc20CommIds && activeNetwork?.metadata.htlc_token_contract && await getCommitments(0, erc20CommIds, activeNetwork?.metadata.htlc_token_contract, 'erc20') || []
-            setCommitments([...commits, ...erc20Commits])
+            setAllCommitments(allCommits => ({ ...allCommits, [selectedProvider]: [...commits, ...erc20Commits] }))
 
             setPage(1)
             if ((commIds ? (Number(commIds?.length) <= PAGE_SIZE) : true) && (erc20CommIds ? (Number(erc20CommIds?.length) <= PAGE_SIZE) : true)) setIsLastPage(true)
@@ -142,19 +147,19 @@ function CommittmentsHistory() {
     }, [router.query, selectedWallet?.address, selectedWallet?.chainId])
 
     const handleLoadMore = useCallback(async () => {
-        const nextPage = page + 1
+        if (!selectedProvider) return null
         setLoading(true)
 
-        const commits = commitIds && activeNetwork?.metadata.htlc_native_contract && await getCommitments(nextPage, commitIds, activeNetwork?.metadata.htlc_native_contract, 'native') || []
-        const erc20Commits = erc20CommIds && activeNetwork?.metadata.htlc_token_contract && await getCommitments(nextPage, erc20CommIds, activeNetwork?.metadata.htlc_token_contract, 'erc20') || []
+        const commits = commitIds && activeNetwork?.metadata.htlc_native_contract && await getCommitments(page, commitIds, activeNetwork?.metadata.htlc_native_contract, 'native') || []
+        const erc20Commits = erc20CommIds && activeNetwork?.metadata.htlc_token_contract && await getCommitments(page, erc20CommIds, activeNetwork?.metadata.htlc_token_contract, 'erc20') || []
 
-        setCommitments(old => [...(old ? old : []), ...commits, ...erc20Commits])
+        setAllCommitments(allCommits => ({ ...allCommits, [selectedProvider]: [...(allCommits?.[selectedProvider] || []), ...commits, ...erc20Commits] }))
 
+        const nextPage = page + 1
         setPage(nextPage)
-        if ((commitIds ? (Number(commitIds?.length) <= PAGE_SIZE) : true) && (erc20CommIds ? Number(erc20CommIds?.length) <= PAGE_SIZE : true)) setIsLastPage(true)
-
+        if ((commitIds ? (Number(commitIds?.length) <= PAGE_SIZE * nextPage) : true) && (erc20CommIds ? (Number(erc20CommIds?.length) <= PAGE_SIZE * nextPage) : true)) setIsLastPage(true)
         setLoading(false)
-    }, [page, setCommitments, commitIds, erc20CommIds])
+    }, [page, setAllCommitments, commitIds, erc20CommIds])
 
     useEffect(() => {
         if (!selectedWallet) {
