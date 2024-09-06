@@ -94,7 +94,7 @@ export default function useSolana(): WalletProvider {
         const provider = new AnchorProvider(connection, lpAnchorWallet as AnchorWallet);
         const lpProgram = (provider && solana?.metadata?.htlc_token_contract) ? new Program(AnchorHtlc(solana?.metadata?.htlc_token_contract), provider) : null;
 
-        if(!lpProgram) {
+        if (!lpProgram) {
             throw new Error("Could not initiatea program")
         }
 
@@ -104,9 +104,11 @@ export default function useSolana(): WalletProvider {
         );
         const result = await program?.methods.getCommitDetails(Array.from(commitIdBuffer), phtlcBump).accountsPartial({ phtlc }).view();
 
+        if (!result) return null
+
         const parsedResult = {
             ...result,
-            lockId: result.locked && `0x${toHexString(result.lockId)}`,
+            lockId: result?.locked && `0x${toHexString(result.lockId)}`,
             amount: Number(result.amount) / Math.pow(10, 6),
             timelock: Number(result.timelock),
             sender: new PublicKey(result.sender).toString(),
@@ -116,9 +118,6 @@ export default function useSolana(): WalletProvider {
             tokenWallet: new PublicKey(result.tokenWallet).toString(),
         }
 
-        if (!result) {
-            throw new Error("No result")
-        }
         return parsedResult
     }
 
@@ -193,6 +192,7 @@ export default function useSolana(): WalletProvider {
             [lockIdBuffer],
             lpProgram.programId
         );
+        debugger
         const result = await lpProgram?.methods.getLockDetails(Array.from(lockIdBuffer), Number(htlcBump)).accountsPartial({ htlc }).view();
 
         const parsedResult = {
