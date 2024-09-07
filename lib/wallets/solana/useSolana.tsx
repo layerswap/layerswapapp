@@ -102,7 +102,7 @@ export default function useSolana(): WalletProvider {
             [commitIdBuffer],
             lpProgram.programId
         );
-        const result = await program?.methods.getCommitDetails(Array.from(commitIdBuffer), phtlcBump).accountsPartial({ phtlc }).view();
+        const result = await lpProgram?.methods.getCommitDetails(Array.from(commitIdBuffer), phtlcBump).accountsPartial({ phtlc }).view();
 
         if (!result) return null
 
