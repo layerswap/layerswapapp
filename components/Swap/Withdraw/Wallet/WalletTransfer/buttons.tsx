@@ -8,6 +8,7 @@ import useWallet from "../../../../../hooks/useWallet";
 import { useSwapDataState } from "../../../../../context/swap";
 import ManualTransferNote from "./manualTransferNote";
 import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapResponse } = useSwapDataState()
@@ -39,7 +40,9 @@ export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
 
     return <ButtonWrapper
         onClick={props.onClick ?? clickHandler}
-        icon={props.icon ?? <WalletIcon className="stroke-2 w-6 h-6" />}
+        icon={loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (props.icon ?? <WalletIcon className="stroke-2 w-6 h-6" />)}
+        isDisabled={loading || props.isDisabled}
+        isSubmitting={loading || props.isSubmitting}
         {...props}
     >
         Send from wallet
@@ -113,7 +116,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
             {props.children}
         </SubmitButton>
         {
-            source_network?.deposit_methods.some(m => m === 'deposit_address') &&
+            source_network?.deposit_methods?.some(m => m === 'deposit_address') &&
             <ManualTransferNote />
         }
     </div>

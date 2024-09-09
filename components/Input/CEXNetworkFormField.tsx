@@ -8,8 +8,6 @@ import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import shortenAddress from "../utils/ShortenAddress";
 import Link from "next/link";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
-import { LayerDisabledReason } from "../Select/Popover/PopoverSelect";
-import { Info } from "lucide-react";
 import { NetworkWithTokens, RouteNetwork } from "../../Models/Network";
 import { ExchangeNetwork } from "../../Models/Exchange";
 import { isValidAddress } from "../../lib/address/validator";
@@ -53,7 +51,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     const network = (direction === 'from' ? from : to)
     const currency = (direction === 'from' ? fromCurrency : toCurrency)
-
+    console.log('historicalNetworks', historicalNetworks)
     const menuItems = historicalNetworks?.data && routesData
         && GenerateMenuItems(historicalNetworks.data, routes?.data)
             .filter(item => routes?.data?.find(l =>
@@ -61,10 +59,8 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     const handleSelect = useCallback((item: SelectMenuItem<ExchangeNetwork>) => {
         if (!item) return
-        const route = routes?.data?.find(l => l.name === item.baseObject.network.name)
-        const currency = route?.tokens.find(a => a.symbol === item.baseObject.token.symbol)
-        setFieldValue(name, route, true)
-        setFieldValue(`${name}Currency`, currency, false)
+        setFieldValue(name, item.baseObject.network, true)
+        setFieldValue(`${name}Currency`, { ...item.baseObject.token, status: "active" }, false)
     }, [name, routes])
 
     const formValue = (direction === 'from' ? from : to)
@@ -104,12 +100,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     </>
 
     const networkDetails = <div>
-        {
-            value?.isAvailable.disabledReason === LayerDisabledReason.LockNetworkIsTrue &&
-            <div className='text-xs text-left text-secondary-text mb-2'>
-                <Info className='h-3 w-3 inline-block mb-0.5' /><span>&nbsp;You&apos;re accessing Layerswap from a partner&apos;s page. In case you want to transact with other networks, please open layerswap.io in a separate tab.</span>
-            </div>
-        }
         <div className="relative z-20 mb-3 ml-3 text-primary-buttonTextColor text-sm">
             <p className="text-sm mt-2 flex space-x-1">
                 <span>Please make sure that the exchange supports the token and network you select here.</span>
@@ -133,7 +123,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             }
         </label>
         <CommandSelectWrapper
-            disabled={(value && !value?.isAvailable?.value) || isRoutesLoading}
+            disabled={(value && !value?.isAvailable) || isRoutesLoading}
             valueGrouper={groupByType}
             placeholder="Network"
             setValue={handleSelect}
@@ -167,7 +157,7 @@ function GenerateMenuItems(
             displayName: network?.display_name,
             order: 1,
             imgSrc: network?.logo || '',
-            isAvailable: { value: true, disabledReason: null },
+            isAvailable: true,
             details
         }
         return item;
