@@ -113,28 +113,18 @@ const Processing: FC<Props> = ({ swapResponse }) => {
             },
             current: {
                 name: 'Processing your deposit',
-                description: <div className='flex space-x-1'>
-                    <div className='flex items-center space-x-1'>
-                        <div className='underline hover:no-underline flex items-center space-x-1'>
-                            <a target={"_blank"} href={input_tx_explorer?.replace("{0}", transactionHash)}>{shortenAddress(transactionHash)}</a>
-                            <ExternalLink className='h-4' />
-                        </div>
-                    </div>
-                    <div>
-                        <span>
-                            {swapInputTransaction && swapInputTransaction?.confirmations && (
-                                <div>
-                                    <span className='whitespace-nowrap'>| Confirmations</span>
-                                    <span className="text-primary-text ml-1">
-                                        <span>{swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations
-                                            ? swapInputTransaction?.max_confirmations
-                                            : swapInputTransaction?.confirmations}</span>
-                                        <span>/</span>{swapInputTransaction?.max_confirmations}
-                                    </span>
-                                </div>
-                            )}
-                        </span>
-                    </div>
+                description: <div>
+                    <span>
+                        <span>Waiting for confirmations</span>
+                        {swapInputTransaction && swapInputTransaction?.confirmations && (
+                            <span className="text-primary-text ml-1">
+                                <span>{swapInputTransaction?.confirmations >= swapInputTransaction?.max_confirmations
+                                    ? swapInputTransaction?.max_confirmations
+                                    : swapInputTransaction?.confirmations}</span>
+                                <span>/</span>{swapInputTransaction?.max_confirmations}
+                            </span>
+                        )}
+                    </span>
                 </div>
             },
             complete: {
