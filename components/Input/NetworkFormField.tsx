@@ -90,17 +90,17 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         if (!isLoading && routes?.data) setRoutesData(routes.data)
     }, [routes])
 
-    const isTestnet = process.env.NEXT_PUBLIC_API_VERSION === 'sandbox'
+    const disableExchanges = process.env.NEXT_PUBLIC_DISABLE_EXCHANGES || false
     
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
-        menuItems = GenerateMenuItems(routesData, toExchange || isTestnet ? [] : exchangesData, direction, !!(from && lockFrom), query);
+        menuItems = GenerateMenuItems(routesData, toExchange || disableExchanges ? [] : exchangesData, direction, !!(from && lockFrom), query);
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        menuItems = GenerateMenuItems(routesData, fromExchange || isTestnet ? [] : exchangesData, direction, !!(to && lockTo), query);
+        menuItems = GenerateMenuItems(routesData, fromExchange || disableExchanges ? [] : exchangesData, direction, !!(to && lockTo), query);
     }
 
     const value = menuItems.find(x => !x.isExchange ?
