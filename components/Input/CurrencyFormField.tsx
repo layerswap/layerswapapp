@@ -56,12 +56,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     } = useSWR<ApiResponse<RouteNetwork[]>>(`${networkRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
     const currencies = direction === 'from' ? routes?.data?.find(r => r.name === from?.name)?.tokens : routes?.data?.find(r => r.name === to?.name)?.tokens;
-
-    if(direction === 'from') {
-        console.log('networkRoutesURL',networkRoutesURL)
-        console.log('routes',routes)
-    }
-
     const currencyMenuItems = GenerateCurrencyMenuItems(
         currencies!,
         values,
