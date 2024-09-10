@@ -36,7 +36,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     } = useSWR<ApiResponse<Exchange[]>>(`${exchangeRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
     const availableAssetGroups = exchanges?.data?.find(e => e.name === exchange?.name)?.token_groups
-
+    
     const lockAsset = direction === 'from' ? query?.lockFromAsset : query?.lockToAsset
     const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
     const lockedCurrency = lockAsset
@@ -62,7 +62,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     }, [currencyGroup, message])
 
     useEffect(() => {
-        if (value) return
+        if (value || !currencyMenuItems) return
         setFieldValue(name, currencyMenuItems?.[0]?.baseObject)
     }, [])
 

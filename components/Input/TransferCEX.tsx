@@ -17,8 +17,6 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
     const sourceLogo = fromExchange ? fromExchange.logo : from?.logo
     const destinationLogo = toExchange ? toExchange.logo : to?.logo
 
-    const cex = fromExchange ? fromExchange.display_name : toExchange?.display_name
-    const chain = from ? from.display_name : to?.display_name
     const learnMoreUrl = fromExchange ? 'https://docs.layerswap.io/user-docs/layerswap-app/transfer-from-cex' : 'https://docs.layerswap.io/user-docs/layerswap-app/transfer-to-cex'
 
     return (<div className="font-normal flex flex-col w-full relative z-10 my-3 pb-4 border-b-2 border-b-secondary">
