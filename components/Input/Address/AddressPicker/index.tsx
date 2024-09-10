@@ -58,9 +58,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const setAddresses = useAddressesStore(state => state.setAddresses)
 
     const { getAutofillProvider: getProvider } = useWallet()
+
     const provider = useMemo(() => {
+        if (destinationExchange) return undefined
+        
         return values?.to && getProvider(values?.to)
-    }, [values?.to, getProvider])
+    }, [values?.to, getProvider, destinationExchange])
+
     const connectedWallet = provider?.getConnectedWallet(values.to)
     const connectedWalletAddress = connectedWallet?.address
 

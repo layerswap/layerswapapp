@@ -16,7 +16,6 @@ import { RouteNetwork } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
-import { Info } from "lucide-react";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../../helpers/routes";
 import RouteIcon from "./RouteIcon";
 
@@ -85,15 +84,17 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         if (!isLoading && routes?.data) setRoutesData(routes.data)
     }, [routes])
 
+    const disableExchanges = process.env.NEXT_PUBLIC_DISABLE_EXCHANGES === 'true'
+
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
-        menuItems = GenerateMenuItems(routesData, toExchange ? [] : exchangesData, direction, !!(from && lockFrom), query);
+        menuItems = GenerateMenuItems(routesData, toExchange || disableExchanges ? [] : exchangesData, direction, !!(from && lockFrom), query);
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        menuItems = GenerateMenuItems(routesData, fromExchange ? [] : exchangesData, direction, !!(to && lockTo), query);
+        menuItems = GenerateMenuItems(routesData, fromExchange || disableExchanges ? [] : exchangesData, direction, !!(to && lockTo), query);
     }
 
     const value = menuItems.find(x => !x.isExchange ?
