@@ -35,6 +35,7 @@ import { addressFormat } from "../../../lib/address/formatter";
 import { useAddressesStore } from "../../../stores/addressesStore";
 import { AddressGroup } from "../../Input/Address/AddressPicker";
 import { useAsyncModal } from "../../../context/asyncModal";
+import { useValidationContext, ValidationProvider } from "../../../context/validationErrorContext";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -208,7 +209,9 @@ export default function Form() {
             validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
         >
-            <SwapForm partner={partner} />
+            <ValidationProvider>
+                <SwapForm partner={partner} />
+            </ValidationProvider>
         </Formik>
     </DepositMethodProvider>
 }
