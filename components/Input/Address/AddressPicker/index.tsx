@@ -57,7 +57,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const groupedAddresses = useAddressesStore(state => state.addresses)
     const setAddresses = useAddressesStore(state => state.setAddresses)
 
-    const { provider } = useWallet(destination, 'autofil')
+    const { provider } = useWallet(destinationExchange ? undefined : destination, 'autofil')
     const connectedWallet = provider?.activeWallet
     const connectedWalletAddress = connectedWallet?.address
 

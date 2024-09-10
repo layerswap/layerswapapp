@@ -47,22 +47,19 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             `exchange_withdrawal_networks?source_exchange=${fromExchange?.name}&&source_token_group=${currencyGroup?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}`
             : `exchange_deposit_networks?destination_exchange=${toExchange?.name}&destination_token_group=${currencyGroup?.symbol}&source_network=${from?.name}&source_token=${fromCurrency?.symbol}`}`)
 
-    const { data: historicalNetworks, isLoading: isHistoricalNetworsLoading } = useSWR<ApiResponse<ExchangeNetwork[]>>(exchangeNetworksEndpoint, apiClient.fetcher, { keepPreviousData: true })
+    const { data: historicalNetworks, isLoading: isHistoricalNetworsLoading, error } = useSWR<ApiResponse<ExchangeNetwork[]>>(exchangeNetworksEndpoint, apiClient.fetcher, { keepPreviousData: true })
 
     const network = (direction === 'from' ? from : to)
     const currency = (direction === 'from' ? fromCurrency : toCurrency)
-
-    const menuItems = historicalNetworks?.data && routesData
+    const menuItems = (!error || undefined) && historicalNetworks?.data && routesData
         && GenerateMenuItems(historicalNetworks.data, routes?.data)
             .filter(item => routes?.data?.find(l =>
                 l.name === item.baseObject.network.name));
 
     const handleSelect = useCallback((item: SelectMenuItem<ExchangeNetwork>) => {
         if (!item) return
-        const route = routes?.data?.find(l => l.name === item.baseObject.network.name)
-        const currency = route?.tokens.find(a => a.symbol === item.baseObject.token.symbol)
-        setFieldValue(name, route, true)
-        setFieldValue(`${name}Currency`, currency, false)
+        setFieldValue(name, item.baseObject.network, true)
+        setFieldValue(`${name}Currency`, { ...item.baseObject.token, status: "active" }, false)
     }, [name, routes])
 
     const formValue = (direction === 'from' ? from : to)

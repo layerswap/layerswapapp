@@ -12,7 +12,6 @@ type PopoverSelectWrapper = {
     placeholder?: string;
     searchHint?: string;
     disabled?: boolean;
-    isAssetLocked?: boolean
 }
 
 export default function PopoverSelectWrapper<T>({
@@ -20,7 +19,7 @@ export default function PopoverSelectWrapper<T>({
     value,
     values,
     placeholder,
-    isAssetLocked
+    disabled,
 }: PopoverSelectWrapper) {
     const [showModal, setShowModal] = useState(false)
 
@@ -30,10 +29,9 @@ export default function PopoverSelectWrapper<T>({
     }, [])
 
     if (!values) return <Placeholder placeholder={placeholder} />
-    if (isAssetLocked && value) return <LockedAsset value={value} />
 
     return (
-        <Popover open={showModal} onOpenChange={() => setShowModal(!showModal)}>
+        <Popover open={showModal} onOpenChange={() => !disabled && setShowModal(!showModal)}>
             <PopoverTrigger asChild>
                 {
                     value ?
@@ -56,7 +54,7 @@ export default function PopoverSelectWrapper<T>({
                                 </span>
 
                                 <span className="ml-1 flex items-center pointer-events-none text-primary-buttonTextColor">
-                                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                                    {!disabled && <ChevronDown className="h-4 w-4" aria-hidden="true" />}
                                 </span>
                             </button>
                         </div>
@@ -70,10 +68,8 @@ export default function PopoverSelectWrapper<T>({
                                         </span>
                                     </span>
                                 </div>
-
-
                                 <span className="ml-1 flex items-center pointer-events-none text-primary-text">
-                                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                                    {!disabled && <ChevronDown className="h-4 w-4" aria-hidden="true" />}
                                 </span>
                             </button>
                         </div>

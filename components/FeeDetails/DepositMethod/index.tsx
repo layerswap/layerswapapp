@@ -48,12 +48,15 @@ const DepositMethodComponent: FC = () => {
         const first = menuItemsRef.current?.[0]?.id
         if (fromExchange) {
             setFieldValue(name, 'deposit_address', true)
+            return
         }
-        else if (defaultMethod && (depositMethod !== defaultMethod?.id)) {
+        else if (defaultMethod) {
             setFieldValue(name, defaultMethod?.id, true)
+            return
         }
-        else{
+        else {
             setFieldValue(name, first, true)
+            return
         }
     }, [from, appName, fromExchange])
 
@@ -169,7 +172,7 @@ function GenerateDepositMethodMenuItems(network: Network, depositMethods: Deposi
         return depositMethods.filter(m => m.id === 'deposit_address')
     }
 
-    return depositMethods.filter(m => network.deposit_methods.some(dm => dm === m.id))
+    return depositMethods.filter(m => network?.deposit_methods?.some(dm => dm === m.id))
 }
 
 export default DepositMethodComponent

@@ -39,6 +39,7 @@ import { addressFormat } from "../../../lib/address/formatter";
 import { AddressGroup } from "../../Input/Address/AddressPicker";
 import { useAddressesStore } from "../../../stores/addressesStore";
 import { useAsyncModal } from "../../../context/asyncModal";
+import { useValidationContext, ValidationProvider } from "../../../context/validationErrorContext";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -142,7 +143,7 @@ export default function Form() {
             else if (data?.code === LSAPIKnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.to) {
                 setNetworkToConnect({
                     DisplayName: values.to.display_name,
-                    AppURL: data.message
+                    AppURL: data.metadata.ActivationUrl
                 })
                 setShowConnectNetworkModal(true);
             } else if (data?.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
@@ -251,7 +252,9 @@ export default function Form() {
             validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
         >
-            <SwapForm partner={partner} />
+            <ValidationProvider>
+                <SwapForm partner={partner} />
+            </ValidationProvider>
         </Formik>
     </DepositMethodProvider >
 }
