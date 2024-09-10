@@ -16,13 +16,8 @@ import { RouteNetwork } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
-import { Info } from "lucide-react";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../../helpers/routes";
-import useValidationErrorStore from "../validationError/validationErrorStore";
-import validationMessageResolver from "../utils/validationErrorResolver";
-import ClickTooltip from "../Tooltips/ClickTooltip";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
-import RouteIcon from "../icons/RouteIcon";
+import RouteIcon from "./RouteIcon";
 
 type Props = {
     direction: SwapDirection,
@@ -57,8 +52,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const { from, to, fromCurrency, toCurrency, fromExchange, toExchange } = values
     const query = useQueryState()
     const { lockFrom, lockTo } = query
-    const { message: validationErrorMessage, directions, setValidationMessage, clearValidationMessage } = useValidationErrorStore()
-
+   
     const { sourceExchanges, destinationExchanges, destinationRoutes, sourceRoutes } = useSettingsState();
     let placeholder = "";
     let searchHint = "";
@@ -122,14 +116,9 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 setFieldValue(`${name}Currency`, assetSubstitute, true)
             }
         }
-        const message = validationMessageResolver(values, direction, query, error)
-        if (!!(from && lockFrom) || !!(to && lockTo))
-            setValidationMessage('Warning', message, 'warning', name);
-        else
-            clearValidationMessage()
     }, [name, value])
 
-    const networkLocked = direction === "from" ? !!(from && lockFrom) : !!(to && lockTo)
+    const isLocked = direction === 'from' ? !!lockFrom : !!lockTo
 
     return (<div className={`p-3 bg-secondary-700 border border-secondary-500 ${className}`}>
         <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
@@ -138,7 +127,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         <div ref={ref} className="mt-1.5 grid grid-flow-row-dense grid-cols-8 md:grid-cols-6 items-center pr-2">
             <div className="col-span-5 md:col-span-4">
                 <CommandSelectWrapper
-                    disabled={isLoading || error || networkLocked}
+                    disabled={isLocked || isLoading}
                     valueGrouper={groupByType}
                     placeholder={placeholder}
                     setValue={handleSelect}
@@ -192,25 +181,8 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
                 !query.lockAsset && !query.lockFromAsset && !query.lockToAsset && !query.lockFrom && !query.lockTo && !query.lockNetwork && !query.lockExchange && r.tokens?.some(r => r.status !== 'inactive')
             );
 
-        const details = !isAvailable ? <ClickTooltip side="left" text={`Transfers ${direction} this network are not available at the moment. Please try later.`} /> : undefined
-
         const order = ResolveNetworkOrder(r, direction, isNewlyListed)
-
         const routeNotFound = isAvailable && !r.tokens?.some(r => r.status === 'active');
-        const icon = routeNotFound ? (
-            <Tooltip delayDuration={200}>
-                <TooltipTrigger asChild >
-                    <div className="absolute -left-0 z-50">
-                        <RouteIcon className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p className="max-w-72">
-                        Route unavailable
-                    </p>
-                </TooltipContent>
-            </Tooltip>
-        ) : undefined;
 
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
             baseObject: r,
@@ -221,9 +193,8 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             isAvailable: isAvailable,
             group: getGroupName(r, 'network', isAvailable && !routeNotFound),
             isExchange: false,
-            details,
             badge,
-            icon
+            icon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} />
         }
         return res;
     }).sort(SortAscending) || [];
