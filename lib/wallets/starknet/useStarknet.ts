@@ -18,7 +18,7 @@ export default function useStarknet(): WalletProvider {
         KnownInternalNames.Networks.ParadexMainnet,
         KnownInternalNames.Networks.ParadexTestnet,
     ]
-
+    const id = 'starknet'
     const name = 'starknet'
     const { networks } = useSettingsState()
 
