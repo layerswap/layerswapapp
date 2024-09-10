@@ -179,7 +179,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, direction: SwapDi
         if (lock) {
             return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
         }
-        else if (!route.tokens?.some(r => r.status === 'active') || route.type === NetworkType.TON) {
+        else if (!route.tokens?.some(r => r.status === 'active')) {
             if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange || !route.tokens?.some(r => r.status !== 'inactive') || route.type === NetworkType.TON) {
                 return { value: false, disabledReason: LayerDisabledReason.InvalidRoute }
             }

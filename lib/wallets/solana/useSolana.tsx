@@ -3,7 +3,7 @@ import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import { AnchorWallet, useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
-import { CommitmentParams, CreatyePreHTLCParams, LockParams, RefundParams } from "../phtlc"
+import { CommitmentParams, CreatePreHTLCParams, LockParams, RefundParams } from "../phtlc"
 import { AnchorHtlc } from "./anchorHTLC"
 import { AssetLock } from "../../../Models/PHTLC"
 import { Address, AnchorProvider, Program, setProvider } from '@coral-xyz/anchor'
@@ -59,7 +59,7 @@ export default function useSolana(): WalletProvider {
         connectWallet()
     }
 
-    const createPreHTLC = useCallback(async (params: CreatyePreHTLCParams): Promise<{ hash: string; commitId: string; } | null | undefined> => {
+    const createPreHTLC = useCallback(async (params: CreatePreHTLCParams): Promise<{ hash: string; commitId: string; } | null | undefined> => {
         if (!program || !publicKey || !solana) return null
 
         const transaction = await phtlcTransactionBuilder({ connection, program, walletPublicKey: publicKey, network: solana, ...params })

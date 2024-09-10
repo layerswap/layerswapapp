@@ -1,7 +1,7 @@
 import { Token } from "../../../Models/Network";
 import { AssetLock, Commit } from "../../../Models/PHTLC";
 
-export type CreatyePreHTLCParams = {
+export type CreatePreHTLCParams = {
     destinationChain: string,
     sourceChain: string,
     amount: string,
