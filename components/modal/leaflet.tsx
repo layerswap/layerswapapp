@@ -114,8 +114,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                         }>
                         </IconButton>
                     </div>
-                    <div
-                        className='select-text max-h-full overflow-y-auto styled-scroll px-6 h-full'>
+                    <div className='select-text max-h-full overflow-y-auto styled-scroll px-6 h-full'>
                         {children}
                     </div>
                 </div>

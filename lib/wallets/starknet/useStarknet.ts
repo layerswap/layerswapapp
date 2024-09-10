@@ -18,8 +18,9 @@ export default function useStarknet(): WalletProvider {
         KnownInternalNames.Networks.ParadexMainnet,
         KnownInternalNames.Networks.ParadexTestnet,
     ]
+
+    const name = 'Starknet'
     const id = 'starknet'
-    const name = 'starknet'
     const { networks } = useSettingsState()
 
     const isMainnet = networks?.some(network => network.name === KnownInternalNames.Networks.StarkNetMainnet)
@@ -100,21 +101,17 @@ export default function useStarknet(): WalletProvider {
         }
     }
 
-    const reconnectWallet = async () => {
-        await disconnectWallets()
-        await connectWallet()
-    }
-
-    return {
+    const provider = {
         connectedWallets: getWallet(),
         activeWallet,
         connectWallet,
         disconnectWallets,
-        reconnectWallet,
         withdrawalSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
     }
+
+    return provider
 }

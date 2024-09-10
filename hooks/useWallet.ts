@@ -9,15 +9,16 @@ import { Wallet } from "../stores/walletStore";
 export type WalletProvider = {
     connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
     disconnectWallets: () => Promise<void> | undefined | void,
-    reconnectWallet: (props?: { chain?: string | number | undefined | null }) => Promise<void> | undefined | void,
     connectedWallets: Wallet[] | undefined,
     activeWallet: Wallet | undefined,
     autofillSupportedNetworks?: string[],
     withdrawalSupportedNetworks: string[],
     asSourceSupportedNetworks?: string[],
     name: string,
-    id: string
-} 
+    id: string,
+    availableWalletsForConnect?: any[]
+}
+
 
 type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 
@@ -30,7 +31,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         useSolana(),
         useImtblX()
     ]
-    
+
     const provider = network && resolveProvider(network, walletProviders, purpose)
 
     const resolveConnectedWallets = () => {

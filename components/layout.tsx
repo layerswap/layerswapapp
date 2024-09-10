@@ -16,7 +16,7 @@ import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
 import TonConnectProvider from "./TonConnectProvider";
-import RainbowKit from "./Wagmi";
+import Wagmi from "./Wagmi";
 import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
 // import { datadogRum } from '@datadog/browser-rum';
@@ -134,13 +134,13 @@ export default function Layout({ children, settings, themeData }: Props) {
             <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
               <ThemeWrapper>
                 <TonConnectProvider basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
-                  <RainbowKit>
+                  <Wagmi>
                     <AsyncModalProvider>
                       {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
                         <MaintananceContent />
                         : children}
                     </AsyncModalProvider>
-                  </RainbowKit>
+                  </Wagmi>
                 </TonConnectProvider>
               </ThemeWrapper>
             </ErrorBoundary>

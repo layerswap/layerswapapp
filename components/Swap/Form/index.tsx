@@ -29,10 +29,6 @@ import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
 import { DepositMethodProvider } from "../../../context/depositMethodContext";
-import { Connector, useAccount, useConnect, useConnectors } from "wagmi";
-import { mainnet } from "wagmi/chains";
-import { useSwitchAccount } from 'wagmi'
-import QRCodeModal from "../../QRCodeWallet";
 import { dynamicWithRetries } from "../../../lib/dynamicWithRetries";
 import AddressNote from "../../Input/Address/AddressNote";
 import { addressFormat } from "../../../lib/address/formatter";
@@ -58,11 +54,7 @@ const SwapDetails = dynamicWithRetries(() => import(".."),
 )
 
 export default function Form() {
-    const [allConnectors, setAllConnectors] = useState<any>()
-    const _connectors = useConnectors()
-    useEffect(() => {
-        setAllConnectors(_connectors.filter((value, index, array) => value.rkDetails))
-    }, [_connectors])
+
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [showSwapModal, setShowSwapModal] = useState(false);
@@ -182,37 +174,8 @@ export default function Form() {
         setShowSwapModal(value)
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
     }, [router, swap])
-    const { connectAsync } = useConnect();
-
-
-    async function connectWallet(connector: Connector) {
-        const result = await connectAsync({
-            chainId: mainnet.id,
-            connector,
-        });
-        return result;
-    }
-
-
-    async function connectToWalletConnectModal(
-        walletConnectModalConnector: Connector,
-    ) {
-        try {
-            await connectWallet(walletConnectModalConnector);
-        } catch (err) {
-            const isUserRejection =
-                err.name === 'UserRejectedRequestError' ||
-                err.message === 'Connection request reset. Please try again.';
-
-            if (!isUserRejection) {
-                throw err;
-            }
-        }
-    }
-    const c = allConnectors?.[5];
   
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
-
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
                 {

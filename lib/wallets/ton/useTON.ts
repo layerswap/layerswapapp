@@ -3,7 +3,6 @@ import { Address } from "@ton/core";
 import KnownInternalNames from "../../knownIds";
 import { WalletProvider } from "../../../hooks/useWallet";
 import TON from "../../../components/icons/Wallets/TON";
-import { useEffect, useState } from "react";
 
 export default function useTON(): WalletProvider {
     const withdrawalSupportedNetworks = [KnownInternalNames.Networks.TONMainnet]
@@ -11,14 +10,6 @@ export default function useTON(): WalletProvider {
     const id = 'ton'
     const tonWallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
-    const [shouldConnect, setShouldConnect] = useState(false)
-
-    useEffect(() => {
-        if (shouldConnect) {
-            connectWallet()
-            setShouldConnect(false)
-        }
-    }, [shouldConnect])
 
     const wallet = tonWallet ? {
         address: Address.parse(tonWallet.account.address).toString({ bounceable: false }),
@@ -50,26 +41,17 @@ export default function useTON(): WalletProvider {
         }
     }
 
-    const reconnectWallet = async () => {
-        try {
-            await disconnectWallet()
-            setShouldConnect(true)
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
-
-    return {
+    const provider = {
         connectedWallets: getWallet(),
         activeWallet: wallet,
         connectWallet,
         disconnectWallets: disconnectWallet,
-        reconnectWallet,
         withdrawalSupportedNetworks,
         autofillSupportedNetworks: withdrawalSupportedNetworks,
         asSourceSupportedNetworks: withdrawalSupportedNetworks,
         name,
         id,
     }
+
+    return provider
 }

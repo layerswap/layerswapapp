@@ -53,17 +53,11 @@ export default function useImtblX(): WalletProvider {
         return removeWallet(name)
     }
 
-    const reconnectWallet = async ({ chain }: { chain: string | number }) => {
-        disconnectWallet()
-        await connectWallet({ chain })
-    }
-
     return {
         connectedWallets: getWallet(),
         activeWallet: wallet,
         connectWallet,
         disconnectWallets: disconnectWallet,
-        reconnectWallet,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks: withdrawalSupportedNetworks,
         name,
