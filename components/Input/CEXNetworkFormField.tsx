@@ -55,7 +55,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     const network = (direction === 'from' ? from : to)
     const currency = (direction === 'from' ? fromCurrency : toCurrency)
-    console.log('historicalNetworks', historicalNetworks)
+    
     const menuItems = historicalNetworks?.data && routesData
         && GenerateMenuItems(historicalNetworks.data, routes?.data)
             .filter(item => routes?.data?.find(l =>
@@ -182,7 +182,7 @@ function GenerateMenuItems(
         const item: SelectMenuItem<ExchangeNetwork> = {
             baseObject: e,
             id: index.toString(),
-            name: `${e.network.name}_${e.token.symbol}`,
+            name: network?.display_name || '',
             displayName: network?.display_name,
             order: 1,
             imgSrc: network?.logo || '',

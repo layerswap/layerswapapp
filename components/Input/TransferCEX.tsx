@@ -19,16 +19,17 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
 
     const cex = fromExchange ? fromExchange.display_name : toExchange?.display_name
     const chain = from ? from.display_name : to?.display_name
+    const learnMoreUrl = fromExchange ? 'https://docs.layerswap.io/user-docs/layerswap-app/transfer-from-cex' : 'https://docs.layerswap.io/user-docs/layerswap-app/transfer-to-cex'
 
     return (<div className="font-normal flex flex-col w-full relative z-10 my-3 pb-4 border-b-2 border-b-secondary">
         <div className="w-full px-2.5 space-y-2">
             <div className="flex items-center mb-">
                 <p className="text-primary-text-placeholder text-base leading-5">
                     <span>Please select an intermediary network available on </span>
-                    <span>{fromExchange ? cex : chain}&nbsp;</span>
+                    <span>{fromExchange ? fromExchange.display_name : toExchange?.display_name}&nbsp;</span>
                     <span>to be used for </span>
                     <span>{fromExchange ? 'withdrawal' : 'deposit'}</span><span>.</span>
-                    <a target='_blank' href='https://docs.layerswap.io/user-docs/layerswap-app/your-first-swap/transfers-to-cex' className='text-primary-text-placeholder underline hover:no-underline decoration-primary-text-placeholder ml-1 cursor-pointer'>Learn more</a>
+                    <a target='_blank' href={learnMoreUrl} className='text-primary-text-placeholder underline hover:no-underline decoration-primary-text-placeholder ml-1 cursor-pointer'>Learn more</a>
                 </p>
             </div>
             <div className="relative flex items-center space-x-2 space-y-2">
