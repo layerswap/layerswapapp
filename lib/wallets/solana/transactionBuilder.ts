@@ -60,20 +60,23 @@ export const phtlcTransactionBuilder = async (params: CreatyePreHTLCParams & { p
 
     if (!sourceAsset.contract || !network.token) return null
 
-    let [commitCounter, _] = PublicKey.findProgramAddressSync(
-        [Buffer.from("commitCounter")],
+    const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
+    const timeLockMS = Date.now() + LOCK_TIME
+    const timeLock = Math.floor(timeLockMS / 1000)
+    const bnTimelock = new BN(timeLock);
+
+    const lpAddressPublicKey = new PublicKey(lpAddress);
+
+    const bnAmount = new BN(Number(amount) * Math.pow(10, 6));
+
+    const commitId = await program?.methods.getCommitId(bnAmount, bnTimelock).accountsPartial({ sender: walletPublicKey, receiver: lpAddressPublicKey }).view();
+
+    let [phtlcTokenAccount, b] = commitId && PublicKey.findProgramAddressSync(
+        [Buffer.from("phtlc_token_account"), commitId],
         program.programId
     );
-
-    const commitId = await program?.methods.getCommitId().accountsPartial({ commitCounter }).view();
-    const commitIdArray = Buffer.from(new BN(commitId).toArray('be', 32))
-
-    let [phtlcTokenAccount, b] = commitIdArray && PublicKey.findProgramAddressSync(
-        [Buffer.from("phtlc_token_account"), commitIdArray],
-        program.programId
-    );
-    let [phtlc, phtlcBump] = commitIdArray && PublicKey.findProgramAddressSync(
-        [commitIdArray],
+    let [phtlc, phtlcBump] = commitId && PublicKey.findProgramAddressSync(
+        [commitId],
         program.programId
     );
 
@@ -96,23 +99,14 @@ export const phtlcTransactionBuilder = async (params: CreatyePreHTLCParams & { p
         throw Error("No contract address")
     }
 
-    const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
-    const timeLockMS = Date.now() + LOCK_TIME
-    const timeLock = Math.floor(timeLockMS / 1000)
-    const TIMELOCK = new BN(timeLock);
-
-    const bnAmount = new BN(Number(amount) * Math.pow(10, 6));
-    const lpAddressPublicKey = new PublicKey(lpAddress);
-
     const tokenContract = new PublicKey(sourceAsset.contract);
 
     const commitTx = await program.methods
-        .commit(commitIdArray, hopChains, hopAssets, hopAddresses, destinationChain, destinationAsset, destination_address, sourceAsset.symbol, lpAddressPublicKey, TIMELOCK, walletPublicKey, bnAmount, phtlcBump)
+        .commit(commitId, hopChains, hopAssets, hopAddresses, destinationChain, destinationAsset, destination_address, sourceAsset.symbol, lpAddressPublicKey, bnTimelock, walletPublicKey, bnAmount, phtlcBump)
         .accountsPartial({
             sender: walletPublicKey,
             phtlc: phtlc,
             phtlcTokenAccount: phtlcTokenAccount,
-            commitCounter: commitCounter,
             tokenContract: tokenContract,
             senderTokenAccount: senderTokenAddress
         })
@@ -127,7 +121,7 @@ export const phtlcTransactionBuilder = async (params: CreatyePreHTLCParams & { p
     commit.lastValidBlockHeight = blockHash.lastValidBlockHeight;
     commit.feePayer = walletPublicKey;
 
-    return { initAndCommit: commit, commitId: commitIdArray }
+    return { initAndCommit: commit, commitId: commitId }
 }
 
 export const lockTransactionBuilder = async (params: CommitmentParams & LockParams & { program: Program<Idl>, connection: Connection, walletPublicKey: PublicKey, network: NetworkWithTokens }) => {

@@ -84,32 +84,6 @@ export const AnchorHtlc = (address: string): Idl => ({
           }
         },
         {
-          "name": "commitCounter",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  109,
-                  109,
-                  105,
-                  116,
-                  67,
-                  111,
-                  117,
-                  110,
-                  116,
-                  101,
-                  114
-                ]
-              }
-            ]
-          }
-        },
-        {
           "name": "token_contract"
         },
         {
@@ -380,33 +354,28 @@ export const AnchorHtlc = (address: string): Idl => ({
       ],
       "accounts": [
         {
-          "name": "commitCounter",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  109,
-                  109,
-                  105,
-                  116,
-                  67,
-                  111,
-                  117,
-                  110,
-                  116,
-                  101,
-                  114
-                ]
-              }
-            ]
-          }
+          "name": "sender"
+        },
+        {
+          "name": "receiver"
         }
       ],
-      "args": [],
-      "returns": "u64"
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "timelock",
+          "type": "u64"
+        }
+      ],
+      "returns": {
+        "array": [
+          "u8",
+          32
+        ]
+      }
     },
     {
       "name": "initLockIdByCommitId",
@@ -473,60 +442,6 @@ export const AnchorHtlc = (address: string): Idl => ({
           }
         }
       ]
-    },
-    {
-      "name": "initialize",
-      "docs": [
-        "@dev Called by the owner(only once) to initialize the commit Counter."
-      ],
-      "discriminator": [
-        175,
-        175,
-        109,
-        31,
-        13,
-        152,
-        155,
-        237
-      ],
-      "accounts": [
-        {
-          "name": "owner",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "commitCounter",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  109,
-                  109,
-                  105,
-                  116,
-                  67,
-                  111,
-                  117,
-                  110,
-                  116,
-                  101,
-                  114
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
     },
     {
       "name": "lock",
@@ -1354,19 +1269,6 @@ export const AnchorHtlc = (address: string): Idl => ({
   ],
   "accounts": [
     {
-      "name": "CommitCounter",
-      "discriminator": [
-        212,
-        48,
-        98,
-        236,
-        88,
-        247,
-        14,
-        230
-      ]
-    },
-    {
       "name": "HTLC",
       "discriminator": [
         172,
@@ -1521,42 +1423,21 @@ export const AnchorHtlc = (address: string): Idl => ({
     },
     {
       "code": 6009,
-      "name": "NotOwner",
-      "msg": "Not The Owner."
-    },
-    {
-      "code": 6010,
       "name": "NotSender",
       "msg": "Not The Sender."
     },
     {
-      "code": 6011,
+      "code": 6010,
       "name": "NotReciever",
       "msg": "Not The Reciever."
     },
     {
-      "code": 6012,
+      "code": 6011,
       "name": "NoToken",
       "msg": "Wrong Token."
     }
   ],
   "types": [
-    {
-      "name": "CommitCounter",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "count",
-            "type": "u64"
-          },
-          {
-            "name": "time",
-            "type": "u64"
-          }
-        ]
-      }
-    },
     {
       "name": "HTLC",
       "type": {
