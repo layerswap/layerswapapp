@@ -4,6 +4,7 @@ import KnownInternalNames from "../../knownIds"
 import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
+import { useSettingsState } from "../../../context/settings";
 
 export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
@@ -19,6 +20,10 @@ export default function useStarknet(): WalletProvider {
     ]
 
     const name = 'starknet'
+    const { networks } = useSettingsState()
+
+    const isMainnet = networks?.some(network => network.name === KnownInternalNames.Networks.StarkNetMainnet)
+
     const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
     const wallets = useWalletStore((state) => state.connectedWallets)
 
@@ -31,8 +36,8 @@ export default function useStarknet(): WalletProvider {
     type ConnectProps = {
         chain?: string
     }
-    const connectWallet = useCallback(async (props?: ConnectProps) => {
-        const { chain } = props || {}
+    const connectWallet = useCallback(async () => {
+        toast.dismiss('connect-wallet')
         const constants = (await import('starknet')).constants
         const connect = (await import('starknetkit')).connect
         try {
@@ -42,14 +47,16 @@ export default function useStarknet(): WalletProvider {
                     projectId: WALLETCONNECT_PROJECT_ID,
                     url: 'https://www.layerswap.io/app',
                     description: 'Move crypto across exchanges, blockchains, and wallets.',
-                    chainId: chain as any
                 },
                 dappName: 'Layerswap',
                 modalMode: 'alwaysAsk'
             })
-            if (wallet && chain && ((wallet.provider?.chainId && wallet.provider?.chainId != chain) || (wallet.provider?.provider?.chainId && wallet.provider?.provider?.chainId != chain))) {
+            const walletChain = wallet && (wallet.provider?.chainId || wallet.provider?.provider?.chainId)
+            const wrongChanin = walletChain == constants.StarknetChainId.SN_MAIN? !isMainnet : isMainnet
+
+            if (wallet && wrongChanin) {
                 await disconnectWallet()
-                const errorMessage = `Please switch the network in your wallet to ${chain === constants.StarknetChainId.SN_SEPOLIA ? 'Sepolia' : 'Mainnet'} and click connect again`
+                const errorMessage = `Please switch the network in your wallet to ${isMainnet ? 'Mainnet' : 'Sepolia'} and click connect again`
                 throw new Error(errorMessage)
             }
 
@@ -66,15 +73,14 @@ export default function useStarknet(): WalletProvider {
                 })
             } else if (wallet?.isConnected === false) {
                 await disconnectWallet()
-                connectWallet({ chain })
+                connectWallet()
             }
-
         }
         catch (e) {
             console.log(e)
-            toast.error(e.message, { duration: 30000 })
+            toast.error(e.message, { id: 'connect-wallet', duration: 30000 })
         }
-    }, [addWallet])
+    }, [addWallet, isMainnet])
 
     const disconnectWallet = async () => {
         const disconnect = (await import('starknetkit')).disconnect
@@ -89,7 +95,7 @@ export default function useStarknet(): WalletProvider {
 
     const reconnectWallet = async ({ chain }: { chain: string }) => {
         await disconnectWallet()
-        await connectWallet({ chain })
+        await connectWallet()
     }
 
     return {
