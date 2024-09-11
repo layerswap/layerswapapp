@@ -103,7 +103,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     </>
 
     const networkDetails = <div>
-        <TransferCEX values={values} manuItems={menuItems} selectedItem={selectedItem} value={value} />
+        <TransferCEX direction={direction} />
     </div>
 
     const header = direction === 'from' ? 'Withdrawal network' : 'Deposit network'

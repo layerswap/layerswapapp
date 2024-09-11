@@ -3,17 +3,20 @@ import Image from 'next/image'
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { ExchangeNetwork } from "../../Models/Exchange";
-import Link from "next/link";
+import { useFormikContext } from "formik";
 
-type TransferCEXProps = {
-    values: SwapFormValues;
-    manuItems: ISelectMenuItem[] | undefined;
-    value: SelectMenuItem<ExchangeNetwork> | undefined;
-    selectedItem?: ISelectMenuItem | null;
+type Props = {
+    direction: "from" | "to",
 }
 
-const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedItem }) => {
+const TransferCEX: FC<Props> = ({ direction }) => {
+    const {
+        values,
+    } = useFormikContext<SwapFormValues>();
+
     const { from, to, fromExchange, toExchange } = values
+    const exchangeNetwork = (direction === 'from' ? from : to)
+
     const sourceLogo = fromExchange ? fromExchange.logo : from?.logo
     const destinationLogo = toExchange ? toExchange.logo : to?.logo
 
@@ -30,9 +33,9 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
                     <a target='_blank' href={learnMoreUrl} className='text-primary-text-placeholder underline hover:no-underline decoration-primary-text-placeholder ml-1 cursor-pointer'>Learn more</a>
                 </p>
             </div>
-            <div className="relative flex items-center space-x-2 space-y-2">
+            <div className="relative flex items-center space-x-2 py-2">
                 <div className="flex-shrink-0 h-6 w-6 relative">
-                    {(values.from || values.fromExchange) && <Image
+                    {sourceLogo && <Image
                         src={sourceLogo!}
                         alt="Project Logo"
                         height="40"
@@ -42,9 +45,9 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
                     />}
                 </div>
                 <div className="w-full h-[2px] bg-primary-text-placeholder my-2 line line-left" />
-                <div className="flex-shrink-0 h-9 w-9 relative">
-                    {value ? <Image
-                        src={value?.imgSrc}
+                <div className="flex-shrink-0 h-8 w-8 relative">
+                    {exchangeNetwork ? <Image
+                        src={exchangeNetwork.logo}
                         alt="Project Logo"
                         height="40"
                         width="40"
@@ -56,7 +59,7 @@ const TransferCEX: FC<TransferCEXProps> = ({ values, manuItems, value, selectedI
                 </div>
                 <div className="w-full h-[2px] bg-primary-text-placeholder my-2 line line-right" />
                 <div className="flex-shrink-0 h-6 w-6 relative">
-                    {(values.to || values.toExchange) && <Image
+                    {destinationLogo && <Image
                         src={destinationLogo!}
                         alt="Project Logo"
                         height="40"
