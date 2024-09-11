@@ -183,7 +183,7 @@ function GenerateMenuItems(
 
         const item: SelectMenuItem<ExchangeNetwork> = {
             baseObject: e,
-            id: index.toString(),
+            id: `${e.network.name}-${e.token.symbol}`,
             name: network?.display_name || '',
             displayName,
             order: 1,

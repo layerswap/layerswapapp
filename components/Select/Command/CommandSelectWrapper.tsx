@@ -37,8 +37,6 @@ export default function CommandSelectWrapper<T>({
     modalHeight,
     modalContent,
     requireConfirmation,
-    selectedItem,
-    setSelectedItem,
     header
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
@@ -104,8 +102,6 @@ export default function CommandSelectWrapper<T>({
                 modalHeight={modalHeight}
                 modalContent={modalContent}
                 requireConfirmation={requireConfirmation}
-                selectedItem={selectedItem}
-                setSelectedItem={setSelectedItem}
                 header={header}
             />
         </>
