@@ -9,7 +9,7 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                 <div className="flex-shrink-0">
                     <div>{item.leftIcon}</div>
                 </div>
-                <div className="flex-shrink-0 h-6 w-6 relative">
+                <div className={`${item?.displayName ? "h-9 w-9" : "h-6 w-6"} flex-shrink-0 relative`}>
                     {item.imgSrc && (
                         <Image
                             src={item.imgSrc}

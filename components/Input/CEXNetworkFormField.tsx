@@ -151,42 +151,44 @@ function GenerateMenuItems(
     const menuItems = historicalNetworks.map((e, index) => {
 
         const network = routes?.find(l => l.name == e.network.name);
-        const details = <div className="flex items-center space-x-1">
-            <div className="w-3.5 h-3.5">
-                <Image
-                    src={e.token.logo}
-                    alt="Project Logo"
-                    height="20"
-                    width="20"
-                    loading="eager"
-                    className="rounded-full object-contain" />
+        const displayName = <div className="flex flex-col space-x-1">
+            <p className="pl-1 text-primary-text text-base">{network?.display_name}</p>
+            <div className="flex items-center space-x-1">
+                <div className="w-4 h-4">
+                    <Image
+                        src={e.token.logo}
+                        alt="Project Logo"
+                        height="20"
+                        width="20"
+                        loading="eager"
+                        className="rounded-full object-contain" />
+                </div>
+                <p className="text-secondary-text text-xs">
+                    {e.token.symbol}
+                    {e.token.contract && network && (
+                        <>
+                            {' - '}
+                            <Link
+                                target="_blank"
+                                href={network.account_explorer_template.replace("{0}", e.token.contract)}
+                                className="underline text-secondary-text hover:no-underline w-fit"
+                            >
+                                {shortenAddress(e.token.contract)}
+                            </Link>
+                        </>
+                    )}
+                </p>
             </div>
-            <p className="text-secondary-text text-xs">
-                {e.token.symbol}
-                {e.token.contract && network && (
-                    <>
-                        {' - '}
-                        <Link
-                            target="_blank"
-                            href={network.account_explorer_template.replace("{0}", e.token.contract)}
-                            className="underline text-secondary-text hover:no-underline w-fit"
-                        >
-                            {shortenAddress(e.token.contract)}
-                        </Link>
-                    </>
-                )}
-            </p>
         </div>
 
         const item: SelectMenuItem<ExchangeNetwork> = {
             baseObject: e,
             id: index.toString(),
             name: network?.display_name || '',
-            displayName: network?.display_name,
+            displayName,
             order: 1,
             imgSrc: network?.logo || '',
-            isAvailable: true,
-            details
+            isAvailable: true
         }
         return item;
     })

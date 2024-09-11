@@ -3,7 +3,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     name: string;
     order: number;
     imgSrc: string;
-    displayName?: string | undefined;
+    displayName?: React.ReactNode;
     isAvailable: boolean;
     group?: string;
     details?: JSX.Element | JSX.Element[];
@@ -26,7 +26,7 @@ export interface ISelectMenuItem {
     id: string;
     name: string;
     imgSrc: string;
-    displayName?: string | undefined;
+    displayName?: React.ReactNode;
     group?: string;
     isAvailable: boolean;
     details?: JSX.Element | JSX.Element[];
