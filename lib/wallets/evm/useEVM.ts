@@ -255,7 +255,7 @@ export default function useEVM(): WalletProvider {
             args: [lockId],
             chainId: Number(chainId),
         })
-        const networkToken = networks.find(network => chainId && Number(network.chain_id) == Number(chainId))?.tokens.find(token => token.symbol === result.dstAsset)
+        const networkToken = networks.find(network => chainId && Number(network.chain_id) == Number(chainId))?.tokens.find(token => token.symbol === result.srcAsset)
 
         if (result.sender !== '0x0000000000000000000000000000000000000000' || result.sender !== '0x0000000000000000000000000000000000000000000000000000000000000000') {
             const parsedResult = {
