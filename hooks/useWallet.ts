@@ -39,7 +39,6 @@ export default function useWallet() {
         useTON(),
         useEVM(),
         useStarknet(),
-        // useImmutableX(),
         useSolana()
     ]
 

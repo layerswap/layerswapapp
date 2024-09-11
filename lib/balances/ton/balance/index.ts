@@ -3,7 +3,7 @@ import formatAmount from "../../../formatAmount";
 import { Network, Token } from "../../../../Models/Network";
 import { datadogRum } from "@datadog/browser-rum";
 import tonClient from "../../../wallets/ton/client";
-import retryWithExponentialBackoff from "../../../retryWithExponentialBackoff";
+import { retryWithExponentialBackoff } from "../../../retry";
 
 export const resolveBalance = async ({ address, network, token }: {
     network: Network,
@@ -66,7 +66,7 @@ const getJettonBalance = async ({ network, token, address }: { network: Network,
             return await jettonWallet.getBalance(tonClient.provider(jettonAddress))
         }
         const jettonBalance = await retryWithExponentialBackoff(getBalance)
-        
+
         const balance = {
             network: network.name,
             token: token.symbol,

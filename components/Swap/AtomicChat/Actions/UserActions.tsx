@@ -92,7 +92,7 @@ export const UserCommitAction: FC = () => {
 
     if (!source_network) return <></>
 
-    return <div className="font-normal flex flex-col w-full relative z-10 space-y-4 grow">
+return <div className="font-normal flex flex-col w-full relative z-10 space-y-4 grow">
         {
             commitId ?
                 <ActionStatus
@@ -187,7 +187,7 @@ export const UserLockAction: FC = () => {
                     activeChain={wallet?.chainId}
                     isConnected={!!wallet}
                     network={source_network}
-                    networkChainId={Number(source_network.chain_id)}
+                    networkChainId={source_network.chain_id}
                     onClick={handleLockAssets}
                 >
                     Lock

@@ -192,7 +192,7 @@ export default function useSolana(): WalletProvider {
             [lockIdBuffer],
             lpProgram.programId
         );
-        debugger
+        
         const result = await lpProgram?.methods.getLockDetails(Array.from(lockIdBuffer), Number(htlcBump)).accountsPartial({ htlc }).view();
 
         const parsedResult = {

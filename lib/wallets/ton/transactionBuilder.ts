@@ -1,4 +1,4 @@
-import retryWithExponentialBackoff from "../../retryWithExponentialBackoff";
+import { retryWithExponentialBackoff } from "../../retry";
 import { CreatePreHTLCParams } from "../phtlc";
 import tonClient from "./client";
 import { JettonMaster, Address, Builder, Dictionary, DictionaryValue, beginCell, Slice, Cell, toNano } from "@ton/ton"
@@ -15,6 +15,7 @@ export const commitTransactionBuilder = async (params: CreatePreHTLCParams & { w
         destinationAsset,
         address,
         decimals,
+        amount
     } = params
 
     if (!sourceAsset.contract) return
@@ -35,7 +36,7 @@ export const commitTransactionBuilder = async (params: CreatePreHTLCParams & { w
         [0n, { $$type: 'StringImpl', data: "0xF6517026847B4c166AAA176fe0C5baD1A245778D" }]
     ]);
 
-    const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
+    const LOCK_TIME = 1000 * 60 * 29 // 29 minutes
     const timeLockMS = Date.now() + LOCK_TIME
     const timelock = BigInt(Math.floor(timeLockMS / 1000))
 
@@ -75,7 +76,7 @@ export const commitTransactionBuilder = async (params: CreatePreHTLCParams & { w
 
     const forward_payload = beginCell().storeUint(1, 1).storeRef(beginCell().storeUint(1734998782, 32).storeBuilder(b_0).endCell()).endCell();
     const custom_payload: Cell | null = beginCell().storeInt(0, 32).storeStringTail("Success").endCell();
-    const tokenTransferAmount = BigInt(0.0000001 * Math.pow(10, decimals))
+    const tokenTransferAmount = BigInt(Number(amount) * Math.pow(10, decimals))
 
     const body = beginCell()
         .storeUint(0x0f8a7ea5, 32) // opcode for jetton transfer
