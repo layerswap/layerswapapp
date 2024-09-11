@@ -130,21 +130,20 @@ export default function useTON(): WalletProvider {
 
             const commitDetails = (commitResult.stack as any)?.items?.[0]?.items
 
-            const lockIdResult = !commitDetails && await tonClient.runMethod(
-                Address.parse(contractAddress),
-                "getLockIdByCommitId",
-                args.build()
-            );
+            var search = window.location.search.substring(1);
+            const searchData = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}')
+            const hashlock = searchData.hashlock
 
-            debugger
+            let lockDetailsArgs = new TupleBuilder();
+            if (hashlock) lockDetailsArgs.writeNumber(hexToBigInt(hashlock));
 
-            const lockDetailsResult = await tonClient.runMethod(
+            const lockDetailsResult = !commitDetails && await tonClient.runMethod(
                 Address.parse(contractAddress),
                 "getLockCDetails",
-                args.build()
+                lockDetailsArgs.build()
             );
 
-
+debugger
             const details = commitDetails;
             const locked = Number(details[10]) === 1
             const srcAsset = details[3].beginParse().loadStringTail()
@@ -164,7 +163,7 @@ export default function useTON(): WalletProvider {
                 amount,
                 messenger: details[9].beginParse().loadAddress().toString(),
                 locked,
-                lockId: lockIdResult ? lockIdResult.stack[0][1].number.number : null,
+                lockId: hashlock,
                 uncommitted: Number(details[11]) === 1,
             }
 
@@ -296,7 +295,7 @@ export default function useTON(): WalletProvider {
             messages: [
                 {
                     address: contractAddress,
-                    amount: toNano('0.2').toString(),
+                    amount: toNano('0.1').toString(),
                     payload: body.toBoc().toString("base64")
                 }
             ]

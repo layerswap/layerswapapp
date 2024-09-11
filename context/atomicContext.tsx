@@ -40,7 +40,7 @@ export function AtomicProvider({ children }) {
         destination,
         destination_asset,
         source,
-        source_asseet
+        source_asset
     } = router.query
 
     const [commitId, setCommitId] = useState<string | undefined>(router.query.commitId as string | undefined)
@@ -58,7 +58,7 @@ export function AtomicProvider({ children }) {
 
     const source_network = networks.find(n => n.name.toUpperCase() === (source as string).toUpperCase())
     const destination_network = networks.find(n => n.name.toUpperCase() === (destination as string).toUpperCase())
-    const source_token = source_network?.tokens.find(t => t.symbol === source_asseet)
+    const source_token = source_network?.tokens.find(t => t.symbol === source_asset)
     const destination_token = destination_network?.tokens.find(t => t.symbol === destination_asset)
 
     useEffect(() => {
