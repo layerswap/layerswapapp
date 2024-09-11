@@ -6,19 +6,17 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     displayName?: string | undefined;
     isAvailable: boolean;
     group?: string;
-    rightIcon?: JSX.Element | JSX.Element[];
     details?: JSX.Element | JSX.Element[];
     badge?: JSX.Element | JSX.Element[];
     leftIcon?: JSX.Element | JSX.Element[];
     baseObject: T;
-    constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, isAvailable: boolean, group?: string, rightIcon?: JSX.Element, details?: JSX.Element | JSX.Element[]) {
+    constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, isAvailable: boolean, group?: string, details?: JSX.Element | JSX.Element[]) {
         this.baseObject = baseObject;
         this.id = id;
         this.name = name;
         this.order = order;
         this.imgSrc = imgSrc;
         this.group = group;
-        this.rightIcon = rightIcon;
         this.details = details;
         this.isAvailable = isAvailable
     }
@@ -31,7 +29,6 @@ export interface ISelectMenuItem {
     displayName?: string | undefined;
     group?: string;
     isAvailable: boolean;
-    rightIcon?: JSX.Element | JSX.Element[];
     details?: JSX.Element | JSX.Element[];
     badge?: JSX.Element | JSX.Element[];
     leftIcon?: JSX.Element | JSX.Element[];

@@ -199,6 +199,7 @@ function GenerateCurrencyMenuItems(
             imgSrc: c.logo,
             isAvailable: currencyIsAvailable,
             badge,
+            details,
             leftIcon: <RouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={!!routeNotFound} />
         };
 
