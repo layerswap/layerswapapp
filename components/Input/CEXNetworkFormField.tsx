@@ -132,13 +132,11 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             values={menuItems!}
             searchHint=''
             isLoading={isRoutesLoading || isHistoricalNetworsLoading}
-            modalHeight="fit"
+            modalHeight="full"
             valueDetails={valueDetails}
             modalContent={networkDetails}
             key={value?.id}
             requireConfirmation={true}
-            selectedItem={selectedItem}
-            setSelectedItem={setSelectedItem}
             header={header}
         />
     </div>)

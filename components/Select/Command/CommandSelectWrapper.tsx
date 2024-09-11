@@ -19,8 +19,6 @@ type CommandSelectWrapperProps = {
     exchangeDetails?: React.ReactNode;
     modalContent?: React.ReactNode;
     requireConfirmation?: boolean;
-    selectedItem?: ISelectMenuItem | null;
-    setSelectedItem?: (item: ISelectMenuItem | null) => void;
     direction?: string;
     header?: string;
 }
