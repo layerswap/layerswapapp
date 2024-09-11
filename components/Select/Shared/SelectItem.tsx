@@ -4,8 +4,8 @@ import Image from 'next/image';
 export default function SelectItem({ item }: { item: ISelectMenuItem }) {
 
     return (
-        <div className="flex items-center justify-between gap-3 w-full overflow-hidden px-1.5">
-            <div className="relative flex items-center gap-3 pl-1 w-full">
+        <div className={`${item?.displayName ? "px-3" : "px-1.5"} flex items-center justify-between gap-3 w-full overflow-hidden`}>
+            <div className={`${item?.displayName ? "gap-2.5" : "gap-3"} relative flex items-center  pl-1 w-full`}>
                 <div className="flex-shrink-0">
                     <div>{item.leftIcon}</div>
                 </div>
