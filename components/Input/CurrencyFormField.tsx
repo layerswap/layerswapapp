@@ -57,7 +57,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     } = useSWR<ApiResponse<RouteNetwork[]>>(`${networkRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
     const allCurrencies: ((RouteToken & { network_name: string, network_display_name: string, network_logo: string })[] | undefined) = routes?.data?.map(route =>
-            route.tokens.map(asset => ({ ...asset, network_display_name: route.display_name, network_name: route.name, network_logo: route.logo }))).flat()
+        route.tokens.map(asset => ({ ...asset, network_display_name: route.display_name, network_name: route.name, network_logo: route.logo }))).flat()
 
     const currencyMenuItems = GenerateCurrencyMenuItems(
         allCurrencies!,
@@ -205,24 +205,19 @@ function GenerateCurrencyMenuItems(
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
         const balanceAmountInUsd = formatted_balance_amount ? (currency?.price_in_usd * formatted_balance_amount).toFixed(2) : undefined
 
-        const DisplayNameComponent = <div>
-            {displayName}
-            <span className="text-primary-text-muted text-xs block">
-                {c.network_display_name}
-            </span>
-        </div>
-
-        const NetworkImage = <div>
-            {c.network_logo && <div className="absolute w-2.5 -right-1 -bottom-0.5">
-                <Image
+        const DisplayNameComponent = <div className="flex flex-col">
+            <span className="text-base text-primary-text">{displayName}</span>
+            <span className="text-secondary-text text-xs flex">
+                {c.network_logo && <Image
                     src={c.network_logo}
                     alt="Project Logo"
-                    height="40"
-                    width="40"
+                    height="12"
+                    width="12"
                     loading="eager"
-                    className="rounded-md object-contain" />
-            </div>
-            }
+                    className="rounded-md object-contain mr-1" />
+                }
+                {c.network_display_name}
+            </span>
         </div>
 
         const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
@@ -234,30 +229,35 @@ function GenerateCurrencyMenuItems(
             );
 
         const routeNotFound = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) || lockAsset;
-        
+
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
 
-        const details = <p className="text-primary-text-placeholder flex flex-col items-end">
+        const details = wallets?.length ? (<p className="text-primary-text-placeholder flex flex-col items-end">
             {Number(formatted_balance_amount) ?
                 <span className="text-primary-text text-sm">{formatted_balance_amount}</span>
                 :
-                <span className="text-primary-text text-sm">0.00</span>
+                <span className="text-primary-text text-sm">-</span>
             }
             {balanceAmountInUsd ?
                 <span className="text-sm">${balanceAmountInUsd}</span>
                 :
-                <span className="text-sm">$0.00</span>
+                null
             }
-        </p>
+        </p>) : null
+
+        const noWalletsConnectedText = !wallets?.length && (
+            <div className="absolute right-2 text-secondary-text text-xs">
+                Connect wallet<br /> to see balance
+            </div>
+        )
 
         const res: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
             baseObject: c,
             id: `${c?.symbol?.toLowerCase()}_${c?.network_name?.toLowerCase()}`,
             name: displayName || "-",
             menuItemLabel: DisplayNameComponent,
-            menuItemImage: NetworkImage,
             balanceAmount: Number(formatted_balance_amount),
             order: CurrencySettings.KnownSettings[c.symbol]?.Order ?? 5,
             imgSrc: c.logo,
@@ -265,7 +265,8 @@ function GenerateCurrencyMenuItems(
             group: getGroupName(c.network_display_name === (direction === "from" ? from?.display_name : to?.display_name) ? c.network_display_name : "All networks"),
             menuItemDetails: details,
             badge,
-            icon: <RouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={!!routeNotFound} />
+            icon: <RouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={!!routeNotFound} />,
+            noWalletsConnectedText
         };
 
         return res

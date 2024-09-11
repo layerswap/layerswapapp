@@ -4,6 +4,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     menuItemLabel?: React.ReactNode;
     menuItemDetails?: React.ReactNode;
     menuItemImage?: React.ReactNode;
+    noWalletsConnectedText?: React.ReactNode;
     balanceAmount?: number | undefined;
     order: number;
     imgSrc: string;
@@ -32,6 +33,7 @@ export interface ISelectMenuItem {
     menuItemLabel?: React.ReactNode;
     menuItemDetails?: React.ReactNode;
     menuItemImage?: React.ReactNode;
+    noWalletsConnectedText?: React.ReactNode;
     balanceAmount?: number | undefined;
     imgSrc: string;
     displayName?: string | undefined;
