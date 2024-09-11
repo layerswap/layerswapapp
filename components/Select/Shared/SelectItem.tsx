@@ -1,12 +1,11 @@
 import { ISelectMenuItem } from "./Props/selectMenuItem";
-import Image from 'next/image'
+import Image from 'next/image';
 
 export default function SelectItem({ item }: { item: ISelectMenuItem }) {
-    const isDisabled = !item.isAvailable;
 
-    return (<div className={`${isDisabled ? "opacity-50" : ""} flex items-center justify-between gap-4 w-full overflow-hidden`}>
+    return (<div className="flex items-center justify-between gap-4 w-full overflow-hidden">
         <div className={`${item?.details ? "gap-2" : "gap-4"} relative flex items-center pl-4`}>
-            {!isDisabled && item?.leftIcon}
+            {item?.leftIcon}
             <div className={`${item?.details ? "h-9 w-9" : "h-6 w-6"} flex-shrink-0 relative`}>
                 {item.imgSrc && <Image
                     src={item.imgSrc}
