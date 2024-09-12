@@ -54,6 +54,16 @@ export default function useEVM(): WalletProvider {
             if (connector == "com.immutable.passport" && network && !(network.name == KnownInternalNames.Networks.ImmutableZkEVM || network.name == KnownInternalNames.Networks.ImmutableXMainnet)) {
                 return undefined
             }
+            let roninWalletNetworks = [
+                KnownInternalNames.Networks.RoninMainnet,
+                KnownInternalNames.Networks.EthereumMainnet,
+                KnownInternalNames.Networks.PolygonMainnet,
+                KnownInternalNames.Networks.BNBChainMainnet,
+                KnownInternalNames.Networks.ArbitrumMainnet];
+
+            if (connector == "com.roninchain.wallet" && network && !roninWalletNetworks.includes(network.name)) {
+                return undefined;
+            }
             return {
                 address: account.address,
                 connector: account.connector.name || connector.charAt(0).toUpperCase() + connector.slice(1),
