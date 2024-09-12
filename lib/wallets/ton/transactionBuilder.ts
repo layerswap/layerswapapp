@@ -36,7 +36,7 @@ export const commitTransactionBuilder = async (params: CreatePreHTLCParams & { w
         [0n, { $$type: 'StringImpl', data: "0xF6517026847B4c166AAA176fe0C5baD1A245778D" }]
     ]);
 
-    const LOCK_TIME = 1000 * 60 * 29 // 29 minutes
+    const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
     const timeLockMS = Date.now() + LOCK_TIME
     const timelock = BigInt(Math.floor(timeLockMS / 1000))
 
