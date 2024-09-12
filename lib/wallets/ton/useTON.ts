@@ -35,8 +35,8 @@ export default function useTON(): WalletProvider {
         }
     }
 
-    const connectWallet = () => {
-        return tonConnectUI.openModal()
+    const connectWallet = async () => {
+        return await tonConnectUI.openModal()
     }
 
     const disconnectWallet = async () => {
