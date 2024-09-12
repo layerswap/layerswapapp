@@ -224,9 +224,10 @@ export default function useTON(): WalletProvider {
         }
 
         const id = lockId || commitId
+        const opcode = lockId ? 2910985977 : 2841160739
 
         const body = beginCell()
-            .storeUint(2910985977, 32)
+            .storeUint(opcode, 32)
             .storeInt(hexToBigInt(id as `0x${string}`), 257)
             .endCell();
 
