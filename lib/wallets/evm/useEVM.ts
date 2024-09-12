@@ -16,7 +16,7 @@ export default function useEVM(): WalletProvider {
     const { disconnectAsync } = useDisconnect()
 
     const asSourceSupportedNetworks = [
-        ...networks.filter(network => network.type === NetworkType.EVM && network.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
+        ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
         KnownInternalNames.Networks.LoopringGoerli,
         KnownInternalNames.Networks.LoopringMainnet,
