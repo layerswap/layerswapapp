@@ -271,7 +271,7 @@ export default function useStarknet(): WalletProvider {
             })
         )
         const result = await atomicContract.functions.getLockDetails(lockId)
-        const networkToken = networks.find(network => chainId && Number(network.chain_id) == Number(chainId))?.tokens.find(token => token.symbol === shortString.decodeShortString(ethers.utils.hexlify(result.dstAsset as BigNumberish)))
+        const networkToken = networks.find(network => chainId && Number(network.chain_id) == Number(chainId))?.tokens.find(token => token.symbol === shortString.decodeShortString(ethers.utils.hexlify(result.srcAsset as BigNumberish)))
 
         const parsedResult: AssetLock = {
             dstAddress: result.dstAddress,
