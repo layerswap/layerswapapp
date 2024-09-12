@@ -201,6 +201,7 @@ export default function useEVM(): WalletProvider {
 
         const parsedResult = {
             ...result,
+            lockId: result.lockId !== "0x0000000000000000000000000000000000000000000000000000000000000000" ? result.lockId : null,
             amount: formatAmount(Number(result.amount), networkToken?.decimals),
             timelock: Number(result.timelock)
         }

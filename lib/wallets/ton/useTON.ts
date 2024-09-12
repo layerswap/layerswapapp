@@ -9,10 +9,11 @@ import { Address, beginCell, Cell, TupleItem, toNano } from "@ton/ton"
 import { commitTransactionBuilder } from "./transactionBuilder";
 import { AssetLock, Commit } from "../../../Models/PHTLC";
 import tonClient from "./client";
-import { hexToBigInt } from "viem";
+import { hexToBigInt, toHex } from "viem";
 import { TupleBuilder } from "@ton/core"
 import { useSettingsState } from "../../../context/settings";
 import { retryUntilFecth } from "../../retry";
+import { getTONCommitment, getTONLock } from "./getters";
 
 export default function useTON(): WalletProvider {
 
@@ -114,60 +115,34 @@ export default function useTON(): WalletProvider {
     }
 
     const getCommitment = async (params: CommitmentParams): Promise<Commit> => {
-        const { commitId, contractAddress, chainId } = params
+        const network = networks.find(n => n.chain_id === params.chainId)
 
         try {
-            const bigIntValue = hexToBigInt(commitId as `0x${string}`);
-
-            let args = new TupleBuilder();
-            args.writeNumber(bigIntValue);
-
-            const commitResult = await tonClient.runMethod(
-                Address.parse(contractAddress),
-                "getCommitDetails",
-                args.build()
-            );
-
-            const commitDetails = (commitResult.stack as any)?.items?.[0]?.items
 
             var search = window.location.search.substring(1);
             const searchData = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}')
-            const hashlock = searchData.hashlock
+            const hashlock = searchData.hashlock as string | undefined
 
-            let lockDetailsArgs = new TupleBuilder();
-            if (hashlock) lockDetailsArgs.writeNumber(hexToBigInt(hashlock));
+            const commitDetailsResult = await getTONCommitment({ network, hashlock, ...params })
 
-            const lockDetailsResult = !commitDetails && await tonClient.runMethod(
-                Address.parse(contractAddress),
-                "getLockCDetails",
-                lockDetailsArgs.build()
-            );
+            const lockDetailsResult = (!commitDetailsResult && hashlock) ? await getTONLock({ lockId: hashlock, network, ...params }) : null
 
-debugger
-            const details = commitDetails;
-            const locked = Number(details[10]) === 1
-            const srcAsset = details[3].beginParse().loadStringTail()
-            const sender = details[4].beginParse().loadAddress().toString()
-
-            const token = networks.find(n => n.chain_id === chainId)?.tokens.find(t => t.symbol === srcAsset)
-            const amount = Number(details[8]) / Math.pow(10, token?.decimals || 8)
-
-            const parsedResult: Commit = {
-                dstAddress: details[0].beginParse().loadStringTail(),
-                dstChain: details[1].beginParse().loadStringTail(),
-                dstAsset: details[2].beginParse().loadStringTail(),
-                srcAsset,
-                sender,
-                srcReceiver: details[6].beginParse().loadAddress().toString(),
-                timelock: Number(details[7]),
-                amount,
-                messenger: details[9].beginParse().loadAddress().toString(),
-                locked,
-                lockId: hashlock,
-                uncommitted: Number(details[11]) === 1,
+            const parsedResult: Commit = commitDetailsResult || {
+                dstAddress: lockDetailsResult?.dstAddress || '',
+                dstChain: lockDetailsResult?.dstChain || '',
+                dstAsset: lockDetailsResult?.dstAsset || '',
+                srcAsset: lockDetailsResult?.srcAsset || '',
+                sender: lockDetailsResult?.sender || '',
+                srcReceiver: lockDetailsResult?.srcReceiver || '',
+                lockId: lockDetailsResult?.hashlock || '',
+                amount: lockDetailsResult?.amount || 0,
+                timelock: lockDetailsResult?.timelock || 0,
+                locked: true,
+                uncommitted: false,
+                messenger: ''
             }
 
-            if (!details) {
+            if (!(commitDetailsResult || lockDetailsResult)) {
                 throw new Error("No result")
             }
             return parsedResult
@@ -183,7 +158,7 @@ debugger
     const getLockIdByCommitId = async (params: CommitmentParams) => {
         const { commitId, contractAddress } = params
 
-        const bigIntValue = BigInt(commitId);
+        const bigIntValue = hexToBigInt(commitId as `0x${string}`);
 
         let args = new TupleBuilder();
         args.writeNumber(bigIntValue);
@@ -194,11 +169,11 @@ debugger
             args.build()
         );
 
-        const lockId = lockIdResult.stack[0][1]
+        const lockId = (lockIdResult?.stack as any)?.items?.[0]?.value as bigint
 
         if (!lockId) return null
 
-        return lockId as `0x${string}`
+        return toHex(lockId)
     }
 
     const lockCommitment = async (params: CommitmentParams & LockParams) => {
@@ -234,46 +209,12 @@ debugger
         return { hash: messageHash, result: res }
     }
 
-    const getLock = async (params: LockParams): Promise<AssetLock> => {
-        const { lockId, contractAddress } = params
+    const getLock = async (params: LockParams): Promise<AssetLock | undefined> => {
 
-        const bigIntValue = BigInt(lockId);
+        const network = networks.find(n => n.chain_id === params.chainId)
+        const lockDetailsResult = await getTONLock({ network, ...params })
 
-
-        let args = new TupleBuilder();
-        args.writeNumber(bigIntValue);
-
-        const lockDetailsResult = await tonClient.runMethod(
-            Address.parse(contractAddress),
-            "getLockDetails",
-            args.build()
-        );
-
-
-        if (!lockDetailsResult) {
-            throw new Error("No result")
-        }
-
-        const lockDetails = lockDetailsResult.stack[0][1].elements;
-
-        const parsedResult: AssetLock = {
-            dstAddress: (Cell.fromBase64(lockDetails[0].slice.bytes)).asSlice().loadStringTail(),
-            dstChain: (Cell.fromBase64(lockDetails[1].slice.bytes)).asSlice().loadStringTail(),
-            dstAsset: (Cell.fromBase64(lockDetails[2].slice.bytes)).asSlice().loadStringTail(),
-            srcAsset: (Cell.fromBase64(lockDetails[3].slice.bytes)).asSlice().loadStringTail(),
-            sender: (Cell.fromBase64(lockDetails[4].slice.bytes)).asSlice().loadAddress().toString(),
-            srcReceiver: (Cell.fromBase64(lockDetails[5].slice.bytes)).asSlice().loadAddress().toString(),
-            hashlock: lockDetails[6].number.number,
-            secret: lockDetails[7].number.number,
-            amount: lockDetails[8].number.number,
-            timelock: lockDetails[9].number.number,
-            redeemed: lockDetails[10].number.number,
-            unlocked: lockDetails[11].number.number,
-            // jettonMasterAddress: (Cell.fromBase64(lockDetails[12].slice.bytes)).asSlice().loadAddress().toString(),
-            // htlcJettonWalletAddress: (Cell.fromBase64(lockDetails[13].slice.bytes)).asSlice().loadAddress().toString(),
-        }
-
-        return parsedResult
+        return lockDetailsResult
     }
 
     const refund = async (params: RefundParams) => {

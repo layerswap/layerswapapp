@@ -9,7 +9,7 @@ export type Commit = {
     amount: number,
     messenger: string,
     locked: boolean,
-    lockId: string,
+    lockId: string | undefined,
     uncommitted: boolean
 }
 

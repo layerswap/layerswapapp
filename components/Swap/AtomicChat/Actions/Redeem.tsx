@@ -21,12 +21,12 @@ export const RedeemAction: FC = () => {
                     if (!destination_provider)
                         throw new Error("No destination provider")
 
-                    const data = await destination_provider.getLock({
+                    const data = committment?.lockId ? await destination_provider.getLock({
                         type: destination_asset?.contract ? 'erc20' : 'native',
                         chainId: destination_network.chain_id,
                         lockId: committment.lockId,
                         contractAddress: contract as `0x${string}`,
-                    })
+                    }) : null
                     if (data) setSourceLock(data)
                     if (data?.redeemed) {
                         clearInterval(commitHandler)
