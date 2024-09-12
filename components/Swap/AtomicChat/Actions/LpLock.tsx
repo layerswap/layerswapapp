@@ -31,8 +31,9 @@ export const LpLockingAssets: FC = () => {
         const params = resolvePersistantQueryParams(router.query)
         if (params && Object.keys(params).length) {
             const search = new URLSearchParams(params as any);
+            search.set('hashlock', hashlock)
             if (search)
-                swapURL += `?${search}&hashlock=${hashlock}`
+                swapURL += `?${search}`
         }
         window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
     }
@@ -52,7 +53,7 @@ export const LpLockingAssets: FC = () => {
                 })
 
                 if (destinationLockId) {
-                    setHashLock(destinationLockId)
+                    if (!router.query.hashlock?.toString()) setHashLock(destinationLockId)
                     const data = await destination_provider.getLock({
                         type: destination_asset?.contract ? 'erc20' : 'native',
                         chainId: destination_network.chain_id,

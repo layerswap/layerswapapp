@@ -11,9 +11,6 @@ import useWallet from "../../../hooks/useWallet";
 import { ExternalLink } from "lucide-react";
 import SubmitButton from "../../buttons/submitButton";
 import { Network } from "../../../Models/Network";
-import useSWR from "swr";
-import { ApiResponse } from "../../../Models/ApiResponse";
-import { CommitFromApi } from "../../../lib/layerSwapApiClient";
 import TimelockTimer from "./TimelockTimer";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 
@@ -157,40 +154,40 @@ const RefundCompleted = ({ walletIcon, source_network, tx_id }: { walletIcon?: J
 
 export const ResolveMessages: FC = () => {
 
-    const { committment, destinationLock, sourceLock, commitId, source_network, userLocked: userInitiatedLock, isTimelockExpired, completedRefundHash, destination_network, source_asset, destination_asset } = useAtomicState()
+    const { committment, destinationLock, sourceLock, commitId, source_network, userLocked: userInitiatedLock, isTimelockExpired, completedRefundHash, destination_network, source_asset, destination_asset, commitFromApi } = useAtomicState()
+
+    const lpLockTransaction = commitFromApi?.transactions.find(t => t.type === 'lock')
+    const lpRedeemTransaction = commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)
+
     const commtting = commitId ? true : false;
     const commited = committment ? true : false;
     const lpLockDetected = destinationLock ? true : false;
 
     const assetsLocked = committment?.locked && destinationLock ? true : false;
 
-    const redeemCompleted = sourceLock?.redeemed ? true : false;
+    const redeemCompleted = (sourceLock?.redeemed ? true : false) || lpRedeemTransaction?.hash;
     const { getWithdrawalProvider } = useWallet()
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const wallet = source_provider?.getConnectedWallet()
 
     const lp_address = source_network?.metadata.lp_address
 
-    const fetcher = (args) => fetch(args).then(res => res.json())
-    const url = process.env.NEXT_PUBLIC_LS_API
-    const { data } = useSWR<ApiResponse<CommitFromApi>>(commitId ? `${url}/api/swap/${commitId}` : null, fetcher, { refreshInterval: 10000 })
-    const commitFromApi = data?.data
-
     const WalletIcon = wallet && <wallet.icon className="w-5 h-5 rounded-full bg-secondary-800 border-secondary-400" />
+
 
     if (redeemCompleted) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <Committed walletIcon={WalletIcon} amount={truncateDecimals(committment?.amount, source_asset?.precision)} asset={source_asset?.symbol} />
-            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} amount={truncateDecimals(destinationLock?.amount, destination_asset?.precision)} asset={destination_asset?.symbol} />
+            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={lpLockTransaction?.hash} amount={truncateDecimals(destinationLock?.amount, destination_asset?.precision)} asset={destination_asset?.symbol} />
             <AssetsLockedByUser walletIcon={WalletIcon} />
-            <AssetsSent address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)?.hash} />
+            <AssetsSent address={lp_address} destination_network={destination_network} tx_id={lpRedeemTransaction?.hash} />
         </div >
     }
     if (isTimelockExpired) {
         if (sourceLock) {
             return <div>
                 <Committed walletIcon={WalletIcon} amount={truncateDecimals(committment?.amount, source_asset?.precision)} asset={source_asset?.symbol} />
-                <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} amount={truncateDecimals(destinationLock?.amount, destination_asset?.precision)} asset={destination_asset?.symbol} />
+                <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={lpLockTransaction?.hash} amount={truncateDecimals(destinationLock?.amount, destination_asset?.precision)} asset={destination_asset?.symbol} />
                 <AssetsLockedByUser walletIcon={WalletIcon} />
                 {
                     sourceLock.unlocked ?
@@ -221,7 +218,7 @@ export const ResolveMessages: FC = () => {
     if (assetsLocked) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <Committed walletIcon={WalletIcon} amount={truncateDecimals(committment?.amount, source_asset?.precision)} asset={source_asset?.symbol} />
-            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} amount={truncateDecimals(destinationLock?.amount, destination_asset?.precision)} asset={destination_asset?.symbol} />
+            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={lpLockTransaction?.hash} amount={truncateDecimals(destinationLock?.amount, destination_asset?.precision)} asset={destination_asset?.symbol} />
             <AssetsLockedByUser walletIcon={WalletIcon} />
             <LpPlng address={lp_address} />
         </div>
@@ -229,14 +226,14 @@ export const ResolveMessages: FC = () => {
     if (userInitiatedLock) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <Committed walletIcon={WalletIcon} amount={truncateDecimals(committment?.amount, source_asset?.precision)} asset={source_asset?.symbol} />
-            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} amount={truncateDecimals(destinationLock?.amount, destination_asset?.precision)} asset={destination_asset?.symbol} />
+            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={lpLockTransaction?.hash} amount={truncateDecimals(destinationLock?.amount, destination_asset?.precision)} asset={destination_asset?.symbol} />
             <UserLocking walletIcon={WalletIcon} />
         </div >
     }
     if (lpLockDetected) {
         return <div className="flex w-full grow flex-col space-y-2" >
             <Committed walletIcon={WalletIcon} amount={truncateDecimals(committment?.amount, source_asset?.precision)} asset={source_asset?.symbol} />
-            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={commitFromApi?.transactions.find(t => t.type === 'lock')?.hash} amount={truncateDecimals(destinationLock?.amount, destination_asset?.precision)} asset={destination_asset?.symbol} />
+            <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={lpLockTransaction?.hash} amount={truncateDecimals(destinationLock?.amount, destination_asset?.precision)} asset={destination_asset?.symbol} />
         </div >
     }
     if (commited) {
@@ -265,12 +262,14 @@ export const ResolveMessages: FC = () => {
     </>
 }
 const ResolveAction: FC = () => {
-    const { committment, destinationLock, sourceLock, error, setError, isTimelockExpired } = useAtomicState()
+    const { committment, destinationLock, destination_network, sourceLock, error, setError, isTimelockExpired, commitFromApi } = useAtomicState()
+
+    const lpRedeemTransaction = commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)
 
     const commited = committment ? true : false;
     const lpLockDetected = destinationLock ? true : false;
     const assetsLocked = committment?.locked && destinationLock ? true : false;
-    const redeemCompleted = sourceLock?.redeemed ? true : false;
+    const redeemCompleted = (sourceLock?.redeemed ? true : false) || lpRedeemTransaction?.hash;
 
     if (error) {
         return <div className="w-full flex flex-col gap-4">

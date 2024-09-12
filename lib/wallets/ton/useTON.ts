@@ -148,7 +148,6 @@ export default function useTON(): WalletProvider {
             return parsedResult
         }
         catch (e) {
-            debugger
             console.log(e)
             throw new Error("No result")
         }
@@ -185,8 +184,8 @@ export default function useTON(): WalletProvider {
 
         const body = beginCell()
             .storeUint(1558004185, 32)
-            .storeInt(BigInt(commitId), 257)
-            .storeInt(BigInt(lockId), 257)
+            .storeInt(hexToBigInt(commitId as `0x${string}`), 257)
+            .storeInt(hexToBigInt(lockId as `0x${string}`), 257)
             .storeInt(timelock, 257)
             .endCell();
 
@@ -195,7 +194,7 @@ export default function useTON(): WalletProvider {
             messages: [
                 {
                     address: contractAddress,
-                    amount: toNano('0.2').toString(),
+                    amount: toNano('0.1').toString(),
                     payload: body.toBoc().toString("base64")
                 }
             ]
@@ -228,7 +227,7 @@ export default function useTON(): WalletProvider {
 
         const body = beginCell()
             .storeUint(2910985977, 32)
-            .storeInt(BigInt(id), 257)
+            .storeInt(hexToBigInt(id as `0x${string}`), 257)
             .endCell();
 
         const tx = {
