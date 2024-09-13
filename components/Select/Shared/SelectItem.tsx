@@ -28,6 +28,7 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                     {item.badge && <span>{item.badge}</span>}
                 </p>
             </div>
+            {item.details}
         </div>
     );
 }

@@ -1,5 +1,5 @@
 import AddressIcon from "../../../components/AddressIcon";
-import WalletIcon from "../../../components/icons/WalletIcon";
+import SVGWithImg from "../../../components/icons/SvgWithImg";
 import KnownEVMConnectors from "../evm/KnownEVMConnectors";
 import KnownSolanaConnectors from "../solana/KnownSolanaConnectors";
 import KnownStarknetConnectors from "../starknet/KnownStarknetConnectors";
@@ -10,15 +10,21 @@ const connectors = [
     ...KnownStarknetConnectors
 ]
 
-const resolveWalletConnectorIcon = ({ connector, address }: { connector?: string, address?: string }) => {
-    const knownConnector = connectors.find(c => c.id.toLowerCase() === connector?.toLowerCase())
+const resolveWalletConnectorIcon = ({ connector, address, iconUrl }: { connector?: string, address: string, iconUrl?: string }) => {
+    const knownConnector = connectors.find(c => c.id === connector?.toLowerCase())
 
-    if (knownConnector) return knownConnector.icon
-    else if (!knownConnector && address) return AddressIconWrapper(address)
-    else return (props) => <WalletIcon {...props} />
+    if (iconUrl) return SVGIconWrapper(iconUrl)
+    else if (!knownConnector) return AddressIconWrapper(address)
+
+    return knownConnector.icon
 }
 
 const AddressIconWrapper = (address: string) => (props: typeof AddressIcon) => {
     return <AddressIcon address={address} size={24} {...props} />
 }
+
+const SVGIconWrapper = (iconUrl: string) => (props) => {
+    return <SVGWithImg {...props} imageUrl={iconUrl} />
+}
+
 export default resolveWalletConnectorIcon

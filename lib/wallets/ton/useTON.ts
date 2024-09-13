@@ -3,7 +3,6 @@ import { Address } from "@ton/core";
 import KnownInternalNames from "../../knownIds";
 import { WalletProvider } from "../../../hooks/useWallet";
 import TON from "../../../components/icons/Wallets/TON";
-
 export default function useTON(): WalletProvider {
     const withdrawalSupportedNetworks = [KnownInternalNames.Networks.TONMainnet]
     const name = 'TON'
@@ -11,8 +10,12 @@ export default function useTON(): WalletProvider {
     const tonWallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
 
+    const address = tonWallet?.account && Address.parse(tonWallet.account.address).toString({ bounceable: false })
+    const iconUrl = (tonWallet as any)?.imageUrl
+
     const wallet = tonWallet ? {
-        address: Address.parse(tonWallet.account.address).toString({ bounceable: false }),
+        address,
+        iconUrl,
         connector: name,
         providerName: id,
         isActive: true,
@@ -28,8 +31,8 @@ export default function useTON(): WalletProvider {
         return undefined
     }
 
-    const connectWallet = () => {
-        return tonConnectUI.openModal()
+    const connectWallet = async () => {
+        return await tonConnectUI.openModal()
     }
 
     const disconnectWallet = async () => {
