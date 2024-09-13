@@ -73,7 +73,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         item.baseObject.token.symbol ===
         (direction === 'from' ? fromCurrency : toCurrency)?.symbol
         && item.baseObject.network.name === formValue?.name)
-
     //Setting default value
     useEffect(() => {
         if (!menuItems) return
@@ -179,6 +178,10 @@ function GenerateMenuItems(
             </div>
         </div>
 
+        const details = <p className="text-primary-text-muted">
+            {e.token.symbol}
+        </p>
+
         const item: SelectMenuItem<ExchangeNetwork> = {
             baseObject: e,
             id: `${e.network.name}-${e.token.symbol}`,
@@ -186,8 +189,10 @@ function GenerateMenuItems(
             displayName,
             order: 1,
             imgSrc: network?.logo || '',
-            isAvailable: true
+            isAvailable: true,
+            details
         }
+        
         return item;
     })
     return menuItems

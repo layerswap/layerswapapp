@@ -35,7 +35,8 @@ export default function CommandSelectWrapper<T>({
     modalHeight,
     modalContent,
     requireConfirmation,
-    header
+    header,
+    valueDetails
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -75,7 +76,7 @@ export default function CommandSelectWrapper<T>({
                         }
                         {value ?
                             <span className="ml-3 flex font-medium flex-auto space-x-1 text-primary-buttonTextColor items-center">
-                                {value.name}
+                                {valueDetails || value.name}
                             </span>
                             :
                             <span className="block font-medium text-primary-text-placeholder flex-auto items-center">

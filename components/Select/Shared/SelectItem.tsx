@@ -29,7 +29,6 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                     <span className="ml-auto pl-2">{item.details}</span>
                 </div>
             </div>
-            {item.details}
         </div>
     );
 }
