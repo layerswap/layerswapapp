@@ -6,7 +6,7 @@ import IMX from "../../../components/icons/Wallets/IMX"
 
 //TODO bring back type implementation
 // export default function useImmutableX(): WalletProvider {
-export default function useImmutableX() {
+export default function useImtblX() {
 
     const withdrawalSupportedNetworks = [
         KnownInternalNames.Networks.ImmutableXMainnet,
@@ -22,8 +22,11 @@ export default function useImmutableX() {
     const getWallet = () => {
         return wallets.find(wallet => wallet.providerName === name)
     }
-
-    const connectWallet = async (chain: string | number) => {
+    type ConnectProps = {
+        chain?: string | number
+    }
+    const connectWallet = async (props?: ConnectProps) => {
+        const { chain } = props || {}
         if (!chain) throw new Error('No chain id for imx connect wallet')
         const networkName = chain == 'testnet' ? KnownInternalNames.Networks.ImmutableXGoerli : KnownInternalNames.Networks.ImmutableXMainnet
         try {
@@ -46,9 +49,9 @@ export default function useImmutableX() {
         return removeWallet(name)
     }
 
-    const reconnectWallet = async (chain: string | number) => {
+    const reconnectWallet = async ({ chain }: { chain: string | number }) => {
         disconnectWallet()
-        await connectWallet(chain)
+        await connectWallet({ chain })
     }
 
     return {

@@ -32,7 +32,7 @@ module.exports = (phase, { defaultConfig }) => {
       return config;
     },
     productionBrowserSourceMaps: true,
-    transpilePackages: ['@coral-xyz/anchor','@solana/web3.js'],
+    transpilePackages: ['@coral-xyz/anchor', '@solana/web3.js', '@imtbl/sdk'],
   }
   if (process.env.APP_BASE_PATH) {
     nextConfig.basePath = process.env.APP_BASE_PATH

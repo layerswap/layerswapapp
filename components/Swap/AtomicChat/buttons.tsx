@@ -29,7 +29,7 @@ export const ConnectWalletButton: FC<ConnectProps> = (props) => {
 
             if (!provider) throw new Error(`No provider from ${network?.name}`)
 
-            await provider.connectWallet(provider?.name)
+            await provider.connectWallet({ chain: network.chain_id })
         }
         catch (e) {
             toast.error(e.message)

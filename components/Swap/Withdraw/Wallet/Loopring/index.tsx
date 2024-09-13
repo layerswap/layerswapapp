@@ -57,7 +57,11 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
             if (!accInfo || !selectedActivationAsset || !loopringToken)
                 return
 
-            const publicKey = await LoopringAPI.userAPI.activateAccount({ accInfo, token: { id: loopringToken?.tokenId, symbol: loopringToken?.symbol } })
+            const publicKey = await LoopringAPI.userAPI.activateAccount(
+                {
+                    accInfo,
+                    token: { id: loopringToken?.tokenId, symbol: loopringToken?.symbol }
+                }, config)
             setActivationPubKey(publicKey)
             await refetchAccount()
         }
@@ -82,7 +86,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
                 call_data: callData,
                 token,
                 unlockedAccount
-            })
+            }, config)
             if (transferResult.hash) {
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, transferResult.hash);
                 setTransferDone(true)

@@ -24,7 +24,7 @@ export default class LayerSwapApiClient {
     fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
 
     async GetRoutesAsync(direction: 'sources' | 'destinations'): Promise<ApiResponse<NetworkWithTokens[]>> {
-        return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/${direction}`)
+        return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/${direction}?include_unmatched=true&include_swaps=true&include_unavailable=true`)
     }
 
     async GetSourceExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
@@ -231,6 +231,10 @@ export type GetQuoteParams = {
 }
 
 export type SwapQuote = {
+    source_network?: Network,
+    source_token?: Token,
+    destination_network?: Network,
+    destination_token?: Token,
     receive_amount: number,
     min_receive_amount: number,
     total_fee: number,
