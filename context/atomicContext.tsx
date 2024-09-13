@@ -67,7 +67,7 @@ export function AtomicProvider({ children }) {
 
     const fetcher = (args) => fetch(args).then(res => res.json())
     const url = process.env.NEXT_PUBLIC_LS_API
-    const { data } = useSWR<ApiResponse<CommitFromApi>>(commitId ? `${url}/api/swap/${commitId}` : null, fetcher, { refreshInterval: 10000 })
+    const { data } = useSWR<ApiResponse<CommitFromApi>>(commitId ? `${url}/api/swap/${commitId}` : null, fetcher, { refreshInterval: 5000 })
     const commitFromApi = data?.data
 
     useEffect(() => {
