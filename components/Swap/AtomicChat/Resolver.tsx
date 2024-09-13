@@ -330,7 +330,7 @@ const ResolveAction: FC = () => {
 
 
 export const ActionsWithProgressbar: FC = () => {
-    const { committment, destinationLock, isTimelockExpired, sourceLock } = useAtomicState()
+    const { committment, destinationLock, isTimelockExpired, sourceLock, commitFromApi, destination_network } = useAtomicState()
 
     let currentStep = 1
     let actiontext = 'Commit'
@@ -350,8 +350,9 @@ export const ActionsWithProgressbar: FC = () => {
         secondStep = "80%"
         currentStep = 2
     }
+    const lpRedeemTransaction = commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)
 
-    const allDone = (committment?.locked && sourceLock?.redeemed) ? true : false
+    const allDone = ((committment?.locked && sourceLock?.redeemed) || lpRedeemTransaction?.hash) ? true : false
     const showSteps = !allDone && !isTimelockExpired
     const timelock = sourceLock?.timelock || committment?.timelock
 
