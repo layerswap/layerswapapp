@@ -13,7 +13,10 @@ const DetailedEstimates: FC = () => {
 
     const parsedFee = fee && parseFloat(Number(fee_amount).toFixed(fromCurrency?.precision))
     const currencyName = fromCurrency?.symbol || " "
-    const feeAmountInUsd = parsedFee && fromCurrency ? (fromCurrency?.price_in_usd * parsedFee).toFixed(2) : undefined
+    const feeAmountInUsd = fee?.quote?.total_fee_in_usd
+
+    const displayFee = parsedFee && parsedFee?.toFixed(fromCurrency?.precision)
+    const displayFeeInUsd = feeAmountInUsd ? (feeAmountInUsd < 0.01 ? '<$0.01' : `$${feeAmountInUsd?.toFixed(2)}`) : null
 
     return <div className="flex flex-col w-full gap-2">
         <div className="flex justify-between w-full items-center">
@@ -26,11 +29,11 @@ const DetailedEstimates: FC = () => {
                         <div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-sm animate-pulse' />
                     ) : (
                         <div>
-                            <span>{parsedFee || '-'} </span>
+                            <span>{displayFee || '-'} </span>
                             <span>{parsedFee ? currencyName : ''}</span>
-                            {feeAmountInUsd !== undefined && Number(feeAmountInUsd) > 0 && (
+                            {displayFeeInUsd !== null && (
                                 <span className="text-xs ml-1 font-medium">
-                                    (${feeAmountInUsd})
+                                    ({displayFeeInUsd})
                                 </span>
                             )}
                         </div>

@@ -25,7 +25,7 @@ export const WalletsHeader = () => {
 
     return (
         <ConnectButton>
-            <div className="-mx-2 p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
+            <div className="-mx-2 p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-componentRoundness items-center">
                 <WalletIcon className="h-6 w-6 mx-0.5" strokeWidth="2" />
             </div>
         </ConnectButton>

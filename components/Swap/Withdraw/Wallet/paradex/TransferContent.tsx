@@ -2,12 +2,8 @@ import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../../../context/swap';
 import WalletIcon from '../../../../icons/WalletIcon';
 import useWallet from '../../../../../hooks/useWallet';
-import { useBalancesState } from '../../../../../context/balances';
-import useBalance from '../../../../../hooks/useBalance';
 import AddressWithIcon from '../../../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../../../Input/Address/AddressPicker';
-import { RefreshCw } from 'lucide-react';
-import { truncateDecimals } from '../../../../utils/RoundDecimals';
 import { useSettingsState } from '../../../../../context/settings';
 import KnownInternalNames from '../../../../../lib/knownIds';
 import { NetworkWithTokens } from '../../../../../Models/Network';
@@ -43,7 +39,7 @@ const WalletTransferContent: FC = () => {
     const handleEvmDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!evmWallet) return
         setIsloading(true);
-        if (evmProvider?.reconnectWallet) await evmProvider.reconnectWallet(source_network?.chain_id)
+        if (evmProvider?.reconnectWallet) await evmProvider.reconnectWallet({ chain: source_network?.chain_id })
         else await disconnectWallet(evmWallet.providerName, swap)
         if (source_exchange) await mutateSwap()
         setIsloading(false);
@@ -68,7 +64,7 @@ const WalletTransferContent: FC = () => {
     const handleStarknetDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!starknetWallet) return
         setIsloading(true);
-        if (evmProvider?.reconnectWallet) await evmProvider.reconnectWallet(source_network?.chain_id)
+        if (evmProvider?.reconnectWallet) await evmProvider.reconnectWallet({ chain: source_network?.chain_id })
         else await disconnectWallet(starknetWallet.providerName, swap)
         if (source_exchange) await mutateSwap()
         setIsloading(false);
@@ -153,7 +149,7 @@ const Content: FC<{ network: NetworkWithTokens | undefined }> = ({ network }) =>
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!wallet) return
         setIsloading(true);
-        if (provider?.reconnectWallet) await provider.reconnectWallet(source_network?.chain_id)
+        if (provider?.reconnectWallet) await provider.reconnectWallet({ chain: source_network?.chain_id })
         else await disconnectWallet(wallet.providerName, swap)
         if (source_exchange) await mutateSwap()
         setIsloading(false);

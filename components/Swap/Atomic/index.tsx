@@ -30,6 +30,7 @@ import AddressNoteModal from "../../Input/Address/AddressNote";
 import { addressFormat } from "../../../lib/address/formatter";
 import { useAddressesStore } from "../../../stores/addressesStore";
 import { AddressGroup } from "../../Input/Address/AddressPicker";
+import { ValidationProvider } from "../../../context/validationErrorContext";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -72,7 +73,7 @@ export default function Form() {
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useFee()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
-        
+
         const { destination_address, to } = values
         if (to &&
             destination_address &&
@@ -199,10 +200,9 @@ export default function Form() {
             validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
         >
-            <>
+            <ValidationProvider>
                 <SwapForm partner={partner} />
-                <AddressNoteModal partner={partner} openModal={showAddressNoteModal} setOpenModal={setShowAddressNoteModal} onConfirm={() => setIsAddressFromQueryConfirmed(true)} />
-            </>
+            </ValidationProvider>
         </Formik>
     </DepositMethodProvider>
 }

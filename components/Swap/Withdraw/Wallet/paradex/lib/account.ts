@@ -6,11 +6,6 @@ import type { Hex } from './types';
 
 export interface Account extends Starknet.Account {}
 
-interface FromEthSignerParams {
-  readonly provider: Starknet.ProviderOptions | Starknet.ProviderInterface;
-  readonly config: ParadexConfig;
-}
-
 interface FromStarknetAccountParams {
   readonly provider: Starknet.ProviderOptions | Starknet.ProviderInterface;
   readonly config: ParadexConfig;

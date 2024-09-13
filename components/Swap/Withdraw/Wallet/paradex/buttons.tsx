@@ -21,8 +21,6 @@ type ConnectProps = {
 
 
 export const ConnectWalletButton: FC<ConnectProps> = ({ network, text, icon, onClick, secondary, onConnect }) => {
-    const [loading, setLoading] = useState(false)
-
     const { getWithdrawalProvider: getProvider } = useWallet()
 
     const provider = useMemo(() => {
@@ -31,18 +29,14 @@ export const ConnectWalletButton: FC<ConnectProps> = ({ network, text, icon, onC
 
     const clickHandler = useCallback(async () => {
         try {
-            setLoading(true)
             onClick && onClick()
             if (!provider) throw new Error(`No provider from ${network?.name}`)
-
-            await provider.connectWallet(provider?.name)
+            
+            await provider.connectWallet({ chain: network?.chain_id })
             onConnect && onConnect()
         }
         catch (e) {
             toast.error(e.message)
-        }
-        finally {
-            setLoading(false)
         }
 
     }, [provider, onClick])
@@ -123,7 +117,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
             {props.children}
         </SubmitButton>
         {
-            source_network?.deposit_methods.some(m => m === 'deposit_address') &&
+            source_network?.deposit_methods?.some(m => m === 'deposit_address') &&
             <ManualTransferNote />
         }
     </div>

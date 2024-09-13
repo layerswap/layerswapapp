@@ -1,16 +1,9 @@
-import { ArrowLeftRight, WalletIcon } from 'lucide-react';
-import { FC, useCallback, useMemo, useState } from 'react'
+import { WalletIcon } from 'lucide-react';
+import { FC, useMemo, useState } from 'react'
 import useWallet from '../../../../../hooks/useWallet';
 import { WithdrawPageProps } from '../WalletTransferContent';
-import * as Paradex from "@paradex/sdk";
-import { TypedData } from '@paradex/sdk/dist/ethereum-signer';
-import { useAccount } from 'wagmi';
 import { useSettingsState } from '../../../../../context/settings';
 import KnownInternalNames from '../../../../../lib/knownIds';
-import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
-import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
-import { useEthersSigner } from '../../../../../lib/ethersToViem/ethers';
-import toast from 'react-hot-toast';
 import Evm from './Evm';
 import Starknet from './Starknet';
 import { ButtonWrapper, ConnectWalletButton } from './buttons';
@@ -65,13 +58,13 @@ const ConnectWalletModal = () => {
         <Dialog open={openDialog} onOpenChange={setOpenDialog}>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle className="text-center">Connect wllet</DialogTitle>
+                    <DialogTitle className="text-center">Connect wallet</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col justify-start space-y-2">
                     <ConnectWalletButton
                         secondary={false}
                         onClick={() => setOpenDialog(false)}
-                        onConnect={()=>select("evm")}
+                        onConnect={() => select("evm")}
                         network={l1Network}
                         text='EVM'
                         icon={<ResolveConnectorIcon
@@ -82,7 +75,7 @@ const ConnectWalletModal = () => {
                     <ConnectWalletButton
                         secondary={false}
                         onClick={() => setOpenDialog(false)}
-                        onConnect={()=>select("starknet")}
+                        onConnect={() => select("starknet")}
                         network={starknet}
                         text='Starknet'
                         icon={<ResolveConnectorIcon

@@ -24,6 +24,8 @@ import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
+import { useValidationContext } from "../../../context/validationErrorContext";
+import ValidationError from "../../validationError";
 
 type Props = {
     partner?: Partner,
@@ -53,6 +55,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
         toExchange,
         currencyGroup
     } = values
+
+    const { validationMessage } = useValidationContext();
 
     const { minAllowedAmount, valuesChanger } = useFee()
     const toAsset = values.toCurrency
@@ -193,14 +197,11 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                             : <></>
                                     }
                                     <div className="w-full">
-                                        <FeeDetailsComponent values={values} />
-                                        {
-                                            values.amount &&
-                                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                                        {validationMessage ?
+                                            <ValidationError />
+                                            :
+                                            <FeeDetailsComponent values={values} />
                                         }
-                                    </div>
-                                    <div className="w-full hidden">
-                                        <FeeDetailsComponent values={values} />
                                         {
                                             values.amount &&
                                             <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />

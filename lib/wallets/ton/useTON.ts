@@ -5,6 +5,7 @@ import { Wallet } from "../../../stores/walletStore";
 import { WalletProvider } from "../../../hooks/useWallet";
 import TON from "../../../components/icons/Wallets/TON";
 import { useEffect, useState } from "react";
+import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 
 export default function useTON() {
 // export default function useTON(): WalletProvider {
@@ -24,19 +25,21 @@ export default function useTON() {
 
     const getWallet = () => {
         if (wallet) {
+            const address = Address.parse(wallet.account.address).toString({ bounceable: false })
+            const iconUrl = (wallet as any)?.imageUrl
             const w: Wallet = {
-                address: Address.parse(wallet.account.address).toString({ bounceable: false }),
-                connector: 'TON',
+                address: address,
+                connector: (wallet as any)?.name || 'TON',
                 providerName: name,
-                icon: TON,
+                icon: iconUrl ? resolveWalletConnectorIcon({ address: address, iconUrl: (wallet as any)?.imageUrl }) : TON,
                 chainId: wallet?.account.chain //TODO check if it is correct
             }
             return w
         }
     }
 
-    const connectWallet = () => {
-        return tonConnectUI.openModal()
+    const connectWallet = async () => {
+        return await tonConnectUI.openModal()
     }
 
     const disconnectWallet = async () => {

@@ -2,6 +2,7 @@ import { keccak256 } from "js-sha3";
 import KnownInternalNames from "../../knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
 import { PublicKey } from '@solana/web3.js'
+import { Address } from "@ton/core";
 
 export function isValidAddress(address?: string, network?: { name: string } | null): boolean {
 
@@ -18,8 +19,11 @@ export function isValidAddress(address?: string, network?: { name: string } | nu
         return validateAndParseAddress(address);
     }
     else if (network?.name.toLowerCase().startsWith("TON".toLowerCase())) {
-        if (address.length === 48) return true
-        else return false
+        try {
+            return !!Address.parse(address).toString({ bounceable: false, testOnly: false, urlSafe: true })
+        } catch (error) {
+            return false
+        }
     }
     else if (network?.name === KnownInternalNames.Networks.OsmosisMainnet) {
         if (/^(osmo1)?[a-z0-9]{38}$/.test(address)) {

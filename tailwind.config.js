@@ -216,6 +216,7 @@ module.exports = {
       backgroundColor: ["disabled"],
       translate: ["hover"],
       display: ["group-hover"],
+      fill: ['hover', 'focus']
     },
   },
   plugins: [

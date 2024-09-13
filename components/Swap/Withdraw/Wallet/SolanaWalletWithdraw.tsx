@@ -16,7 +16,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
     const { setSwapTransaction } = useSwapTransactionStore();
 
     const provider = getWithdrawalProvider(network!);
-    const wallet = provider?.getConnectedWallet();
+    const wallet = provider?.getConnectedWallet(network);
     const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
     const solanaNode = network?.node_url
 

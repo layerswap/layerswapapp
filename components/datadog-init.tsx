@@ -2,9 +2,14 @@
 
 import { datadogRum } from "@datadog/browser-rum";
 
+const configs: {
+    applicationId: string,
+    clientToken: string,
+} = process.env.NEXT_PUBLIC_DATADOG_CONFIGS ? JSON.parse(process.env.NEXT_PUBLIC_DATADOG_CONFIGS) : undefined
+
 datadogRum.init({
-    applicationId: '197690db-795d-4a05-9460-4533ca98b295',
-    clientToken: 'pubdb16c9e025f159fe1538d002e303193b',
+    applicationId: configs?.applicationId,
+    clientToken: configs?.clientToken,
     site: 'datadoghq.com',
     service: 'layerswapuiapp',
     env: process.env.NEXT_PUBLIC_VERCEL_ENV,

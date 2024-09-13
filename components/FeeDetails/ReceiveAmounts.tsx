@@ -12,6 +12,7 @@ type WillReceiveProps = {
     onButtonClick: () => void;
     isFeeLoading: boolean;
 }
+//TODO: remove destination_token prop
 export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination_token, refuel, fee, onButtonClick, isFeeLoading }) => {
     const receive_amount = fee?.quote?.receive_amount
     const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(destination_token?.precision) || "")

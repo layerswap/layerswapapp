@@ -18,6 +18,7 @@ type CommandSelectWrapperProps = {
     valueDetails?: React.ReactNode;
     exchangeDetails?: React.ReactNode;
     modalContent?: React.ReactNode;
+    direction?: string;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -30,8 +31,8 @@ export default function CommandSelectWrapper<T>({
     valueGrouper,
     isLoading,
     modalHeight,
-    valueDetails,
-    modalContent
+    modalContent,
+    valueDetails
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -80,7 +81,7 @@ export default function CommandSelectWrapper<T>({
                         }
                     </span>
                     <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-primary-text">
-                        <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                        {!disabled && <ChevronDown className="h-4 w-4" aria-hidden="true" />}
                     </span>
                 </button>
             </div>

@@ -66,7 +66,7 @@ const ConnectButton = ({
                             key={index}
                             className="w-full h-fit bg-secondary-700 border border-secondary-500 rounded py-2 px-3"
                             onClick={() => {
-                                connectWallet(connector.id);
+                                connectWallet({ providerName: connector.id });
                                 setOpen(false);
                                 onClose && onClose();
                             }}
@@ -103,7 +103,7 @@ const ConnectButton = ({
                         key={index}
                         className="w-full h-full hover:bg-secondary-600 rounded py-2 px-3"
                         onClick={() => {
-                            connectWallet(connector.id);
+                            connectWallet({ providerName: connector.id });
                             setOpen(false);
                             onClose && onClose();
                         }}

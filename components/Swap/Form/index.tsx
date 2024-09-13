@@ -30,10 +30,12 @@ import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
 import { DepositMethodProvider } from "../../../context/depositMethodContext";
 import { dynamicWithRetries } from "../../../lib/dynamicWithRetries";
-import AddressNoteModal from "../../Input/Address/AddressNote";
+import AddressNote from "../../Input/Address/AddressNote";
 import { addressFormat } from "../../../lib/address/formatter";
 import { useAddressesStore } from "../../../stores/addressesStore";
 import { AddressGroup } from "../../Input/Address/AddressPicker";
+import { useAsyncModal } from "../../../context/asyncModal";
+import { ValidationProvider } from "../../../context/validationErrorContext";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -55,13 +57,13 @@ export default function Form() {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [showSwapModal, setShowSwapModal] = useState(false);
-    const [showAddressNoteModal, setShowAddressNoteModal] = useState(false);
     const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
     const { getSourceProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
+    const { getConfirmation } = useAsyncModal();
 
     const settings = useSettingsState();
     const query = useQueryState()
@@ -84,8 +86,18 @@ export default function Form() {
             (addressFormat(query.destAddress?.toString(), to) === addressFormat(destination_address, to)) &&
             !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
 
-            setShowAddressNoteModal(true)
-            return
+            const confirmed = await getConfirmation({
+                content: <AddressNote partner={partner} values={values} />,
+                submitText: 'Confirm address',
+                dismissText: 'Cancel address'
+            })
+
+            if (confirmed) {
+                setIsAddressFromQueryConfirmed(true)
+            }
+            else if (!confirmed) {
+                return
+            }
 
         }
         try {
@@ -123,7 +135,7 @@ export default function Form() {
             else if (data?.code === LSAPIKnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.to) {
                 setNetworkToConnect({
                     DisplayName: values.to.display_name,
-                    AppURL: data.message
+                    AppURL: data.metadata.ActivationUrl
                 })
                 setShowConnectNetworkModal(true);
             } else if (data?.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
@@ -197,10 +209,9 @@ export default function Form() {
             validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
         >
-            <>
+            <ValidationProvider>
                 <SwapForm partner={partner} />
-                <AddressNoteModal partner={partner} openModal={showAddressNoteModal} setOpenModal={setShowAddressNoteModal} onConfirm={() => setIsAddressFromQueryConfirmed(true)} />
-            </>
+            </ValidationProvider>
         </Formik>
     </DepositMethodProvider>
 }

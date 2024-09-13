@@ -36,7 +36,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
         return network && getProvider(network)
     }, [network, getProvider])
 
-    const wallet = provider?.getConnectedWallet()
+    const wallet = provider?.getConnectedWallet(network)
 
     useEffect(() => {
         if (signer?._address !== syncWallet?.cachedAddress && network) {

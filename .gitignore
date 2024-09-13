@@ -36,3 +36,4 @@ package-lock.json
 storybook-static/*
 # Sentry Config File
 .sentryclirc
+.env*.local

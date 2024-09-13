@@ -21,11 +21,11 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     }, [to, getProvider])
     const { fetchNetworkBalances, fetchGas } = useBalance()
 
-    const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet()
-    const destinationNetworkWallet = destinationWalletProvider?.getConnectedWallet()
+    const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet(values.from)
+    const destinationNetworkWallet = destinationWalletProvider?.getConnectedWallet(values.to)
 
     const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
-    const destinationBalance = destinationNetworkWallet && balances[destination_address || destinationNetworkWallet?.address]?.find(b => b?.network === to?.name && b?.token === toCurrency?.symbol)
+    const destinationBalance = balances[destination_address || (destinationNetworkWallet?.address || '')]?.find(b => b?.network === to?.name && b?.token === toCurrency?.symbol)
 
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
     const destinationBalanceAmount = destinationBalance?.amount && truncateDecimals(destinationBalance?.amount, toCurrency?.precision)
@@ -66,7 +66,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     return (
         <>
             {
-                (direction === 'from' ? (from && fromCurrency && sourceNetworkWallet) : (to && toCurrency && destinationNetworkWallet)) &&
+                (direction === 'from' ? (from && fromCurrency && sourceNetworkWallet) : (to && toCurrency)) &&
                     isBalanceLoading ?
                     <div className="text-xs text-right absolute right-0 -top-7">
                         <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
