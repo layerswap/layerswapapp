@@ -89,7 +89,7 @@ export function GenerateCurrencyMenuItems(
             order: ResolveCEXCurrencyOrder(c),
             imgSrc: c.logo,
             isAvailable: isAvailable,
-            icon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} />
+            leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} />
         };
         return res
     });

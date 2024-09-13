@@ -4,12 +4,12 @@ import Image from 'next/image';
 export default function SelectItem({ item }: { item: ISelectMenuItem }) {
 
     return (
-        <div className="flex items-center justify-between gap-3 w-full overflow-hidden px-0.5">
-            <div className="relative flex items-center gap-3 pl-1">
+        <div className={`${item?.displayName ? "px-3" : "px-1.5"} flex items-center justify-between gap-3 w-full overflow-hidden`}>
+            <div className={`${item?.displayName ? "gap-2.5" : "gap-3"} relative flex items-center  pl-1 w-full`}>
                 <div className="flex-shrink-0">
-                    <div>{item.icon}</div>
+                    <div>{item.leftIcon}</div>
                 </div>
-                <div className="flex-shrink-0 h-6 w-6 relative">
+                <div className={`${item?.displayName ? "h-9 w-9" : "h-6 w-6"} flex-shrink-0 relative`}>
                     {item.imgSrc && (
                         <Image
                             src={item.imgSrc}
@@ -21,14 +21,16 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                         />
                     )}
                 </div>
-                <p className="text-md font-medium flex w-full justify-between space-x-2">
-                    <span className="flex items-center justify-center pb-0.5">
+                <div className="flex justify-between w-full">
+                    <span className="flex items-center pb-0.5">
                         {item.displayName ? item.displayName : item.name}
                     </span>
-                    {item.badge && <span>{item.badge}</span>}
-                </p>
+                    {item.badge && <span className="ml-2">{item.badge}</span>}
+                    <span className="ml-auto pl-2">{item.details}</span>
+                </div>
             </div>
             {item.details}
         </div>
     );
 }
+

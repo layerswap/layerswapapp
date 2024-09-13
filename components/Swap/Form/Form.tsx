@@ -23,9 +23,11 @@ import { Balance, Gas } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
-import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
+import { resolveExchangesURLForSelectedToken } from "../../../helpers/routes";
 import ValidationError from "../../validationError";
 import { ImtblPassportProvider } from "../../ImtblPassportProvider";
+import { Exchange, ExchangeToken } from "../../../Models/Exchange";
+import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";
 
 type Props = {
@@ -98,9 +100,11 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
     const sourceRoutesEndpoint = (source || destination) ? resolveRoutesURLForSelectedToken({ direction: 'from', network: source?.name, token: fromCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
     const destinationRoutesEndpoint = (source || destination) ? resolveRoutesURLForSelectedToken({ direction: 'to', network: destination?.name, token: toCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
+    const exchangeRoutesURL = (fromExchange || toExchange) ? resolveExchangesURLForSelectedToken(fromExchange ? 'from' : 'to', values) : null
 
     const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<RouteNetwork[]>>(sourceRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true })
     const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<RouteNetwork[]>>(destinationRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true })
+    const { data: exchanges, isLoading: exchnagesDataLoading } = useSWR<ApiResponse<Exchange[]>>(`${exchangeRoutesURL}`, layerswapApiClient.fetcher, { keepPreviousData: true })
 
     const sourceCanBeSwapped = !source ? true : (destinationRoutes?.data?.some(l => l.name === source?.name && l.tokens.some(t => t.symbol === fromCurrency?.symbol && t.status === 'active')) ?? false)
     const destinationCanBeSwapped = !destination ? true : (sourceRoutes?.data?.some(l => l.name === destination?.name && l.tokens.some(t => t.symbol === toCurrency?.symbol && t.status === 'active')) ?? false)
@@ -115,13 +119,28 @@ const SwapForm: FC<Props> = ({ partner }) => {
     }
 
     const valuesSwapper = useCallback(() => {
+        let newFromExchange: Exchange | undefined
+        let newToExchange: Exchange | undefined
+        let newFromExchangeToken: ExchangeToken | undefined
+        let newToExchangeToken: ExchangeToken | undefined
+
+        if (toExchange) {
+            newFromExchange = exchanges?.data?.find(e => e.name === toExchange?.name)
+            newFromExchangeToken = newFromExchange?.token_groups.find(t => t.symbol === fromCurrency?.symbol)
+        }
+        if (fromExchange) {
+            newToExchange = exchanges?.data?.find(e => e.name === fromExchange?.name)
+            newToExchangeToken = newToExchange?.token_groups.find(t => t.symbol === toCurrency?.symbol)
+        }
+
         const newFrom = sourceRoutes?.data?.find(l => l.name === destination?.name)
         const newTo = destinationRoutes?.data?.find(l => l.name === source?.name)
         const newFromToken = newFrom?.tokens.find(t => t.symbol === toCurrency?.symbol)
         const newToToken = newTo?.tokens.find(t => t.symbol === fromCurrency?.symbol)
-        setValues({ ...values, from: newFrom, to: newTo, fromCurrency: newFromToken, toCurrency: newToToken, toExchange: values.fromExchange, fromExchange: values.toExchange }, true)
-    }, [values, sourceRoutes, destinationRoutes])
-
+        
+        setValues({ ...values, from: newFrom, to: newTo, fromCurrency: newFromToken, toCurrency: newToToken, toExchange: newToExchange, fromExchange: newFromExchange, currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined }, true)
+    }, [values, sourceRoutes, destinationRoutes, exchanges])
+  
     const hideAddress = query?.hideAddress
         && query?.to
         && query?.destAddress
@@ -146,15 +165,15 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                 <button
                                     type="button"
                                     aria-label="Reverse the source and destination"
-                                    disabled={valuesSwapperDisabled || sourceLoading || destinationLoading}
+                                    disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || exchnagesDataLoading}
                                     onClick={valuesSwapper}
-                                    className={`${sourceLoading || destinationLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[86px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
+                                    className={`${sourceLoading || destinationLoading || exchnagesDataLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[86px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
                                     <motion.div
                                         animate={animate}
                                         transition={{ duration: 0.3 }}
                                         onTap={() => !valuesSwapperDisabled && cycle()}
                                     >
-                                        {sourceLoading || destinationLoading ?
+                                        {sourceLoading || destinationLoading || exchnagesDataLoading ?
                                             <Loader2 className="opacity-50 w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30 animate-spin" />
                                             :
                                             <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />

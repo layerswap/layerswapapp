@@ -18,7 +18,9 @@ type CommandSelectWrapperProps = {
     valueDetails?: React.ReactNode;
     exchangeDetails?: React.ReactNode;
     modalContent?: React.ReactNode;
+    requireConfirmation?: boolean;
     direction?: string;
+    header?: string;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -32,7 +34,8 @@ export default function CommandSelectWrapper<T>({
     isLoading,
     modalHeight,
     modalContent,
-    valueDetails
+    requireConfirmation,
+    header
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -72,7 +75,7 @@ export default function CommandSelectWrapper<T>({
                         }
                         {value ?
                             <span className="ml-3 flex font-medium flex-auto space-x-1 text-primary-buttonTextColor items-center">
-                                {valueDetails || value.name}
+                                {value.name}
                             </span>
                             :
                             <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
@@ -96,6 +99,8 @@ export default function CommandSelectWrapper<T>({
                 isLoading={isLoading}
                 modalHeight={modalHeight}
                 modalContent={modalContent}
+                requireConfirmation={requireConfirmation}
+                header={header}
             />
         </>
     )
