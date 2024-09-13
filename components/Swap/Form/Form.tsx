@@ -140,18 +140,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
     }, [values.amount])
 
     const shoouldConnectWallet = !values.without_source_wallet && !values.source_wallet
-    const { wallets } = useWallet()
-
-
-
-    useEffect(() => {
-
-
-        setFieldValue('source_wallet', {})
-
-    }, [])
-
-
+    console.log("form render")
 
     return <ImtblPassportProvider from={source} to={destination}>
         <>
@@ -246,7 +235,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                     {ActionText(errors, actionDisplayName)}
                                 </SwapButton>
                         }
-
                     </Widget.Footer>
                 </Form>
             </Widget>
@@ -268,7 +256,6 @@ const Wallets = () => {
     } = useFormikContext<SwapFormValues>();
 
     useEffect(() => {
-        console.log(wallets)
 
     }, [wallets])
 
@@ -296,7 +283,7 @@ const Wallets = () => {
                 ))
             }
         </div>
-        <ConnectButton onClose={() => { }}>
+        <ConnectButton>
             <div className="text-secondary-text hover:text-secondary-text/80 flex items-center gap-1 justify-end w-fit">
                 <Plus className="h-4 w-4" />
                 <span className="text-sm">

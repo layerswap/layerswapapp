@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Network, RouteNetwork } from "../Models/Network"
 import useEVM from "../lib/wallets/evm/useEVM";
 import useImtblX from "../lib/wallets/imtblX/useImtblX";
@@ -23,6 +24,7 @@ export type WalletProvider = {
 type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 
 export default function useWallet(network?: Network | undefined, purpose?: WalletPurpose) {
+
 
     const walletProviders: WalletProvider[] = [
         useEVM(),
@@ -69,4 +71,16 @@ const resolveProvider = (network: Network, walletProviders: WalletProvider[], pu
         case "asSource":
             return walletProviders.find(provider => provider.asSourceSupportedNetworks?.includes(network.name))
     }
+}
+
+
+export const useWalletProviders = () => {
+
+    const evm = useEVM()
+
+
+    const walletProviders: WalletProvider[] = useMemo(() => [evm,], [evm])
+
+    return walletProviders
+
 }

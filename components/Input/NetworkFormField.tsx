@@ -18,6 +18,7 @@ import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../../helpers/routes";
 import RouteIcon from "./RouteIcon";
+import WalletPicker from "./WalletPicker";
 
 type Props = {
     direction: SwapDirection,
@@ -123,6 +124,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     return (<div className={`p-3 bg-secondary-700 border border-secondary-500 ${className}`}>
         <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
             {label}
+            <WalletPicker direction={direction}/>
         </label>
         <div ref={ref} className="mt-1.5 grid grid-flow-row-dense grid-cols-8 md:grid-cols-6 items-center pr-2">
             <div className="col-span-5 md:col-span-4">
