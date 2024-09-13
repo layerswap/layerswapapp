@@ -48,11 +48,6 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     let validationDetails: ValidationDetails = {};
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const sourceRoutesEndpoint = (from || to) ? resolveRoutesURLForSelectedToken({ direction: 'from', network: from?.name, token: fromCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
-    const destinationRoutesEndpoint = (from || to) ? resolveRoutesURLForSelectedToken({ direction: 'to', network: from?.name, token: toCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
-
-    const { data: sourceRoutes } = useSWR<ApiResponse<RouteNetwork[]>>(sourceRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true })
-    const { data: destinationRoutes } = useSWR<ApiResponse<RouteNetwork[]>>(destinationRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true })
 
     if (query?.lockToAsset) {
         if (fromCurrency?.status === 'not_found') {

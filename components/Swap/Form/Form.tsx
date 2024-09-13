@@ -104,7 +104,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
     const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<RouteNetwork[]>>(sourceRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true })
     const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<RouteNetwork[]>>(destinationRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true })
-    const { data: exchanges, isLoading: exchnagesDataLoading } = useSWR<ApiResponse<Exchange[]>>(`${exchangeRoutesURL}`, layerswapApiClient.fetcher, { keepPreviousData: true })
+    const { data: exchanges, isLoading: exchnagesDataLoading } = useSWR<ApiResponse<Exchange[]>>(exchangeRoutesURL, layerswapApiClient.fetcher, { keepPreviousData: true })
 
     const sourceCanBeSwapped = !source ? true : (destinationRoutes?.data?.some(l => l.name === source?.name && l.tokens.some(t => t.symbol === fromCurrency?.symbol && t.status === 'active')) ?? false)
     const destinationCanBeSwapped = !destination ? true : (sourceRoutes?.data?.some(l => l.name === destination?.name && l.tokens.some(t => t.symbol === toCurrency?.symbol && t.status === 'active')) ?? false)

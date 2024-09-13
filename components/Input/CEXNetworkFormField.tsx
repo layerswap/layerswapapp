@@ -37,7 +37,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     } = values
 
 
-    const [selectedItem, setSelectedItem] = useState<ISelectMenuItem | null>(null);
     const apiClient = new LayerSwapApiClient()
 
     const routesEndpoint = `/${direction === "from" ? `exchange_source_networks?destination_token_group=${currencyGroup?.symbol}&include_unmatched=true` : `exchange_destination_networks?source_token_group=${currencyGroup?.symbol}&include_unmatched=true`}`
@@ -50,7 +49,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         && (`/${direction === 'from' ?
             `exchange_withdrawal_networks?source_exchange=${fromExchange?.name}&&source_token_group=${currencyGroup?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}`
             : `exchange_deposit_networks?destination_exchange=${toExchange?.name}&destination_token_group=${currencyGroup?.symbol}&source_network=${from?.name}&source_token=${fromCurrency?.symbol}`}`)
-
     const { data: historicalNetworks, isLoading: isHistoricalNetworsLoading, error } = useSWR<ApiResponse<ExchangeNetwork[]>>(exchangeNetworksEndpoint, apiClient.fetcher, { keepPreviousData: true })
 
     const network = (direction === 'from' ? from : to)
