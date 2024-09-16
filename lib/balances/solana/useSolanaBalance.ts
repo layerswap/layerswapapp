@@ -12,7 +12,8 @@ import {
 
 export default function useSolanaBalance(): BalanceProvider {
     const supportedNetworks = [
-        KnownInternalNames.Networks.SolanaMainnet
+        KnownInternalNames.Networks.SolanaMainnet,
+        KnownInternalNames.Networks.SolanaDevnet
     ]
     const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
 
