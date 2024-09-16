@@ -66,6 +66,17 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         wallets,
         error
     )
+
+    const groupedCurrencies = GenerateGroupedCurrencyMenuItems(
+        allCurrencies!,
+        values,
+        direction,
+        balances,
+        query,
+        wallets,
+        error
+    );
+
     const currencyAsset = direction === 'from' ? fromCurrency?.symbol : toCurrency?.symbol;
     const currencyNetwork = allCurrencies?.find(c => c.symbol === currencyAsset && c.network_name === from?.name)?.network_name
 
@@ -153,6 +164,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 setValue={handleSelect}
                 value={value}
                 values={currencyMenuItems}
+                groupedCurrencies={groupedCurrencies}
                 searchHint='Search'
                 isLoading={isLoading}
             />
@@ -284,5 +296,110 @@ function GenerateCurrencyMenuItems(
         return res
     }).sort(SortingByAvailability);
 }
+
+function GenerateGroupedCurrencyMenuItems(
+    currencies: (RouteToken & { network_name: string, network_display_name: string, network_logo: string })[],
+    values: SwapFormValues,
+    direction: string,
+    balances?: { [address: string]: Balance[]; },
+    query?: QueryParams,
+    wallets?: Wallet[] | undefined,
+    error?: ApiError,
+): SelectMenuItemGroup[] {
+    const { to, from } = values;
+    const lockAsset = direction === 'from' ? query?.lockFromAsset : query?.lockToAsset;
+
+    const groupedCurrencies: { [key: string]: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }>[] } = {};
+
+    currencies?.forEach(currency => {
+        const displayName = currency.symbol;
+
+        for (const key in balances) {
+            if (!wallets?.some(wallet => wallet?.address === key)) {
+                delete balances[key];
+            }
+        }
+
+        const balancesArray = balances && Object.values(balances).flat();
+        const balance = balancesArray?.find(b => b?.token === currency?.symbol && b?.network === currency.network_name);
+
+        const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, currency.precision)) : '';
+        const balanceAmountInUsd = formatted_balance_amount ? (currency?.price_in_usd * formatted_balance_amount).toFixed(2) : undefined;
+
+        const DisplayNameComponent = (
+            <div className="flex flex-col">
+                <span className="text-base text-primary-text">{displayName}</span>
+                <div className="text-secondary-text text-xs flex">
+                    {currency.network_logo && (
+                        <Image
+                            src={currency.network_logo}
+                            alt="Project Logo"
+                            height="16"
+                            width="16"
+                            loading="eager"
+                            className="rounded-md object-contain mr-1"
+                        />
+                    )}
+                    <span>{currency.network_display_name}</span>
+                </div>
+            </div>
+        );
+
+        const isNewlyListed = new Date(currency?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
+
+        const currencyIsAvailable = !lockAsset && (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR);
+
+        const badge = isNewlyListed ? (
+            <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
+        ) : undefined;
+
+        const details = wallets?.length ? (
+            <p className="text-primary-text text-sm flex flex-col items-end">
+                {Number(formatted_balance_amount) ? <span>{formatted_balance_amount}</span> : <span>-</span>}
+                {balanceAmountInUsd ? <span className="text-secondary-text">${balanceAmountInUsd}</span> : null}
+            </p>
+        ) : null;
+
+        const res: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
+            baseObject: currency,
+            id: `${currency?.symbol?.toLowerCase()}_${currency?.network_name?.toLowerCase()}`,
+            name: displayName || "-",
+            menuItemLabel: DisplayNameComponent,
+            balanceAmount: Number(formatted_balance_amount),
+            order: CurrencySettings.KnownSettings[currency.symbol]?.Order ?? 5,
+            imgSrc: currency.logo,
+            isAvailable: currencyIsAvailable,
+            group: currency.network_name,
+            menuItemDetails: details,
+            badge,
+            logo: (
+                <div className="flex-shrink-0 h-9 w-9 relative">
+                    {currency.logo && (
+                        <Image
+                            src={currency.logo}
+                            alt="Project Logo"
+                            height="40"
+                            width="40"
+                            loading="eager"
+                            className="rounded-full object-contain"
+                        />
+                    )}
+                </div>
+            )
+        };
+
+        if (!groupedCurrencies[currency.network_name]) {
+            groupedCurrencies[currency.network_name] = [];
+        }
+
+        groupedCurrencies[currency.network_name].push(res);
+    });
+
+    return Object.keys(groupedCurrencies).map(groupName => ({
+        name: groupName,
+        items: groupedCurrencies[groupName],
+    }));
+}
+
 
 export default CurrencyFormField
