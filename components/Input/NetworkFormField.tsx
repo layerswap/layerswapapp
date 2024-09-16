@@ -180,7 +180,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, direction: SwapDi
             return { value: false, disabledReason: LayerDisabledReason.LockNetworkIsTrue }
         }
         else if (!route.tokens?.some(r => r.status === 'active')) {
-            if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange || !route.tokens?.some(r => r.status !== 'inactive') || route.type === NetworkType.TON) {
+            if (query.lockAsset || query.lockFromAsset || query.lockToAsset || query.lockFrom || query.lockTo || query.lockNetwork || query.lockExchange || !route.tokens?.some(r => r.status !== 'inactive')) {
                 return { value: false, disabledReason: LayerDisabledReason.InvalidRoute }
             }
             else {

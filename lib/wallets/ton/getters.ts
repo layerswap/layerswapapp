@@ -1,8 +1,8 @@
-import { CommitmentParams, LockParams } from "../phtlc";
+import { CommitmentParams, GetCommitsParams, LockParams } from "../phtlc";
 import { Address } from "@ton/ton"
 import tonClient from "./client";
 import { hexToBigInt } from "viem";
-import { TupleBuilder } from "@ton/core"
+import { beginCell, TupleBuilder } from "@ton/core"
 import { NetworkWithTokens } from "../../../Models/Network";
 import { AssetLock, Commit } from "../../../Models/PHTLC";
 
@@ -44,8 +44,8 @@ export const getTONLock = async (params: LockParams & { network: NetworkWithToke
         secret: Number(lockDetails[7]),
         amount: lockAmount,
         timelock: Number(lockDetails[9]),
-        redeemed: Number(lockDetails[10]) === 1,
-        unlocked: Number(lockDetails[11]) === 1
+        redeemed: Number(lockDetails[10]) == 1,
+        unlocked: Number(lockDetails[11]) == 1
     }
 
     return parsedLockResult
@@ -101,4 +101,29 @@ export const getTONCommitment = async (params: CommitmentParams & { hashlock: st
     }
 
     return parsedResult
+}
+
+export const getTONCommits = async (params: GetCommitsParams & { address: string }) => {
+    const { address, contractAddress } = params
+    let args = new TupleBuilder();
+    args.writeSlice(beginCell().storeAddress(Address.parse(address)).endCell());
+
+    const commitsResponse = await tonClient.runMethod(
+        Address.parse(contractAddress),
+        "getCommits",
+        args.build()
+    );
+
+    const commits = (commitsResponse.stack as any)?.items?.[0]?.type !== 'null' ? (commitsResponse.stack as any).items : null
+
+    if (!commits) return []
+
+    debugger
+    const parsedCommits = commits?.map((commit: any) => {
+        debugger
+        commit.cell.beginParse().loadStringTail();
+        commit.cell.beginParse().loadAddress().toString()
+    })
+
+
 }

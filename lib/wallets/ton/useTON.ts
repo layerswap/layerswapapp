@@ -5,7 +5,7 @@ import { WalletProvider } from "../../../hooks/useWallet";
 import TON from "../../../components/icons/Wallets/TON";
 import { useEffect, useState } from "react";
 import { CommitmentParams, CreatePreHTLCParams, LockParams, RefundParams } from "../phtlc";
-import { Address, beginCell, Cell, TupleItem, toNano } from "@ton/ton"
+import { Address, beginCell, Cell, toNano } from "@ton/ton"
 import { commitTransactionBuilder } from "./transactionBuilder";
 import { AssetLock, Commit } from "../../../Models/PHTLC";
 import tonClient from "./client";

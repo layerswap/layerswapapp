@@ -3,7 +3,7 @@ import { Balance, BalanceProps, BalanceProvider, NetworkBalancesProps } from "..
 import { resolveBalance } from "./balance";
 
 export default function useTonBalance(): BalanceProvider {
-    const supportedNetworks = [KnownInternalNames.Networks.TONMainnet]
+    const supportedNetworks = [KnownInternalNames.Networks.TONMainnet, KnownInternalNames.Networks.TONTestnet]
 
     const getNetworkBalances = async ({ network, address }: NetworkBalancesProps) => {
 
