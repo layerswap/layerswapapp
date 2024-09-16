@@ -15,7 +15,7 @@ import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 import { CircleAlert, RouteOff } from "lucide-react";
 import { QueryParams } from "../../Models/QueryParams";
-import RouteIcon from "./RouteIcon";
+import ResolveRouteIcon from "./RouteIcon";
 
 const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -93,7 +93,7 @@ export function GenerateCurrencyMenuItems(
             order: ResolveCEXCurrencyOrder(c),
             imgSrc: c.logo,
             isAvailable: isAvailable,
-            icon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} />
+            icon: <ResolveRouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} />
         };
         return res
     });

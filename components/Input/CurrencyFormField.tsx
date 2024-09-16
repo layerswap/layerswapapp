@@ -22,10 +22,8 @@ import useWallet from "../../hooks/useWallet";
 import { Wallet } from "../../stores/walletStore";
 import { useSettingsState } from "../../context/settings";
 import { ONE_WEEK } from "./NetworkFormField";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 import { SortingByAvailability } from "../../lib/sorting";
-import { CircleAlert, RouteOff } from "lucide-react";
-import RouteIcon from "./RouteIcon";
+import ResolveRouteIcon from "./RouteIcon";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -207,17 +205,17 @@ function GenerateCurrencyMenuItems(
 
         const DisplayNameComponent = <div className="flex flex-col">
             <span className="text-base text-primary-text">{displayName}</span>
-            <span className="text-secondary-text text-xs flex">
+            <div className="text-secondary-text text-xs flex">
                 {c.network_logo && <Image
                     src={c.network_logo}
                     alt="Project Logo"
-                    height="12"
-                    width="12"
+                    height="16"
+                    width="16"
                     loading="eager"
                     className="rounded-md object-contain mr-1" />
                 }
-                {c.network_display_name}
-            </span>
+                <span>{c.network_display_name}</span>
+            </div>
         </div>
 
         const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
@@ -234,24 +232,37 @@ function GenerateCurrencyMenuItems(
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
 
-        const details = wallets?.length ? (<p className="text-primary-text-placeholder flex flex-col items-end">
+        const details = wallets?.length ? (<p className="text-primary-text text-sm flex flex-col items-end">
             {Number(formatted_balance_amount) ?
-                <span className="text-primary-text text-sm">{formatted_balance_amount}</span>
+                <span>{formatted_balance_amount}</span>
                 :
-                <span className="text-primary-text text-sm">-</span>
+                <span>-</span>
             }
             {balanceAmountInUsd ?
-                <span className="text-sm">${balanceAmountInUsd}</span>
+                <span className="text-secondary-text">${balanceAmountInUsd}</span>
                 :
                 null
             }
         </p>) : null
 
         const noWalletsConnectedText = !wallets?.length && (
-            <div className="absolute right-2 text-secondary-text text-xs">
+            <div className=" text-secondary-text text-xs">
                 Connect wallet<br /> to see balance
             </div>
         )
+
+        const logo = <div className="flex-shrink-0 h-9 w-9 relative">
+            {c.logo && (
+                <Image
+                    src={c.logo}
+                    alt="Project Logo"
+                    height="40"
+                    width="40"
+                    loading="eager"
+                    className="rounded-full object-contain"
+                />
+            )}
+        </div>
 
         const res: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
             baseObject: c,
@@ -265,8 +276,9 @@ function GenerateCurrencyMenuItems(
             group: getGroupName(c.network_display_name === (direction === "from" ? from?.display_name : to?.display_name) ? c.network_display_name : "All networks"),
             menuItemDetails: details,
             badge,
-            icon: <RouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={!!routeNotFound} />,
-            noWalletsConnectedText
+            icon: <ResolveRouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={!!routeNotFound} />,
+            noWalletsConnectedText,
+            logo
         };
 
         return res

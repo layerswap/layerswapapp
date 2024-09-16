@@ -7,13 +7,15 @@ import {
     CommandList,
     CommandWrapper
 } from '../../shadcn/command'
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import useWindowDimensions from '../../../hooks/useWindowDimensions';
 import SelectItem from '../Shared/SelectItem';
 import { SelectProps } from '../Shared/Props/SelectProps'
 import Modal from '../../modal/modal';
 import SpinIcon from '../../icons/spinIcon';
 import { LeafletHeight } from '../../modal/leaflet';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../shadcn/tooltip';
+import { CircleAlert } from 'lucide-react';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
@@ -57,9 +59,14 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                     <CommandGroup key={group.name} heading={group.name}>
                                         {group.items.map(item => {
                                             return (
-                                                <CommandItem value={item.id} key={item.id} onSelect={() => handleSelectValue(item)}>
-                                                    <SelectItem item={item} />
-                                                </CommandItem>
+                                                <div className='flex group' key={item.id}>
+                                                    <div className='relative items-center flex-shrink-0 w-3'>
+                                                        {item.icon}
+                                                    </div>
+                                                    <CommandItem className='grow' value={item.id} key={item.id} onSelect={() => handleSelectValue(item)}>
+                                                        <SelectItem item={item} />
+                                                    </CommandItem>
+                                                </div>
                                             )
                                         })
                                         }
