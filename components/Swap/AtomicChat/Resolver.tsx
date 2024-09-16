@@ -165,7 +165,7 @@ export const ResolveMessages: FC = () => {
 
     const assetsLocked = committment?.locked && destinationLock ? true : false;
 
-    const redeemCompleted = (sourceLock?.redeemed ? true : false) || lpRedeemTransaction?.hash;
+    const redeemCompleted = (destinationLock?.redeemed ? true : false) || lpRedeemTransaction?.hash;
     const { getWithdrawalProvider } = useWallet()
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const wallet = source_provider?.getConnectedWallet()
@@ -269,7 +269,7 @@ const ResolveAction: FC = () => {
     const commited = committment ? true : false;
     const lpLockDetected = destinationLock ? true : false;
     const assetsLocked = committment?.locked && destinationLock ? true : false;
-    const redeemCompleted = (sourceLock?.redeemed ? true : false) || lpRedeemTransaction?.hash;
+    const redeemCompleted = (destinationLock?.redeemed ? true : false) || lpRedeemTransaction?.hash;
 
     if (error) {
         return <div className="w-full flex flex-col gap-4">
@@ -352,7 +352,7 @@ export const ActionsWithProgressbar: FC = () => {
     }
     const lpRedeemTransaction = commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)
 
-    const allDone = ((committment?.locked && sourceLock?.redeemed) || lpRedeemTransaction?.hash) ? true : false
+    const allDone = ((committment?.locked && destinationLock?.redeemed) || lpRedeemTransaction?.hash) ? true : false
     const showSteps = !allDone && !isTimelockExpired
     const timelock = sourceLock?.timelock || committment?.timelock
 
