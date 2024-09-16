@@ -52,8 +52,15 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
 
     useEffect(() => {
         if (value) return
-        setFieldValue(name, currencyMenuItems?.[0]?.baseObject)
+        if (currencyMenuItems?.[0])
+            setFieldValue(name, currencyMenuItems?.[0]?.baseObject)
     }, [])
+
+    useEffect(() => {
+        const value = availableAssetGroups?.find(r => r.symbol === currencyGroup?.symbol)
+        if (!value) return
+        setFieldValue(name, value)
+    }, [fromCurrency, toCurrency, availableAssetGroups])
 
     const handleSelect = useCallback((item: SelectMenuItem<ExchangeToken>) => {
         setFieldValue(name, item.baseObject, true)
@@ -89,7 +96,7 @@ export function GenerateCurrencyMenuItems(
             order: ResolveCEXCurrencyOrder(c),
             imgSrc: c.logo,
             isAvailable: isAvailable,
-            icon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} />
+            leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} />
         };
         return res
     });

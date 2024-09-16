@@ -47,34 +47,27 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     let validationMessage = '';
     let validationDetails: ValidationDetails = {};
 
-    const layerswapApiClient = new LayerSwapApiClient()
-    const sourceRoutesEndpoint = (from || to) ? resolveRoutesURLForSelectedToken({ direction: 'from', network: from?.name, token: fromCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
-    const destinationRoutesEndpoint = (from || to) ? resolveRoutesURLForSelectedToken({ direction: 'to', network: from?.name, token: toCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
-
-    const { data: sourceRoutes } = useSWR<ApiResponse<RouteNetwork[]>>(sourceRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true })
-    const { data: destinationRoutes } = useSWR<ApiResponse<RouteNetwork[]>>(destinationRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true })
-
     if (query?.lockToAsset) {
-        if (fromCurrency?.status === 'not_found') {
-            validationMessage = `Transfers from ${fromDisplayName} ${fromCurrency.symbol} to this token are not supported`;
+        if (fromCurrency?.status === 'not_found' || (currencyGroup?.status === 'not_found' && fromExchange)) {
+            validationMessage = `Transfers from ${fromDisplayName} ${fromCurrency?.symbol || currencyGroup?.symbol} to this token are not supported`;
             validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
         }
-        else if (fromCurrency?.status === 'inactive') {
-            validationMessage = `Sorry, transfers from ${fromDisplayName} ${fromCurrency.symbol} are not available at the moment. Please try later.`;
+        else if (fromCurrency?.status === 'inactive' || (currencyGroup?.status === 'inactive' && fromExchange)) {
+            validationMessage = `Sorry, transfers from ${fromDisplayName} ${fromCurrency?.symbol || currencyGroup?.symbol} are not available at the moment. Please try later.`;
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <CircleAlert stroke='#f8974b' className='w-4 h-4 ' /> };
         }
-        else if (!fromCurrency) {
+        else if (!toCurrency) {
             validationMessage = `Sorry, transfers to ${toDisplayName || query.to} ${query?.toAsset} are not available at the moment. Please try later.`;
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <CircleAlert stroke='#f8974b' className='w-4 h-4 ' /> };
         }
     }
     else if (query?.lockFromAsset) {
-        if (toCurrency?.status === 'not_found') {
-            validationMessage = `Transfers to ${toDisplayName} ${toCurrency?.symbol} from this token are not supported`;
+        if (toCurrency?.status === 'not_found' || (currencyGroup?.status === 'not_found' && toExchange)) {
+            validationMessage = `Transfers to ${toDisplayName} ${toCurrency?.symbol || currencyGroup?.symbol} from this token are not supported`;
             validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
         }
-        else if (toCurrency?.status === 'inactive') {
-            validationMessage = `Sorry, transfers to ${toDisplayName} ${toCurrency?.symbol} are not available at the moment. Please try later.`;
+        else if (toCurrency?.status === 'inactive' || (currencyGroup?.status === 'inactive' && toExchange)) {
+            validationMessage = `Sorry, transfers to ${toDisplayName} ${toCurrency?.symbol || currencyGroup?.symbol} are not available at the moment. Please try later.`;
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <CircleAlert stroke='#f8974b' className='w-4 h-4 ' /> };
         }
         else if (!fromCurrency) {
