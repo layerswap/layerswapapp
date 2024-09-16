@@ -29,15 +29,6 @@ export class PersistantQueryParams {
     hideDepositMethod?: boolean = false;
     hideLogo?: boolean = false
 
-    //v8
-    address?: string = "";
-    source?: string = "";
-    destination?: string = "";
-    source_asset?: string = "";
-    destination_asset?: string = "";
-    commitId?: string = "";
-    hashlock?: string = "";
-
     // Obsolate
     sourceExchangeName?: string = "";
     destNetwork?: string = "";

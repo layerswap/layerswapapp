@@ -12,7 +12,6 @@ import ActionStatus from "./ActionStatus";
 import shortenAddress from "../../../utils/ShortenAddress";
 import { ExternalLink } from "lucide-react";
 import { NextRouter, useRouter } from "next/router";
-import { resolvePersistantQueryParams } from "../../../../helpers/querryHelper";
 
 export const LpLockingAssets: FC = () => {
     const { destination_network, commitId, setDestinationLock, setHashLock, destination_asset } = useAtomicState()
@@ -28,14 +27,14 @@ export const LpLockingAssets: FC = () => {
         const basePath = router?.basePath || ""
         var swapURL = window.location.protocol + "//"
             + window.location.host + `${basePath}/atomic`;
-        const params = resolvePersistantQueryParams(router.query)
+        const params = window.location.search
         if (params && Object.keys(params).length) {
             const search = new URLSearchParams(params as any);
             search.set('hashlock', hashlock)
             if (search)
                 swapURL += `?${search}`
         }
-        window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
+        window.history.replaceState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
     }
 
     useEffect(() => {
@@ -53,7 +52,9 @@ export const LpLockingAssets: FC = () => {
                 })
 
                 if (destinationLockId) {
-                    if (!router.query.hashlock?.toString()) setHashLock(destinationLockId)
+                    setHashLock(destinationLockId)
+                    if (!router.query.hashlock?.toString())
+                        setHashlockURI(router, destinationLockId)
                     const data = await destination_provider.getLock({
                         type: destination_asset?.contract ? 'erc20' : 'native',
                         chainId: destination_network.chain_id,
@@ -63,9 +64,11 @@ export const LpLockingAssets: FC = () => {
                     if (data) {
                         setDestinationLock(data)
                         clearInterval(lockHandler)
-                        setHashlockURI(router, destinationLockId)
+
+                        setHashLock(destinationLockId)
                     }
                 }
+
             }, 5000)
         }
         return () => {

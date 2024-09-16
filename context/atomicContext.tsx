@@ -96,7 +96,7 @@ export function AtomicProvider({ children }) {
 
     const handleCommited = (commitId: string) => {
         setCommitId(commitId)
-        router.push({
+        router.replace({
             pathname: router.pathname,
             query: { ...router.query, commitId }
         }, undefined, { shallow: true })
