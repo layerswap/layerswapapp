@@ -22,7 +22,7 @@ const CommitmentDetails = ({ settings, themeData, apiKey }: InferGetServerSidePr
         destination,
         destination_asset,
         source,
-        source_asseet
+        source_asset
     } = router.query
 
     return (<>
@@ -39,7 +39,7 @@ const CommitmentDetails = ({ settings, themeData, apiKey }: InferGetServerSidePr
                                         destination={destination as string}
                                         destination_asset={destination_asset as string}
                                         source={source as string}
-                                        source_asseet={source_asseet as string}
+                                        source_asset={source_asset as string}
                                         type='widget'
                                     />
                                 </AtomicProvider>

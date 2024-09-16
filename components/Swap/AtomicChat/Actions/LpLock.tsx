@@ -11,14 +11,31 @@ import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
 import shortenAddress from "../../../utils/ShortenAddress";
 import { ExternalLink } from "lucide-react";
+import { NextRouter, useRouter } from "next/router";
 
 export const LpLockingAssets: FC = () => {
-    const { destination_network, commitId, setDestinationLock, destinationLock, setHashLock, destination_asset } = useAtomicState()
+    const { destination_network, commitId, setDestinationLock, setHashLock, destination_asset } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
+
+    const router = useRouter()
 
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
 
     const atomicContract = (destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract) as `0x${string}`
+
+    const setHashlockURI = (router: NextRouter, hashlock: string) => {
+        const basePath = router?.basePath || ""
+        var swapURL = window.location.protocol + "//"
+            + window.location.host + `${basePath}/atomic`;
+        const params = window.location.search
+        if (params && Object.keys(params).length) {
+            const search = new URLSearchParams(params as any);
+            search.set('hashlock', hashlock)
+            if (search)
+                swapURL += `?${search}`
+        }
+        window.history.replaceState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
+    }
 
     useEffect(() => {
         let lockHandler: any = undefined
@@ -36,6 +53,8 @@ export const LpLockingAssets: FC = () => {
 
                 if (destinationLockId) {
                     setHashLock(destinationLockId)
+                    if (!router.query.hashlock?.toString())
+                        setHashlockURI(router, destinationLockId)
                     const data = await destination_provider.getLock({
                         type: destination_asset?.contract ? 'erc20' : 'native',
                         chainId: destination_network.chain_id,
@@ -47,6 +66,7 @@ export const LpLockingAssets: FC = () => {
                         clearInterval(lockHandler)
                     }
                 }
+
             }, 5000)
         }
         return () => {

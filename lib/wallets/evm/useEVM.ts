@@ -7,7 +7,7 @@ import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
-import { CreatyePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams } from "../phtlc"
+import { CreatePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams } from "../phtlc"
 import { writeContract, simulateContract, readContract, waitForTransactionReceipt } from '@wagmi/core'
 import { ethers } from "ethers"
 import { AssetLock, Commit } from "../../../Models/PHTLC"
@@ -99,12 +99,13 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-    const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
-    const timeLockMS = Date.now() + LOCK_TIME
-    const timeLock = Math.floor(timeLockMS / 1000)
-
-    const createPreHTLC = async (params: CreatyePreHTLCParams) => {
+    const createPreHTLC = async (params: CreatePreHTLCParams) => {
         const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, amount, decimals, atomicContract, chainId } = params
+
+        const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
+        const timeLockMS = Date.now() + LOCK_TIME
+        const timeLock = Math.floor(timeLockMS / 1000)
+
         if (!account.address) {
             throw Error("Wallet not connected")
         }
@@ -201,6 +202,7 @@ export default function useEVM(): WalletProvider {
 
         const parsedResult = {
             ...result,
+            lockId: result.lockId !== "0x0000000000000000000000000000000000000000000000000000000000000000" ? result.lockId : null,
             amount: formatAmount(Number(result.amount), networkToken?.decimals),
             timelock: Number(result.timelock)
         }
@@ -231,6 +233,10 @@ export default function useEVM(): WalletProvider {
     const lockCommitment = async (params: CommitmentParams & LockParams) => {
         const { chainId, commitId, contractAddress, lockId, type } = params
         const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
+
+        const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
+        const timeLockMS = Date.now() + LOCK_TIME
+        const timeLock = Math.floor(timeLockMS / 1000)
 
         const { request, result } = await simulateContract(config, {
             abi: abi,

@@ -3,6 +3,9 @@ import { useRouter } from 'next/router';
 import { useSettingsState } from './settings';
 import { AssetLock, Commit } from '../Models/PHTLC';
 import { Network, Token } from '../Models/Network';
+import useSWR from 'swr';
+import { ApiResponse } from '../Models/ApiResponse';
+import { CommitFromApi } from '../lib/layerSwapApiClient';
 
 const AtomicStateContext = createContext<DataContextType | null>(null);
 
@@ -22,6 +25,7 @@ type DataContextType = {
     isTimelockExpired?: boolean,
     completedRefundHash?: string,
     error: string | undefined,
+    commitFromApi?: CommitFromApi,
     onCommit: (commitId: string) => void;
     setCommitment: (commitment: Commit) => void;
     setDestinationLock: (data: AssetLock) => void;
@@ -40,7 +44,7 @@ export function AtomicProvider({ children }) {
         destination,
         destination_asset,
         source,
-        source_asseet
+        source_asset
     } = router.query
 
     const [commitId, setCommitId] = useState<string | undefined>(router.query.commitId as string | undefined)
@@ -58,8 +62,13 @@ export function AtomicProvider({ children }) {
 
     const source_network = networks.find(n => n.name.toUpperCase() === (source as string).toUpperCase())
     const destination_network = networks.find(n => n.name.toUpperCase() === (destination as string).toUpperCase())
-    const source_token = source_network?.tokens.find(t => t.symbol === source_asseet)
+    const source_token = source_network?.tokens.find(t => t.symbol === source_asset)
     const destination_token = destination_network?.tokens.find(t => t.symbol === destination_asset)
+
+    const fetcher = (args) => fetch(args).then(res => res.json())
+    const url = process.env.NEXT_PUBLIC_LS_API
+    const { data } = useSWR<ApiResponse<CommitFromApi>>(commitId ? `${url}/api/swap/${commitId}` : null, fetcher, { refreshInterval: 5000 })
+    const commitFromApi = data?.data
 
     useEffect(() => {
         let timer: NodeJS.Timeout;
@@ -87,7 +96,7 @@ export function AtomicProvider({ children }) {
 
     const handleCommited = (commitId: string) => {
         setCommitId(commitId)
-        router.push({
+        router.replace({
             pathname: router.pathname,
             query: { ...router.query, commitId }
         }, undefined, { shallow: true })
@@ -112,6 +121,7 @@ export function AtomicProvider({ children }) {
             isTimelockExpired,
             completedRefundHash,
             error,
+            commitFromApi,
             setDestinationLock,
             setHashLock,
             setSourceLock,

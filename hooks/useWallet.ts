@@ -4,9 +4,10 @@ import { Wallet } from "../stores/walletStore"
 import useEVM from "../lib/wallets/evm/useEVM"
 import useStarknet from "../lib/wallets/starknet/useStarknet"
 import { Network, RouteNetwork } from "../Models/Network"
-import { CreatyePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams } from "../lib/wallets/phtlc"
+import { CreatePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams } from "../lib/wallets/phtlc"
 import { AssetLock, Commit } from "../Models/PHTLC"
 import useSolana from "../lib/wallets/solana/useSolana"
+import useTON from "../lib/wallets/ton/useTON"
 
 export type WalletProvider = {
     connectWallet: (chain?: string | number | undefined | null, destination?: RouteNetwork) => Promise<void> | undefined | void,
@@ -19,7 +20,7 @@ export type WalletProvider = {
     name: string,
     connectedWalletActiveChain?: string | number | null,
 
-    createPreHTLC: (args: CreatyePreHTLCParams) => Promise<{ hash: string, commitId: string } | null | undefined>,
+    createPreHTLC: (args: CreatePreHTLCParams) => Promise<{ hash: string, commitId: string } | null | undefined>,
     claim: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
     refund: (args: RefundParams) => Promise<any> | undefined | void,
 
@@ -35,10 +36,9 @@ export type WalletProvider = {
 export default function useWallet() {
 
     const WalletProviders: WalletProvider[] = [
-        // useTON(),
+        useTON(),
         useEVM(),
         useStarknet(),
-        // useImmutableX(),
         useSolana()
     ]
 

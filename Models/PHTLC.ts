@@ -9,7 +9,7 @@ export type Commit = {
     amount: number,
     messenger: string,
     locked: boolean,
-    lockId: string,
+    lockId: string | undefined,
     uncommitted: boolean
 }
 
@@ -18,8 +18,8 @@ export type AssetLock = {
     dstChain?: string,
     dstAsset?: string,
     srcAsset?: string,
-    sender: `0x${string}`,
-    srcReceiver: `0x${string}`,
+    sender: string,
+    srcReceiver: string,
     hashlock: string,
     secret: number,
     amount: number,

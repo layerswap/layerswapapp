@@ -5159,10 +5159,10 @@
   resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-14.5.2.tgz#db7257d727c891905947bd1c1a99da20e03c2ebd"
   integrity sha512-YAh82Wh4TIrxYLmfGcixwD18oIjyC1pFQC2Y01F2lzV2HTMiYrI0nze0FD0ocB//CKS/7jIUgae+adPqxK5yCQ==
 
-"@ton/core@^0.53.0":
-  version "0.53.0"
-  resolved "https://registry.yarnpkg.com/@ton/core/-/core-0.53.0.tgz#9a2c101c4d2f48d0c9ec0e889b067da72d914df1"
-  integrity sha512-tB5RxXFS6Z/ivmsqMn/eebEZmkWXIAz+hS1PDZXhbBkcvnBTknZ12g2AFrZtXyuvpm8O6SbL15UI/3NgkyIWzQ==
+"@ton/core@^0.57.0":
+  version "0.57.0"
+  resolved "https://registry.yarnpkg.com/@ton/core/-/core-0.57.0.tgz#fdf2d32848a3d1135b890e9a5bd8295e958a4a81"
+  integrity sha512-UOehEXEV5yqi+17qmmWdD01YfVgQlYtitSm5OfN/WMg6PAMkt+Uf91JRC4mdPNtkKDhyKuujJuhYs6QiOsHPfw==
   dependencies:
     symbol.inspect "1.0.1"
 
@@ -5173,7 +5173,7 @@
   dependencies:
     jssha "3.2.0"
 
-"@ton/crypto@^3.2.0":
+"@ton/crypto@^3.3.0":
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/@ton/crypto/-/crypto-3.3.0.tgz#019103df6540fbc1d8102979b4587bc85ff9779e"
   integrity sha512-/A6CYGgA/H36OZ9BbTaGerKtzWp50rg67ZCH2oIjV1NcrBaCK9Z343M+CxedvM7Haf3f/Ee9EhxyeTp0GKMUpA==
@@ -5182,10 +5182,10 @@
     jssha "3.2.0"
     tweetnacl "1.0.3"
 
-"@ton/ton@^13.11.1":
-  version "13.11.2"
-  resolved "https://registry.yarnpkg.com/@ton/ton/-/ton-13.11.2.tgz#e40204df6a663fdf1b862dfe8ba2a91be3c0dddc"
-  integrity sha512-EPqW+ZTe0MmfqguJEIGMuAqTAFRKMEce95HlDx8h6CGn2y3jiMgV1/oO+WpDIOiX+1wnTu+xtajk8JTWr8nKRQ==
+"@ton/ton@^15.0.0":
+  version "15.0.0"
+  resolved "https://registry.yarnpkg.com/@ton/ton/-/ton-15.0.0.tgz#03aab727d082db877ec6012f3b1b3fb6aa564b40"
+  integrity sha512-0xBivkN0u0+vczt3mKJrx5yqkCxRR00wM8gXCmN/eOzzHKXRFWDEjJp8EEs5J/mq1Op/OhCOFExmOZkr58wgOA==
   dependencies:
     axios "^1.6.7"
     dataloader "^2.0.0"
@@ -5224,7 +5224,7 @@
     "@tonconnect/isomorphic-fetch" "^0.0.3"
     "@tonconnect/protocol" "^2.2.6"
 
-"@tonconnect/ui-react@^2.0.0-beta.4":
+"@tonconnect/ui-react@^2.0.9":
   version "2.0.9"
   resolved "https://registry.yarnpkg.com/@tonconnect/ui-react/-/ui-react-2.0.9.tgz#c226b81110e05b7e259bbf965ad5da42318a5dd3"
   integrity sha512-wN7tEZpQiRYSUcdNAxFsDkk5TYo8krIu00ZLE1R5kXyr+XpO120jOmTEweBSXvIzTgEVkD/PxDZbBQQxRTXsUw==

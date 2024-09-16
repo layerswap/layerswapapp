@@ -128,14 +128,13 @@ const CommitDetails: FC<Props> = ({ commit, source_network }) => {
                                 address: dstAddress,
                                 source: source_network?.name,
                                 destination: destination_network?.name,
-                                source_asseet: srcAsset,
+                                source_asset: srcAsset,
                                 destination_asset: dstAsset,
                                 commitId: id
                             }
                         }, undefined, { shallow: false })}
                         icon={
-                            <Eye
-                                className='h-5 w-5' />
+                            <Eye className='h-5 w-5' />
                         }
                     >
                         View swap

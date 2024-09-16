@@ -136,7 +136,7 @@ export default function Form() {
                     address: values.destination_address,
                     source: values.from?.name,
                     destination: values.to?.name,
-                    source_asseet: values.fromCurrency.symbol,
+                    source_asset: values.fromCurrency.symbol,
                     destination_asset: values.toCurrency.symbol,
                 }
             }, undefined, { shallow: false })

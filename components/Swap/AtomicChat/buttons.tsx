@@ -121,7 +121,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
 
 type LockButtonProps = {
     isConnected: boolean,
-    networkChainId: number | string,
+    networkChainId: number | string | null,
     network: Network,
     activeChain: any,
     onClick: () => Promise<void>,
@@ -149,7 +149,7 @@ export const WalletActionButton: FC<LockButtonProps> = (props) => {
             network={network}
         />
     }
-    if (activeChain != networkChainId && network) {
+    if (activeChain != networkChainId && network && networkChainId) {
         return <ChangeNetworkButton
             chainId={networkChainId}
             network={network.display_name}

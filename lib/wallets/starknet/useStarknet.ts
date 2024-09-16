@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { Call, Contract, RpcProvider, shortString, byteArray } from "starknet";
 import PHTLCAbi from "../../../lib/abis/atomic/STARKNET_PHTLC.json"
 import ETHABbi from "../../../lib/abis/STARKNET_ETH.json"
-import { CommitmentParams, CreatyePreHTLCParams, GetCommitsParams, LockParams, RefundParams } from "../phtlc";
+import { CommitmentParams, CreatePreHTLCParams, GetCommitsParams, LockParams, RefundParams } from "../phtlc";
 import { BigNumberish, ethers } from "ethers";
 import { AssetLock, Commit } from "../../../Models/PHTLC";
 import { toHex } from "viem";
@@ -112,7 +112,7 @@ export default function useStarknet(): WalletProvider {
     const timeLock = Math.floor((Date.now() + LOCK_TIME) / 1000)
     const messanger = "0x152747029e738c20a4ecde5ef869ea072642938d62f0aa7f3d0e9dfb5051cb9"
 
-    const createPreHTLC = async (params: CreatyePreHTLCParams) => {
+    const createPreHTLC = async (params: CreatePreHTLCParams) => {
         const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, tokenContractAddress, amount, decimals, atomicContract: atomicAddress } = params
         if (!wallet?.metadata?.starknetAccount?.account) {
             throw new Error('Wallet not connected')
