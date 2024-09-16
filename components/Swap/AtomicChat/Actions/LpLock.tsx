@@ -64,8 +64,6 @@ export const LpLockingAssets: FC = () => {
                     if (data) {
                         setDestinationLock(data)
                         clearInterval(lockHandler)
-
-                        setHashLock(destinationLockId)
                     }
                 }
 
