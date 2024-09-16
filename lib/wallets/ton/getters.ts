@@ -28,6 +28,9 @@ export const getTONLock = async (params: LockParams & { network: NetworkWithToke
         args.build()
     );
     const lockDetails = (lockDetailsResult?.stack as any)?.items?.[0]?.items
+
+    if(!lockDetails) return null
+
     const srcLockAsset = lockDetails[3].beginParse().loadStringTail()
     const lockSender = lockDetails[4].beginParse().loadAddress().toString()
 

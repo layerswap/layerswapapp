@@ -213,6 +213,8 @@ export default function useTON(): WalletProvider {
         const network = networks.find(n => n.chain_id === params.chainId)
         const lockDetailsResult = await getTONLock({ network, ...params })
 
+        if (!lockDetailsResult) return undefined
+
         return lockDetailsResult
     }
 
