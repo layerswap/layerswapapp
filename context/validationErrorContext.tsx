@@ -58,7 +58,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
             validationMessage = `Sorry, transfers from ${fromDisplayName} ${fromCurrency.symbol} are not available at the moment. Please try later.`;
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <CircleAlert stroke='#f8974b' className='w-4 h-4 ' /> };
         }
-        else if (!fromCurrency) {
+        else if (!toCurrency) {
             validationMessage = `Sorry, transfers to ${toDisplayName || query.to} ${query?.toAsset} are not available at the moment. Please try later.`;
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <CircleAlert stroke='#f8974b' className='w-4 h-4 ' /> };
         }
