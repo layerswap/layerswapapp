@@ -9,15 +9,16 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { Wallet } from "../../../stores/walletStore"
 import { EVMAddresses, useEVMAddressesStore } from "../../../stores/evmAddressesStore"
 import { useWalletModalState } from "../../../stores/walletModalStateStore"
+import { address } from "@ton/core"
 
 export default function useEVM(): WalletProvider {
     const name = 'EVM'
     const id = 'evm'
     const { networks } = useSettingsState()
-        console.log("rndrevm")
-        useEffect(() => {
-            console.log("hookrevm")
-        }, [])
+    console.log("rndrevm")
+    useEffect(() => {
+        console.log("hookrevm")
+    }, [])
     const asSourceSupportedNetworks = [
         ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
@@ -95,7 +96,8 @@ export default function useEVM(): WalletProvider {
                 const activeAddress = activeAccount?.address
 
                 const addresses = EVMAddresses?.find(w => w.connectorName.toLowerCase() === account.name.toLowerCase())?.addresses
-
+                if (!addresses) continue
+                
                 let wallet: Wallet = {
                     isActive: accountIsActive,
                     address: accountIsActive ? activeAddress : addresses?.[0],
@@ -103,7 +105,7 @@ export default function useEVM(): WalletProvider {
                     connector: account.name,
                     providerName: name,
                     isLoading: isLoading,
-                    icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account), address: activeAddress }),
+                    icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account), address: activeAddress || addresses[0] }),
                     connect: connectWallet,
                     disconnect: () => disconnectWallet(account.name)
                 }

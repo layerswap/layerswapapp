@@ -142,7 +142,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     return (
         <div className="relative">
-            <BalanceComponent values={values} direction={direction} />
+            {/* <BalanceComponent values={values} direction={direction} /> */}
             <PopoverSelectWrapper
                 placeholder="Asset"
                 values={currencyMenuItems}

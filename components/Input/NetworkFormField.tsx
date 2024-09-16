@@ -53,7 +53,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const { from, to, fromCurrency, toCurrency, fromExchange, toExchange } = values
     const query = useQueryState()
     const { lockFrom, lockTo } = query
-   
+
     const { sourceExchanges, destinationExchanges, destinationRoutes, sourceRoutes } = useSettingsState();
     let placeholder = "";
     let searchHint = "";
@@ -121,12 +121,15 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     const isLocked = direction === 'from' ? !!lockFrom : !!lockTo
 
-    return (<div className={`p-3 bg-secondary-700 border border-secondary-500 ${className}`}>
-        <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
-            {label}
-            <WalletPicker direction={direction}/>
-        </label>
-        <div ref={ref} className="mt-1.5 grid grid-flow-row-dense grid-cols-8 md:grid-cols-6 items-center pr-2">
+    return (<div className={`${className}`}>
+        <div className="flex justify-between items-center">
+            <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
+                {label}
+            </label>
+            <WalletPicker direction={direction} />
+        </div>
+
+        <div ref={ref} className="bg-secondary-700 p-3 rounded-xl mt-1.5 grid grid-flow-row-dense grid-cols-8 md:grid-cols-6 items-center gap-2">
             <div className="col-span-5 md:col-span-4">
                 <CommandSelectWrapper
                     disabled={isLocked || isLoading}
@@ -140,7 +143,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     direction={direction}
                 />
             </div>
-            <div className="col-span-3 md:col-span-2 w-full ml-2">
+            <div className="col-span-3 md:col-span-2 w-full">
                 {
                     value?.isExchange ?
                         <CurrencyGroupFormField direction={name} />
