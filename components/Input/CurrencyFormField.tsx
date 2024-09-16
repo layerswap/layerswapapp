@@ -200,7 +200,7 @@ function GenerateCurrencyMenuItems(
             isAvailable: currencyIsAvailable,
             badge,
             details,
-            icon: <RouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={!!routeNotFound} />
+            leftIcon: <RouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={!!routeNotFound} />
         };
 
         return res

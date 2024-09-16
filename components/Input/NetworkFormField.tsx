@@ -194,7 +194,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             group: getGroupName(r, 'network', isAvailable && !routeNotFound),
             isExchange: false,
             badge,
-            icon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} />
+            leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} />,
         }
         return res;
     }).sort(SortAscending) || [];
