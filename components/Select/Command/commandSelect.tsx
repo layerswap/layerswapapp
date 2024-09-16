@@ -23,7 +23,6 @@ export interface CommandSelectProps extends SelectProps {
     isLoading: boolean;
     modalHeight?: LeafletHeight;
     modalContent?: React.ReactNode;
-    requireConfirmation?: boolean;
     header?: string;
 }
 
@@ -36,14 +35,14 @@ export class SelectMenuItemGroup {
     items: ISelectMenuItem[];
 }
 
-export default function CommandSelect({ values, setValue, show, setShow, searchHint, valueGrouper, isLoading, modalHeight = 'full', modalContent, requireConfirmation = false, header }: CommandSelectProps) {
+export default function CommandSelect({ values, setValue, show, setShow, searchHint, valueGrouper, isLoading, modalHeight = 'full', modalContent, header }: CommandSelectProps) {
     const { isDesktop } = useWindowDimensions();
 
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
     const handleSelectValue = useCallback((item: ISelectMenuItem) => {
         setValue(item);
         setShow(false);
-    }, [setValue, setShow, requireConfirmation]);
+    }, [setValue, setShow]);
 
     return (
         <Modal height={modalHeight} show={show} setShow={setShow} modalId='comandSelect'>

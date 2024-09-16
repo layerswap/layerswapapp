@@ -133,7 +133,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             valueDetails={valueDetails}
             modalContent={networkDetails}
             key={value?.id}
-            requireConfirmation={true}
             header={header}
         />
     </div>)
