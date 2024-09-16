@@ -189,7 +189,7 @@ function GenerateMenuItems(
             isAvailable: true,
             details
         }
-        
+
         return item;
     })
     return menuItems
