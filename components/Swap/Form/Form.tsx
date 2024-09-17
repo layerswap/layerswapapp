@@ -215,7 +215,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
                     </Widget.Content>
                     <Widget.Footer>
                         <SwapButton
-                            className="plausible-event-name=Swap+initiated"
                             type='submit'
                             isDisabled={!isValid}
                             isSubmitting={isSubmitting}>
