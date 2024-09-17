@@ -6,6 +6,7 @@ import { Network, Token } from '../Models/Network';
 import useSWR from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 import { CommitFromApi } from '../lib/layerSwapApiClient';
+import { toHex } from 'viem';
 
 const AtomicStateContext = createContext<DataContextType | null>(null);
 
@@ -67,7 +68,8 @@ export function AtomicProvider({ children }) {
 
     const fetcher = (args) => fetch(args).then(res => res.json())
     const url = process.env.NEXT_PUBLIC_LS_API
-    const { data } = useSWR<ApiResponse<CommitFromApi>>(commitId ? `${url}/api/swap/${commitId}` : null, fetcher, { refreshInterval: 5000 })
+    const parsedCommitId = commitId ? toHex(BigInt(commitId)) : undefined
+    const { data } = useSWR<ApiResponse<CommitFromApi>>(parsedCommitId ? `${url}/api/swap/${parsedCommitId}` : null, fetcher, { refreshInterval: 5000 })
     const commitFromApi = data?.data
 
     useEffect(() => {
