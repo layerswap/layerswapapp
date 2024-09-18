@@ -25,6 +25,7 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
     const wallet = provider?.getConnectedWallet(network)
 
     const handleTransfer = useCallback(async () => {
+        debugger
         if (!swapId || !token) {
             return
         }
@@ -35,7 +36,17 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
             }
 
             try {
-                const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.account?.execute(JSON.parse(callData || "")) || {});
+                const parsedCallData = callData && JSON.parse(callData)?.map(item => ({
+                    contract_address: item.contractAddress,
+                    entry_point: item.entrypoint,
+                    calldata: item.calldata
+                }));
+
+                const { transaction_hash: transferTxHash } = callData && (await wallet?.metadata?.starknetAccount?.request({
+                    type: 'wallet_addInvokeTransaction',
+                    params: { calls: parsedCallData }
+                })) || {}
+                
                 if (transferTxHash) {
                     setSwapTransaction(swapId, BackendTransactionStatus.Completed, transferTxHash);
                     setTransferDone(true)
