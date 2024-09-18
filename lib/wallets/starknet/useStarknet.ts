@@ -33,7 +33,7 @@ export default function useStarknet(): WalletProvider {
     const getWallet = () => {
         return wallets.find(wallet => wallet.providerName === name)
     }
-    
+
     const connectWallet = useCallback(async () => {
         toast.dismiss('connect-wallet')
         const constants = (await import('starknet')).constants
@@ -53,14 +53,15 @@ export default function useStarknet(): WalletProvider {
 
             const walletChain = wallet && chainId
             const wrongChanin = walletChain == constants.StarknetChainId.SN_MAIN ? !isMainnet : isMainnet
-            
+
             if (wallet && wrongChanin) {
                 await disconnectWallet()
                 const errorMessage = `Please switch the network in your wallet to ${isMainnet ? 'Mainnet' : 'Sepolia'} and click connect again`
                 throw new Error(errorMessage)
             }
 
-            if (wallet && connectorData?.account) {
+            if (wallet && connectorData?.account && connector) {
+                const account = await connector.account({})
                 addWallet({
                     address: connectorData?.account,
                     chainId: chainId,
@@ -68,7 +69,8 @@ export default function useStarknet(): WalletProvider {
                     connector: wallet.name,
                     providerName: name,
                     metadata: {
-                        starknetAccount: wallet
+                        starknetAccount: account,
+                        wallet: wallet
                     }
                 })
             }

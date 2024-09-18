@@ -29,7 +29,6 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const {
         values,
     } = useFormikContext<SwapFormValues>();
-debugger
     const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
 
     const { to, from, fromCurrency, toCurrency, toExchange, fromExchange, currencyGroup } = values;
