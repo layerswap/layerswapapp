@@ -106,6 +106,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             return
         if (item.isExchange) {
             setFieldValue(name, null)
+            setFieldValue(`${name}Currency`, null)
             setFieldValue(`${name}Exchange`, item.baseObject, true)
         } else {
             setFieldValue(`${name}Exchange`, null)
