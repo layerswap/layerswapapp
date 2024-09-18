@@ -23,16 +23,16 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        {process.env.NEXT_PUBLIC_VERCEL_ENV && <script
+        <script
           defer
           data-domain='layerswap.io/v8'
           src="https://plausible.io/js/script.tagged-events.js"
-        />}
-        {process.env.NEXT_PUBLIC_VERCEL_ENV && <script
+        />
+        <script
           defer
           data-domain='layerswap.io/v8'
           src="https://plausible.io/js/script.manual.js"
-        />}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html:
