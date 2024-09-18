@@ -108,3 +108,9 @@ export default function useStarknet(): WalletProvider {
         name
     }
 }
+
+function extractChainId(wallet) {
+    return wallet.provider?.chainId // Braavos
+        || wallet.provider?.provider?.chainId // ArgentX 
+        || wallet.provider?.channel?.chainId // Argent mobile
+}
