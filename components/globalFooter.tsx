@@ -49,10 +49,12 @@ const GLobalFooter = () => {
         ],
     }
 
+    const version = process.env.NEXT_PUBLIC_API_VERSION
+
     return (
         <>
             <footer className="z-0 hidden md:block fixed bottom-0 py-4 w-full px-6 lg:px-8 mt-auto">
-                <NewsComponent />
+                {version === 'sandbox' && <NewsComponent />}
                 <div className=" flex justify-between items-center w-full">
                     <div>
                         <div className="flex mt-3 md:mt-0 gap-6">
@@ -91,7 +93,7 @@ const NewsComponent = () => {
                     Try v8
                 </p>
             </div>
-            <p className='mt-2 text-left text-secondary-text'>
+            <div className='mt-2 text-left text-secondary-text'>
                 <span>Transfers to</span>
                 <div className={`h-3.5 w-3.5 inline-flex flex-shrink-0 relative mx-1`}>
                     <Image
@@ -103,8 +105,8 @@ const NewsComponent = () => {
                         className="rounded-md object-contain"
                     />
                 </div>
-                <span className="text-primary-text">Soneium Minato and 8+ other chains are now available in Layerswap v8</span>
-            </p>
+                <span className="text-primary-text">Soneium Minato and 8+ other chains</span> <span>are now available in Layerswap v8</span>
+            </div>
             <Link href='https://layerswap.io/v8' target="_blank" className="flex items-center gap-1 underline hover:no-underline">
                 <p>
                     layerswap.io/v8
