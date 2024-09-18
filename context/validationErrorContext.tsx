@@ -1,16 +1,9 @@
-import React, { createContext, useEffect } from 'react';
+import React, { createContext } from 'react';
 import { ReactNode } from 'react';
 import { CircleAlert, RouteOff } from 'lucide-react';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import { QueryParams } from '../Models/QueryParams';
-import { ApiError, LSAPIKnownErrorCode } from '../Models/ApiError';
 import { useFormikContext } from 'formik';
 import { useQueryState } from './query';
-import { resolveRoutesURLForSelectedToken } from '../helpers/routes';
-import useSWR from 'swr';
-import { ApiResponse } from '../Models/ApiResponse';
-import { RouteNetwork } from '../Models/Network';
-import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import { useSettingsState } from './settings';
 
 interface ValidationDetails {
@@ -36,7 +29,6 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const {
         values,
     } = useFormikContext<SwapFormValues>();
-
     const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
 
     const { to, from, fromCurrency, toCurrency, toExchange, fromExchange, currencyGroup } = values;
@@ -97,6 +89,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         }
     }
     else if (currencyGroup?.status === 'not_found' || toCurrency?.status === 'not_found' || fromCurrency?.status === 'not_found') {
+        
         validationMessage = 'Please change one of the selected tokens';
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
     }
