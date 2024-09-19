@@ -41,7 +41,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const { destinationRoutes, sourceRoutes } = useSettingsState()
     const { wallets } = useWallet()
-    const { to, fromCurrency, toCurrency, from, currencyGroup, destination_address } = values
+    const { to, fromCurrency, toCurrency, from, currencyGroup } = values
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { balances } = useBalancesState()
@@ -388,11 +388,11 @@ function GenerateGroupedCurrencyMenuItems(
             )
         };
 
-        if (!groupedCurrencies[currency.network_name]) {
-            groupedCurrencies[currency.network_name] = [];
+        if (!groupedCurrencies[currency.network_display_name]) {
+            groupedCurrencies[currency.network_display_name] = [];
         }
 
-        groupedCurrencies[currency.network_name].push(res);
+        groupedCurrencies[currency.network_display_name].push(res);
     });
 
     return Object.keys(groupedCurrencies).map(groupName => ({
