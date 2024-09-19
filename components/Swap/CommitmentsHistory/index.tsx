@@ -20,12 +20,13 @@ import WalletIcon from "../../icons/WalletIcon";
 import StatusIcon from "./StatusIcons";
 import AppSettings from "../../../lib/AppSettings";
 import { truncateDecimals } from "../../utils/RoundDecimals";
+import { CommitFromApi } from "../../../lib/layerSwapApiClient";
 
 type CommitStatus = 'committed' | 'user_locked' | 'lp_locked' | 'completed' | 'refunded' | 'timelock_expired'
 
-const commitStatusResolver = (commit: Commit, destination_lock: AssetLock | undefined): CommitStatus => {
+const commitStatusResolver = (commit: Commit, destination_lock: AssetLock | undefined, source_lock: AssetLock | undefined): CommitStatus => {
 
-    if (destination_lock?.redeemed) return 'completed'
+    if (destination_lock?.redeemed || source_lock?.redeemed) return 'completed'
     //TODO check&implement source lock refund
     else if (commit.uncommitted) return 'refunded'
     else if (commit.timelock && Number(commit.timelock) * 1000 < Date.now()) return 'timelock_expired'
@@ -82,6 +83,7 @@ function CommittmentsHistory() {
             const destinationType = destination_asset?.contract ? 'erc20' : 'native'
 
             let destinationLock: AssetLock | undefined = undefined
+            let sourceLock: AssetLock | undefined = undefined
 
             if (destination_network && destination_provider && destination_network.chain_id && destination_asset) {
 
@@ -100,6 +102,12 @@ function CommittmentsHistory() {
                             chainId: destination_network.chain_id,
                             contractAddress: destinationAtomicContract as `0x${string}`
                         })
+                        sourceLock = await source_provider?.getLock({
+                            type: sourceType,
+                            lockId: destinationLockId,
+                            chainId: activeNetwork?.chain_id as string,
+                            contractAddress: sourceAtomicContract as `0x${string}`
+                        })
                     }
                 } catch (e) {
                     console.log(e)
@@ -107,7 +115,7 @@ function CommittmentsHistory() {
             }
 
             if (commit) {
-                const status = commitStatusResolver(commit, destinationLock)
+                const status = commitStatusResolver(commit, destinationLock, sourceLock)
                 commits.push({
                     id: commitIds[i].toString(),
                     status,
