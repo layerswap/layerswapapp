@@ -1,5 +1,6 @@
 import AddressIcon from "../../../components/AddressIcon";
 import SVGWithImg from "../../../components/icons/SvgWithImg";
+import WalletIcon from "../../../components/icons/WalletIcon";
 import KnownEVMConnectors from "../evm/KnownEVMConnectors";
 import KnownSolanaConnectors from "../solana/KnownSolanaConnectors";
 import KnownStarknetConnectors from "../starknet/KnownStarknetConnectors";
@@ -10,11 +11,14 @@ const connectors = [
     ...KnownStarknetConnectors
 ]
 
-const resolveWalletConnectorIcon = ({ connector, address, iconUrl }: { connector?: string, address: string, iconUrl?: string }) => {
+const resolveWalletConnectorIcon = ({ connector, address, iconUrl }: { connector?: string, address?: string, iconUrl?: string }) => {
     const knownConnector = connectors.find(c => c.id === connector?.toLowerCase())
 
     if (iconUrl) return SVGIconWrapper(iconUrl)
-    else if (!knownConnector) return AddressIconWrapper(address)
+    else if (!knownConnector) {
+        if (address) return AddressIconWrapper(address)
+        else return WalletIcon
+    }
 
     return knownConnector.icon
 }
