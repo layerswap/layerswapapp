@@ -1,7 +1,7 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useEffect, useState } from "react";
+import { forwardRef, useCallback, useEffect } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
+import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
@@ -130,7 +130,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             values={menuItems!}
             searchHint=''
             isLoading={isRoutesLoading || isHistoricalNetworsLoading}
-            modalHeight="fit"
+            modalHeight="full"
             valueDetails={valueDetails}
             modalContent={networkDetails}
             key={value?.id}
