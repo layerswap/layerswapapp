@@ -52,7 +52,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                     transition={{
                         duration: 0.15,
                     }}
-                    custom={{ direction: "back" ? -1 : 1, width: 100 }}
+                    custom={{ direction: -1, width: 100 }}
                     variants={variants}
                     className={`text-primary-text text-base mt-3        
                         max-sm:fixed

@@ -70,7 +70,7 @@ function RainbowKitComponent({ children }: Props) {
         .filter(net => net.type === NetworkType.EVM
             && net.node_url
             && net.token)
-        .map(resolveChain).filter(isChain) as [Chain]
+        .map(resolveChain).filter(isChain) as Chain[]
 
     const transports = {}
 
@@ -80,7 +80,7 @@ function RainbowKitComponent({ children }: Props) {
 
     const config = createConfig({
         connectors,
-        chains: settingsChains,
+        chains: settingsChains as [Chain, ...Chain[]],
         transports: transports,
     });
 
