@@ -83,6 +83,19 @@ export default function useEVM(): WalletProvider {
 
     const getConnectedWallets = useCallback(() => {
 
+        //TODO: handle Ronin wallet case
+        // let roninWalletNetworks = [
+        //     KnownInternalNames.Networks.RoninMainnet,
+        //     KnownInternalNames.Networks.EthereumMainnet,
+        //     KnownInternalNames.Networks.PolygonMainnet,
+        //     KnownInternalNames.Networks.BNBChainMainnet,
+        //     KnownInternalNames.Networks.ArbitrumMainnet];
+
+        // if (connector == "com.roninchain.wallet" && network && !roninWalletNetworks.includes(network.name)) {
+        //     return undefined;
+        // }
+
+
         let wallets: Wallet[] = []
 
         if (uniqueConnectors) {
@@ -97,7 +110,7 @@ export default function useEVM(): WalletProvider {
 
                 const addresses = EVMAddresses?.find(w => w.connectorName.toLowerCase() === account.name.toLowerCase())?.addresses
                 if (!addresses) continue
-                
+
                 let wallet: Wallet = {
                     isActive: accountIsActive,
                     address: accountIsActive ? activeAddress : addresses?.[0],

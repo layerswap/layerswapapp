@@ -65,6 +65,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     }, [name, routes])
 
     const formValue = (direction === 'from' ? from : to)
+    const routeUnavailable = currencyGroup?.status === 'not_found' || toCurrency?.status === 'not_found' || fromCurrency?.status === 'not_found'
 
     //TODO set default currency & reset currency if not available
     const value = menuItems?.find(item =>
@@ -121,7 +122,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             }
         </label>
         <CommandSelectWrapper
-            disabled={(value && !value?.isAvailable) || isRoutesLoading}
+            disabled={(value && !value?.isAvailable) || isRoutesLoading || routeUnavailable}
             valueGrouper={groupByType}
             placeholder="Network"
             setValue={handleSelect}
@@ -129,7 +130,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             values={menuItems!}
             searchHint=''
             isLoading={isRoutesLoading || isHistoricalNetworsLoading}
-            modalHeight="full"
+            modalHeight="fit"
             valueDetails={valueDetails}
             modalContent={networkDetails}
             key={value?.id}

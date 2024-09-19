@@ -107,6 +107,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             return
         if (item.isExchange) {
             setFieldValue(name, null)
+            setFieldValue(`${name}Currency`, null)
             setFieldValue(`${name}Exchange`, item.baseObject, true)
         } else {
             setFieldValue(`${name}Exchange`, null)
@@ -199,7 +200,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             group: getGroupName(r, 'network', isAvailable && !routeNotFound),
             isExchange: false,
             badge,
-            leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} />,
+            leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} type="network" />,
         }
         return res;
     }).sort(SortAscending) || [];

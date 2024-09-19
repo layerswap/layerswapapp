@@ -31,7 +31,8 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
             }
 
             try {
-                const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.account?.execute(JSON.parse(callData || "")) || {});
+                const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.execute(JSON.parse(callData || "")) || {});
+
                 if (transferTxHash) {
                     setSwapTransaction(swapId, BackendTransactionStatus.Completed, transferTxHash);
                     setTransferDone(true)

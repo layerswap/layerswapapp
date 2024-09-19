@@ -40,7 +40,11 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
 
                 const paraclearProvider = new Paradex.ParaclearProvider.DefaultProvider(config);
 
-                const snAccount = wallet?.metadata?.starknetAccount?.account
+                const snAccount = wallet?.metadata?.starknetAccount
+
+                if (!snAccount) {
+                    throw Error("Starknet account not found")
+                }
 
                 const paradexAccount = await Paradex.Account.fromStarknetAccount({
                     provider: paraclearProvider,

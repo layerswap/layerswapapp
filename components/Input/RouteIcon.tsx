@@ -5,11 +5,12 @@ import { CircleAlert, RouteOff } from "lucide-react"
 type Props = {
     isAvailable: boolean,
     routeNotFound: boolean,
-    direction: string
+    direction: string,
+    type: 'network' | 'token'
 }
 
 const RouteIcon: FC<Props> = (props) => {
-    const { isAvailable, routeNotFound, direction } = props
+    const { isAvailable, routeNotFound, direction, type } = props
 
     if (!isAvailable)
         return <Tooltip delayDuration={200}>
@@ -20,7 +21,7 @@ const RouteIcon: FC<Props> = (props) => {
             </TooltipTrigger>
             <TooltipContent>
                 <p className="max-w-72">
-                    Transfers {direction} this token are not available at the moment. Please try later.
+                    <span>Transfers</span> <span>{direction}</span> <span>this</span> <span>{type}</span> <span>are not available at the moment. Please try later.</span>
                 </p>
             </TooltipContent>
         </Tooltip>

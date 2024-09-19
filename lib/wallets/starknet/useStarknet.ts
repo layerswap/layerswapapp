@@ -46,7 +46,7 @@ export default function useStarknet(): WalletProvider {
         const connect = (await import('starknetkit')).connect
 
         try {
-            const { wallet } = await connect({
+            const { wallet, connectorData, connector } = await connect({
                 argentMobileOptions: {
                     dappName: 'Layerswap',
                     projectId: WALLETCONNECT_PROJECT_ID,
@@ -56,7 +56,9 @@ export default function useStarknet(): WalletProvider {
                 dappName: 'Layerswap',
                 modalMode: 'alwaysAsk'
             })
-            const walletChain = wallet && (wallet.provider?.chainId || wallet.provider?.provider?.chainId)
+            const chainId = `0x${connectorData?.chainId?.toString(16)}`
+
+            const walletChain = wallet && chainId
             const wrongChanin = walletChain == constants.StarknetChainId.SN_MAIN ? !isMainnet : isMainnet
 
             if (wallet && wrongChanin) {
@@ -65,23 +67,22 @@ export default function useStarknet(): WalletProvider {
                 throw new Error(errorMessage)
             }
 
-            if (wallet && wallet.account && wallet.isConnected) {
+            if (wallet && connectorData?.account && connector) {
+                const account = await connector.account({})
                 addWallet({
-                    address: wallet.account.address,
-                    chainId: wallet.provider?.chainId || wallet.provider?.provider?.chainId,
-                    icon: resolveWalletConnectorIcon({ connector: wallet.name, address: wallet.account.address }),
+                    address: connectorData?.account,
+                    chainId: chainId,
+                    icon: resolveWalletConnectorIcon({ connector: wallet.name, address: connectorData?.account }),
                     connector: wallet.name,
                     providerName: name,
                     metadata: {
-                        starknetAccount: wallet
+                        starknetAccount: account,
+                        wallet: wallet
                     },
                     isActive: true,
                     connect: () => connectWallet(),
                     disconnect: () => disconnectWallets()
                 })
-            } else if (wallet?.isConnected === false) {
-                await disconnectWallets()
-                connectWallet()
             }
         }
         catch (e) {
