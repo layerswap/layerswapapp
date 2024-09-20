@@ -42,7 +42,7 @@ const Summary: FC<SwapInfoProps> = ({
     const sourceAddressFromInput = sourceTransaction?.from;
     const receiveAmount = quote?.receive_amount
     const calculatedReceiveAmount = destinationTransaction?.amount ?? receiveAmount
-
+    console.log("swap", swap)
     let sourceAccountAddress = ""
     if (sourceAddressFromInput) {
         sourceAccountAddress = shortenAddress(sourceAddressFromInput)
@@ -62,45 +62,70 @@ const Summary: FC<SwapInfoProps> = ({
         <div className="bg-secondary-800 rounded-lg cursor-pointer border border-secondary-500">
             <div className="bg-secondary-700 rounded-lg px-3  border border-secondary-500 w-full relative z-10 space-y-4">
                 <div className="font-normal flex flex-col w-full relative z-10 space-y-4">
-                    <div className="grid grid-cols-11 items-center w-full">
-
-                        <div className="flex col-span-5 py-4 items-center gap-3 grow">
-                            {
-                                source &&
-                                <Image
-                                    src={source.logo}
-                                    alt={source.display_name}
-                                    width={24}
-                                    height={24}
-                                    className="rounded-full" />
+                    <div className="grid grid-cols-12 items-center w-full">
+                        <div className="flex col-span-9 py-4 items-center gap-3 grow">
+                            {source?.display_name !== destination?.display_name ?
+                                <div className="w-11 relative">
+                                    {
+                                        source &&
+                                        <Image
+                                            src={source.logo}
+                                            alt={source.display_name}
+                                            width={28}
+                                            height={28}
+                                            className="rounded-md" />
+                                    }
+                                    {
+                                        destination &&
+                                        <Image
+                                            src={destination.logo}
+                                            alt={destination.display_name}
+                                            width={28}
+                                            height={28}
+                                            className="rounded-md absolute left-4 top-4" />
+                                    }
+                                </div>
+                                :
+                                <div className="w-11">
+                                    {
+                                        source &&
+                                        <Image
+                                            src={source.logo}
+                                            alt={source.display_name}
+                                            width={44}
+                                            height={44}
+                                            className="rounded-md" />
+                                    }
+                                </div>
                             }
-                            <div>
+                            <div className="flex flex-col">
+                                <p className="text-secondary-text text-base">{source?.display_name} to {destination?.display_name}</p>
+                                <div>
+                                    <div>
+                                        <p className="text-secondary-text text-xs">{shortenAddress(sourceAddressFromInput as string)}</p>
+                                    </div>
+                                    <ChevronRightIcon className="h-3 w-3" />
+                                    <div>
+                                        <p className="text-secondary-text text-xs">{shortenAddress(destAddress as string)}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            {/* <div>
                                 <p className="font-semibold text-primary-text text-base leading-5">
                                     {truncateDecimals(requested_amount, source_token.precision)} {source_token.symbol}
                                 </p>
                                 <p className="text-secondary-text text-sm">{source?.display_name}</p>
-                            </div>
+                            </div> */}
                         </div>
-                        {/* <div className="relative left-[50%] w-px bg-secondary-500 h-full">
-                        </div> */}
-                        <ChevronRightIcon className="mx-auto text-secondary-text/30" />
-
-                        <div className="col-start-7 flex col-span-5 items-center gap-3 grow">
-                            {
-                                destination &&
-                                <Image
-                                    src={destination.logo}
-                                    alt={destination.display_name}
-                                    width={24}
-                                    height={24}
-                                    className="rounded-full" />
-                            }
+                        {/* <div className="col-start-7 flex col-span-5 items-center gap-3 grow">
                             <div>
                                 <p className="font-semibold text-primary-text text-base leading-5">{truncateDecimals(calculatedReceiveAmount, destination_token.precision)} {destination_token.symbol}</p>
                                 <p className="text-sm text-secondary-text">{destination?.display_name}</p>
                             </div>
-                        </div>
-
+                        </div> */}
                     </div>
                 </div>
             </div>
