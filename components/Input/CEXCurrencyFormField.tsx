@@ -54,6 +54,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         if (value) return
         if (currencyMenuItems?.[0])
             setFieldValue(name, currencyMenuItems?.[0]?.baseObject)
+        return () => { setFieldValue(name, null) }
     }, [])
 
     useEffect(() => {
