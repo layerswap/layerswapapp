@@ -16,7 +16,7 @@ export default function useEVM(): WalletProvider {
     const { disconnectAsync } = useDisconnect()
 
     const asSourceSupportedNetworks = [
-        ...networks.filter(network => network.type === NetworkType.EVM && network.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
+        ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
         KnownInternalNames.Networks.LoopringGoerli,
         KnownInternalNames.Networks.LoopringMainnet,
@@ -53,6 +53,16 @@ export default function useEVM(): WalletProvider {
             const connector = account.connector.id
             if (connector == "com.immutable.passport" && network && !(network.name == KnownInternalNames.Networks.ImmutableZkEVM || network.name == KnownInternalNames.Networks.ImmutableXMainnet)) {
                 return undefined
+            }
+            let roninWalletNetworks = [
+                KnownInternalNames.Networks.RoninMainnet,
+                KnownInternalNames.Networks.EthereumMainnet,
+                KnownInternalNames.Networks.PolygonMainnet,
+                KnownInternalNames.Networks.BNBChainMainnet,
+                KnownInternalNames.Networks.ArbitrumMainnet];
+
+            if (connector == "com.roninchain.wallet" && network && !roninWalletNetworks.includes(network.name)) {
+                return undefined;
             }
             return {
                 address: account.address,

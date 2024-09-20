@@ -56,7 +56,10 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount 
                 errors.destination_address = `Enter a valid ${values.to?.display_name} address`;
             }
         }
-        if (values.fromCurrency?.status === 'not_found' || values.toCurrency?.status === 'not_found') {
+        if (values.fromCurrency?.status === 'not_found' || values.toCurrency?.status === 'not_found' || values.currencyGroup?.status === 'not_found') {
+            errors.amount = `Route unavailable`;
+        }
+        if (values.fromCurrency?.status === 'inactive' || values.toCurrency?.status === 'inactive' || values.currencyGroup?.status === 'inactive') {
             errors.amount = `Route unavailable`;
         }
 

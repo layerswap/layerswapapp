@@ -67,19 +67,19 @@ export default function Layout({ children, settings, themeData }: Props) {
 
   const query: QueryParams = {
     ...router.query,
-    ...(router.query.lockNetwork === 'true' ? { lockNetwork: true } : {}),
-    ...(router.query.lockExchange === 'true' ? { lockExchange: true } : {}),
-    ...(router.query.hideRefuel === 'true' ? { hideRefuel: true } : {}),
-    ...(router.query.hideAddress === 'true' ? { hideAddress: true } : {}),
-    ...(router.query.hideFrom === 'true' ? { hideFrom: true } : {}),
-    ...(router.query.hideTo === 'true' ? { hideTo: true } : {}),
-    ...(router.query.lockFrom === 'true' ? { lockFrom: true } : {}),
-    ...(router.query.lockTo === 'true' ? { lockTo: true } : {}),
-    ...(router.query.lockAsset === 'true' ? { lockAsset: true } : {}),
-    ...(router.query.lockFromAsset === 'true' ? { lockFromAsset: true } : {}),
-    ...(router.query.lockToAsset === 'true' ? { lockToAsset: true } : {}),
-    ...(router.query.hideLogo === 'true' ? { hideLogo: true } : {}),
-    ...(router.query.hideDepositMethod === 'true' ? { hideDepositMethod: true } : {}),
+    lockNetwork: router.query.lockNetwork === 'true',
+    lockExchange: router.query.lockExchange === 'true',
+    hideRefuel: router.query.hideRefuel === 'true',
+    hideAddress: router.query.hideAddress === 'true',
+    hideFrom: router.query.hideFrom === 'true',
+    hideTo: router.query.hideTo === 'true',
+    lockFrom: router.query.lockFrom === 'true',
+    lockTo: router.query.lockTo === 'true',
+    lockAsset: router.query.lockAsset === 'true',
+    lockFromAsset: router.query.lockFromAsset === 'true',
+    lockToAsset: router.query.lockToAsset === 'true',
+    hideLogo: router.query.hideLogo === 'true',
+    hideDepositMethod: router.query.hideDepositMethod === 'true'
   };
 
   function logErrorToService(error, info) {

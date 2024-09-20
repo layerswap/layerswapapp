@@ -36,6 +36,8 @@ import { addressFormat } from "../../../lib/address/formatter";
 import { useAddressesStore } from "../../../stores/addressesStore";
 import { AddressGroup } from "../../Input/Address/AddressPicker";
 import { useAsyncModal } from "../../../context/asyncModal";
+import { ValidationProvider } from "../../../context/validationErrorContext";
+import { TrackEvent } from "../../../pages/_document";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -118,6 +120,7 @@ export default function Form() {
             const wallet = provider?.getConnectedWallet()
 
             const swapId = await createSwap(values, wallet?.address, query, partner);
+            plausible(TrackEvent.SwapInitiated)
             setSwapId(swapId)
             pollFee(false)
             setSwapPath(swapId, router)
@@ -221,7 +224,9 @@ export default function Form() {
             validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
             onSubmit={handleSubmit}
         >
-            <SwapForm partner={partner} />
+            <ValidationProvider>
+                <SwapForm partner={partner} />
+            </ValidationProvider>
         </Formik>
     </DepositMethodProvider>
 }

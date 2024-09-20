@@ -16,13 +16,9 @@ import dynamic from "next/dynamic";
 import { QueryParams } from "../../Models/QueryParams";
 import { ApiError, LSAPIKnownErrorCode } from "../../Models/ApiError";
 import { resolveNetworkRoutesURL } from "../../helpers/routes";
-import ClickTooltip from "../Tooltips/ClickTooltip";
 import useWallet from "../../hooks/useWallet";
 import { ONE_WEEK } from "./NetworkFormField";
-import useValidationErrorStore from "../validationError/validationErrorStore";
-import validationMessageResolver from "../utils/validationErrorResolver";
-import RouteIcon from "../icons/RouteIcon";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
+import RouteIcon from "./RouteIcon";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -40,7 +36,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const { balances } = useBalancesState()
 
     const { getAutofillProvider: getProvider } = useWallet()
-    const { message: validationErrorMessage, directions, setValidationMessage, clearValidationMessage } = useValidationErrorStore()
 
     const sourceWalletProvider = useMemo(() => {
         return from && getProvider(from)
@@ -61,7 +56,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     } = useSWR<ApiResponse<RouteNetwork[]>>(`${networkRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
 
     const currencies = direction === 'from' ? routes?.data?.find(r => r.name === from?.name)?.tokens : routes?.data?.find(r => r.name === to?.name)?.tokens;
-
     const currencyMenuItems = GenerateCurrencyMenuItems(
         currencies!,
         values,
@@ -80,9 +74,12 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
         if (currencyIsAvailable) return
 
-        const default_currency = currencyMenuItems?.find(c =>
+        const assetFromQuery = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === (query?.toAsset)?.toUpperCase())
-            || currencyMenuItems?.[0]
+
+        const isLocked = query?.lockToAsset
+
+        const default_currency = assetFromQuery || (!isLocked && currencyMenuItems?.[0])
 
         const selected_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase())
@@ -103,9 +100,12 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
         if (currencyIsAvailable) return
 
-        const default_currency = currencyMenuItems?.find(c =>
+        const assetFromQuery = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === (query?.fromAsset)?.toUpperCase())
-            || currencyMenuItems?.[0]
+
+        const isLocked = query?.lockFromAsset
+
+        const default_currency = assetFromQuery || (!isLocked && currencyMenuItems?.[0])
 
         const selected_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === toCurrency?.symbol?.toUpperCase())
@@ -126,42 +126,26 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             const value = routes.data?.find(r => r.name === to?.name)?.tokens?.find(r => r.symbol === toCurrency?.symbol)
             if (!value) return
 
-            if (value?.status === 'not_found') {
-                const message = validationMessageResolver(values, direction, query, error)
-                setValidationMessage('Route Unavailable', message, 'warning', name);
-            } else {
-                clearValidationMessage()
-            }
             setFieldValue(name, value)
         }
-    }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading, validationErrorMessage])
+    }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
 
     useEffect(() => {
         if (name === "fromCurrency" && fromCurrency && !isLoading && routes) {
             const value = routes.data?.find(r => r.name === from?.name)?.tokens?.find(r => r.symbol === fromCurrency?.symbol)
             if (!value) return
 
-            if (value?.status === 'not_found') {
-                const message = validationMessageResolver(values, direction, query, error)
-                setValidationMessage('Route Unavailable', message, 'warning', name);
-            } else {
-                clearValidationMessage()
-            }
             setFieldValue(name, value)
         }
-    }, [toCurrency, currencyGroup, name, from, routes, error, isLoading, validationErrorMessage])
+    }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
 
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken>) => {
         setFieldValue(name, item.baseObject, true)
-        const message = validationMessageResolver(values, direction, query, error)
-        if (!item.isAvailable)
-            setValidationMessage('Warning', message, 'warning', name);
-        else
-            clearValidationMessage()
-
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
+    const isLocked = direction === 'from' ? query?.lockFromAsset
+        : query?.lockToAsset
 
     return (
         <div className="relative">
@@ -171,7 +155,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 values={currencyMenuItems}
                 value={value}
                 setValue={handleSelect}
-                disabled={isLoading || (value && !value.isAvailable)}
+                disabled={isLoading || isLocked}
             />
         </div>
     )
@@ -180,14 +164,12 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 function GenerateCurrencyMenuItems(
     currencies: RouteToken[],
     values: SwapFormValues,
-    direction?: string,
+    direction: string,
     balances?: Balance[],
     query?: QueryParams,
     error?: ApiError
 ): SelectMenuItem<RouteToken>[] {
     const { to, from } = values
-    const lockAsset = direction === 'from' ? query?.lockFromAsset
-        : query?.lockToAsset
 
     return currencies?.map(c => {
         const currency = c
@@ -196,36 +178,18 @@ function GenerateCurrencyMenuItems(
         const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
         const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
 
-        const currencyIsAvailable = !lockAsset &&
-            (
-                (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
-                !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive')
-            );
-            
-        const showRouteIcon = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) || lockAsset;
+        const currencyIsAvailable = (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
+            !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive')
+
+        const routeNotFound = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR);
+
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
-        const details = c.status === 'inactive' ?
-            <ClickTooltip side="left" text={`Transfers ${direction} this token are not available at the moment. Please try later.`} /> :
-            <p className="text-primary-text-muted">
-                {formatted_balance_amount}
-            </p>
 
-        const icon = showRouteIcon ? (
-            <Tooltip delayDuration={200}>
-                <TooltipTrigger asChild >
-                    <div className="absolute -left-0 z-50">
-                        <RouteIcon className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p className="max-w-72">
-                        Route unavailable
-                    </p>
-                </TooltipContent>
-            </Tooltip>
-        ) : undefined;
+        const details = <p className="text-primary-text-muted">
+            {formatted_balance_amount}
+        </p>
 
         const res: SelectMenuItem<RouteToken> = {
             baseObject: c,
@@ -234,9 +198,9 @@ function GenerateCurrencyMenuItems(
             order: ResolveCurrencyOrder(c, isNewlyListed),
             imgSrc: c.logo,
             isAvailable: currencyIsAvailable,
-            details,
             badge,
-            icon
+            details,
+            leftIcon: <RouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={!!routeNotFound} type="token" />
         };
 
         return res
