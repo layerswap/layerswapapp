@@ -76,7 +76,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         wallets,
         error
     );
-
+console.log('groupedCurrencies', groupedCurrencies)
     const currencyAsset = direction === 'from' ? fromCurrency?.symbol : toCurrency?.symbol;
     const currencyNetwork = allCurrencies?.find(c => c.symbol === currencyAsset && c.network_name === from?.name)?.network_name
 
@@ -360,6 +360,8 @@ function GenerateGroupedCurrencyMenuItems(
             </p>
         ) : null;
 
+        const routeNotFound = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) || lockAsset;
+
         const res: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
             baseObject: currency,
             id: `${currency?.symbol?.toLowerCase()}_${currency?.network_name?.toLowerCase()}`,
@@ -372,6 +374,7 @@ function GenerateGroupedCurrencyMenuItems(
             group: currency.network_name,
             menuItemDetails: details,
             badge,
+            icon: <ResolveRouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={!!routeNotFound} />,
             logo: (
                 <div className="flex-shrink-0 h-9 w-9 relative">
                     {currency.logo && (

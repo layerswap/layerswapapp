@@ -53,14 +53,14 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                     {searchHint && <CommandInput autoFocus={isDesktop} placeholder={searchHint} />}
                     {modalContent}
                     {!isLoading ? (
-                        <CommandList>
+                        <CommandList className='p-1'>
                             <CommandEmpty>No results found.</CommandEmpty>
                             {groupedCurrencies && groupedCurrencies.length > 0 ? (
                                 groupedCurrencies.map((group) =>
                                     group.items.length > 1 ? (
                                         <Accordion type="single" collapsible key={group.name}>
                                             <AccordionItem value={group.name}>
-                                                <AccordionTrigger className='flex items-center w-full overflow-hidden rounded-md p-2 gap-2 hover:bg-secondary-500'>
+                                                <AccordionTrigger className='flex ml-3 pl-5 items-center w-full overflow-hidden rounded-md p-2 gap-2 hover:bg-secondary-500'>
                                                     <div className="flex items-center gap-2 flex-grow">
                                                         {group.items[0]?.logo}
                                                         {group.name}
