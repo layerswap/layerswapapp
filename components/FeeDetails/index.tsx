@@ -20,20 +20,18 @@ const RefuelToggle = dynamic(() => import("./Refuel"), {
 });
 
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
-    const { toCurrency, to, refuel, toExchange, from, fromCurrency } = values || {};
+    const { toCurrency, to, refuel, toExchange, from, fromCurrency, amount } = values || {};
     const { fee, isFeeLoading } = useFee()
     const query = useQueryState();
     const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false)
 
     return (
-        <>
+        <span className={amount ? 'visible' : 'hidden'}>
             <ResizablePanel>
-
                 {
                     from && to && toCurrency && fromCurrency &&
                     <DepositMethod />
                 }
-
                 <FeeDetails>
                     {
                         toCurrency?.refuel && !query.hideRefuel && !toExchange &&
@@ -72,6 +70,6 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
 
             <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
 
-        </>
+        </span>
     )
 }

@@ -18,13 +18,21 @@ import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../../helpers/routes";
 import RouteIcon from "./RouteIcon";
-import WalletPicker from "./WalletPicker";
+import SourceWalletPicker from "./SourceWalletPicker";
+import DestinationWalletPicker from "./DestinationWalletPicker";
+import dynamic from "next/dynamic";
+import { Partner } from "../../Models/Partner";
+import { PlusIcon } from "lucide-react";
 
 type Props = {
     direction: SwapDirection,
     label: string,
     className?: string,
+    partner?: Partner
 }
+const Address = dynamic(() => import("../Input/Address"), {
+    loading: () => <></>,
+});
 
 const GROUP_ORDERS = { "Popular": 1, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
 export const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
@@ -43,14 +51,14 @@ const getGroupName = (value: RouteNetwork | Exchange, type: 'cex' | 'network', c
     }
 }
 
-const NetworkFormField = forwardRef(function NetworkFormField({ direction, label, className }: Props, ref: any) {
+const NetworkFormField = forwardRef(function NetworkFormField({ direction, label, className, partner }: Props, ref: any) {
     const {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = direction
 
-    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange } = values
+    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address } = values
     const query = useQueryState()
     const { lockFrom, lockTo } = query
 
@@ -124,14 +132,17 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     return (<div className={`${className}`}>
         <div className="flex justify-between items-center">
-            <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
+            <label htmlFor={name} className="block font-semibold text-secondary-text text-xs p-2">
                 {label}
             </label>
-            <WalletPicker direction={direction} />
+            {
+                direction === "from" ?
+                    <SourceWalletPicker />
+                    : <span><Address partner={partner} >{DestinationWalletPicker}</Address></span> //TODO: implement destination hidden
+            }
         </div>
-
-        <div ref={ref} className="bg-secondary-700 p-3 rounded-xl mt-1.5 grid grid-flow-row-dense grid-cols-8 md:grid-cols-6 items-center gap-2">
-            <div className="col-span-5 md:col-span-4">
+        <div ref={ref} className="bg-secondary-700 p-3 rounded-xl mt-1 grid grid-flow-row-dense grid-cols-6 items-center gap-2">
+            <div className="col-span-4">
                 <CommandSelectWrapper
                     disabled={isLocked || isLoading}
                     valueGrouper={groupByType}
@@ -144,7 +155,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     direction={direction}
                 />
             </div>
-            <div className="col-span-3 md:col-span-2 w-full">
+            <div className="col-span-2 w-full">
                 {
                     value?.isExchange ?
                         <CurrencyGroupFormField direction={name} />
@@ -152,9 +163,24 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                         <CurrencyFormField direction={name} />
                 }
             </div>
+            {
+                /* //TODO: implement destination hidden */
+                direction === "to" && !destination_address && !toExchange && to &&
+                <div className="flex items-center col-span-6">
+                    <Address partner={partner} >{SecondDestinationWalletPicker}</Address>
+                </div>
+            }
         </div>
-    </div>)
+    </div >)
 });
+
+export const SecondDestinationWalletPicker = () => {
+
+    return <div className=" justify-center w-full pl-3 pr-2 py-2 bg-secondary-600 items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 ">
+        <PlusIcon className="stroke-1" /> <span>Destination Address</span>
+    </div>
+}
+
 
 function groupByType(values: ISelectMenuItem[]) {
     let groups: SelectMenuItemGroup[] = [];

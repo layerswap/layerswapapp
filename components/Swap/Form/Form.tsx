@@ -33,6 +33,7 @@ import ConnectButton from "../../buttons/connectButton";
 import { Exchange, ExchangeToken } from "../../../Models/Exchange";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";
+import { FormSourceWalletButton } from "../../Input/SourceWalletPicker";
 
 type Props = {
     partner?: Partner,
@@ -41,11 +42,6 @@ type Props = {
 const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
     loading: () => <></>,
 });
-
-const Address = dynamic(() => import("../../Input/Address"), {
-    loading: () => <></>,
-});
-
 
 const SwapForm: FC<Props> = ({ partner }) => {
     const {
@@ -61,8 +57,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
         fromExchange,
         toExchange,
         currencyGroup,
-        source_wallet,
-        without_source_wallet
+        source_wallet
     } = values
     const [showConnectWalletModal, setShowConnectWalletModal] = useState(false);
     const { minAllowedAmount, valuesChanger } = useFee()
@@ -143,10 +138,10 @@ const SwapForm: FC<Props> = ({ partner }) => {
         const newTo = destinationRoutes?.data?.find(l => l.name === source?.name)
         const newFromToken = newFrom?.tokens.find(t => t.symbol === toCurrency?.symbol)
         const newToToken = newTo?.tokens.find(t => t.symbol === fromCurrency?.symbol)
-        
+
         setValues({ ...values, from: newFrom, to: newTo, fromCurrency: newFromToken, toCurrency: newToToken, toExchange: newToExchange, fromExchange: newFromExchange, currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined }, true)
     }, [values, sourceRoutes, destinationRoutes, exchanges])
-  
+
     const hideAddress = query?.hideAddress
         && query?.to
         && query?.destAddress
@@ -158,8 +153,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
             setFieldValue('amount', walletBalance?.amount - networkGas?.gas)
     }, [values.amount])
 
-    const shoouldConnectWallet = !values.without_source_wallet && !values.source_wallet
-    console.log("form render")
+    const shoouldConnectWallet = values.depositMethod !== 'deposit_address' && !values.source_wallet
 
     return <ImtblPassportProvider from={source} to={destination}>
         <>
@@ -179,7 +173,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                     <Widget.Content>
                         <div className='flex-col relative flex justify-between w-full space-y-0.5 mb-3.5 leading-4'>
                             {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                                <NetworkFormField direction="from" label="From" className="rounded-t-lg pb-5" />
+                                <NetworkFormField direction="from" label="From" className="rounded-t-lg pb-5" partner={partner} />
                             </div>}
                             {!query?.hideFrom && !query?.hideTo &&
                                 <button
@@ -201,14 +195,14 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                     </motion.div>
                                 </button>}
                             {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
-                                <NetworkFormField direction="to" label="To" className="rounded-b-lg" />
+                                <NetworkFormField direction="to" label="To" className="rounded-b-lg" partner={partner} />
                             </div>}
                         </div>
                         {
                             (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
                                 <div className="mb-6 leading-4">
                                     <ResizablePanel>
-                                        <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
+                                        <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} partner={partner} />
                                     </ResizablePanel>
                                 </div>
                                 : <></>
@@ -216,12 +210,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                         <div className="mb-6 leading-4">
                             <AmountField />
                         </div>
-                        {
-                            !hideAddress ?
-                                <Address partner={partner} />
-                                : <></>
-                        }
-                        <div className="w-full">
+                        <div className="w-full min-h-10">
                             {validationMessage ?
                                 <ValidationError />
                                 :
@@ -236,15 +225,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                     <Widget.Footer>
                         {
                             shoouldConnectWallet ?
-                                <SwapButton
-                                    className="plausible-event-name=Swap+initiated"
-                                    type='button'
-                                    isDisabled={false}
-                                    isSubmitting={isSubmitting}
-                                    onClick={() => { setShowConnectWalletModal(true) }}
-                                >
-                                    Connect Wallet
-                                </SwapButton>
+                                <FormSourceWalletButton />
                                 :
                                 <SwapButton
                                     className="plausible-event-name=Swap+initiated"

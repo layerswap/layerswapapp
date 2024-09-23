@@ -15,10 +15,7 @@ export default function useEVM(): WalletProvider {
     const name = 'EVM'
     const id = 'evm'
     const { networks } = useSettingsState()
-    console.log("rndrevm")
-    useEffect(() => {
-        console.log("hookrevm")
-    }, [])
+
     const asSourceSupportedNetworks = [
         ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,

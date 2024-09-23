@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
+import { FC, ReactElement, forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { AddressBookItem } from "../../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../../DTOs/SwapFormValues";
 import { isValidAddress } from "../../../../lib/address/validator";
@@ -11,12 +11,13 @@ import Modal from "../../../modal/modal";
 import ResizablePanel from "../../../ResizablePanel";
 import ConnectWalletButton from "./ConnectWalletButton";
 import ExchangeNote from "./ExchangeNote";
-import { NetworkType, RouteNetwork } from "../../../../Models/Network";
+import { Network, NetworkType, RouteNetwork } from "../../../../Models/Network";
 import { Exchange } from "../../../../Models/Exchange";
 import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";
 import { useQueryState } from "../../../../context/query";
 import { useAddressesStore } from "../../../../stores/addressesStore";
+import { Wallet } from "../../../../stores/walletStore";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -31,22 +32,30 @@ export type AddressItem = {
     date?: string
 }
 
-interface Input extends Omit<React.HTMLProps<HTMLInputElement>, 'ref' | 'as' | 'onChange'> {
+export type AddressTriggerProps = {
+    addressItem?: AddressItem;
+    connectedWallet?: Wallet;
+    partner?: Partner;
+    disabled: boolean;
+    destination: Network | undefined,
+}
+
+interface Input {
+    children: (props: AddressTriggerProps) => JSX.Element;
     showAddressModal: boolean;
     setShowAddressModal: (show: boolean) => void;
     hideLabel?: boolean;
     disabled: boolean;
     name: string;
-    children?: JSX.Element | JSX.Element[];
-    ref?: any;
     close: () => void,
     partner?: Partner,
     canFocus?: boolean,
     address_book?: AddressBookItem[],
+
 }
 
 const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
-    ({ showAddressModal, setShowAddressModal, name, canFocus, close, address_book, disabled, partner }, ref) {
+    ({ showAddressModal, setShowAddressModal, name, canFocus, close, address_book, disabled, partner, children }, ref) {
 
     const {
         values,
@@ -132,7 +141,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             connectedWallet={connectedWallet}
             partner={partner}
             destination={destination}
-        />
+        >{children({ destination, disabled, addressItem: destinationAddressItem, connectedWallet, partner })}</AddressButton>
         <Modal
             header='Send To'
             height="fit"

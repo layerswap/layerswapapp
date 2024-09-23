@@ -21,7 +21,7 @@ export type WalletProvider = {
 }
 
 
-type WalletPurpose = "autofil" | "withdrawal" | "asSource"
+export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 
 export default function useWallet(network?: Network | undefined, purpose?: WalletPurpose) {
 
@@ -38,7 +38,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
 
     const resolveConnectedWallets = () => {
         let connectedWallets: Wallet[] = []
-
+        
         walletProviders.forEach(wallet => {
             const w = wallet.connectedWallets
             connectedWallets = w && [...connectedWallets, ...w] || [...connectedWallets]

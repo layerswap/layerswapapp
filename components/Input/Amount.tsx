@@ -69,7 +69,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     }, [amount, fromCurrency, fee, isFeeLoading])
 
     return (<>
-        <p className="block font-semibold text-secondary-text text-xs mb-1">Amount</p>
+        <p className="block font-semibold text-secondary-text text-xs mb-1 p-2">Amount</p>
         <div className="flex w-full justify-between bg-secondary-700 rounded-lg">
             <div className="relative w-full">
                 <NumericInput

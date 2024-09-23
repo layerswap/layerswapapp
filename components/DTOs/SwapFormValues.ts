@@ -5,7 +5,6 @@ import { Wallet } from "../../stores/walletStore";
 export type SwapFormValues = {
   amount?: string;
   destination_address?: string;
-  without_source_wallet?: boolean;
   source_wallet?: Wallet;
   fromCurrency?: RouteToken;
   toCurrency?: RouteToken;
@@ -15,7 +14,7 @@ export type SwapFormValues = {
   fromExchange?: Exchange,
   toExchange?: Exchange,
   currencyGroup?: ExchangeToken
-  depositMethod?: string,
+  depositMethod?: 'wallet' | 'deposit_address',
 }
 
 
