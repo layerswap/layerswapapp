@@ -178,10 +178,10 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             {!query?.hideFrom && !query?.hideTo &&
                                 <button
                                     type="button"
-                                    aria-label="Reverse the source and destination"
+                                    aria-label="Reverse the source and destination" 
                                     disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || exchnagesDataLoading}
                                     onClick={valuesSwapper}
-                                    className={`${sourceLoading || destinationLoading || exchnagesDataLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[120px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
+                                    className={`${sourceLoading || destinationLoading || exchnagesDataLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[118px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
                                     <motion.div
                                         animate={animate}
                                         transition={{ duration: 0.3 }}
