@@ -11,6 +11,7 @@ import ConnectButton from "../buttons/connectButton";
 import FilledCheck from "../icons/FilledCheck";
 import { Wallet } from "../../stores/walletStore";
 import SwapButton from "../buttons/swapButton";
+import Balance from "./dynamic/Balance";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -74,7 +75,7 @@ const Component: FC = () => {
                 <div className="rounded-lg bg-secondary-700 pl-2 flex items-center space-x-2 text-sm leading-4">
                     {
                         selectedWallet?.address && <>
-                            <div>0.000395269</div>
+                            <div><Balance values={values} direction="from" /></div>
                             <div onClick={handleWalletChange} className="rounded-lg bg-secondary-500 flex space-x-1 items-center py-0.5 pl-2 pr-1 cursor-pointer">
                                 <div className="inline-flex items-center relative p-0.5">
                                     <selectedWallet.icon className="w-5 h-5" />

@@ -56,30 +56,18 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
             && fetchGas(from, fromCurrency, destination_address || sourceNetworkWallet.address)
 
     }, [from, fromCurrency, sourceNetworkWallet?.address])
-
+    console.log('balanceAmount', balanceAmount)
     return (
         <>
             {
                 (direction === 'from' ? (from && fromCurrency && sourceNetworkWallet) : (to && toCurrency)) &&
                     isBalanceLoading ?
-                    <div className="text-xs text-right absolute right-0 -top-7">
-                        <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
-                            <div>
-                                <span>Balance:&nbsp;</span>
-                                <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                            </div>
-                        </div>
-                    </div>
+                    <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
                     :
                     (balanceAmount !== undefined && !isNaN(balanceAmount)) &&
-                    <div className="text-xs text-right absolute right-0 -top-7">
-                        <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
-                            <div>
-                                <span>Balance:&nbsp;</span>
-                                <span>{balanceAmount}</span>
-                            </div>
-                        </div>
-                    </div>
+                    <>
+                        {balanceAmount}
+                    </>
             }
         </>
     )

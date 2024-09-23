@@ -181,16 +181,16 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                     aria-label="Reverse the source and destination"
                                     disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || exchnagesDataLoading}
                                     onClick={valuesSwapper}
-                                    className={`${sourceLoading || destinationLoading || exchnagesDataLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[86px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
+                                    className={`${sourceLoading || destinationLoading || exchnagesDataLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[120px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
                                     <motion.div
                                         animate={animate}
                                         transition={{ duration: 0.3 }}
                                         onTap={() => !valuesSwapperDisabled && cycle()}
                                     >
                                         {sourceLoading || destinationLoading || exchnagesDataLoading ?
-                                            <Loader2 className="opacity-50 w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30 animate-spin" />
+                                            <Loader2 className="opacity-50 w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30 animate-spin" />
                                             :
-                                            <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />
+                                            <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30")} />
                                         }
                                     </motion.div>
                                 </button>}
