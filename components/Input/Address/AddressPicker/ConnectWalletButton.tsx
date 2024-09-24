@@ -11,7 +11,7 @@ import { FC, useState } from "react";
 
 type Props = {
     provider: WalletProvider,
-    onClick: () => void,
+    onClick: (address: string) => void,
     onConnect?: () => void,
     connectedWallet: Wallet | undefined,
     destination: Network,
@@ -21,6 +21,7 @@ type Props = {
 const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connectedWallet, destination, destination_address }) => {
 
     const [isLoading, setIsLoading] = useState(false)
+    const connectedWallets = provider.connectedWallets
 
     const connect = async () => {
         setIsLoading(true)
@@ -36,41 +37,37 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
         setIsLoading(false)
     }
 
-    const addressItem = connectedWallet?.address && {
-        address: connectedWallet?.address,
-        group: AddressGroup.ConnectedWallet,
-    }
-
-    return addressItem ?
-        <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between w-full">
-                <p className="text-sm font-medium text-secondary-text">Connected Wallet</p>
-                <button
-                    onClick={disconnect}
-                    disabled={isLoading}
-                    className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200"
-                >
-                    {
-                        isLoading ?
-                            <RefreshCw className="h-3 w-auto animate-spin" />
-                            :
-                            <RefreshCw className="h-3 w-auto" />
-                    }
-                    <p>Switch Wallet</p>
-                </button>
-            </div>
-            <button type="button" onClick={onClick} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 ${connectedWallet.address && addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) && 'bg-secondary-800'}`}>
-                <div className={`flex items-center justify-between w-full`}>
-                    <AddressWithIcon addressItem={addressItem} connectedWallet={connectedWallet} destination={destination} />
-                    <div className="flex h-6 items-center px-1">
+    return provider.connectedWallets?.length ?
+        <>
+            {
+                connectedWallets && connectedWallets.map((wallet, index) => {
+                    return <span key={index}>
                         {
-                            connectedWallet.address && addressFormat(connectedWallet.address, destination!) === addressFormat(destination_address!, destination!) &&
-                            <FilledCheck className="text-primary" />
+                            wallet.addresses?.map((address) => {
+                                const addressItem = {
+                                    address: address,
+                                    group: AddressGroup.ConnectedWallet,
+                                }
+
+                                return <div key={address} className="flex flex-col gap-2">
+                                    <button type="button" onClick={() => onClick(address)} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 ${address && addressFormat(address, destination!) === addressFormat(destination_address!, destination!) && 'bg-secondary-800'}`}>
+                                        <div className={`flex items-center justify-between w-full`}>
+                                            <AddressWithIcon addressItem={addressItem} connectedWallet={wallet} destination={destination} />
+                                            <div className="flex h-6 items-center px-1">
+                                                {
+                                                    addressFormat(address, destination!) === addressFormat(destination_address!, destination!) &&
+                                                    <FilledCheck className="text-primary" />
+                                                }
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                            })
                         }
-                    </div>
-                </div>
-            </button>
-        </div>
+                    </span>
+                })
+            }
+        </>
         :
         <button typeof="button" onClick={connect} type="button" className={`py-5 px-6 bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl ${isLoading && 'cursor-progress opacity-80'}`}>
             <div className="flex flex-row justify-between gap-9 items-stretch">

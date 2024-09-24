@@ -12,6 +12,7 @@ import FilledCheck from "../icons/FilledCheck";
 import { Wallet } from "../../stores/walletStore";
 import SwapButton from "../buttons/swapButton";
 import Balance from "./dynamic/Balance";
+import AddressIcon from "../AddressIcon";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -34,12 +35,14 @@ const Component: FC = () => {
     useEffect(() => {
         if ((!source_addsress || (previouslyAutofilledAddress.current && previouslyAutofilledAddress.current != connectedWalletAddress)) && provider?.activeWallet && values.depositMethod !== 'deposit_address') {
             setFieldValue('source_wallet', provider?.activeWallet)
+            setFieldValue('source_address', provider?.activeWallet?.address)
         }
     }, [provider?.activeWallet, source_addsress, values.depositMethod])
 
     useEffect(() => {
         if (values.depositMethod === 'deposit_address' || !provider?.activeWallet?.address) {
             setFieldValue('source_wallet', undefined)
+            setFieldValue('source_address', undefined)
         }
     }, [values.depositMethod, provider?.activeWallet?.address])
 
@@ -47,8 +50,9 @@ const Component: FC = () => {
         setOpenModal(true)
     }
 
-    const handleSelectWallet = (wallet: any) => {
+    const handleSelectWallet = (wallet: Wallet | undefined, address: string | undefined) => {
         setFieldValue('source_wallet', wallet)
+        setFieldValue('source_address', address)
         if (!wallet) {
             setFieldValue('depositMethod', 'deposit_address')
         }
@@ -74,14 +78,14 @@ const Component: FC = () => {
                 :
                 <div className="rounded-lg bg-secondary-700 pl-2 flex items-center space-x-2 text-sm leading-4">
                     {
-                        selectedWallet?.address && <>
+                        selectedWallet && values.source_address && <>
                             <div><Balance values={values} direction="from" /></div>
                             <div onClick={handleWalletChange} className="rounded-lg bg-secondary-500 flex space-x-1 items-center py-0.5 pl-2 pr-1 cursor-pointer">
                                 <div className="inline-flex items-center relative p-0.5">
                                     <selectedWallet.icon className="w-5 h-5" />
                                 </div>
                                 <div className="text-primary-text">
-                                    {shortenAddress(selectedWallet?.address)}
+                                    {shortenAddress(values.source_address)}
                                 </div>
                                 <div className="w-5 h-5 items-center flex">
                                     <ChevronDown className="h-4 w-4" aria-hidden="true" />
@@ -106,7 +110,7 @@ const Component: FC = () => {
 type WalletListProps = {
     route?: RouteNetwork,
     purpose: WalletPurpose
-    onSelect: (wallet?: Wallet) => void
+    onSelect: (wallet?: Wallet, address?: string) => void
 }
 
 export const FormSourceWalletButton: FC = () => {
@@ -129,8 +133,9 @@ export const FormSourceWalletButton: FC = () => {
         setMounted(true)
     }, [])
 
-    const handleSelectWallet = (wallet: any) => {
+    const handleSelectWallet = (wallet?: Wallet, address?: string) => {
         setFieldValue('source_wallet', wallet)
+        setFieldValue('source_address', address)
         if (!wallet) {
             setFieldValue('depositMethod', 'deposit_address')
         }
@@ -196,34 +201,69 @@ export const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect }) =
             </ConnectButton>
             <div className="flex flex-col justify-start space-y-3">
                 {
-                    provider?.connectedWallets?.map((wallet, index) => {
-                        const isSelected = values.source_wallet?.address === wallet.address
+                    provider?.connectedWallets?.map((wallet) => {
+                        return <>
+                            {wallet.addresses?.map((address) => {
+                                const isSelected = values.source_address === address
 
-                        return <div key={index} onClick={() => onSelect(wallet)} className="w-full cursor-pointer relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
-                            <div className="flex space-x-4 items-center">
-                                {
-                                    wallet.connector &&
-                                    <div className="inline-flex items-center relative">
-                                        <wallet.icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
+                                return <div key={address} onClick={() => onSelect(wallet, address)} className="w-full cursor-pointer relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
+                                    <div className="flex space-x-4 items-center">
+                                        <div className="flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9">
+                                            <AddressIcon className="scale-150 h-9 w-9 p-0.5" address={address} size={36} />
+                                        </div>
+                                        <div>
+                                            {
+                                                !wallet.isLoading && wallet.address &&
+                                                <p className="text-sm">{shortenAddress(address)}</p>
+                                            }
+                                            <div className="flex space-x-1">
+                                                {
+                                                    wallet.connector &&
+                                                    <div className="inline-flex items-center relative">
+                                                        <wallet.icon className="w-4 h-4 rounded-md bg-secondary-800" />
+                                                    </div>
+                                                }
+                                                <p className="text-xs text-secondary-text">
+                                                    {wallet.connector}
+                                                </p>
+                                            </div>
+
+                                        </div>
                                     </div>
-                                }
-                                <div>
-                                    {
-                                        !wallet.isLoading && wallet.address &&
-                                        <p className="text-sm">{shortenAddress(wallet.address)}</p>
-                                    }
-                                    <p className="text-xs text-secondary-text">
-                                        {wallet.connector}
-                                    </p>
+                                    <div className="flex h-6 items-center px-1">
+                                        {
+                                            isSelected &&
+                                            <FilledCheck />
+                                        }
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="flex h-6 items-center px-1">
-                                {
-                                    isSelected &&
-                                    <FilledCheck />
-                                }
-                            </div>
-                        </div>
+                            })}
+                        </>
+                        // return <div key={index} onClick={() => onSelect(wallet)} className="w-full cursor-pointer relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
+                        //     <div className="flex space-x-4 items-center">
+                        //         {
+                        //             wallet.connector &&
+                        //             <div className="inline-flex items-center relative">
+                        //                 <wallet.icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
+                        //             </div>
+                        //         }
+                        //         <div>
+                        //             {
+                        //                 !wallet.isLoading && wallet.address &&
+                        //                 <p className="text-sm">{shortenAddress(wallet.address)}</p>
+                        //             }
+                        //             <p className="text-xs text-secondary-text">
+                        //                 {wallet.connector}
+                        //             </p>
+                        //         </div>
+                        //     </div>
+                        //     <div className="flex h-6 items-center px-1">
+                        //         {
+                        //             isSelected &&
+                        //             <FilledCheck />
+                        //         }
+                        //     </div>
+                        // </div>
                     })
                 }
             </div>

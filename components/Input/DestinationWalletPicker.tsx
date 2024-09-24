@@ -76,7 +76,6 @@ type WalletListProps = {
     onSelect: (wallet?: Wallet) => void
 }
 
-
 const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect }) => {
     const {
         values,
@@ -96,34 +95,45 @@ const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect }) => {
             </ConnectButton>
             <div className="flex flex-col justify-start space-y-3">
                 {
-                    provider?.connectedWallets?.map((wallet, index) => {
-                        const isSelected = values.source_wallet?.address === wallet.address
 
-                        return <div key={index} onClick={() => onSelect(wallet)} className="w-full cursor-pointer relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
-                            <div className="flex space-x-4 items-center">
-                                {
-                                    wallet.connector &&
-                                    <div className="inline-flex items-center relative">
-                                        <wallet.icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
+                    provider?.connectedWallets?.map((wallet, index) => {
+
+                        return <>{wallet.addresses?.map((address, index) => {
+                            const isSelected = values.source_address === address
+
+                            return <div key={index} onClick={() => onSelect(wallet)} className="w-full cursor-pointer relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
+                                <div className="flex space-x-4 items-center">
+                                    <div className="flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9">
+                                        <AddressIcon className="scale-150 h-9 w-9 p-0.5" address={address} size={36} />
                                     </div>
-                                }
-                                <div>
+
+                                    <div>
+                                        {
+                                            !wallet.isLoading && wallet.address &&
+                                            <p className="text-sm">{shortenAddress(address)}</p>
+                                        }
+                                        <div className="flex space-x-1">
+                                            {
+                                                wallet.connector &&
+                                                <div className="inline-flex items-center relative">
+                                                    <wallet.icon className="w-4 h-4 rounded-md bg-secondary-800" />
+                                                </div>
+                                            }
+                                            <p className="text-xs text-secondary-text">
+                                                {wallet.connector}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex h-6 items-center px-1">
                                     {
-                                        !wallet.isLoading && wallet.address &&
-                                        <p className="text-sm">{shortenAddress(wallet.address)}</p>
+                                        isSelected &&
+                                        <FilledCheck />
                                     }
-                                    <p className="text-xs text-secondary-text">
-                                        {wallet.connector}
-                                    </p>
                                 </div>
                             </div>
-                            <div className="flex h-6 items-center px-1">
-                                {
-                                    isSelected &&
-                                    <FilledCheck />
-                                }
-                            </div>
-                        </div>
+                        })}
+                        </>
                     })
                 }
             </div>

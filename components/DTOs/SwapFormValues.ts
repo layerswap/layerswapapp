@@ -6,6 +6,7 @@ export type SwapFormValues = {
   amount?: string;
   destination_address?: string;
   source_wallet?: Wallet;
+  source_address?: string;
   fromCurrency?: RouteToken;
   toCurrency?: RouteToken;
   refuel?: boolean;

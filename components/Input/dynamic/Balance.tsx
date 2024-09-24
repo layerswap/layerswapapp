@@ -8,17 +8,15 @@ import { isValidAddress } from "../../../lib/address/validator";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
-    const { to, fromCurrency, toCurrency, from, destination_address } = values
+    const { to, fromCurrency, toCurrency, from, destination_address, source_address } = values
     const { balances, isBalanceLoading } = useBalancesState()
     const { provider: destinationWalletProvider } = useWallet(to, 'autofil')
-    const { provider: sourceWalletProvider } = useWallet(from, 'autofil')
 
     const { fetchNetworkBalances, fetchGas } = useBalance()
 
-    const sourceNetworkWallet = sourceWalletProvider?.activeWallet
     const destinationNetworkWallet = destinationWalletProvider?.activeWallet
 
-    const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address || '']?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+    const walletBalance = source_address ? balances[source_address || '']?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
     const destinationBalance = balances[destination_address || (destinationNetworkWallet?.address || '')]?.find(b => b?.network === to?.name && b?.token === toCurrency?.symbol)
 
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
@@ -29,13 +27,13 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
 
     useEffect(() => {
         if (((previouslySelectedSource.current && (from?.type == previouslySelectedSource.current?.type))
-            || (from && isValidAddress(sourceNetworkWallet?.address, from)))
+            || (from && isValidAddress(source_address, from)))
             && from
             && direction === 'from') {
-            fetchNetworkBalances(from, sourceNetworkWallet?.address);
+            fetchNetworkBalances(from, source_address);
         }
         previouslySelectedSource.current = from
-    }, [from, sourceNetworkWallet?.address])
+    }, [from, source_address])
 
     const previouslySelectedDestination = useRef(to);
 
@@ -50,17 +48,17 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
 
     useEffect(() => {
         direction === 'from'
-            && sourceNetworkWallet?.address
+            && source_address
             && from
             && fromCurrency
-            && fetchGas(from, fromCurrency, destination_address || sourceNetworkWallet.address)
+            && fetchGas(from, fromCurrency, destination_address || source_address)
 
-    }, [from, fromCurrency, sourceNetworkWallet?.address])
+    }, [from, fromCurrency, source_address])
     console.log('balanceAmount', balanceAmount)
     return (
         <>
             {
-                (direction === 'from' ? (from && fromCurrency && sourceNetworkWallet) : (to && toCurrency)) &&
+                (direction === 'from' ? (from && fromCurrency && source_address) : (to && toCurrency)) &&
                     isBalanceLoading ?
                     <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
                     :
