@@ -259,8 +259,10 @@ function GenerateCurrencyMenuItems(
         </p>) : null
 
         const noWalletsConnectedText = !wallets?.length && (
-            <div className=" text-secondary-text text-xs">
-                Connect wallet<br /> to see balance
+            <div className="text-secondary-text text-xs">
+                <span>Connect wallet</span>
+                <br />
+                <span>to see balance</span>
             </div>
         )
 
@@ -309,9 +311,8 @@ function GenerateGroupedCurrencyMenuItems(
     error?: ApiError,
 ): SelectMenuItemGroup[] {
     const { to, from } = values;
-    const lockAsset = direction === 'from' ? query?.lockFromAsset : query?.lockToAsset;
 
-    const groupedCurrencies: { [key: string]: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }>[] } = {};
+    const groupedCurrencies: { [key: string]: { groupLogo: JSX.Element; groupIcon: JSX.Element; items: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }>[] } } = {};
 
     currencies?.forEach(currency => {
         const displayName = currency.symbol;
@@ -323,7 +324,7 @@ function GenerateGroupedCurrencyMenuItems(
         }
 
         const network = routes?.find(r => r.name === currency.network_name);
-        const networkLocked = direction === "from" ? !!(from && query?.lockFrom) : !!(to && query?.lockTo)
+        const networkLocked = direction === "from" ? !!(from && query?.lockFrom) : !!(to && query?.lockTo);
 
         const networkIsAvailable = !networkLocked &&
             (
@@ -361,7 +362,7 @@ function GenerateGroupedCurrencyMenuItems(
         const isNewlyListed = new Date(currency?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
 
         const currencyIsAvailable = (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
-            !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive')
+            !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive');
 
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
@@ -385,7 +386,6 @@ function GenerateGroupedCurrencyMenuItems(
             order: CurrencySettings.KnownSettings[currency.symbol]?.Order ?? 5,
             imgSrc: currency.logo,
             isAvailable: currencyIsAvailable,
-            group: currency.network_name,
             menuItemDetails: details,
             badge,
             icon: ResolveRouteIcon({ direction, isAvailable: currencyIsAvailable, routeNotFound }),
@@ -403,35 +403,38 @@ function GenerateGroupedCurrencyMenuItems(
                     )}
                 </div>
             ),
-            groupIcon: ResolveRouteIcon({ direction, isAvailable: !!networkIsAvailable, routeNotFound: !!networksRouteNotFound }),
-            networkLogo: (
-                <div className="flex-shrink-0 h-9 w-9 relative">
-                    {network?.logo && (
-                        <Image
-                            src={network?.logo}
-                            alt="Project Logo"
-                            height="40"
-                            width="40"
-                            loading="eager"
-                            className="rounded-full object-contain"
-                        />
-                    )}
-                </div>
-            ),
         };
 
+        const groupLogo = (
+            <div className="flex-shrink-0 h-9 w-9 relative">
+                {network?.logo && (
+                    <Image
+                        src={network?.logo}
+                        alt="Network Logo"
+                        height="40"
+                        width="40"
+                        loading="eager"
+                        className="rounded-full object-contain"
+                    />
+                )}
+            </div>
+        );
+
+        const groupIcon = ResolveRouteIcon({ direction, isAvailable: !!networkIsAvailable, routeNotFound: !!networksRouteNotFound }) || <></>
+
         if (!groupedCurrencies[currency.network_display_name]) {
-            groupedCurrencies[currency.network_display_name] = [];
+            groupedCurrencies[currency.network_display_name] = { groupLogo, groupIcon, items: [] };
         }
 
-        groupedCurrencies[currency.network_display_name].push(res);
+        groupedCurrencies[currency.network_display_name].items.push(res);
     });
 
     return Object.keys(groupedCurrencies).map(groupName => ({
         name: groupName,
-        items: groupedCurrencies[groupName],
+        groupLogo: groupedCurrencies[groupName].groupLogo,
+        groupIcon: groupedCurrencies[groupName].groupIcon,
+        items: groupedCurrencies[groupName].items,
     }));
 }
-
 
 export default CurrencyFormField

@@ -35,6 +35,8 @@ export class SelectMenuItemGroup {
 
     name: string;
     items: ISelectMenuItem[];
+    groupLogo?: JSX.Element;
+    groupIcon?: JSX.Element;
 }
 
 export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, groupedCurrencies, isLoading, modalHeight = 'full', modalContent }: CommandSelectProps) {
@@ -58,15 +60,15 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                             {groupedCurrencies && groupedCurrencies.length > 0 ? (
                                 groupedCurrencies.map((group) =>
                                     group.items.length > 1 ? (
-                                        <div className='group' key={group.items[0].id}>
-                                            <div className="relative w-3">
-                                                {group.items[0].groupIcon}
+                                        <div className='group ' key={group.items[0].id}>
+                                            <div className="w-3 absolute bottom-0 left-0 right-0 top-0 grid place-items-center">
+                                                {group.groupIcon}
                                             </div>
                                             <Accordion type="single" collapsible key={group.name}>
                                                 <AccordionItem value={group.name}>
                                                     <AccordionTrigger className='flex ml-3 items-center w-full overflow-hidden rounded-md p-2 gap-2 hover:bg-secondary-500'>
                                                         <div className="flex items-center gap-2 flex-grow">
-                                                            {group.items[0]?.networkLogo}
+                                                            {group.groupLogo}
                                                             {group.name}
                                                         </div>
                                                     </AccordionTrigger>
@@ -93,7 +95,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                     ) : (
                                         <div className="flex group" key={group.items[0].id}>
                                             <div className="relative items-center flex-shrink-0 w-3">
-                                                {group.items[0].icon}
+                                                {group.groupIcon}
                                             </div>
                                             <CommandItem
                                                 className="grow"
@@ -106,14 +108,18 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                     )
                                 )
                             ) : (
-                                <CommandList>
+                                <div>
                                     <CommandEmpty>No results found.</CommandEmpty>
                                     {groups.filter(g => g.items?.length > 0).map((group) => {
+                                        console.log(groups)
                                         return (
                                             <CommandGroup key={group.name} heading={group.name}>
                                                 {group.items.map(item => {
                                                     return (
                                                         <CommandItem value={item.id} key={item.id} onSelect={() => handleSelectValue(item)}>
+                                                            <div className="relative items-center flex-shrink-0 w-3">
+                                                                {item.icon}
+                                                            </div>
                                                             <SelectItem item={item} />
                                                         </CommandItem>
                                                     )
@@ -121,7 +127,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                                 }
                                             </CommandGroup>)
                                     })}
-                                </CommandList>
+                                </div>
                             )}
                         </CommandList>
                     ) : (
