@@ -126,7 +126,7 @@ export default function useBalanceProvider() {
                 if (gas) {
                     setAllGases((data) => {
                         const networkGases = data[network.name]
-                        const filteredGases = networkGases?.some(b => b?.token === token?.symbol) ? networkGases.filter(g => g.token !== token.symbol) : networkGases || []
+                        const filteredGases = networkGases?.filter(g => g && g.token !== token.symbol) || []
                         return { ...data, [network.name]: filteredGases.concat(gas) }
                     })
                 }

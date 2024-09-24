@@ -60,8 +60,8 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                             {groupedCurrencies && groupedCurrencies.length > 0 ? (
                                 groupedCurrencies.map((group) =>
                                     group.items.length > 1 ? (
-                                        <div className='group ' key={group.items[0].id}>
-                                            <div className="w-3 absolute bottom-0 left-0 right-0 top-0 grid place-items-center">
+                                        <div className='group' key={group.items[0].id}>
+                                            <div className="w-3 relative flex">
                                                 {group.groupIcon}
                                             </div>
                                             <Accordion type="single" collapsible key={group.name}>
