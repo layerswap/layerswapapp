@@ -7,12 +7,12 @@ import { Loader } from 'lucide-react';
 import { WalletButton } from '@rainbow-me/rainbowkit';
 import { isMobile } from '../../../lib/isMobile';
 import { WalletsListProps } from '..';
+import toast from 'react-hot-toast';
 
 const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFinish, setSelectedProvider }) => {
 
-    const { connect } = useConnect();
     const { disconnectAsync } = useDisconnect()
-    const { connectors: connectedWallets } = useSwitchAccount()
+    const { connectors, connect } = useConnect();
 
     return (
         !provider?.connector?.qr ?
@@ -24,8 +24,6 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, o
                     const Icon = resolveWalletConnectorIcon({ connector: connectorId })
                     const isLoading = provider.connector?.name === connectorName
                     const name = connector?.['rkDetails']?.['id']
-                    const alreadyConnectedConnectors = connectedWallets?.filter((c) => c.providerName === connector.id)
-
                     return (
                         <WalletButton.Custom key={index} wallet={name}>
                             {({ connector }) => {
@@ -36,35 +34,19 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, o
                                             disabled={!!provider.connector}
                                             className="w-full flex items-center justify-between hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 py-2"
                                             onClick={async () => {
-
                                                 try {
+
                                                     setSelectedProvider({ ...provider, connector: { name: connectorName } })
+                                                    await connector.disconnect()
+                                                    await connector.connect()
+                                                    onFinish()
+                                                    setSelectedProvider(undefined)
 
-                                                    if (alreadyConnectedConnectors.length > 0) {
-                                                        for (const alreadyConnectedConnector of alreadyConnectedConnectors) {
-                                                            await disconnectAsync({
-                                                                connector: alreadyConnectedConnector,
-                                                            })
-                                                        }
-                                                    }
-
-                                                    connect({
-                                                        chainId: mainnet.id,
-                                                        connector: connector,
-                                                    }, {
-                                                        onSuccess: (data) => {
-                                                            onFinish()
-                                                            setSelectedProvider(undefined)
-                                                        },
-                                                        onError: (error) => {
-                                                            console.log(error)
-                                                            setSelectedProvider(undefined)
-                                                        }
-                                                    });
                                                 } catch (e) {
                                                     console.log(e)
+                                                    toast.error('Error connecting wallet')
+                                                    setSelectedProvider(undefined)
                                                 }
-
 
                                                 if (isMobile()) {
                                                     const uri = await getWalletConnectUri(connector, connector?.['rkDetails']?.['mobile']?.['getUri'])
@@ -75,7 +57,6 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, o
                                                     const iconUrl = await (provider.availableWalletsForConnect as Connector[]).find((c) => c?.['rkDetails']?.['name'] === connectorName)?.['rkDetails']?.['iconUrl']()
                                                     if (provider.connector) setSelectedProvider({ ...provider, connector: { ...provider.connector, qr: uri, iconUrl } })
                                                 }
-
                                             }}
                                         >
                                             <div className="flex gap-3 items-center font-semibold">

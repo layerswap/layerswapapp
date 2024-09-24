@@ -1,26 +1,18 @@
-import { useFormikContext } from "formik";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { FC, useEffect, useRef, useState } from "react";
-import useWallet, { WalletPurpose } from "../../hooks/useWallet";
+import { WalletPurpose } from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import Image from "next/image";
-import { ChevronDown, Plus } from "lucide-react";
-import Modal from "../modal/modal";
+import { ChevronDown } from "lucide-react";
 import { RouteNetwork } from "../../Models/Network";
-import ConnectButton from "../buttons/connectButton";
-import FilledCheck from "../icons/FilledCheck";
 import { Wallet } from "../../stores/walletStore";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
 import { Partner } from "../../Models/Partner";
 import AddressIcon from "../AddressIcon";
 
 
-
 const Component = (props: AddressTriggerProps) => {
     const { destination, disabled, addressItem, connectedWallet, partner } = props
     return <>
         {
-
             addressItem &&
             <div className="flex items-center space-x-2 text-sm leading-4">
                 {<>
@@ -69,80 +61,5 @@ const ResolvedIcon = (props: AdderssIconprops) => {
         return <AddressIcon className="h-5 w-5 p-0.5" address={addressItem.address} size={20} />
     }
 }
-
-type WalletListProps = {
-    route?: RouteNetwork,
-    purpose: WalletPurpose
-    onSelect: (wallet?: Wallet) => void
-}
-
-const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect }) => {
-    const {
-        values,
-    } = useFormikContext<SwapFormValues>();
-
-    const { provider } = useWallet(route, purpose)
-
-    return (
-        <div className="space-y-3">
-            <ConnectButton className="w-full flex justify-center p-2 bg-secondary-700 rounded-md hover:bg-secondary-600">
-                <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
-                    <Plus className="h-4 w-4" />
-                    <span className="text-sm">
-                        Connect new wallet
-                    </span>
-                </div>
-            </ConnectButton>
-            <div className="flex flex-col justify-start space-y-3">
-                {
-
-                    provider?.connectedWallets?.map((wallet, index) => {
-
-                        return <>{wallet.addresses?.map((address, index) => {
-                            const isSelected = values.source_address === address
-
-                            return <div key={index} onClick={() => onSelect(wallet)} className="w-full cursor-pointer relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
-                                <div className="flex space-x-4 items-center">
-                                    <div className="flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9">
-                                        <AddressIcon className="scale-150 h-9 w-9 p-0.5" address={address} size={36} />
-                                    </div>
-
-                                    <div>
-                                        {
-                                            !wallet.isLoading && wallet.address &&
-                                            <p className="text-sm">{shortenAddress(address)}</p>
-                                        }
-                                        <div className="flex space-x-1">
-                                            {
-                                                wallet.connector &&
-                                                <div className="inline-flex items-center relative">
-                                                    <wallet.icon className="w-4 h-4 rounded-md bg-secondary-800" />
-                                                </div>
-                                            }
-                                            <p className="text-xs text-secondary-text">
-                                                {wallet.connector}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex h-6 items-center px-1">
-                                    {
-                                        isSelected &&
-                                        <FilledCheck />
-                                    }
-                                </div>
-                            </div>
-                        })}
-                        </>
-                    })
-                }
-            </div>
-            <div onClick={() => onSelect()} className="underline text-base text-center text-secondary-text cursor-pointer">
-                Continue without a wallet
-            </div>
-        </div>
-    )
-}
-
 
 export default Component

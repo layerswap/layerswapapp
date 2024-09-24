@@ -188,9 +188,9 @@ const resolveAvailableWallets = (all_connectors: readonly Connector[], connected
     const available_connectors = all_connectors.filter((connector, index, array) => {
         return connector?.['rkDetails']
             && array.findIndex(a => a?.['rkDetails']?.['id'] === connector?.['rkDetails']?.['id']) === index
-            && !connected.some((connected_connector) => {
-                return connected_connector?.['rkDetails']?.['id'] === connector?.['rkDetails']?.['id']
-            })
+            // && !connected.some((connected_connector) => {
+            //     return connected_connector?.['rkDetails']?.['id'] === connector?.['rkDetails']?.['id']
+            // })
     })
     return available_connectors
 

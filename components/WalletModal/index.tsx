@@ -31,7 +31,6 @@ export function WalletModalProvider({ children }) {
             setSelectedProvider(undefined)
         }
     }, [open])
-
     return (
         <>
             {children}

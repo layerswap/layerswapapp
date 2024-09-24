@@ -205,7 +205,6 @@ export const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect }) =
                         return <>
                             {wallet.addresses?.map((address) => {
                                 const isSelected = values.source_address === address
-
                                 return <div key={address} onClick={() => onSelect(wallet, address)} className="w-full cursor-pointer relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
                                     <div className="flex space-x-4 items-center">
                                         <div className="flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9">
@@ -239,31 +238,6 @@ export const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect }) =
                                 </div>
                             })}
                         </>
-                        // return <div key={index} onClick={() => onSelect(wallet)} className="w-full cursor-pointer relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
-                        //     <div className="flex space-x-4 items-center">
-                        //         {
-                        //             wallet.connector &&
-                        //             <div className="inline-flex items-center relative">
-                        //                 <wallet.icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
-                        //             </div>
-                        //         }
-                        //         <div>
-                        //             {
-                        //                 !wallet.isLoading && wallet.address &&
-                        //                 <p className="text-sm">{shortenAddress(wallet.address)}</p>
-                        //             }
-                        //             <p className="text-xs text-secondary-text">
-                        //                 {wallet.connector}
-                        //             </p>
-                        //         </div>
-                        //     </div>
-                        //     <div className="flex h-6 items-center px-1">
-                        //         {
-                        //             isSelected &&
-                        //             <FilledCheck />
-                        //         }
-                        //     </div>
-                        // </div>
                     })
                 }
             </div>

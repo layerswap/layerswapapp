@@ -11,7 +11,7 @@ import { FC, useState } from "react";
 
 type Props = {
     provider: WalletProvider,
-    onClick: (address: string) => void,
+    onClick: (address: string, wallet: Wallet) => void,
     onConnect?: () => void,
     connectedWallet: Wallet | undefined,
     destination: Network,
@@ -50,7 +50,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
                                 }
 
                                 return <div key={address} className="flex flex-col gap-2">
-                                    <button type="button" onClick={() => onClick(address)} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 ${address && addressFormat(address, destination!) === addressFormat(destination_address!, destination!) && 'bg-secondary-800'}`}>
+                                    <button type="button" onClick={() => onClick(address, wallet)} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 ${address && addressFormat(address, destination!) === addressFormat(destination_address!, destination!) && 'bg-secondary-800'}`}>
                                         <div className={`flex items-center justify-between w-full`}>
                                             <AddressWithIcon addressItem={addressItem} connectedWallet={wallet} destination={destination} />
                                             <div className="flex h-6 items-center px-1">
