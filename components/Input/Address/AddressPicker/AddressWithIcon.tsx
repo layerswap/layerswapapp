@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react"
+import { FC, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "../../../AddressIcon";
 import shortenAddress from "../../../utils/ShortenAddress";
@@ -93,9 +93,10 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, des
 type ExtendedAddressProps = {
     address: string;
     network: Network;
+    addressClassNames?: string;
 }
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, addressClassNames }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
 
@@ -107,7 +108,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network }) 
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-pointer">
-                                    <p className="block text-sm font-medium">
+                                    <p className={`block text-sm font-medium ${addressClassNames}`}>
                                         {shortenAddress(address)}
                                     </p>
                                     <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />

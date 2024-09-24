@@ -1,16 +1,20 @@
 
 import useSWR from "swr"
-import LayerSwapApiClient, { SwapItem, SwapResponse, TransactionType } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapResponse, TransactionType } from "../../lib/layerSwapApiClient"
 import { ApiResponse } from "../../Models/ApiResponse"
 import Image from 'next/image';
 import { useQueryState } from "../../context/query"
 import { Partner } from "../../Models/Partner"
-import shortenAddress, { shortenEmail } from "../utils/ShortenAddress"
+import { addressEnding, shortenEmail } from "../utils/ShortenAddress"
 import KnownInternalNames from "../../lib/knownIds"
 import { ChevronRightIcon } from 'lucide-react'
-import StatusIcon from "../SwapHistory/StatusIcons"
+import StatusIcon from "./StatusIcons"
 import { FC } from "react"
 import { truncateDecimals } from "../utils/RoundDecimals";
+import useWallet from "../../hooks/useWallet";
+import AddressIcon from "../AddressIcon";
+import { addressFormat } from "../../lib/address/formatter";
+import { SwapStatus } from "../../Models/SwapStatus";
 
 type SwapInfoProps = {
     swapResponse: SwapResponse,
@@ -27,6 +31,8 @@ const Summary: FC<SwapInfoProps> = ({
         hideAddress
     } = useQueryState()
 
+    const { wallets } = useWallet()
+
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = partnerData?.data
@@ -38,111 +44,117 @@ const Summary: FC<SwapInfoProps> = ({
     const destination = hideTo ? partner : (destination_exchange || destination_network)
 
     const sourceTransaction = swap.transactions?.find(t => t.type === TransactionType.Input)
-    const destinationTransaction = swap.transactions?.find(t => t.type === TransactionType.Input)
+    const destinationTransaction = swap.transactions?.find(t => t.type === TransactionType.Output)
     const sourceAddressFromInput = sourceTransaction?.from;
-    const receiveAmount = quote?.receive_amount
-    const calculatedReceiveAmount = destinationTransaction?.amount ?? receiveAmount
-    console.log("swap", swap)
+    const calculatedReceiveAmount = destinationTransaction?.amount ?? quote?.receive_amount
+
     let sourceAccountAddress = ""
-    if (sourceAddressFromInput) {
-        sourceAccountAddress = shortenAddress(sourceAddressFromInput)
+    if (source_exchange) {
+        sourceAccountAddress = "Exchange"
+    }
+    else if (sourceAddressFromInput) {
+        sourceAccountAddress = addressEnding(sourceAddressFromInput)
     }
     else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
         sourceAccountAddress = shortenEmail(exchange_account_name, 10);
     }
-    else if (source_exchange) {
-        sourceAccountAddress = "Exchange"
-    }
     else {
         sourceAccountAddress = "Network"
     }
+
     const destAddress = (hideAddress && hideTo && account) ? account : destination_address
 
-    return (source_token && <>
-        <div className="bg-secondary-800 rounded-lg cursor-pointer border border-secondary-500">
-            <div className="bg-secondary-700 rounded-lg px-3  border border-secondary-500 w-full relative z-10 space-y-4">
-                <div className="font-normal flex flex-col w-full relative z-10 space-y-4">
-                    <div className="grid grid-cols-12 items-center w-full">
-                        <div className="flex col-span-9 py-4 items-center gap-3 grow">
-                            {source?.display_name !== destination?.display_name ?
-                                <div className="w-11 relative">
+    const source_wallet = sourceAddressFromInput ? wallets.find(w => (addressFormat(w.address, source_network) === addressFormat(sourceAddressFromInput, source_network))) : null
+    const destination_wallet = wallets.find(w => addressFormat(w.address, destination_network) === addressFormat(destAddress, destination_network))
+
+    return (
+        source_token && <>
+            <div className="bg-secondary-700 p-3 w-full relative z-10 font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer">
+                <div className="grid grid-cols-12 items-center w-full">
+                    <div className="flex col-span-7 items-center gap-3">
+                        {source?.display_name !== destination?.display_name ?
+                            <div className="h-11 w-11 relative min-w-11">
+                                {
+                                    source &&
+                                    <Image
+                                        src={source.logo}
+                                        alt={source.display_name}
+                                        width={28}
+                                        height={28}
+                                        className="rounded" />
+                                }
+                                {
+                                    destination &&
+                                    <Image
+                                        src={destination.logo}
+                                        alt={destination.display_name}
+                                        width={28}
+                                        height={28}
+                                        className="rounded absolute left-4 top-4" />
+                                }
+                            </div>
+                            :
+                            <div className="w-11 h-11">
+                                {
+                                    source &&
+                                    <Image
+                                        src={source.logo}
+                                        alt={source.display_name}
+                                        width={44}
+                                        height={44}
+                                        className="rounded-md" />
+                                }
+                            </div>
+                        }
+                        <div className="flex flex-col gap-0.5 overflow-hidden">
+                            <p className="text-secondary-text text-base truncate"><span>{source?.display_name} </span> <span>to</span> <span>{destination?.display_name}</span></p>
+                            <div className="flex items-center gap-0.5">
+                                <div className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-secondary-950 rounded-md">
                                     {
-                                        source &&
-                                        <Image
-                                            src={source.logo}
-                                            alt={source.display_name}
-                                            width={28}
-                                            height={28}
-                                            className="rounded-md" />
+                                        source_wallet?.icon ?
+                                            <source_wallet.icon className="h-3.5 w-3.5" />
+                                            :
+                                            (
+                                                sourceAddressFromInput && !source_exchange ?
+                                                    <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded h-3.5 overflow-hidden w-3.5'>
+                                                        <AddressIcon className="scale-150 h-3.5 w-3.5" address={sourceAddressFromInput} size={14} />
+                                                    </div>
+                                                    :
+                                                    null
+                                            )
                                     }
-                                    {
-                                        destination &&
-                                        <Image
-                                            src={destination.logo}
-                                            alt={destination.display_name}
-                                            width={28}
-                                            height={28}
-                                            className="rounded-md absolute left-4 top-4" />
-                                    }
+                                    <p className="text-secondary-text text-xs">{sourceAccountAddress}</p>
                                 </div>
-                                :
-                                <div className="w-11">
+                                <ChevronRightIcon className="h-3 w-3" />
+                                <div className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-secondary-950 rounded-md">
                                     {
-                                        source &&
-                                        <Image
-                                            src={source.logo}
-                                            alt={source.display_name}
-                                            width={44}
-                                            height={44}
-                                            className="rounded-md" />
+                                        destination_wallet?.icon ?
+                                            <destination_wallet.icon className="h-3.5 w-3.5" />
+                                            :
+                                            !destination_exchange &&
+                                            <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded h-3.5 overflow-hidden w-3.5'>
+                                                <AddressIcon className="scale-150 h-3.5 w-3.5" address={destAddress} size={14} />
+                                            </div>
                                     }
-                                </div>
-                            }
-                            <div className="flex flex-col">
-                                <p className="text-secondary-text text-base">{source?.display_name} to {destination?.display_name}</p>
-                                <div>
-                                    <div>
-                                        <p className="text-secondary-text text-xs">{shortenAddress(sourceAddressFromInput as string)}</p>
-                                    </div>
-                                    <ChevronRightIcon className="h-3 w-3" />
-                                    <div>
-                                        <p className="text-secondary-text text-xs">{shortenAddress(destAddress as string)}</p>
-                                    </div>
+                                    <p className="text-secondary-text text-xs">{destination_exchange ? 'Exchange' : addressEnding(destAddress)}</p>
                                 </div>
                             </div>
-
-
-
-                            {/* <div>
-                                <p className="font-semibold text-primary-text text-base leading-5">
-                                    {truncateDecimals(requested_amount, source_token.precision)} {source_token.symbol}
-                                </p>
-                                <p className="text-secondary-text text-sm">{source?.display_name}</p>
-                            </div> */}
                         </div>
-                        {/* <div className="col-start-7 flex col-span-5 items-center gap-3 grow">
-                            <div>
-                                <p className="font-semibold text-primary-text text-base leading-5">{truncateDecimals(calculatedReceiveAmount, destination_token.precision)} {destination_token.symbol}</p>
-                                <p className="text-sm text-secondary-text">{destination?.display_name}</p>
-                            </div>
-                        </div> */}
+                    </div>
+                    <div className="col-span-5 grow text-end">
+                        <div>
+                            <p className="font-light text-secondary-text text-base">{truncateDecimals(sourceTransaction?.amount || swap.requested_amount, source_token.precision)} {source_token.symbol}</p>
+                            <p className="font-medium text-primary-text text-lg leading-5">{truncateDecimals(calculatedReceiveAmount, destination_token.precision)} {destination_token.symbol}</p>
+                        </div>
                     </div>
                 </div>
+                {
+                    swap.status !== SwapStatus.Completed &&
+                    <StatusIcon swap={swap} withBg />
+                }
             </div>
-            <div className="px-3 py-2">
-                <span className="grow w-full grid grid-cols-11 items-center text-sm font-normal">
-                    <span className="col-span-5 opacity-60 text-primary-text">
-                        {<StatusIcon swap={swap} />}
-                    </span>
-                    {/* <div><ChevronDownIcon className="mx-auto col-start-6 text-secondary-text/20 pt-1" /></div> */}
-                    <span className="col-start-7 col-span-5">
-                        <p className="text-sm text-primary-text font-medium">{shortenAddress(destAddress as string)}</p>
-                    </span>
-                </span>
-
-            </div>
-        </div>
-    </>)
+        </>
+    )
 }
 
 export default Summary

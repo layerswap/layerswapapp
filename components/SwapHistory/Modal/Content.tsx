@@ -1,8 +1,6 @@
 import LayerSwapApiClient, { SwapResponse } from "../../../lib/layerSwapApiClient"
 import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
-import { SwapDataProvider } from "../../../context/swap"
-import WithdrawalPage from "../../Swap"
-import { Scroll } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import Modal from "../../modal/modal"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
@@ -10,10 +8,12 @@ import Summary from "../Summary";
 import useSWRInfinite from 'swr/infinite'
 import useWallet from "../../../hooks/useWallet"
 import Link from "next/link"
-import AppSettings from "../../../lib/AppSettings"
 import axios from "axios"
 import SwapDetails from "../SwapDetailsComponent"
-import Snippet from "./Snippet"
+import Snippet, { HistoryItemSceleton } from "./Snippet"
+import { groupBy } from "../../utils/groupBy"
+import { useAuthState } from "../../../context/authContext"
+import ConnectButton from "../../buttons/connectButton"
 
 const PAGE_SIZE = 20
 const container = {
@@ -61,7 +61,7 @@ const item = {
 }
 
 type ListProps = {
-    statuses: string | number;
+    statuses?: string | number;
     refreshing: boolean;
     loadExplorerSwaps: boolean;
 }
@@ -81,6 +81,7 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
     const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
     const [selectedSwap, setSelectedSwap] = useState<Swap | undefined>()
     const { wallets } = useWallet()
+    const { authData, userId } = useAuthState()
     const addresses = wallets.map(w => w.address)
     const [cachedSize, setCachedSize] = useState(1)
 
@@ -125,12 +126,13 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
             mutate()
     }, [])
 
-    const userSwaps = userSwapPages?.map(p => {
+    const userSwaps = (!(userSwapPages?.[0] instanceof EmptyApiResponse) && userSwapPages?.map(p => {
         p.data?.forEach(s => {
             s.type = 'user'
         })
         return p?.data
-    }).flat(1) || []
+    }).flat(1)) || []
+
     const explorerSwaps = explorerPages?.map(p => {
         p.data?.forEach(s => {
             s.type = 'explorer'
@@ -139,7 +141,8 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
     }).flat(1) || []
 
     const userSwapsisEmpty =
-        (userSwapPages?.[0] instanceof EmptyApiResponse)
+        !userSwapPages
+        || (userSwapPages && (userSwapPages?.[0] instanceof EmptyApiResponse))
 
     const explorerSwapsisEmpty =
         (explorerPages?.[0] instanceof EmptyApiResponse)
@@ -172,73 +175,125 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
         }
     })
 
-    const allEmpty = userSwapsisEmpty && explorerSwapsisEmpty
+    const allEmpty = !!userSwapsisEmpty && !!explorerSwapsisEmpty
+
+    if (!wallets.length && !userId) return <ConnectOrSignIn />
+    if (allEmpty) return <BlankHistory />
+
+    const swapsGrouppedByDate = !allEmpty ? Object.entries(groupBy(userSwaps as Swap[], ({ swap }) => new Date(swap.created_date).toLocaleDateString())).map(([date, values]) => ({ date, values })) : null
 
     return <>
         <AnimatePresence >
-            {(userSwapsLoading || explorerSwapsLoading) && !(Number(userSwaps?.length) > 0) ?
-                <Snippet />
-                :
-                <motion.div
-                    variants={container}
-                    initial="initial"
-                    animate={refreshing ? "loading" : "highlight"}
-                    exit={"initial"}
-                    className="text-sm py-3 space-y-4 font-medium focus:outline-none h-full"
-                >
-                    {
-                        userSwaps?.map((swap) => {
+            <>
+                {
+                    (userSwapsLoading || explorerSwapsLoading) && !(Number(userSwaps?.length) > 0) ?
+                        <Snippet />
+                        :
+                        swapsGrouppedByDate && <motion.div
+                            variants={container}
+                            initial="initial"
+                            animate={refreshing ? "loading" : "highlight"}
+                            exit={"initial"}
+                            className="text-sm py-3 flex flex-col gap-5 font-medium focus:outline-none h-full"
+                        >
+                            {
+                                swapsGrouppedByDate.map(({ date, values }) => {
 
-                            if (!swap) return <></>
+                                    return <div key={date} className="flex flex-col gap-1.5">
+                                        <motion.p variants={item as any} className="text-sm text-secondary-text font-normal pl-2">
+                                            {date}
+                                        </motion.p>
+                                        <div className="space-y-3">
+                                            {
+                                                values?.map((swap) => {
 
-                            return <motion.div
-                                onClick={() => handleopenSwapDetails(swap)}
-                                key={swap.swap.id}
-                                variants={item as any}
-                            >
-                                <Summary swapResponse={swap} />
-                            </motion.div>
-                        })
-                    }
-                    {
-                        allEmpty &&
-                        <div className="absolute top-1/4 right-0 text-center w-full">
-                            <Scroll className='h-40 w-40 text-secondary-700 mx-auto' />
-                            <p className="my-2 text-xl">It&apos;s empty here</p>
-                            <p className="px-14 text-primary-text">You can find all your transactions by searching with address in</p>
-                            <Link target="_blank" href={AppSettings.ExplorerURl} className="underline hover:no-underline cursor-pointer hover:text-secondary-text text-primary-text font-light">
-                                <span>Layerswap Explorer</span>
-                            </Link>
-                        </div>
-                    }
-                    <button
-                        disabled={isReachingEnd || userSwapsLoading}
-                        type="button"
-                        onClick={handleLoadMore}
-                        className=" hidden"
-                    >
+                                                    if (!swap) return <></>
 
-                        <span>Load more</span>
-                    </button>
-                </motion.div >}
+                                                    return <motion.div
+                                                        onClick={() => handleopenSwapDetails(swap)}
+                                                        key={swap.swap.id}
+                                                        variants={item as any}
+                                                    >
+                                                        <Summary swapResponse={swap} />
+                                                    </motion.div>
+                                                })
+                                            }
+                                        </div>
+                                    </div>
+                                })
+                            }
+
+                            {/* <button
+                            disabled={isReachingEnd || userSwapsLoading}
+                            type="button"
+                            onClick={handleLoadMore}
+                            className=" hidden"
+                        >
+
+                            <span>Load more</span>
+                        </button> */}
+                        </motion.div>
+                }
+            </>
         </AnimatePresence>
         <Modal
-            height='90%'
+            height='fit'
             show={openSwapDetailsModal}
             setShow={handleSWapDetailsShow}
-            header={`Swap`}
+            header={`Swap details`}
             modalId="pendingSwapDetails"
         >
-            <SwapDataProvider>
-                {
-                    selectedSwap && (selectedSwap?.type === 'user' ?
-                        <WithdrawalPage type="contained" />
-                        :
-                        <SwapDetails swapResponse={selectedSwap} />)
-                }
-            </SwapDataProvider>
+            {
+                selectedSwap &&
+                <SwapDetails swapResponse={selectedSwap} />
+            }
         </Modal>
     </>
+}
+
+const BlankHistory = () => {
+
+    return <div className="w-full h-full flex flex-col justify-center items-center">
+        <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
+        <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
+        <div className="mt-2 text-center space-y-2">
+            <h1 className="text-secondary-text text-[28px] font-bold tracking-wide" >
+                No Transfer History
+            </h1>
+            <p className="max-w-xs text-center text-primary-text-muted text-base font-normal">
+                Transfers you make with this wallet/account will appear here after excution.
+            </p>
+        </div>
+        <Link href={"/"} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-600 py-2 px-3 rounded-lg">
+            <Plus className="w-4 h-4" />
+            <p>New Transfer</p>
+        </Link>
+    </div>
+
+}
+
+const ConnectOrSignIn = () => {
+    return <div className="w-full h-full grid grid-rows-3  items-center">
+        <div className="flex flex-col justify-end items-center text-center row-span-2 self-end">
+            <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
+            <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
+            <div className="mt-4 text-center space-y-3">
+                <h1 className="text-secondary-text text-[28px] font-bold tracking-wide" >
+                    Connect wallet or sign in
+                </h1>
+                <p className="max-w-xs text-center text-primary-text-muted text-base font-normal">
+                    In order to see your transfer history you need to connect your wallet or Sign in with your email.
+                </p>
+            </div>
+        </div>
+        <div className="self-end">
+            <ConnectButton className="w-full">
+                <div className="w-full px-4 py-3 bg-primary rounded-lg justify-center items-center gap-2.5 inline-flex">
+                    <div className="text-center text-primary-text text-xl font-semibold">Connect Wallet</div>
+                </div>
+            </ConnectButton>
+        </div>
+    </div>
 }
 
 export default List
