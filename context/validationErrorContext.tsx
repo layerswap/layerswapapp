@@ -1,6 +1,6 @@
 import React, { createContext } from 'react';
 import { ReactNode } from 'react';
-import { CircleAlert, RouteOff } from 'lucide-react';
+import { Info, RouteOff } from 'lucide-react';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { useFormikContext } from 'formik';
 import { useQueryState } from './query';
@@ -46,11 +46,11 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         }
         else if (fromCurrency?.status === 'inactive' || (currencyGroup?.status === 'inactive' && fromExchange)) {
             validationMessage = `Sorry, transfers from ${fromDisplayName} ${fromCurrency?.symbol || currencyGroup?.symbol} are not available at the moment. Please try later.`;
-            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <CircleAlert stroke='#f8974b' className='w-4 h-4 ' /> };
+            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
         else if (!toCurrency) {
             validationMessage = `Sorry, transfers to ${toDisplayName || query.to} ${query?.toAsset} are not available at the moment. Please try later.`;
-            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <CircleAlert stroke='#f8974b' className='w-4 h-4 ' /> };
+            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
     }
     else if (query?.lockFromAsset) {
@@ -60,11 +60,11 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         }
         else if (toCurrency?.status === 'inactive' || (currencyGroup?.status === 'inactive' && toExchange)) {
             validationMessage = `Sorry, transfers to ${toDisplayName} ${toCurrency?.symbol || currencyGroup?.symbol} are not available at the moment. Please try later.`;
-            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <CircleAlert stroke='#f8974b' className='w-4 h-4 ' /> };
+            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
         else if (!fromCurrency) {
             validationMessage = `Sorry, transfers from ${fromDisplayName || query.from} ${query?.fromAsset} are not available at the moment. Please try later.`;
-            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <CircleAlert stroke='#f8974b' className='w-4 h-4 ' /> };
+            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
     }
     else if (toCurrency?.status === 'inactive' || fromCurrency?.status === 'inactive' || currencyGroup?.status === 'inactive') {
@@ -76,16 +76,16 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         if (unfilteredDestinationCurrency?.status === 'inactive') {
             const unavailableDirection = `${toDisplayName} ${toCurrency?.symbol}`;
             validationMessage = `Sorry, transfers to ${unavailableDirection} are not available at the moment. Please try later.`;
-            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <CircleAlert stroke='#f8974b' className='w-4 h-4 ' /> };
+            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
         else if (unfilteredSourceCurrency?.status === 'inactive') {
             const unavailableDirection = `${fromDisplayName} ${fromCurrency?.symbol}`;
             validationMessage = `Sorry, transfers from ${unavailableDirection} are not available at the moment. Please try later.`;
-            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <CircleAlert stroke='#f8974b' className='w-4 h-4 ' /> };
+            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
         else {
             validationMessage = `Please change one of the selected tokens or try later.`;
-            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <CircleAlert stroke='#f8974b' className='w-4 h-4 ' /> };
+            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
     }
     else if (currencyGroup?.status === 'not_found' || toCurrency?.status === 'not_found' || fromCurrency?.status === 'not_found') {
