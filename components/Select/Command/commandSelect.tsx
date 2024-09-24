@@ -58,33 +58,38 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                             {groupedCurrencies && groupedCurrencies.length > 0 ? (
                                 groupedCurrencies.map((group) =>
                                     group.items.length > 1 ? (
-                                        <Accordion type="single" collapsible key={group.name}>
-                                            <AccordionItem value={group.name}>
-                                                <AccordionTrigger className='flex ml-3 pl-5 items-center w-full overflow-hidden rounded-md p-2 gap-2 hover:bg-secondary-500'>
-                                                    <div className="flex items-center gap-2 flex-grow">
-                                                        {group.items[0]?.logo}
-                                                        {group.name}
-                                                    </div>
-                                                </AccordionTrigger>
-                                                <AccordionContent>
-                                                    {group.items.map((item) => (
-                                                        <div className="flex group" key={item.id}>
-                                                            <div className="relative items-center flex-shrink-0 w-3">
-                                                                {item.icon}
-                                                            </div>
-                                                            <CommandItem
-                                                                className="grow"
-                                                                value={item.id}
-                                                                key={item.id}
-                                                                onSelect={() => handleSelectValue(item)}
-                                                            >
-                                                                <SelectItem item={item} />
-                                                            </CommandItem>
+                                        <div className='group' key={group.items[0].id}>
+                                            <div className="relative w-3">
+                                                {group.items[0].groupIcon}
+                                            </div>
+                                            <Accordion type="single" collapsible key={group.name}>
+                                                <AccordionItem value={group.name}>
+                                                    <AccordionTrigger className='flex ml-3 items-center w-full overflow-hidden rounded-md p-2 gap-2 hover:bg-secondary-500'>
+                                                        <div className="flex items-center gap-2 flex-grow">
+                                                            {group.items[0]?.networkLogo}
+                                                            {group.name}
                                                         </div>
-                                                    ))}
-                                                </AccordionContent>
-                                            </AccordionItem>
-                                        </Accordion>
+                                                    </AccordionTrigger>
+                                                    <AccordionContent>
+                                                        {group.items.map((item) => (
+                                                            <div className="flex group" key={item.id}>
+                                                                <div className="relative items-center flex-shrink-0 w-3">
+                                                                    {item.icon}
+                                                                </div>
+                                                                <CommandItem
+                                                                    className="grow"
+                                                                    value={item.id}
+                                                                    key={item.id}
+                                                                    onSelect={() => handleSelectValue(item)}
+                                                                >
+                                                                    <SelectItem item={item} />
+                                                                </CommandItem>
+                                                            </div>
+                                                        ))}
+                                                    </AccordionContent>
+                                                </AccordionItem>
+                                            </Accordion>
+                                        </div>
                                     ) : (
                                         <div className="flex group" key={group.items[0].id}>
                                             <div className="relative items-center flex-shrink-0 w-3">
@@ -93,7 +98,6 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                             <CommandItem
                                                 className="grow"
                                                 value={group.items[0].id}
-                                                key={group.items[0].id}
                                                 onSelect={() => handleSelectValue(group.items[0])}
                                             >
                                                 <SelectItem item={group.items[0]} />

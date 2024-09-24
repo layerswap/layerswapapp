@@ -14,11 +14,11 @@ const ResolveRouteIcon = (props:Props) => {
         return <Tooltip delayDuration={200}>
             <TooltipTrigger asChild >
                 <div className="absolute top-0.5 z-50 inset-0 flex items-center cursor-pointer">
-                    <CircleAlert className="!w-3.5 text-primary-text-placeholder hover:text-primary-text" />
+                    <CircleAlert className="!w-4 text-primary-text-placeholder hover:text-primary-text" />
                 </div>
             </TooltipTrigger>
             <TooltipContent side="right">
-                <p className="max-w-72  p-2 text-base text-primary-text">
+                <p className="max-w-72 p-2 text-base text-primary-text">
                     Transfers {direction} this token are not available at the moment. Please try later.
                 </p>
             </TooltipContent>
@@ -28,7 +28,7 @@ const ResolveRouteIcon = (props:Props) => {
         return <Tooltip delayDuration={200}>
             <TooltipTrigger asChild >
                 <div className="absolute top-0.5 z-50 inset-0 flex items-center cursor-pointer">
-                    <RouteOff className="!w-3 text-primary-text-placeholder hover:text-primary-text" />
+                    <RouteOff className="!w-3.5 text-primary-text-placeholder hover:text-primary-text" />
                 </div>
             </TooltipTrigger>
             <TooltipContent side="right">
