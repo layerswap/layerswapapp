@@ -1,6 +1,6 @@
 import LayerSwapApiClient, { SwapResponse } from "../../../lib/layerSwapApiClient"
 import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
-import { Plus } from 'lucide-react'
+import { Eye, Plus } from 'lucide-react'
 import Modal from "../../modal/modal"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
@@ -81,7 +81,7 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
     const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
     const [selectedSwap, setSelectedSwap] = useState<Swap | undefined>()
     const { wallets } = useWallet()
-    const { authData, userId } = useAuthState()
+    const { userId } = useAuthState()
     const addresses = wallets.map(w => w.address)
     const [cachedSize, setCachedSize] = useState(1)
 
@@ -177,6 +177,7 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
 
     const allEmpty = !!userSwapsisEmpty && !!explorerSwapsisEmpty
 
+    if ((userSwapsLoading || explorerSwapsLoading) && !(Number(userSwaps?.length) > 0)) return <Snippet />
     if (!wallets.length && !userId) return <ConnectOrSignIn />
     if (allEmpty) return <BlankHistory />
 
@@ -184,46 +185,48 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
 
     return <>
         <AnimatePresence >
-            <>
+            <div className="h-full space-y-3 mt-3 ">
+                <div className="text-secondary-text px-2 py-1.5 bg-secondary-700 rounded-md justify-start items-center gap-1.5 inline-flex">
+                    <Eye className="w-4 h-4 relative" />
+                    <div className="text-sm font-normal">Incomplete swaps</div>
+                    {/* <div className="w-3 h-3 bg-[#df8b16] rounded-full" /> */}
+                </div>
                 {
-                    (userSwapsLoading || explorerSwapsLoading) && !(Number(userSwaps?.length) > 0) ?
-                        <Snippet />
-                        :
-                        swapsGrouppedByDate && <motion.div
-                            variants={container}
-                            initial="initial"
-                            animate={refreshing ? "loading" : "highlight"}
-                            exit={"initial"}
-                            className="text-sm py-3 flex flex-col gap-5 font-medium focus:outline-none h-full"
-                        >
-                            {
-                                swapsGrouppedByDate.map(({ date, values }) => {
+                    swapsGrouppedByDate && <motion.div
+                        variants={container}
+                        initial="initial"
+                        animate={refreshing ? "loading" : "highlight"}
+                        exit={"initial"}
+                        className="text-sm flex flex-col gap-5 font-medium focus:outline-none overflow-y-auto styled-scroll max-h-[580px]"
+                    >
+                        {
+                            swapsGrouppedByDate.map(({ date, values }) => {
 
-                                    return <div key={date} className="flex flex-col gap-1.5">
-                                        <motion.p variants={item as any} className="text-sm text-secondary-text font-normal pl-2">
-                                            {date}
-                                        </motion.p>
-                                        <div className="space-y-3">
-                                            {
-                                                values?.map((swap) => {
+                                return <div key={date} className="flex flex-col gap-1.5">
+                                    <motion.p variants={item as any} className="text-sm text-secondary-text font-normal pl-2">
+                                        {date}
+                                    </motion.p>
+                                    <div className="space-y-3">
+                                        {
+                                            values?.map((swap) => {
 
-                                                    if (!swap) return <></>
+                                                if (!swap) return <></>
 
-                                                    return <motion.div
-                                                        onClick={() => handleopenSwapDetails(swap)}
-                                                        key={swap.swap.id}
-                                                        variants={item as any}
-                                                    >
-                                                        <Summary swapResponse={swap} />
-                                                    </motion.div>
-                                                })
-                                            }
-                                        </div>
+                                                return <motion.div
+                                                    onClick={() => handleopenSwapDetails(swap)}
+                                                    key={swap.swap.id}
+                                                    variants={item as any}
+                                                >
+                                                    <Summary swapResponse={swap} />
+                                                </motion.div>
+                                            })
+                                        }
                                     </div>
-                                })
-                            }
+                                </div>
+                            })
+                        }
 
-                            {/* <button
+                        {/* <button
                             disabled={isReachingEnd || userSwapsLoading}
                             type="button"
                             onClick={handleLoadMore}
@@ -232,12 +235,12 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
 
                             <span>Load more</span>
                         </button> */}
-                        </motion.div>
+                    </motion.div>
                 }
-            </>
+            </div>
         </AnimatePresence>
         <Modal
-            height='fit'
+            height="fit"
             show={openSwapDetailsModal}
             setShow={handleSWapDetailsShow}
             header={`Swap details`}
@@ -253,7 +256,7 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
 
 const BlankHistory = () => {
 
-    return <div className="w-full h-full flex flex-col justify-center items-center">
+    return <div className="w-full h-full flex flex-col justify-center items-center ">
         <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
         <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
         <div className="mt-2 text-center space-y-2">
@@ -273,7 +276,7 @@ const BlankHistory = () => {
 }
 
 const ConnectOrSignIn = () => {
-    return <div className="w-full h-full grid grid-rows-3  items-center">
+    return <div className="w-full h-full grid grid-rows-3  items-center ">
         <div className="flex flex-col justify-end items-center text-center row-span-2 self-end">
             <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
             <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />

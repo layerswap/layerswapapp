@@ -4,7 +4,7 @@ import Image from 'next/image'
 import shortenAddress, { shortenEmail } from '../utils/ShortenAddress';
 import CopyButton from '../buttons/copyButton';
 import StatusIcon from './StatusIcons';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, RefreshCw } from 'lucide-react';
 import isGuid from '../utils/isGuid';
 import KnownInternalNames from '../../lib/knownIds';
 import { useQueryState } from '../../context/query';
@@ -18,15 +18,18 @@ import { addressFormat } from '../../lib/address/formatter';
 import { truncateDecimals } from '../utils/RoundDecimals';
 import Link from 'next/link';
 import calculateDatesDifference from '../../lib/calculateDatesDifference';
+import { SwapStatus } from '../../Models/SwapStatus';
+import { useRouter } from 'next/router';
 
 type Props = {
     swapResponse: SwapResponse
 }
 
 const SwapDetails: FC<Props> = ({ swapResponse }) => {
-    const swap = swapResponse?.swap
+    const { swap, refuel } = swapResponse
     const { source_token, destination_token, destination_address, source_network, destination_network, source_exchange, destination_exchange, requested_amount } = swap || {}
 
+    const router = useRouter()
     const {
         hideFrom,
         hideTo,
@@ -51,6 +54,11 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const receive_amount = swapOutputTransaction?.amount
     const receiveAmountInUsd = receive_amount ? (destination_token?.price_in_usd * receive_amount).toFixed(2) : undefined
     const requestedAmountInUsd = requested_amount && (source_token?.price_in_usd * requested_amount).toFixed(2)
+
+    const nativeCurrency = refuel?.token
+    const truncatedRefuelAmount = nativeCurrency && !!refuel ?
+        truncateDecimals(refuel.amount, nativeCurrency?.precision) : null
+    const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.price_in_usd || 1) * (truncatedRefuelAmount || 0)).toFixed(2)
 
     const provider = useMemo(() => {
         return source_network && getProvider(source_network)
@@ -79,9 +87,11 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     }
 
     return (
-        <div className='space-y-4 pt-3'>
+        <div className='space-y-4 pt-2'>
             <div className='p-3 bg-secondary-700 rounded-xl'>
                 <div className={`font-normal flex flex-col w-full relative z-10 ${(source_exchange || destination_exchange) ? 'space-y-2' : 'space-y-4'}`}>
+
+                    {/* From and To */}
                     <div className='space-y-1'>
                         <p className='text-xs font-normal text-secondary-text pl-1'>From</p>
                         <div className="flex items-center justify-between w-full">
@@ -175,6 +185,20 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                 </div>
             </div>
 
+            {/* Refuel */}
+            {
+                refuel && <div className='p-3 bg-secondary-700 rounded-xl'>
+                    <div className="flex justify-between items-baseline text-sm">
+                        <p className="text-left text-secondary-text">Refuel</p>
+                        <div className="flex flex-col justify-end">
+                            <p className="text-primary-text text-base font-semibold">{truncatedRefuelAmount} {nativeCurrency?.symbol}</p>
+                            <p className="text-secondary-text text-sm flex justify-end">${refuelAmountInUsd}</p>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            {/* Fees */}
             <div className='p-3 bg-secondary-700 rounded-xl'>
                 <div className="flex justify-between items-baseline text-sm">
                     <span className="text-left">Fees</span>
@@ -182,6 +206,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                 </div>
             </div>
 
+            {/* Date and Status */}
             <div className='p-3 bg-secondary-700 rounded-xl'>
                 <div className='text-sm flex flex-col gap-3'>
                     <div className="flex justify-between items-center text-sm">
@@ -214,6 +239,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                 </div>
             </div>
 
+            {/* Source and Destination Transactions */}
             <div className='p-3 bg-secondary-700 rounded-xl'>
                 <div className='text-sm flex flex-col gap-3'>
                     <div className="flex justify-between items-baseline">
@@ -255,6 +281,30 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                     </div >
                 </div>
             </div>
+
+            {
+                swap.status === SwapStatus.Completed &&
+                <button
+                    onClick={() => router.push({
+                        pathname: `/`,
+                        query: {
+                            amount: requested_amount,
+                            destAddress: destination_address,
+                            from: source_network?.name,
+                            to: destination_network?.name,
+                            fromAsset: source_token.symbol,
+                            toAsset: destination_token.symbol,
+                        }
+                    }, undefined, { shallow: false })}
+                    className='w-full inline-flex items-center gap-2 justify-center py-2.5 px-3 text-xl font-semibold bg-primary-text-placeholder hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-secondary-950'
+                >
+                    <RefreshCw className='h-6 w-6' />
+                    <p>
+                        Repeat Swap
+                    </p>
+                </button>
+            }
+
         </div>
     )
 }
