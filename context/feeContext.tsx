@@ -48,12 +48,12 @@ export function FeeProvider({ children }) {
         min_amount_in_usd: number
         max_amount: number
         max_amount_in_usd: number
-    }>>((from && fromCurrency && to && toCurrency && depositMethod) ?
+    }>>((from && fromCurrency?.status === "active" && to && toCurrency?.status === "active" && depositMethod) ?
         `/limits?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&use_deposit_address=${use_deposit_address}&refuel=${!!refuel}` : null, apiClient.fetcher, {
         refreshInterval: poll ? 20000 : 0,
     })
 
-    const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<Quote>>((from && fromCurrency && to && toCurrency && debouncedAmount && depositMethod) ?
+    const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<Quote>>((from && fromCurrency?.status === "active" && to && toCurrency?.status === "active" && debouncedAmount && depositMethod) ?
         `/quote?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}` : null, apiClient.fetcher, {
         refreshInterval: poll ? 42000 : 0,
         fallbackData: { data: cachedRateData }
