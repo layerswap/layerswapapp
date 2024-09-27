@@ -26,7 +26,7 @@ type Props = {
 }
 
 const SwapDetails: FC<Props> = ({ swapResponse }) => {
-    const { swap, refuel } = swapResponse
+    const { swap, refuel,quote } = swapResponse
     const { source_token, destination_token, destination_address, source_network, destination_network, source_exchange, destination_exchange, requested_amount } = swap || {}
 
     const router = useRouter()
@@ -51,7 +51,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const source = (hideFrom && partner && account) ? partner : source_network
     const destination = (hideTo && partner && account) ? partner : destination_network
 
-    const receive_amount = swapOutputTransaction?.amount
+    const receive_amount = swapOutputTransaction?.amount ?? quote?.receive_amount
     const receiveAmountInUsd = receive_amount ? (destination_token?.price_in_usd * receive_amount).toFixed(2) : undefined
     const requestedAmountInUsd = requested_amount && (source_token?.price_in_usd * requested_amount).toFixed(2)
 
@@ -173,10 +173,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                         <p className="text-secondary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
                                     </div>
                                     :
-                                    <div className="flex flex-col justify-end">
-                                        <div className="h-[10px] my-[5px] w-20 animate-pulse rounded bg-gray-500" />
-                                        <div className="h-[10px] my-[5px] w-10 animate-pulse rounded bg-gray-500 ml-auto" />
-                                    </div>
+                                    <>-</>
                             }
                         </div>
                     </div>
@@ -202,7 +199,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
             <div className='p-3 bg-secondary-700 rounded-xl'>
                 <div className="flex justify-between items-baseline text-sm">
                     <span className="text-left">Fees</span>
-                    <span>{swapResponse?.quote.total_fee} {source_token?.symbol}</span>
+                    <span>{swapResponse?.quote.total_fee?.toFixed(source_token?.precision)} {source_token?.symbol}</span>
                 </div>
             </div>
 

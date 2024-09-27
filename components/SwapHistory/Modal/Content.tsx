@@ -1,6 +1,6 @@
 import LayerSwapApiClient, { SwapResponse } from "../../../lib/layerSwapApiClient"
 import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
-import { Eye, Plus } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Plus, RefreshCw } from 'lucide-react'
 import Modal from "../../modal/modal"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
@@ -66,8 +66,8 @@ type ListProps = {
     loadExplorerSwaps: boolean;
 }
 
-const getSwapsKey = () => (index) =>
-    `/internal/swaps?page=${index + 1}`
+const getSwapsKey = () => (index: number, include_expired: boolean) =>
+    `/internal/swaps?page=${index + 1}&include_expired=${include_expired}`
 
 const getExplorerKey = (addresses: string[]) => (index) => {
     if (!addresses?.[index])
@@ -80,10 +80,10 @@ type Swap = SwapResponse & { type: 'user' | 'explorer' }
 const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
     const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
     const [selectedSwap, setSelectedSwap] = useState<Swap | undefined>()
+    const [showIncompleteSwaps, setShowIncompleteSwaps] = useState(false)
     const { wallets } = useWallet()
     const { userId } = useAuthState()
     const addresses = wallets.map(w => w.address)
-    const [cachedSize, setCachedSize] = useState(1)
 
     const handleopenSwapDetails = (swap: Swap) => {
         setSelectedSwap(swap)
@@ -97,7 +97,7 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
 
     const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, mutate } =
         useSWRInfinite<ApiResponse<Swap[]>>(
-            getKey,
+            (index) => getKey(index, showIncompleteSwaps),
             apiClient.fetcher,
             { revalidateAll: true, dedupingInterval: 10000 }
         )
@@ -137,7 +137,7 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
         p.data?.forEach(s => {
             s.type = 'explorer'
         })
-        return p?.data?.filter(s => s.swap.status === 'completed')
+        return p?.data?.filter(s => !showIncompleteSwaps ? s.swap.status === 'completed' : true)
     }).flat(1) || []
 
     const userSwapsisEmpty =
@@ -152,9 +152,8 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
     const isReachingEnd =
         userSwapsisEmpty || (userSwapPages && Number(userSwapPages[userSwapPages.length - 1]?.data?.length) < PAGE_SIZE);
 
-    const handleLoadMore = () => {
-        setSize(size + 1)
-        setCachedSize(size + 1)
+    const handleLoadMore = async () => {
+        await setSize(size + 1)
     }
     // TODO filter explorer swaps by status
     !userSwapsLoading && explorerSwaps?.forEach(es => {
@@ -186,11 +185,15 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
     return <>
         <AnimatePresence >
             <div className="h-full space-y-3 mt-3 ">
-                <div className="text-secondary-text px-2 py-1.5 bg-secondary-700 rounded-md justify-start items-center gap-1.5 inline-flex">
-                    <Eye className="w-4 h-4 relative" />
+                <button onClick={() => setShowIncompleteSwaps(!showIncompleteSwaps)} className="text-secondary-text px-2 py-1.5 bg-secondary-700 hover:bg-secondary-600 hover:text-primary-text rounded-md justify-start items-center gap-1.5 inline-flex">
+                    {
+                        showIncompleteSwaps ?
+                            <Eye className="w-4 h-4 relative" />
+                            :
+                            <EyeOff className="w-4 h-4 relative" />
+                    }
                     <div className="text-sm font-normal">Incomplete swaps</div>
-                    {/* <div className="w-3 h-3 bg-[#df8b16] rounded-full" /> */}
-                </div>
+                </button>
                 {
                     swapsGrouppedByDate && <motion.div
                         variants={container}
@@ -204,7 +207,7 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
 
                                 return <div key={date} className="flex flex-col gap-1.5">
                                     <motion.p variants={item as any} className="text-sm text-secondary-text font-normal pl-2">
-                                        {date}
+                                        {resolveDate(date)}
                                     </motion.p>
                                     <div className="space-y-3">
                                         {
@@ -226,15 +229,19 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
                             })
                         }
 
-                        {/* <button
-                            disabled={isReachingEnd || userSwapsLoading}
-                            type="button"
-                            onClick={handleLoadMore}
-                            className=" hidden"
-                        >
+                        {
+                            !isReachingEnd &&
+                            <button
+                                disabled={isReachingEnd || userSwapsLoading || explorerSwapsLoading}
+                                type="button"
+                                onClick={handleLoadMore}
+                                className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80"
+                            >
 
-                            <span>Load more</span>
-                        </button> */}
+                                <RefreshCw className={`w-4 h-4 ${(userSwapsLoading || explorerSwapsLoading) && 'animate-spin'}`} />
+                                <span>Load more</span>
+                            </button>
+                        }
                     </motion.div>
                 }
             </div>
@@ -256,14 +263,14 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
 
 const BlankHistory = () => {
 
-    return <div className="w-full h-full flex flex-col justify-center items-center ">
+    return <div className="w-full h-full min-h-[inherit] flex flex-col justify-center items-center ">
         <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
         <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
         <div className="mt-2 text-center space-y-2">
             <h1 className="text-secondary-text text-[28px] font-bold tracking-wide" >
                 No Transfer History
             </h1>
-            <p className="max-w-xs text-center text-primary-text-muted text-base font-normal">
+            <p className="max-w-xs text-center text-primary-text-muted text-base font-normal mx-auto">
                 Transfers you make with this wallet/account will appear here after excution.
             </p>
         </div>
@@ -276,27 +283,69 @@ const BlankHistory = () => {
 }
 
 const ConnectOrSignIn = () => {
-    return <div className="w-full h-full grid grid-rows-3  items-center ">
-        <div className="flex flex-col justify-end items-center text-center row-span-2 self-end">
+    return <div className="w-full h-full min-h-[inherit] grid grid-rows-3 items-center ">
+        <div className="flex flex-col items-center text-center row-span-2 self-end">
             <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
             <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
             <div className="mt-4 text-center space-y-3">
                 <h1 className="text-secondary-text text-[28px] font-bold tracking-wide" >
                     Connect wallet or sign in
                 </h1>
-                <p className="max-w-xs text-center text-primary-text-muted text-base font-normal">
+                <p className="max-w-xs text-center text-primary-text-muted text-base font-normal mx-auto">
                     In order to see your transfer history you need to connect your wallet or Sign in with your email.
                 </p>
             </div>
         </div>
         <div className="self-end">
             <ConnectButton className="w-full">
-                <div className="w-full px-4 py-3 bg-primary rounded-lg justify-center items-center gap-2.5 inline-flex">
-                    <div className="text-center text-primary-text text-xl font-semibold">Connect Wallet</div>
+                <div className="w-full py-2.5 px-3 text-xl font-semibold bg-primary-text-placeholder hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-secondary-950">
+                    <div className="text-center text-xl font-semibold">Connect Wallet</div>
                 </div>
             </ConnectButton>
         </div>
     </div>
 }
+
+function resolveDate(dateInput) {
+    // Get the current date
+    const today = new Date();
+
+    // Calculate the difference in time between the input date and today
+    const inputDate = new Date(dateInput);
+    const timeDiff = today.getTime() - inputDate.getTime();
+
+    // Convert the time difference from milliseconds to days
+    const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+
+    // Format the input date to DD/MM/YYYY
+    const formatDate = (date) => {
+        const day = ("0" + date.getDate()).slice(-2);
+        const month = ("0" + (date.getMonth() + 1)).slice(-2);
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
+    // Resolve the output based on the difference in days
+    switch (dayDiff) {
+        case 0:
+            return "Today";
+        case 1:
+            return "Yesterday";
+        case 2:
+            return "2 days ago";
+        case 3:
+            return "3 days ago";
+        case 4:
+            return "4 days ago";
+        case 5:
+            return "5 days ago";
+        case 6:
+            return "6 days ago";
+        default:
+            // If the date is more than 6 days ago, return it in DD/MM/YYYY format
+            return formatDate(inputDate);
+    }
+}
+
 
 export default List
