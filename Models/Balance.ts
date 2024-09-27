@@ -2,7 +2,7 @@ import { Wallet } from "../stores/walletStore"
 import { Network, Token } from "./Network"
 
 export type BalanceProps = {
-    network: Network,
+    networkName: string,
     token: Token,
     address: string
 }
@@ -43,7 +43,7 @@ export type Gas = {
 }
 
 export type BalanceProvider = {
-    getBalance: ({ network, token, address }: BalanceProps) => Promise<Balance | undefined | null> | Balance | undefined,
+    getBalance: ({ networkName, token, address }: BalanceProps) => Promise<Balance | undefined | null> | Balance | undefined,
     getNetworkBalances: (props: NetworkBalancesProps) => Promise<Balance[] | undefined> | Balance[] | undefined | void,
     getGas?: (props: GasProps) => Promise<Gas[] | undefined> | undefined | void,
     supportedNetworks: string[],
