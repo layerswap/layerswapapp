@@ -4,7 +4,6 @@ import { http, createConfig } from '@wagmi/core'
 import { erc20Abi } from 'viem'
 import { multicall } from '@wagmi/core'
 import { getBalance, GetBalanceReturnType } from '@wagmi/core'
-
 import { Network, NetworkWithTokens, Token } from "../../../../Models/Network"
 import { Balance } from "../../../../Models/Balance"
 import { datadogRum } from "@datadog/browser-rum"

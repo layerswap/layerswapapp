@@ -67,7 +67,11 @@ export default function useEVMBalance(): BalanceProvider {
     }
 
 
-    const getBalance = async ({ network, token, address }: BalanceProps) => {
+    const getBalance = async ({ networkName, token, address }: BalanceProps) => {
+        const network = networks.find(n => n.name === networkName)
+
+        if (!network) return
+
         try {
             const resolveChain = (await import("../../resolveChain")).default
             const chain = resolveChain(network)
