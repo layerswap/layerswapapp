@@ -32,7 +32,10 @@ export default function useQueryBalances(): BalanceProvider {
     }
 
 
-    const getBalance = ({ network, token }: BalanceProps) => {
+    const getBalance = ({ networkName, token }: BalanceProps) => {
+        const network = networks.find(n => n.name === networkName)
+
+        if (!network) return
 
         const balancesFromQueries = new URL(window.location.href.replaceAll('&quot;', '"')).searchParams.get('balances');
         const parsedBalances = balancesFromQueries && JSON.parse(balancesFromQueries)

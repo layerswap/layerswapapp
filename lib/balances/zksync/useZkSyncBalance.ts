@@ -47,7 +47,10 @@ export default function useZkSyncBalance(): BalanceProvider {
     }
 
 
-    const getBalance = async ({ network, token, address }: BalanceProps) => {
+    const getBalance = async ({ networkName, token, address }: BalanceProps) => {
+        const network = networks.find(n => n.name === networkName)
+
+        if (!network) return
 
         try {
             const result = await client.getAccountInfo(network.node_url, address);

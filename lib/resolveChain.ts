@@ -21,8 +21,6 @@ export default function resolveChain(network: Network)  {
         return
     }
 
-    
-
     const res: RainbowKitChain = {
         id: Number(network.chain_id),
         name: network.display_name,
