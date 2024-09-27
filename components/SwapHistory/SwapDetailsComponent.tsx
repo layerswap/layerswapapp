@@ -20,13 +20,14 @@ import Link from 'next/link';
 import calculateDatesDifference from '../../lib/calculateDatesDifference';
 import { SwapStatus } from '../../Models/SwapStatus';
 import { useRouter } from 'next/router';
+import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 
 type Props = {
     swapResponse: SwapResponse
 }
 
 const SwapDetails: FC<Props> = ({ swapResponse }) => {
-    const { swap, refuel,quote } = swapResponse
+    const { swap, refuel, quote } = swapResponse
     const { source_token, destination_token, destination_address, source_network, destination_network, source_exchange, destination_exchange, requested_amount } = swap || {}
 
     const router = useRouter()
@@ -291,6 +292,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             to: destination_network?.name,
                             fromAsset: source_token.symbol,
                             toAsset: destination_token.symbol,
+                            ...resolvePersistantQueryParams(router.query),
                         }
                     }, undefined, { shallow: false })}
                     className='w-full inline-flex items-center gap-2 justify-center py-2.5 px-3 text-xl font-semibold bg-primary-text-placeholder hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-secondary-950'
@@ -298,6 +300,21 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                     <RefreshCw className='h-6 w-6' />
                     <p>
                         Repeat Swap
+                    </p>
+                </button>
+            }
+
+            {
+                (swap.status !== SwapStatus.Completed && swap.status !== SwapStatus.Expired && swap.status !== SwapStatus.Failed) &&
+                <button
+                    onClick={() => router.push({
+                        pathname: `/swap/${swap.id}`,
+                        query: resolvePersistantQueryParams(router.query),
+                    }, undefined, { shallow: false })}
+                    className='w-full inline-flex items-center gap-2 justify-center py-2.5 px-3 text-xl font-semibold bg-primary hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-primary-text'
+                >
+                    <p>
+                        Complete Swap
                     </p>
                 </button>
             }

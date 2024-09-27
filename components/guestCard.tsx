@@ -19,7 +19,7 @@ function GuestCard() {
     const GoToCodeStep = () => goToStep(AuthStep.Code)
 
     return (
-        <div className='mt-10'>
+        <div>
             <Wizard wizardId='guestCard'>
                 <WizardItem StepName={AuthStep.Email} fitHeight>
                     <div className={noToolBar ? `p-6 border border-secondary-500 rounded-md` : "pt-6"}>

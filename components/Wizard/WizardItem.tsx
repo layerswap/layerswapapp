@@ -8,10 +8,11 @@ type Props = {
     PositionPercent?: number,
     GoBack?: () => void,
     children: JSX.Element | JSX.Element[];
-    fitHeight?: boolean
+    fitHeight?: boolean,
+    className?: string;
 }
 
-const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent, fitHeight = false }: Props) => {
+const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent, fitHeight = false, className }: Props) => {
     const { currentStepName, wrapperWidth, moving } = useFormWizardState()
     const { setGoBack, setPositionPercent } = useFormWizardaUpdate()
     const styleConfigs = fitHeight ? { width: `${wrapperWidth}px`, height: '100%' } : { width: `${wrapperWidth}px`, minHeight: '534px', height: '100%' }
@@ -35,7 +36,7 @@ const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent, f
                 x: { duration: 0.35, type: "spring" },
             }}
             custom={{ direction: moving === "back" ? -1 : 1, width: wrapperWidth }}>
-            <div style={styleConfigs} className="pb-6">
+            <div style={styleConfigs} className={className}>
                 {Number(wrapperWidth) > 1 && children}
             </div>
         </motion.div>

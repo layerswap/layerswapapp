@@ -9,6 +9,7 @@ import TokenService from '../lib/TokenService';
 import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
 import SubmitButton from './buttons/submitButton';
 import { Widget } from './Widget/Index';
+import ResizablePanel from './ResizablePanel';
 
 type EmailFormValues = {
     email: string;
@@ -81,7 +82,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                 <div>
                                     <Disclosure>
                                         {({ open }) => (
-                                            <>
+                                            <ResizablePanel>
                                                 <Disclosure.Button className="w-full text-left text-base font-light">
                                                     <div className='flex items-center justify-between'>
                                                         <p className='text-xl text-primary-text'>
@@ -122,7 +123,7 @@ const SendEmail: FC<Props> = ({ onSend, disclosureLogin }) => {
                                                         </div>
                                                     </div>
                                                 </Disclosure.Panel>
-                                            </>
+                                            </ResizablePanel>
                                         )}
                                     </Disclosure>
                                 </div>

@@ -40,7 +40,7 @@ const Wizard: FC<Props> = ({ children, wizardId }) => {
 
          </div>
          <div className={noToolBar ? 'relative' : `relative px-6 `}>
-            <div className="flex items-start"
+            <div className="flex items-start w-full"
                ref={wrapper}>
                <AnimatePresence initial={false} custom={{ direction: moving === "forward" ? 1 : -1, width: wrapperWidth }}>
                   <div className={`flex flex-nowrap`} key={wizardId}>
