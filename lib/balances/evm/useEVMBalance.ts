@@ -96,10 +96,11 @@ export default function useEVMBalance(): BalanceProvider {
 
 
     const getGas = async ({ network, address, token, isSweeplessTx, recipientAddress = '0x2fc617e933a52713247ce25730f6695920b3befe' }: GasProps) => {
+        const networkFromSettings = networks.find(n => n.name === network.name)
 
         const chainId = Number(network?.chain_id)
 
-        if (!network || !address || isSweeplessTx === undefined || !chainId || !recipientAddress) {
+        if (!networkFromSettings || !address || isSweeplessTx === undefined || !chainId || !recipientAddress) {
             return
         }
 
@@ -110,7 +111,7 @@ export default function useEVMBalance(): BalanceProvider {
             const { createPublicClient, http } = await import("viem")
             const resolveNetworkChain = (await import("../../resolveChain")).default
             const publicClient = createPublicClient({
-                chain: resolveNetworkChain(network),
+                chain: resolveNetworkChain(networkFromSettings),
                 transport: http(),
             })
 
