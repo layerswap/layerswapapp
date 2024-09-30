@@ -255,10 +255,10 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
             </div>
         </AnimatePresence>
         <Modal
-            height="fit"
+            height="90%"
             show={openSwapDetailsModal}
             setShow={handleSWapDetailsShow}
-            header={`Swap details`}
+            header='Swap detail'
             modalId="pendingSwapDetails"
         >
             {

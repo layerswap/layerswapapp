@@ -81,7 +81,7 @@ export function SwapDataProvider({ children }) {
         if (!swapId)
             return
         const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-        const txForSwap = data.state.swapTransactions?.[swapId];
+        const txForSwap = data.state?.swapTransactions?.[swapId];
         setSwapTransaction(txForSwap)
     }, [swapId])
 

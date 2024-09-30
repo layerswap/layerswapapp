@@ -247,6 +247,8 @@ export type Transaction = {
     usd_value: number,
     usd_price: number,
     status: BackendTransactionStatus,
+    fee_amount?: number | null,
+    fee_token?: Token,
     timestamp?: string,
 }
 
