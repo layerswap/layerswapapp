@@ -52,7 +52,12 @@ const ConnectButton = ({
     );
     return isMobile ? (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger aria-label="Connect wallet">{children}</DialogTrigger>
+            <DialogTrigger
+                aria-label="Connect wallet"
+                className={`${className} disabled:opacity-50 disabled:cursor-not-allowed `}
+            >
+                {children}
+            </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] text-primary-text">
                 <DialogHeader>
                     <DialogTitle className="text-center">
