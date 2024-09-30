@@ -2,20 +2,35 @@ import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
-import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import { ResolveCEXCurrencyOrder } from "../../lib/sorting";
 import { useQueryState } from "../../context/query";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
-import { groupByType } from "./CurrencyFormField";
 import { Exchange, ExchangeToken } from "../../Models/Exchange";
 import { resolveExchangesURLForSelectedToken } from "../../helpers/routes";
 import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
-import { CircleAlert, RouteOff } from "lucide-react";
-import { QueryParams } from "../../Models/QueryParams";
 import ResolveRouteIcon from "./RouteIcon";
+import { Network } from "../../Models/Network";
+import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
+
+const GROUP_ORDERS = { "Popular": 1, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
+export function groupByType(values: SelectMenuItem<Network>[]) {
+    let groups: SelectMenuItemGroup[] = [];
+    values.forEach((v) => {
+        let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });
+        group.items.push(v);
+        if (!groups.find(x => x.name == v.group)) {
+            groups.push(group);
+        }
+    });
+
+    groups.sort((a, b) => {
+        return (GROUP_ORDERS[a.name] || GROUP_ORDERS.Other) - (GROUP_ORDERS[b.name] || GROUP_ORDERS.Other);
+    });
+
+    return groups;
+}
 
 const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {

@@ -1,12 +1,12 @@
 import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useMemo } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
-import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
+import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import CurrencySettings from "../../lib/CurrencySettings";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useQueryState } from "../../context/query";
-import { Network, RouteNetwork, RouteToken } from "../../Models/Network";
+import { RouteNetwork, RouteToken } from "../../Models/Network";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import useSWR from "swr";
 import { ApiResponse } from "../../Models/ApiResponse";
@@ -22,15 +22,29 @@ import useWallet from "../../hooks/useWallet";
 import { Wallet } from "../../stores/walletStore";
 import { useSettingsState } from "../../context/settings";
 import { ONE_WEEK } from "./NetworkFormField";
-import { SortingByAvailability } from "../../lib/sorting";
+import { ResolveNetworkOrder, SortingByAvailability } from "../../lib/sorting";
 import ResolveRouteIcon from "./RouteIcon";
+import { Exchange } from "../../Models/Exchange";
+import NetworkSettings from "../../lib/NetworkSettings";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
 });
 
-const getGroupName = (displayName: string | undefined) => {
-    return displayName;
+const GROUP_ORDERS = { "Selected Network": 1, "Top Assets": 2, "Popular": 3, "Networks": 10 };
+const getGroupName = (value: RouteNetwork | Exchange | undefined, type: 'selected' | 'top', canShowInPopular?: boolean) => {
+    if (value && NetworkSettings.KnownSettings[value.name]?.isFeatured && canShowInPopular) {
+        return "Popular";
+    }
+    else if (type === 'selected') {
+        return "Selected Network";
+    }
+    else if (type === 'top') {
+        return "Top Assets";
+    }
+    else {
+        return "Networks";
+    }
 }
 
 const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
@@ -60,6 +74,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const currencyMenuItems = GenerateCurrencyMenuItems(
         allCurrencies!,
         values,
+        routes?.data,
         direction,
         balances,
         query,
@@ -67,7 +82,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         error
     )
 
-    const groupedCurrencies = GenerateGroupedCurrencyMenuItems(
+    const neyworkGroupedCurrencies = GenerateGroupedCurrencyMenuItems(
         allCurrencies!,
         values,
         routes?.data,
@@ -150,7 +165,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const value = currencyMenuItems?.find(x => x.baseObject.symbol == currencyAsset && x.baseObject.network_name === currencyNetwork);
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }>) => {
-        const network = (direction === 'from' ? sourceRoutes : destinationRoutes)?.find(r => r.name === item.baseObject.network_name)
+        const network = (direction === 'from' ? sourceRoutes : destinationRoutes)?.find(r => r.name === item?.name || r.name === item?.baseObject?.network_name)
         setFieldValue(name, item.baseObject, true)
         setFieldValue(direction, network, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
@@ -165,7 +180,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 setValue={handleSelect}
                 value={value}
                 values={currencyMenuItems}
-                groupedCurrencies={groupedCurrencies}
+                groupedCurrencies={neyworkGroupedCurrencies}
                 searchHint='Search'
                 isLoading={isLoading}
             />
@@ -173,7 +188,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     )
 };
 
-export function groupByType(values: SelectMenuItem<Network>[]) {
+function groupByType(values: ISelectMenuItem[]) {
     let groups: SelectMenuItemGroup[] = [];
     values?.forEach((v) => {
         let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });
@@ -183,13 +198,17 @@ export function groupByType(values: SelectMenuItem<Network>[]) {
         }
     });
 
-    groups.sort((a, b) => (a.name === "All networks" ? 1 : b.name === "All networks" ? -1 : a.name.localeCompare(b.name)));
+    groups.sort((a, b) => {
+        return GROUP_ORDERS[a.name] - GROUP_ORDERS[b.name];
+    });
+
     return groups;
 }
 
 function GenerateCurrencyMenuItems(
     currencies: (RouteToken & { network_name: string, network_display_name: string, network_logo: string })[],
     values: SwapFormValues,
+    routes: RouteNetwork[] | undefined,
     direction: string,
     balances?: { [address: string]: Balance[]; },
     query?: QueryParams,
@@ -266,18 +285,18 @@ function GenerateCurrencyMenuItems(
             </div>
         )
 
-        const logo = <div className="flex-shrink-0 h-9 w-9 relative">
-            {c.logo && (
-                <Image
-                    src={c.logo}
-                    alt="Project Logo"
-                    height="40"
-                    width="40"
-                    loading="eager"
-                    className="rounded-full object-contain"
-                />
-            )}
-        </div>
+        const logo = c.logo && (
+            <Image
+                src={c.logo}
+                alt="Project Logo"
+                height="40"
+                width="40"
+                loading="eager"
+                className="rounded-full object-contain"
+            />
+        )
+
+        const network = routes?.find(r => r.name === currency.network_name);
 
         const res: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
             baseObject: c,
@@ -288,7 +307,7 @@ function GenerateCurrencyMenuItems(
             order: CurrencySettings.KnownSettings[c.symbol]?.Order ?? 5,
             imgSrc: c.logo,
             isAvailable: currencyIsAvailable,
-            group: getGroupName(c.network_display_name === (direction === "from" ? from?.display_name : to?.display_name) ? c.network_display_name : "All networks"),
+            group: getGroupName(network, (values?.from?.name === network?.name || values?.to?.name === network?.name) ? 'selected' : 'top', currencyIsAvailable && !routeNotFound),
             menuItemDetails: details,
             badge,
             icon: <ResolveRouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={!!routeNotFound} />,
@@ -312,7 +331,7 @@ function GenerateGroupedCurrencyMenuItems(
 ): SelectMenuItemGroup[] {
     const { to, from } = values;
 
-    const groupedCurrencies: { [key: string]: { groupLogo: JSX.Element; groupIcon: JSX.Element; items: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }>[] } } = {};
+    const networkGroupedCurrencies: { [key: string]: SelectMenuItemGroup } = {};
 
     currencies?.forEach(currency => {
         const displayName = currency.symbol;
@@ -337,8 +356,20 @@ function GenerateGroupedCurrencyMenuItems(
         const balancesArray = balances && Object.values(balances).flat();
         const balance = balancesArray?.find(b => b?.token === currency?.symbol && b?.network === currency.network_name);
 
-        const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, currency.precision)) : '';
-        const balanceAmountInUsd = formatted_balance_amount ? (currency?.price_in_usd * formatted_balance_amount).toFixed(2) : undefined;
+        const formattedBalanceAmount = balance ? Number(truncateDecimals(balance?.amount, currency.precision)) : '';
+        const balanceAmountInUsd = formattedBalanceAmount ? (currency?.price_in_usd * formattedBalanceAmount).toFixed(2) : undefined;
+
+        const networkTokens = balancesArray?.filter(b => b?.network === network?.name);
+        
+        const networkBalanceInUsd = networkTokens
+            ? networkTokens.reduce((acc, b) => {
+                const token = network?.tokens?.find(t => t?.symbol === b?.token);
+                const tokenPriceInUsd = token?.price_in_usd || 0;
+                const tokenPrecision = token?.precision || 0;
+                const formattedBalance = Number(truncateDecimals(b?.amount, tokenPrecision));
+                return acc + (formattedBalance * tokenPriceInUsd);
+            }, 0).toFixed(2)
+            : 0;
 
         const DisplayNameComponent = (
             <div className="flex flex-col">
@@ -370,42 +401,40 @@ function GenerateGroupedCurrencyMenuItems(
 
         const details = wallets?.length ? (
             <p className="text-primary-text text-sm flex flex-col items-end pr-1.5">
-                {Number(formatted_balance_amount) ? <span>{formatted_balance_amount}</span> : <span>-</span>}
+                {Number(formattedBalanceAmount) ? <span>{formattedBalanceAmount}</span> : <span>-</span>}
                 {balanceAmountInUsd ? <span className="text-secondary-text">${balanceAmountInUsd}</span> : null}
             </p>
         ) : null;
 
         const routeNotFound = currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR;
+        const groupName = getGroupName(network, (values?.from?.name === network?.name || values?.to?.name === network?.name) ? 'selected' : 'top', currencyIsAvailable && !routeNotFound)
 
         const res: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
             baseObject: currency,
             id: `${currency?.symbol?.toLowerCase()}_${currency?.network_name?.toLowerCase()}`,
             name: displayName || "-",
             menuItemLabel: DisplayNameComponent,
-            balanceAmount: Number(formatted_balance_amount),
             order: CurrencySettings.KnownSettings[currency.symbol]?.Order ?? 5,
             imgSrc: currency.logo,
             isAvailable: currencyIsAvailable,
             menuItemDetails: details,
+            group: groupName,
             badge,
             icon: ResolveRouteIcon({ direction, isAvailable: currencyIsAvailable, routeNotFound }),
-            logo: (
-                <div className="flex-shrink-0 h-9 w-9 relative">
-                    {currency.logo && (
-                        <Image
-                            src={currency.logo}
-                            alt="Project Logo"
-                            height="40"
-                            width="40"
-                            loading="eager"
-                            className="rounded-full object-contain"
-                        />
-                    )}
-                </div>
+            logo: (currency.logo && (
+                <Image
+                    src={currency.logo}
+                    alt="Project Logo"
+                    height="40"
+                    width="40"
+                    loading="eager"
+                    className="rounded-full object-contain"
+                />
+            )
             ),
         };
 
-        const groupLogo = (
+        const networkLogo = (
             <div className="flex-shrink-0 h-9 w-9 relative">
                 {network?.logo && (
                     <Image
@@ -414,27 +443,38 @@ function GenerateGroupedCurrencyMenuItems(
                         height="40"
                         width="40"
                         loading="eager"
-                        className="rounded-full object-contain"
+                        className={`${network?.tokens?.length > 1 ? "rounded-md" : "rounded-full"} object-contain`}
                     />
                 )}
             </div>
         );
 
-        const groupIcon = ResolveRouteIcon({ direction, isAvailable: !!networkIsAvailable, routeNotFound: !!networksRouteNotFound }) || <></>
+        const networkIcon = ResolveRouteIcon({ direction, isAvailable: !!networkIsAvailable, routeNotFound: !!networksRouteNotFound }) || <></>
 
-        if (!groupedCurrencies[currency.network_display_name]) {
-            groupedCurrencies[currency.network_display_name] = { groupLogo, groupIcon, items: [] };
+        if (!networkGroupedCurrencies[groupName]) {
+            networkGroupedCurrencies[groupName] = { name: groupName, items: [] };
         }
 
-        groupedCurrencies[currency.network_display_name].items.push(res);
+        if (!networkGroupedCurrencies[groupName].items.find(c => c.id === network?.name) && network) {
+            networkGroupedCurrencies[groupName].items.push({
+                id: network.name,
+                name: network.name,
+                displayName: network.display_name,
+                menuItemLabel: DisplayNameComponent,
+                menuItemDetails: details,
+                logo: networkLogo,
+                balanceAmount: Number(networkBalanceInUsd),
+                imgSrc: network.logo,
+                isAvailable: !!networkIsAvailable,
+                icon: networkIcon,
+                subItems: [],
+            });
+        }
+
+        networkGroupedCurrencies[groupName].items.find(c => c.id === network?.name)?.subItems?.push(res);
     });
 
-    return Object.keys(groupedCurrencies).map(groupName => ({
-        name: groupName,
-        groupLogo: groupedCurrencies[groupName].groupLogo,
-        groupIcon: groupedCurrencies[groupName].groupIcon,
-        items: groupedCurrencies[groupName].items,
-    }));
+    return Object.values(networkGroupedCurrencies)
 }
 
 export default CurrencyFormField
