@@ -107,7 +107,18 @@ const Summary: FC<SwapInfoProps> = ({
                             </div>
                         }
                         <div className="flex flex-col gap-0.5 overflow-hidden">
-                            <p className="text-secondary-text text-base truncate"><span>{source?.display_name} </span> <span>to</span> <span>{destination?.display_name}</span></p>
+                            <p className="text-secondary-text text-base truncate">
+                                {
+                                    source?.display_name !== destination?.display_name ?
+                                        <>
+                                            <span>Swap in</span> <span>{source?.display_name}</span>
+                                        </>
+                                        :
+                                        <>
+                                            <span>{source?.display_name} </span> <span>to</span> <span>{destination?.display_name}</span>
+                                        </>
+                                }
+                            </p>
                             <div className="flex items-center gap-0.5">
                                 <div className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-secondary-950 rounded-md">
                                     {

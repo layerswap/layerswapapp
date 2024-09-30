@@ -59,7 +59,10 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
     const inputTransactionFee = swapInputTransaction?.fee_amount
     const inputTransactionFeeInUsd = inputTransactionFee && swapInputTransaction?.fee_token && (swapInputTransaction?.fee_token?.price_in_usd * inputTransactionFee)
+    const displayInputFeeInUsd = inputTransactionFeeInUsd ? (inputTransactionFeeInUsd < 0.01 ? '<$0.01' : `$${inputTransactionFeeInUsd?.toFixed(2)}`) : null
     const calculatedFeeAmountInUsd = inputTransactionFeeInUsd ? inputTransactionFeeInUsd + quote?.total_fee_in_usd : quote?.total_fee_in_usd
+    const displayCalculatedFeeAmountInUsd = calculatedFeeAmountInUsd ? (calculatedFeeAmountInUsd < 0.01 ? '<$0.01' : `$${calculatedFeeAmountInUsd?.toFixed(2)}`) : null
+    const displayLayerswapFeeInUsd = quote?.total_fee_in_usd ? (quote?.total_fee_in_usd < 0.01 ? '<$0.01' : `$${quote?.total_fee_in_usd?.toFixed(2)}`) : null
 
     const nativeCurrency = refuel?.token
     const truncatedRefuelAmount = nativeCurrency && !!refuel ?
@@ -210,7 +213,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                 <AccordionTrigger className='w-full'>
                                     <div className="flex justify-between items-baseline text-sm w-full mr-1">
                                         <span className="text-left">Fees</span>
-                                        <span className='font-semibold'>${calculatedFeeAmountInUsd.toFixed(2)}</span>
+                                        <span className='font-semibold'>{displayCalculatedFeeAmountInUsd}</span>
                                     </div>
                                 </AccordionTrigger>
                                 <AccordionContent >
@@ -219,14 +222,14 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                             <span className="text-left">Layerswap Fee</span>
                                             <div className="flex flex-col items-end justify-end">
                                                 <p className="text-primary-text text-sm font-semibold">{swapResponse?.quote.total_fee?.toFixed(source_token?.precision)} {source_token?.symbol}</p>
-                                                <p className="text-secondary-text text-xs flex justify-end">${quote.total_fee_in_usd}</p>
+                                                <p className="text-secondary-text text-xs flex justify-end">{displayLayerswapFeeInUsd}</p>
                                             </div>
                                         </div>
                                         <div className="flex justify-between items-baseline text-sm">
                                             <span className="text-left">Gas Fee</span>
                                             <div className="flex flex-col items-end justify-end">
                                                 <p className="text-primary-text text-sm font-semibold">{inputTransactionFee?.toFixed(swapInputTransaction?.fee_token?.precision)} {swapInputTransaction?.fee_token?.symbol}</p>
-                                                <p className="text-secondary-text text-xs flex justify-end">${inputTransactionFeeInUsd}</p>
+                                                <p className="text-secondary-text text-xs flex justify-end">{displayInputFeeInUsd}</p>
                                             </div>
                                         </div>
                                     </div>
