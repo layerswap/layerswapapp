@@ -54,7 +54,6 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
             && fetchGas(from, fromCurrency, destination_address || source_address)
 
     }, [from, fromCurrency, source_address])
-    console.log('balanceAmount', balanceAmount)
     return (
         <>
             {

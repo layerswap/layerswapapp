@@ -122,7 +122,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             setFieldValue("destination_address", undefined)
         }
     }, [activeWallet, previouslyAutofilledAddress])
-    console.log('activeWallet', activeWallet)
     useEffect(() => {
         if (canFocus) {
             inputReference?.current?.focus()
@@ -222,7 +221,6 @@ const resolveAddressGroups = ({
             addresses.push(...(wallet.addresses.map(a => ({ address: a, group: AddressGroup.ConnectedWallet })) || []))
         }
     })
-    console.log('addresses', addresses)
     if (addressFromQuery) {
         addresses.push({ address: addressFromQuery, group: AddressGroup.FromQuery })
     }

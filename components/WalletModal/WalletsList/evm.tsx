@@ -11,9 +11,6 @@ import toast from 'react-hot-toast';
 
 const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFinish, setSelectedProvider }) => {
 
-    const { disconnectAsync } = useDisconnect()
-    const { connectors, connect } = useConnect();
-
     return (
         !provider?.connector?.qr ?
             <div className="flex flex-col gap-1 w-full max-h-[40vh] overflow-y-auto styled-scroll">
@@ -24,9 +21,10 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, o
                     const Icon = resolveWalletConnectorIcon({ connector: connectorId })
                     const isLoading = provider.connector?.name === connectorName
                     const name = connector?.['rkDetails']?.['id']
+
                     return (
                         <WalletButton.Custom key={index} wallet={name}>
-                            {({ connector }) => {
+                            {({ connect }) => {
                                 return (
                                     <div key={index}>
                                         <button
@@ -38,8 +36,13 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, o
 
                                                     setSelectedProvider({ ...provider, connector: { name: connectorName } })
                                                     await connector.disconnect()
-                                                    await connector.connect()
-                                                    onFinish()
+                                                    if (connector.type === 'walletConnect' && !provider.activeWallet && !isMobile()) {
+                                                        await connect()
+                                                    }
+                                                    else {
+                                                        await connector.connect()
+                                                        onFinish()
+                                                    }
                                                     setSelectedProvider(undefined)
 
                                                 } catch (e) {
@@ -48,15 +51,15 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, o
                                                     setSelectedProvider(undefined)
                                                 }
 
-                                                if (isMobile()) {
-                                                    const uri = await getWalletConnectUri(connector, connector?.['rkDetails']?.['mobile']?.['getUri'])
-                                                    window.location.href = uri
-                                                }
-                                                else if (connector.type === 'walletConnect') {
-                                                    const uri = await getWalletConnectUri(connector, connector?.['rkDetails']?.['qrCode']?.['getUri'])
-                                                    const iconUrl = await (provider.availableWalletsForConnect as Connector[]).find((c) => c?.['rkDetails']?.['name'] === connectorName)?.['rkDetails']?.['iconUrl']()
-                                                    if (provider.connector) setSelectedProvider({ ...provider, connector: { ...provider.connector, qr: uri, iconUrl } })
-                                                }
+                                                // if (isMobile()) {
+                                                //     const uri = await getWalletConnectUri(connector, connector?.['rkDetails']?.['mobile']?.['getUri'])
+                                                //     window.location.href = uri
+                                                // }
+                                                // else if (connector.type === 'walletConnect') {
+                                                //     const uri = await getWalletConnectUri(connector, connector?.['rkDetails']?.['qrCode']?.['getUri'])
+                                                //     const iconUrl = await (provider.availableWalletsForConnect as Connector[]).find((c) => c?.['rkDetails']?.['name'] === connectorName)?.['rkDetails']?.['iconUrl']()
+                                                //     if (provider.connector) setSelectedProvider({ ...provider, connector: { ...provider.connector, qr: uri, iconUrl } })
+                                                // }
                                             }}
                                         >
                                             <div className="flex gap-3 items-center font-semibold">

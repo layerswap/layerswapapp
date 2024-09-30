@@ -154,7 +154,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
     }, [values.amount])
 
     const shoouldConnectWallet = values.depositMethod !== 'deposit_address' && !values.source_wallet
-
+    
     return <ImtblPassportProvider from={source} to={destination}>
         <>
             <Widget className="sm:min-h-[504px]">
@@ -178,7 +178,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             {!query?.hideFrom && !query?.hideTo &&
                                 <button
                                     type="button"
-                                    aria-label="Reverse the source and destination" 
+                                    aria-label="Reverse the source and destination"
                                     disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || exchnagesDataLoading}
                                     onClick={valuesSwapper}
                                     className={`${sourceLoading || destinationLoading || exchnagesDataLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[118px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>

@@ -185,7 +185,6 @@ export default function useEVM(): WalletProvider {
 
 const resolveAvailableWallets = (all_connectors: readonly Connector[], connected: readonly Connector[]) => {
 
-    console.log(all_connectors)
     const available_connectors = all_connectors.filter((connector, index, array) => {
 
         if (connector.id === 'io.metamask') {

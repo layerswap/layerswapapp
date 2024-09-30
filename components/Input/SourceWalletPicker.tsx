@@ -24,27 +24,28 @@ const Component: FC = () => {
 
     const walletNetwork = values.fromExchange ? undefined : values.from
 
-    const { provider } = useWallet(walletNetwork, 'asSource')
+    const { provider, wallets } = useWallet(walletNetwork, 'asSource')
 
     const selectedWallet = values.source_wallet
+    const activeWallet = walletNetwork ? provider?.activeWallet : wallets[0]
 
     const connectedWalletAddress = provider?.activeWallet?.address
     const source_addsress = values.source_wallet?.address
     const previouslyAutofilledAddress = useRef<string | undefined>(undefined)
 
     useEffect(() => {
-        if ((!source_addsress || (previouslyAutofilledAddress.current && previouslyAutofilledAddress.current != connectedWalletAddress)) && provider?.activeWallet && values.depositMethod !== 'deposit_address') {
-            setFieldValue('source_wallet', provider?.activeWallet)
-            setFieldValue('source_address', provider?.activeWallet?.address)
+        if ((!source_addsress || (previouslyAutofilledAddress.current && previouslyAutofilledAddress.current != connectedWalletAddress)) && activeWallet && values.depositMethod !== 'deposit_address') {
+            setFieldValue('source_wallet', activeWallet)
+            setFieldValue('source_address', activeWallet?.address)
         }
-    }, [provider?.activeWallet, source_addsress, values.depositMethod])
+    }, [activeWallet, source_addsress, values.depositMethod])
 
     useEffect(() => {
-        if (values.depositMethod === 'deposit_address' || !provider?.activeWallet?.address) {
+        if (values.depositMethod === 'deposit_address' || !activeWallet?.address) {
             setFieldValue('source_wallet', undefined)
             setFieldValue('source_address', undefined)
         }
-    }, [values.depositMethod, provider?.activeWallet?.address])
+    }, [values.depositMethod, activeWallet?.address])
 
     const handleWalletChange = () => {
         setOpenModal(true)
@@ -61,6 +62,9 @@ const Component: FC = () => {
         }
         setOpenModal(false)
     }
+
+    if(!walletNetwork)
+        return <></>
 
     return <>
         {
@@ -124,7 +128,7 @@ export const FormSourceWalletButton: FC = () => {
 
     const walletNetwork = values.fromExchange ? undefined : values.from
 
-    const { wallets, provider } = useWallet(walletNetwork, 'asSource')
+    const { wallets } = useWallet(walletNetwork, 'asSource')
 
     const handleWalletChange = () => {
         setOpenModal(true)
@@ -187,10 +191,11 @@ export const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect }) =
         values,
     } = useFormikContext<SwapFormValues>();
 
-    const { provider } = useWallet(route, purpose)
+    const { provider, wallets } = useWallet(route, purpose)
+    const connectedWallets = route ? provider?.connectedWallets : wallets
 
     return (
-        <div className="space-y-3">
+        <div className="space-y-3 mt-4">
             <ConnectButton className="w-full flex justify-center p-2 bg-secondary-700 rounded-md hover:bg-secondary-600">
                 <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
                     <Plus className="h-4 w-4" />
@@ -201,7 +206,7 @@ export const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect }) =
             </ConnectButton>
             <div className="flex flex-col justify-start space-y-3">
                 {
-                    provider?.connectedWallets?.map((wallet) => {
+                    connectedWallets?.map((wallet) => {
                         return <>
                             {wallet.addresses?.map((address) => {
                                 const isSelected = values.source_address === address
