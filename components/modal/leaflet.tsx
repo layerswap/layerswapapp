@@ -20,7 +20,6 @@ export interface LeafletProps {
     position: LeafletPosition;
     onClose?: () => void;
 }
-// TODO handle overflow when height is set to 'fit'
 export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, position, onClose }, topmostRef) {
     const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
@@ -75,6 +74,9 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
         case '80%':
             wrapperHeightClass = 'h-[80%]'
             break;
+        case 'fit':
+            wrapperHeightClass = 'h-fit max-h-[70vh]'
+            break;
         default:
             wrapperHeightClass = ''
     }
@@ -104,7 +106,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
-                <div className={`py-3 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
+                <div className={`py-3 overflow-y-auto max-h-[inherit] flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
                     <div className='px-6 flex justify-between items-center hover:cursor-grab'>
                         <div className="text-lg text-secondary-text font-semibold">
                             <div>{title}</div>
