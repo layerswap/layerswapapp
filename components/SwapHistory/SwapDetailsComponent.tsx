@@ -219,14 +219,14 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                 <AccordionContent >
                                     <div className='flex flex-col gap-3 mt-4'>
                                         <div className="flex justify-between items-baseline text-sm">
-                                            <span className="text-left">Layerswap Fee</span>
+                                            <span className="text-left text-secondary-text">Layerswap Fee</span>
                                             <div className="flex flex-col items-end justify-end">
                                                 <p className="text-primary-text text-sm font-semibold">{swapResponse?.quote.total_fee?.toFixed(source_token?.precision)} {source_token?.symbol}</p>
                                                 <p className="text-secondary-text text-xs flex justify-end">{displayLayerswapFeeInUsd}</p>
                                             </div>
                                         </div>
                                         <div className="flex justify-between items-baseline text-sm">
-                                            <span className="text-left">Gas Fee</span>
+                                            <span className="text-left text-secondary-text">Gas Fee</span>
                                             <div className="flex flex-col items-end justify-end">
                                                 <p className="text-primary-text text-sm font-semibold">{inputTransactionFee?.toFixed(swapInputTransaction?.fee_token?.precision)} {swapInputTransaction?.fee_token?.symbol}</p>
                                                 <p className="text-secondary-text text-xs flex justify-end">{displayInputFeeInUsd}</p>
