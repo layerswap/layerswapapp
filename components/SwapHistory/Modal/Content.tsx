@@ -208,7 +208,7 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
                         initial="initial"
                         animate={refreshing ? "loading" : "highlight"}
                         exit={"initial"}
-                        className="text-sm flex flex-col gap-5 font-medium focus:outline-none overflow-y-auto styled-scroll max-h-[83vh] sm:max-h-[550px]"
+                        className="text-sm flex flex-col gap-5 font-medium focus:outline-none overflow-y-auto styled-scroll h-full max-h-[83vh] sm:max-h-[550px]"
                     >
                         {
                             swapsGrouppedByDate.map(({ date, values }) => {
@@ -217,7 +217,7 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
                                     <motion.p variants={item as any} className="text-sm text-secondary-text font-normal pl-2">
                                         {resolveDate(date)}
                                     </motion.p>
-                                    <div className="space-y-3">
+                                    <div className="space-y-3 pb-1">
                                         {
                                             values?.map((swap) => {
 

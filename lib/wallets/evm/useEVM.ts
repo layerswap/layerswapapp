@@ -7,10 +7,8 @@ import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
-import { useRouter } from "next/router"
 
 export default function useEVM(): WalletProvider {
-    const router = useRouter();
     const { networks } = useSettingsState()
     const [shouldConnect, setShouldConnect] = useState(false)
     const { disconnectAsync } = useDisconnect()
