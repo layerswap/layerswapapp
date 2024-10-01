@@ -7,7 +7,7 @@ import {
     CommandList,
     CommandWrapper
 } from '../../shadcn/command';
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import useWindowDimensions from '../../../hooks/useWindowDimensions';
 import SelectItem from '../Shared/SelectItem';
 import { SelectProps } from '../Shared/Props/SelectProps';
@@ -38,18 +38,35 @@ export class SelectMenuItemGroup {
 
 export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, groupedCurrencies, isLoading, modalHeight = 'full', modalContent }: CommandSelectProps) {
     const { isDesktop } = useWindowDimensions();
+    const [searchQuery, setSearchQuery] = useState('');
 
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
     const handleSelectValue = useCallback((item: ISelectMenuItem) => {
         setValue(item);
         setShow(false);
     }, [setValue, setShow]);
-console.log('groupedCurrencies', groupedCurrencies);
+
+    const filterItems = (items: ISelectMenuItem[]) =>
+        items.filter(
+            (item) =>
+                item?.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                item?.id?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value);
+    };
+
     return (
         <Modal height={modalHeight} show={show} setShow={setShow} modalId='commandSelect'>
             {show ? (
                 <CommandWrapper>
-                    {searchHint && <CommandInput autoFocus={isDesktop} placeholder={searchHint} />}
+                    {searchHint && <input
+                        autoFocus={isDesktop}
+                        placeholder={searchHint}
+                        value={searchQuery}
+                        onChange={handleSearchChange} 
+                        className="h-11 px-2 py-4 w-full bg-transparent border-0 focus border-b mb-2 border-secondary-500 focus:border-transparent focus:border-b-secondary-500 focus:ring-0 placeholder:text-primary-text-placeholder placeholder:text-lg  disabled:cursor-not-allowed disabled:opacity-50"
+                    />}
                     {modalContent}
                     {!isLoading ? (
                         <CommandList className='p-1'>
@@ -58,7 +75,7 @@ console.log('groupedCurrencies', groupedCurrencies);
                                 groupedCurrencies.map((g) => (
                                     g.items && g.items.length > 0 ? (
                                         <CommandGroup key={g.name} heading={g.name}>
-                                            {g.items.map((item) =>
+                                            {filterItems(g.items).map((item) =>
                                                 item.subItems ? (
                                                     <div className='group' key={item.id}>
                                                         <div className="relative items-center flex-shrink-0 w-4 top-6">
@@ -132,7 +149,7 @@ console.log('groupedCurrencies', groupedCurrencies);
                                     <CommandEmpty>No results found.</CommandEmpty>
                                     {groups.filter(group => group.items?.length > 0).map((group) => (
                                         <CommandGroup key={group.name} heading={group.name}>
-                                            {group.items.map(item => (
+                                            {filterItems(group.items).map(item => (
                                                 <CommandItem value={item.id} key={item.id} onSelect={() => handleSelectValue(item)}>
                                                     <div className="relative items-center flex-shrink-0 w-3">
                                                         {item.icon}
@@ -144,7 +161,6 @@ console.log('groupedCurrencies', groupedCurrencies);
                                     ))}
                                 </div>
                             )}
-
                         </CommandList>
                     ) : (
                         <div className="flex justify-center h-full items-center">
