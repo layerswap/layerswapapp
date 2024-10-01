@@ -414,6 +414,7 @@ function GenerateGroupedCurrencyMenuItems(
             id: `${currency?.symbol?.toLowerCase()}_${currency?.network_name?.toLowerCase()}`,
             name: displayName || "-",
             menuItemLabel: DisplayNameComponent,
+            balanceAmount: Number(formattedBalanceAmount),
             order: CurrencySettings.KnownSettings[currency.symbol]?.Order ?? 5,
             imgSrc: currency.logo,
             isAvailable: currencyIsAvailable,

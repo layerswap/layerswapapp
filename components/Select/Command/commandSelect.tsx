@@ -44,12 +44,12 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
         setValue(item);
         setShow(false);
     }, [setValue, setShow]);
-
+console.log('groupedCurrencies', groupedCurrencies);
     return (
         <Modal height={modalHeight} show={show} setShow={setShow} modalId='commandSelect'>
             {show ? (
                 <CommandWrapper>
-                    {searchHint && <CommandInput  autoFocus={isDesktop} placeholder={searchHint} />}
+                    {searchHint && <CommandInput autoFocus={isDesktop} placeholder={searchHint} />}
                     {modalContent}
                     {!isLoading ? (
                         <CommandList className='p-1'>
@@ -59,7 +59,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                     g.items && g.items.length > 0 ? (
                                         <CommandGroup key={g.name} heading={g.name}>
                                             {g.items.map((item) =>
-                                                item.subItems && item.subItems.length > 1 ? (
+                                                item.subItems ? (
                                                     <div className='group' key={item.id}>
                                                         <div className="relative items-center flex-shrink-0 w-4 top-6">
                                                             {item.icon}
@@ -75,16 +75,15 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                                                         <div className="flex flex-col w-full items-end space-y-2 self-baseline">
                                                                             <p className='text-secondary-text text-sm'>{item?.balanceAmount ? `$${item.balanceAmount}` : ''}</p>
                                                                             <div className="flex justify-end items-center w-full relative">
-                                                                                {item.subItems.map((subItem, index) => (
+                                                                                {item?.balanceAmount ? item.subItems?.filter(i => i?.balanceAmount)?.map((subItem, index) => (
                                                                                     <div
                                                                                         key={subItem.id}
                                                                                         className="w-3.5 absolute"
                                                                                         style={{ right: `${index * 3.5}%` }}
                                                                                     >
                                                                                         {subItem.logo}
-                                                                                        {subItem.balanceAmount}
                                                                                     </div>
-                                                                                ))}
+                                                                                )) : null}
                                                                             </div>
                                                                         </div>
                                                                     </div>
