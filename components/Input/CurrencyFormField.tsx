@@ -390,6 +390,14 @@ function GenerateGroupedCurrencyMenuItems(
             </div>
         );
 
+        const noWalletsConnectedText = !wallets?.length && (
+            <div className="text-secondary-text text-xs">
+                <span>Connect wallet</span>
+                <br />
+                <span>to see balance</span>
+            </div>
+        )
+
         const isNewlyListed = new Date(currency?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
 
         const currencyIsAvailable = (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
@@ -407,7 +415,7 @@ function GenerateGroupedCurrencyMenuItems(
         ) : null;
 
         const routeNotFound = currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR;
-        const groupName = getGroupName(network, (values?.from?.name === network?.name || values?.to?.name === network?.name) ? 'selected' : 'top', currencyIsAvailable && !routeNotFound)
+        const groupName = getGroupName(network, (values?.from?.name === network?.name || values?.to?.name === network?.name) ? 'selected' :  'top', currencyIsAvailable && !routeNotFound)
 
         const res: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
             baseObject: currency,
@@ -433,6 +441,7 @@ function GenerateGroupedCurrencyMenuItems(
                 />
             )
             ),
+            noWalletsConnectedText
         };
 
         const networkLogo = (
@@ -469,6 +478,7 @@ function GenerateGroupedCurrencyMenuItems(
                 isAvailable: !!networkIsAvailable,
                 icon: networkIcon,
                 subItems: [],
+                noWalletsConnectedText
             });
         }
 

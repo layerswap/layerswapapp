@@ -77,7 +77,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                         <CommandGroup key={g.name} heading={g.name}>
                                             {filterItems(g.items).map((item) =>
                                                 item.subItems ? (
-                                                    <div className='group' key={item.id}>
+                                                    <div key={item.id}>
                                                         <div className="relative items-center flex-shrink-0 w-4 top-6">
                                                             {item.icon}
                                                         </div>
