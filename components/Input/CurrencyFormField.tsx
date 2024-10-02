@@ -33,15 +33,15 @@ const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
 
 const GROUP_ORDERS = { "Selected Network": 1, "Top Assets": 2, "Popular": 3, "Networks": 10 };
 const getGroupName = (value: RouteNetwork | Exchange | undefined, type: 'selected' | 'top', canShowInPopular?: boolean) => {
-    if (value && NetworkSettings.KnownSettings[value.name]?.isFeatured && canShowInPopular) {
-        return "Popular";
-    }
-    else if (type === 'selected') {
+    if (type === 'selected') {
         return "Selected Network";
+    }
+    else if (value && NetworkSettings.KnownSettings[value.name]?.isFeatured && canShowInPopular) {
+        return "Popular";
     }
     else if (type === 'top') {
         return "Top Assets";
-    }
+    } 
     else {
         return "Networks";
     }

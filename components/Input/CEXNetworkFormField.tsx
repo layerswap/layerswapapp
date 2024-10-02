@@ -11,6 +11,7 @@ import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import { NetworkWithTokens, RouteNetwork } from "../../Models/Network";
 import { ExchangeNetwork } from "../../Models/Exchange";
 import { isValidAddress } from "../../lib/address/validator";
+import Image from 'next/image'
 
 type SwapDirection = "from" | "to";
 type Props = {
@@ -144,6 +145,19 @@ function GenerateMenuItems(
             {e.token.symbol}
         </p>
 
+        const logo = <div className="flex-shrink-0 h-6 w-6 relative">
+            {network?.logo && (
+                <Image
+                    src={network.logo}
+                    alt="Project Logo"
+                    height="40"
+                    width="40"
+                    loading="eager"
+                    className="rounded-md object-contain"
+                />
+            )}
+        </div>
+
         const item: SelectMenuItem<ExchangeNetwork> = {
             baseObject: e,
             id: index.toString(),
@@ -153,7 +167,8 @@ function GenerateMenuItems(
             imgSrc: network?.logo || '',
             menuItemDetails: details,
             isAvailable: true,
-            details
+            details,
+            logo
         }
         return item;
     })

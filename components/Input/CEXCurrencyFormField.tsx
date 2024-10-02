@@ -13,6 +13,7 @@ import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import ResolveRouteIcon from "./RouteIcon";
 import { Network } from "../../Models/Network";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
+import Image from 'next/image'
 
 const GROUP_ORDERS = { "Popular": 1, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
 export function groupByType(values: SelectMenuItem<Network>[]) {
@@ -64,7 +65,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         direction,
         lockedCurrency
     )
-
+    
     const value = currencyMenuItems?.find(x => x.id == currencyGroup?.symbol);
 
     useEffect(() => {
@@ -101,6 +102,19 @@ export function GenerateCurrencyMenuItems(
         
         const routeNotFound = c.status === "not_found"
 
+        const logo = <div className="flex-shrink-0 h-6 w-6 relative">
+            {c.logo && (
+                <Image
+                    src={c.logo}
+                    alt="Project Logo"
+                    height="40"
+                    width="40"
+                    loading="eager"
+                    className="rounded-md object-contain"
+                />
+            )}
+        </div>
+
         const res: SelectMenuItem<ExchangeToken> = {
             baseObject: c,
             id: c.symbol,
@@ -108,7 +122,8 @@ export function GenerateCurrencyMenuItems(
             order: ResolveCEXCurrencyOrder(c),
             imgSrc: c.logo,
             isAvailable: isAvailable,
-            icon: <ResolveRouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} />
+            icon: <ResolveRouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} />,
+            logo
         };
         return res
     });
