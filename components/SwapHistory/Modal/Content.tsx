@@ -3,7 +3,7 @@ import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
 import { Eye, EyeOff, Plus, RefreshCw } from 'lucide-react'
 import Modal from "../../modal/modal"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import { AnimatePresence, motion } from "framer-motion"
+import { AnimatePresence } from "framer-motion"
 import Summary from "../Summary";
 import useSWRInfinite from 'swr/infinite'
 import useWallet from "../../../hooks/useWallet"
@@ -20,50 +20,6 @@ import GuestCard from "../../guestCard"
 import { AuthStep } from "../../../Models/Wizard"
 
 const PAGE_SIZE = 20
-const container = {
-    initial: {
-        transition: {
-            type: "spring",
-            staggerChildren: 0.03,
-            staggerDirection: 1,
-            duration: 3
-        }
-    },
-    highlight: {
-        transition: {
-            type: "spring",
-            staggerChildren: 0.03,
-            staggerDirection: 1,
-            duration: 0.3
-        }
-    }
-}
-
-const item = {
-    initial: {
-        transition: {
-            duration: 3
-        }
-    },
-    highlight: {
-        filter: [
-            null,
-            null,
-            "blur(3px) drop-shadow(4px 4px 4px rgb(var(--ls-colors-secondary-500)))",
-            "blur(0px)",
-            null
-        ],
-        y: [0, -5, 3, -2, 0]
-    },
-    loading: {
-        filter: [null, "blur(2px)"],
-        transition: {
-            type: "spring",
-            duration: 0.5,
-        }
-    }
-}
-
 type ListProps = {
     statuses?: string | number;
     refreshing: boolean;
@@ -191,69 +147,62 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
     const swapsGrouppedByDate = !allEmpty ? Object.entries(groupBy(userSwaps as Swap[], ({ swap }) => new Date(swap.created_date).toLocaleDateString())).map(([date, values]) => ({ date, values })) : null
 
     return <>
-        <AnimatePresence >
-            <div className="h-full space-y-3 mt-3 ">
-                <button onClick={() => setShowIncompleteSwaps(!showIncompleteSwaps)} className="text-secondary-text px-2 py-1.5 bg-secondary-700 hover:bg-secondary-600 hover:text-primary-text rounded-md justify-start items-center gap-1.5 inline-flex">
-                    {
-                        showIncompleteSwaps ?
-                            <Eye className="w-4 h-4 relative" />
-                            :
-                            <EyeOff className="w-4 h-4 relative" />
-                    }
-                    <div className="text-sm font-normal">Incomplete swaps</div>
-                </button>
+        <div className="h-full space-y-3 mt-3 ">
+            <button onClick={() => setShowIncompleteSwaps(!showIncompleteSwaps)} className="text-secondary-text px-2 py-1.5 bg-secondary-700 hover:bg-secondary-600 hover:text-primary-text rounded-md justify-start items-center gap-1.5 inline-flex">
                 {
-                    swapsGrouppedByDate && <motion.div
-                        variants={container}
-                        initial="initial"
-                        animate={refreshing ? "loading" : "highlight"}
-                        exit={"initial"}
-                        className="text-sm flex flex-col gap-5 font-medium focus:outline-none overflow-y-auto styled-scroll h-full max-h-[83vh] sm:max-h-[550px]"
-                    >
-                        {
-                            swapsGrouppedByDate.map(({ date, values }) => {
-
-                                return <div key={date} className="flex flex-col gap-1.5">
-                                    <motion.p variants={item as any} className="text-sm text-secondary-text font-normal pl-2">
-                                        {resolveDate(date)}
-                                    </motion.p>
-                                    <div className="space-y-3 pb-1">
-                                        {
-                                            values?.map((swap) => {
-
-                                                if (!swap) return <></>
-
-                                                return <motion.div
-                                                    onClick={() => handleopenSwapDetails(swap)}
-                                                    key={swap.swap.id}
-                                                    variants={item as any}
-                                                >
-                                                    <Summary swapResponse={swap} />
-                                                </motion.div>
-                                            })
-                                        }
-                                    </div>
-                                </div>
-                            })
-                        }
-
-                        {
-                            !isReachingEnd &&
-                            <button
-                                disabled={isReachingEnd || userSwapsLoading || explorerSwapsLoading || isValidating}
-                                type="button"
-                                onClick={handleLoadMore}
-                                className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80"
-                            >
-
-                                <RefreshCw className={`w-4 h-4 ${(userSwapsLoading || explorerSwapsLoading || isValidating) && 'animate-spin'}`} />
-                                <span>Load more</span>
-                            </button>
-                        }
-                    </motion.div>
+                    showIncompleteSwaps ?
+                        <Eye className="w-4 h-4 relative" />
+                        :
+                        <EyeOff className="w-4 h-4 relative" />
                 }
-            </div>
-        </AnimatePresence>
+                <div className="text-sm font-normal">Incomplete swaps</div>
+            </button>
+            {
+                swapsGrouppedByDate && <div
+                    className="text-sm flex flex-col gap-5 font-medium focus:outline-none overflow-y-auto styled-scroll h-full max-h-[83vh] sm:max-h-[550px]"
+                >
+                    {
+                        swapsGrouppedByDate.map(({ date, values }) => {
+
+                            return <div key={date} className="flex flex-col gap-1.5">
+                                <p className="text-sm text-secondary-text font-normal pl-2">
+                                    {resolveDate(date)}
+                                </p>
+                                <div className="space-y-3 pb-1">
+                                    {
+                                        values?.map((swap) => {
+
+                                            if (!swap) return <></>
+
+                                            return <div
+                                                onClick={() => handleopenSwapDetails(swap)}
+                                                key={swap.swap.id}
+                                            >
+                                                <Summary swapResponse={swap} />
+                                            </div>
+                                        })
+                                    }
+                                </div>
+                            </div>
+                        })
+                    }
+
+                    {
+                        !isReachingEnd &&
+                        <button
+                            disabled={isReachingEnd || userSwapsLoading || explorerSwapsLoading || isValidating}
+                            type="button"
+                            onClick={handleLoadMore}
+                            className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80"
+                        >
+
+                            <RefreshCw className={`w-4 h-4 ${(userSwapsLoading || explorerSwapsLoading || isValidating) && 'animate-spin'}`} />
+                            <span>Load more</span>
+                        </button>
+                    }
+                </div>
+            }
+        </div>
         <Modal
             height="fit"
             show={openSwapDetailsModal}

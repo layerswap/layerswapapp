@@ -2,7 +2,7 @@ import { DetailedHTMLProps, HTMLAttributes } from "react"
 
 const Snippet = () => {
     return <div className="text-sm py-3 space-y-4 font-medium focus:outline-none">
-        {[...Array(5)]?.map((item, index) => (
+        {[...Array(6)]?.map((item, index) => (
           <HistoryItemSceleton className="animate-pulse" key={index}/>
         ))}
     </div>
