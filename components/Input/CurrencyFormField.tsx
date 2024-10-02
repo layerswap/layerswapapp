@@ -19,6 +19,7 @@ import { resolveNetworkRoutesURL } from "../../helpers/routes";
 import useWallet from "../../hooks/useWallet";
 import { ONE_WEEK } from "./NetworkFormField";
 import RouteIcon from "./RouteIcon";
+import useBalance from "../../hooks/useBalance";
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -34,6 +35,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { balances } = useBalancesState()
+    const { fetchBalance } = useBalance()
 
     const { getAutofillProvider: getProvider } = useWallet()
 
@@ -138,6 +140,23 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             setFieldValue(name, value)
         }
     }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
+
+
+    const network = direction === 'from' ? from : to
+    const token = direction === 'from' ? fromCurrency : toCurrency
+    useEffect(() => {
+        let balanceGetHandler: any = undefined
+        if (network && token) {
+            (async () => {
+                balanceGetHandler = setInterval(async () => {
+                    await fetchBalance(network, token);
+                }, 60000)
+            })()
+        }
+        return () => {
+            clearInterval(balanceGetHandler)
+        }
+    }, [network, token])
 
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken>) => {
