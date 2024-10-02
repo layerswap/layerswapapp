@@ -146,7 +146,6 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                 ))
                             ) : (
                                 <div>
-                                    <CommandEmpty>No results found.</CommandEmpty>
                                     {groups.filter(group => group.items?.length > 0).map((group) => (
                                         <CommandGroup key={group.name} heading={group.name}>
                                             {filterItems(group.items).map(item => (
