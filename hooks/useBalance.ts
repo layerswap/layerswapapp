@@ -88,7 +88,6 @@ export default function useBalanceProvider() {
             && address) {
             try {
                 setIsBalanceLoading(true)
-                debugger
 
                 const provider = getBalanceProvider(network)
                 const newBalance = await provider?.getBalance({
