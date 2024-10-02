@@ -415,7 +415,7 @@ function GenerateGroupedCurrencyMenuItems(
         ) : null;
 
         const routeNotFound = currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR;
-        const groupName = getGroupName(network, (values?.from?.name === network?.name || values?.to?.name === network?.name) ? 'selected' :  'top', currencyIsAvailable && !routeNotFound)
+        const groupName = getGroupName(network, (values?.from?.name === network?.name || values?.to?.name === network?.name) ? 'selected' : 'top', currencyIsAvailable && !routeNotFound && !wallets?.length); 
 
         const res: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
             baseObject: currency,
