@@ -1,8 +1,6 @@
 import { ISelectMenuItem } from '../Shared/Props/selectMenuItem';
 import {
-    CommandEmpty,
     CommandGroup,
-    CommandInput,
     CommandItem,
     CommandList,
     CommandWrapper
@@ -110,7 +108,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                                                 </div>
                                                             </AccordionTrigger>
                                                             <AccordionContent>
-                                                                {item.subItems.map((subItem) => {
+                                                                {item?.subItems?.map((subItem) => {
                                                                     return (
                                                                         <div className="flex group" key={subItem.id}>
                                                                             <div className="relative items-center flex-shrink-0 w-4">
