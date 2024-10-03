@@ -46,12 +46,15 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
         setShow(false);
     }, [setValue, setShow]);
 
-    const filterItems = (items: ISelectMenuItem[]) =>
-        items.filter(
+    const filterItems = (items: ISelectMenuItem[]) => {
+        const filtered = items.filter(
             (item) =>
                 item?.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 item?.id?.toLowerCase().includes(searchQuery.toLowerCase())
         );
+        console.log("Filtered items:", filtered);
+        return filtered;
+    };
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(e.target.value);
     };
@@ -64,90 +67,77 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                         autoFocus={isDesktop}
                         placeholder={searchHint}
                         value={searchQuery}
-                        onChange={handleSearchChange} 
+                        onChange={handleSearchChange}
                         className="h-11 px-2 py-4 w-full bg-transparent border-0 focus border-b mb-2 border-secondary-500 focus:border-transparent focus:border-b-secondary-500 focus:ring-0 placeholder:text-primary-text-placeholder placeholder:text-lg  disabled:cursor-not-allowed disabled:opacity-50"
                     />}
                     {modalContent}
                     {!isLoading ? (
                         <CommandList className='p-1'>
-                            <CommandEmpty>No results found.</CommandEmpty>
+                            {!filterItems?.length && searchQuery &&
+                                <div className='py-6 text-center text-sm'>No results found.</div>
+                            }
                             {groupedCurrencies?.length ? (
                                 groupedCurrencies.map((g) => (
                                     g.items && g.items.length > 0 ? (
-                                        <CommandGroup key={g.name} heading={g.name}>
-                                            {filterItems(g.items).map((item) =>
-                                                item.subItems ? (
-                                                    <div key={item.id}>
-                                                        <div className="relative items-center flex-shrink-0 w-4 top-6">
-                                                            {item.icon}
-                                                        </div>
-                                                        <Accordion type="single" collapsible key={item.name}>
-                                                            <AccordionItem value={item.name}>
-                                                                <AccordionTrigger
-                                                                    className={`flex mb-1 ml-4 items-center w-full overflow-hidden rounded-md py-2 px-1.5 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary`}
-                                                                >
-                                                                    <div className="whitespace-nowrap flex items-center gap-2 flex-grow">
-                                                                        {item.logo}
-                                                                        {item.displayName}
-                                                                        <div className="flex flex-col w-full items-end space-y-2 self-baseline">
-                                                                            <p className='text-secondary-text text-sm'>{item?.balanceAmount ? `$${item.balanceAmount}` : ''}</p>
-                                                                            <div className="flex justify-end items-center w-full relative">
-                                                                                {item?.balanceAmount ? item.subItems?.filter(i => i?.balanceAmount)?.map((subItem, index) => (
-                                                                                    <div
-                                                                                        key={subItem.id}
-                                                                                        className="w-3.5 absolute"
-                                                                                        style={{ right: `${index * 3.5}%` }}
-                                                                                    >
-                                                                                        {subItem.logo}
-                                                                                    </div>
-                                                                                )) : null}
-                                                                            </div>
+                                        <CommandGroup key={g.name} heading={filterItems(g.items)?.length ? g.name : ""}>
+                                            {filterItems(g.items).map((item) => (
+                                                <div key={item.id}>
+                                                    <div className="relative items-center flex-shrink-0 w-4 top-6">
+                                                        {item.icon}
+                                                    </div>
+                                                    <Accordion type="single" collapsible key={item.name}>
+                                                        <AccordionItem value={item.name}>
+                                                            <AccordionTrigger
+                                                                className={`flex mb-1 ml-4 items-center w-full overflow-hidden rounded-md py-2 px-1.5 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary`}
+                                                            >
+                                                                <div className="whitespace-nowrap flex items-center gap-2 flex-grow">
+                                                                    {item.logo}
+                                                                    {item.displayName}
+                                                                    <div className="flex flex-col w-full items-end space-y-2 self-baseline">
+                                                                        <p className='text-secondary-text text-sm'>{item?.balanceAmount ? `$${item.balanceAmount}` : ''}</p>
+                                                                        <div className="flex justify-end items-center w-full relative">
+                                                                            {item?.balanceAmount ? item.subItems?.filter(i => i?.balanceAmount)?.map((subItem, index) => (
+                                                                                <div
+                                                                                    key={subItem.id}
+                                                                                    className="w-3.5 absolute"
+                                                                                    style={{ right: `${index * 3.5}%` }}
+                                                                                >
+                                                                                    {subItem.logo}
+                                                                                </div>
+                                                                            )) : null}
                                                                         </div>
                                                                     </div>
-                                                                </AccordionTrigger>
-                                                                <AccordionContent>
-                                                                    {item.subItems.map((subItem) => {
-                                                                        return (
-                                                                            <div className="flex group" key={subItem.id}>
-                                                                                <div className="relative items-center flex-shrink-0 w-4">
-                                                                                    {subItem.icon}
-                                                                                </div>
-                                                                                <CommandItem
-                                                                                    className="grow bg-secondary"
-                                                                                    value={subItem.id}
-                                                                                    onSelect={() => handleSelectValue(subItem)}
-                                                                                >
-                                                                                    <SelectItem item={subItem} />
-                                                                                </CommandItem>
+                                                                </div>
+                                                            </AccordionTrigger>
+                                                            <AccordionContent>
+                                                                {item.subItems.map((subItem) => {
+                                                                    return (
+                                                                        <div className="flex group" key={subItem.id}>
+                                                                            <div className="relative items-center flex-shrink-0 w-4">
+                                                                                {subItem.icon}
                                                                             </div>
-                                                                        );
-                                                                    })}
-                                                                </AccordionContent>
-                                                            </AccordionItem>
-                                                        </Accordion>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex group" key={item.id}>
-                                                        <div className="relative items-center flex-shrink-0 w-4">
-                                                            {item.icon}
-                                                        </div>
-                                                        <CommandItem
-                                                            className="grow"
-                                                            value={item.id}
-                                                            onSelect={() => handleSelectValue(item)}
-                                                        >
-                                                            <SelectItem item={item} />
-                                                        </CommandItem>
-                                                    </div>
-                                                )
-                                            )}
+                                                                            <CommandItem
+                                                                                className="grow bg-secondary"
+                                                                                value={subItem.id}
+                                                                                onSelect={() => handleSelectValue(subItem)}
+                                                                            >
+                                                                                <SelectItem item={subItem} />
+                                                                            </CommandItem>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </AccordionContent>
+                                                        </AccordionItem>
+                                                    </Accordion>
+                                                </div>
+                                            ))}
                                         </CommandGroup>
                                     ) : null
                                 ))
                             ) : (
                                 <div>
                                     {groups.filter(group => group.items?.length > 0).map((group) => (
-                                        <CommandGroup key={group.name} heading={group.name}>
+                                        <CommandGroup key={group.name} heading={filterItems(group.items)?.length ? group.name : ""}>
                                             {filterItems(group.items).map(item => (
                                                 <CommandItem value={item.id} key={item.id} onSelect={() => handleSelectValue(item)}>
                                                     <div className="relative items-center flex-shrink-0 w-3">
