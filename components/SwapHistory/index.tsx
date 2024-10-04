@@ -26,9 +26,9 @@ function TransactionsHistory() {
 
 
   return (
-    <div className='bg-secondary-900 sm:shadow-card pb-4 rounded-lg w-full text-primary-text overflow-hidden relative min-h-[600px]'>
+    <div className='bg-secondary-900 sm:shadow-card pb-4 rounded-lg w-full text-primary-text overflow-hidden relative h-screen sm:h-[650px]'>
       <HeaderWithMenu goBack={goBack} />
-      <div className="px-6 h-full min-h-[inherit]">
+      <div className="px-6 h-full sm:max-h-[90%] overflow-y-auto styled-scroll">
         <Content
           loadExplorerSwaps={true}
           refreshing={refreshing}

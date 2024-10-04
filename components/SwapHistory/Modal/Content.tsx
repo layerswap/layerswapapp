@@ -1,9 +1,8 @@
 import LayerSwapApiClient, { SwapResponse } from "../../../lib/layerSwapApiClient"
 import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
-import { Eye, EyeOff, Plus, RefreshCw } from 'lucide-react'
+import { ChevronDown, Plus, RefreshCw } from 'lucide-react'
 import Modal from "../../modal/modal"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import { AnimatePresence } from "framer-motion"
 import Summary from "../Summary";
 import useSWRInfinite from 'swr/infinite'
 import useWallet from "../../../hooks/useWallet"
@@ -18,6 +17,8 @@ import { FormWizardProvider } from "../../../context/formWizardProvider"
 import { TimerProvider } from "../../../context/timerContext"
 import GuestCard from "../../guestCard"
 import { AuthStep } from "../../../Models/Wizard"
+import { SwapStatus } from "../../../Models/SwapStatus"
+import ResizablePanel from "../../ResizablePanel"
 
 const PAGE_SIZE = 20
 type ListProps = {
@@ -26,8 +27,8 @@ type ListProps = {
     loadExplorerSwaps: boolean;
 }
 
-const getSwapsKey = () => (index: number, include_expired: boolean) =>
-    `/internal/swaps?page=${index + 1}&include_expired=${include_expired}`
+const getSwapsKey = () => (index: number) =>
+    `/internal/swaps?page=${index + 1}`
 
 const getExplorerKey = (addresses: string[]) => (index) => {
     if (!addresses?.[index])
@@ -37,10 +38,10 @@ const getExplorerKey = (addresses: string[]) => (index) => {
 
 type Swap = SwapResponse & { type: 'user' | 'explorer' }
 
-const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
+const List: FC<ListProps> = ({ loadExplorerSwaps }) => {
     const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
     const [selectedSwap, setSelectedSwap] = useState<Swap | undefined>()
-    const [showIncompleteSwaps, setShowIncompleteSwaps] = useState(false)
+    const [showAll, setShowAll] = useState(false)
     const { wallets } = useWallet()
     const { userId } = useAuthState()
     const addresses = wallets.map(w => w.address)
@@ -57,7 +58,7 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
 
     const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, isValidating, mutate } =
         useSWRInfinite<ApiResponse<Swap[]>>(
-            (index) => getKey(index, showIncompleteSwaps),
+            getKey,
             apiClient.fetcher,
             { revalidateAll: true, dedupingInterval: 10000 }
         )
@@ -97,7 +98,7 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
         p.data?.forEach(s => {
             s.type = 'explorer'
         })
-        return p?.data?.filter(s => !showIncompleteSwaps ? s.swap.status === 'completed' : true)
+        return p?.data?.filter(s => s.swap.status === 'completed')
     }).flat(1) || []
 
     const userSwapsisEmpty =
@@ -144,33 +145,39 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
     if (!wallets.length && !userId) return <ConnectOrSignIn />
     if (allEmpty) return <BlankHistory />
 
-    const swapsGrouppedByDate = !allEmpty ? Object.entries(groupBy(userSwaps as Swap[], ({ swap }) => new Date(swap.created_date).toLocaleDateString())).map(([date, values]) => ({ date, values })) : null
+    const grouppedSwaps = !allEmpty ?
+        Object.entries(
+            groupBy(
+                userSwaps as Swap[], ({ swap }) => swap.status === SwapStatus.Completed ? new Date(swap.created_date).toLocaleDateString() : 'Pending')).map(([key, values]) => ({ key, values }
+                ))
+        : null
+
 
     return <>
-        <div className="h-full space-y-3 mt-3 ">
-            <button onClick={() => setShowIncompleteSwaps(!showIncompleteSwaps)} className="text-secondary-text px-2 py-1.5 bg-secondary-700 hover:bg-secondary-600 hover:text-primary-text rounded-md justify-start items-center gap-1.5 inline-flex">
-                {
-                    showIncompleteSwaps ?
-                        <Eye className="w-4 h-4 relative" />
-                        :
-                        <EyeOff className="w-4 h-4 relative" />
-                }
-                <div className="text-sm font-normal">Incomplete swaps</div>
-            </button>
+        <div className="h-full space-y-3 pt-3 ">
             {
-                swapsGrouppedByDate && <div
-                    className="text-sm flex flex-col gap-5 font-medium focus:outline-none overflow-y-auto styled-scroll h-full max-h-[83vh] sm:max-h-[550px]"
+                grouppedSwaps && <div
+                    className="text-sm flex flex-col gap-5 font-medium focus:outline-none h-full"
                 >
                     {
-                        swapsGrouppedByDate.map(({ date, values }) => {
+                        grouppedSwaps.map(({ key, values }) => {
 
-                            return <div key={date} className="flex flex-col gap-1.5">
-                                <p className="text-sm text-secondary-text font-normal pl-2">
-                                    {resolveDate(date)}
-                                </p>
-                                <div className="space-y-3 pb-1">
+                            return <div key={key} className="flex flex-col gap-1.5">
+                                <div className="w-full flex items-center justify-between">
+                                    <p className="text-sm text-secondary-text font-normal pl-2">
+                                        {key === 'Pending' ? key : resolveDate(key)}
+                                    </p>
                                     {
-                                        values?.map((swap) => {
+                                        key == 'Pending' && values.length > 1 &&
+                                        <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text pr-2'>
+                                            <p>See all</p>
+                                            <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
+                                        </button>
+                                    }
+                                </div>
+                                <ResizablePanel className="space-y-3 pb-1">
+                                    {
+                                        values.filter((v, index) => ((key === 'Pending' && !showAll) ? index == 0 : true))?.map((swap) => {
 
                                             if (!swap) return <></>
 
@@ -182,7 +189,7 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
                                             </div>
                                         })
                                     }
-                                </div>
+                                </ResizablePanel>
                             </div>
                         })
                     }
@@ -204,7 +211,7 @@ const List: FC<ListProps> = ({ refreshing, loadExplorerSwaps }) => {
             }
         </div>
         <Modal
-            height="fit"
+            height="full"
             show={openSwapDetailsModal}
             setShow={handleSWapDetailsShow}
             header='Swap detail'

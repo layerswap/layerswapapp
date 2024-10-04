@@ -119,6 +119,8 @@ const Summary: FC<SwapInfoProps> = ({
                                         </>
                                 }
                             </p>
+
+
                             <div className="flex items-center gap-0.5">
                                 <div className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-secondary-950 rounded-md">
                                     {
@@ -136,25 +138,32 @@ const Summary: FC<SwapInfoProps> = ({
                                     }
                                     <p className="text-secondary-text text-xs">{sourceAccountAddress}</p>
                                 </div>
-                                <ChevronRightIcon className="h-3 w-3" />
-                                <div className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-secondary-950 rounded-md">
-                                    {
-                                        destination_wallet?.icon ?
-                                            <destination_wallet.icon className="h-3.5 w-3.5" />
-                                            :
-                                            !destination_exchange &&
-                                            <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded h-3.5 overflow-hidden w-3.5'>
-                                                <AddressIcon className="scale-150 h-3.5 w-3.5" address={destAddress} size={14} />
-                                            </div>
-                                    }
-                                    <p className="text-secondary-text text-xs">{destination_exchange ? 'Exchange' : addressEnding(destAddress)}</p>
-                                </div>
+                                {
+                                    addressFormat(destAddress, destination_network) !== (sourceAddressFromInput ? addressFormat(sourceAddressFromInput, source_network) : null) &&
+                                    <>
+                                        <ChevronRightIcon className="h-3 w-3" />
+                                        <div className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-secondary-950 rounded-md">
+                                            {
+                                                destination_wallet?.icon ?
+                                                    <destination_wallet.icon className="h-3.5 w-3.5" />
+                                                    :
+                                                    !destination_exchange &&
+                                                    <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded h-3.5 overflow-hidden w-3.5'>
+                                                        <AddressIcon className="scale-150 h-3.5 w-3.5" address={destAddress} size={14} />
+                                                    </div>
+                                            }
+                                            <p className="text-secondary-text text-xs">{destination_exchange ? 'Exchange' : addressEnding(destAddress)}</p>
+                                        </div>
+
+                                    </>
+                                }
                             </div>
+
                         </div>
                     </div>
                     <div className="col-span-5 grow text-end">
                         <div>
-                            <p className="font-light text-secondary-text text-base">{truncateDecimals(sourceTransaction?.amount || swap.requested_amount, source_token.precision)} {source_token.symbol}</p>
+                            <p className="font-light text-secondary-text text-sm">{truncateDecimals(sourceTransaction?.amount || swap.requested_amount, source_token.precision)} {source_token.symbol}</p>
                             <p className="font-medium text-primary-text text-lg leading-5">{truncateDecimals(calculatedReceiveAmount, destination_token.precision)} {destination_token.symbol}</p>
                         </div>
                     </div>

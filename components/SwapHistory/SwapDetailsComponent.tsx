@@ -96,233 +96,240 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     }
 
     return (
-        <div className='space-y-4 pt-2'>
-            <div className='p-3 bg-secondary-700 rounded-xl'>
-                <div className={`font-normal flex flex-col w-full relative z-10 ${(source_exchange || destination_exchange) ? 'space-y-2' : 'space-y-4'}`}>
+        <div className='flex flex-col justify-between w-full h-full gap-4'>
+            <div className='space-y-4 pt-2'>
+                <div className='p-3 bg-secondary-700 rounded-xl'>
+                    <div className={`font-normal flex flex-col w-full relative z-10 ${(source_exchange || destination_exchange) ? 'space-y-2' : 'space-y-4'}`}>
 
-                    {/* From and To */}
-                    <div className='space-y-1'>
-                        <p className='text-xs font-normal text-secondary-text pl-1'>From</p>
-                        <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center gap-3">
-                                <Image
-                                    src={source_exchange?.logo || source.logo}
-                                    alt={source_exchange?.display_name || source.display_name}
-                                    width={32}
-                                    height={32}
-                                    className="rounded-md w-11 h-11"
-                                />
-                                <div>
-                                    <p className="text-secondary-text text-base">{source_exchange ? source_exchange?.display_name : source?.display_name}</p>
-                                    {
-                                        source_exchange ?
-                                            <p className="text-xs text-secondary-text">Exchange</p>
-                                            : sourceAccountAddress ?
-                                                isValidAddress(sourceAccountAddress, source_network) ?
-                                                    <div className="group/addressItem text-secondary-text">
-                                                        <ExtendedAddress address={addressFormat(sourceAccountAddress, source_network)} network={source_network} addressClassNames='text-xs' />
-                                                    </div>
+                        {/* From and To */}
+                        <div className='space-y-1'>
+                            <p className='text-xs font-normal text-secondary-text pl-1'>From</p>
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-3">
+                                    <Image
+                                        src={source_exchange?.logo || source.logo}
+                                        alt={source_exchange?.display_name || source.display_name}
+                                        width={32}
+                                        height={32}
+                                        className="rounded-md w-11 h-11"
+                                    />
+                                    <div>
+                                        <p className="text-secondary-text text-base">{source_exchange ? source_exchange?.display_name : source?.display_name}</p>
+                                        {
+                                            source_exchange ?
+                                                <p className="text-xs text-secondary-text">Exchange</p>
+                                                : sourceAccountAddress ?
+                                                    isValidAddress(sourceAccountAddress, source_network) ?
+                                                        <div className="group/addressItem text-secondary-text">
+                                                            <ExtendedAddress address={addressFormat(sourceAccountAddress, source_network)} network={source_network} addressClassNames='text-xs' />
+                                                        </div>
+                                                        :
+                                                        <p className="text-xs text-secondary-text">{sourceAccountAddress}</p>
                                                     :
-                                                    <p className="text-xs text-secondary-text">{sourceAccountAddress}</p>
-                                                :
-                                                null
-                                    }
+                                                    null
+                                        }
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="flex flex-col items-end">
-                                {
-                                    requested_amount &&
-                                    <p className="text-primary-text text-base font-semibold">{truncateDecimals(requested_amount, source_token.precision)} {source_token.symbol}</p>
-                                }
-                                <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {
-                        (source_exchange || destination_exchange) &&
-                        <div className='flex flex-col gap-1 justify-start items-center w-fit ml-2.5'>
-                            <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-sm" />
-                            <Image
-                                src={source_exchange ? source_network?.logo : destination_network?.logo}
-                                alt={source_exchange ? source_network?.display_name : destination_network?.display_name}
-                                width={24}
-                                height={24}
-                                className="rounded-md w-6 h-6"
-                            />
-                            <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-sm" />
-                        </div>
-                    }
-
-                    <div className='space-y-1'>
-                        <p className='text-xs font-normal text-secondary-text pl-1'>To</p>
-                        <div className="flex items-center justify-between w-full ">
-                            <div className="flex items-center gap-3">
-                                <Image
-                                    src={destination_exchange?.logo || destination.logo}
-                                    alt={destination_exchange?.display_name || destination.display_name}
-                                    width={32}
-                                    height={32}
-                                    className="rounded-md w-11 h-11"
-                                />
-                                <div className="group/addressItem text-sm text-secondary-text">
-                                    <p className="text-secondary-text text-base">{destination_exchange ? destination_exchange?.display_name : destination?.display_name}</p>
+                                <div className="flex flex-col items-end">
                                     {
-                                        destination_exchange ?
-                                            <p className="text-xs text-secondary-text">Exchange</p>
-                                            :
-                                            <ExtendedAddress address={addressFormat(destination_address, destination_network)} network={destination_network} addressClassNames='text-xs' />
+                                        requested_amount &&
+                                        <p className="text-primary-text text-base font-semibold">{truncateDecimals(requested_amount, source_token.precision)} {source_token.symbol}</p>
                                     }
+                                    <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
                                 </div>
                             </div>
-                            {
-                                receive_amount != undefined ?
-                                    <div className="flex flex-col justify-end">
-                                        <p className="text-primary-text text-base font-semibold">{truncateDecimals(receive_amount, destination_token.precision)} {destination_token.symbol}</p>
-                                        <p className="text-secondary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
-                                    </div>
-                                    :
-                                    <>-</>
-                            }
                         </div>
-                    </div>
 
+                        {
+                            (source_exchange || destination_exchange) &&
+                            <div className='flex flex-col gap-1 justify-start items-center w-fit ml-2.5'>
+                                <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-sm" />
+                                <Image
+                                    src={source_exchange ? source_network?.logo : destination_network?.logo}
+                                    alt={source_exchange ? source_network?.display_name : destination_network?.display_name}
+                                    width={24}
+                                    height={24}
+                                    className="rounded-md w-6 h-6"
+                                />
+                                <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-sm" />
+                            </div>
+                        }
 
-                </div>
-            </div>
-
-            {/* Refuel */}
-            {
-                refuel && <div className='p-3 bg-secondary-700 rounded-xl'>
-                    <div className="flex justify-between items-baseline text-sm">
-                        <p className="text-left text-secondary-text">Refuel</p>
-                        <div className="flex flex-col justify-end">
-                            <p className="text-primary-text text-sm font-semibold">{truncatedRefuelAmount} {nativeCurrency?.symbol}</p>
-                            <p className="text-secondary-text text-xs flex justify-end">${refuelAmountInUsd}</p>
-                        </div>
-                    </div>
-                </div>
-            }
-
-            {/* Fees */}
-            <div className='p-3 bg-secondary-700 rounded-xl'>
-                {
-                    inputTransactionFeeInUsd ?
-                        <Accordion type="single" collapsible>
-                            <AccordionItem value="item-1">
-                                <AccordionTrigger className='w-full'>
-                                    <div className="flex justify-between items-baseline text-sm w-full mr-1">
-                                        <span className="text-left">Fees</span>
-                                        <span className='font-semibold'>{displayCalculatedFeeAmountInUsd}</span>
+                        <div className='space-y-1'>
+                            <p className='text-xs font-normal text-secondary-text pl-1'>To</p>
+                            <div className="flex items-center justify-between w-full ">
+                                <div className="flex items-center gap-3">
+                                    <Image
+                                        src={destination_exchange?.logo || destination.logo}
+                                        alt={destination_exchange?.display_name || destination.display_name}
+                                        width={32}
+                                        height={32}
+                                        className="rounded-md w-11 h-11"
+                                    />
+                                    <div className="group/addressItem text-sm text-secondary-text">
+                                        <p className="text-secondary-text text-base">{destination_exchange ? destination_exchange?.display_name : destination?.display_name}</p>
+                                        {
+                                            destination_exchange ?
+                                                <p className="text-xs text-secondary-text">Exchange</p>
+                                                :
+                                                <ExtendedAddress address={addressFormat(destination_address, destination_network)} network={destination_network} addressClassNames='text-xs' />
+                                        }
                                     </div>
-                                </AccordionTrigger>
-                                <AccordionContent >
-                                    <div className='flex flex-col gap-3 mt-4'>
-                                        <div className="flex justify-between items-baseline text-sm">
-                                            <span className="text-left text-secondary-text">Layerswap Fee</span>
-                                            <div className="flex flex-col items-end justify-end">
-                                                <p className="text-primary-text text-sm font-semibold">{swapResponse?.quote.total_fee?.toFixed(source_token?.precision)} {source_token?.symbol}</p>
-                                                <p className="text-secondary-text text-xs flex justify-end">{displayLayerswapFeeInUsd}</p>
-                                            </div>
+                                </div>
+                                {
+                                    receive_amount != undefined ?
+                                        <div className="flex flex-col justify-end">
+                                            <p className="text-primary-text text-base font-semibold">{truncateDecimals(receive_amount, destination_token.precision)} {destination_token.symbol}</p>
+                                            <p className="text-secondary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
                                         </div>
-                                        <div className="flex justify-between items-baseline text-sm">
-                                            <span className="text-left text-secondary-text">Gas Fee</span>
-                                            <div className="flex flex-col items-end justify-end">
-                                                <p className="text-primary-text text-sm font-semibold">{inputTransactionFee?.toFixed(swapInputTransaction?.fee_token?.precision)} {swapInputTransaction?.fee_token?.symbol}</p>
-                                                <p className="text-secondary-text text-xs flex justify-end">{displayInputFeeInUsd}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </AccordionContent>
-                            </AccordionItem>
-                        </Accordion>
-                        :
-                        <div className="flex justify-between items-baseline text-sm w-full">
-                            <p className="text-left">Fees</p>
-                            <div className="flex flex-col justify-end">
-                                <p className="text-primary-text text-sm font-semibold">{swapResponse?.quote.total_fee?.toFixed(source_token?.precision)} {source_token?.symbol}</p>
-                                <p className="text-secondary-text text-xs flex justify-end">${quote.total_fee_in_usd}</p>
+                                        :
+                                        <>-</>
+                                }
                             </div>
                         </div>
+
+
+                    </div>
+                </div>
+
+                {/* Refuel */}
+                {
+                    refuel && <div className='p-3 bg-secondary-700 rounded-xl'>
+                        <div className="flex justify-between items-baseline text-sm">
+                            <p className="text-left text-secondary-text">Refuel</p>
+                            <div className="flex flex-col justify-end">
+                                <p className="text-primary-text text-sm font-semibold">{truncatedRefuelAmount} {nativeCurrency?.symbol}</p>
+                                <p className="text-secondary-text text-xs flex justify-end">${refuelAmountInUsd}</p>
+                            </div>
+                        </div>
+                    </div>
                 }
-            </div>
 
+                {/* Fees */}
+                <div className='p-3 bg-secondary-700 rounded-xl'>
+                    {
+                        inputTransactionFeeInUsd ?
+                            <Accordion type="single" collapsible>
+                                <AccordionItem value="item-1">
+                                    <AccordionTrigger className='w-full'>
+                                        <div className="flex justify-between items-baseline text-sm w-full mr-1">
+                                            <span className="text-left">Fees</span>
+                                            <span className='font-semibold'>{displayCalculatedFeeAmountInUsd}</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent >
+                                        <div className='flex flex-col gap-3 mt-4'>
+                                            <div className="flex justify-between items-baseline text-sm">
+                                                <span className="text-left text-secondary-text">Layerswap Fee</span>
+                                                <div className="flex flex-col items-end justify-end">
+                                                    <p className="text-primary-text text-sm font-semibold">{swapResponse?.quote.total_fee?.toFixed(source_token?.precision)} {source_token?.symbol}</p>
+                                                    <p className="text-secondary-text text-xs flex justify-end">{displayLayerswapFeeInUsd}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-between items-baseline text-sm">
+                                                <span className="text-left text-secondary-text">Gas Fee</span>
+                                                <div className="flex flex-col items-end justify-end">
+                                                    <p className="text-primary-text text-sm font-semibold">{inputTransactionFee?.toFixed(swapInputTransaction?.fee_token?.precision)} {swapInputTransaction?.fee_token?.symbol}</p>
+                                                    <p className="text-secondary-text text-xs flex justify-end">{displayInputFeeInUsd}</p>
+                                                </div>
+                                            </div>
+                                        </div>
 
-            {/* Date and Status */}
-            <div className='p-3 bg-secondary-700 rounded-xl'>
-                <div className='text-sm flex flex-col gap-3'>
-                    <div className="flex justify-between items-center text-sm">
-                        <p className="text-left text-secondary-text">Swap Id</p>
-                        <CopyButton toCopy={swap?.id} iconClassName='order-2 ml-1'>
-                            {shortenAddress(swap?.id)}
-                        </CopyButton>
-                    </div>
-                    <div className="flex justify-between items-baseline">
-                        <span className="text-left text-secondary-text">Date & Time</span>
-                        <span className='text-primary-text'>{(new Date(swap.created_date)).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between items-baseline">
-                        <span className="text-left text-secondary-text">Time Consumed</span>
-                        <span className='text-primary-text'>
-                            {
-                                (swapInputTransaction?.timestamp && swapOutputTransaction?.timestamp) ?
-                                    calculateDatesDifference(swapInputTransaction?.timestamp, swapOutputTransaction?.timestamp)
-                                    :
-                                    '-'
-                            }
-                        </span>
-                    </div>
-                    <div className="flex justify-between p items-baseline">
-                        <span className="text-left text-secondary-text">Status </span>
-                        <span className="text-primary-text">
-                            <StatusIcon swap={swap} />
-                        </span>
-                    </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+                            :
+                            <div className="flex justify-between items-baseline text-sm w-full">
+                                <p className="text-left">Fees</p>
+                                <div className="flex flex-col justify-end">
+                                    <p className="text-primary-text text-sm font-semibold">{swapResponse?.quote.total_fee?.toFixed(source_token?.precision)} {source_token?.symbol}</p>
+                                    <p className="text-secondary-text text-xs flex justify-end">${quote.total_fee_in_usd}</p>
+                                </div>
+                            </div>
+                    }
                 </div>
-            </div>
 
-            {/* Source and Destination Transactions */}
-            <div className='p-3 bg-secondary-700 rounded-xl'>
-                <div className='text-sm flex flex-col gap-3'>
-                    <div className="flex justify-between items-baseline">
-                        <p className="text-left text-secondary-text">Source transaction</p>
-                        {
-                            swapInputTransaction?.transaction_hash ?
-                                <Link
-                                    target="_blank"
-                                    href={input_tx_explorer_template?.replace("{0}", swapInputTransaction.transaction_hash)}
-                                    className='flex items-center space-x-1'
-                                >
-                                    <span>{shortenAddress(swapInputTransaction.transaction_hash)}</span>
-                                    <ExternalLink className='h-4' />
-                                </Link>
-                                :
-                                <span>-</span>
-                        }
-                    </div >
-                    <div className="flex justify-between items-baseline">
-                        <p className="text-left text-secondary-text">Destination transaction</p>
-                        {
-                            swapOutputTransaction?.transaction_hash ?
-                                (
-                                    (swapOutputTransaction?.transaction_hash && swap?.destination_exchange?.name === KnownInternalNames.Exchanges.Coinbase && (isGuid(swapOutputTransaction?.transaction_hash))) ?
-                                        <span><CopyButton toCopy={swapOutputTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenAddress(swapOutputTransaction.transaction_hash)}</CopyButton></span>
+
+                {/* Date and Status */}
+                <div className='p-3 bg-secondary-700 rounded-xl'>
+                    <div className='text-sm flex flex-col gap-3'>
+                        <div className="flex justify-between items-center text-sm">
+                            <p className="text-left text-secondary-text">Swap Id</p>
+                            <CopyButton toCopy={swap?.id} iconClassName='order-2 ml-1'>
+                                {shortenAddress(swap?.id)}
+                            </CopyButton>
+                        </div>
+                        <div className="flex justify-between items-baseline">
+                            <span className="text-left text-secondary-text">Date & Time</span>
+                            <span className='text-primary-text'>{(new Date(swap.created_date)).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-baseline">
+                            <span className="text-left text-secondary-text">Time Consumed</span>
+                            <span className='text-primary-text'>
+                                {
+                                    (swapInputTransaction?.timestamp && swapOutputTransaction?.timestamp) ?
+                                        calculateDatesDifference(swapInputTransaction?.timestamp, swapOutputTransaction?.timestamp)
                                         :
-                                        <Link
-                                            target="_blank"
-                                            href={output_tx_explorer_template?.replace("{0}", swapOutputTransaction.transaction_hash)}
-                                            className='flex items-center space-x-1'
-                                        >
-                                            <span>{shortenAddress(swapOutputTransaction.transaction_hash)}</span>
-                                            <ExternalLink className='h-4' />
-                                        </Link>
-                                )
-                                :
-                                <span>-</span>
-                        }
-                    </div >
+                                        '-'
+                                }
+                            </span>
+                        </div>
+                        <div className="flex justify-between p items-baseline">
+                            <span className="text-left text-secondary-text">Status </span>
+                            <span className="text-primary-text">
+                                <StatusIcon swap={swap} />
+                            </span>
+                        </div>
+                    </div>
                 </div>
+
+                {/* Source and Destination Transactions */}
+                <div className='p-3 bg-secondary-700 rounded-xl'>
+                    <div className='text-sm flex flex-col gap-3'>
+                        <div className="flex justify-between items-baseline">
+                            <p className="text-left text-secondary-text">Source transaction</p>
+                            {
+                                swapInputTransaction?.transaction_hash ?
+                                    <Link
+                                        target="_blank"
+                                        href={input_tx_explorer_template?.replace("{0}", swapInputTransaction.transaction_hash)}
+                                        className='flex items-center space-x-1'
+                                    >
+                                        <span>{shortenAddress(swapInputTransaction.transaction_hash)}</span>
+                                        <ExternalLink className='h-4' />
+                                    </Link>
+                                    :
+                                    <span>-</span>
+                            }
+                        </div >
+                        <div className="flex justify-between items-baseline">
+                            <p className="text-left text-secondary-text">Destination transaction</p>
+                            {
+                                swapOutputTransaction?.transaction_hash ?
+                                    (
+                                        (swapOutputTransaction?.transaction_hash && swap?.destination_exchange?.name === KnownInternalNames.Exchanges.Coinbase && (isGuid(swapOutputTransaction?.transaction_hash))) ?
+                                            <span><CopyButton toCopy={swapOutputTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenAddress(swapOutputTransaction.transaction_hash)}</CopyButton></span>
+                                            :
+                                            <Link
+                                                target="_blank"
+                                                href={output_tx_explorer_template?.replace("{0}", swapOutputTransaction.transaction_hash)}
+                                                className='flex items-center space-x-1'
+                                            >
+                                                <span>{shortenAddress(swapOutputTransaction.transaction_hash)}</span>
+                                                <ExternalLink className='h-4' />
+                                            </Link>
+                                    )
+                                    :
+                                    <span>-</span>
+                            }
+                        </div >
+                    </div>
+                </div>
+
+
+
+
+
             </div>
 
             {
@@ -348,7 +355,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                     </p>
                 </button>
             }
-
             {
                 (swap.status !== SwapStatus.Completed && swap.status !== SwapStatus.Expired && swap.status !== SwapStatus.Failed) &&
                 <button
@@ -365,6 +371,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
             }
 
         </div>
+
     )
 }
 
