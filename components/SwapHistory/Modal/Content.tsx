@@ -141,7 +141,7 @@ const List: FC<ListProps> = ({ loadExplorerSwaps }) => {
         mutate()
     }, [userId])
 
-    if ((userSwapsLoading || explorerSwapsLoading) && !(Number(userSwaps?.length) > 0)) return <Snippet />
+    if ((userSwapsLoading && !(Number(userSwaps?.length) > 0) || explorerSwapsLoading)) return <Snippet />
     if (!wallets.length && !userId) return <ConnectOrSignIn />
     if (allEmpty) return <BlankHistory />
 
@@ -160,43 +160,44 @@ const List: FC<ListProps> = ({ loadExplorerSwaps }) => {
                     className="text-sm flex flex-col gap-5 font-medium focus:outline-none h-full"
                 >
                     {
-                        grouppedSwaps.map(({ key, values }) => {
-
-                            return <div key={key} className="flex flex-col gap-1.5">
-                                <div className="w-full">
-                                    {
-                                        key !== 'Pending' &&
-                                        <p className="text-sm text-secondary-text font-normal pl-2">
-                                            {resolveDate(key)}
-                                        </p>
-                                    }
-                                    {
-                                        key == 'Pending' && values.length > 1 &&
-                                        <div className="w-full flex justify-end">
-                                            <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text pr-2'>
-                                                <p>See all</p>
-                                                <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
-                                            </button>
-                                        </div>
-                                    }
-                                </div>
-                                <ResizablePanel className="space-y-3 pb-1">
-                                    {
-                                        values.filter((v, index) => ((key === 'Pending' && !showAll) ? index == 0 : true))?.map((swap) => {
-
-                                            if (!swap) return <></>
-
-                                            return <div
-                                                onClick={() => handleopenSwapDetails(swap)}
-                                                key={swap.swap.id}
-                                            >
-                                                <Summary swapResponse={swap} />
+                        grouppedSwaps
+                            .sort((a, b) => a.key === 'Pending' ? -1 : b.key === 'Pending' ? 1 : 0)
+                            .map(({ key, values }) => {
+                                return <div key={key} className="flex flex-col gap-1.5">
+                                    <div className="w-full">
+                                        {
+                                            key !== 'Pending' &&
+                                            <p className="text-sm text-secondary-text font-normal pl-2">
+                                                {resolveDate(key)}
+                                            </p>
+                                        }
+                                        {
+                                            key == 'Pending' && values.length > 1 &&
+                                            <div className="w-full flex justify-end">
+                                                <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text pr-2'>
+                                                    <p>See all incomplete swaps</p>
+                                                    <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
+                                                </button>
                                             </div>
-                                        })
-                                    }
-                                </ResizablePanel>
-                            </div>
-                        })
+                                        }
+                                    </div>
+                                    <ResizablePanel className="space-y-3 pb-1">
+                                        {
+                                            values.filter((v, index) => ((key === 'Pending' && !showAll) ? index == 0 : true))?.map((swap) => {
+
+                                                if (!swap) return <></>
+
+                                                return <div
+                                                    onClick={() => handleopenSwapDetails(swap)}
+                                                    key={swap.swap.id}
+                                                >
+                                                    <Summary swapResponse={swap} />
+                                                </div>
+                                            })
+                                        }
+                                    </ResizablePanel>
+                                </div>
+                            })
                     }
 
                     {
