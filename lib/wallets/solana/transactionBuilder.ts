@@ -69,59 +69,71 @@ export const phtlcTransactionBuilder = async (params: CreatePreHTLCParams & { pr
 
     const bnAmount = new BN(Number(amount) * Math.pow(10, 6));
 
-    const commitId = await program?.methods.getCommitId(bnAmount, bnTimelock).accountsPartial({ sender: walletPublicKey, receiver: lpAddressPublicKey }).view();
+    try {
+        const commitId = await program?.methods.getCommitId(bnAmount, bnTimelock).accountsPartial({ sender: walletPublicKey, receiver: lpAddressPublicKey }).view();
 
-    let [phtlcTokenAccount, b] = commitId && PublicKey.findProgramAddressSync(
-        [Buffer.from("phtlc_token_account"), commitId],
-        program.programId
-    );
-    let [phtlc, phtlcBump] = commitId && PublicKey.findProgramAddressSync(
-        [commitId],
-        program.programId
-    );
+        let [phtlcTokenAccount, b] = commitId && PublicKey.findProgramAddressSync(
+            [Buffer.from("phtlc_token_account"), commitId],
+            program.programId
+        );
+        let [phtlc, phtlcBump] = commitId && PublicKey.findProgramAddressSync(
+            [commitId],
+            program.programId
+        );
 
-    const hopChains = [destinationChain]
-    const hopAssets = [destinationAsset]
-    const hopAddresses = [lpAddress]
+        const hopChains = [destinationChain]
+        const hopAssets = [destinationAsset]
+        const hopAddresses = [lpAddress]
 
-    const senderTokenAddress = await getAssociatedTokenAddress(new PublicKey(sourceAsset.contract), walletPublicKey);
+        const senderTokenAddress = await getAssociatedTokenAddress(new PublicKey(sourceAsset.contract), walletPublicKey);
 
-    if (!walletPublicKey) {
-        throw Error("Wallet not connected")
+        if (!walletPublicKey) {
+            throw Error("Wallet not connected")
+        }
+        if (isNaN(Number(chainId))) {
+            throw Error("Invalid source chain")
+        }
+        if (!lpAddress) {
+            throw Error("No LP address")
+        }
+        if (!atomicContract) {
+            throw Error("No contract address")
+        }
+
+        const tokenContract = new PublicKey(sourceAsset.contract);
+
+        const commitTx = await program.methods
+            .commit(commitId, hopChains, hopAssets, hopAddresses, destinationChain, destinationAsset, destination_address, sourceAsset.symbol, lpAddressPublicKey, bnTimelock, walletPublicKey, bnAmount, phtlcBump)
+            .accountsPartial({
+                sender: walletPublicKey,
+                phtlc: phtlc,
+                phtlcTokenAccount: phtlcTokenAccount,
+                tokenContract: tokenContract,
+                senderTokenAccount: senderTokenAddress
+            })
+            .transaction();
+
+        let commit = new Transaction();
+        commit.add(commitTx);
+
+        const blockHash = await connection.getLatestBlockhash();
+
+        commit.recentBlockhash = blockHash.blockhash;
+        commit.lastValidBlockHeight = blockHash.lastValidBlockHeight;
+        commit.feePayer = walletPublicKey;
+
+        return { initAndCommit: commit, commitId: commitId }
     }
-    if (isNaN(Number(chainId))) {
-        throw Error("Invalid source chain")
+    catch (error) {
+
+        if (error.simulationResponse.err === 'AccountNotFound') {
+            throw new Error('Not enough SOL balance')
+        }
+
+        throw new Error(error)
     }
-    if (!lpAddress) {
-        throw Error("No LP address")
-    }
-    if (!atomicContract) {
-        throw Error("No contract address")
-    }
 
-    const tokenContract = new PublicKey(sourceAsset.contract);
 
-    const commitTx = await program.methods
-        .commit(commitId, hopChains, hopAssets, hopAddresses, destinationChain, destinationAsset, destination_address, sourceAsset.symbol, lpAddressPublicKey, bnTimelock, walletPublicKey, bnAmount, phtlcBump)
-        .accountsPartial({
-            sender: walletPublicKey,
-            phtlc: phtlc,
-            phtlcTokenAccount: phtlcTokenAccount,
-            tokenContract: tokenContract,
-            senderTokenAccount: senderTokenAddress
-        })
-        .transaction();
-
-    let commit = new Transaction();
-    commit.add(commitTx);
-
-    const blockHash = await connection.getLatestBlockhash();
-
-    commit.recentBlockhash = blockHash.blockhash;
-    commit.lastValidBlockHeight = blockHash.lastValidBlockHeight;
-    commit.feePayer = walletPublicKey;
-
-    return { initAndCommit: commit, commitId: commitId }
 }
 
 export const lockTransactionBuilder = async (params: CommitmentParams & LockParams & { program: Program<Idl>, connection: Connection, walletPublicKey: PublicKey, network: NetworkWithTokens }) => {
