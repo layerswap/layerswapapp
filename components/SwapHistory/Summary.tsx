@@ -48,7 +48,7 @@ const Summary: FC<SwapInfoProps> = ({
     const sourceAddressFromInput = sourceTransaction?.from;
     const calculatedReceiveAmount = destinationTransaction?.amount ?? quote?.receive_amount
 
-    let sourceAccountAddress = ""
+    let sourceAccountAddress: string | undefined = undefined
     if (source_exchange) {
         sourceAccountAddress = "Exchange"
     }
@@ -57,9 +57,6 @@ const Summary: FC<SwapInfoProps> = ({
     }
     else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && exchange_account_connected) {
         sourceAccountAddress = shortenEmail(exchange_account_name, 10);
-    }
-    else {
-        sourceAccountAddress = "Network"
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destination_address
@@ -122,22 +119,25 @@ const Summary: FC<SwapInfoProps> = ({
 
 
                             <div className="flex items-center gap-0.5">
-                                <div className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-secondary-950 rounded-md">
-                                    {
-                                        source_wallet?.icon ?
-                                            <source_wallet.icon className="h-3.5 w-3.5" />
-                                            :
-                                            (
-                                                sourceAddressFromInput && !source_exchange ?
-                                                    <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded h-3.5 overflow-hidden w-3.5'>
-                                                        <AddressIcon className="scale-150 h-3.5 w-3.5" address={sourceAddressFromInput} size={14} />
-                                                    </div>
-                                                    :
-                                                    null
-                                            )
-                                    }
-                                    <p className="text-secondary-text text-xs">{sourceAccountAddress}</p>
-                                </div>
+                                {
+                                    sourceAccountAddress &&
+                                    <div className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-secondary-950 rounded-md">
+                                        {
+                                            source_wallet?.icon ?
+                                                <source_wallet.icon className="h-3.5 w-3.5" />
+                                                :
+                                                (
+                                                    sourceAddressFromInput && !source_exchange ?
+                                                        <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded h-3.5 overflow-hidden w-3.5'>
+                                                            <AddressIcon className="scale-150 h-3.5 w-3.5" address={sourceAddressFromInput} size={14} />
+                                                        </div>
+                                                        :
+                                                        null
+                                                )
+                                        }
+                                        <p className="text-secondary-text text-xs">{sourceAccountAddress}</p>
+                                    </div>
+                                }
                                 {
                                     addressFormat(destAddress, destination_network) !== (sourceAddressFromInput ? addressFormat(sourceAddressFromInput, source_network) : null) &&
                                     <>

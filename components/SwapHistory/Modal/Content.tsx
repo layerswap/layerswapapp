@@ -163,16 +163,21 @@ const List: FC<ListProps> = ({ loadExplorerSwaps }) => {
                         grouppedSwaps.map(({ key, values }) => {
 
                             return <div key={key} className="flex flex-col gap-1.5">
-                                <div className="w-full flex items-center justify-between">
-                                    <p className="text-sm text-secondary-text font-normal pl-2">
-                                        {key === 'Pending' ? key : resolveDate(key)}
-                                    </p>
+                                <div className="w-full">
+                                    {
+                                        key !== 'Pending' &&
+                                        <p className="text-sm text-secondary-text font-normal pl-2">
+                                            {resolveDate(key)}
+                                        </p>
+                                    }
                                     {
                                         key == 'Pending' && values.length > 1 &&
-                                        <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text pr-2'>
-                                            <p>See all</p>
-                                            <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
-                                        </button>
+                                        <div className="w-full flex justify-end">
+                                            <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text pr-2'>
+                                                <p>See all</p>
+                                                <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
+                                            </button>
+                                        </div>
                                     }
                                 </div>
                                 <ResizablePanel className="space-y-3 pb-1">

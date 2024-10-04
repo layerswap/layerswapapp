@@ -11,7 +11,6 @@ import { useQueryState } from '../../context/query';
 import { ApiResponse } from '../../Models/ApiResponse';
 import { Partner } from '../../Models/Partner';
 import useSWR from 'swr';
-import useWallet from '../../hooks/useWallet';
 import { isValidAddress } from '../../lib/address/validator';
 import { ExtendedAddress } from '../Input/Address/AddressPicker/AddressWithIcon';
 import { addressFormat } from '../../lib/address/formatter';
@@ -38,7 +37,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
         account,
         appName
     } = useQueryState()
-    const { getWithdrawalProvider: getProvider } = useWallet()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
@@ -69,30 +67,19 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
         truncateDecimals(refuel.amount, nativeCurrency?.precision) : null
     const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.price_in_usd || 1) * (truncatedRefuelAmount || 0)).toFixed(2)
 
-    const provider = useMemo(() => {
-        return source_network && getProvider(source_network)
-    }, [source_network, getProvider])
 
-    const wallet = provider?.getConnectedWallet()
-
-    let sourceAccountAddress = ""
+    let sourceAccountAddress: string | undefined = undefined
     if (hideFrom && account) {
         sourceAccountAddress = account;
     }
     else if (swapInputTransaction?.from) {
         sourceAccountAddress = swapInputTransaction?.from;
     }
-    else if (wallet) {
-        sourceAccountAddress = wallet.address;
-    }
     else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && swap?.exchange_account_connected) {
         sourceAccountAddress = shortenEmail(swap?.exchange_account_name, 10);
     }
     else if (source_exchange) {
         sourceAccountAddress = "Exchange"
-    }
-    else {
-        sourceAccountAddress = "Network"
     }
 
     return (
@@ -116,17 +103,20 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                     <div>
                                         <p className="text-secondary-text text-base">{source_exchange ? source_exchange?.display_name : source?.display_name}</p>
                                         {
-                                            source_exchange ?
-                                                <p className="text-xs text-secondary-text">Exchange</p>
-                                                : sourceAccountAddress ?
-                                                    isValidAddress(sourceAccountAddress, source_network) ?
-                                                        <div className="group/addressItem text-secondary-text">
-                                                            <ExtendedAddress address={addressFormat(sourceAccountAddress, source_network)} network={source_network} addressClassNames='text-xs' />
-                                                        </div>
+                                            sourceAccountAddress &&
+                                            (
+                                                source_exchange ?
+                                                    <p className="text-xs text-secondary-text">Exchange</p>
+                                                    : sourceAccountAddress ?
+                                                        isValidAddress(sourceAccountAddress, source_network) ?
+                                                            <div className="group/addressItem text-secondary-text">
+                                                                <ExtendedAddress address={addressFormat(sourceAccountAddress, source_network)} network={source_network} addressClassNames='text-xs' />
+                                                            </div>
+                                                            :
+                                                            <p className="text-xs text-secondary-text">{sourceAccountAddress}</p>
                                                         :
-                                                        <p className="text-xs text-secondary-text">{sourceAccountAddress}</p>
-                                                    :
-                                                    null
+                                                        null
+                                            )
                                         }
                                     </div>
                                 </div>
