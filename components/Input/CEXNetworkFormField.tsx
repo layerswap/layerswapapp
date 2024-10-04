@@ -176,6 +176,10 @@ function GenerateMenuItems(
             </div>
         </div>
 
+        const details = <p className="text-primary-text-muted">
+            {e.token.symbol}
+        </p>
+
         const item: SelectMenuItem<ExchangeNetwork> = {
             baseObject: e,
             id: `${e.network.name}-${e.token.symbol}`,
@@ -184,6 +188,7 @@ function GenerateMenuItems(
             order: 1,
             imgSrc: network?.logo || '',
             isAvailable: true,
+            details
         }
 
         return item;
