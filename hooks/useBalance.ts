@@ -41,7 +41,7 @@ export default function useBalanceProvider() {
 
         const balance = balances[address || '']?.find(b => b?.network === network?.name);
         const isBalanceOutDated = !balance || new Date().getTime() - (new Date(balance?.request_time).getTime() || 0) > 10000;
-
+        
         if (network
             && isBalanceOutDated
             && address) {
