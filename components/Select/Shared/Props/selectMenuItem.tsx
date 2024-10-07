@@ -9,7 +9,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     balanceAmount?: number | undefined;
     order: number;
     imgSrc: string;
-    displayName?: React.ReactNode;
+    displayName?: string;
     isAvailable: boolean;
     group?: string;
     details?: JSX.Element | JSX.Element[];
@@ -39,7 +39,7 @@ export interface ISelectMenuItem {
     noWalletsConnectedText?: React.ReactNode;
     balanceAmount?: number | undefined;
     imgSrc: string;
-    displayName?: React.ReactNode;
+    displayName?: string;
     group?: string;
     isAvailable: boolean;
     details?: JSX.Element | JSX.Element[];

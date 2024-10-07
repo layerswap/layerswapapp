@@ -9,7 +9,7 @@ type Props = {
 }
 
 const ResolveRouteIcon = (props: Props) => {
-    const { isAvailable, routeNotFound, direction } = props
+    const { isAvailable, routeNotFound, direction, type } = props
 
     if (!isAvailable)
         return <Tooltip delayDuration={200}>

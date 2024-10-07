@@ -168,10 +168,6 @@ function GenerateMenuItems(
             </div>
         </div>
 
-        const details = <p className="text-primary-text-muted">
-            {e.token.symbol}
-        </p>
-
         const logo = <div className="flex-shrink-0 h-6 w-6 relative">
             {network?.logo && (
                 <Image
@@ -192,9 +188,7 @@ function GenerateMenuItems(
             displayName: network?.display_name,
             order: 1,
             imgSrc: network?.logo || '',
-            menuItemDetails: details,
             isAvailable: true,
-            details,
             logo
         }
 

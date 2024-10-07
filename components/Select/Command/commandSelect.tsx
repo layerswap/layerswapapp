@@ -51,7 +51,6 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                 item?.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 item?.id?.toLowerCase().includes(searchQuery.toLowerCase())
         );
-        console.log("Filtered items:", filtered);
         return filtered;
     };
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,7 +81,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                             {filterItems(g.items).map((item) => (
                                                 <div key={item.id}>
                                                     <div className="relative items-center flex-shrink-0 w-4 top-6">
-                                                        {item.icon}
+                                                        {item.leftIcon}
                                                     </div>
                                                     <Accordion type="single" collapsible key={item.name}>
                                                         <AccordionItem value={item.name}>
@@ -113,7 +112,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                                                     return (
                                                                         <div className="flex group" key={subItem.id}>
                                                                             <div className="relative items-center flex-shrink-0 w-4">
-                                                                                {subItem.icon}
+                                                                                {subItem.leftIcon}
                                                                             </div>
                                                                             <CommandItem
                                                                                 className="grow bg-secondary"
@@ -140,7 +139,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                             {filterItems(group.items).map(item => (
                                                 <CommandItem value={item.id} key={item.id} onSelect={() => handleSelectValue(item)}>
                                                     <div className="relative items-center flex-shrink-0 w-3">
-                                                        {item.icon}
+                                                        {item.leftIcon}
                                                     </div>
                                                     <SelectItem item={item} />
                                                 </CommandItem>
