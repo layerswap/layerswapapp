@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useMemo } from "react";
+import { FC, useCallback, useEffect } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import CurrencySettings from "../../lib/CurrencySettings";
@@ -22,7 +22,7 @@ import useWallet from "../../hooks/useWallet";
 import { Wallet } from "../../stores/walletStore";
 import { useSettingsState } from "../../context/settings";
 import { ONE_WEEK } from "./NetworkFormField";
-import { ResolveNetworkOrder, SortingByAvailability } from "../../lib/sorting";
+import { SortingByAvailability } from "../../lib/sorting";
 import ResolveRouteIcon from "./RouteIcon";
 import { Exchange } from "../../Models/Exchange";
 import NetworkSettings from "../../lib/NetworkSettings";
@@ -41,7 +41,7 @@ const getGroupName = (value: RouteNetwork | Exchange | undefined, type: 'selecte
     }
     else if (type === 'top') {
         return "Top Assets";
-    } 
+    }
     else {
         return "Networks";
     }
@@ -107,6 +107,11 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             c.baseObject?.symbol?.toUpperCase() === (query?.toAsset)?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === to?.name)
             || currencyMenuItems?.find(c => c.baseObject.status === "active" && c.baseObject.network_name === to?.name)
 
+        const assetFromQuery = currencyMenuItems?.find(c =>
+            c.baseObject?.symbol?.toUpperCase() === (query?.toAsset)?.toUpperCase())
+
+        const isLocked = query?.lockToAsset
+
         const selected_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === to?.name)
 
@@ -129,6 +134,11 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         const default_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === (query?.fromAsset)?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
             || currencyMenuItems?.find(c => c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
+
+        const assetFromQuery = currencyMenuItems?.find(c =>
+            c.baseObject?.symbol?.toUpperCase() === (query?.fromAsset)?.toUpperCase())
+
+        const isLocked = query?.lockFromAsset
 
         const selected_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === toCurrency?.symbol?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
@@ -169,6 +179,9 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         setFieldValue(name, item.baseObject, true)
         setFieldValue(direction, network, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
+
+    const isLocked = direction === 'from' ? query?.lockFromAsset
+        : query?.lockToAsset
 
     return (
         <div className="relative">
@@ -216,8 +229,6 @@ function GenerateCurrencyMenuItems(
     error?: ApiError,
 ): SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }>[] {
     const { to, from } = values
-    const lockAsset = direction === 'from' ? query?.lockFromAsset
-        : query?.lockToAsset
 
     return currencies?.map(c => {
         const currency = c
@@ -252,13 +263,10 @@ function GenerateCurrencyMenuItems(
 
         const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
 
-        const currencyIsAvailable = !lockAsset &&
-            (
-                (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
-                !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive')
-            );
+        const currencyIsAvailable = (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
+            !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive')
 
-        const routeNotFound = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) || lockAsset;
+        const routeNotFound = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR);
 
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
@@ -310,7 +318,7 @@ function GenerateCurrencyMenuItems(
             group: getGroupName(network, (values?.from?.name === network?.name || values?.to?.name === network?.name) ? 'selected' : 'top', currencyIsAvailable && !routeNotFound),
             menuItemDetails: details,
             badge,
-            icon: <ResolveRouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={!!routeNotFound} />,
+            leftIcon: ResolveRouteIcon({ direction, isAvailable: currencyIsAvailable, routeNotFound, type: 'token' }),
             noWalletsConnectedText,
             logo
         };
@@ -360,7 +368,7 @@ function GenerateGroupedCurrencyMenuItems(
         const balanceAmountInUsd = formattedBalanceAmount ? (currency?.price_in_usd * formattedBalanceAmount).toFixed(2) : undefined;
 
         const networkTokens = balancesArray?.filter(b => b?.network === network?.name);
-        
+
         const networkBalanceInUsd = networkTokens
             ? networkTokens.reduce((acc, b) => {
                 const token = network?.tokens?.find(t => t?.symbol === b?.token);
@@ -415,7 +423,7 @@ function GenerateGroupedCurrencyMenuItems(
         ) : null;
 
         const routeNotFound = currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR;
-        const groupName = getGroupName(network, (values?.from?.name === network?.name || values?.to?.name === network?.name) ? 'selected' : 'top', currencyIsAvailable && !routeNotFound && !wallets?.length); 
+        const groupName = getGroupName(network, (values?.from?.name === network?.name || values?.to?.name === network?.name) ? 'selected' : 'top', currencyIsAvailable && !routeNotFound && !wallets?.length);
 
         const res: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
             baseObject: currency,
@@ -429,7 +437,7 @@ function GenerateGroupedCurrencyMenuItems(
             menuItemDetails: details,
             group: groupName,
             badge,
-            icon: ResolveRouteIcon({ direction, isAvailable: currencyIsAvailable, routeNotFound }),
+            leftIcon: ResolveRouteIcon({ direction, isAvailable: currencyIsAvailable, routeNotFound, type: "token" }),
             logo: (currency.logo && (
                 <Image
                     src={currency.logo}
@@ -459,7 +467,7 @@ function GenerateGroupedCurrencyMenuItems(
             </div>
         );
 
-        const networkIcon = ResolveRouteIcon({ direction, isAvailable: !!networkIsAvailable, routeNotFound: !!networksRouteNotFound }) || <></>
+        const networkIcon = ResolveRouteIcon({ direction, isAvailable: !!networkIsAvailable, routeNotFound: !!networksRouteNotFound, type: "token" }) || <></>
 
         if (!networkGroupedCurrencies[groupName]) {
             networkGroupedCurrencies[groupName] = { name: groupName, items: [] };
@@ -476,7 +484,7 @@ function GenerateGroupedCurrencyMenuItems(
                 balanceAmount: Number(networkBalanceInUsd),
                 imgSrc: network.logo,
                 isAvailable: !!networkIsAvailable,
-                icon: networkIcon,
+                leftIcon: networkIcon,
                 subItems: [],
                 noWalletsConnectedText
             });

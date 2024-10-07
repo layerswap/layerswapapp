@@ -11,6 +11,7 @@ import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import { NetworkWithTokens, RouteNetwork } from "../../Models/Network";
 import { ExchangeNetwork } from "../../Models/Exchange";
 import { isValidAddress } from "../../lib/address/validator";
+import TransferCEX from "./TransferCEX";
 import Image from 'next/image'
 
 type SwapDirection = "from" | "to";
@@ -35,6 +36,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         currencyGroup
     } = values
 
+
     const apiClient = new LayerSwapApiClient()
 
     const routesEndpoint = `/${direction === "from" ? `exchange_source_networks?destination_token_group=${currencyGroup?.symbol}&include_unmatched=true` : `exchange_destination_networks?source_token_group=${currencyGroup?.symbol}&include_unmatched=true`}`
@@ -47,33 +49,29 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         && (`/${direction === 'from' ?
             `exchange_withdrawal_networks?source_exchange=${fromExchange?.name}&&source_token_group=${currencyGroup?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}`
             : `exchange_deposit_networks?destination_exchange=${toExchange?.name}&destination_token_group=${currencyGroup?.symbol}&source_network=${from?.name}&source_token=${fromCurrency?.symbol}`}`)
-
-    const { data: historicalNetworks, isLoading: isHistoricalNetworsLoading } = useSWR<ApiResponse<ExchangeNetwork[]>>(exchangeNetworksEndpoint, apiClient.fetcher, { keepPreviousData: true })
+    const { data: historicalNetworks, isLoading: isHistoricalNetworsLoading, error } = useSWR<ApiResponse<ExchangeNetwork[]>>(exchangeNetworksEndpoint, apiClient.fetcher, { keepPreviousData: true })
 
     const network = (direction === 'from' ? from : to)
     const currency = (direction === 'from' ? fromCurrency : toCurrency)
-
-    const menuItems = historicalNetworks?.data && routesData
+    const menuItems = (!error || undefined) && historicalNetworks?.data && routesData
         && GenerateMenuItems(historicalNetworks.data, routes?.data)
             .filter(item => routes?.data?.find(l =>
                 l.name === item.baseObject.network.name));
 
     const handleSelect = useCallback((item: SelectMenuItem<ExchangeNetwork>) => {
         if (!item) return
-        const route = routes?.data?.find(l => l.name === item.baseObject.network.name)
-        const currency = route?.tokens.find(a => a.symbol === item.baseObject.token.symbol)
-        setFieldValue(name, route, true)
-        setFieldValue(`${name}Currency`, currency, false)
+        setFieldValue(name, item.baseObject.network, true)
+        setFieldValue(`${name}Currency`, { ...item.baseObject.token, status: "active" }, false)
     }, [name, routes])
 
     const formValue = (direction === 'from' ? from : to)
+    const routeUnavailable = currencyGroup?.status === 'not_found' || toCurrency?.status === 'not_found' || fromCurrency?.status === 'not_found'
 
     //TODO set default currency & reset currency if not available
     const value = menuItems?.find(item =>
         item.baseObject.token.symbol ===
         (direction === 'from' ? fromCurrency : toCurrency)?.symbol
         && item.baseObject.network.name === formValue?.name)
-
     //Setting default value
     useEffect(() => {
         if (!menuItems) return
@@ -96,17 +94,15 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
     }, [currencyGroup])
 
     const networkDetails = <div>
-        <div className="relative z-20 mb-3 ml-3 text-primary-buttonTextColor text-sm">
-            <p className="text-sm mt-2 flex space-x-1">
-                <span>Please make sure that the exchange supports the token and network you select here.</span>
-            </p>
-        </div>
+        <TransferCEX direction={direction} />
     </div>
+
+    const header = direction === 'from' ? 'Withdrawal network' : 'Deposit network'
 
     return (<div className={`p-2 rounded-lg bg-secondary-700 border border-secondary-500`}>
         <label htmlFor={name} className="font-semibold flex justify-between text-secondary-text text-xs mb-1.5">
             <div className="flex space-x-1">
-                <span>{direction === 'from' ? 'Withdrawal network' : 'Deposit network'}</span>
+                <span>{header}</span>
             </div>
             {
                 currency?.contract && isValidAddress(currency.contract, network) && network &&
@@ -119,7 +115,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             }
         </label>
         <CommandSelectWrapper
-            disabled={(value && !value?.isAvailable) || isRoutesLoading}
+            disabled={(value && !value?.isAvailable) || isRoutesLoading || routeUnavailable}
             valueGrouper={groupByType}
             placeholder="Network"
             setValue={handleSelect}
@@ -130,6 +126,7 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             modalHeight="80%"
             modalContent={networkDetails}
             key={value?.id}
+            header={header}
         />
     </div>)
 })
@@ -141,6 +138,36 @@ function GenerateMenuItems(
     const menuItems = historicalNetworks.map((e, index) => {
 
         const network = routes?.find(l => l.name == e.network.name);
+        const displayName = <div className="flex flex-col space-x-1">
+            <p className="pl-1 text-primary-text text-base">{network?.display_name}</p>
+            <div className="flex items-center space-x-1">
+                <div className="w-4 h-4">
+                    <Image
+                        src={e.token.logo}
+                        alt="Project Logo"
+                        height="20"
+                        width="20"
+                        loading="eager"
+                        className="rounded-full object-contain" />
+                </div>
+                <p className="text-secondary-text text-xs">
+                    {e.token.symbol}
+                    {e.token.contract && network && (
+                        <>
+                            {' - '}
+                            <Link
+                                target="_blank"
+                                href={network.account_explorer_template.replace("{0}", e.token.contract)}
+                                className="underline text-secondary-text hover:no-underline w-fit"
+                            >
+                                {shortenAddress(e.token.contract)}
+                            </Link>
+                        </>
+                    )}
+                </p>
+            </div>
+        </div>
+
         const details = <p className="text-primary-text-muted">
             {e.token.symbol}
         </p>
@@ -160,7 +187,7 @@ function GenerateMenuItems(
 
         const item: SelectMenuItem<ExchangeNetwork> = {
             baseObject: e,
-            id: index.toString(),
+            id: `${e.network.name}-${e.token.symbol}`,
             name: `${e.network.display_name}`,
             displayName: network?.display_name,
             order: 1,
@@ -170,6 +197,7 @@ function GenerateMenuItems(
             details,
             logo
         }
+
         return item;
     })
     return menuItems

@@ -77,7 +77,7 @@ export default function useBalanceProvider() {
 
             const provider = getBalanceProvider(network)
             const balance = await provider?.getBalance({
-                network: network,
+                networkName: network.name,
                 address: address,
                 token
             })

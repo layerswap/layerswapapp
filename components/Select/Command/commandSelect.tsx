@@ -23,6 +23,7 @@ export interface CommandSelectProps extends SelectProps {
     isLoading?: boolean;
     modalHeight?: LeafletHeight;
     modalContent?: React.ReactNode;
+    header?: string;
 }
 
 export class SelectMenuItemGroup {

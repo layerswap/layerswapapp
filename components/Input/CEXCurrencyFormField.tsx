@@ -52,9 +52,9 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
 
     const availableAssetGroups = exchanges?.data?.find(e => e.name === exchange?.name)?.token_groups
 
-    const lockAsset = direction === 'from' ? query?.lockFromAsset : query?.lockToAsset
+    const isLocked = direction === 'from' ? query?.lockFromAsset : query?.lockToAsset
     const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
-    const lockedCurrency = lockAsset
+    const lockedCurrency = isLocked
         ? availableAssetGroups?.find(a => a.symbol.toUpperCase() === (asset)?.toUpperCase())
         : undefined
 
@@ -70,8 +70,16 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
 
     useEffect(() => {
         if (value) return
-        setFieldValue(name, currencyMenuItems?.[0]?.baseObject)
+        if (currencyMenuItems?.[0])
+            setFieldValue(name, currencyMenuItems?.[0]?.baseObject)
+        return () => { setFieldValue(name, null) }
     }, [])
+
+    useEffect(() => {
+        const value = availableAssetGroups?.find(r => r.symbol === currencyGroup?.symbol)
+        if (!value) return
+        setFieldValue(name, value)
+    }, [fromCurrency, toCurrency, availableAssetGroups])
 
     const handleSelect = useCallback((item: SelectMenuItem<ExchangeToken>) => {
         setFieldValue(name, item.baseObject, true)
@@ -99,7 +107,7 @@ export function GenerateCurrencyMenuItems(
         const displayName = lockedCurrency?.symbol ?? currency.symbol;
 
         const isAvailable = (lockedCurrency || (c?.status !== "active" && c.status !== "not_found")) ? false : true;
-        
+
         const routeNotFound = c.status === "not_found"
 
         const logo = <div className="flex-shrink-0 h-6 w-6 relative">
@@ -122,7 +130,7 @@ export function GenerateCurrencyMenuItems(
             order: ResolveCEXCurrencyOrder(c),
             imgSrc: c.logo,
             isAvailable: isAvailable,
-            icon: <ResolveRouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} />,
+            leftIcon: ResolveRouteIcon({ direction, isAvailable, routeNotFound, type: 'token' }),
             logo
         };
         return res

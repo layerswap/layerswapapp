@@ -1,25 +1,26 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip"
-import { CircleAlert, RouteOff } from "lucide-react"
+import { Info, RouteOff } from "lucide-react"
 
 type Props = {
     isAvailable: boolean,
     routeNotFound: boolean,
-    direction: string
+    direction: string,
+    type: 'network' | 'token'
 }
 
-const ResolveRouteIcon = (props:Props) => {
+const ResolveRouteIcon = (props: Props) => {
     const { isAvailable, routeNotFound, direction } = props
 
     if (!isAvailable)
         return <Tooltip delayDuration={200}>
             <TooltipTrigger asChild >
                 <div className="absolute top-0.5 z-50 inset-0 flex items-center cursor-pointer">
-                    <CircleAlert className="!w-4 text-primary-text-placeholder hover:text-primary-text" />
+                    <Info className="!w-4 text-primary-text-placeholder hover:text-primary-text" />
                 </div>
             </TooltipTrigger>
             <TooltipContent side="right">
                 <p className="max-w-72 p-2 text-base text-primary-text">
-                    Transfers {direction} this token are not available at the moment. Please try later.
+                    <span>Transfers</span> <span>{direction}</span> <span>this</span> <span>{type}</span> <span>are not available at the moment. Please try later.</span>
                 </p>
             </TooltipContent>
         </Tooltip>
@@ -36,7 +37,7 @@ const ResolveRouteIcon = (props:Props) => {
                     Route unavailable
                 </p>
             </TooltipContent>
-        </Tooltip>
+        </Tooltip >
 
     return undefined
 }

@@ -85,15 +85,17 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         if (!isLoading && routes?.data) setRoutesData(routes.data)
     }, [routes])
 
+    const disableExchanges = process.env.NEXT_PUBLIC_DISABLE_EXCHANGES === 'true'
+
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
-        menuItems = GenerateMenuItems(routesData, toExchange ? [] : exchangesData, direction, !!(from && lockFrom), query);
+        menuItems = GenerateMenuItems(routesData, toExchange || disableExchanges ? [] : exchangesData, direction, !!(from && lockFrom), query);
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        menuItems = GenerateMenuItems(routesData, fromExchange ? [] : exchangesData, direction, !!(to && lockTo), query);
+        menuItems = GenerateMenuItems(routesData, fromExchange || disableExchanges ? [] : exchangesData, direction, !!(to && lockTo), query);
     }
 
     const value = menuItems.find(x => !x.isExchange ?
@@ -105,6 +107,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             return
         if (item.isExchange) {
             setFieldValue(name, null)
+            setFieldValue(`${name}Currency`, null)
             setFieldValue(`${name}Exchange`, item.baseObject, true)
         } else {
             setFieldValue(`${name}Exchange`, null)
@@ -115,10 +118,9 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 setFieldValue(`${name}Currency`, assetSubstitute, true)
             }
         }
-
     }, [name, value])
 
-    const networkLocked = direction === "from" ? !!(from && lockFrom) : !!(to && lockTo)
+    const isLocked = direction === 'from' ? !!lockFrom : !!lockTo
 
     return (<div className={`p-3 bg-secondary-700 border border-secondary-500 ${className}`}>
         <label htmlFor={name} className="block font-semibold text-secondary-text text-xs">
@@ -127,7 +129,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         <div ref={ref} className="mt-1.5 grid grid-flow-row-dense grid-cols-8 md:grid-cols-6 items-center pr-2">
             <div className="col-span-5 md:col-span-4">
                 <CommandSelectWrapper
-                    disabled={isLoading || error || networkLocked}
+                    disabled={isLocked || isLoading}
                     valueGrouper={groupByType}
                     placeholder={placeholder}
                     setValue={handleSelect}
@@ -207,7 +209,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             group: getGroupName(r, 'network', isAvailable && !routeNotFound),
             isExchange: false,
             badge,
-            icon: ResolveRouteIcon({ direction, isAvailable, routeNotFound }),
+            leftIcon: ResolveRouteIcon({ direction, isAvailable, routeNotFound, type: 'network' }),
             logo
         }
         return res;

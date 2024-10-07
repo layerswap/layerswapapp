@@ -9,13 +9,13 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     balanceAmount?: number | undefined;
     order: number;
     imgSrc: string;
-    displayName?: string | undefined;
+    displayName?: React.ReactNode;
     isAvailable: boolean;
     group?: string;
     details?: JSX.Element | JSX.Element[];
     badge?: JSX.Element | JSX.Element[];
-    icon?: JSX.Element | JSX.Element[];
     subItems?: ISelectMenuItem[];
+    leftIcon?: JSX.Element | JSX.Element[];
     baseObject: T;
     constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, isAvailable: boolean, group?: string, details?: JSX.Element | JSX.Element[]) {
         this.baseObject = baseObject;
@@ -39,12 +39,12 @@ export interface ISelectMenuItem {
     noWalletsConnectedText?: React.ReactNode;
     balanceAmount?: number | undefined;
     imgSrc: string;
-    displayName?: string | undefined;
+    displayName?: React.ReactNode;
     group?: string;
     isAvailable: boolean;
     details?: JSX.Element | JSX.Element[];
     badge?: JSX.Element | JSX.Element[];
-    icon?: JSX.Element | JSX.Element[];
+    leftIcon?: JSX.Element | JSX.Element[];
     order?: number;
     subItems?: ISelectMenuItem[];
 }

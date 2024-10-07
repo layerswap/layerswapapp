@@ -38,7 +38,8 @@
 iframe body {
   display: none;
 }
-.light .top-backdrop{
+
+.light .top-backdrop {
   display: none;
 }
 
@@ -273,6 +274,7 @@ input::-webkit-input-placeholder {
 body {
   overflow: overlay;
 }
+
 body::-webkit-scrollbar {
   --tw-bg-opacity: 1;
   background-color: rgb(var(--ls-colors-secondary-700));

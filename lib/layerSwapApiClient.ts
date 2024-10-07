@@ -8,6 +8,7 @@ import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
 import { NetworkWithTokens, Network, Token } from "../Models/Network";
 import { Exchange } from "../Models/Exchange";
+import { datadogRum } from '@datadog/browser-rum';
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
@@ -24,7 +25,7 @@ export default class LayerSwapApiClient {
     fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
 
     async GetRoutesAsync(direction: 'sources' | 'destinations'): Promise<ApiResponse<NetworkWithTokens[]>> {
-        return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/${direction}`)
+        return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/${direction}?include_unmatched=true&include_swaps=true&include_unavailable=true`)
     }
 
     async GetSourceExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
@@ -87,6 +88,10 @@ export default class LayerSwapApiClient {
                     return Promise.resolve(new EmptyApiResponse());
                 }
                 else {
+                    const renderingError = new Error(`API request error with uri:${uri}`);
+                    renderingError.name = `APIError`;
+                    renderingError.cause = reason;
+                    datadogRum.addError(renderingError);
                     return Promise.reject(reason);
                 }
             });
@@ -214,6 +219,10 @@ export type GetQuoteParams = {
 }
 
 export type SwapQuote = {
+    source_network?: Network,
+    source_token?: Token,
+    destination_network?: Network,
+    destination_token?: Token,
     receive_amount: number,
     min_receive_amount: number,
     total_fee: number,

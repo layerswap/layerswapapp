@@ -87,7 +87,11 @@ export default function useSolanaBalance(): BalanceProvider {
         return balances
     }
 
-    const getBalance = async ({ network, token, address }: BalanceProps) => {
+    const getBalance = async ({ networkName, token, address }: BalanceProps) => {
+        const network = networks.find(n => n.name === networkName)
+
+        if (!network) return
+
         const SolanaWeb3 = await import("@solana/web3.js");
         const { PublicKey, Connection } = SolanaWeb3
         class SolanaConnection extends Connection { }
