@@ -260,8 +260,7 @@ const BlankHistory = () => {
 
 const ConnectOrSignIn = () => {
     return <div className="w-full h-full min-h-[inherit] flex flex-col justify-between items-center ">
-        <div />
-        <div className="flex flex-col items-center text-center w-full h-full">
+        <div className="flex flex-col items-center justify-center text-center w-full h-full">
             <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
             <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
             <div className="mt-4 text-center space-y-3">

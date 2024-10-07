@@ -67,44 +67,45 @@ const Summary: FC<SwapInfoProps> = ({
     return (
         source_token && <>
             <div className="bg-secondary-700 p-3 w-full relative z-10 font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer">
-                <div className="grid grid-cols-12 items-center w-full">
-                    <div className="flex col-span-7 items-center gap-3">
-                        {source?.display_name !== destination?.display_name ?
-                            <div className="h-11 w-11 relative min-w-11">
-                                {
-                                    source &&
-                                    <Image
-                                        src={source.logo}
-                                        alt={source.display_name}
-                                        width={28}
-                                        height={28}
-                                        className="rounded" />
-                                }
-                                {
-                                    destination &&
-                                    <Image
-                                        src={destination.logo}
-                                        alt={destination.display_name}
-                                        width={28}
-                                        height={28}
-                                        className="rounded absolute left-4 top-4" />
-                                }
-                            </div>
-                            :
-                            <div className="w-11 h-11">
-                                {
-                                    source &&
-                                    <Image
-                                        src={source.logo}
-                                        alt={source.display_name}
-                                        width={44}
-                                        height={44}
-                                        className="rounded-md" />
-                                }
-                            </div>
-                        }
-                        <div className="flex flex-col gap-0.5 overflow-hidden">
-                            <p className="text-secondary-text text-base truncate">
+                <div className="flex gap-3 w-full items-center">
+                    {source?.display_name !== destination?.display_name ?
+                        <div className="h-11 w-11 relative min-w-11">
+                            {
+                                source &&
+                                <Image
+                                    src={source.logo}
+                                    alt={source.display_name}
+                                    width={28}
+                                    height={28}
+                                    className="rounded" />
+                            }
+                            {
+                                destination &&
+                                <Image
+                                    src={destination.logo}
+                                    alt={destination.display_name}
+                                    width={28}
+                                    height={28}
+                                    className="rounded absolute left-4 top-4" />
+                            }
+                        </div>
+                        :
+                        <div className="w-11 h-11">
+                            {
+                                source &&
+                                <Image
+                                    src={source.logo}
+                                    alt={source.display_name}
+                                    width={44}
+                                    height={44}
+                                    className="rounded-md" />
+                            }
+                        </div>
+                    }
+                    <div className="flex flex-col gap-0.5 w-full">
+
+                        <div className="flex items-baseline justify-between w-full overflow-hidden">
+                            <p className="text-secondary-text text-base truncate max-w-[50%]">
                                 {
                                     source?.display_name === destination?.display_name ?
                                         <>
@@ -117,7 +118,13 @@ const Summary: FC<SwapInfoProps> = ({
                                 }
                             </p>
 
+                            <p className="font-light text-secondary-text text-sm">{truncateDecimals(sourceTransaction?.amount || swap.requested_amount, source_token.precision)} {source_token.symbol}</p>
 
+
+
+
+                        </div>
+                        <div className="flex w-full justify-between items-start text-end">
                             <div className="flex items-center gap-0.5">
                                 {
                                     sourceAccountAddress &&
@@ -158,12 +165,6 @@ const Summary: FC<SwapInfoProps> = ({
                                     </>
                                 }
                             </div>
-
-                        </div>
-                    </div>
-                    <div className="col-span-5 grow text-end">
-                        <div>
-                            <p className="font-light text-secondary-text text-sm">{truncateDecimals(sourceTransaction?.amount || swap.requested_amount, source_token.precision)} {source_token.symbol}</p>
                             <p className="font-medium text-primary-text text-lg leading-5">{truncateDecimals(calculatedReceiveAmount, destination_token.precision)} {destination_token.symbol}</p>
                         </div>
                     </div>

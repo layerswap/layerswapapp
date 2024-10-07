@@ -198,7 +198,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                 {/* Fees */}
                 <div className='p-3 bg-secondary-700 rounded-xl'>
                     {
-                        inputTransactionFeeInUsd ?
+                        (inputTransactionFeeInUsd && !source_exchange) ?
                             <Accordion type="single" collapsible>
                                 <AccordionItem value="item-1">
                                     <AccordionTrigger className='w-full'>
