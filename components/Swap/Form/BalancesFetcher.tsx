@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { useBalancesState } from "../../../context/balances"
 import { useSettingsState } from "../../../context/settings"
 import useWallet from "../../../hooks/useWallet"
 import useBalance from "../../../hooks/useBalance"

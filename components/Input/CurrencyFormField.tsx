@@ -180,9 +180,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         setFieldValue(direction, network, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
-    const isLocked = direction === 'from' ? query?.lockFromAsset
-        : query?.lockToAsset
-
     return (
         <div className="relative">
             <BalanceComponent values={values} direction={direction} />
@@ -418,7 +415,7 @@ function GenerateGroupedCurrencyMenuItems(
         const details = wallets?.length ? (
             <p className="text-primary-text text-sm flex flex-col items-end pr-1.5">
                 {Number(formattedBalanceAmount) ? <span>{formattedBalanceAmount}</span> : <span>-</span>}
-                {balanceAmountInUsd ? <span className="text-secondary-text">${balanceAmountInUsd}</span> : null}
+                {balanceAmountInUsd ? <span className="text-secondary-text">${new Intl.NumberFormat("en-US", {style: "decimal",}).format(Number(balanceAmountInUsd))}</span> : null}
             </p>
         ) : null;
 
