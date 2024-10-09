@@ -69,7 +69,11 @@ export default function useStarknetBalance(): BalanceProvider {
     }
 
 
-    const getBalance = async ({ network, token, address }: BalanceProps) => {
+    const getBalance = async ({ networkName, token, address }: BalanceProps) => {
+        const network = networks.find(n => n.name === networkName)
+
+        if (!network) return
+
         const {
             Contract,
             RpcProvider,

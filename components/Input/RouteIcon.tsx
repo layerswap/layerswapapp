@@ -1,6 +1,6 @@
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip"
-import { CircleAlert, RouteOff } from "lucide-react"
+import { Info, RouteOff } from "lucide-react"
 
 type Props = {
     isAvailable: boolean,
@@ -16,7 +16,7 @@ const RouteIcon: FC<Props> = (props) => {
         return <Tooltip delayDuration={200}>
             <TooltipTrigger asChild >
                 <div className="absolute -left-1 top-0.5 z-50">
-                    <CircleAlert className="!w-4 text-primary-text-placeholder hover:text-primary-text icoooooooooon" />
+                    <Info className="!w-4 text-primary-text-placeholder hover:text-primary-text icoooooooooon" />
                 </div>
             </TooltipTrigger>
             <TooltipContent>

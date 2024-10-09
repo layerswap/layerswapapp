@@ -69,7 +69,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
                                     <div className="text-secondary-text">
                                         <span>Your current balance</span>
                                     </div>
-                                    <p>
+                                    <p className='text-end'>
                                         <span>{truncateDecimals(destNativeTokenBalance.amount, nativeAsset?.precision)} {nativeAsset?.symbol}</span> <span className="text-secondary-text">(${amountInUsd})</span>
                                     </p>
                                 </div>
