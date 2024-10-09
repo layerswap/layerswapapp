@@ -1,7 +1,7 @@
 import { WalletProvider } from "../../../hooks/useWallet";
 import { useWalletStore } from "../../../stores/walletStore"
 import KnownInternalNames from "../../knownIds"
-import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
+import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
 import { useSettingsState } from "../../../context/settings";
 import { useCallback } from "react";

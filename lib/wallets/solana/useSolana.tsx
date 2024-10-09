@@ -2,7 +2,7 @@ import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import { useWallet } from "@solana/wallet-adapter-react"
-import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
+import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
 import { Wallet } from "../../../stores/walletStore"
 
 export default function useSolana(): WalletProvider {

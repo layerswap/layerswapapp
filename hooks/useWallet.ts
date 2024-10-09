@@ -6,6 +6,7 @@ import useSolana from "../lib/wallets/solana/useSolana";
 import useStarknet from "../lib/wallets/starknet/useStarknet";
 import useTON from "../lib/wallets/ton/useTON";
 import { Wallet } from "../stores/walletStore";
+import { LSConnector } from "../lib/wallets/connectors/types";
 
 export type WalletProvider = {
     connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
@@ -17,7 +18,7 @@ export type WalletProvider = {
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,
-    availableWalletsForConnect?: any[]
+    availableWalletsForConnect?: LSConnector[]
 }
 
 

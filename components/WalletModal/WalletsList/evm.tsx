@@ -1,121 +1,133 @@
-import { FC } from 'react'
-import { Connector, useConnect, useDisconnect, useSwitchAccount } from 'wagmi';
+import { FC, useState } from 'react'
+import { Connector, useConnect } from 'wagmi';
 import { mainnet } from 'viem/chains';
 import { QRCodeSVG } from 'qrcode.react';
-import resolveWalletConnectorIcon from '../../../lib/wallets/utils/resolveWalletIcon';
+import { resolveWalletConnectorIcon } from '../../../lib/wallets/utils/resolveWalletIcon';
 import { Loader } from 'lucide-react';
-import { WalletButton } from '@rainbow-me/rainbowkit';
-import { isMobile } from '../../../lib/isMobile';
 import { WalletsListProps } from '..';
 import toast from 'react-hot-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../shadcn/dialog';
+import { isMobile } from '../../../lib/wallets/connectors/utils/isMobile';
 
 const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFinish, setSelectedProvider }) => {
 
+    const { connectAsync } = useConnect();
+    const [walletQRData, setWalletQRData] = useState<{ qr: string, icon: string | undefined } | undefined>(undefined)
+
     return (
-        !provider?.connector?.qr ?
-            <div className="flex flex-col gap-1 w-full max-h-[40vh] overflow-y-auto styled-scroll">
-                {provider?.availableWalletsForConnect?.map((connector: Connector, index) => {
-                    const connectorName = connector?.['rkDetails']?.['name'] as string
-                    const connectorId = connector?.['rkDetails']?.['id'] as string
+        <div className="flex flex-col gap-1 w-full max-h-[40vh] overflow-y-auto styled-scroll">
+            {/* //TODO: refactor ordering */}
+            {provider?.availableWalletsForConnect?.sort((a, b) => (a.order || 100) - (b.order || 100))?.map((connector, index) => {
+                const connectorName = connector?.name
+                const connectorId = connector?.id
 
-                    const Icon = resolveWalletConnectorIcon({ connector: connectorId })
-                    const isLoading = provider.connector?.name === connectorName
-                    const name = connector?.['rkDetails']?.['id']
+                const Icon = resolveWalletConnectorIcon({ connector: connectorId })
 
-                    return (
-                        <WalletButton.Custom key={index} wallet={name}>
-                            {({ connect }) => {
-                                return (
-                                    <div key={index}>
-                                        <button
-                                            type="button"
-                                            disabled={!!provider.connector}
-                                            className="w-full flex items-center justify-between hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 py-2"
-                                            onClick={async () => {
-                                                try {
+                const isLoading = provider.connector?.name === connectorName
+                const name = connector?.['rkDetails']?.['id']
 
-                                                    setSelectedProvider({ ...provider, connector: { name: connectorName } })
-                                                    await connector.disconnect()
-                                                    if (connector.type === 'walletConnect' && !provider.activeWallet && !isMobile()) {
-                                                        await connect()
-                                                    }
-                                                    else {
-                                                        await connector.connect()
-                                                        onFinish()
-                                                    }
-                                                    setSelectedProvider(undefined)
-
-                                                } catch (e) {
-                                                    console.log(e)
-                                                    toast.error('Error connecting wallet')
-                                                    setSelectedProvider(undefined)
+                return (
+                    <div key={index}>
+                        <button
+                            type="button"
+                            disabled={!!provider.connector}
+                            className="w-full flex items-center justify-between hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 py-2"
+                            onClick={async () => {
+                                try {
+                                    setSelectedProvider({ ...provider, connector: { name: connectorName } })
+                                    if (connector.id !== 'walletConnect') {
+                                        if (isMobile()) {
+                                            getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
+                                                window.location.href = uri;
+                                            })
+                                        }
+                                        else {
+                                            getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
+                                                const qrData = {
+                                                    qr: uri,
+                                                    icon: undefined
                                                 }
+                                                setWalletQRData(qrData)
+                                            })
+                                        }
+                                    }
+                                    
+                                    await connectAsync({
+                                        chainId: mainnet.id,
+                                        connector: connector,
+                                    });
 
-                                                // if (isMobile()) {
-                                                //     const uri = await getWalletConnectUri(connector, connector?.['rkDetails']?.['mobile']?.['getUri'])
-                                                //     window.location.href = uri
-                                                // }
-                                                // else if (connector.type === 'walletConnect') {
-                                                //     const uri = await getWalletConnectUri(connector, connector?.['rkDetails']?.['qrCode']?.['getUri'])
-                                                //     const iconUrl = await (provider.availableWalletsForConnect as Connector[]).find((c) => c?.['rkDetails']?.['name'] === connectorName)?.['rkDetails']?.['iconUrl']()
-                                                //     if (provider.connector) setSelectedProvider({ ...provider, connector: { ...provider.connector, qr: uri, iconUrl } })
-                                                // }
-                                            }}
-                                        >
-                                            <div className="flex gap-3 items-center font-semibold">
-                                                <Icon className="w-8 h-8 rounded-md bg-secondary-900" />
-                                                <p>{connectorName}</p>
-                                            </div>
-                                            {
-                                                isLoading &&
-                                                <Loader className='h-4 w-4 animate-spin' />
-                                            }
-                                        </button>
-                                    </div>
-                                );
+                                    setSelectedProvider(undefined)
+                                    onFinish()
+
+                                } catch (e) {
+                                    //TODO: handle error like in transfer
+                                    toast.error('Error connecting wallet')
+                                    // setSelectedProvider(undefined)
+                                }
                             }}
-                        </WalletButton.Custom>
-                    )
-                })}
-            </div>
-            :
-            <div className='w-full flex justify-center pt-2'>
-                <QRCodeSVG
-                    className="rounded-lg"
-                    value={provider.connector.qr}
-                    includeMargin={true}
-                    size={350}
-                    level={"H"}
-                    imageSettings={{
-                        src: provider.connector.iconUrl!,
-                        x: undefined,
-                        y: undefined,
-                        height: 50,
-                        width: 50,
-                        excavate: true,
-                    }}
-                />
-            </div>
+                        >
+                            <div className="flex gap-3 items-center font-semibold">
+                                <Icon className="w-8 h-8 rounded-md bg-secondary-900" />
+                                <p>{connectorName}</p>
+                            </div>
+                            {
+                                isLoading &&
+                                <Loader className='h-4 w-4 animate-spin' />
+                            }
+                        </button>
+                    </div>
+                )
+            })}
+            {
+                walletQRData && <Dialog open={!!walletQRData} onOpenChange={(open) => { !open && setWalletQRData(undefined) }}>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle className="text-center">Connect wallet</DialogTitle>
+                        </DialogHeader>
+                        <div className="flex flex-col justify-start space-y-2">
+                            <div className='w-full flex justify-center pt-2'>
+                                <QRCodeSVG
+                                    className="rounded-lg"
+                                    value={walletQRData.qr}
+                                    includeMargin={true}
+                                    size={350}
+                                    level={"H"}
+                                    imageSettings={{
+                                        src: walletQRData.icon || "",
+                                        x: undefined,
+                                        y: undefined,
+                                        height: 50,
+                                        width: 50,
+                                        excavate: true,
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            }
+        </div>
     )
 }
 
 
 const getWalletConnectUri = async (
     connector: Connector,
-    uriConverter: (uri: string) => string,
-): Promise<string> => {
+    uriConverter: (uri: string) => string = (uri) => uri,
+    useCallback: (uri: string) => void,
+): Promise<void> => {
     const provider = await connector.getProvider();
-
     if (connector.id === 'coinbase') {
         // @ts-expect-error
         return provider.qrUrl;
     }
-    return new Promise<string>((resolve) =>
-        // Wagmi v2 doesn't have a return type for provider yet
-        // @ts-expect-error
-        provider.once('display_uri', (uri) => {
-            resolve(uriConverter(uri));
-        }),
+    return new Promise<void>((resolve) => {
+        return provider?.['once'] && provider['once']('display_uri', (uri) => {
+            const converted = uriConverter(uri);
+            resolve(useCallback(uriConverter(uri)));
+        })
+    }
     );
 };
 

@@ -12,6 +12,14 @@ import BitGetIcon from "../../../components/icons/Wallets/Bitget"
 const KnownEVMConnectors = [
     {
         id: 'metamask',
+        icon: MetaMaskIcon,
+    },
+    {
+        id: 'io.metamask',
+        icon: MetaMaskIcon
+    },
+    {
+        id: 'metamasksdk',
         icon: MetaMaskIcon
     },
     {
@@ -20,6 +28,10 @@ const KnownEVMConnectors = [
     },
     {
         id: 'rainbow',
+        icon: RainbowIcon
+    },
+    {
+        id: 'app.rainbow',
         icon: RainbowIcon
     },
     {
@@ -36,6 +48,10 @@ const KnownEVMConnectors = [
     },
     {
         id: 'phantom',
+        icon: Phantom
+    },
+    {
+        id: 'app.phantom',
         icon: Phantom
     },
     {

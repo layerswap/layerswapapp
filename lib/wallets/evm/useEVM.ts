@@ -3,7 +3,7 @@ import { NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
-import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
+import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Wallet } from "../../../stores/walletStore"
@@ -45,6 +45,18 @@ export default function useEVM(): WalletProvider {
     const activeAccount = useAccount()
     const allConnectors = useConnectors()
 
+    // console.log("connectedWallets", connectedWallets)
+    // useEffect(() => {
+    //     (async () => {
+    //         connectedWallets.forEach(async (connector) => {
+    //             const res = connector.getAccounts && await connector.getAccounts()
+    //             if (res && res.length > 0) {
+    //                 console.log(connector.name, connector.id, res)
+    //             }
+    //         })
+    //     })()
+    // }, [connectedWallets])
+
     const uniqueConnectors = connectedWallets.filter((value, index, array) => array.findIndex(a => a.name.toLowerCase() === value.name.toLowerCase()) === index)
 
     const EVMAddresses = useEVMAddressesStore((state) => state.EVMAddresses)
@@ -52,7 +64,7 @@ export default function useEVM(): WalletProvider {
     const [isLoading, setIsLoading] = useState(false)
     const [fetchAddresses, setFetchAddresses] = useState(false)
     const lastUniqueConnectors = useRef<Connector[] | null>(null)
-
+    
     useEffect(() => {
         if (!fetchAddresses || isLoading || (uniqueConnectors && lastUniqueConnectors.current && uniqueConnectors.toString() === lastUniqueConnectors.current.toString())) return
 
@@ -142,11 +154,10 @@ export default function useEVM(): WalletProvider {
 
         try {
             const connector = connectedWallets.find(w => w.name.toLowerCase() === connectorName.toLowerCase())
-            connector && await connector.disconnect()
+            // connector && await connector.disconnect()
             await disconnectAsync({
                 connector: connector
             })
-            addEVMAddresses(undefined)
         }
         catch (e) {
             console.log(e)
@@ -165,6 +176,8 @@ export default function useEVM(): WalletProvider {
     }
 
     const availableWalletsforConnect = resolveAvailableWallets(allConnectors, connectedWallets)
+    {/* //TODO: refactor ordering */}
+    availableWalletsforConnect.forEach(w => {w["order"] = resolveWalletConnectorIndex(w.id)})
     const resolvedConnectedWallets = getConnectedWallets()
 
     const provider = {
@@ -184,14 +197,14 @@ export default function useEVM(): WalletProvider {
 }
 
 const resolveAvailableWallets = (all_connectors: readonly Connector[], connected: readonly Connector[]) => {
-
+    return all_connectors
     const available_connectors = all_connectors.filter((connector, index, array) => {
 
         if (connector.id === 'io.metamask') {
             connector['rkDetails'] = array.find(a => a.id === 'metaMask')?.['rkDetails']
             return true
         }
-        if(connector.id === 'metaMask') {
+        if (connector.id === 'metaMask') {
             return false
         }
 

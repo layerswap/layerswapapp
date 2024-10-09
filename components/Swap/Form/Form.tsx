@@ -154,7 +154,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
     }, [values.amount])
 
     const shoouldConnectWallet = values.depositMethod !== 'deposit_address' && !values.source_wallet
-    
+
     return <ImtblPassportProvider from={source} to={destination}>
         <>
             <Widget className="sm:min-h-[504px]">

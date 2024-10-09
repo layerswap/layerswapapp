@@ -11,9 +11,8 @@ const connectors = [
     ...KnownStarknetConnectors
 ]
 
-const resolveWalletConnectorIcon = ({ connector, address, iconUrl }: { connector?: string, address?: string, iconUrl?: string }) => {
+export const resolveWalletConnectorIcon = ({ connector, address, iconUrl }: { connector?: string, address?: string, iconUrl?: string }) => {
     const knownConnector = connectors.find(c => c.id === connector?.toLowerCase())
-
     if (iconUrl) return SVGIconWrapper(iconUrl)
     else if (!knownConnector) {
         if (address) return AddressIconWrapper(address)
@@ -23,6 +22,10 @@ const resolveWalletConnectorIcon = ({ connector, address, iconUrl }: { connector
     return knownConnector.icon
 }
 
+export const resolveWalletConnectorIndex = (id: string) => {
+    return connectors.findIndex(c => c.id === id?.toLowerCase())
+}
+
 const AddressIconWrapper = (address: string) => (props: typeof AddressIcon) => {
     return <AddressIcon address={address} size={24} {...props} />
 }
@@ -30,5 +33,3 @@ const AddressIconWrapper = (address: string) => (props: typeof AddressIcon) => {
 const SVGIconWrapper = (iconUrl: string) => (props) => {
     return <SVGWithImg {...props} imageUrl={iconUrl} />
 }
-
-export default resolveWalletConnectorIcon

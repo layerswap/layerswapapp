@@ -8,6 +8,8 @@ import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../Input/Address/AddressPicker';
 import { RefreshCw } from 'lucide-react';
 import { truncateDecimals } from '../../utils/RoundDecimals';
+import { useSwitchAccount } from 'wagmi';
+import { Wallet } from '../../../stores/walletStore';
 
 const WalletTransferContent: FC = () => {
     const { swapResponse } = useSwapDataState()
@@ -16,36 +18,42 @@ const WalletTransferContent: FC = () => {
     const [isLoading, setIsloading] = useState(false);
     const { mutateSwap } = useSwapDataUpdate()
     const { provider } = useWallet(source_network, 'withdrawal')
-
-    const wallet = provider?.activeWallet
+    const all_wallets = provider?.connectedWallets
+    const activeWallet = provider?.activeWallet
     const { balances, isBalanceLoading } = useBalancesState()
     const { fetchBalance, fetchGas } = useBalance()
-
-    const walletBalance = wallet && balances[wallet.address || '']?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
+    const { switchAccount, connectors } = useSwitchAccount()
+    const walletBalance = activeWallet && balances[activeWallet.address || '']?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
+
+    const changeWallet = useCallback(async (wallet: Wallet) => {
+        const connector = connectors?.find(c => c.name === wallet.connector)
+        if (!connector) return
+        switchAccount({ connector })
+    }, [provider, connectors])
 
     useEffect(() => {
         source_network && source_token && fetchBalance(source_network, source_token);
-    }, [source_network, source_token, wallet?.address])
+    }, [source_network, source_token, activeWallet?.address])
 
     useEffect(() => {
-        wallet?.address && source_network && source_token && fetchGas(source_network, source_token, wallet.address)
-    }, [source_network, source_token, wallet?.address])
+        activeWallet?.address && source_network && source_token && fetchGas(source_network, source_token, activeWallet.address)
+    }, [source_network, source_token, activeWallet?.address])
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!wallet) return
+        if (!activeWallet) return
         setIsloading(true);
-        await wallet.disconnect()
+        await activeWallet.disconnect()
         if (source_exchange) await mutateSwap()
         setIsloading(false);
-    }, [source_network?.type, swap?.source_exchange, wallet, setIsloading, isLoading])
+    }, [source_network?.type, swap?.source_exchange, activeWallet, setIsloading, isLoading])
 
     let accountAddress: string | undefined = ""
     if (swap?.source_exchange) {
         accountAddress = swap.exchange_account_name || ""
     }
-    else if (wallet) {
-        accountAddress = wallet.address || "";
+    else if (activeWallet) {
+        accountAddress = activeWallet.address || "";
     }
 
     if (!accountAddress || (swap?.source_exchange && !swap.exchange_account_connected)) {
@@ -71,28 +79,36 @@ const WalletTransferContent: FC = () => {
         </div>
         {
             provider &&
-            wallet &&
+            all_wallets &&
             source_network &&
-            <div className="group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
-                <AddressWithIcon addressItem={{ address: wallet?.address || '', group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} destination={source_network} />
-                <div>
-                    {
-                        walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
-                            <div className="text-right text-secondary-text font-normal text-sm">
-                                {
-                                    isBalanceLoading ?
-                                        <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                                        :
-                                        <>
-                                            <span>{walletBalanceAmount}</span> <span>{source_token?.symbol}</span>
-                                        </>
-                                }
+            all_wallets.map(wallet => {
+                return <div onClick={() => changeWallet(wallet)} key={`${wallet.address}_${wallet.connector}`} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
+                    <AddressWithIcon addressItem={{ address: wallet?.address || '', group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} destination={source_network} />
+                    <div>
+                        {
+                            walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
+                                <div className="text-right text-secondary-text font-normal text-sm">
+                                    {
+                                        isBalanceLoading ?
+                                            <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                            :
+                                            <>
+                                                <span>{walletBalanceAmount}</span> <span>{source_token?.symbol}</span>
+                                            </>
+                                    }
+                                </div>
+                                :
+                                <></>
+                        }
+                        {
+                            activeWallet?.address === wallet.address && activeWallet?.connector === wallet.connector &&
+                            <div className="text-right text-secondary-text font-normal text-xs">
+                                <span className="text-primary-text">Active</span>
                             </div>
-                            :
-                            <></>
-                    }
+                        }
+                    </div>
                 </div>
-            </div>
+            })
         }
     </div>
 }

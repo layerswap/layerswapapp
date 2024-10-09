@@ -7,9 +7,9 @@ import { ResolveConnectorIcon } from '../icons/ConnectorIcons';
 import useWallet from '../../hooks/useWallet';
 import { ModalWalletProvider, useWalletModalState } from '../../stores/walletModalStateStore';
 import EVMConnectList from './WalletsList/evm';
+import { useConfig } from 'wagmi';
 
 export function WalletModalProvider({ children }) {
-
     const { providers } = useWallet();
     const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks)
 
