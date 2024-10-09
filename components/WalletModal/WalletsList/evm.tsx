@@ -35,6 +35,7 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, o
                             onClick={async () => {
                                 try {
                                     setSelectedProvider({ ...provider, connector: { name: connectorName } })
+                                    await connector.disconnect()
                                     if (connector.id !== 'walletConnect') {
                                         if (isMobile()) {
                                             getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
@@ -51,7 +52,7 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, o
                                             })
                                         }
                                     }
-                                    
+
                                     await connectAsync({
                                         chainId: mainnet.id,
                                         connector: connector,
