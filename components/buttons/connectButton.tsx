@@ -16,10 +16,12 @@ const ConnectButton = ({
     children,
     className,
     onClose,
+    side = 'bottom',
 }: {
     children: ReactNode;
     className?: string;
     onClose?: () => void;
+    side?: 'top' | 'bottom' | 'left' | 'right';
 }) => {
     const { connectWallet, wallets } = useWallet();
     const [open, setOpen] = useState<boolean>();
@@ -101,7 +103,7 @@ const ConnectButton = ({
             >
                 {children}
             </PopoverTrigger>
-            <PopoverContent className="flex flex-col items-start gap-2 w-fit">
+            <PopoverContent side={side} className="flex flex-col items-start gap-2 w-fit">
                 {filteredConnectors.map((connector, index) => (
                     <button
                         type="button"

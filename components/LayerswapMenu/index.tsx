@@ -12,16 +12,13 @@ import WizardItem from "../Wizard/WizardItem";
 const Comp = () => {
     const [openTopModal, setOpenTopModal] = useState(false);
 
-    const [selectedWizardComponent, setSelectedWizardComponent] = useState<string | undefined>(undefined)
     const { goBack, currentStepName } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
 
-    const handleGoBack = () => {
-        if (goBack) {
-            goBack()
-        }
-        if (selectedWizardComponent) {
-            setSelectedWizardComponent(undefined)
+    const handleModalOpenStateChange = (value: boolean) => {
+        setOpenTopModal(value)
+        if (value === false) {
+            goToStep(MenuStep.Menu)
         }
     }
 
@@ -36,13 +33,13 @@ const Comp = () => {
                     <Modal
                         modalId="menuModal"
                         show={openTopModal}
-                        setShow={setOpenTopModal}
+                        setShow={handleModalOpenStateChange}
                         header={
                             <div className="inline-flex items-center">
                                 {
-                                    (selectedWizardComponent || goBack) &&
+                                    goBack &&
                                     <div className="-ml-2">
-                                        <IconButton onClick={handleGoBack} icon={
+                                        <IconButton onClick={goBack} icon={
                                             <ChevronLeft strokeWidth="2" />
                                         }>
                                         </IconButton>

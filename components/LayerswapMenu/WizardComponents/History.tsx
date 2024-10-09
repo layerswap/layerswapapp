@@ -14,7 +14,7 @@ const HistoryWizard: FC = () => {
 
     return (
         <HistorySwapProvider>
-            <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} >
+            <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full">
                 <HistoryList onSwapSettled={() => goToStep(MenuStep.TransactionDetails)} componentType="steps" refreshing={false} loadExplorerSwaps={true} />
             </WizardItem>
             <WizardItem StepName={MenuStep.TransactionDetails} GoBack={goBackToHistoryListStep} >
