@@ -83,8 +83,8 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     }
 
     return (
-        <div className='flex flex-col justify-between w-full h-full gap-4'>
-            <div className='space-y-4 pt-2'>
+        <div className='flex flex-col justify-between w-full h-full gap-3'>
+            <div className='space-y-3 pt-2'>
                 <div className='p-3 bg-secondary-700 rounded-xl'>
                     <div className={`font-normal flex flex-col w-full relative z-10 ${(source_exchange || destination_exchange) ? 'space-y-2' : 'space-y-4'}`}>
 
@@ -204,7 +204,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                     <AccordionTrigger className='w-full'>
                                         <div className="flex justify-between items-baseline text-sm w-full mr-1">
                                             <span className="text-left">Fees</span>
-                                            <span className='font-semibold'>{displayCalculatedFeeAmountInUsd}</span>
+                                            <span className='font-semibold text-primary-text'>{displayCalculatedFeeAmountInUsd}</span>
                                         </div>
                                     </AccordionTrigger>
                                     <AccordionContent >
@@ -224,7 +224,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                 </div>
                                             </div>
                                         </div>
-
                                     </AccordionContent>
                                 </AccordionItem>
                             </Accordion>
@@ -243,7 +242,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                 {/* Date and Status */}
                 <div className='p-3 bg-secondary-700 rounded-xl'>
                     <div className='text-sm flex flex-col gap-3'>
-                        <div className="flex justify-between items-center text-sm">
+                        <div className="flex justify-between items-center text-sm text-primary-text">
                             <p className="text-left text-secondary-text">Swap Id</p>
                             <CopyButton toCopy={swap?.id} iconClassName='order-2 ml-1'>
                                 {shortenAddress(swap?.id)}
@@ -274,7 +273,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                 </div>
 
                 {/* Source and Destination Transactions */}
-                <div className='p-3 bg-secondary-700 rounded-xl'>
+                <div className='p-3 bg-secondary-700 rounded-xl text-primary-text'>
                     <div className='text-sm flex flex-col gap-3'>
                         <div className="flex justify-between items-baseline">
                             <p className="text-left text-secondary-text">Source transaction</p>

@@ -10,7 +10,7 @@ import KnownInternalNames from "../../lib/knownIds"
 import { ChevronRightIcon } from 'lucide-react'
 import StatusIcon from "./StatusIcons"
 import { FC } from "react"
-import { truncateDecimals } from "../utils/RoundDecimals";
+import { findIndexOfFirstNonZeroAfterComma, truncateDecimalsToFloor } from "../utils/RoundDecimals";
 import useWallet from "../../hooks/useWallet";
 import AddressIcon from "../AddressIcon";
 import { addressFormat } from "../../lib/address/formatter";
@@ -105,7 +105,7 @@ const Summary: FC<SwapInfoProps> = ({
                     <div className="flex flex-col gap-0.5 w-full">
 
                         <div className="flex items-baseline justify-between w-full overflow-hidden">
-                            <p className="text-secondary-text text-base truncate max-w-[50%]">
+                            <p className="text-secondary-text text-base truncate max-w-[55%]">
                                 {
                                     source?.display_name === destination?.display_name ?
                                         <>
@@ -118,11 +118,7 @@ const Summary: FC<SwapInfoProps> = ({
                                 }
                             </p>
 
-                            <p className="font-light text-secondary-text text-sm">{truncateDecimals(sourceTransaction?.amount || swap.requested_amount, source_token.precision)} {source_token.symbol}</p>
-
-
-
-
+                            <p className="font-light text-secondary-text text-sm">{truncateDecimalsToFloor(sourceTransaction?.amount || swap.requested_amount, findIndexOfFirstNonZeroAfterComma((0.01 / Number(source_token?.price_in_usd.toFixed()))) || 0)} {source_token.symbol}</p>
                         </div>
                         <div className="flex w-full justify-between items-start text-end">
                             <div className="flex items-center gap-0.5">
@@ -165,7 +161,7 @@ const Summary: FC<SwapInfoProps> = ({
                                     </>
                                 }
                             </div>
-                            <p className="font-medium text-primary-text text-lg leading-5">{truncateDecimals(calculatedReceiveAmount, destination_token.precision)} {destination_token.symbol}</p>
+                            <p className="font-medium text-primary-text text-lg leading-5">{truncateDecimalsToFloor(calculatedReceiveAmount, findIndexOfFirstNonZeroAfterComma((0.01 / Number(destination_token?.price_in_usd.toFixed()))) || 0)} {destination_token.symbol}</p>
                         </div>
                     </div>
                 </div>

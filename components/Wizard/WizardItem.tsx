@@ -32,9 +32,6 @@ const WizardItem: FC<Props> = (({ StepName, children, GoBack, PositionPercent, f
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{
-                x: { duration: 0.35, type: "spring" },
-            }}
             custom={{ direction: moving === "back" ? -1 : 1, width: wrapperWidth }}>
             <div style={styleConfigs} className={className}>
                 {Number(wrapperWidth) > 1 && children}
@@ -50,6 +47,7 @@ let variants = {
     center: {
         x: 0,
         transition: {
+            duration: 0.2,
             when: "beforeChildren",
         },
     },
