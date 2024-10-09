@@ -67,9 +67,9 @@ const Summary: FC<SwapInfoProps> = ({
     return (
         source_token && <>
             <div className="bg-secondary-700 p-3 w-full relative z-10 font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer">
-                <div className="flex gap-3 w-full items-center">
+                <div className="grid grid-cols-8 gap-3 w-full items-center">
                     {source?.display_name !== destination?.display_name ?
-                        <div className="h-11 w-11 relative min-w-11">
+                        <div className="col-span-1 h-11 w-11 relative min-w-11">
                             {
                                 source &&
                                 <Image
@@ -90,7 +90,7 @@ const Summary: FC<SwapInfoProps> = ({
                             }
                         </div>
                         :
-                        <div className="w-11 h-11">
+                        <div className="w-11 h-11 col-span-1">
                             {
                                 source &&
                                 <Image
@@ -102,7 +102,7 @@ const Summary: FC<SwapInfoProps> = ({
                             }
                         </div>
                     }
-                    <div className="flex flex-col gap-0.5 w-full">
+                    <div className="col-span-7 flex flex-col gap-0.5 w-full">
 
                         <div className="flex items-baseline justify-between w-full overflow-hidden">
                             <p className="text-secondary-text text-base truncate max-w-[55%]">
@@ -142,7 +142,6 @@ const Summary: FC<SwapInfoProps> = ({
                                     </div>
                                 }
                                 {
-                                    addressFormat(destAddress, destination_network) !== (sourceAddressFromInput ? addressFormat(sourceAddressFromInput, source_network) : null) &&
                                     <>
                                         <ChevronRightIcon className="h-3 w-3" />
                                         <div className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-secondary-950 rounded-md">
