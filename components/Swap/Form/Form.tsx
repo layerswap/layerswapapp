@@ -25,7 +25,7 @@ import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
 import { resolveExchangesURLForSelectedToken } from "../../../helpers/routes";
 import ValidationError from "../../validationError";
-import { ImtblPassportProvider } from "../../ImtblPassportProvider";
+import { ImtblPassportProvider } from "../../WalletProviders/ImtblPassportProvider";
 import { Exchange, ExchangeToken } from "../../../Models/Exchange";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";
@@ -137,10 +137,10 @@ const SwapForm: FC<Props> = ({ partner }) => {
         const newTo = destinationRoutes?.data?.find(l => l.name === source?.name)
         const newFromToken = newFrom?.tokens.find(t => t.symbol === toCurrency?.symbol)
         const newToToken = newTo?.tokens.find(t => t.symbol === fromCurrency?.symbol)
-        
+
         setValues({ ...values, from: newFrom, to: newTo, fromCurrency: newFromToken, toCurrency: newToToken, toExchange: newToExchange, fromExchange: newFromExchange, currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined }, true)
     }, [values, sourceRoutes, destinationRoutes, exchanges])
-  
+
     const hideAddress = query?.hideAddress
         && query?.to
         && query?.destAddress

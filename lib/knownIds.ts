@@ -166,6 +166,9 @@ export default class KnownInternalNames {
 
         public static readonly ParadexMainnet: string = "PARADEX_MAINNET"
 
+        public static readonly FuelTestnet: string = "FUEL_TESTNET"
+
+
     }
 
     static Currencies = class {
