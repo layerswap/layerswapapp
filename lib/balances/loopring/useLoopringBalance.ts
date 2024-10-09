@@ -53,7 +53,11 @@ export default function useLoopringBalance(): BalanceProvider {
     }
 
 
-    const getBalance = async ({ network, token, address }: BalanceProps) => {
+    const getBalance = async ({ networkName, token, address }: BalanceProps) => {
+        const network = networks.find(n => n.name === networkName)
+
+        if (!network) return
+
         try {
             const account: { data: AccountInfo } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`)
             const accInfo = account.data
