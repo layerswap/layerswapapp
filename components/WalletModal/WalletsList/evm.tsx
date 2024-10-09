@@ -64,7 +64,7 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, o
                                 } catch (e) {
                                     //TODO: handle error like in transfer
                                     toast.error('Error connecting wallet')
-                                    // setSelectedProvider(undefined)
+                                    setSelectedProvider({ ...provider, connector: undefined })
                                 }
                             }}
                         >
