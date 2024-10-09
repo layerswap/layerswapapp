@@ -1,13 +1,20 @@
 export class SelectMenuItem<T> implements ISelectMenuItem {
     id: string;
     name: string;
+    menuItemLabel?: React.ReactNode;
+    menuItemDetails?: React.ReactNode;
+    menuItemImage?: React.ReactNode;
+    logo?: React.ReactNode;
+    noWalletsConnectedText?: React.ReactNode;
+    balanceAmount?: number | undefined;
     order: number;
     imgSrc: string;
-    displayName?: React.ReactNode;
+    displayName?: string;
     isAvailable: boolean;
     group?: string;
     details?: JSX.Element | JSX.Element[];
     badge?: JSX.Element | JSX.Element[];
+    subItems?: ISelectMenuItem[];
     leftIcon?: JSX.Element | JSX.Element[];
     baseObject: T;
     constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, isAvailable: boolean, group?: string, details?: JSX.Element | JSX.Element[]) {
@@ -25,12 +32,19 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
 export interface ISelectMenuItem {
     id: string;
     name: string;
+    menuItemLabel?: React.ReactNode;
+    menuItemDetails?: React.ReactNode;
+    menuItemImage?: React.ReactNode;
+    logo?: React.ReactNode;
+    noWalletsConnectedText?: React.ReactNode;
+    balanceAmount?: number | undefined;
     imgSrc: string;
-    displayName?: React.ReactNode;
+    displayName?: string;
     group?: string;
     isAvailable: boolean;
     details?: JSX.Element | JSX.Element[];
     badge?: JSX.Element | JSX.Element[];
     leftIcon?: JSX.Element | JSX.Element[];
     order?: number;
+    subItems?: ISelectMenuItem[];
 }

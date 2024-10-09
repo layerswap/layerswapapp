@@ -93,13 +93,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         else if (value) return
     }, [currencyGroup])
 
-    const valueDetails = <>
-        <div className="flex">{network?.display_name}</div>
-        <div className="text-primary-text-placeholder inline-flex items-center justify-self-end gap-1">
-            ({currency?.symbol})
-        </div>
-    </>
-
     const networkDetails = <div>
         <TransferCEX direction={direction} />
     </div>
@@ -131,7 +124,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             searchHint=''
             isLoading={isRoutesLoading || isHistoricalNetworsLoading}
             modalHeight="80%"
-            valueDetails={valueDetails}
             modalContent={networkDetails}
             key={value?.id}
             header={header}
@@ -176,19 +168,28 @@ function GenerateMenuItems(
             </div>
         </div>
 
-        const details = <p className="text-primary-text-muted">
-            {e.token.symbol}
-        </p>
+        const logo = <div className="flex-shrink-0 h-6 w-6 relative">
+            {network?.logo && (
+                <Image
+                    src={network.logo}
+                    alt="Project Logo"
+                    height="40"
+                    width="40"
+                    loading="eager"
+                    className="rounded-md object-contain"
+                />
+            )}
+        </div>
 
         const item: SelectMenuItem<ExchangeNetwork> = {
             baseObject: e,
             id: `${e.network.name}-${e.token.symbol}`,
-            name: network?.display_name || '',
-            displayName,
+            name: `${e.network.display_name}`,
+            displayName: network?.display_name,
             order: 1,
             imgSrc: network?.logo || '',
             isAvailable: true,
-            details
+            logo
         }
 
         return item;

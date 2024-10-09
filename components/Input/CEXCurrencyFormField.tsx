@@ -2,18 +2,36 @@ import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
-import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import { ResolveCEXCurrencyOrder } from "../../lib/sorting";
 import { useQueryState } from "../../context/query";
+import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
 import { Exchange, ExchangeToken } from "../../Models/Exchange";
 import { resolveExchangesURLForSelectedToken } from "../../helpers/routes";
 import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
-import { CircleAlert, RouteOff } from "lucide-react";
-import { QueryParams } from "../../Models/QueryParams";
-import RouteIcon from "./RouteIcon";
+import ResolveRouteIcon from "./RouteIcon";
+import { Network } from "../../Models/Network";
+import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
+import Image from 'next/image'
+
+const GROUP_ORDERS = { "Popular": 1, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
+export function groupByType(values: SelectMenuItem<Network>[]) {
+    let groups: SelectMenuItemGroup[] = [];
+    values.forEach((v) => {
+        let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });
+        group.items.push(v);
+        if (!groups.find(x => x.name == v.group)) {
+            groups.push(group);
+        }
+    });
+
+    groups.sort((a, b) => {
+        return (GROUP_ORDERS[a.name] || GROUP_ORDERS.Other) - (GROUP_ORDERS[b.name] || GROUP_ORDERS.Other);
+    });
+
+    return groups;
+}
 
 const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -47,7 +65,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         direction,
         lockedCurrency
     )
-
+    
     const value = currencyMenuItems?.find(x => x.id == currencyGroup?.symbol);
 
     useEffect(() => {
@@ -67,12 +85,14 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
-    return <PopoverSelectWrapper
+    return <CommandSelectWrapper
+        disabled={!value?.isAvailable}
+        valueGrouper={groupByType}
         placeholder="Asset"
-        values={currencyMenuItems}
-        value={value}
         setValue={handleSelect}
-        disabled={isLocked}
+        value={value}
+        values={currencyMenuItems}
+        searchHint='Search'
     />;
 }
 
@@ -90,6 +110,19 @@ export function GenerateCurrencyMenuItems(
 
         const routeNotFound = c.status === "not_found"
 
+        const logo = <div className="flex-shrink-0 h-6 w-6 relative">
+            {c.logo && (
+                <Image
+                    src={c.logo}
+                    alt="Project Logo"
+                    height="40"
+                    width="40"
+                    loading="eager"
+                    className="rounded-md object-contain"
+                />
+            )}
+        </div>
+
         const res: SelectMenuItem<ExchangeToken> = {
             baseObject: c,
             id: c.symbol,
@@ -97,7 +130,8 @@ export function GenerateCurrencyMenuItems(
             order: ResolveCEXCurrencyOrder(c),
             imgSrc: c.logo,
             isAvailable: isAvailable,
-            leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} type="token" />
+            leftIcon: ResolveRouteIcon({ direction, isAvailable, routeNotFound, type: 'token' }),
+            logo
         };
         return res
     });

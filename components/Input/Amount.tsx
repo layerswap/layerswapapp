@@ -3,7 +3,6 @@ import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import NumericInput from "./NumericInput";
 import { useBalancesState } from "../../context/balances";
-import { truncateDecimals } from "../utils/RoundDecimals";
 import { useFee } from "../../context/feeContext";
 import dynamic from "next/dynamic";
 import { useQueryState } from "../../context/query";
@@ -19,7 +18,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { fromCurrency, from, to, amount, toCurrency, fromExchange, toExchange } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee, isFeeLoading } = useFee()
     const [isFocused, setIsFocused] = useState(false);
-    const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
+    const { balances, gases, isGasLoading } = useBalancesState()
     const [walletAddress, setWalletAddress] = useState<string>()
     const native_currency = from?.token
     const query = useQueryState()
@@ -49,7 +48,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         maxAllowedAmount = Number(maxAmountFromApi) || 0
     }
 
-    const placeholder = (fromCurrency && toCurrency && from && to && minAllowedAmount && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAmountFromApi}` : '0.0'
+    const placeholder = (fromCurrency && toCurrency && from && to && minAllowedAmount && !isGasLoading) ? `${minAllowedAmount} - ${maxAmountFromApi}` : '0.0'
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
     const amountRef = useRef(ref)
 

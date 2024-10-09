@@ -76,6 +76,10 @@ export default function useWallet() {
         return connectedWallets
     }
 
+    const connectedWalletProviders = WalletProviders.filter(provider => {
+        return provider.getConnectedWallet()
+    })
+
     const getWithdrawalProvider = (network: Network) => {
         const provider = WalletProviders.find(provider => provider.withdrawalSupportedNetworks.includes(network.name))
         return provider
@@ -93,6 +97,7 @@ export default function useWallet() {
 
     return {
         wallets: getConnectedWallets(),
+        connectedWalletProviders,
         connectWallet,
         disconnectWallet,
         reconnectWallet,

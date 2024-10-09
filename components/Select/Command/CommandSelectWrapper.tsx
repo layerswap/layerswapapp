@@ -13,16 +13,18 @@ type CommandSelectWrapperProps = {
     searchHint: string;
     disabled: boolean;
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
-    isLoading: boolean;
+    groupedCurrencies?: SelectMenuItemGroup[];
+    isLoading?: boolean | undefined;
     modalHeight?: LeafletHeight;
-    valueDetails?: React.ReactNode;
     exchangeDetails?: React.ReactNode;
     modalContent?: React.ReactNode;
     direction?: string;
     header?: string;
+    walletComp?: React.ReactNode;
 }
 
 export default function CommandSelectWrapper<T>({
+    walletComp,
     setValue,
     value,
     disabled,
@@ -30,11 +32,10 @@ export default function CommandSelectWrapper<T>({
     searchHint,
     values,
     valueGrouper,
+    groupedCurrencies,
     isLoading,
     modalHeight,
     modalContent,
-    header,
-    valueDetails
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -74,7 +75,7 @@ export default function CommandSelectWrapper<T>({
                         }
                         {value ?
                             <span className="ml-3 flex font-medium flex-auto space-x-1 text-primary-buttonTextColor items-center">
-                                {valueDetails || value.name}
+                                {value.name}
                             </span>
                             :
                             <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
@@ -88,17 +89,18 @@ export default function CommandSelectWrapper<T>({
                 </button>
             </div>
             <CommandSelect
+                walletComp={walletComp}
                 setShow={setShowModal}
                 setValue={handleSelect}
                 show={showModal}
                 value={value}
                 searchHint={searchHint}
                 valueGrouper={valueGrouper}
+                groupedCurrencies={groupedCurrencies}
                 values={values}
                 isLoading={isLoading}
                 modalHeight={modalHeight}
                 modalContent={modalContent}
-                header={header}
             />
         </>
     )

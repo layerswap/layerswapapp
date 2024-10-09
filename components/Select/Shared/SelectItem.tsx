@@ -1,37 +1,29 @@
 import { ISelectMenuItem } from "./Props/selectMenuItem";
-import Image from 'next/image';
 
 export default function SelectItem({ item }: { item: ISelectMenuItem }) {
 
     return (
-        <div className={`${item?.displayName ? "px-3" : "px-1.5"} flex items-center justify-between gap-3 w-full overflow-hidden`}>
-            <div className={`${item?.displayName ? "gap-2.5" : "gap-3"} relative flex items-center  pl-1 w-full`}>
-                {!item?.displayName &&
-                    <div className="flex-shrink-0">
-                        <div>{item.leftIcon}</div>
-                    </div>
-                }
-                <div className={`${item?.displayName ? "h-9 w-9" : "h-6 w-6"} flex-shrink-0 relative`}>
-                    {item.imgSrc && (
-                        <Image
-                            src={item.imgSrc}
-                            alt="Project Logo"
-                            height="40"
-                            width="40"
-                            loading="eager"
-                            className="rounded-md object-contain"
-                        />
-                    )}
+        <div className={`${item.noWalletsConnectedText ? "group-hover:bg-secondary-500" : "hover:bg-secondary-500 "} flex items-center justify-between w-full overflow-hidden rounded-md p-1.5 py-3`}>
+            <div className="relative flex items-center gap-1.5">
+                <div className="flex-shrink-0">
+                    {item.logo}
                 </div>
-                <div className="flex justify-between w-full">
-                    <span className="flex items-center pb-0.5">
-                        {item.displayName ? item.displayName : item.name}
+                <p className="text-md font-medium flex w-full justify-between space-x-2 items-center">
+                    <span className="flex items-center justify-center pb-0.5">
+                        {item.menuItemImage && item.menuItemImage}
+                        {item.menuItemLabel ? item.menuItemLabel : item.name}
                     </span>
-                    {item.badge && <span className="ml-2">{item.badge}</span>}
-                    <span className="ml-auto pl-2">{item.details}</span>
-                </div>
+                    {item.badge && <span>{item.badge}</span>}
+                </p>
             </div>
+            <div>
+                {item.menuItemDetails && item.menuItemDetails}
+            </div>
+            {item.noWalletsConnectedText && (
+                <div className="hidden group-hover:block">
+                    <span>{item.noWalletsConnectedText}</span>
+                </div>
+            )}
         </div>
     );
 }
-

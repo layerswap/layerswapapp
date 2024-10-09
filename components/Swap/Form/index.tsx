@@ -28,6 +28,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
+import BalancesFetcher from "./BalancesFetcher";
 import { DepositMethodProvider } from "../../../context/depositMethodContext";
 import { dynamicWithRetries } from "../../../lib/dynamicWithRetries";
 import AddressNote from "../../Input/Address/AddressNote";
@@ -172,12 +173,12 @@ export default function Form() {
     }, [router, swap])
 
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
+        <BalancesFetcher />
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
                 {
-                    swap &&
-                    !showSwapModal &&
-                    <PendingSwap key="pendingSwap" onClick={() => handleShowSwapModal(true)} />
+                    networkToConnect &&
+                    <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
                 }
             </AnimatePresence>
         </div>
