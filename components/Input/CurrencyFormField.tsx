@@ -27,6 +27,10 @@ import ResolveRouteIcon from "./RouteIcon";
 import { Exchange } from "../../Models/Exchange";
 import NetworkSettings from "../../lib/NetworkSettings";
 
+const WalletsHeader = dynamic(() => import("../ConnectedWallets").then((comp) => comp.WalletsHeader), {
+    loading: () => <></>
+ })
+
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
 });
@@ -193,6 +197,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 groupedCurrencies={neyworkGroupedCurrencies}
                 searchHint='Search'
                 isLoading={isLoading}
+                walletComp={<WalletsHeader />}
             />
         </div>
     )

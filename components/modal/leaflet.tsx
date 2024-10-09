@@ -11,6 +11,7 @@ export type LeafletHeight = 'fit' | 'full' | '80%' | '90%';
 export type LeafletPosition = 'absolute' | 'fixed';
 
 export interface LeafletProps {
+    wallet?: React.ReactNode;
     show: boolean;
     setShow: Dispatch<SetStateAction<boolean>>;
     title?: React.ReactNode;
@@ -19,9 +20,10 @@ export interface LeafletProps {
     height?: LeafletHeight;
     position: LeafletPosition;
     onClose?: () => void;
+    walletComp?: React.ReactNode;
 }
 // TODO handle overflow when height is set to 'fit'
-export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, position, onClose }, topmostRef) {
+export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, position, onClose, walletComp }, topmostRef) {
     const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 40 };
@@ -109,10 +111,13 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                         <div className="text-lg text-secondary-text font-semibold">
                             <div>{title}</div>
                         </div>
-                        <IconButton onClick={handleCloseModal} icon={
-                            <X strokeWidth={3} />
-                        }>
-                        </IconButton>
+                        <div className='flex space-x-1'>
+                            {walletComp && <div>{walletComp}</div>}
+                            <IconButton onClick={handleCloseModal} icon={
+                                <X strokeWidth={3} />
+                            }>
+                            </IconButton>
+                        </div>
                     </div>
                     <div
                         className='select-text max-h-full overflow-y-auto styled-scroll px-6 h-full'>

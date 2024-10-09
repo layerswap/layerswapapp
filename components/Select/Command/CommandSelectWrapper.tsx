@@ -20,9 +20,11 @@ type CommandSelectWrapperProps = {
     modalContent?: React.ReactNode;
     direction?: string;
     header?: string;
+    walletComp?: React.ReactNode;
 }
 
 export default function CommandSelectWrapper<T>({
+    walletComp,
     setValue,
     value,
     disabled,
@@ -87,6 +89,7 @@ export default function CommandSelectWrapper<T>({
                 </button>
             </div>
             <CommandSelect
+                walletComp={walletComp}
                 setShow={setShowModal}
                 setValue={handleSelect}
                 show={showModal}

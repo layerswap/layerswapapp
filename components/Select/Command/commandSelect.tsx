@@ -24,6 +24,7 @@ export interface CommandSelectProps extends SelectProps {
     modalHeight?: LeafletHeight;
     modalContent?: React.ReactNode;
     header?: string;
+    walletComp?: React.ReactNode;
 }
 
 export class SelectMenuItemGroup {
@@ -35,7 +36,7 @@ export class SelectMenuItemGroup {
     items: ISelectMenuItem[];
 }
 
-export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, groupedCurrencies, isLoading, modalHeight = 'full', modalContent }: CommandSelectProps) {
+export default function CommandSelect({ values, value, setValue, show, setShow, searchHint, valueGrouper, groupedCurrencies, isLoading, modalHeight = 'full', modalContent, walletComp }: CommandSelectProps) {
     const { isDesktop } = useWindowDimensions();
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -58,7 +59,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
     };
 
     return (
-        <Modal height={modalHeight} show={show} setShow={setShow} modalId='commandSelect'>
+        <Modal height={modalHeight} show={show} setShow={setShow} modalId='commandSelect' walletComp={walletComp}>
             {show ? (
                 <CommandWrapper>
                     {searchHint && <input
