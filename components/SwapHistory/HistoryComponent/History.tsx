@@ -2,7 +2,7 @@ import LayerSwapApiClient, { SwapResponse } from "../../../lib/layerSwapApiClien
 import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
 import { ChevronDown, Plus, RefreshCw } from 'lucide-react'
 import Modal from "../../modal/modal"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, useEffect, useMemo, useState } from "react"
 import Summary from "../Summary";
 import useSWRInfinite from 'swr/infinite'
 import useWallet from "../../../hooks/useWallet"
@@ -19,12 +19,15 @@ import GuestCard from "../../guestCard"
 import { AuthStep } from "../../../Models/Wizard"
 import { SwapStatus } from "../../../Models/SwapStatus"
 import ResizablePanel from "../../ResizablePanel"
+import { useHistoryContext } from "../../../context/historyContext"
 
 const PAGE_SIZE = 20
 type ListProps = {
     statuses?: string | number;
     refreshing: boolean;
     loadExplorerSwaps: boolean;
+    componentType?: 'steps' | 'page'
+    onSwapSettled?: () => void
 }
 
 const getSwapsKey = () => (index: number) =>
@@ -38,15 +41,16 @@ const getExplorerKey = (addresses: string[]) => (index) => {
 
 type Swap = SwapResponse & { type: 'user' | 'explorer' }
 
-const List: FC<ListProps> = ({ loadExplorerSwaps }) => {
+const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page', onSwapSettled }) => {
     const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
-    const [selectedSwap, setSelectedSwap] = useState<Swap | undefined>()
     const [showAll, setShowAll] = useState(false)
     const { wallets } = useWallet()
     const { userId } = useAuthState()
     const addresses = wallets.map(w => w.address)
+    const { setSelectedSwap, selectedSwap } = useHistoryContext()
 
     const handleopenSwapDetails = (swap: Swap) => {
+        onSwapSettled && onSwapSettled()
         setSelectedSwap(swap)
         setOpenSwapDetailsModal(true)
     }
@@ -81,11 +85,13 @@ const List: FC<ListProps> = ({ loadExplorerSwaps }) => {
         if (explorerSize !== addresses.length) setExplorerSize(addresses.length)
     }, [addresses.length])
 
-    const handleSWapDetailsShow = useCallback((show: boolean) => {
-        setOpenSwapDetailsModal(show)
-        if (!show)
-            mutate()
-    }, [])
+    const handleSWapDetailsShow = (show: boolean) => {
+        if (componentType === 'page') {
+            setOpenSwapDetailsModal(show)
+            if (!show)
+                mutate()
+        }
+    }
 
     const userSwaps = (!(userSwapPages?.[0] instanceof EmptyApiResponse) && userSwapPages?.map(p => {
         p.data?.forEach(s => {
@@ -145,11 +151,19 @@ const List: FC<ListProps> = ({ loadExplorerSwaps }) => {
     if (!wallets.length && !userId) return <ConnectOrSignIn />
     if (allEmpty) return <BlankHistory />
 
-    const grouppedSwaps = !allEmpty ?
-        Object.entries(
-            groupBy(
-                userSwaps as Swap[], ({ swap }) => swap.status === SwapStatus.Completed ? new Date(swap.created_date).toLocaleDateString() : 'Pending')).map(([key, values]) => ({ key, values }
+    const grouppedSwaps = !allEmpty
+        ? Object
+            .entries(
+                groupBy(
+                    userSwaps as Swap[], ({ swap }) =>
+                    swap.status === SwapStatus.Created
+                        || swap.status === SwapStatus.LsTransferPending
+                        || swap.status === SwapStatus.UserTransferPending
+                        || swap.status === SwapStatus.UserTransferDelayed
+                        ? 'Pending'
+                        : new Date(swap.created_date).toLocaleDateString()
                 ))
+            .map(([key, values]) => ({ key, values }))
         : null
 
 
@@ -216,18 +230,21 @@ const List: FC<ListProps> = ({ loadExplorerSwaps }) => {
                 </div>
             }
         </div>
-        <Modal
-            height="full"
-            show={openSwapDetailsModal}
-            setShow={handleSWapDetailsShow}
-            header='Swap detail'
-            modalId="pendingSwapDetails"
-        >
-            {
-                selectedSwap &&
-                <SwapDetails swapResponse={selectedSwap} />
-            }
-        </Modal>
+        {
+            componentType === 'page' &&
+            <Modal
+                height="full"
+                show={openSwapDetailsModal}
+                setShow={handleSWapDetailsShow}
+                header='Swap details'
+                modalId="swapDetails"
+            >
+                {
+                    selectedSwap &&
+                    <SwapDetails swapResponse={selectedSwap} />
+                }
+            </Modal>
+        }
     </>
 }
 
@@ -259,7 +276,8 @@ const BlankHistory = () => {
 }
 
 const ConnectOrSignIn = () => {
-    return <div className="w-full h-full min-h-[inherit] flex flex-col justify-between items-center ">
+
+    return <div className="w-full h-full  flex flex-col justify-between items-center ">
         <div className="flex flex-col items-center justify-center text-center w-full h-full">
             <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
             <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
@@ -278,7 +296,9 @@ const ConnectOrSignIn = () => {
                     <div className="text-center text-xl font-semibold">Connect Wallet</div>
                 </div>
             </ConnectButton>
-            <SignIn />
+            <div className="w-full overflow-hidden">
+                <SignIn />
+            </div>
         </div>
     </div>
 }
@@ -294,7 +314,9 @@ const SignIn = () => {
         <TimerProvider>
             {
                 showGuestCard ?
-                    <GuestCard />
+                    <div className="animate-fade-in">
+                        <GuestCard />
+                    </div>
                     :
                     <button onClick={() => setShowGuestCard(true)} className="text-secondary-text w-fit mx-auto flex justify-center mt-2 underline hover:no-underline">
                         <span>Sign in with your email</span>
@@ -346,5 +368,4 @@ function resolveDate(dateInput) {
     }
 }
 
-
-export default List
+export default HistoryList

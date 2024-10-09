@@ -78,6 +78,10 @@ const Footer = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     )
 }
 
+const ItemWithSteps = () => {
+    
+}
+
 Menu.Group = Group
 Menu.Item = Item
 Menu.Footer = Footer

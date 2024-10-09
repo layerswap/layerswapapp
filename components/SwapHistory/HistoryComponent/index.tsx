@@ -7,18 +7,17 @@ import { AnimatePresence, motion } from "framer-motion"
 const Header = dynamic(() => import("./Header"), {
     loading: () => <></>
 })
-const Content = dynamic(() => import("./Content"), {
+const Content = dynamic(() => import("./History"), {
     loading: () => <Snippet />
 })
 
 type Props = {
-    statuses: string | number;
     children: JSX.Element | JSX.Element[];
     title: string;
     loadExplorerSwaps: boolean;
 }
 
-const SwapsListModal: FC<Props> = ({ children, statuses, title, loadExplorerSwaps }) => {
+const SwapsListModal: FC<Props> = ({ children, title, loadExplorerSwaps }) => {
     const [openTopModal, setOpenTopModal] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
@@ -35,13 +34,11 @@ const SwapsListModal: FC<Props> = ({ children, statuses, title, loadExplorerSwap
                     header={<Header
                         setRefreshing={setRefreshing}
                         loadExplorerSwaps={loadExplorerSwaps}
-                        statuses={statuses}
                         title={title}
                     />}>
                     <AnimatePresence>
                         <Content
                             loadExplorerSwaps={loadExplorerSwaps}
-                            statuses={statuses}
                             refreshing={refreshing}
                         />
                     </AnimatePresence>

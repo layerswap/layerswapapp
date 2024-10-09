@@ -7,14 +7,13 @@ import useWallet from "../../../hooks/useWallet"
 import toast from "react-hot-toast"
 
 type Props = {
-    statuses: string | number;
     title: string;
     loadExplorerSwaps: boolean;
     setRefreshing: (value: boolean) => void
 }
 
-const getSwapsKey = (statuses: string | number) => (index) =>
-    `/swaps?page=${index + 1}&status=${statuses}`
+const getSwapsKey = () => (index) =>
+    `/swaps?page=${index + 1}`
 
 const getExplorerKey = (addresses: string[]) => (index) => {
     if (!addresses?.[index])
@@ -22,12 +21,12 @@ const getExplorerKey = (addresses: string[]) => (index) => {
     return `/explorer/${addresses[index]}`
 }
 
-const Header = ({ statuses, title, loadExplorerSwaps, setRefreshing }: Props) => {
+const Header = ({ title, loadExplorerSwaps, setRefreshing }: Props) => {
     const { wallets } = useWallet()
     const addresses = wallets.map(w => w.address)
     const { mutate } = useSWRConfig()
 
-    const getKey = useMemo(() => getSwapsKey(statuses), [statuses])
+    const getKey = useMemo(() => getSwapsKey(), [])
     const getFromExplorerKey = useMemo(() => getExplorerKey(addresses), [addresses])
 
     const handleRefresh = useCallback(async () => {

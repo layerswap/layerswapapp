@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react'
+import { FC } from 'react'
 import LayerSwapApiClient, { SwapResponse, TransactionType } from '../../lib/layerSwapApiClient';
 import Image from 'next/image'
 import shortenAddress, { shortenEmail } from '../utils/ShortenAddress';
@@ -28,7 +28,7 @@ type Props = {
 
 const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const { swap, refuel, quote } = swapResponse
-    const { source_token, destination_token, destination_address, source_network, destination_network, source_exchange, destination_exchange, requested_amount } = swap || {}
+    const { source_token, destination_token, destination_address, source_network, destination_network, source_exchange, destination_exchange, requested_amount } = swap
 
     const router = useRouter()
     const {
@@ -122,10 +122,10 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                 </div>
                                 <div className="flex flex-col items-end">
                                     {
-                                        requested_amount &&
-                                        <p className="text-primary-text text-base font-semibold">{truncateDecimals(requested_amount, source_token.precision)} {source_token.symbol}</p>
+                                        (swapInputTransaction?.amount || requested_amount) &&
+                                        <p className="text-primary-text text-base font-semibold">{truncateDecimals(swapInputTransaction?.amount || requested_amount, source_token.precision)} {source_token.symbol}</p>
                                     }
-                                    <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
+                                    <p className="text-secondary-text text-sm flex justify-end">${swapInputTransaction?.usd_value || requestedAmountInUsd}</p>
                                 </div>
                             </div>
                         </div>
@@ -315,11 +315,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                         </div >
                     </div>
                 </div>
-
-
-
-
-
             </div>
 
             {

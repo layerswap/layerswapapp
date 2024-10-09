@@ -44,4 +44,3 @@ function GuestCard() {
 }
 
 export default GuestCard;
-

@@ -109,13 +109,15 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                         <div className="text-lg text-secondary-text font-semibold">
                             <div>{title}</div>
                         </div>
-                        <IconButton onClick={handleCloseModal} icon={
-                            <X strokeWidth={3} />
-                        }>
-                        </IconButton>
+                        <div className='-mr-2'>
+                            <IconButton onClick={handleCloseModal} icon={
+                                <X strokeWidth={3} />
+                            }>
+                            </IconButton>
+                        </div>
                     </div>
                     <div
-                        className='select-text max-h-full overflow-y-auto styled-scroll px-6 h-full'>
+                        className='select-text max-h-full overflow-y-auto overflow-x-hidden styled-scroll px-6 h-full'>
                         {children}
                     </div>
                 </div>
