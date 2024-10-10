@@ -91,7 +91,7 @@ export const setMenuPath = (path: string, router: NextRouter) => {
         if (search)
             finalURI += `?${search}`
     }
-    window.history.pushState({ ...window.history.state, as: finalURI, url: finalURI }, '', finalURI);
+    window.history.pushState({ ...window.history.state, as: router.asPath, url: finalURI }, '', finalURI);
 }
 
 export const clearMenuPath = (router: NextRouter) => {
@@ -99,7 +99,7 @@ export const clearMenuPath = (router: NextRouter) => {
     let finalURI = window.location.protocol + "//"
         + window.location.host + basePath + router.asPath;
 
-    window.history.replaceState({ ...window.history.state, as: finalURI, url: finalURI }, '', finalURI);
+    window.history.replaceState({ ...window.history.state, as: router.asPath, url: finalURI }, '', finalURI);
 }
 
 export default LayerswapMenu
