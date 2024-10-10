@@ -3,6 +3,7 @@ import shortenAddress from "./utils/ShortenAddress"
 import useWallet from "../hooks/useWallet"
 import ConnectButton from "./buttons/connectButton"
 import SubmitButton from "./buttons/submitButton"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./shadcn/dialog"
 import { useState } from "react"
 import { Wallet } from "../stores/walletStore"
 import Modal from "./modal/modal"
@@ -15,7 +16,7 @@ export const WalletsHeader = () => {
     if (wallets.length > 0) {
         return (
             <>
-                <button type="button" aria-label="Connected wallets" onClick={() => setOpenModal(true)} className="-mx-2 p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
+                <button type="button" aria-label="Connected wallets" onClick={() => setOpenModal(true)} className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
                     <WalletsIcons wallets={wallets} />
                 </button>
                 <Modal
@@ -33,7 +34,7 @@ export const WalletsHeader = () => {
 
     return (
         <ConnectButton>
-            <div className="-mx-2 p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
+            <div className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
                 <WalletIcon className="h-6 w-6 mx-0.5" strokeWidth="2" />
             </div>
         </ConnectButton>
@@ -105,9 +106,12 @@ export const WalletsMenu = () => {
 
     return (
         <ConnectButton>
-            <SubmitButton text_align="center" icon={<WalletIcon className='stroke-2 w-6 h-6' strokeWidth={2} />} className="bg-primary/20 border-none !text-primary !px-4" type="button" isDisabled={false} isSubmitting={false}>
-                Connect a wallet
-            </SubmitButton>
+            <div className=" border border-primary disabled:border-primary-900 items-center space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md transform hover:brightness-125 transition duration-200 ease-in-out bg-primary py-3 md:px-3 bg-primary/20 border-none !text-primary !px-4" >
+                <span className="order-first absolute left-0 inset-y-0 flex items-center pl-3">
+                    <WalletIcon className="h-6 w-6" strokeWidth="2" />
+                </span>
+                <span className="grow text-center">Connect a wallet</span>
+            </div>
         </ConnectButton>
     )
 }

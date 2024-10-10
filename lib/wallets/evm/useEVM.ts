@@ -9,7 +9,6 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { Wallet } from "../../../stores/walletStore"
 import { EVMAddresses, useEVMAddressesStore } from "../../../stores/evmAddressesStore"
 import { useWalletModalState } from "../../../stores/walletModalStateStore"
-import { address } from "@ton/core"
 
 export default function useEVM(): WalletProvider {
     const name = 'EVM'
@@ -64,7 +63,7 @@ export default function useEVM(): WalletProvider {
     const [isLoading, setIsLoading] = useState(false)
     const [fetchAddresses, setFetchAddresses] = useState(false)
     const lastUniqueConnectors = useRef<Connector[] | null>(null)
-    
+
     useEffect(() => {
         if (!fetchAddresses || isLoading || (uniqueConnectors && lastUniqueConnectors.current && uniqueConnectors.toString() === lastUniqueConnectors.current.toString())) return
 
@@ -118,16 +117,17 @@ export default function useEVM(): WalletProvider {
                 const activeAddress = activeAccount?.address
 
                 const addresses = EVMAddresses?.find(w => w.connectorName.toLowerCase() === account.name.toLowerCase())?.addresses
-                if (!addresses) continue
+                const address = accountIsActive ? activeAddress : addresses?.[0]
+                if (!address) continue
 
                 let wallet: Wallet = {
                     isActive: accountIsActive,
-                    address: accountIsActive ? activeAddress : addresses?.[0],
+                    address,
                     addresses: addresses,
                     connector: account.name,
                     providerName: name,
                     isLoading: isLoading,
-                    icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account), address: activeAddress || addresses[0] }),
+                    icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account), address }),
                     connect: connectWallet,
                     disconnect: () => disconnectWallet(account.name)
                 }
@@ -176,8 +176,8 @@ export default function useEVM(): WalletProvider {
     }
 
     const availableWalletsforConnect = resolveAvailableWallets(allConnectors, connectedWallets)
-    {/* //TODO: refactor ordering */}
-    availableWalletsforConnect.forEach(w => {w["order"] = resolveWalletConnectorIndex(w.id)})
+    {/* //TODO: refactor ordering */ }
+    availableWalletsforConnect.forEach(w => { w["order"] = resolveWalletConnectorIndex(w.id) })
     const resolvedConnectedWallets = getConnectedWallets()
 
     const provider = {

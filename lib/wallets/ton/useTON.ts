@@ -13,7 +13,7 @@ export default function useTON(): WalletProvider {
     const address = tonWallet?.account && Address.parse(tonWallet.account.address).toString({ bounceable: false })
     const iconUrl = (tonWallet as any)?.imageUrl
 
-    const wallet = tonWallet ? {
+    const wallet = tonWallet && address ? {
         address,
         iconUrl,
         connector: name,

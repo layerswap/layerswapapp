@@ -11,8 +11,8 @@ import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "..
 import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import Modal from "../../modal/modal";
 import SwapForm from "./Form";
-import { NextRouter, useRouter } from "next/router";
 import useSWR from "swr";
+import { NextRouter, useRouter } from "next/router";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
@@ -199,13 +199,11 @@ export default function Form() {
                 <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
             }
         </Modal>
-        <Modal
-            height='fit'
+        <Modal height='fit'
             show={showSwapModal}
             setShow={handleShowSwapModal}
             header={`Complete the swap`}
-            modalId="showSwap"
-        >
+            modalId="showSwap">
             <ResizablePanel>
                 <SwapDetails type="contained" />
             </ResizablePanel>

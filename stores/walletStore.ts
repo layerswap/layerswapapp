@@ -11,7 +11,7 @@ interface WalletState {
 
 export type Wallet = {
     isActive: boolean;
-    address?: string | `0x${string}`;
+    address: string | `0x${string}`;
     addresses?: string[] | `0x${string}`[];
     providerName: string
     icon: (props: any) => React.JSX.Element;
