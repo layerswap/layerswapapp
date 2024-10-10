@@ -22,7 +22,7 @@ const WalletTransferContent: FC = () => {
 
     const wallet = provider?.getConnectedWallet(source_network)
 
-    const { balances } = useBalancesState()
+    const { balances, isBalanceLoading } = useBalancesState()
     const { fetchBalance, fetchGas } = useBalance()
 
     const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
@@ -44,7 +44,7 @@ const WalletTransferContent: FC = () => {
         if (source_exchange) await mutateSwap()
         setIsloading(false);
     }, [source_network?.type, swap?.source_exchange, disconnectWallet, setIsloading, isLoading])
-
+    
     let accountAddress: string | undefined = ""
     if (swap?.source_exchange) {
         accountAddress = swap.exchange_account_name || ""
@@ -82,12 +82,12 @@ const WalletTransferContent: FC = () => {
                 <AddressWithIcon addressItem={{ address: wallet?.address, group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} destination={source_network} />
                 <div>
                     {
-                        walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
-                            <div className="text-right text-secondary-text font-normal text-sm">
-                                <span>{walletBalanceAmount}</span> <span>{source_token?.symbol}</span>
-                            </div>
-                            :
-                            <></>
+                        isBalanceLoading ?
+                            <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                            : walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
+                                <div className="text-right text-secondary-text font-normal text-sm">
+                                    <span>{walletBalanceAmount}</span> <span>{source_token?.symbol}</span>
+                                </div> : <></>
                     }
                 </div>
             </div>

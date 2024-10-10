@@ -26,10 +26,12 @@ import { SortingByAvailability } from "../../lib/sorting";
 import ResolveRouteIcon from "./RouteIcon";
 import { Exchange } from "../../Models/Exchange";
 import NetworkSettings from "../../lib/NetworkSettings";
+import { ExtendedAddress } from "./Address/AddressPicker/AddressWithIcon";
+import { addressFormat } from "../../lib/address/formatter";
 
 const WalletsHeader = dynamic(() => import("../ConnectedWallets").then((comp) => comp.WalletsHeader), {
     loading: () => <></>
- })
+})
 
 const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
     loading: () => <></>,
@@ -62,7 +64,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const { to, fromCurrency, toCurrency, from, currencyGroup } = values
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
-    const { balances } = useBalancesState()
+    const { balances, isBalanceLoading } = useBalancesState()
 
     const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
     const apiClient = new LayerSwapApiClient()
@@ -94,7 +96,8 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         balances,
         query,
         wallets,
-        error
+        error,
+        isBalanceLoading
     );
 
     const currencyAsset = direction === 'from' ? fromCurrency?.symbol : toCurrency?.symbol;
@@ -138,11 +141,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         const default_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === (query?.fromAsset)?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
             || currencyMenuItems?.find(c => c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
-
-        const assetFromQuery = currencyMenuItems?.find(c =>
-            c.baseObject?.symbol?.toUpperCase() === (query?.fromAsset)?.toUpperCase())
-
-        const isLocked = query?.lockFromAsset
 
         const selected_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === toCurrency?.symbol?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === from?.name)
@@ -230,8 +228,6 @@ function GenerateCurrencyMenuItems(
     wallets?: Wallet[] | undefined,
     error?: ApiError,
 ): SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }>[] {
-    const { to, from } = values
-
     return currencies?.map(c => {
         const currency = c
         const displayName = currency.symbol;
@@ -278,12 +274,12 @@ function GenerateCurrencyMenuItems(
             {Number(formatted_balance_amount) ?
                 <span>{formatted_balance_amount}</span>
                 :
-                <span>-</span>
+                <span>0</span>
             }
             {balanceAmountInUsd ?
                 <span className="text-secondary-text">${balanceAmountInUsd}</span>
                 :
-                null
+                <span>$0</span>
             }
         </p>) : null
 
@@ -338,6 +334,7 @@ function GenerateGroupedCurrencyMenuItems(
     query?: QueryParams,
     wallets?: Wallet[] | undefined,
     error?: ApiError,
+    isBalanceLoading?: boolean,
 ): SelectMenuItemGroup[] {
     const { to, from } = values;
 
@@ -419,13 +416,15 @@ function GenerateGroupedCurrencyMenuItems(
 
         const details = wallets?.length ? (
             <p className="text-primary-text text-sm flex flex-col items-end pr-1.5">
-                {Number(formattedBalanceAmount) ? <span>{formattedBalanceAmount}</span> : <span>-</span>}
-                {balanceAmountInUsd ? <span className="text-secondary-text">${new Intl.NumberFormat("en-US", {style: "decimal",}).format(Number(balanceAmountInUsd))}</span> : null}
+                {Number(formattedBalanceAmount) ? <span>{formattedBalanceAmount}</span> : <span>0</span>}
+                {balanceAmountInUsd ? <span className="text-secondary-text">${new Intl.NumberFormat("en-US", { style: "decimal", }).format(Number(balanceAmountInUsd))}</span> : <span className="text-secondary-text">$0</span>}
             </p>
         ) : null;
 
         const routeNotFound = currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR;
         const groupName = getGroupName(network, (values?.from?.name === network?.name || values?.to?.name === network?.name) ? 'selected' : 'top', currencyIsAvailable && !routeNotFound && !wallets?.length);
+
+        const extendedAddress = (network && currency.contract) && <ExtendedAddress address={addressFormat(currency.contract, network)} network={network} />
 
         const res: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
             baseObject: currency,
@@ -451,7 +450,8 @@ function GenerateGroupedCurrencyMenuItems(
                 />
             )
             ),
-            noWalletsConnectedText
+            noWalletsConnectedText,
+            extendedAddress
         };
 
         const networkLogo = (

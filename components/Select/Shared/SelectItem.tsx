@@ -11,7 +11,13 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                 <p className="text-md font-medium flex w-full justify-between space-x-2 items-center">
                     <span className="flex items-center justify-center pb-0.5">
                         {item.menuItemImage && item.menuItemImage}
-                        {item.menuItemLabel ? item.menuItemLabel : item.name}
+                        {item.menuItemLabel ?
+                            <span className="flex space-x-1">
+                                {item.menuItemLabel}
+                                {item?.extendedAddress && <span className="self-end hidden group-hover:block">{item?.extendedAddress}</span>}
+                            </span>
+                            :
+                            item.name}
                     </span>
                     {item.badge && <span>{item.badge}</span>}
                 </p>

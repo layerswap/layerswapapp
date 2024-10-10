@@ -16,6 +16,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     badge?: JSX.Element | JSX.Element[];
     subItems?: ISelectMenuItem[];
     leftIcon?: JSX.Element | JSX.Element[];
+    extendedAddress?: React.ReactNode;
     baseObject: T;
     constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, isAvailable: boolean, group?: string, details?: JSX.Element | JSX.Element[]) {
         this.baseObject = baseObject;
@@ -47,4 +48,5 @@ export interface ISelectMenuItem {
     leftIcon?: JSX.Element | JSX.Element[];
     order?: number;
     subItems?: ISelectMenuItem[];
+    extendedAddress?: React.ReactNode;
 }
