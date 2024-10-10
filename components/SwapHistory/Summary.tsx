@@ -142,6 +142,7 @@ const Summary: FC<SwapInfoProps> = ({
                                     </div>
                                 }
                                 {
+                                    addressFormat(destAddress, destination_network) !== (sourceAddressFromInput ? addressFormat(sourceAddressFromInput, source_network) : null) &&
                                     <>
                                         <ChevronRightIcon className="h-3 w-3" />
                                         <div className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-secondary-950 rounded-md">
