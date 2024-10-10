@@ -19,7 +19,7 @@ import { SwapStatus } from "../../Models/SwapStatus";
 type SwapInfoProps = {
     swapResponse: SwapResponse,
 }
-const Summary: FC<SwapInfoProps> = ({
+const HistorySummary: FC<SwapInfoProps> = ({
     swapResponse,
 }) => {
 
@@ -118,7 +118,7 @@ const Summary: FC<SwapInfoProps> = ({
                                 }
                             </p>
 
-                            <p className="font-light text-secondary-text text-sm">{truncateDecimalsToFloor(sourceTransaction?.amount || swap.requested_amount, findIndexOfFirstNonZeroAfterComma((0.01 / Number(source_token?.price_in_usd.toFixed()))) || 0)} {source_token.symbol}</p>
+                            <p className="font-light text-secondary-text text-sm">{smartDecimalTruncate(sourceTransaction?.amount || swap.requested_amount, source_token?.price_in_usd)} {source_token.symbol}</p>
                         </div>
                         <div className="flex w-full justify-between items-start text-end">
                             <div className="flex items-center gap-0.5">
@@ -161,7 +161,7 @@ const Summary: FC<SwapInfoProps> = ({
                                     </>
                                 }
                             </div>
-                            <p className="font-medium text-primary-text text-lg leading-5">{truncateDecimalsToFloor(calculatedReceiveAmount, findIndexOfFirstNonZeroAfterComma((0.01 / Number(destination_token?.price_in_usd.toFixed()))) || 0)} {destination_token.symbol}</p>
+                            <p className="font-medium text-primary-text text-lg leading-5">{smartDecimalTruncate(calculatedReceiveAmount, destination_token?.price_in_usd)} {destination_token.symbol}</p>
                         </div>
                     </div>
                 </div>
@@ -174,4 +174,19 @@ const Summary: FC<SwapInfoProps> = ({
     )
 }
 
-export default Summary
+const smartDecimalTruncate = (value: number, price_in_usd: number) => {
+    let decimals = findIndexOfFirstNonZeroAfterComma((0.01 / Number(price_in_usd.toFixed()))) || 0
+    let truncatedAmount = truncateDecimalsToFloor(value, decimals)
+
+    if (truncatedAmount === 0) {
+        while (truncatedAmount === 0) {
+            decimals += 1
+            truncatedAmount = truncateDecimalsToFloor(value, decimals)
+        }
+    }
+
+    return truncateDecimalsToFloor(value, decimals)
+}
+
+
+export default HistorySummary
