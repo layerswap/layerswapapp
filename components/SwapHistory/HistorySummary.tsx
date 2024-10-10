@@ -67,7 +67,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
     return (
         source_token && <>
             <div className="bg-secondary-700 p-3 w-full relative z-10 font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer">
-                <div className="grid grid-cols-8 gap-3 w-full items-center">
+                <div className="grid grid-cols-6 sm:grid-cols-8 gap-3 w-full items-center">
                     {source?.display_name !== destination?.display_name ?
                         <div className="col-span-1 h-11 w-11 relative min-w-11">
                             {
@@ -102,10 +102,10 @@ const HistorySummary: FC<SwapInfoProps> = ({
                             }
                         </div>
                     }
-                    <div className="col-span-7 flex flex-col gap-0.5 w-full">
+                    <div className="col-span-5 sm:col-span-7 flex flex-col gap-0.5 w-full">
 
                         <div className="flex items-baseline justify-between w-full overflow-hidden">
-                            <p className="text-secondary-text text-base truncate max-w-[55%]">
+                            <p className="text-secondary-text text-sm sm:text-base truncate max-w-[55%]">
                                 {
                                     source?.display_name === destination?.display_name ?
                                         <>
@@ -118,7 +118,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                 }
                             </p>
 
-                            <p className="font-light text-secondary-text text-sm">{smartDecimalTruncate(sourceTransaction?.amount || swap.requested_amount, source_token?.price_in_usd)} {source_token.symbol}</p>
+                            <p className="font-light text-secondary-text text-xs sm:text-sm ">{smartDecimalTruncate(sourceTransaction?.amount || swap.requested_amount, source_token?.price_in_usd)} {source_token.symbol}</p>
                         </div>
                         <div className="flex w-full justify-between items-start text-end">
                             <div className="flex items-center gap-0.5">
@@ -161,7 +161,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                     </>
                                 }
                             </div>
-                            <p className="font-medium text-primary-text text-lg leading-5">{smartDecimalTruncate(calculatedReceiveAmount, destination_token?.price_in_usd)} {destination_token.symbol}</p>
+                            <p className="font-medium text-primary-text text-sm sm:text-lg leading-5 sm:leading-5">{smartDecimalTruncate(calculatedReceiveAmount, destination_token?.price_in_usd)} {destination_token.symbol}</p>
                         </div>
                     </div>
                 </div>
