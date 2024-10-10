@@ -14,8 +14,6 @@ function TransactionsHistory() {
 
   const router = useRouter();
 
-  const [refreshing, setRefreshing] = useState(false);
-
   const goBack = useCallback(() => {
     window?.['navigation']?.['canGoBack'] ?
       router.back()
@@ -33,7 +31,6 @@ function TransactionsHistory() {
         <div className="px-6 h-full sm:max-h-[92%] overflow-y-auto styled-scroll">
           <Content
             loadExplorerSwaps={true}
-            refreshing={refreshing}
           />
         </div>
         <div id="widget_root" />

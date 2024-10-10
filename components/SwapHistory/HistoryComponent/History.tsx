@@ -24,14 +24,17 @@ import { useHistoryContext } from "../../../context/historyContext"
 const PAGE_SIZE = 20
 type ListProps = {
     statuses?: string | number;
-    refreshing: boolean;
+    refreshing?: boolean;
     loadExplorerSwaps: boolean;
     componentType?: 'steps' | 'page'
-    onSwapSettled?: () => void
+    onSwapSettled?: () => void,
+    onNewTransferClick?: () => void
 }
 
-const getSwapsKey = () => (index: number) =>
-    `/internal/swaps?page=${index + 1}`
+const getSwapsKey = () => (index: number, userId: string | undefined) => {
+    if (!userId) return null
+    return `/internal/swaps?page=${index + 1}`
+}
 
 const getExplorerKey = (addresses: string[]) => (index) => {
     if (!addresses?.[index])
@@ -41,7 +44,7 @@ const getExplorerKey = (addresses: string[]) => (index) => {
 
 type Swap = SwapResponse & { type: 'user' | 'explorer' }
 
-const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page', onSwapSettled }) => {
+const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page', onSwapSettled, onNewTransferClick }) => {
     const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
     const [showAll, setShowAll] = useState(false)
     const { wallets } = useWallet()
@@ -62,7 +65,7 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
 
     const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, isValidating, mutate } =
         useSWRInfinite<ApiResponse<Swap[]>>(
-            getKey,
+            (index) => getKey(index, userId),
             apiClient.fetcher,
             { revalidateAll: true, dedupingInterval: 10000 }
         )
@@ -149,7 +152,7 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
 
     if ((userSwapsLoading && !(Number(userSwaps?.length) > 0) || explorerSwapsLoading)) return <Snippet />
     if (!wallets.length && !userId) return <ConnectOrSignIn />
-    if (allEmpty) return <BlankHistory />
+    if (allEmpty) return <BlankHistory componentType={componentType} onNewTransferClick={onNewTransferClick} />
 
     const grouppedSwaps = !allEmpty
         ? Object
@@ -248,7 +251,7 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
     </>
 }
 
-const BlankHistory = () => {
+const BlankHistory = ({ componentType, onNewTransferClick }: { componentType?: 'steps' | 'page', onNewTransferClick?: () => void }) => {
 
     return <div className="w-full h-full min-h-[inherit] flex flex-col justify-between items-center ">
         <div />
@@ -263,10 +266,19 @@ const BlankHistory = () => {
                     Transfers you make with this wallet/account will appear here after excution.
                 </p>
             </div>
-            <Link href={"/"} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-600 py-2 px-3 rounded-lg">
-                <Plus className="w-4 h-4" />
-                <p>New Transfer</p>
-            </Link>
+            {
+                componentType === 'steps' ?
+                    <button onClick={onNewTransferClick} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-600 py-2 px-3 rounded-lg">
+                        <Plus className="w-4 h-4" />
+                        <p>New Transfer</p>
+                    </button>
+                    :
+                    <Link href={"/"} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-600 py-2 px-3 rounded-lg">
+                        <Plus className="w-4 h-4" />
+                        <p>New Transfer</p>
+                    </Link>
+            }
+
         </div>
         <div className="w-full">
             <SignIn />

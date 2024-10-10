@@ -49,11 +49,11 @@ const Comp = () => {
                             </div>
                         }
                     >
-                        <Wizard wizardId='historyWizard' >
+                        <Wizard wizardId='menuWizard' >
                             <WizardItem StepName={MenuStep.Menu}>
                                 <MenuList goToStep={goToStep} />
                             </WizardItem>
-                            <HistoryWizard />
+                            <HistoryWizard setModalOpenState={setOpenTopModal} />
                         </Wizard>
                     </Modal>
                 </>
