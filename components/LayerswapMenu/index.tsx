@@ -83,29 +83,23 @@ const LayerswapMenu: FC = () => {
 //TODO: move URI handling to wizard provider
 export const setMenuPath = (path: string, router: NextRouter) => {
     const basePath = router?.basePath || ""
-    var swapURL = window.location.protocol + "//"
+    var finalURI = window.location.protocol + "//"
         + window.location.host + `${basePath}${path}`;
     const params = resolvePersistantQueryParams(router.query)
     if (params && Object.keys(params).length) {
         const search = new URLSearchParams(params as any);
         if (search)
-            swapURL += `?${search}`
+            finalURI += `?${search}`
     }
-    window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
+    window.history.pushState({ ...window.history.state, as: finalURI, url: finalURI }, '', finalURI);
 }
 
 export const clearMenuPath = (router: NextRouter) => {
     const basePath = router?.basePath || ""
-    let homeURL = window.location.protocol + "//"
-        + window.location.host + basePath
+    let finalURI = window.location.protocol + "//"
+        + window.location.host + basePath + router.asPath;
 
-    const params = resolvePersistantQueryParams(router.query)
-    if (params && Object.keys(params).length) {
-        const search = new URLSearchParams(params as any);
-        if (search)
-            homeURL += `?${search}`
-    }
-    window.history.replaceState({ ...window.history.state, as: homeURL, url: homeURL }, '', homeURL);
+    window.history.replaceState({ ...window.history.state, as: finalURI, url: finalURI }, '', finalURI);
 }
 
 export default LayerswapMenu

@@ -20,7 +20,7 @@ import { AuthStep } from "../../../Models/Wizard"
 import { SwapStatus } from "../../../Models/SwapStatus"
 import ResizablePanel from "../../ResizablePanel"
 import { useHistoryContext } from "../../../context/historyContext"
-import { setMenuPath } from "../../LayerswapMenu"
+import { clearMenuPath, setMenuPath } from "../../LayerswapMenu"
 import { useRouter } from "next/router"
 
 const PAGE_SIZE = 20
@@ -96,8 +96,10 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
     const handleSWapDetailsShow = (show: boolean) => {
         if (componentType === 'page') {
             setOpenSwapDetailsModal(show)
-            if (!show)
+            if (!show){
                 mutate()
+                clearMenuPath(router)
+            }
         }
     }
 
