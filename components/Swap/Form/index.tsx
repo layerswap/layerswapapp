@@ -324,6 +324,7 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
 }
 
 const setSwapPath = (swapId: string, router: NextRouter) => {
+    //TODO: as path should be without basepath and host
     const basePath = router?.basePath || ""
     var swapURL = window.location.protocol + "//"
         + window.location.host + `${basePath}/swap/${swapId}`;
@@ -333,6 +334,7 @@ const setSwapPath = (swapId: string, router: NextRouter) => {
         if (search)
             swapURL += `?${search}`
     }
+    
     window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
 }
 
@@ -347,5 +349,5 @@ const removeSwapPath = (router: NextRouter) => {
         if (search)
             homeURL += `?${search}`
     }
-    window.history.replaceState({ ...window.history.state, as: homeURL, url: homeURL }, '', homeURL);
+    window.history.replaceState({ ...window.history.state, as: router.asPath, url: homeURL }, '', homeURL);
 }
