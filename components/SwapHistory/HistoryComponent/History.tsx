@@ -110,14 +110,8 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
         return p?.data?.filter(s => s.swap.status === 'completed')
     }).flat(1) || []
 
-    const userSwapsisEmpty =
-        !userSwapPages
-        || (userSwapPages && (userSwapPages?.[0] instanceof EmptyApiResponse))
-
-    const explorerSwapsisEmpty =
-        (explorerPages?.[0] instanceof EmptyApiResponse)
-        || (!explorerSwapsLoading && !(explorerSwaps?.length >= 1))
-        || explorerError
+    const userSwapsisEmpty = !userSwapsLoading && userSwaps.length === 0
+    const explorerSwapsisEmpty = !explorerSwapsLoading && explorerSwaps.length === 0
 
     const isReachingEnd =
         userSwapsisEmpty || (userSwapPages && Number(userSwapPages[userSwapPages.length - 1]?.data?.length) < PAGE_SIZE);
@@ -145,7 +139,8 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
     })
 
     const allEmpty = !!userSwapsisEmpty && !!explorerSwapsisEmpty
-
+    console.log("userSwapsisEmpty", userSwapsisEmpty)
+    console.log("explorerSwapsisEmpty", explorerSwapsisEmpty)
     useEffect(() => {
         mutate()
     }, [userId])

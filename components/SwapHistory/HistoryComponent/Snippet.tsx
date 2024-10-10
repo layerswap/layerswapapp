@@ -1,10 +1,13 @@
 import { DetailedHTMLProps, HTMLAttributes } from "react"
 
 const Snippet = () => {
-    return <div className="text-sm py-3 space-y-4 font-medium focus:outline-none">
-        {[...Array(6)]?.map((item, index) => (
-          <HistoryItemSceleton className="animate-pulse" key={index}/>
+    return <div className="text-sm py-3 space-y-4 font-medium focus:outline-none ">
+        {[...Array(5)]?.map((item, index) => (
+            <HistoryItemSceleton className="animate-pulse" key={index} />
         ))}
+        <div className="relative" aria-hidden="true">
+            <div className="absolute -inset-x-20 bottom-0 bg-gradient-to-t from-10% from-secondary-900 pt-[90%] sm:pt-[30%] lg:pt-[80%]" />
+        </div>
     </div>
 }
 
