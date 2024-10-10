@@ -41,7 +41,6 @@ const Comp = () => {
                     }>
                     </IconButton>
                     <Modal
-                        height="full"
                         modalId="menuModal"
                         show={openTopModal}
                         setShow={handleModalOpenStateChange}
