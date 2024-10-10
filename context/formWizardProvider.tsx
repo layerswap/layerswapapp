@@ -26,6 +26,7 @@ export type WizardProvider<T> = {
 }
 
 type UpdateInterface<T> = {
+    //TODO: implement set URI 
     goToStep: (step: T, move?: Direction) => void,
     setLoading: (value: boolean) => void,
     setError: (error: StepError<T>) => void,
