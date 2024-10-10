@@ -3,7 +3,7 @@ import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
 import { ChevronDown, Plus, RefreshCw } from 'lucide-react'
 import Modal from "../../modal/modal"
 import { FC, useEffect, useMemo, useState } from "react"
-import Summary from "../Summary";
+import HistorySummary from "../HistorySummary";
 import useSWRInfinite from 'swr/infinite'
 import useWallet from "../../../hooks/useWallet"
 import Link from "next/link"
@@ -205,7 +205,7 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
                                                     onClick={() => handleopenSwapDetails(swap)}
                                                     key={swap.swap.id}
                                                 >
-                                                    <Summary swapResponse={swap} />
+                                                    <HistorySummary swapResponse={swap} />
                                                 </div>
                                             })
                                         }
