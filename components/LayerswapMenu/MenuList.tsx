@@ -24,7 +24,7 @@ const WalletsMenu = dynamic(() => import("../ConnectedWallets").then((comp) => c
     loading: () => <></>
 })
 
-const MenuList: FC<{ goToStep: (step: MenuStep) => void }> = ({ goToStep }) => {
+const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
     const { email, userType, userId } = useAuthState()
     const { setUserType } = useAuthDataUpdate()
     const router = useRouter();
@@ -70,7 +70,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep) => void }> = ({ goToStep }) => {
                 </>
                 <>
                     {router.pathname != '/transactions' &&
-                        <Menu.Item onClick={() => goToStep(MenuStep.Transactions)} icon={<ScrollText className="h-5 w-5" />} >
+                        <Menu.Item onClick={() => goToStep(MenuStep.Transactions, "/transactions")} icon={<ScrollText className="h-5 w-5" />} >
                             Transactions
                         </Menu.Item>
                     }

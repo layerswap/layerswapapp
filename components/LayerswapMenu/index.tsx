@@ -8,18 +8,28 @@ import { MenuStep } from "../../Models/Wizard";
 import MenuList from "./MenuList";
 import Wizard from "../Wizard/Wizard";
 import WizardItem from "../Wizard/WizardItem";
+import { NextRouter, useRouter } from "next/router";
+import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 
 const Comp = () => {
-    const [openTopModal, setOpenTopModal] = useState(false);
+    const router = useRouter();
 
     const { goBack, currentStepName } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
+
+    const [openTopModal, setOpenTopModal] = useState(false);
 
     const handleModalOpenStateChange = (value: boolean) => {
         setOpenTopModal(value)
         if (value === false) {
             goToStep(MenuStep.Menu)
+            clearMenuPath(router)
         }
+    }
+
+    const handleGoToStep = (step: MenuStep, path: string) => {
+        goToStep(step)
+        setMenuPath(path, router)
     }
 
     return <>
@@ -51,7 +61,7 @@ const Comp = () => {
                     >
                         <Wizard wizardId='menuWizard' >
                             <WizardItem StepName={MenuStep.Menu}>
-                                <MenuList goToStep={goToStep} />
+                                <MenuList goToStep={handleGoToStep} />
                             </WizardItem>
                             <HistoryWizard setModalOpenState={setOpenTopModal} />
                         </Wizard>
@@ -68,6 +78,34 @@ const LayerswapMenu: FC = () => {
             <Comp />
         </FormWizardProvider>
     )
+}
+
+//TODO: move URI handling to wizard provider
+export const setMenuPath = (path: string, router: NextRouter) => {
+    const basePath = router?.basePath || ""
+    var swapURL = window.location.protocol + "//"
+        + window.location.host + `${basePath}${path}`;
+    const params = resolvePersistantQueryParams(router.query)
+    if (params && Object.keys(params).length) {
+        const search = new URLSearchParams(params as any);
+        if (search)
+            swapURL += `?${search}`
+    }
+    window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
+}
+
+export const clearMenuPath = (router: NextRouter) => {
+    const basePath = router?.basePath || ""
+    let homeURL = window.location.protocol + "//"
+        + window.location.host + basePath
+
+    const params = resolvePersistantQueryParams(router.query)
+    if (params && Object.keys(params).length) {
+        const search = new URLSearchParams(params as any);
+        if (search)
+            homeURL += `?${search}`
+    }
+    window.history.replaceState({ ...window.history.state, as: homeURL, url: homeURL }, '', homeURL);
 }
 
 export default LayerswapMenu
