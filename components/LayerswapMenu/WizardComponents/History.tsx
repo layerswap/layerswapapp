@@ -6,7 +6,7 @@ import HistoryList from "../../SwapHistory/HistoryComponent/History"
 import { useFormWizardaUpdate } from "../../../context/formWizardProvider"
 import { MenuStep } from "../../../Models/Wizard"
 import { useRouter } from "next/router"
-import { clearMenuPath, setMenuPath } from ".."
+import { clearMenuPath } from ".."
 
 const HistoryWizard: FC<{ setModalOpenState: (value: boolean) => void }> = ({ setModalOpenState }) => {
     const router = useRouter();
@@ -14,7 +14,7 @@ const HistoryWizard: FC<{ setModalOpenState: (value: boolean) => void }> = ({ se
     const { goToStep } = useFormWizardaUpdate()
 
     const goBackToMenuStep = () => { goToStep(MenuStep.Menu, "back"); clearMenuPath(router) }
-    const goBackToHistoryListStep = () => { goToStep(MenuStep.Transactions, "back"); setMenuPath("/transactions", router) }
+    const goBackToHistoryListStep = () => { goToStep(MenuStep.Transactions, "back"); }
 
     const onNewTransferClick = () => {
         setModalOpenState(false)
