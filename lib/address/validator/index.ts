@@ -3,9 +3,9 @@ import KnownInternalNames from "../../knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
 import { PublicKey } from '@solana/web3.js'
 import { Address } from "@ton/core";
+import { utils } from "tronweb";
 
 export function isValidAddress(address?: string, network?: { name: string } | null): boolean {
-
     if (!address || isBlacklistedAddress(address)) {
         return false
     }
@@ -45,6 +45,9 @@ export function isValidAddress(address?: string, network?: { name: string } | nu
             return true;
         }
         return false
+    }
+    else if (network?.name === KnownInternalNames.Networks.TronMainnet || network?.name === KnownInternalNames.Networks.TronTestnet) {
+        return utils.address.isAddress(address)
     }
     else {
         return isValidEtherAddress(address);
