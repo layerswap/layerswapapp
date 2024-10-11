@@ -29,6 +29,7 @@ import { ImtblPassportProvider } from "../../ImtblPassportProvider";
 import { Exchange, ExchangeToken } from "../../../Models/Exchange";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";
+import { toHex } from "viem";
 
 type Props = {
     partner?: Partner,
@@ -137,10 +138,10 @@ const SwapForm: FC<Props> = ({ partner }) => {
         const newTo = destinationRoutes?.data?.find(l => l.name === source?.name)
         const newFromToken = newFrom?.tokens.find(t => t.symbol === toCurrency?.symbol)
         const newToToken = newTo?.tokens.find(t => t.symbol === fromCurrency?.symbol)
-        
+
         setValues({ ...values, from: newFrom, to: newTo, fromCurrency: newFromToken, toCurrency: newToToken, toExchange: newToExchange, fromExchange: newFromExchange, currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined }, true)
     }, [values, sourceRoutes, destinationRoutes, exchanges])
-  
+
     const hideAddress = query?.hideAddress
         && query?.to
         && query?.destAddress
