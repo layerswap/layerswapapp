@@ -24,7 +24,7 @@ const HistoryWizard: FC<{ setModalOpenState: (value: boolean) => void }> = ({ se
         setModalOpenState(false)
         goToStep(MenuStep.Menu)
     }
-    console.log("!appName", !appName)
+    
     return (
         <HistorySwapProvider>
             <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full">
