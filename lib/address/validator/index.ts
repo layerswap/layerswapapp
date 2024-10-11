@@ -107,9 +107,6 @@ function decodeBase58(base58Str) {
     // Decode Base58 string to a BigInt
     for (let char of base58Str) {
         let charIndex = ALPHABET.indexOf(char);
-        if (charIndex === -1) {
-            throw new Error(`Invalid character found: ${char}`);
-        }
         num = num * BigInt(BASE) + BigInt(charIndex);
     }
 
