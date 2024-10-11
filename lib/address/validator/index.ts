@@ -3,7 +3,6 @@ import KnownInternalNames from "../../knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
 import { PublicKey } from '@solana/web3.js'
 import { Address } from "@ton/core";
-import { toHex } from "viem";
 
 export function isValidAddress(address?: string, network?: { name: string } | null): boolean {
     if (!address || isBlacklistedAddress(address)) {
@@ -47,8 +46,8 @@ export function isValidAddress(address?: string, network?: { name: string } | nu
         return false
     }
     else if (network?.name === KnownInternalNames.Networks.TronMainnet || network?.name === KnownInternalNames.Networks.TronTestnet) {
-        const decodedAddress = toHex(decodeBase58(address));
-        return decodedAddress.startsWith('0x41')
+        const decodedAddress = decodeBase58(address).toUpperCase();
+        return decodedAddress.startsWith('41') && decodedAddress.length == 42
     }
     else {
         return isValidEtherAddress(address);
@@ -105,6 +104,7 @@ function decodeBase58(base58Str) {
 
     let num = 0n; // Use BigInt for large numbers
 
+    // Decode Base58 string to a BigInt
     for (let char of base58Str) {
         let charIndex = ALPHABET.indexOf(char);
         if (charIndex === -1) {
@@ -113,5 +113,32 @@ function decodeBase58(base58Str) {
         num = num * BigInt(BASE) + BigInt(charIndex);
     }
 
-    return num;
+    // Convert BigInt to a byte array
+    let hex = num.toString(16);
+    if (hex.length % 2 !== 0) {
+        hex = '0' + hex; // Ensure even length for proper byte representation
+    }
+    let bytes = Array.from(Buffer.from(hex, 'hex'));
+
+    // Add leading zero bytes for each '1' in the original Base58 string
+    let leadingZeroes = 0;
+    for (let char of base58Str) {
+        if (char === '1') {
+            leadingZeroes++;
+        } else {
+            break;
+        }
+    }
+    // Prepend zero bytes for each leading '1'
+    bytes = new Array(leadingZeroes).fill(0).concat(bytes);
+
+    // Remove the last 4 bytes (checksum) from the decoded data
+    if (bytes.length > 4) {
+        bytes = bytes.slice(0, -4);
+    }
+
+    // Convert byte array to hex string
+    let resultHex = bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    return resultHex;
 }
