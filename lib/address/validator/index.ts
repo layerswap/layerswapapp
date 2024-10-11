@@ -3,7 +3,7 @@ import KnownInternalNames from "../../knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
 import { PublicKey } from '@solana/web3.js'
 import { Address } from "@ton/core";
-import { utils } from "tronweb";
+import { toHex } from "viem";
 
 export function isValidAddress(address?: string, network?: { name: string } | null): boolean {
     if (!address || isBlacklistedAddress(address)) {
@@ -47,7 +47,8 @@ export function isValidAddress(address?: string, network?: { name: string } | nu
         return false
     }
     else if (network?.name === KnownInternalNames.Networks.TronMainnet || network?.name === KnownInternalNames.Networks.TronTestnet) {
-        return utils.address.isAddress(address)
+        const decodedAddress = toHex(decodeBase58(address));
+        return decodedAddress.startsWith('0x41')
     }
     else {
         return isValidEtherAddress(address);
@@ -95,4 +96,22 @@ function isBlacklistedAddress(address: string): boolean {
 
     if (BlacklistedAddresses.find(a => a.toLowerCase() === account.toLowerCase())) return true
     else return false
+}
+
+// Function to decode a Base58 string
+function decodeBase58(base58Str) {
+    const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+    const BASE = 58;
+
+    let num = 0n; // Use BigInt for large numbers
+
+    for (let char of base58Str) {
+        let charIndex = ALPHABET.indexOf(char);
+        if (charIndex === -1) {
+            throw new Error(`Invalid character found: ${char}`);
+        }
+        num = num * BigInt(BASE) + BigInt(charIndex);
+    }
+
+    return num;
 }
