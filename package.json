@@ -69,6 +69,7 @@
     "react-hot-toast": "^2.2.0",
     "react-swipeable": "^7.0.0",
     "react-use-intercom": "^2.0.0",
+    "react-virtuoso": "^4.10.4",
     "starknet": "^6.11.0",
     "starknetkit": "2.3.0",
     "swr": "^2.2.5",

@@ -21,6 +21,7 @@ import { SwapStatus } from "../../../Models/SwapStatus"
 import ResizablePanel from "../../ResizablePanel"
 import { useHistoryContext } from "../../../context/historyContext"
 import { useRouter } from "next/router"
+import { Virtuoso, GroupedVirtuoso } from 'react-virtuoso'
 
 const PAGE_SIZE = 20
 type ListProps = {
@@ -52,7 +53,7 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
     const [showAll, setShowAll] = useState(false)
     const { wallets } = useWallet()
     const { userId } = useAuthState()
-    const addresses = wallets.map(w => w.address)
+    const addresses = ['0x169dA96eef4ce602E8101CF5261553A127a4a21D']//wallets.map(w => w.address)
     const { setSelectedSwap, selectedSwap } = useHistoryContext()
 
     const handleopenSwapDetails = (swap: Swap) => {
@@ -163,16 +164,54 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
                         ? 'Pending'
                         : new Date(swap.created_date).toLocaleDateString()
                 ))
-            .map(([key, values]) => ({ key, values }))
+            .map(([key, values]) => ({ key, values })).sort((a, b) => a.key === 'Pending' ? -1 : b.key === 'Pending' ? 1 : 0)
         : null
-
 
     return <>
         <div className="h-full space-y-3 pt-3 ">
             {
                 grouppedSwaps && <div
-                    className="text-sm flex flex-col gap-5 font-medium focus:outline-none h-full"
+                    className="text-sm flex flex-col gap-5 font-medium focus:outline-none h-full styled-scroll"
                 >
+                    {/* <GroupedVirtuoso
+                        data={grouppedSwaps?.flatMap(g => g.values)}
+                        groupCounts={grouppedSwaps.map(g => g.values.length)}
+                        scrollerRef={(ref)=>{
+                           typeof ref?.classList?.['add'] === 'function'&& ref?.classList?.['add']('styled-scroll')
+                        }}
+                        groupContent={(index) => {
+                            const group = grouppedSwaps[index]
+                            const { key, values } = group
+                            return (
+                                <div className="w-full">
+                                    {
+                                        key !== 'Pending' &&
+                                        <p className="text-sm text-secondary-text font-normal pl-2">
+                                            {resolveDate(key)}
+                                        </p>
+                                    }
+                                    {
+                                        key == 'Pending' && values.length > 1 &&
+                                        <div className="w-full flex justify-end">
+                                            <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text pr-2'>
+                                                <p>See all incomplete swaps</p>
+                                                <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            )
+                        }}
+                        itemContent={(index, grouIndex, swap) => {
+                            if (!swap) return <></>
+                            return <div
+                                onClick={() => handleopenSwapDetails(swap)}
+                                key={swap.swap.id}
+                            >
+                                <HistorySummary swapResponse={swap} />
+                            </div>
+                        }}
+                    /> */}
                     {
                         grouppedSwaps
                             .sort((a, b) => a.key === 'Pending' ? -1 : b.key === 'Pending' ? 1 : 0)
@@ -205,7 +244,7 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
                                                     onClick={() => handleopenSwapDetails(swap)}
                                                     key={swap.swap.id}
                                                 >
-                                                    <HistorySummary swapResponse={swap} />
+                                                    <HistorySummary swapResponse={swap} wallets={wallets}/>
                                                 </div>
                                             })
                                         }
