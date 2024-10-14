@@ -17,8 +17,6 @@ export const LpLockingAssets: FC = () => {
     const { destination_network, commitId, setDestinationDetails, destination_asset } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
 
-    const router = useRouter()
-
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
 
     const atomicContract = (destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract) as `0x${string}`

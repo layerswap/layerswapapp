@@ -27,9 +27,9 @@ const commitStatusResolver = (commit: Commit, destination_details: Commit | unde
 
     if (destination_details?.redeemed || commit?.redeemed) return 'completed'
     //TODO check&implement source lock refund
-    else if (commit.uncommitted) return 'refunded'
+    else if (commit.refunded) return 'refunded'
     else if (commit.timelock && Number(commit.timelock) * 1000 < Date.now()) return 'timelock_expired'
-    else if (commit.locked) return 'user_locked'
+    else if (commit.hashlock) return 'user_locked'
     else if (destination_details) return 'lp_locked'
 
     return 'committed'
@@ -50,7 +50,7 @@ function CommittmentsHistory() {
     const router = useRouter();
     const { wallets, getWithdrawalProvider, getProviderByName } = useWallet()
 
-    const providers = wallets.filter(wallet => wallet.providerName !== 'solana')
+    const providers = wallets.filter(wallet => wallet.providerName !== 'solana' && wallet.providerName !== 'ton')
 
     const [selectedProvider, setSelectedProvider] = useState<string | undefined>(providers?.[0]?.connector)
 
@@ -102,9 +102,9 @@ function CommittmentsHistory() {
             if (commit) {
                 const status = commitStatusResolver(commit, destinationDetails)
                 commits.push({
-                    status,
                     ...commit,
-                    id: commit.id ?? ''
+                    status,
+                    id: commitIds[i]
                 })
             }
         }

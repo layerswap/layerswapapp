@@ -150,7 +150,7 @@ export const UserLockAction: FC = () => {
 
     useEffect(() => {
         let commitHandler: any = undefined
-        if (!sourceDetails?.locked) {
+        if (!sourceDetails?.hashlock) {
             (async () => {
                 commitHandler = setInterval(async () => {
                     if (!source_network?.chain_id)
@@ -164,7 +164,7 @@ export const UserLockAction: FC = () => {
                         id: commitId as string,
                         contractAddress: atomicContract
                     })
-                    if (data?.locked) {
+                    if (data?.hashlock) {
                         setSourceDetails(data)
                         clearInterval(commitHandler)
                     }
@@ -248,7 +248,7 @@ export const UserRefundAction: FC = () => {
                     id: commitId as string,
                     contractAddress: sourceAtomicContract
                 })
-                if (data?.uncommitted) {
+                if (data?.refunded) {
                     setSourceDetails(data)
                     clearInterval(commitHandler)
                 }
@@ -263,16 +263,18 @@ export const UserRefundAction: FC = () => {
             lockHandler = setInterval(async () => {
                 if (!destination_network?.chain_id)
                     throw Error("No chain id")
+                if (!commitId)
+                    throw Error("No commitId")
 
                 const data = await destination_provider.getDetails({
                     type: destination_asset?.contract ? 'erc20' : 'native',
                     chainId: destination_network.chain_id,
-                    id: sourceDetails?.id as string,
+                    id: commitId,
                     contractAddress: destinationAtomicContract,
                 })
 
                 if (data) setDestinationDetails(data)
-                if (data?.uncommitted) {
+                if (data?.refunded) {
                     clearInterval(lockHandler)
                 }
             }, 5000)

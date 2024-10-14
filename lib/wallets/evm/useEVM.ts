@@ -199,7 +199,7 @@ export default function useEVM(): WalletProvider {
 
         const parsedResult = {
             ...result,
-            lockId: result.lockId !== "0x0000000000000000000000000000000000000000000000000000000000000000" ? result.lockId : null,
+            hashlock: result.hashlock !== "0x0000000000000000000000000000000000000000000000000000000000000000" ? result.hashlock : null,
             amount: formatAmount(Number(result.amount), networkToken?.decimals),
             timelock: Number(result.timelock)
         }
@@ -207,7 +207,7 @@ export default function useEVM(): WalletProvider {
         if (!result) {
             throw new Error("No result")
         }
-        return parsedResult as Commit
+        return parsedResult
     }
 
     const addLock = async (params: CommitmentParams & LockParams) => {

@@ -7,11 +7,9 @@ export type Commit = {
     srcReceiver: string,
     timelock: number,
     amount: number,
-    locked: boolean,
-    id: string | undefined,
+    id?: string | undefined,
     hashlock: string | undefined,
-    uncommitted: boolean,
-    unlocked?: boolean,
+    refunded: boolean,
     secret: number,
     redeemed: boolean,
 }

@@ -161,9 +161,9 @@ export const ResolveMessages: FC = () => {
 
     const commtting = commitId ? true : false;
     const commited = sourceDetails ? true : false;
-    const lpLockDetected = destinationDetails ? true : false;
+    const lpLockDetected = destinationDetails?.hashlock ? true : false;
 
-    const assetsLocked = sourceDetails?.locked && destinationDetails ? true : false;
+    const assetsLocked = sourceDetails?.hashlock && destinationDetails?.hashlock ? true : false;
 
     const redeemCompleted = (destinationDetails?.redeemed ? true : false) || lpRedeemTransaction?.hash;
     const { getWithdrawalProvider } = useWallet()
@@ -186,13 +186,13 @@ export const ResolveMessages: FC = () => {
         </div >
     }
     if (isTimelockExpired) {
-        if (sourceDetails?.locked) {
+        if (sourceDetails?.hashlock) {
             return <div>
                 <Committed walletIcon={WalletIcon} amount={commitAmount} asset={source_asset?.symbol} />
                 <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={lpLockTransaction?.hash} amount={destinationDetailsAmount} asset={destination_asset?.symbol} />
                 <AssetsLockedByUser walletIcon={WalletIcon} />
                 {
-                    sourceDetails?.unlocked ?
+                    sourceDetails?.refunded ?
                         <RefundCompleted walletIcon={WalletIcon} source_network={source_network} tx_id={completedRefundHash} />
                         :
                         completedRefundHash ?
@@ -206,7 +206,7 @@ export const ResolveMessages: FC = () => {
             return <div className="flex w-full grow flex-col space-y-2" >
                 <Committed walletIcon={WalletIcon} amount={commitAmount} asset={source_asset?.symbol} />
                 {
-                    sourceDetails?.uncommitted ?
+                    sourceDetails?.refunded ?
                         <RefundCompleted walletIcon={WalletIcon} source_network={source_network} tx_id={completedRefundHash} />
                         :
                         completedRefundHash ?
@@ -269,8 +269,8 @@ const ResolveAction: FC = () => {
     const lpRedeemTransaction = commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)
 
     const commited = sourceDetails ? true : false;
-    const lpLockDetected = destinationDetails ? true : false;
-    const assetsLocked = sourceDetails?.locked && destinationDetails ? true : false;
+    const lpLockDetected = destinationDetails?.hashlock ? true : false;
+    const assetsLocked = sourceDetails?.hashlock && destinationDetails?.hashlock ? true : false;
     const redeemCompleted = (destinationDetails?.redeemed ? true : false) || lpRedeemTransaction?.hash;
 
     if (error) {
@@ -296,7 +296,7 @@ const ResolveAction: FC = () => {
         </div>
     }
     if (isTimelockExpired) {
-        if (sourceDetails?.uncommitted || sourceDetails?.unlocked) {
+        if (sourceDetails?.refunded) {
             return <div className="flex w-full grow flex-col space-y-2" >
                 <ActionStatus
                     status="success"
@@ -341,20 +341,20 @@ export const ActionsWithProgressbar: FC = () => {
     if (sourceDetails) {
         firstStep = "80%"
     }
-    if (destinationDetails) {
+    if (destinationDetails?.hashlock) {
         firstStep = "100%"
         secondStep = "10%"
         currentStep = 2
         actiontext = 'Lock'
     }
-    if (sourceDetails?.locked) {
+    if (sourceDetails?.hashlock) {
         firstStep = "100%"
         secondStep = "80%"
         currentStep = 2
     }
     const lpRedeemTransaction = commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)
 
-    const allDone = ((sourceDetails?.locked && destinationDetails?.redeemed) || lpRedeemTransaction?.hash) ? true : false
+    const allDone = ((sourceDetails?.hashlock && destinationDetails?.redeemed) || lpRedeemTransaction?.hash) ? true : false
     const showSteps = !allDone && !isTimelockExpired
     const timelock = sourceDetails?.timelock || sourceDetails?.timelock
 

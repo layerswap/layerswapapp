@@ -117,11 +117,7 @@ export default function useTON(): WalletProvider {
 
         try {
 
-            var search = window.location.search.substring(1);
-            const searchData = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}')
-            const hashlock = searchData.hashlock as string | undefined
-
-            const detailsResult = await getTONDetails({ network, hashlock, ...params })
+            const detailsResult = await getTONDetails({ network, ...params })
 
             if (!(detailsResult)) {
                 throw new Error("No result")

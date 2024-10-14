@@ -7,12 +7,11 @@ import { NetworkWithTokens } from "../../../Models/Network";
 import { Commit } from "../../../Models/PHTLC";
 
 
-export const getTONDetails = async (params: CommitmentParams & { hashlock: string | undefined, network: NetworkWithTokens | undefined }) => {
+export const getTONDetails = async (params: CommitmentParams & { network: NetworkWithTokens | undefined }) => {
 
     const {
         id,
         contractAddress,
-        hashlock,
         network
     } = params
 
@@ -25,7 +24,7 @@ export const getTONDetails = async (params: CommitmentParams & { hashlock: strin
 
     const commitResult = await tonClient.runMethod(
         Address.parse(contractAddress),
-        "getCommitDetails",
+        "getDetails",
         args.build()
     );
 
@@ -34,12 +33,12 @@ export const getTONDetails = async (params: CommitmentParams & { hashlock: strin
     if (!commitDetails) return null
 
     const details = commitDetails;
-    const locked = Number(details[10]) === 1
     const srcAsset = details[3].beginParse().loadStringTail()
     const sender = details[4].beginParse().loadAddress().toString()
 
     const token = network?.tokens.find(t => t.symbol === srcAsset)
-    const amount = Number(details[8]) / Math.pow(10, token?.decimals || 8)
+    const amount = Number(details[9]) / Math.pow(10, token?.decimals || 8)
+    const hashlock = details[8].toString()
 
     const parsedResult: Commit = {
         dstAddress: details[0].beginParse().loadStringTail(),
@@ -48,14 +47,13 @@ export const getTONDetails = async (params: CommitmentParams & { hashlock: strin
         srcAsset,
         sender,
         srcReceiver: details[6].beginParse().loadAddress().toString(),
-        timelock: Number(details[7]),
+        timelock: Number(details[10]),
         amount,
-        locked,
+        hashlock: hashlock != 0 && hashlock,
         id,
-        hashlock,
-        uncommitted: Number(details[11]) === 1,
-        secret: 0,
-        redeemed: false
+        refunded: Number(details[12]) === 1,
+        secret: Number(details[7]),
+        redeemed: Number(details[11]) === 1
     }
 
     return parsedResult

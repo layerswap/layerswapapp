@@ -68,11 +68,12 @@ export function AtomicProvider({ children }) {
 
     useEffect(() => {
         let timer: NodeJS.Timeout;
-        if (!sourceDetails || isTimelockExpired || (sourceDetails.locked && !destinationDetails)) return
+
+        if (!sourceDetails || isTimelockExpired || (sourceDetails.hashlock && !destinationDetails?.hashlock)) return
         const time = (Number(sourceDetails?.timelock) * 1000) - Date.now()
 
 
-        if (!sourceDetails.locked || (destinationDetails && !destinationDetails.redeemed)) {
+        if (!sourceDetails.hashlock || (destinationDetails && !destinationDetails.redeemed)) {
             if (time < 0) {
                 setIsTimelockExpired(true)
                 return
