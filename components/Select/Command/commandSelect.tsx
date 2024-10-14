@@ -86,14 +86,12 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                                     </div>
                                                     <Accordion type="single" collapsible key={item.name}>
                                                         <AccordionItem value={item.name}>
-                                                            <AccordionTrigger
-                                                                className={`flex mb-1 ml-4 items-center w-full overflow-hidden rounded-md py-2 px-1.5 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary`}
-                                                            >
+                                                            <AccordionTrigger className="flex mb-1 ml-4 items-center w-full overflow-hidden rounded-md py-2 px-1.5 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary">
                                                                 <div className="whitespace-nowrap flex items-center gap-2 flex-grow">
                                                                     {item.logo}
                                                                     {item.displayName}
                                                                     <div className="flex flex-col w-full items-end space-y-2 self-baseline">
-                                                                        <p className='text-secondary-text text-sm'>{item?.balanceAmount ? `$${new Intl.NumberFormat("en-US", {style: "decimal",}).format(item.balanceAmount)}` : ''}</p>
+                                                                        <p className='text-secondary-text text-sm'>{item?.balanceAmount ? `$${new Intl.NumberFormat("en-US", { style: "decimal", }).format(item.balanceAmount)}` : ''}</p>
                                                                         <div className="flex justify-end items-center w-full relative">
                                                                             {item?.balanceAmount ? item.subItems?.filter(i => i?.balanceAmount)?.map((subItem, index) => (
                                                                                 <div
@@ -108,7 +106,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                                                     </div>
                                                                 </div>
                                                             </AccordionTrigger>
-                                                            <AccordionContent>
+                                                            <AccordionContent className='rounded-md'>
                                                                 {item?.subItems?.map((subItem) => {
                                                                     return (
                                                                         <div className="flex group" key={subItem.id}>
