@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react"
 import { ArrowRight, ChevronDown, ChevronRight, RefreshCcw, Scroll } from 'lucide-react';
-import { AssetLock, Commit } from "../../../Models/PHTLC";
+import { Commit } from "../../../Models/PHTLC";
 import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 import HeaderWithMenu from "../../HeaderWithMenu";
 import { classNames } from "../../utils/classNames";
@@ -20,18 +20,17 @@ import WalletIcon from "../../icons/WalletIcon";
 import StatusIcon from "./StatusIcons";
 import AppSettings from "../../../lib/AppSettings";
 import { truncateDecimals } from "../../utils/RoundDecimals";
-import { CommitFromApi } from "../../../lib/layerSwapApiClient";
 
 type CommitStatus = 'committed' | 'user_locked' | 'lp_locked' | 'completed' | 'refunded' | 'timelock_expired'
 
-const commitStatusResolver = (commit: Commit, destination_lock: AssetLock | undefined, source_lock: AssetLock | undefined): CommitStatus => {
+const commitStatusResolver = (commit: Commit, destination_details: Commit | undefined | null): CommitStatus => {
 
-    if (destination_lock?.redeemed || source_lock?.redeemed) return 'completed'
+    if (destination_details?.redeemed || commit?.redeemed) return 'completed'
     //TODO check&implement source lock refund
     else if (commit.uncommitted) return 'refunded'
     else if (commit.timelock && Number(commit.timelock) * 1000 < Date.now()) return 'timelock_expired'
     else if (commit.locked) return 'user_locked'
-    else if (destination_lock) return 'lp_locked'
+    else if (destination_details) return 'lp_locked'
 
     return 'committed'
 }
@@ -74,7 +73,7 @@ function CommittmentsHistory() {
         let commits: (HistoryCommit)[] = []
 
         for (let i = page * PAGE_SIZE; i < (page + 1) * PAGE_SIZE; i++) {
-            const commit = commitIds[i] && await source_provider?.getCommitment({ commitId: commitIds[i], chainId: activeNetwork?.chain_id as string, contractAddress: sourceAtomicContract as `0x${string}`, type: sourceType })
+            const commit = commitIds[i] && await source_provider?.getDetails({ id: commitIds[i], chainId: activeNetwork?.chain_id as string, contractAddress: sourceAtomicContract as `0x${string}`, type: sourceType })
 
             const destination_network = commit && networks.find(network => network.name === commit.dstChain) || null
             const destination_provider = destination_network && getWithdrawalProvider(destination_network)
@@ -82,44 +81,30 @@ function CommittmentsHistory() {
             const destinationAtomicContract = destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract
             const destinationType = destination_asset?.contract ? 'erc20' : 'native'
 
-            let destinationLock: AssetLock | undefined = undefined
-            let sourceLock: AssetLock | undefined = undefined
+            let destinationDetails: Commit | undefined | null = undefined
 
             if (destination_network && destination_provider && destination_network.chain_id && destination_asset) {
 
                 try {
-                    const destinationLockId = await destination_provider.getLockIdByCommitId({
+
+                    destinationDetails = await destination_provider.getDetails({
                         type: destinationType,
+                        id: commitIds[i],
                         chainId: destination_network.chain_id,
-                        commitId: commitIds[i].toString(),
                         contractAddress: destinationAtomicContract as `0x${string}`
                     })
 
-                    if (destinationLockId) {
-                        destinationLock = await destination_provider.getLock({
-                            type: destinationType,
-                            lockId: destinationLockId,
-                            chainId: destination_network.chain_id,
-                            contractAddress: destinationAtomicContract as `0x${string}`
-                        })
-                        sourceLock = await source_provider?.getLock({
-                            type: sourceType,
-                            lockId: destinationLockId,
-                            chainId: activeNetwork?.chain_id as string,
-                            contractAddress: sourceAtomicContract as `0x${string}`
-                        })
-                    }
                 } catch (e) {
                     console.log(e)
                 }
             }
 
             if (commit) {
-                const status = commitStatusResolver(commit, destinationLock, sourceLock)
+                const status = commitStatusResolver(commit, destinationDetails)
                 commits.push({
-                    id: commitIds[i].toString(),
                     status,
-                    ...commit
+                    ...commit,
+                    id: commit.id ?? ''
                 })
             }
         }
@@ -134,14 +119,14 @@ function CommittmentsHistory() {
 
     useEffect(() => {
         (async () => {
-            if (providers.length === 0 || !activeNetwork || !activeNetwork.chain_id || !source_provider?.getCommits || !selectedProvider) return
+            if (providers.length === 0 || !activeNetwork || !activeNetwork.chain_id || !source_provider?.getContracts || !selectedProvider) return
             setPage(0)
             setIsLastPage(false)
             setLoading(true)
 
-            const commIds = activeNetwork?.metadata.htlc_native_contract && await source_provider?.getCommits({ contractAddress: activeNetwork?.metadata.htlc_native_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'native' })
+            const commIds = activeNetwork?.metadata.htlc_native_contract && await source_provider?.getContracts({ contractAddress: activeNetwork?.metadata.htlc_native_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'native' })
             if (commIds) setAllCommitIds(ids => ({ ...ids, [selectedProvider]: commIds }))
-            const erc20CommIds = await source_provider?.getCommits({ contractAddress: activeNetwork?.metadata.htlc_token_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'erc20' })
+            const erc20CommIds = await source_provider?.getContracts({ contractAddress: activeNetwork?.metadata.htlc_token_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'erc20' })
             if (erc20CommIds) setAllErc20CommIds(ids => ({ ...ids, [selectedProvider]: erc20CommIds }))
 
             const commits = commIds && await getCommitments(0, commIds, activeNetwork?.metadata.htlc_native_contract, 'native') || []

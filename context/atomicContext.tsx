@@ -1,7 +1,7 @@
 import { Context, createContext, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/router';
 import { useSettingsState } from './settings';
-import { AssetLock, Commit } from '../Models/PHTLC';
+import { Commit } from '../Models/PHTLC';
 import { Network, Token } from '../Models/Network';
 import useSWR from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
@@ -18,20 +18,16 @@ type DataContextType = {
     address?: string,
     amount?: number,
     commitId?: string,
-    committment?: Commit,
-    destinationLock?: AssetLock,
-    hashLock?: string,
+    destinationDetails?: Commit,
     userLocked?: boolean,
-    sourceLock?: AssetLock,
+    sourceDetails?: Commit,
     isTimelockExpired?: boolean,
     completedRefundHash?: string,
     error: string | undefined,
     commitFromApi?: CommitFromApi,
     onCommit: (commitId: string) => void;
-    setCommitment: (commitment: Commit) => void;
-    setDestinationLock: (data: AssetLock) => void;
-    setSourceLock: (data: AssetLock) => void;
-    setHashLock: (data: string) => void;
+    setDestinationDetails: (data: Commit) => void;
+    setSourceDetails: (data: Commit) => void;
     setUserLocked: (locked: boolean) => void,
     setCompletedRefundHash: (hash: string) => void
     setError(error: string | undefined): void
@@ -50,11 +46,9 @@ export function AtomicProvider({ children }) {
 
     const [commitId, setCommitId] = useState<string | undefined>(router.query.commitId as string | undefined)
     const { networks } = useSettingsState()
-    const [committment, setCommitment] = useState<Commit | undefined>(undefined)
-    const [destinationLock, setDestinationLock] = useState<AssetLock | undefined>(undefined)
-    const [sourceLock, setSourceLock] = useState<AssetLock | undefined>(undefined)
+    const [sourceDetails, setSourceDetails] = useState<Commit | undefined>(undefined)
+    const [destinationDetails, setDestinationDetails] = useState<Commit | undefined>(undefined)
 
-    const [hashLock, setHashLock] = useState<string | undefined>(undefined)
     const [userLocked, setUserLocked] = useState<boolean>(false)
 
     const [isTimelockExpired, setIsTimelockExpired] = useState<boolean>(false)
@@ -74,11 +68,11 @@ export function AtomicProvider({ children }) {
 
     useEffect(() => {
         let timer: NodeJS.Timeout;
-        if (!committment || isTimelockExpired || (committment.locked && !destinationLock)) return
-        const time = (Number(sourceLock?.timelock || committment.timelock) * 1000) - Date.now()
+        if (!sourceDetails || isTimelockExpired || (sourceDetails.locked && !destinationDetails)) return
+        const time = (Number(sourceDetails?.timelock) * 1000) - Date.now()
 
 
-        if (!committment.locked || (destinationLock && !destinationLock.redeemed)) {
+        if (!sourceDetails.locked || (destinationDetails && !destinationDetails.redeemed)) {
             if (time < 0) {
                 setIsTimelockExpired(true)
                 return
@@ -94,7 +88,7 @@ export function AtomicProvider({ children }) {
 
         return () => timer && clearInterval(timer)
 
-    }, [committment, destinationLock, sourceLock])
+    }, [sourceDetails, destinationDetails])
 
     const handleCommited = (commitId: string) => {
         setCommitId(commitId)
@@ -108,25 +102,21 @@ export function AtomicProvider({ children }) {
         <AtomicStateContext.Provider value={{
             source_network,
             onCommit: handleCommited,
-            setCommitment,
             source_asset: source_token,
             destination_asset: destination_token,
             address: address as string,
             amount: amount ? Number(amount) : undefined,
             destination_network,
             commitId,
-            committment: committment,
-            destinationLock,
-            hashLock,
+            sourceDetails,
+            destinationDetails,
             userLocked,
-            sourceLock,
             isTimelockExpired,
             completedRefundHash,
             error,
             commitFromApi,
-            setDestinationLock,
-            setHashLock,
-            setSourceLock,
+            setDestinationDetails,
+            setSourceDetails,
             setUserLocked,
             setCompletedRefundHash,
             setError

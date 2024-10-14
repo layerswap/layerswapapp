@@ -40,7 +40,6 @@ export const commitTransactionBuilder = async (params: CreatePreHTLCParams & { w
     const timeLockMS = Date.now() + LOCK_TIME
     const timelock = BigInt(Math.floor(timeLockMS / 1000))
 
-    const messenger: Address = Address.parse(wallet.address);
     const senderPublicKey = fromHex(`0x${wallet.publicKey}`, 'bigint')
     const srcReceiver: Address = Address.parse(lpAddress);
     const parsedAtomicContract = Address.parse(atomicContract);
@@ -63,9 +62,8 @@ export const commitTransactionBuilder = async (params: CreatePreHTLCParams & { w
     b_1.storeStringRefTail(sourceAsset.symbol);
     b_1.storeAddress(srcReceiver);
     b_1.storeInt(timelock, 257);
-    b_1.storeAddress(messenger);
+    b_1.storeAddress(jettonMasterAddress);
     let b_2 = new Builder();
-    b_2.storeAddress(jettonMasterAddress);
     b_2.storeAddress(htlcJettonWalletAddress);
     b_2.storeInt(senderPublicKey, 257);
     b_2.storeDict(hopChains, Dictionary.Keys.BigInt(257), dictValueParserStringImpl());

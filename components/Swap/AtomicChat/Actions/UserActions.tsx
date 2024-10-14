@@ -5,7 +5,7 @@ import ActionStatus from "./ActionStatus";
 import { WalletActionButton } from "../buttons";
 
 export const UserCommitAction: FC = () => {
-    const { source_network, destination_network, amount, address, source_asset, destination_asset, onCommit, commitId, setCommitment, setError } = useAtomicState();
+    const { source_network, destination_network, amount, address, source_asset, destination_asset, onCommit, commitId, setSourceDetails, setError } = useAtomicState();
     const { getWithdrawalProvider } = useWallet()
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
@@ -64,7 +64,7 @@ export const UserCommitAction: FC = () => {
 
     useEffect(() => {
         let commitHandler: any = undefined
-        if (source_network && commitId && !requestingCommit.current ) {
+        if (source_network && commitId && !requestingCommit.current) {
             (async () => {
                 commitHandler = setInterval(async () => {
                     if (!source_network?.chain_id)
@@ -72,14 +72,14 @@ export const UserCommitAction: FC = () => {
                     if (!source_provider)
                         throw new Error("No source provider")
 
-                    const data = await source_provider.getCommitment({
+                    const data = await source_provider.getDetails({
                         type: source_asset?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
-                        commitId: commitId,
+                        id: commitId,
                         contractAddress: atomicContract
                     })
                     if (data && data.sender != '0x0000000000000000000000000000000000000000') {
-                        setCommitment(data)
+                        setSourceDetails(data)
                         clearInterval(commitHandler)
                     }
                 }, 5000)
@@ -92,7 +92,7 @@ export const UserCommitAction: FC = () => {
 
     if (!source_network) return <></>
 
-return <div className="font-normal flex flex-col w-full relative z-10 space-y-4 grow">
+    return <div className="font-normal flex flex-col w-full relative z-10 space-y-4 grow">
         {
             commitId ?
                 <ActionStatus
@@ -113,7 +113,7 @@ return <div className="font-normal flex flex-col w-full relative z-10 space-y-4 
 
 
 export const UserLockAction: FC = () => {
-    const { source_network, commitId, hashLock, committment, setCommitment, setUserLocked, userLocked, setError, source_asset, destinationLock } = useAtomicState()
+    const { source_network, commitId, sourceDetails, setSourceDetails, setUserLocked, userLocked, setError, source_asset, destinationDetails } = useAtomicState()
 
     const { getWithdrawalProvider } = useWallet()
 
@@ -128,16 +128,16 @@ export const UserLockAction: FC = () => {
                 throw Error("No chain id")
             if (!source_provider)
                 throw new Error("No source provider")
-            if (!hashLock)
+            if (!destinationDetails?.hashlock)
                 throw new Error("No destination hashlock")
 
-            await source_provider.lockCommitment({
+            await source_provider.addLock({
                 type: source_asset?.contract ? 'erc20' : 'native',
                 chainId: source_network.chain_id,
-                commitId: commitId as string,
-                lockId: hashLock,
+                id: commitId as string,
+                hashlock: destinationDetails?.hashlock,
                 contractAddress: atomicContract,
-                lockData: destinationLock
+                lockData: destinationDetails
             })
             setUserLocked(true)
         }
@@ -150,7 +150,7 @@ export const UserLockAction: FC = () => {
 
     useEffect(() => {
         let commitHandler: any = undefined
-        if (!committment?.locked) {
+        if (!sourceDetails?.locked) {
             (async () => {
                 commitHandler = setInterval(async () => {
                     if (!source_network?.chain_id)
@@ -158,14 +158,14 @@ export const UserLockAction: FC = () => {
                     if (!source_provider)
                         throw new Error("No source provider")
 
-                    const data = await source_provider.getCommitment({
+                    const data = await source_provider.getDetails({
                         type: source_asset?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
-                        commitId: commitId as string,
+                        id: commitId as string,
                         contractAddress: atomicContract
                     })
                     if (data?.locked) {
-                        setCommitment(data)
+                        setSourceDetails(data)
                         clearInterval(commitHandler)
                     }
                 }, 5000)
@@ -198,7 +198,7 @@ export const UserLockAction: FC = () => {
 }
 
 export const UserRefundAction: FC = () => {
-    const { source_network, commitId, sourceLock, setCompletedRefundHash, committment, setCommitment, setError, setSourceLock, setDestinationLock, source_asset, destination_network, destination_asset } = useAtomicState()
+    const { source_network, commitId, sourceDetails, setCompletedRefundHash, setSourceDetails, setError, source_asset, destination_network, destination_asset, setDestinationDetails } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
     const [requestedRefund, setRequestedRefund] = useState(false)
 
@@ -208,19 +208,20 @@ export const UserRefundAction: FC = () => {
     const wallet = source_provider?.getConnectedWallet()
 
     const sourceAtomicContract = (source_asset?.contract ? source_network?.metadata.htlc_token_contract : source_network?.metadata.htlc_native_contract) as `0x${string}`
+    const destinationAtomicContract = (destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract) as `0x${string}`
 
     const handleRefundAssets = async () => {
         try {
             if (!source_network) throw new Error("No source network")
             if (!commitId) throw new Error("No commitment details")
-            if (!committment) throw new Error("No commitment")
+            if (!sourceDetails) throw new Error("No commitment")
             if (!source_network.chain_id) throw new Error("No chain id")
 
             const res = await source_provider?.refund({
                 type: source_asset?.contract ? 'erc20' : 'native',
-                commitId: commitId,
-                commit: committment,
-                lockId: sourceLock?.hashlock,
+                id: commitId,
+                commit: sourceDetails,
+                hashlock: sourceDetails?.hashlock,
                 chainId: source_network.chain_id,
                 contractAddress: sourceAtomicContract
             })
@@ -233,66 +234,45 @@ export const UserRefundAction: FC = () => {
     }
 
     useEffect(() => {
+        let commitHandler: any = undefined;
         (async () => {
-            if (!source_network || !source_network.chain_id || !destination_network?.chain_id || !commitId || !source_provider || !destination_provider) return
+            commitHandler = setInterval(async () => {
+                if (!source_network?.chain_id)
+                    throw Error("No chain id")
+                if (!source_provider)
+                    throw new Error("No source provider")
 
-            if (committment?.lockId) {
-                const sourceLock = await source_provider.getLock({
+                const data = await source_provider.getDetails({
                     type: source_asset?.contract ? 'erc20' : 'native',
                     chainId: source_network.chain_id,
-                    lockId: committment?.lockId,
-                    contractAddress: sourceAtomicContract as `0x${string}`
+                    id: commitId as string,
+                    contractAddress: sourceAtomicContract
                 })
-                if (sourceLock) setSourceLock(sourceLock)
-
-            }
-
+                if (data?.uncommitted) {
+                    setSourceDetails(data)
+                    clearInterval(commitHandler)
+                }
+            }, 5000)
         })()
-
-    }, [commitId])
-
-    useEffect(() => {
-        let commitHandler: any = undefined
-        if (!committment?.uncommitted && !sourceLock) {
-            (async () => {
-                commitHandler = setInterval(async () => {
-                    if (!source_network?.chain_id)
-                        throw Error("No chain id")
-                    if (!source_provider)
-                        throw new Error("No source provider")
-
-                    const data = await source_provider.getCommitment({
-                        type: source_asset?.contract ? 'erc20' : 'native',
-                        chainId: source_network.chain_id,
-                        commitId: commitId as string,
-                        contractAddress: sourceAtomicContract
-                    })
-                    if (data?.uncommitted) {
-                        setCommitment(data)
-                        clearInterval(commitHandler)
-                    }
-                }, 5000)
-            })()
-        }
         return () => clearInterval(commitHandler)
     }, [source_provider])
 
     useEffect(() => {
         let lockHandler: any = undefined
-        if (destination_provider && sourceLock && !sourceLock.unlocked) {
+        if (destination_provider) {
             lockHandler = setInterval(async () => {
                 if (!destination_network?.chain_id)
                     throw Error("No chain id")
 
-                const data = await destination_provider.getLock({
+                const data = await destination_provider.getDetails({
                     type: destination_asset?.contract ? 'erc20' : 'native',
                     chainId: destination_network.chain_id,
-                    lockId: committment?.lockId as string,
-                    contractAddress: sourceAtomicContract,
+                    id: sourceDetails?.id as string,
+                    contractAddress: destinationAtomicContract,
                 })
 
-                if (data) setDestinationLock(data)
-                if (data?.unlocked) {
+                if (data) setDestinationDetails(data)
+                if (data?.uncommitted) {
                     clearInterval(lockHandler)
                 }
             }, 5000)

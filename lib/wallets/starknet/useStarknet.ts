@@ -9,7 +9,7 @@ import PHTLCAbi from "../../../lib/abis/atomic/STARKNET_PHTLC.json"
 import ETHABbi from "../../../lib/abis/STARKNET_ETH.json"
 import { CommitmentParams, CreatePreHTLCParams, GetCommitsParams, LockParams, RefundParams } from "../phtlc";
 import { BigNumberish, ethers } from "ethers";
-import { AssetLock, Commit } from "../../../Models/PHTLC";
+import { Commit } from "../../../Models/PHTLC";
 import { toHex } from "viem";
 import formatAmount from "../../formatAmount";
 import { useSettingsState } from "../../../context/settings";
@@ -157,7 +157,7 @@ export default function useStarknet(): WalletProvider {
                 trx.transaction_hash
             );
             const parsedEvents = atomicContract.parseEvents(commitTransactionData);
-            const tokenCommitedEvent = parsedEvents.find((event: any) => event.TokenCommitted || event?.['htlc::Erc20github::HashedTimelockERC20::TokenCommitted'] )
+            const tokenCommitedEvent = parsedEvents.find((event: any) => event.TokenCommitted || event?.['htlc::Erc20github::HashedTimelockERC20::TokenCommitted'])
 
             const commitId = tokenCommitedEvent?.TokenCommitted?.commitId || tokenCommitedEvent?.['htlc::Erc20github::HashedTimelockERC20::TokenCommitted']?.commitId
             if (!commitId) {
@@ -179,7 +179,7 @@ export default function useStarknet(): WalletProvider {
     }
 
     const refund = async (params: RefundParams) => {
-        const { contractAddress: atomicAddress, commitId, lockId } = params
+        const { contractAddress: atomicAddress, id } = params
 
         if (!wallet?.metadata?.starknetAccount?.account) {
             throw new Error('Wallet not connected')
@@ -191,7 +191,7 @@ export default function useStarknet(): WalletProvider {
             wallet.metadata?.starknetAccount?.account,
         )
 
-        const refundCall: Call = atomicContract.populate(lockId ? "unlock" : "uncommit", [lockId || commitId])
+        const refundCall: Call = atomicContract.populate('refund', [id])
         const trx = (await wallet?.metadata?.starknetAccount?.account?.execute(refundCall))
 
         if (!trx) {
@@ -200,8 +200,8 @@ export default function useStarknet(): WalletProvider {
         return trx.transaction_hash
     }
 
-    const getCommitment = async (params: CommitmentParams): Promise<Commit> => {
-        const { commitId, contractAddress, chainId } = params
+    const getDetails = async (params: CommitmentParams): Promise<Commit> => {
+        const { id, contractAddress, chainId } = params
 
         const atomicContract = new Contract(
             PHTLCAbi,
@@ -211,7 +211,7 @@ export default function useStarknet(): WalletProvider {
             })
         )
 
-        const result = await atomicContract.functions.getCommitDetails(commitId)
+        const result = await atomicContract.functions.getDetails(id)
 
         if (!result) {
             throw new Error("No result")
@@ -226,25 +226,26 @@ export default function useStarknet(): WalletProvider {
             sender: ethers.utils.hexlify(result.sender as BigNumberish),
             srcReceiver: ethers.utils.hexlify(result.srcReceiver as BigNumberish),
             timelock: Number(result.timelock),
-            lockId: result.lockId && toHex(result.lockId, { size: 32 }),
+            id: result.lockId && toHex(result.id, { size: 32 }),
             amount: formatAmount(Number(result.amount), networkToken?.decimals),
-            messenger: ethers.utils.hexlify(result.messenger as BigNumberish),
             locked: result.locked,
-            uncommitted: result.uncommitted
+            uncommitted: result.uncommitted,
+            hashlock: result.hashlock && toHex(result.hashlock, { size: 32 }),
+            secret: result.secret || null,
+            redeemed: result.redeemed || false,
         }
 
         return parsedResult
     }
 
-    const lockCommitment = async (params: CommitmentParams & LockParams) => {
-        const { commitId, contractAddress, lockId } = params
+    const addLock = async (params: CommitmentParams & LockParams) => {
+        const { id, contractAddress } = params
 
         if (!wallet?.metadata?.starknetAccount?.account) {
             throw new Error('Wallet not connected')
         }
         const args = [
-            commitId,
-            lockId,
+            id,
             timeLock
         ]
         const atomicContract = new Contract(
@@ -253,63 +254,14 @@ export default function useStarknet(): WalletProvider {
             wallet.metadata?.starknetAccount?.account,
         )
 
-        const committmentCall: Call = atomicContract.populate("lockCommit", args)
+        const committmentCall: Call = atomicContract.populate("addLock", args)
 
         const trx = (await wallet?.metadata?.starknetAccount?.account?.execute(committmentCall))
         return { hash: trx.transaction_hash as `0x${string}`, result: trx.transaction_hash as `0x${string}` }
     }
 
-    const getLock = async (params: LockParams): Promise<AssetLock> => {
 
-        const { lockId, contractAddress, chainId } = params
-
-        const atomicContract = new Contract(
-            PHTLCAbi,
-            contractAddress,
-            new RpcProvider({
-                nodeUrl: nodeUrl,
-            })
-        )
-        const result = await atomicContract.functions.getLockDetails(lockId)
-        const networkToken = networks.find(network => chainId && Number(network.chain_id) == Number(chainId))?.tokens.find(token => token.symbol === shortString.decodeShortString(ethers.utils.hexlify(result.srcAsset as BigNumberish)))
-
-        const parsedResult: AssetLock = {
-            dstAddress: result.dstAddress,
-            dstChain: shortString.decodeShortString(ethers.utils.hexlify(result.dstChain as BigNumberish)),
-            dstAsset: shortString.decodeShortString(ethers.utils.hexlify(result.dstAsset as BigNumberish)),
-            srcAsset: shortString.decodeShortString(ethers.utils.hexlify(result.srcAsset as BigNumberish)),
-            timelock: Number(result.timelock),
-            amount: formatAmount(Number(result.amount), networkToken?.decimals),
-            hashlock: ethers.utils.hexlify(result.hashlock as BigNumberish),
-            redeemed: result.redeemed,
-            secret: Number(result.secret),
-            sender: ethers.utils.hexlify(result.sender as BigNumberish) as `0x${string}`,
-            srcReceiver: ethers.utils.hexlify(result.srcReceiver as BigNumberish) as `0x${string}`,
-            unlocked: result.unlocked
-        }
-
-        return parsedResult
-    }
-    const getLockIdByCommitId = async (params: CommitmentParams) => {
-        const { commitId, contractAddress } = params
-
-        const atomicContract = new Contract(
-            PHTLCAbi,
-            contractAddress,
-            new RpcProvider({
-                nodeUrl: nodeUrl,
-            })
-        )
-        const result = await atomicContract.functions.getLockIdByCommitId(commitId)
-
-        if (!result || result === '0x00') return null
-
-        const hexedResult = ethers.utils.hexlify(result)
-
-        return hexedResult
-    }
-
-    const getCommits = async (params: GetCommitsParams) => {
+    const getContracts = async (params: GetCommitsParams) => {
         const { contractAddress } = params
 
         const atomicContract = new Contract(
@@ -346,10 +298,8 @@ export default function useStarknet(): WalletProvider {
         createPreHTLC,
         claim,
         refund,
-        getCommitment,
-        getLock,
-        lockCommitment,
-        getLockIdByCommitId,
-        getCommits
+        getDetails,
+        addLock: addLock,
+        getContracts
     }
 }

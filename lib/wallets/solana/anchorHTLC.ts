@@ -10,14 +10,90 @@ export const AnchorHtlc = (address: string): Idl => ({
   },
   "instructions": [
     {
+      "name": "add_lock",
+      "docs": [
+        "@dev Called by the sender to add hashlock to the HTLC",
+        "",
+        "@param Id of the HTLC.",
+        "@param hashlock to be added."
+      ],
+      "discriminator": [
+        242,
+        102,
+        183,
+        107,
+        109,
+        168,
+        82,
+        140
+      ],
+      "accounts": [
+        {
+          "name": "sender",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "htlc",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "arg",
+                "path": "Id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "Id",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "hashlock",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timelock",
+          "type": "u64"
+        }
+      ],
+      "returns": {
+        "array": [
+          "u8",
+          32
+        ]
+      }
+    },
+    {
       "name": "commit",
       "docs": [
         "@dev Sender / Payer sets up a new pre-hash time lock contract depositing the",
-        "funds and providing the reciever/srcReceiver and terms.",
-        "@param srcReceiver reciever of the funds.",
+        "funds and providing the reciever/src_receiver and terms.",
+        "@param src_receiver reciever of the funds.",
         "@param timelock UNIX epoch seconds time that the lock expires at.",
         "Refunds can be made after this time.",
-        "@return Id of the new PHTLC. This is needed for subsequent calls."
+        "@return Id of the new HTLC. This is needed for subsequent calls."
       ],
       "discriminator": [
         223,
@@ -36,26 +112,25 @@ export const AnchorHtlc = (address: string): Idl => ({
           "signer": true
         },
         {
-          "name": "phtlc",
+          "name": "htlc",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "arg",
-                "path": "commitId"
+                "path": "Id"
               }
             ]
           }
         },
         {
-          "name": "phtlc_token_account",
+          "name": "htlc_token_account",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  112,
                   104,
                   116,
                   108,
@@ -78,7 +153,7 @@ export const AnchorHtlc = (address: string): Idl => ({
               },
               {
                 "kind": "arg",
-                "path": "commitId"
+                "path": "Id"
               }
             ]
           }
@@ -105,7 +180,7 @@ export const AnchorHtlc = (address: string): Idl => ({
       ],
       "args": [
         {
-          "name": "commitId",
+          "name": "Id",
           "type": {
             "array": [
               "u8",
@@ -148,7 +223,7 @@ export const AnchorHtlc = (address: string): Idl => ({
           "type": "string"
         },
         {
-          "name": "srcReceiver",
+          "name": "src_receiver",
           "type": "pubkey"
         },
         {
@@ -156,15 +231,11 @@ export const AnchorHtlc = (address: string): Idl => ({
           "type": "u64"
         },
         {
-          "name": "messenger",
-          "type": "pubkey"
-        },
-        {
           "name": "amount",
           "type": "u64"
         },
         {
-          "name": "phtlc_bump",
+          "name": "commit_bump",
           "type": "u8"
         }
       ],
@@ -176,70 +247,20 @@ export const AnchorHtlc = (address: string): Idl => ({
       }
     },
     {
-      "name": "getCommitDetails",
-      "docs": [
-        "@dev Get PHTLC details.",
-        "@param lockId of the PHTLC."
-      ],
-      "discriminator": [
-        234,
-        217,
-        223,
-        134,
-        74,
-        122,
-        105,
-        206
-      ],
-      "accounts": [
-        {
-          "name": "phtlc",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "arg",
-                "path": "commitId"
-              }
-            ]
-          }
-        }
-      ],
-      "args": [
-        {
-          "name": "commitId",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
-          "name": "phtlc_bump",
-          "type": "u8"
-        }
-      ],
-      "returns": {
-        "defined": {
-          "name": "PHTLC"
-        }
-      }
-    },
-    {
-      "name": "getLockDetails",
+      "name": "getDetails",
       "docs": [
         "@dev Get HTLC details.",
-        "@param lockId of the HTLC."
+        "@param Id of the HTLC."
       ],
       "discriminator": [
-        7,
-        77,
-        156,
-        156,
-        110,
-        235,
-        80,
-        251
+        185,
+        254,
+        236,
+        165,
+        213,
+        30,
+        224,
+        250
       ],
       "accounts": [
         {
@@ -248,7 +269,7 @@ export const AnchorHtlc = (address: string): Idl => ({
             "seeds": [
               {
                 "kind": "arg",
-                "path": "lockId"
+                "path": "Id"
               }
             ]
           }
@@ -256,85 +277,19 @@ export const AnchorHtlc = (address: string): Idl => ({
       ],
       "args": [
         {
-          "name": "lockId",
+          "name": "Id",
           "type": {
             "array": [
               "u8",
               32
             ]
           }
-        },
-        {
-          "name": "htlc_bump",
-          "type": "u8"
         }
       ],
       "returns": {
         "defined": {
           "name": "HTLC"
         }
-      }
-    },
-    {
-      "name": "getLockIdByCommitId",
-      "discriminator": [
-        94,
-        198,
-        7,
-        168,
-        151,
-        95,
-        85,
-        15
-      ],
-      "accounts": [
-        {
-          "name": "lockIdStruct",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  109,
-                  109,
-                  105,
-                  116,
-                  95,
-                  116,
-                  111,
-                  95,
-                  108,
-                  111,
-                  99,
-                  107
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "commitId"
-              }
-            ]
-          }
-        }
-      ],
-      "args": [
-        {
-          "name": "commitId",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        }
-      ],
-      "returns": {
-        "array": [
-          "u8",
-          32
-        ]
       }
     },
     {
@@ -378,77 +333,11 @@ export const AnchorHtlc = (address: string): Idl => ({
       }
     },
     {
-      "name": "initLockIdByCommitId",
-      "discriminator": [
-        131,
-        125,
-        163,
-        39,
-        191,
-        150,
-        63,
-        79
-      ],
-      "accounts": [
-        {
-          "name": "sender",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "lockIdStruct",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  109,
-                  109,
-                  105,
-                  116,
-                  95,
-                  116,
-                  111,
-                  95,
-                  108,
-                  111,
-                  99,
-                  107
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "commitId"
-              }
-            ]
-          }
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "commitId",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        }
-      ]
-    },
-    {
       "name": "lock",
       "docs": [
         "@dev Sender / Payer sets up a new hash time lock contract depositing the",
         "funds and providing the reciever and terms.",
-        "@param srcReceiver receiver of the funds.",
+        "@param src_receiver receiver of the funds.",
         "@param hashlock A sha-256 hash hashlock.",
         "@param timelock UNIX epoch seconds time that the lock expires at.",
         "Refunds can be made after this time.",
@@ -477,7 +366,7 @@ export const AnchorHtlc = (address: string): Idl => ({
             "seeds": [
               {
                 "kind": "arg",
-                "path": "lockId"
+                "path": "Id"
               }
             ]
           }
@@ -512,38 +401,7 @@ export const AnchorHtlc = (address: string): Idl => ({
               },
               {
                 "kind": "arg",
-                "path": "lockId"
-              }
-            ]
-          }
-        },
-        {
-          "name": "lockIdStruct",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  109,
-                  109,
-                  105,
-                  116,
-                  95,
-                  116,
-                  111,
-                  95,
-                  108,
-                  111,
-                  99,
-                  107
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "commitId"
+                "path": "Id"
               }
             ]
           }
@@ -570,7 +428,7 @@ export const AnchorHtlc = (address: string): Idl => ({
       ],
       "args": [
         {
-          "name": "lockId",
+          "name": "Id",
           "type": {
             "array": [
               "u8",
@@ -579,7 +437,7 @@ export const AnchorHtlc = (address: string): Idl => ({
           }
         },
         {
-          "name": "commitId",
+          "name": "hashlock",
           "type": {
             "array": [
               "u8",
@@ -608,11 +466,7 @@ export const AnchorHtlc = (address: string): Idl => ({
           "type": "string"
         },
         {
-          "name": "srcReceiver",
-          "type": "pubkey"
-        },
-        {
-          "name": "messenger",
+          "name": "src_receiver",
           "type": "pubkey"
         },
         {
@@ -620,180 +474,7 @@ export const AnchorHtlc = (address: string): Idl => ({
           "type": "u64"
         },
         {
-          "name": "htlc_bump",
-          "type": "u8"
-        }
-      ],
-      "returns": {
-        "array": [
-          "u8",
-          32
-        ]
-      }
-    },
-    {
-      "name": "lockCommit",
-      "docs": [
-        "@dev Called by the messenger to convert the PHTLC to HTLC",
-        "",
-        "@param commitId of the PHTLC to lockCommit.",
-        "@param hashlock of the HTLC to be created."
-      ],
-      "discriminator": [
-        165,
-        2,
-        57,
-        117,
-        110,
-        94,
-        153,
-        251
-      ],
-      "accounts": [
-        {
-          "name": "messenger",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "phtlc",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "arg",
-                "path": "commitId"
-              }
-            ]
-          }
-        },
-        {
-          "name": "htlc",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "arg",
-                "path": "lockId"
-              }
-            ]
-          }
-        },
-        {
-          "name": "phtlc_token_account",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  104,
-                  116,
-                  108,
-                  99,
-                  95,
-                  116,
-                  111,
-                  107,
-                  101,
-                  110,
-                  95,
-                  97,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "commitId"
-              }
-            ]
-          }
-        },
-        {
-          "name": "htlc_token_account",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  104,
-                  116,
-                  108,
-                  99,
-                  95,
-                  116,
-                  111,
-                  107,
-                  101,
-                  110,
-                  95,
-                  97,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "lockId"
-              }
-            ]
-          }
-        },
-        {
-          "name": "token_contract",
-          "relations": [
-            "phtlc"
-          ]
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "commitId",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
-          "name": "lockId",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
-          "name": "timelock",
-          "type": "u64"
-        },
-        {
-          "name": "phtlc_bump",
+          "name": "lock_bump",
           "type": "u8"
         }
       ],
@@ -807,10 +488,10 @@ export const AnchorHtlc = (address: string): Idl => ({
     {
       "name": "redeem",
       "docs": [
-        "@dev Called by the srcReceiver once they know the secret of the hashlock.",
-        "This will transfer the locked funds to the HTLC's srcReceiver's address.",
+        "@dev Called by the src_receiver once they know the secret of the hashlock.",
+        "This will transfer the locked funds to the HTLC's src_receiver's address.",
         "",
-        "@param lockId of the HTLC.",
+        "@param Id of the HTLC.",
         "@param secret sha256(secret) should equal the contract hashlock."
       ],
       "discriminator": [
@@ -836,7 +517,7 @@ export const AnchorHtlc = (address: string): Idl => ({
             "seeds": [
               {
                 "kind": "arg",
-                "path": "lockId"
+                "path": "Id"
               }
             ]
           }
@@ -871,19 +552,19 @@ export const AnchorHtlc = (address: string): Idl => ({
               },
               {
                 "kind": "arg",
-                "path": "lockId"
+                "path": "Id"
               }
             ]
           }
         },
         {
-          "name": "srcReceiver_token_account",
+          "name": "src_receiver_token_account",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "account",
-                "path": "srcReceiver"
+                "path": "src_receiver"
               },
               {
                 "kind": "const",
@@ -974,7 +655,7 @@ export const AnchorHtlc = (address: string): Idl => ({
           ]
         },
         {
-          "name": "srcReceiver",
+          "name": "src_receiver",
           "relations": [
             "htlc"
           ]
@@ -1004,7 +685,7 @@ export const AnchorHtlc = (address: string): Idl => ({
       ],
       "args": [
         {
-          "name": "lockId",
+          "name": "Id",
           "type": {
             "array": [
               "u8",
@@ -1029,142 +710,22 @@ export const AnchorHtlc = (address: string): Idl => ({
       "returns": "bool"
     },
     {
-      "name": "uncommit",
-      "docs": [
-        "@dev Called by the sender if there was no redeem OR lockCommit AND the time lock has",
-        "expired. This will unlock the contract amount.",
-        "",
-        "@param commitId of the PHTLC to unlock from.",
-        "@return bool true on success"
-      ],
-      "discriminator": [
-        87,
-        248,
-        220,
-        24,
-        213,
-        171,
-        93,
-        83
-      ],
-      "accounts": [
-        {
-          "name": "user_signing",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "phtlc",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "arg",
-                "path": "commitId"
-              }
-            ]
-          }
-        },
-        {
-          "name": "phtlc_token_account",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  112,
-                  104,
-                  116,
-                  108,
-                  99,
-                  95,
-                  116,
-                  111,
-                  107,
-                  101,
-                  110,
-                  95,
-                  97,
-                  99,
-                  99,
-                  111,
-                  117,
-                  110,
-                  116
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "commitId"
-              }
-            ]
-          }
-        },
-        {
-          "name": "sender",
-          "writable": true,
-          "relations": [
-            "phtlc"
-          ]
-        },
-        {
-          "name": "token_contract",
-          "relations": [
-            "phtlc"
-          ]
-        },
-        {
-          "name": "sender_token_account",
-          "writable": true
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "commitId",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
-          "name": "phtlc_bump",
-          "type": "u8"
-        }
-      ],
-      "returns": "bool"
-    },
-    {
-      "name": "unlock",
+      "name": "refund",
       "docs": [
         "@dev Called by the sender if there was no redeem AND the time lock has",
-        "expired. This will unlock the contract amount.",
+        "expired. This will refund the contract amount.",
         "",
-        "@param commitId of the HTLC to unlock from."
+        "@param Id of the HTLC to refund from."
       ],
       "discriminator": [
-        101,
-        155,
-        40,
-        21,
-        158,
-        189,
-        56,
-        203
+        2,
+        96,
+        183,
+        251,
+        63,
+        208,
+        46,
+        46
       ],
       "accounts": [
         {
@@ -1179,7 +740,7 @@ export const AnchorHtlc = (address: string): Idl => ({
             "seeds": [
               {
                 "kind": "arg",
-                "path": "lockId"
+                "path": "Id"
               }
             ]
           }
@@ -1214,7 +775,7 @@ export const AnchorHtlc = (address: string): Idl => ({
               },
               {
                 "kind": "arg",
-                "path": "lockId"
+                "path": "Id"
               }
             ]
           }
@@ -1251,7 +812,7 @@ export const AnchorHtlc = (address: string): Idl => ({
       ],
       "args": [
         {
-          "name": "lockId",
+          "name": "Id",
           "type": {
             "array": [
               "u8",
@@ -1280,99 +841,6 @@ export const AnchorHtlc = (address: string): Idl => ({
         55,
         177
       ]
-    },
-    {
-      "name": "LockIdStruct",
-      "discriminator": [
-        97,
-        193,
-        114,
-        198,
-        198,
-        10,
-        156,
-        66
-      ]
-    },
-    {
-      "name": "PHTLC",
-      "discriminator": [
-        252,
-        8,
-        240,
-        212,
-        38,
-        61,
-        30,
-        242
-      ]
-    }
-  ],
-  "events": [
-    {
-      "name": "TokenCommitted",
-      "discriminator": [
-        198,
-        227,
-        27,
-        10,
-        43,
-        217,
-        121,
-        127
-      ]
-    },
-    {
-      "name": "TokenLocked",
-      "discriminator": [
-        18,
-        238,
-        170,
-        48,
-        2,
-        120,
-        199,
-        224
-      ]
-    },
-    {
-      "name": "TokenRedeemed",
-      "discriminator": [
-        75,
-        7,
-        43,
-        228,
-        204,
-        167,
-        97,
-        76
-      ]
-    },
-    {
-      "name": "TokenUncommited",
-      "discriminator": [
-        198,
-        49,
-        47,
-        30,
-        198,
-        28,
-        79,
-        14
-      ]
-    },
-    {
-      "name": "TokenUnlocked",
-      "discriminator": [
-        86,
-        204,
-        216,
-        175,
-        122,
-        181,
-        8,
-        237
-      ]
     }
   ],
   "errors": [
@@ -1388,28 +856,28 @@ export const AnchorHtlc = (address: string): Idl => ({
     },
     {
       "code": 6002,
+      "name": "HashlockNotSet",
+      "msg": "Hashlock Is Not Set."
+    },
+    {
+      "code": 6003,
       "name": "HashlockNoMatch",
       "msg": "Does Not Match the Hashlock."
     },
     {
-      "code": 6003,
+      "code": 6004,
+      "name": "HashlockAlreadySet",
+      "msg": "Hashlock Already Set."
+    },
+    {
+      "code": 6005,
       "name": "AlreadyRedeemed",
       "msg": "Funds Are Alredy Redeemed."
     },
     {
-      "code": 6004,
-      "name": "AlreadyUnlocked",
-      "msg": "Funds Are Alredy Unlocked."
-    },
-    {
-      "code": 6005,
-      "name": "AlreadyUncommitted",
-      "msg": "Funds Are Alredy Uncommitted."
-    },
-    {
       "code": 6006,
-      "name": "AlreadyLocked",
-      "msg": "Already Locked."
+      "name": "AlreadyRefunded",
+      "msg": "Funds Are Alredy Refunded."
     },
     {
       "code": 6007,
@@ -1423,16 +891,21 @@ export const AnchorHtlc = (address: string): Idl => ({
     },
     {
       "code": 6009,
+      "name": "NotOwner",
+      "msg": "Not The Owner."
+    },
+    {
+      "code": 6010,
       "name": "NotSender",
       "msg": "Not The Sender."
     },
     {
-      "code": 6010,
+      "code": 6011,
       "name": "NotReciever",
       "msg": "Not The Reciever."
     },
     {
-      "code": 6011,
+      "code": 6012,
       "name": "NoToken",
       "msg": "Wrong Token."
     }
@@ -1464,7 +937,7 @@ export const AnchorHtlc = (address: string): Idl => ({
             "type": "pubkey"
           },
           {
-            "name": "srcReceiver",
+            "name": "src_receiver",
             "type": "pubkey"
           },
           {
@@ -1506,290 +979,8 @@ export const AnchorHtlc = (address: string): Idl => ({
             "type": "bool"
           },
           {
-            "name": "unlocked",
+            "name": "refunded",
             "type": "bool"
-          }
-        ]
-      }
-    },
-    {
-      "name": "LockIdStruct",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "lock_id",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "PHTLC",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "dst_address",
-            "type": "string"
-          },
-          {
-            "name": "dst_chain",
-            "type": "string"
-          },
-          {
-            "name": "dst_asset",
-            "type": "string"
-          },
-          {
-            "name": "src_asset",
-            "type": "string"
-          },
-          {
-            "name": "sender",
-            "type": "pubkey"
-          },
-          {
-            "name": "srcReceiver",
-            "type": "pubkey"
-          },
-          {
-            "name": "lockId",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "amount",
-            "type": "u64"
-          },
-          {
-            "name": "timelock",
-            "type": "u64"
-          },
-          {
-            "name": "messenger",
-            "type": "pubkey"
-          },
-          {
-            "name": "token_contract",
-            "type": "pubkey"
-          },
-          {
-            "name": "token_wallet",
-            "type": "pubkey"
-          },
-          {
-            "name": "locked",
-            "type": "bool"
-          },
-          {
-            "name": "uncommitted",
-            "type": "bool"
-          }
-        ]
-      }
-    },
-    {
-      "name": "TokenCommitted",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "commitId",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "hopChains",
-            "type": {
-              "vec": "string"
-            }
-          },
-          {
-            "name": "hopAssets",
-            "type": {
-              "vec": "string"
-            }
-          },
-          {
-            "name": "hopAddress",
-            "type": {
-              "vec": "string"
-            }
-          },
-          {
-            "name": "dst_chain",
-            "type": "string"
-          },
-          {
-            "name": "dst_address",
-            "type": "string"
-          },
-          {
-            "name": "dst_asset",
-            "type": "string"
-          },
-          {
-            "name": "sender",
-            "type": "pubkey"
-          },
-          {
-            "name": "srcReceiver",
-            "type": "pubkey"
-          },
-          {
-            "name": "src_asset",
-            "type": "string"
-          },
-          {
-            "name": "amount",
-            "type": "u64"
-          },
-          {
-            "name": "timelock",
-            "type": "u64"
-          },
-          {
-            "name": "messenger",
-            "type": "pubkey"
-          },
-          {
-            "name": "token_contract",
-            "type": "pubkey"
-          }
-        ]
-      }
-    },
-    {
-      "name": "TokenLocked",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "hashlock",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "dst_chain",
-            "type": "string"
-          },
-          {
-            "name": "dst_address",
-            "type": "string"
-          },
-          {
-            "name": "dst_asset",
-            "type": "string"
-          },
-          {
-            "name": "sender",
-            "type": "pubkey"
-          },
-          {
-            "name": "srcReceiver",
-            "type": "pubkey"
-          },
-          {
-            "name": "src_asset",
-            "type": "string"
-          },
-          {
-            "name": "amount",
-            "type": "u64"
-          },
-          {
-            "name": "timelock",
-            "type": "u64"
-          },
-          {
-            "name": "messenger",
-            "type": "pubkey"
-          },
-          {
-            "name": "commitId",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "token_contract",
-            "type": "pubkey"
-          }
-        ]
-      }
-    },
-    {
-      "name": "TokenRedeemed",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "lockId",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "redeem_address",
-            "type": "pubkey"
-          }
-        ]
-      }
-    },
-    {
-      "name": "TokenUncommited",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "commitId",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "TokenUnlocked",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "lockId",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
           }
         ]
       }

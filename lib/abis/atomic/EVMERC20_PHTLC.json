@@ -1,5 +1,10 @@
 [
     {
+        "inputs": [],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
         "inputs": [
             {
                 "internalType": "address",
@@ -23,87 +28,7 @@
     },
     {
         "inputs": [],
-        "name": "AlreadyLocked",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "AlreadyRedeemed",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "AlreadyUncommitted",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "AlreadyUnlocked",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "CommitIdAlreadyExists",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "CommitmentNotExists",
-        "type": "error"
-    },
-    {
-        "inputs": [],
         "name": "FailedInnerCall",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "FundsNotSent",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "HashlockNotMatch",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "IncorrectData",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "InsufficientBalance",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "LockAlreadyExists",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "LockNotExists",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "NoAllowance",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "NoMessenger",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "NotFutureTimelock",
-        "type": "error"
-    },
-    {
-        "inputs": [],
-        "name": "NotPassedTimelock",
         "type": "error"
     },
     {
@@ -134,9 +59,9 @@
         "anonymous": false,
         "inputs": [
             {
-                "indexed": false,
+                "indexed": true,
                 "internalType": "bytes32",
-                "name": "commitId",
+                "name": "Id",
                 "type": "bytes32"
             },
             {
@@ -176,13 +101,13 @@
                 "type": "string"
             },
             {
-                "indexed": false,
+                "indexed": true,
                 "internalType": "address",
                 "name": "sender",
                 "type": "address"
             },
             {
-                "indexed": false,
+                "indexed": true,
                 "internalType": "address",
                 "name": "srcReceiver",
                 "type": "address"
@@ -208,12 +133,6 @@
             {
                 "indexed": false,
                 "internalType": "address",
-                "name": "messenger",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "address",
                 "name": "tokenContract",
                 "type": "address"
             }
@@ -226,6 +145,12 @@
         "inputs": [
             {
                 "indexed": true,
+                "internalType": "bytes32",
+                "name": "Id",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
                 "internalType": "bytes32",
                 "name": "hashlock",
                 "type": "bytes32"
@@ -281,18 +206,6 @@
             {
                 "indexed": false,
                 "internalType": "address",
-                "name": "messenger",
-                "type": "address"
-            },
-            {
-                "indexed": false,
-                "internalType": "bytes32",
-                "name": "commitId",
-                "type": "bytes32"
-            },
-            {
-                "indexed": false,
-                "internalType": "address",
                 "name": "tokenContract",
                 "type": "address"
             }
@@ -306,7 +219,7 @@
             {
                 "indexed": true,
                 "internalType": "bytes32",
-                "name": "lockId",
+                "name": "Id",
                 "type": "bytes32"
             },
             {
@@ -325,25 +238,92 @@
             {
                 "indexed": true,
                 "internalType": "bytes32",
-                "name": "commitId",
+                "name": "Id",
                 "type": "bytes32"
             }
         ],
-        "name": "TokenUncommitted",
+        "name": "TokenRefunded",
         "type": "event"
     },
     {
-        "anonymous": false,
         "inputs": [
             {
-                "indexed": true,
                 "internalType": "bytes32",
-                "name": "lockId",
+                "name": "Id",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "bytes32",
+                "name": "hashlock",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "uint256",
+                "name": "timelock",
+                "type": "uint256"
+            }
+        ],
+        "name": "addLock",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
                 "type": "bytes32"
             }
         ],
-        "name": "TokenUnlocked",
-        "type": "event"
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "bytes32",
+                        "name": "Id",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "bytes32",
+                        "name": "hashlock",
+                        "type": "bytes32"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "timelock",
+                        "type": "uint256"
+                    }
+                ],
+                "internalType": "struct LayerswapV8ERC20.addLockMsg",
+                "name": "message",
+                "type": "tuple"
+            },
+            {
+                "internalType": "uint8",
+                "name": "v",
+                "type": "uint8"
+            },
+            {
+                "internalType": "bytes32",
+                "name": "r",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "bytes32",
+                "name": "s",
+                "type": "bytes32"
+            }
+        ],
+        "name": "addLockSig",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
     },
     {
         "inputs": [
@@ -393,11 +373,6 @@
                 "type": "uint256"
             },
             {
-                "internalType": "address",
-                "name": "messenger",
-                "type": "address"
-            },
-            {
                 "internalType": "uint256",
                 "name": "amount",
                 "type": "uint256"
@@ -412,97 +387,11 @@
         "outputs": [
             {
                 "internalType": "bytes32",
-                "name": "commitId",
+                "name": "Id",
                 "type": "bytes32"
             }
         ],
-        "stateMutability": "payable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes32",
-                "name": "commitId",
-                "type": "bytes32"
-            }
-        ],
-        "name": "getCommitDetails",
-        "outputs": [
-            {
-                "components": [
-                    {
-                        "internalType": "string",
-                        "name": "dstAddress",
-                        "type": "string"
-                    },
-                    {
-                        "internalType": "string",
-                        "name": "dstChain",
-                        "type": "string"
-                    },
-                    {
-                        "internalType": "string",
-                        "name": "dstAsset",
-                        "type": "string"
-                    },
-                    {
-                        "internalType": "string",
-                        "name": "srcAsset",
-                        "type": "string"
-                    },
-                    {
-                        "internalType": "address payable",
-                        "name": "sender",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "address payable",
-                        "name": "srcReceiver",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "bytes32",
-                        "name": "lockId",
-                        "type": "bytes32"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "timelock",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "amount",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "messenger",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "address",
-                        "name": "tokenContract",
-                        "type": "address"
-                    },
-                    {
-                        "internalType": "bool",
-                        "name": "locked",
-                        "type": "bool"
-                    },
-                    {
-                        "internalType": "bool",
-                        "name": "uncommitted",
-                        "type": "bool"
-                    }
-                ],
-                "internalType": "struct HashedTimeLockERC20.PHTLC",
-                "name": "",
-                "type": "tuple"
-            }
-        ],
-        "stateMutability": "view",
+        "stateMutability": "nonpayable",
         "type": "function"
     },
     {
@@ -513,7 +402,7 @@
                 "type": "address"
             }
         ],
-        "name": "getCommits",
+        "name": "getContracts",
         "outputs": [
             {
                 "internalType": "bytes32[]",
@@ -528,11 +417,11 @@
         "inputs": [
             {
                 "internalType": "bytes32",
-                "name": "lockId",
+                "name": "Id",
                 "type": "bytes32"
             }
         ],
-        "name": "getLockDetails",
+        "name": "getDetails",
         "outputs": [
             {
                 "components": [
@@ -573,7 +462,7 @@
                     },
                     {
                         "internalType": "uint256",
-                        "name": "secret",
+                        "name": "timelock",
                         "type": "uint256"
                     },
                     {
@@ -583,7 +472,7 @@
                     },
                     {
                         "internalType": "uint256",
-                        "name": "timelock",
+                        "name": "secret",
                         "type": "uint256"
                     },
                     {
@@ -598,11 +487,11 @@
                     },
                     {
                         "internalType": "bool",
-                        "name": "unlocked",
+                        "name": "refunded",
                         "type": "bool"
                     }
                 ],
-                "internalType": "struct HashedTimeLockERC20.HTLC",
+                "internalType": "struct LayerswapV8ERC20.HTLC",
                 "name": "",
                 "type": "tuple"
             }
@@ -614,42 +503,9 @@
         "inputs": [
             {
                 "internalType": "bytes32",
-                "name": "commitId",
+                "name": "Id",
                 "type": "bytes32"
-            }
-        ],
-        "name": "getLockIdByCommitId",
-        "outputs": [
-            {
-                "internalType": "bytes32",
-                "name": "",
-                "type": "bytes32"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "senderAddr",
-                "type": "address"
-            }
-        ],
-        "name": "getLocks",
-        "outputs": [
-            {
-                "internalType": "bytes32[]",
-                "name": "",
-                "type": "bytes32[]"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
+            },
             {
                 "internalType": "bytes32",
                 "name": "hashlock",
@@ -686,16 +542,6 @@
                 "type": "string"
             },
             {
-                "internalType": "bytes32",
-                "name": "commitId",
-                "type": "bytes32"
-            },
-            {
-                "internalType": "address",
-                "name": "messenger",
-                "type": "address"
-            },
-            {
                 "internalType": "uint256",
                 "name": "amount",
                 "type": "uint256"
@@ -710,7 +556,7 @@
         "outputs": [
             {
                 "internalType": "bytes32",
-                "name": "lockId",
+                "name": "",
                 "type": "bytes32"
             }
         ],
@@ -721,36 +567,7 @@
         "inputs": [
             {
                 "internalType": "bytes32",
-                "name": "commitId",
-                "type": "bytes32"
-            },
-            {
-                "internalType": "bytes32",
-                "name": "hashlock",
-                "type": "bytes32"
-            },
-            {
-                "internalType": "uint256",
-                "name": "timelock",
-                "type": "uint256"
-            }
-        ],
-        "name": "lockCommitment",
-        "outputs": [
-            {
-                "internalType": "bytes32",
-                "name": "lockId",
-                "type": "bytes32"
-            }
-        ],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes32",
-                "name": "lockId",
+                "name": "Id",
                 "type": "bytes32"
             },
             {
@@ -774,30 +591,11 @@
         "inputs": [
             {
                 "internalType": "bytes32",
-                "name": "commitId",
+                "name": "Id",
                 "type": "bytes32"
             }
         ],
-        "name": "uncommit",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes32",
-                "name": "lockId",
-                "type": "bytes32"
-            }
-        ],
-        "name": "unlock",
+        "name": "refund",
         "outputs": [
             {
                 "internalType": "bool",

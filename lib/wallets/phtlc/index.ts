@@ -1,5 +1,5 @@
 import { Token } from "../../../Models/Network";
-import { AssetLock, Commit } from "../../../Models/PHTLC";
+import { Commit } from "../../../Models/PHTLC";
 
 export type CreatePreHTLCParams = {
     destinationChain: string,
@@ -17,18 +17,19 @@ export type CreatePreHTLCParams = {
 
 export type CommitmentParams = {
     type: 'erc20' | 'native';
-    commitId: string,
+    id: string,
     chainId: string,
     contractAddress: `0x${string}`
 }
 
 export type LockParams = {
     type: 'erc20' | 'native';
-    lockId: string,
-    lockData?: AssetLock,
+    id: string,
+    lockData?: Commit,
+    hashlock: string,
     chainId: string,
     contractAddress: `0x${string}`,
-    lockDataResolver?: (data: any[]) => AssetLock
+    lockDataResolver?: (data: any[]) => Commit
 }
 
 export type RefundParams = {
@@ -36,8 +37,8 @@ export type RefundParams = {
     chainId: string,
     contractAddress: `0x${string}`,
     commit: Commit
-    commitId: string,
-    lockId?: string | null,
+    id: string,
+    hashlock?: string | undefined,
 }
 
 export type GetCommitsParams = {

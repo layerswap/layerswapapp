@@ -1,12 +1,12 @@
 [
   {
-    "name": "HashedTimelockERC20",
     "type": "impl",
+    "name": "HashedTimelockERC20",
     "interface_name": "htlc::Erc20github::IHashedTimelockERC20"
   },
   {
-    "name": "core::integer::u256",
     "type": "struct",
+    "name": "core::integer::u256",
     "members": [
       {
         "name": "low",
@@ -19,8 +19,8 @@
     ]
   },
   {
-    "name": "core::array::Span::<core::felt252>",
     "type": "struct",
+    "name": "core::array::Span::<core::felt252>",
     "members": [
       {
         "name": "snapshot",
@@ -29,8 +29,8 @@
     ]
   },
   {
-    "name": "core::byte_array::ByteArray",
     "type": "struct",
+    "name": "core::byte_array::ByteArray",
     "members": [
       {
         "name": "data",
@@ -47,8 +47,8 @@
     ]
   },
   {
-    "name": "core::bool",
     "type": "enum",
+    "name": "core::bool",
     "variants": [
       {
         "name": "False",
@@ -61,66 +61,8 @@
     ]
   },
   {
-    "name": "htlc::Erc20github::HashedTimelockERC20::PHTLC",
     "type": "struct",
-    "members": [
-      {
-        "name": "dstAddress",
-        "type": "core::byte_array::ByteArray"
-      },
-      {
-        "name": "dstChain",
-        "type": "core::felt252"
-      },
-      {
-        "name": "dstAsset",
-        "type": "core::felt252"
-      },
-      {
-        "name": "srcAsset",
-        "type": "core::felt252"
-      },
-      {
-        "name": "sender",
-        "type": "core::starknet::contract_address::ContractAddress"
-      },
-      {
-        "name": "srcReceiver",
-        "type": "core::starknet::contract_address::ContractAddress"
-      },
-      {
-        "name": "lockId",
-        "type": "core::integer::u256"
-      },
-      {
-        "name": "amount",
-        "type": "core::integer::u256"
-      },
-      {
-        "name": "timelock",
-        "type": "core::integer::u256"
-      },
-      {
-        "name": "messenger",
-        "type": "core::starknet::contract_address::ContractAddress"
-      },
-      {
-        "name": "tokenContract",
-        "type": "core::starknet::contract_address::ContractAddress"
-      },
-      {
-        "name": "locked",
-        "type": "core::bool"
-      },
-      {
-        "name": "uncommitted",
-        "type": "core::bool"
-      }
-    ]
-  },
-  {
     "name": "htlc::Erc20github::HashedTimelockERC20::HTLC",
-    "type": "struct",
     "members": [
       {
         "name": "dstAddress",
@@ -171,14 +113,14 @@
         "type": "core::bool"
       },
       {
-        "name": "unlocked",
+        "name": "refunded",
         "type": "core::bool"
       }
     ]
   },
   {
-    "name": "core::array::Span::<core::integer::u256>",
     "type": "struct",
+    "name": "core::array::Span::<core::integer::u256>",
     "members": [
       {
         "name": "snapshot",
@@ -187,12 +129,12 @@
     ]
   },
   {
-    "name": "htlc::Erc20github::IHashedTimelockERC20",
     "type": "interface",
+    "name": "htlc::Erc20github::IHashedTimelockERC20",
     "items": [
       {
-        "name": "commit_hop",
         "type": "function",
+        "name": "commit_hop",
         "inputs": [
           {
             "name": "amount",
@@ -235,10 +177,6 @@
             "type": "core::integer::u256"
           },
           {
-            "name": "messenger",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
-          {
             "name": "tokenContract",
             "type": "core::starknet::contract_address::ContractAddress"
           }
@@ -251,8 +189,8 @@
         "state_mutability": "external"
       },
       {
-        "name": "commit",
         "type": "function",
+        "name": "commit",
         "inputs": [
           {
             "name": "amount",
@@ -283,10 +221,6 @@
             "type": "core::integer::u256"
           },
           {
-            "name": "messenger",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
-          {
             "name": "tokenContract",
             "type": "core::starknet::contract_address::ContractAddress"
           }
@@ -299,9 +233,13 @@
         "state_mutability": "external"
       },
       {
-        "name": "lock",
         "type": "function",
+        "name": "lock",
         "inputs": [
+          {
+            "name": "Id",
+            "type": "core::integer::u256"
+          },
           {
             "name": "amount",
             "type": "core::integer::u256"
@@ -335,14 +273,6 @@
             "type": "core::felt252"
           },
           {
-            "name": "commitId",
-            "type": "core::integer::u256"
-          },
-          {
-            "name": "messenger",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
-          {
             "name": "tokenContract",
             "type": "core::starknet::contract_address::ContractAddress"
           }
@@ -355,11 +285,11 @@
         "state_mutability": "external"
       },
       {
-        "name": "redeem",
         "type": "function",
+        "name": "redeem",
         "inputs": [
           {
-            "name": "lockId",
+            "name": "Id",
             "type": "core::integer::u256"
           },
           {
@@ -375,11 +305,11 @@
         "state_mutability": "external"
       },
       {
-        "name": "uncommit",
         "type": "function",
+        "name": "refund",
         "inputs": [
           {
-            "name": "commitId",
+            "name": "Id",
             "type": "core::integer::u256"
           }
         ],
@@ -391,27 +321,11 @@
         "state_mutability": "external"
       },
       {
-        "name": "unlock",
         "type": "function",
+        "name": "addLock",
         "inputs": [
           {
-            "name": "lockId",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::bool"
-          }
-        ],
-        "state_mutability": "external"
-      },
-      {
-        "name": "lockCommit",
-        "type": "function",
-        "inputs": [
-          {
-            "name": "commitId",
+            "name": "Id",
             "type": "core::integer::u256"
           },
           {
@@ -431,27 +345,11 @@
         "state_mutability": "external"
       },
       {
-        "name": "getCommitDetails",
         "type": "function",
+        "name": "getDetails",
         "inputs": [
           {
-            "name": "commitId",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "htlc::Erc20github::HashedTimelockERC20::PHTLC"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "name": "getLockDetails",
-        "type": "function",
-        "inputs": [
-          {
-            "name": "lockId",
+            "name": "Id",
             "type": "core::integer::u256"
           }
         ],
@@ -463,8 +361,8 @@
         "state_mutability": "view"
       },
       {
-        "name": "getCommits",
         "type": "function",
+        "name": "getCommits",
         "inputs": [
           {
             "name": "sender",
@@ -477,244 +375,201 @@
           }
         ],
         "state_mutability": "view"
-      },
-      {
-        "name": "getLockIdByCommitId",
-        "type": "function",
-        "inputs": [
-          {
-            "name": "commitId",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
       }
     ]
   },
   {
-    "name": "constructor",
     "type": "constructor",
+    "name": "constructor",
     "inputs": []
   },
   {
-    "kind": "struct",
+    "type": "event",
     "name": "htlc::Erc20github::HashedTimelockERC20::TokenCommitted",
-    "type": "event",
+    "kind": "struct",
     "members": [
       {
-        "kind": "data",
-        "name": "commitId",
-        "type": "core::integer::u256"
+        "name": "Id",
+        "type": "core::integer::u256",
+        "kind": "data"
       },
       {
-        "kind": "data",
         "name": "hopChains",
-        "type": "core::array::Span::<core::felt252>"
+        "type": "core::array::Span::<core::felt252>",
+        "kind": "data"
       },
       {
-        "kind": "data",
         "name": "hopAssets",
-        "type": "core::array::Span::<core::felt252>"
+        "type": "core::array::Span::<core::felt252>",
+        "kind": "data"
       },
       {
-        "kind": "data",
         "name": "hopAddress",
-        "type": "core::array::Span::<core::felt252>"
+        "type": "core::array::Span::<core::felt252>",
+        "kind": "data"
       },
       {
-        "kind": "data",
         "name": "dstChain",
-        "type": "core::felt252"
+        "type": "core::felt252",
+        "kind": "data"
       },
       {
-        "kind": "data",
         "name": "dstAddress",
-        "type": "core::byte_array::ByteArray"
+        "type": "core::byte_array::ByteArray",
+        "kind": "data"
       },
       {
-        "kind": "data",
         "name": "dstAsset",
-        "type": "core::felt252"
+        "type": "core::felt252",
+        "kind": "data"
       },
       {
-        "kind": "key",
         "name": "sender",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
       },
       {
-        "kind": "key",
         "name": "srcReceiver",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
       },
       {
-        "kind": "data",
         "name": "srcAsset",
-        "type": "core::felt252"
+        "type": "core::felt252",
+        "kind": "data"
       },
       {
-        "kind": "data",
         "name": "amount",
-        "type": "core::integer::u256"
+        "type": "core::integer::u256",
+        "kind": "data"
       },
       {
-        "kind": "data",
         "name": "timelock",
-        "type": "core::integer::u256"
+        "type": "core::integer::u256",
+        "kind": "data"
       },
       {
-        "kind": "data",
-        "name": "messenger",
-        "type": "core::starknet::contract_address::ContractAddress"
-      },
-      {
-        "kind": "data",
         "name": "tokenContract",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
       }
     ]
   },
   {
-    "kind": "struct",
+    "type": "event",
     "name": "htlc::Erc20github::HashedTimelockERC20::TokenLocked",
-    "type": "event",
+    "kind": "struct",
     "members": [
       {
-        "kind": "key",
+        "name": "Id",
+        "type": "core::integer::u256",
+        "kind": "key"
+      },
+      {
         "name": "hashlock",
-        "type": "core::integer::u256"
+        "type": "core::integer::u256",
+        "kind": "data"
       },
       {
-        "kind": "data",
         "name": "dstChain",
-        "type": "core::felt252"
+        "type": "core::felt252",
+        "kind": "data"
       },
       {
-        "kind": "data",
         "name": "dstAddress",
-        "type": "core::byte_array::ByteArray"
+        "type": "core::byte_array::ByteArray",
+        "kind": "data"
       },
       {
-        "kind": "data",
         "name": "dstAsset",
-        "type": "core::felt252"
+        "type": "core::felt252",
+        "kind": "data"
       },
       {
-        "kind": "key",
         "name": "sender",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
       },
       {
-        "kind": "key",
         "name": "srcReceiver",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "key"
       },
       {
-        "kind": "data",
         "name": "srcAsset",
-        "type": "core::felt252"
+        "type": "core::felt252",
+        "kind": "data"
       },
       {
-        "kind": "data",
         "name": "amount",
-        "type": "core::integer::u256"
+        "type": "core::integer::u256",
+        "kind": "data"
       },
       {
-        "kind": "data",
         "name": "timelock",
-        "type": "core::integer::u256"
+        "type": "core::integer::u256",
+        "kind": "data"
       },
       {
-        "kind": "data",
-        "name": "messenger",
-        "type": "core::starknet::contract_address::ContractAddress"
-      },
-      {
-        "kind": "data",
         "name": "tokenContract",
-        "type": "core::starknet::contract_address::ContractAddress"
-      },
-      {
-        "kind": "data",
-        "name": "commitId",
-        "type": "core::integer::u256"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
       }
     ]
   },
   {
-    "kind": "struct",
+    "type": "event",
     "name": "htlc::Erc20github::HashedTimelockERC20::TokenRedeemed",
-    "type": "event",
+    "kind": "struct",
     "members": [
       {
-        "kind": "key",
-        "name": "lockId",
-        "type": "core::integer::u256"
+        "name": "Id",
+        "type": "core::integer::u256",
+        "kind": "key"
       },
       {
-        "kind": "data",
         "name": "redeemAddress",
-        "type": "core::starknet::contract_address::ContractAddress"
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
       }
     ]
   },
   {
-    "kind": "struct",
-    "name": "htlc::Erc20github::HashedTimelockERC20::TokenUnlocked",
     "type": "event",
+    "name": "htlc::Erc20github::HashedTimelockERC20::TokenRefunded",
+    "kind": "struct",
     "members": [
       {
-        "kind": "key",
-        "name": "lockId",
-        "type": "core::integer::u256"
+        "name": "Id",
+        "type": "core::integer::u256",
+        "kind": "key"
       }
     ]
   },
   {
-    "kind": "struct",
-    "name": "htlc::Erc20github::HashedTimelockERC20::TokenUncommitted",
     "type": "event",
-    "members": [
-      {
-        "kind": "key",
-        "name": "commitId",
-        "type": "core::integer::u256"
-      }
-    ]
-  },
-  {
-    "kind": "enum",
     "name": "htlc::Erc20github::HashedTimelockERC20::Event",
-    "type": "event",
+    "kind": "enum",
     "variants": [
       {
-        "kind": "nested",
         "name": "TokenCommitted",
-        "type": "htlc::Erc20github::HashedTimelockERC20::TokenCommitted"
+        "type": "htlc::Erc20github::HashedTimelockERC20::TokenCommitted",
+        "kind": "nested"
       },
       {
-        "kind": "nested",
         "name": "TokenLocked",
-        "type": "htlc::Erc20github::HashedTimelockERC20::TokenLocked"
+        "type": "htlc::Erc20github::HashedTimelockERC20::TokenLocked",
+        "kind": "nested"
       },
       {
-        "kind": "nested",
         "name": "TokenRedeemed",
-        "type": "htlc::Erc20github::HashedTimelockERC20::TokenRedeemed"
+        "type": "htlc::Erc20github::HashedTimelockERC20::TokenRedeemed",
+        "kind": "nested"
       },
       {
-        "kind": "nested",
-        "name": "TokenUnlocked",
-        "type": "htlc::Erc20github::HashedTimelockERC20::TokenUnlocked"
-      },
-      {
-        "kind": "nested",
-        "name": "TokenUncommitted",
-        "type": "htlc::Erc20github::HashedTimelockERC20::TokenUncommitted"
+        "name": "TokenRefunded",
+        "type": "htlc::Erc20github::HashedTimelockERC20::TokenRefunded",
+        "kind": "nested"
       }
     ]
   }

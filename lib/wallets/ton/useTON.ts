@@ -7,13 +7,11 @@ import { useEffect, useState } from "react";
 import { CommitmentParams, CreatePreHTLCParams, LockParams, RefundParams } from "../phtlc";
 import { Address, beginCell, Cell, toNano } from "@ton/ton"
 import { commitTransactionBuilder } from "./transactionBuilder";
-import { AssetLock, Commit } from "../../../Models/PHTLC";
-import tonClient from "./client";
-import { hexToBigInt, toHex } from "viem";
-import { TupleBuilder } from "@ton/core"
+import { Commit } from "../../../Models/PHTLC";
+import { hexToBigInt } from "viem";
 import { useSettingsState } from "../../../context/settings";
 import { retryUntilFecth } from "../../retry";
-import { getTONCommitment, getTONLock } from "./getters";
+import { getTONDetails } from "./getters";
 
 export default function useTON(): WalletProvider {
 
@@ -114,7 +112,7 @@ export default function useTON(): WalletProvider {
         return { hash: messageHash, commitId }
     }
 
-    const getCommitment = async (params: CommitmentParams): Promise<Commit> => {
+    const getDetails = async (params: CommitmentParams): Promise<Commit> => {
         const network = networks.find(n => n.chain_id === params.chainId)
 
         try {
@@ -123,29 +121,12 @@ export default function useTON(): WalletProvider {
             const searchData = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}')
             const hashlock = searchData.hashlock as string | undefined
 
-            const commitDetailsResult = await getTONCommitment({ network, hashlock, ...params })
+            const detailsResult = await getTONDetails({ network, hashlock, ...params })
 
-            const lockDetailsResult = (!commitDetailsResult && hashlock) ? await getTONLock({ lockId: hashlock, network, ...params }) : null
-
-            const parsedResult: Commit = commitDetailsResult || {
-                dstAddress: lockDetailsResult?.dstAddress || '',
-                dstChain: lockDetailsResult?.dstChain || '',
-                dstAsset: lockDetailsResult?.dstAsset || '',
-                srcAsset: lockDetailsResult?.srcAsset || '',
-                sender: lockDetailsResult?.sender || '',
-                srcReceiver: lockDetailsResult?.srcReceiver || '',
-                lockId: lockDetailsResult?.hashlock || '',
-                amount: lockDetailsResult?.amount || 0,
-                timelock: lockDetailsResult?.timelock || 0,
-                locked: true,
-                uncommitted: false,
-                messenger: ''
-            }
-
-            if (!(commitDetailsResult || lockDetailsResult)) {
+            if (!(detailsResult)) {
                 throw new Error("No result")
             }
-            return parsedResult
+            return detailsResult
         }
         catch (e) {
             console.log(e)
@@ -154,29 +135,8 @@ export default function useTON(): WalletProvider {
 
     }
 
-    const getLockIdByCommitId = async (params: CommitmentParams) => {
-        const { commitId, contractAddress } = params
-
-        const bigIntValue = hexToBigInt(commitId as `0x${string}`);
-
-        let args = new TupleBuilder();
-        args.writeNumber(bigIntValue);
-
-        const lockIdResult = await tonClient.runMethod(
-            Address.parse(contractAddress),
-            "getLockIdByCommitId",
-            args.build()
-        );
-
-        const lockId = (lockIdResult?.stack as any)?.items?.[0]?.value as bigint
-
-        if (!lockId) return null
-
-        return toHex(lockId)
-    }
-
-    const lockCommitment = async (params: CommitmentParams & LockParams) => {
-        const { commitId, contractAddress, lockId } = params
+    const addLock = async (params: CommitmentParams & LockParams) => {
+        const { id, hashlock, contractAddress } = params
 
         const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
         const timeLockMS = Date.now() + LOCK_TIME
@@ -184,8 +144,8 @@ export default function useTON(): WalletProvider {
 
         const body = beginCell()
             .storeUint(1558004185, 32)
-            .storeInt(hexToBigInt(commitId as `0x${string}`), 257)
-            .storeInt(hexToBigInt(lockId as `0x${string}`), 257)
+            .storeInt(hexToBigInt(id as `0x${string}`), 257)
+            .storeInt(hexToBigInt(hashlock as `0x${string}`), 257)
             .storeInt(timelock, 257)
             .endCell();
 
@@ -208,25 +168,10 @@ export default function useTON(): WalletProvider {
         return { hash: messageHash, result: res }
     }
 
-    const getLock = async (params: LockParams): Promise<AssetLock | undefined> => {
-
-        const network = networks.find(n => n.chain_id === params.chainId)
-        const lockDetailsResult = await getTONLock({ network, ...params })
-
-        if (!lockDetailsResult) return undefined
-
-        return lockDetailsResult
-    }
-
     const refund = async (params: RefundParams) => {
-        const { lockId, commit, commitId, contractAddress } = params
+        const { id, contractAddress } = params
 
-        if (commit.locked && !lockId) {
-            throw new Error("No lockId")
-        }
-
-        const id = lockId || commitId
-        const opcode = lockId ? 2910985977 : 2841160739
+        const opcode = 2910985977
 
         const body = beginCell()
             .storeUint(opcode, 32)
@@ -268,12 +213,9 @@ export default function useTON(): WalletProvider {
         name,
 
         createPreHTLC,
-        getCommitment,
-        getLockIdByCommitId,
-        lockCommitment,
-        getLock,
+        getDetails,
+        addLock,
         refund,
-
         claim
     }
 }
