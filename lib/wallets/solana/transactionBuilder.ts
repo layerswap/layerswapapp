@@ -72,11 +72,11 @@ export const phtlcTransactionBuilder = async (params: CreatePreHTLCParams & { pr
     try {
         const commitId = await program?.methods.getCommitId(bnAmount, bnTimelock).accountsPartial({ sender: walletPublicKey, receiver: lpAddressPublicKey }).view();
 
-        let [phtlcTokenAccount, b] = commitId && PublicKey.findProgramAddressSync(
-            [Buffer.from("phtlc_token_account"), commitId],
+        let [htlcTokenAccount, b] = commitId && PublicKey.findProgramAddressSync(
+            [Buffer.from("htlc_token_account"), commitId],
             program.programId
         );
-        let [phtlc, phtlcBump] = commitId && PublicKey.findProgramAddressSync(
+        let [htlc, htlcBump] = commitId && PublicKey.findProgramAddressSync(
             [commitId],
             program.programId
         );
@@ -103,11 +103,11 @@ export const phtlcTransactionBuilder = async (params: CreatePreHTLCParams & { pr
         const tokenContract = new PublicKey(sourceAsset.contract);
 
         const commitTx = await program.methods
-            .commit(commitId, hopChains, hopAssets, hopAddresses, destinationChain, destinationAsset, destination_address, sourceAsset.symbol, lpAddressPublicKey, bnTimelock, walletPublicKey, bnAmount, phtlcBump)
+            .commit(commitId, hopChains, hopAssets, hopAddresses, destinationChain, destinationAsset, destination_address, sourceAsset.symbol, lpAddressPublicKey, bnTimelock, bnAmount, htlcBump)
             .accountsPartial({
                 sender: walletPublicKey,
-                phtlc: phtlc,
-                phtlcTokenAccount: phtlcTokenAccount,
+                htlc: htlc,
+                htlcTokenAccount: htlcTokenAccount,
                 tokenContract: tokenContract,
                 senderTokenAccount: senderTokenAddress
             })
@@ -137,7 +137,7 @@ export const phtlcTransactionBuilder = async (params: CreatePreHTLCParams & { pr
 }
 
 export const lockTransactionBuilder = async (params: CommitmentParams & LockParams & { program: Program<Idl>, connection: Connection, walletPublicKey: PublicKey, network: NetworkWithTokens }) => {
-    const { walletPublicKey, commitId, connection, lockId, network, program, lockData } = params
+    const { walletPublicKey, id, connection, hashlock, network, program, lockData } = params
     const token = network?.tokens.find(t => t.symbol === lockData?.dstAsset)
 
     if (!program) {
@@ -155,44 +155,35 @@ export const lockTransactionBuilder = async (params: CommitmentParams & LockPara
     const timeLock = Math.floor(timeLockMS / 1000)
     const TIMELOCK = new BN(timeLock);
 
-    const commitIdBuffer = Buffer.from(commitId.replace('0x', ''), 'hex');
-    const lockIdBuffer = Buffer.from(lockId.replace('0x', ''), 'hex');
-    let [htlc, htlcBump]: any = lockId && PublicKey.findProgramAddressSync(
-        [lockIdBuffer],
-        program.programId
-    );
-    let [phtlc, phtlcBump]: any = commitId && PublicKey.findProgramAddressSync(
+    const commitIdBuffer = Buffer.from(id.replace('0x', ''), 'hex');
+    const hashlockBuffer = Buffer.from(hashlock.replace('0x', ''), 'hex');
+
+    let [htlc, htlcBump]: any = id && PublicKey.findProgramAddressSync(
         [commitIdBuffer],
         program.programId
     );
-    let [htlcTokenAccount, bump2]: any = lockId && PublicKey.findProgramAddressSync(
-        [Buffer.from("htlc_token_account"), lockIdBuffer],
-        program.programId
-    );
-    let [phtlcTokenAccount, bump3]: any = commitId && PublicKey.findProgramAddressSync(
-        [Buffer.from("phtlc_token_account"), commitIdBuffer],
+    let [htlcTokenAccount, bump3]: any = id && PublicKey.findProgramAddressSync(
+        [Buffer.from("htlc_token_account"), commitIdBuffer],
         program.programId
     );
 
-    const lockTx = await program.methods.lockCommit(commitIdBuffer, lockIdBuffer, TIMELOCK, phtlcBump)
+    const lockTx = await program.methods.addLock(commitIdBuffer, hashlockBuffer, TIMELOCK, htlcBump)
         .accountsPartial({
-            messenger: walletPublicKey,
-            phtlc: phtlc,
-            htlc: htlc,
-            phtlcTokenAccount: phtlcTokenAccount,
+            sender: walletPublicKey,
+            htlc,
             htlcTokenAccount: htlcTokenAccount,
             tokenContract: new PublicKey(token.contract),
         })
         .transaction();
 
-    let lockCommit = new Transaction();
-    lockCommit.add(lockTx);
+    let addLock = new Transaction();
+    addLock.add(lockTx);
 
     const blockHash = await connection.getLatestBlockhash();
 
-    lockCommit.recentBlockhash = blockHash.blockhash;
-    lockCommit.lastValidBlockHeight = blockHash.lastValidBlockHeight;
-    lockCommit.feePayer = walletPublicKey;
+    addLock.recentBlockhash = blockHash.blockhash;
+    addLock.lastValidBlockHeight = blockHash.lastValidBlockHeight;
+    addLock.feePayer = walletPublicKey;
 
-    return { lockCommit, lockId: lockIdBuffer }
+    return { lockCommit: addLock, lockId: hashlockBuffer }
 }

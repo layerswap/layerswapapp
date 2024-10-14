@@ -4,7 +4,7 @@ import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
 
 export const RedeemAction: FC = () => {
-    const { destination_network, source_network, committment, setDestinationLock, setSourceLock, destination_asset, source_asset } = useAtomicState()
+    const { destination_network, source_network, sourceDetails, setDestinationDetails, setSourceDetails, destination_asset, source_asset, commitId } = useAtomicState()
 
     const { getWithdrawalProvider } = useWallet()
 
@@ -14,8 +14,8 @@ export const RedeemAction: FC = () => {
     const source_contract = source_asset?.contract ? source_network?.metadata.htlc_token_contract : source_network?.metadata.htlc_native_contract
 
     useEffect(() => {
-        let commitHandler: any = undefined
-        if (committment?.locked) {
+        let commitHandler: any = undefined;
+        if (commitId) {
             (async () => {
                 commitHandler = setInterval(async () => {
                     if (!destination_network?.chain_id)
@@ -23,13 +23,13 @@ export const RedeemAction: FC = () => {
                     if (!destination_provider)
                         throw new Error("No destination provider")
 
-                    const data = committment?.lockId ? await destination_provider.getLock({
+                    const data = sourceDetails?.id ? await destination_provider.getDetails({
                         type: destination_asset?.contract ? 'erc20' : 'native',
                         chainId: destination_network.chain_id,
-                        lockId: committment.lockId,
+                        id: commitId,
                         contractAddress: destination_contract as `0x${string}`,
                     }) : null
-                    if (data) setDestinationLock(data)
+                    if (data) setDestinationDetails(data)
                     if (data?.redeemed) {
                         clearInterval(commitHandler)
                     }
@@ -37,11 +37,11 @@ export const RedeemAction: FC = () => {
             })()
         }
         return () => clearInterval(commitHandler)
-    }, [destination_network, committment])
+    }, [destination_network, sourceDetails])
 
     useEffect(() => {
-        let commitHandler: any = undefined
-        if (committment?.locked) {
+        let commitHandler: any = undefined;
+        if (commitId) {
             (async () => {
                 commitHandler = setInterval(async () => {
                     if (!source_network?.chain_id)
@@ -49,13 +49,13 @@ export const RedeemAction: FC = () => {
                     if (!source_provider)
                         throw new Error("No destination provider")
 
-                    const data = committment?.lockId ? await source_provider.getLock({
+                    const data = sourceDetails?.id ? await source_provider.getDetails({
                         type: source_asset?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
-                        lockId: committment.lockId,
+                        id: commitId,
                         contractAddress: source_contract as `0x${string}`,
                     }) : null
-                    if (data) setSourceLock(data)
+                    if (data) setSourceDetails(data)
                     if (data?.redeemed) {
                         clearInterval(commitHandler)
                     }
@@ -63,7 +63,7 @@ export const RedeemAction: FC = () => {
             })()
         }
         return () => clearInterval(commitHandler)
-    }, [source_network, committment])
+    }, [source_network, sourceDetails])
 
     return <ActionStatus
         status="pending"

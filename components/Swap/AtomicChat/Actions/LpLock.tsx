@@ -1,7 +1,6 @@
 import { FC, useEffect } from "react";
 import { NetworkWithTokens, Token } from "../../../../Models/Network";
 import Image from 'next/image';
-import { AssetLock } from "../../../../Models/PHTLC";
 import { ExtendedAddress } from "../../../Input/Address/AddressPicker/AddressWithIcon";
 import { addressFormat } from "../../../../lib/address/formatter";
 import { truncateDecimals } from "../../../utils/RoundDecimals";
@@ -12,30 +11,15 @@ import ActionStatus from "./ActionStatus";
 import shortenAddress from "../../../utils/ShortenAddress";
 import { ExternalLink } from "lucide-react";
 import { NextRouter, useRouter } from "next/router";
+import { Commit } from "../../../../Models/PHTLC";
 
 export const LpLockingAssets: FC = () => {
-    const { destination_network, commitId, setDestinationLock, setHashLock, destination_asset } = useAtomicState()
+    const { destination_network, commitId, setDestinationDetails, destination_asset } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
-
-    const router = useRouter()
 
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
 
     const atomicContract = (destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract) as `0x${string}`
-
-    const setHashlockURI = (router: NextRouter, hashlock: string) => {
-        const basePath = router?.basePath || ""
-        var swapURL = window.location.protocol + "//"
-            + window.location.host + `${basePath}/atomic`;
-        const params = window.location.search
-        if (params && Object.keys(params).length) {
-            const search = new URLSearchParams(params as any);
-            search.set('hashlock', hashlock)
-            if (search)
-                swapURL += `?${search}`
-        }
-        window.history.replaceState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
-    }
 
     useEffect(() => {
         let lockHandler: any = undefined
@@ -44,27 +28,16 @@ export const LpLockingAssets: FC = () => {
                 if (!destination_network.chain_id)
                     throw Error("No chain id")
 
-                const destinationLockId = await destination_provider.getLockIdByCommitId({
+                const destiantionDetails = await destination_provider.getDetails({
                     type: destination_asset?.contract ? 'erc20' : 'native',
                     chainId: destination_network.chain_id,
-                    commitId: commitId,
+                    id: commitId,
                     contractAddress: atomicContract
                 })
 
-                if (destinationLockId) {
-                    setHashLock(destinationLockId)
-                    if (!router.query.hashlock?.toString())
-                        setHashlockURI(router, destinationLockId)
-                    const data = await destination_provider.getLock({
-                        type: destination_asset?.contract ? 'erc20' : 'native',
-                        chainId: destination_network.chain_id,
-                        lockId: destinationLockId as string,
-                        contractAddress: atomicContract,
-                    })
-                    if (data) {
-                        setDestinationLock(data)
-                        clearInterval(lockHandler)
-                    }
+                if (destiantionDetails?.hashlock) {
+                    setDestinationDetails(destiantionDetails)
+                    clearInterval(lockHandler)
                 }
 
             }, 5000)
@@ -90,11 +63,11 @@ type DoneProps = {
     address: string;
     source_asset: Token;
     destination_asset: Token;
-    destinationLock: AssetLock;
+    destinationDetails: Commit;
 }
 
 export const LpLockDone: FC<DoneProps> = (props) => {
-    const { source_network, destination_network, destination_asset, destinationLock } = props
+    const { source_network, destination_network, destination_asset, destinationDetails: destinationLock } = props
     const destinationLockedAmount = destination_asset && destinationLock?.amount && Number(ethers.utils.formatUnits(destinationLock?.amount?.toString(), destination_asset?.decimals))
     const destinationLocAmountInUSD = destinationLockedAmount && (destination_asset?.price_in_usd * destinationLockedAmount).toFixed(2)
 

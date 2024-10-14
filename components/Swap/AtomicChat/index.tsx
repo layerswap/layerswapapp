@@ -25,7 +25,7 @@ const Commitment: FC<ContainerProps> = (props) => {
     const { getWithdrawalProvider } = useWallet()
     const { fee, valuesChanger } = useFee()
 
-    const { commitId, committment } = useAtomicState()
+    const { commitId, sourceDetails } = useAtomicState()
 
     const source_network = networks.find(n => n.name.toUpperCase() === source.toUpperCase())
     const destination_network = networks.find(n => n.name.toUpperCase() === destination.toUpperCase())
@@ -58,11 +58,11 @@ const Commitment: FC<ContainerProps> = (props) => {
                                 <Summary
                                     destination={destination_network}
                                     source={source_network}
-                                    destinationAddress={committment?.dstAddress || address}
+                                    destinationAddress={sourceDetails?.dstAddress || address}
                                     destinationCurrency={destination_token}
                                     requestedAmount={amount}
                                     sourceCurrency={source_token}
-                                    sourceAccountAddress={committment?.sender || wallet?.address}
+                                    sourceAccountAddress={sourceDetails?.sender || wallet?.address}
                                     receiveAmount={receiveAmount}
                                 />
                             }
