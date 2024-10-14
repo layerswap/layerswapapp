@@ -86,10 +86,12 @@ export default function useSolana(): WalletProvider {
 
     const getDetails = async (params: CommitmentParams) => {
 
+        if (!solana?.metadata.lp_address) throw new Error("No LP address")
+
         const { id } = params
         const idBuffer = Buffer.from(id.replace('0x', ''), 'hex');
 
-        const lpAnchorWallet = { publicKey: new PublicKey(solana?.metadata?.lp_address!) }
+        const lpAnchorWallet = { publicKey: new PublicKey(solana?.metadata?.lp_address) }
         const provider = new AnchorProvider(connection, lpAnchorWallet as AnchorWallet);
         const lpProgram = (provider && solana?.metadata?.htlc_token_contract) ? new Program(AnchorHtlc(solana?.metadata?.htlc_token_contract), provider) : null;
 
