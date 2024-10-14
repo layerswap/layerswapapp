@@ -16,7 +16,7 @@ function MaintananceContent(props) {
         updateWithProps()
     })
 
-    const twitterLogo = <TwitterLogo className="text-primary-text h-6 w-6" />
+    const twitterLogo = <TwitterLogo className="h-6 w-6" />
     return (
         <div className="flex items-stretch flex-col">
             <LayerSwapLogo className="h-8 mt-4 md:hidden w-auto text-primary-logoColor fill-primary-text" />
@@ -26,10 +26,10 @@ function MaintananceContent(props) {
                         <p className="mb-4 text-primary-text">
                             We&apos;re upgrading our systems and infrastructure to give you the best experience yet.
                         </p>
-                        <span className="block font-bold text-3xl xl:inline">We&apos;ll be back at 15:00 UTC</span>
+                        {/* <span className="block font-bold text-3xl xl:inline">We&apos;ll be back at 15:00 UTC</span>
                         <p className="mt-4 text-primary-text">
                             Any pending swaps will be completed after maintenance.
-                        </p>
+                        </p> */}
                     </h1>
                     <SubmitButton onClick={() => window.open('https://twitter.com/layerswap', '_blank')} icon={twitterLogo} isDisabled={false} isSubmitting={false}>Follow for updates</SubmitButton>
                 </div>
