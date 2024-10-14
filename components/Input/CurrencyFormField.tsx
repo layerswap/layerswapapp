@@ -90,7 +90,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         error
     )
 
-    const neyworkGroupedCurrencies = GenerateGroupedCurrencyMenuItems(
+    const networkGroupedCurrencies = GenerateGroupedCurrencyMenuItems(
         values,
         routes?.data,
         direction,
@@ -193,7 +193,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 setValue={handleSelect}
                 value={value}
                 values={currencyMenuItems}
-                groupedCurrencies={neyworkGroupedCurrencies}
+                groupedCurrencies={networkGroupedCurrencies}
                 searchHint='Search'
                 isLoading={isLoading}
                 walletComp={<WalletsHeader />}
@@ -428,10 +428,20 @@ function GenerateGroupedCurrencyMenuItems(
                         const currencyIsAvailable = (token?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
                             !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || token.status === 'inactive');
                         const details = wallets?.length ? (
-                            <p className="text-primary-text text-sm flex flex-col items-end pr-1.5">
-                                {Number(formattedBalanceAmount) ? <span>{formattedBalanceAmount}</span> : <span>0</span>}
-                                {balanceAmountInUsd ? <span className="text-secondary-text">${new Intl.NumberFormat("en-US", { style: "decimal", }).format(Number(balanceAmountInUsd))}</span> : <span className="text-secondary-text">$0</span>}
-                            </p>
+                            isBalanceLoading ? (
+                                <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                            ) : (
+                                <p className="text-primary-text text-sm flex flex-col items-end pr-1.5">
+                                    {Number(formattedBalanceAmount) ? <span>{formattedBalanceAmount}</span> : <span>0</span>}
+                                    {balanceAmountInUsd ? (
+                                        <span className="text-secondary-text">
+                                            ${new Intl.NumberFormat("en-US", { style: "decimal" }).format(Number(balanceAmountInUsd))}
+                                        </span>
+                                    ) : (
+                                        <span className="text-secondary-text">$0</span>
+                                    )}
+                                </p>
+                            )
                         ) : null;
                         const isNewlyListed = new Date(token?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
                         const badge = isNewlyListed ? (
@@ -464,7 +474,8 @@ function GenerateGroupedCurrencyMenuItems(
                             )
                             ),
                             noWalletsConnectedText,
-                            extendedAddress
+                            extendedAddress,
+                            isBalanceLoading
                         };
                         return token_select_item
                     }),

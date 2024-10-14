@@ -17,6 +17,7 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     subItems?: ISelectMenuItem[];
     leftIcon?: JSX.Element | JSX.Element[];
     extendedAddress?: React.ReactNode;
+    isBalanceLoading?: boolean;
     baseObject: T;
     constructor(baseObject: T, id: string, name: string, order: number, imgSrc: string, isAvailable: boolean, group?: string, details?: JSX.Element | JSX.Element[]) {
         this.baseObject = baseObject;
@@ -49,4 +50,5 @@ export interface ISelectMenuItem {
     order?: number;
     subItems?: ISelectMenuItem[];
     extendedAddress?: React.ReactNode;
+    isBalanceLoading?: boolean;
 }

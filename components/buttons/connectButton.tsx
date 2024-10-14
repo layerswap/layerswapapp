@@ -96,7 +96,7 @@ const ConnectButton = ({
             >
                 {children}
             </PopoverTrigger>
-            <PopoverContent className="flex flex-col items-start gap-2 w-fit">
+            <PopoverContent className="flex flex-col items-start gap-2 w-fit mr-8">
                 {filteredConnectors.map((connector, index) => (
                     <button
                         type="button"
