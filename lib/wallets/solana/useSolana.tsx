@@ -97,27 +97,34 @@ export default function useSolana(): WalletProvider {
             throw new Error("Could not initiatea program")
         }
 
-        let [htlc, htlcBump] = idBuffer && PublicKey.findProgramAddressSync(
+        let [htlc] = idBuffer && PublicKey.findProgramAddressSync(
             [idBuffer],
             lpProgram.programId
         );
-        const result = await lpProgram?.methods.getDetails(Array.from(idBuffer), htlcBump).accountsPartial({ htlc }).view();
 
-        if (!result) return null
+        try {
+            const result = await lpProgram?.methods.getDetails(Array.from(idBuffer)).accountsPartial({ htlc }).view();
 
-        const parsedResult = {
-            ...result,
-            hashlock: result?.hashlock && `0x${toHexString(result.hashlock)}`,
-            amount: Number(result.amount) / Math.pow(10, 6),
-            timelock: Number(result.timelock),
-            sender: new PublicKey(result.sender).toString(),
-            srcReceiver: new PublicKey(result.srcReceiver).toString(),
-            secret: new TextDecoder().decode(result.secret),
-            tokenContract: new PublicKey(result.tokenContract).toString(),
-            tokenWallet: new PublicKey(result.tokenWallet).toString(),
+            if (!result) return null
+
+            const parsedResult = {
+                ...result,
+                hashlock: (result?.hashlock && toHexString(result.hashlock) !== '0000000000000000000000000000000000000000000000000000000000000000') && `0x${toHexString(result.hashlock)}`,
+                amount: Number(result.amount) / Math.pow(10, 6),
+                timelock: Number(result.timelock),
+                sender: new PublicKey(result.sender).toString(),
+                srcReceiver: new PublicKey(result.srcReceiver).toString(),
+                secret: result.secret,
+                tokenContract: new PublicKey(result.tokenContract).toString(),
+                tokenWallet: new PublicKey(result.tokenWallet).toString(),
+            }
+
+            return parsedResult
         }
-
-        return parsedResult
+        catch (e) {
+            console.log(e)
+            throw new Error("No result")
+        }
     }
 
     const addLock = async (params: CommitmentParams & LockParams) => {

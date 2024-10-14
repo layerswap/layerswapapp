@@ -158,16 +158,16 @@ export const lockTransactionBuilder = async (params: CommitmentParams & LockPara
     const commitIdBuffer = Buffer.from(id.replace('0x', ''), 'hex');
     const hashlockBuffer = Buffer.from(hashlock.replace('0x', ''), 'hex');
 
-    let [htlc, htlcBump]: any = id && PublicKey.findProgramAddressSync(
+    let [htlc]: any = id && PublicKey.findProgramAddressSync(
         [commitIdBuffer],
         program.programId
     );
-    let [htlcTokenAccount, bump3]: any = id && PublicKey.findProgramAddressSync(
+    let [htlcTokenAccount]: any = id && PublicKey.findProgramAddressSync(
         [Buffer.from("htlc_token_account"), commitIdBuffer],
         program.programId
     );
 
-    const lockTx = await program.methods.addLock(commitIdBuffer, hashlockBuffer, TIMELOCK, htlcBump)
+    const lockTx = await program.methods.addLock(commitIdBuffer, hashlockBuffer, TIMELOCK)
         .accountsPartial({
             sender: walletPublicKey,
             htlc,
