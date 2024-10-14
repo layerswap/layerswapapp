@@ -28,6 +28,8 @@ import { Exchange } from "../../Models/Exchange";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { ExtendedAddress } from "./Address/AddressPicker/AddressWithIcon";
 import { addressFormat } from "../../lib/address/formatter";
+import { groupBy } from "../utils/groupBy";
+import { Console } from "console";
 
 const WalletsHeader = dynamic(() => import("../ConnectedWallets").then((comp) => comp.WalletsHeader), {
     loading: () => <></>
@@ -89,7 +91,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     )
 
     const neyworkGroupedCurrencies = GenerateGroupedCurrencyMenuItems(
-        allCurrencies!,
         values,
         routes?.data,
         direction,
@@ -326,7 +327,6 @@ function GenerateCurrencyMenuItems(
 }
 
 function GenerateGroupedCurrencyMenuItems(
-    currencies: (RouteToken & { network_name: string, network_display_name: string, network_logo: string })[],
     values: SwapFormValues,
     routes: RouteNetwork[] | undefined,
     direction: string,
@@ -338,164 +338,144 @@ function GenerateGroupedCurrencyMenuItems(
 ): SelectMenuItemGroup[] {
     const { to, from } = values;
 
-    const networkGroupedCurrencies: { [key: string]: SelectMenuItemGroup } = {};
-
-    currencies?.forEach(currency => {
-        const displayName = currency.symbol;
-
-        for (const key in balances) {
-            if (!wallets?.some(wallet => wallet?.address === key)) {
-                delete balances[key];
-            }
-        }
-
-        const network = routes?.find(r => r.name === currency.network_name);
-        const networkLocked = direction === "from" ? !!(from && query?.lockFrom) : !!(to && query?.lockTo);
-
-        const networkIsAvailable = !networkLocked &&
-            (
-                network?.tokens?.some(r => r.status === 'active' || r.status === 'not_found') ||
-                !query?.lockAsset && !query?.lockFromAsset && !query?.lockToAsset && !query?.lockFrom && !query?.lockTo && !query?.lockNetwork && !query?.lockExchange && network?.tokens?.some(r => r.status !== 'inactive')
-            );
-
-        const networksRouteNotFound = networkIsAvailable && !network?.tokens?.some(r => r.status === 'active');
-
-        const balancesArray = balances && Object.values(balances).flat();
-        const balance = balancesArray?.find(b => b?.token === currency?.symbol && b?.network === currency.network_name);
-
-        const formattedBalanceAmount = balance ? Number(truncateDecimals(balance?.amount, currency.precision)) : '';
-        const balanceAmountInUsd = formattedBalanceAmount ? (currency?.price_in_usd * formattedBalanceAmount).toFixed(2) : undefined;
-
-        const networkTokens = balancesArray?.filter(b => b?.network === network?.name);
-
-        const networkBalanceInUsd = networkTokens
-            ? networkTokens.reduce((acc, b) => {
-                const token = network?.tokens?.find(t => t?.symbol === b?.token);
-                const tokenPriceInUsd = token?.price_in_usd || 0;
-                const tokenPrecision = token?.precision || 0;
-                const formattedBalance = Number(truncateDecimals(b?.amount, tokenPrecision));
-                return acc + (formattedBalance * tokenPriceInUsd);
-            }, 0).toFixed(2)
-            : 0;
-
-        const DisplayNameComponent = (
-            <div className="flex flex-col">
-                <span className="text-base text-primary-text">{displayName}</span>
-                <div className="text-secondary-text text-xs flex">
-                    {currency.network_logo && (
-                        <Image
-                            src={currency.network_logo}
-                            alt="Project Logo"
-                            height="16"
-                            width="16"
-                            loading="eager"
-                            className="rounded-md object-contain mr-1"
-                        />
-                    )}
-                    <span>{currency.network_display_name}</span>
-                </div>
-            </div>
-        );
-
-        const noWalletsConnectedText = !wallets?.length && (
-            <div className="text-secondary-text text-xs">
-                <span>Connect wallet</span>
-                <br />
-                <span>to see balance</span>
-            </div>
-        )
-
-        const isNewlyListed = new Date(currency?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
-
-        const currencyIsAvailable = (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
-            !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive');
-
-        const badge = isNewlyListed ? (
-            <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
-        ) : undefined;
-
-        const details = wallets?.length ? (
-            <p className="text-primary-text text-sm flex flex-col items-end pr-1.5">
-                {Number(formattedBalanceAmount) ? <span>{formattedBalanceAmount}</span> : <span>0</span>}
-                {balanceAmountInUsd ? <span className="text-secondary-text">${new Intl.NumberFormat("en-US", { style: "decimal", }).format(Number(balanceAmountInUsd))}</span> : <span className="text-secondary-text">$0</span>}
-            </p>
-        ) : null;
-
-        const routeNotFound = currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR;
-        const groupName = getGroupName(network, (values?.from?.name === network?.name || values?.to?.name === network?.name) ? 'selected' : 'top', currencyIsAvailable && !routeNotFound && !wallets?.length);
-
-        const extendedAddress = (network && currency.contract) && <ExtendedAddress address={addressFormat(currency.contract, network)} network={network} />
-
-        const res: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
-            baseObject: currency,
-            id: `${currency?.symbol?.toLowerCase()}_${currency?.network_name?.toLowerCase()}`,
-            name: displayName || "-",
-            menuItemLabel: DisplayNameComponent,
-            balanceAmount: Number(formattedBalanceAmount),
-            order: CurrencySettings.KnownSettings[currency.symbol]?.Order ?? 5,
-            imgSrc: currency.logo,
-            isAvailable: currencyIsAvailable,
-            menuItemDetails: details,
-            group: groupName,
-            badge,
-            leftIcon: ResolveRouteIcon({ direction, isAvailable: currencyIsAvailable, routeNotFound, type: "token" }),
-            logo: (currency.logo && (
-                <Image
-                    src={currency.logo}
-                    alt="Project Logo"
-                    height="40"
-                    width="40"
-                    loading="eager"
-                    className="rounded-full object-contain"
-                />
-            )
-            ),
-            noWalletsConnectedText,
-            extendedAddress
-        };
-
-        const networkLogo = (
-            <div className="flex-shrink-0 h-9 w-9 relative">
-                {network?.logo && (
-                    <Image
-                        src={network?.logo}
-                        alt="Network Logo"
-                        height="40"
-                        width="40"
-                        loading="eager"
-                        className={`${network?.tokens?.length > 1 ? "rounded-md" : "rounded-full"} object-contain`}
-                    />
-                )}
-            </div>
-        );
-
-        const networkIcon = ResolveRouteIcon({ direction, isAvailable: !!networkIsAvailable, routeNotFound: !!networksRouteNotFound, type: "token" }) || <></>
-
-        if (!networkGroupedCurrencies[groupName]) {
-            networkGroupedCurrencies[groupName] = { name: groupName, items: [] };
-        }
-
-        if (!networkGroupedCurrencies[groupName].items.find(c => c.id === network?.name) && network) {
-            networkGroupedCurrencies[groupName].items.push({
-                id: network.name,
-                name: network.name,
-                displayName: network.display_name,
-                menuItemLabel: DisplayNameComponent,
-                menuItemDetails: details,
-                logo: networkLogo,
-                balanceAmount: Number(networkBalanceInUsd),
-                imgSrc: network.logo,
-                isAvailable: !!networkIsAvailable,
-                leftIcon: networkIcon,
-                subItems: [],
-                noWalletsConnectedText
-            });
-        }
-
-        networkGroupedCurrencies[groupName].items.find(c => c.id === network?.name)?.subItems?.push(res);
+    const groupedRoutes = routes && groupBy(routes, route => {
+        const network_currencies = route.tokens
+        return getGroupName(route, (values?.from?.name === route?.name || values?.to?.name === route?.name) ? 'selected' : 'top', network_currencies.some(c => c.status === "active") && !wallets?.length);
     });
 
-    return Object.values(networkGroupedCurrencies)
+    const res = groupedRoutes && Object.entries(groupedRoutes).map(([group, networks]) => {
+        return {
+            name: group,
+            items: networks.map(network => {
+                const balancesArray = balances && Object.values(balances).flat();
+                const networkbalances = balancesArray?.filter(b => b?.network === network.name);
+
+                const total_network_balance_in_usd = networkbalances
+                    ? networkbalances.reduce((acc, b) => {
+                        const token = network?.tokens?.find(t => t?.symbol === b?.token);
+                        const tokenPriceInUsd = token?.price_in_usd || 0;
+                        const tokenPrecision = token?.precision || 0;
+                        const formattedBalance = Number(truncateDecimals(b?.amount, tokenPrecision));
+                        return acc + (formattedBalance * tokenPriceInUsd);
+                    }, 0).toFixed(2)
+                    : 0;
+
+                const networkLogo = (
+                    <div className="flex-shrink-0 h-9 w-9 relative">
+                        {network?.logo && (
+                            <Image
+                                src={network?.logo}
+                                alt="Network Logo"
+                                height="40"
+                                width="40"
+                                loading="eager"
+                                className={`${network?.tokens?.length > 1 ? "rounded-md" : "rounded-full"} object-contain`}
+                            />
+                        )}
+                    </div>
+                );
+                const networkLocked = direction === "from" ? !!(from && query?.lockFrom) : !!(to && query?.lockTo);
+
+                const networkIsAvailable = !networkLocked &&
+                    (
+                        network?.tokens?.some(r => r.status === 'active' || r.status === 'not_found') ||
+                        !query?.lockAsset && !query?.lockFromAsset && !query?.lockToAsset && !query?.lockFrom && !query?.lockTo && !query?.lockNetwork && !query?.lockExchange && network?.tokens?.some(r => r.status !== 'inactive')
+                    );
+                const networksRouteNotFound = networkIsAvailable && !network?.tokens?.some(r => r.status === 'active');
+
+                const networkIcon = ResolveRouteIcon({ direction, isAvailable: !!networkIsAvailable, routeNotFound: !!networksRouteNotFound, type: "token" }) || <></>
+                const noWalletsConnectedText = !wallets?.length && (
+                    <div className="text-secondary-text text-xs">
+                        <span>Connect wallet</span>
+                        <br />
+                        <span>to see balance</span>
+                    </div>
+                )
+
+                const res = {
+                    id: network.name,
+                    name: network.name,
+                    displayName: network.display_name,
+                    logo: networkLogo,
+                    balanceAmount: Number(total_network_balance_in_usd),
+                    imgSrc: network.logo,
+                    isAvailable: !!networkIsAvailable,
+                    leftIcon: networkIcon,
+                    subItems: network.tokens.map(token => {
+                        const displayName = token.symbol
+                        const DisplayNameComponent = (
+                            <div className="flex flex-col">
+                                <span className="text-base text-primary-text">{displayName}</span>
+                                <div className="text-secondary-text text-xs flex">
+                                    {network.logo && (
+                                        <Image
+                                            src={network.logo}
+                                            alt="Project Logo"
+                                            height="16"
+                                            width="16"
+                                            loading="eager"
+                                            className="rounded-md object-contain mr-1"
+                                        />
+                                    )}
+                                    <span>{network.display_name}</span>
+                                </div>
+                            </div>
+                        );
+                        const token_balance = networkbalances?.find(b => b?.token === token?.symbol);
+
+                        const formattedBalanceAmount = token_balance ? Number(truncateDecimals(token_balance?.amount, token.precision)) : '';
+                        const balanceAmountInUsd = formattedBalanceAmount ? (token?.price_in_usd * formattedBalanceAmount).toFixed(2) : undefined;
+                        const currencyIsAvailable = (token?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
+                            !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || token.status === 'inactive');
+                        const details = wallets?.length ? (
+                            <p className="text-primary-text text-sm flex flex-col items-end pr-1.5">
+                                {Number(formattedBalanceAmount) ? <span>{formattedBalanceAmount}</span> : <span>0</span>}
+                                {balanceAmountInUsd ? <span className="text-secondary-text">${new Intl.NumberFormat("en-US", { style: "decimal", }).format(Number(balanceAmountInUsd))}</span> : <span className="text-secondary-text">$0</span>}
+                            </p>
+                        ) : null;
+                        const isNewlyListed = new Date(token?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
+                        const badge = isNewlyListed ? (
+                            <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
+                        ) : undefined;
+                        const routeNotFound = token?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR;
+                        const extendedAddress = (network && token.contract) && <ExtendedAddress address={addressFormat(token.contract, network)} network={network} isForCurrency={true} />
+
+                        const token_select_item: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
+                            baseObject: { ...token, network_name: network.name, network_display_name: network.display_name, network_logo: network.logo },
+                            id: `${token?.symbol?.toLowerCase()}_${network.name?.toLowerCase()}`,
+                            name: displayName || "-",
+                            menuItemLabel: DisplayNameComponent,
+                            balanceAmount: Number(formattedBalanceAmount),
+                            order: CurrencySettings.KnownSettings[token.symbol]?.Order ?? 5,
+                            imgSrc: token.logo,
+                            isAvailable: currencyIsAvailable,
+                            menuItemDetails: details,
+                            badge,
+                            leftIcon: ResolveRouteIcon({ direction, isAvailable: currencyIsAvailable, routeNotFound, type: "token" }),
+                            logo: (token.logo && (
+                                <Image
+                                    src={token.logo}
+                                    alt="Project Logo"
+                                    height="40"
+                                    width="40"
+                                    loading="eager"
+                                    className="rounded-full object-contain"
+                                />
+                            )
+                            ),
+                            noWalletsConnectedText,
+                            extendedAddress
+                        };
+                        return token_select_item
+                    }),
+                    noWalletsConnectedText
+                };
+
+                return res
+            })
+        }
+    })
+    return res || []
 }
 
 export default CurrencyFormField

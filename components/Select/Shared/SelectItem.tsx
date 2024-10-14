@@ -3,7 +3,7 @@ import { ISelectMenuItem } from "./Props/selectMenuItem";
 export default function SelectItem({ item }: { item: ISelectMenuItem }) {
 
     return (
-        <div className={`${item.noWalletsConnectedText ? "group-hover:bg-secondary-500" : "hover:bg-secondary-500 "} flex items-center justify-between w-full overflow-hidden rounded-md p-1.5 py-3`}>
+        <div className={`${item.noWalletsConnectedText ? "group-hover:bg-secondary-500" : "hover:bg-secondary-500 "} flex items-center justify-between w-full overflow-hidden rounded-md p-1.5`}>
             <div className="relative flex items-center gap-1.5">
                 <div className="flex-shrink-0">
                     {item.logo}
