@@ -29,7 +29,7 @@ import { ImtblPassportProvider } from "../../ImtblPassportProvider";
 import { Exchange, ExchangeToken } from "../../../Models/Exchange";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";
-import VaulDrawer from "../../modal/vaul";
+import { toHex } from "viem";
 
 type Props = {
     partner?: Partner,
@@ -153,8 +153,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
             setFieldValue('amount', walletBalance?.amount - networkGas?.gas)
     }, [values.amount])
 
-    const [show, setShow] = React.useState(false);
-
     return <ImtblPassportProvider from={source} to={destination}>
         <>
             <Widget className="sm:min-h-[504px]">
@@ -215,14 +213,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                 <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
                             }
                         </div>
-                        <div onClick={() => setShow(!show)} className="relative flex h-10 flex-shrink-0 items-center justify-center gap-2 overflow-hidden rounded-full bg-white px-4 text-sm font-medium shadow-sm transition-all hover:bg-[#FAFAFA] dark:bg-[#161615] dark:hover:bg-[#1A1A19]">
-                            Open Drawer
-                        </div>
-                        <VaulDrawer show={show} setShow={setShow}>
-                            <div className="text-gray-900">
-                                chuchulucu
-                            </div>
-                        </VaulDrawer>
                     </Widget.Content>
                     <Widget.Footer>
                         <SwapButton
