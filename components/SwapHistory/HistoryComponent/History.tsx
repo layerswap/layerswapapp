@@ -243,6 +243,19 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
                                 </div>
                             )
                         })}
+                        {
+                            !isReachingEnd &&
+                            <button
+                                disabled={isReachingEnd || userSwapsLoading || explorerSwapsLoading || isValidating}
+                                type="button"
+                                onClick={handleLoadMore}
+                                className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full"
+                            >
+
+                                <RefreshCw className={`w-4 h-4 ${(userSwapsLoading || explorerSwapsLoading || isValidating) && 'animate-spin'}`} />
+                                <span>Load more</span>
+                            </button>
+                        }
                     </div>
                 </div>
             </div>
