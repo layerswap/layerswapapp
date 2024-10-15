@@ -86,7 +86,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
         <div className='flex flex-col justify-between w-full h-full gap-3'>
             <div className='space-y-3 pt-2'>
                 <div className='p-3 bg-secondary-700 rounded-xl'>
-                    <div className={`font-normal flex flex-col w-full relative z-10 ${(source_exchange || destination_exchange) ? 'space-y-2' : 'space-y-4'}`}>
+                    <div className={`font-normal flex flex-col w-full relative ${(source_exchange || destination_exchange) ? 'space-y-2' : 'space-y-4'}`}>
 
                         {/* From and To */}
                         <div className='space-y-1'>

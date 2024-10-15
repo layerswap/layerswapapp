@@ -1,14 +1,12 @@
 import LayerSwapApiClient, { SwapResponse } from "../../../lib/layerSwapApiClient"
 import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
 import { ChevronDown, Plus, RefreshCw } from 'lucide-react'
-import Modal from "../../modal/modal"
 import { FC, useEffect, useMemo, useState } from "react"
 import HistorySummary from "../HistorySummary";
 import useSWRInfinite from 'swr/infinite'
 import useWallet from "../../../hooks/useWallet"
 import Link from "next/link"
 import axios from "axios"
-import SwapDetails from "../SwapDetailsComponent"
 import Snippet, { HistoryItemSceleton } from "./Snippet"
 import { groupBy } from "../../utils/groupBy"
 import { useAuthState, UserType } from "../../../context/authContext"
@@ -21,7 +19,8 @@ import { SwapStatus } from "../../../Models/SwapStatus"
 import ResizablePanel from "../../ResizablePanel"
 import { useHistoryContext } from "../../../context/historyContext"
 import { useRouter } from "next/router"
-import { Virtuoso, GroupedVirtuoso } from 'react-virtuoso'
+import React from "react"
+import { useVirtualizer } from '@tanstack/react-virtual'
 
 const PAGE_SIZE = 20
 type ListProps = {
@@ -55,17 +54,15 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
     const { userId } = useAuthState()
     const addresses = ['0x169dA96eef4ce602E8101CF5261553A127a4a21D']//wallets.map(w => w.address)
     const { setSelectedSwap, selectedSwap } = useHistoryContext()
-
-    const handleopenSwapDetails = (swap: Swap) => {
+    const handleopenSwapDetails = (swap: Swap, index: number) => {
         onSwapSettled && onSwapSettled()
         setSelectedSwap(swap)
         setOpenSwapDetailsModal(true)
     }
-
     const getKey = useMemo(() => getSwapsKey(), [])
     const getFromExplorerKey = getExplorerKey(addresses)
-
     const apiClient = new LayerSwapApiClient()
+
 
     const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, isValidating, mutate } =
         useSWRInfinite<ApiResponse<Swap[]>>(
@@ -147,10 +144,7 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
     useEffect(() => {
         mutate()
     }, [userId])
-
-    if ((userSwapsLoading && !(Number(userSwaps?.length) > 0) || explorerSwapsLoading)) return <Snippet />
-    if (!wallets.length && !userId) return <ConnectOrSignIn />
-    if (allEmpty) return <BlankHistory componentType={componentType} onNewTransferClick={onNewTransferClick} />
+    const parentRef = React.useRef(null)
 
     const grouppedSwaps = !allEmpty
         ? Object
@@ -167,124 +161,93 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
             .map(([key, values]) => ({ key, values })).sort((a, b) => a.key === 'Pending' ? -1 : b.key === 'Pending' ? 1 : 0)
         : null
 
-    return <>
-        <div className="h-full space-y-3 pt-3 ">
-            {
-                grouppedSwaps && <div
-                    className="text-sm flex flex-col gap-5 font-medium focus:outline-none h-full styled-scroll"
+    const flattenedSwaps = grouppedSwaps?.flatMap(g => {
+        if (g.key == "Pending" && !showAll) return [g.key, ...g.values.slice(0, 1)]
+        return [g.key, ...g.values]
+    })
+
+    const rowVirtualizer = useVirtualizer({
+        count: flattenedSwaps?.length || 0,
+        getScrollElement: () => window.document.getElementById('virtualListContainer'),
+        estimateSize: () => 35,
+    })
+
+    const items = rowVirtualizer.getVirtualItems()
+
+    if ((userSwapsLoading && !(Number(userSwaps?.length) > 0) || explorerSwapsLoading)) return <Snippet />
+    if (!wallets.length && !userId) return <ConnectOrSignIn />
+    if (!flattenedSwaps?.length) return <BlankHistory componentType={componentType} onNewTransferClick={onNewTransferClick} />
+
+    return (
+        <>
+            <div
+                ref={parentRef}
+            >
+                <div
+                    style={{
+                        height: rowVirtualizer.getTotalSize(),
+                        width: '100%',
+                        position: 'relative',
+                    }}
                 >
-                    {/* <GroupedVirtuoso
-                        data={grouppedSwaps?.flatMap(g => g.values)}
-                        groupCounts={grouppedSwaps.map(g => g.values.length)}
-                        scrollerRef={(ref)=>{
-                           typeof ref?.classList?.['add'] === 'function'&& ref?.classList?.['add']('styled-scroll')
+                    <div
+                        className="space-y-2"
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            transform: `translateY(${items[0]?.start ?? 0}px)`,
                         }}
-                        groupContent={(index) => {
-                            const group = grouppedSwaps[index]
-                            const { key, values } = group
-                            return (
-                                <div className="w-full">
-                                    {
-                                        key !== 'Pending' &&
-                                        <p className="text-sm text-secondary-text font-normal pl-2">
-                                            {resolveDate(key)}
-                                        </p>
-                                    }
-                                    {
-                                        key == 'Pending' && values.length > 1 &&
-                                        <div className="w-full flex justify-end">
-                                            <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text pr-2'>
-                                                <p>See all incomplete swaps</p>
-                                                <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
-                                            </button>
+                    >
+                        {items.map((virtualRow) => {
+                            const data = flattenedSwaps?.[virtualRow.index]
+                            if (typeof data === 'string') {
+                                if (data === "Pending" && Number(grouppedSwaps?.[0]?.values?.length) > 1) {
+                                    return (<div className="w-full flex justify-end">
+                                        <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text hover:text-primary-text pr-2'>
+                                            <p className="select-none">See all incomplete swaps</p>
+                                            <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
+                                        </button>
+                                    </div>)
+                                }
+                                return (
+                                    <div
+                                        key={virtualRow.key}
+                                        data-index={virtualRow.index}
+                                        ref={rowVirtualizer.measureElement}
+                                    >
+                                        <div className="w-full mt-5">
+                                            {
+                                                data !== 'Pending' &&
+                                                <p className="text-sm text-secondary-text font-normal pl-2">
+                                                    {resolveDate(data)}
+                                                </p>
+                                            }
                                         </div>
-                                    }
+                                    </div>
+                                )
+                            }
+                            const swap = data
+                            if (!swap) return <></>
+                            return (
+                                <div
+                                    onClick={() => handleopenSwapDetails(swap, virtualRow.index)}
+                                    key={virtualRow.key}
+                                    data-index={virtualRow.index}
+                                    ref={rowVirtualizer.measureElement}
+                                >
+                                    <div>
+                                        <HistorySummary swapResponse={swap} wallets={wallets} />
+                                    </div>
                                 </div>
                             )
-                        }}
-                        itemContent={(index, grouIndex, swap) => {
-                            if (!swap) return <></>
-                            return <div
-                                onClick={() => handleopenSwapDetails(swap)}
-                                key={swap.swap.id}
-                            >
-                                <HistorySummary swapResponse={swap} />
-                            </div>
-                        }}
-                    /> */}
-                    {
-                        grouppedSwaps
-                            .sort((a, b) => a.key === 'Pending' ? -1 : b.key === 'Pending' ? 1 : 0)
-                            .map(({ key, values }) => {
-                                return <div key={key} className="flex flex-col gap-1.5">
-                                    <div className="w-full">
-                                        {
-                                            key !== 'Pending' &&
-                                            <p className="text-sm text-secondary-text font-normal pl-2">
-                                                {resolveDate(key)}
-                                            </p>
-                                        }
-                                        {
-                                            key == 'Pending' && values.length > 1 &&
-                                            <div className="w-full flex justify-end">
-                                                <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text pr-2'>
-                                                    <p>See all incomplete swaps</p>
-                                                    <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
-                                                </button>
-                                            </div>
-                                        }
-                                    </div>
-                                    <ResizablePanel className="space-y-3 pb-1">
-                                        {
-                                            values.filter((v, index) => ((key === 'Pending' && !showAll) ? index == 0 : true))?.map((swap) => {
-
-                                                if (!swap) return <></>
-
-                                                return <div
-                                                    onClick={() => handleopenSwapDetails(swap)}
-                                                    key={swap.swap.id}
-                                                >
-                                                    <HistorySummary swapResponse={swap} wallets={wallets}/>
-                                                </div>
-                                            })
-                                        }
-                                    </ResizablePanel>
-                                </div>
-                            })
-                    }
-
-                    {
-                        !isReachingEnd &&
-                        <button
-                            disabled={isReachingEnd || userSwapsLoading || explorerSwapsLoading || isValidating}
-                            type="button"
-                            onClick={handleLoadMore}
-                            className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80"
-                        >
-
-                            <RefreshCw className={`w-4 h-4 ${(userSwapsLoading || explorerSwapsLoading || isValidating) && 'animate-spin'}`} />
-                            <span>Load more</span>
-                        </button>
-                    }
+                        })}
+                    </div>
                 </div>
-            }
-        </div>
-        {
-            componentType === 'page' &&
-            <Modal
-                height="full"
-                show={openSwapDetailsModal}
-                setShow={handleSWapDetailsShow}
-                header='Swap details'
-                modalId="swapDetails"
-            >
-                {
-                    selectedSwap &&
-                    <SwapDetails swapResponse={selectedSwap} />
-                }
-            </Modal>
-        }
-    </>
+            </div>
+        </>
+    )
 }
 
 const BlankHistory = ({ componentType, onNewTransferClick }: { componentType?: 'steps' | 'page', onNewTransferClick?: () => void }) => {
