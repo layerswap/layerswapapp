@@ -230,6 +230,12 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
                             }
                             const swap = data
                             if (!swap) return <></>
+                            const collapsedPendingSwap = !showAll && Number(grouppedSwaps?.[0]?.values?.length) > 1 &&
+                                (swap.swap.status === SwapStatus.Created
+                                    || swap.swap.status === SwapStatus.LsTransferPending
+                                    || swap.swap.status === SwapStatus.UserTransferPending
+                                    || swap.swap.status === SwapStatus.UserTransferDelayed)
+
                             return (
                                 <div
                                     onClick={() => handleopenSwapDetails(swap, virtualRow.index)}
@@ -237,8 +243,10 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
                                     data-index={virtualRow.index}
                                     ref={rowVirtualizer.measureElement}
                                 >
-                                    <div>
-                                        <HistorySummary swapResponse={swap} wallets={wallets} />
+                                    <div className="">
+                                        <HistorySummary swapResponse={swap} wallets={wallets} className={collapsedPendingSwap ? 'shadow-lg' : ''} />
+                                        {collapsedPendingSwap &&
+                                            <div className="z-0 h-6 -top-4 opacity-65 shadow-lg relative bg-secondary-700 p-3 w-[95%] mx-auto font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer" />}
                                     </div>
                                 </div>
                             )
