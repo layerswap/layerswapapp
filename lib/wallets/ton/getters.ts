@@ -1,7 +1,7 @@
 import { CommitmentParams, GetCommitsParams } from "../phtlc";
 import { Address } from "@ton/ton"
 import tonClient from "./client";
-import { hexToBigInt } from "viem";
+import { hexToBigInt, toHex } from "viem";
 import { beginCell, TupleBuilder } from "@ton/core"
 import { NetworkWithTokens } from "../../../Models/Network";
 import { Commit } from "../../../Models/PHTLC";
@@ -38,7 +38,7 @@ export const getTONDetails = async (params: CommitmentParams & { network: Networ
 
     const token = network?.tokens.find(t => t.symbol === srcAsset)
     const amount = Number(details[9]) / Math.pow(10, token?.decimals || 8)
-    const hashlock = details[8].toString()
+    const hashlock = (Number(details[8]) != 0) ? toHex(details[8]) : undefined
 
     const parsedResult: Commit = {
         dstAddress: details[0].beginParse().loadStringTail(),
@@ -49,7 +49,7 @@ export const getTONDetails = async (params: CommitmentParams & { network: Networ
         srcReceiver: details[6].beginParse().loadAddress().toString(),
         timelock: Number(details[10]),
         amount,
-        hashlock: hashlock != 0 && hashlock,
+        hashlock,
         id,
         refunded: Number(details[12]) === 1,
         secret: Number(details[7]),
