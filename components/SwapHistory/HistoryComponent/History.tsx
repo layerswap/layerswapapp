@@ -20,6 +20,8 @@ import ResizablePanel from "../../ResizablePanel"
 import { useHistoryContext } from "../../../context/historyContext"
 import React from "react"
 import { useVirtualizer } from '@tanstack/react-virtual'
+import Modal from "../../modal/modal";
+import SwapDetails from "../SwapDetailsComponent"
 
 const PAGE_SIZE = 20
 type ListProps = {
@@ -244,6 +246,21 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
                     </div>
                 </div>
             </div>
+            {
+                componentType === 'page' &&
+                <Modal
+                    height="full"
+                    show={openSwapDetailsModal}
+                    setShow={handleSWapDetailsShow}
+                    header='Swap details'
+                    modalId="swapDetails"
+                >
+                    {
+                        selectedSwap &&
+                        <SwapDetails swapResponse={selectedSwap} />
+                    }
+                </Modal>
+            }
         </>
     )
 }
