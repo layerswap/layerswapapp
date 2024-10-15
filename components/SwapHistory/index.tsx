@@ -4,7 +4,6 @@ import HeaderWithMenu from "../HeaderWithMenu";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import dynamic from "next/dynamic";
 import Snippet from "./HistoryComponent/Snippet";
-import { HistorySwapProvider } from "../../context/historyContext";
 
 const Content = dynamic(() => import("./HistoryComponent/History"), {
   loading: () => <Snippet />
@@ -25,17 +24,15 @@ function TransactionsHistory() {
 
 
   return (
-    <HistorySwapProvider>
-      <div className='bg-secondary-900 sm:shadow-card pb-4 rounded-lg w-full text-primary-text overflow-hidden relative h-screen sm:h-[650px]'>
-        <HeaderWithMenu goBack={goBack} />
-        <div className="px-6 h-full sm:max-h-[92%] overflow-y-auto styled-scroll">
-          <Content
-            loadExplorerSwaps={true}
-          />
-        </div>
-        <div id="widget_root" />
+    <div className='bg-secondary-900 sm:shadow-card pb-4 rounded-lg w-full text-primary-text overflow-hidden relative h-screen sm:h-[650px]'>
+      <HeaderWithMenu goBack={goBack} />
+      <div className="px-6 h-full sm:max-h-[92%] overflow-y-auto styled-scroll">
+        <Content
+          loadExplorerSwaps={true}
+        />
       </div>
-    </HistorySwapProvider>
+      <div id="widget_root" />
+    </div>
   )
 }
 

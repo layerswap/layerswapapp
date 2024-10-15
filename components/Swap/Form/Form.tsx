@@ -29,6 +29,7 @@ import { ImtblPassportProvider } from "../../ImtblPassportProvider";
 import { Exchange, ExchangeToken } from "../../../Models/Exchange";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";
+import VaulDrawer from "../../modal/vaul";
 
 type Props = {
     partner?: Partner,
@@ -137,10 +138,10 @@ const SwapForm: FC<Props> = ({ partner }) => {
         const newTo = destinationRoutes?.data?.find(l => l.name === source?.name)
         const newFromToken = newFrom?.tokens.find(t => t.symbol === toCurrency?.symbol)
         const newToToken = newTo?.tokens.find(t => t.symbol === fromCurrency?.symbol)
-        
+
         setValues({ ...values, from: newFrom, to: newTo, fromCurrency: newFromToken, toCurrency: newToToken, toExchange: newToExchange, fromExchange: newFromExchange, currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined }, true)
     }, [values, sourceRoutes, destinationRoutes, exchanges])
-  
+
     const hideAddress = query?.hideAddress
         && query?.to
         && query?.destAddress
@@ -151,6 +152,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
         if (walletBalance && networkGas)
             setFieldValue('amount', walletBalance?.amount - networkGas?.gas)
     }, [values.amount])
+
+    const [show, setShow] = React.useState(false);
 
     return <ImtblPassportProvider from={source} to={destination}>
         <>
@@ -212,6 +215,14 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                 <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
                             }
                         </div>
+                        <div onClick={() => setShow(!show)} className="relative flex h-10 flex-shrink-0 items-center justify-center gap-2 overflow-hidden rounded-full bg-white px-4 text-sm font-medium shadow-sm transition-all hover:bg-[#FAFAFA] dark:bg-[#161615] dark:hover:bg-[#1A1A19]">
+                            Open Drawer
+                        </div>
+                        <VaulDrawer show={show} setShow={setShow}>
+                            <div className="text-gray-900">
+                                chuchulucu
+                            </div>
+                        </VaulDrawer>
                     </Widget.Content>
                     <Widget.Footer>
                         <SwapButton

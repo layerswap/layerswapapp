@@ -19,16 +19,12 @@ import GuestCard from "../../guestCard"
 import { AuthStep } from "../../../Models/Wizard"
 import { SwapStatus } from "../../../Models/SwapStatus"
 import ResizablePanel from "../../ResizablePanel"
-import { useHistoryContext } from "../../../context/historyContext"
-import { useRouter } from "next/router"
 
 const PAGE_SIZE = 20
 type ListProps = {
     statuses?: string | number;
     refreshing?: boolean;
     loadExplorerSwaps: boolean;
-    componentType?: 'steps' | 'page'
-    onSwapSettled?: () => void,
     onNewTransferClick?: () => void
 }
 
@@ -45,18 +41,15 @@ const getExplorerKey = (addresses: string[]) => (index) => {
 
 type Swap = SwapResponse & { type: 'user' | 'explorer' }
 
-const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page', onSwapSettled, onNewTransferClick }) => {
-    const router = useRouter();
-
+const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, onNewTransferClick }) => {
     const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
     const [showAll, setShowAll] = useState(false)
     const { wallets } = useWallet()
     const { userId } = useAuthState()
     const addresses = wallets.map(w => w.address)
-    const { setSelectedSwap, selectedSwap } = useHistoryContext()
+    const [selectedSwap, setSelectedSwap] = useState<Swap | undefined>()
 
     const handleopenSwapDetails = (swap: Swap) => {
-        onSwapSettled && onSwapSettled()
         setSelectedSwap(swap)
         setOpenSwapDetailsModal(true)
     }
@@ -92,11 +85,9 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
     }, [addresses.length])
 
     const handleSWapDetailsShow = (show: boolean) => {
-        if (componentType === 'page') {
-            setOpenSwapDetailsModal(show)
-            if (!show) {
-                mutate()
-            }
+        setOpenSwapDetailsModal(show)
+        if (!show) {
+            mutate()
         }
     }
 
@@ -149,7 +140,7 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
 
     if ((userSwapsLoading && !(Number(userSwaps?.length) > 0) || explorerSwapsLoading)) return <Snippet />
     if (!wallets.length && !userId) return <ConnectOrSignIn />
-    if (allEmpty) return <BlankHistory componentType={componentType} onNewTransferClick={onNewTransferClick} />
+    if (allEmpty) return <BlankHistory onNewTransferClick={onNewTransferClick} />
 
     const grouppedSwaps = !allEmpty
         ? Object
@@ -230,25 +221,21 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
                 </div>
             }
         </div>
-        {
-            componentType === 'page' &&
-            <Modal
-                height="full"
-                show={openSwapDetailsModal}
-                setShow={handleSWapDetailsShow}
-                header='Swap details'
-                modalId="swapDetails"
-            >
-                {
-                    selectedSwap &&
-                    <SwapDetails swapResponse={selectedSwap} />
-                }
-            </Modal>
-        }
+        <Modal
+            show={openSwapDetailsModal}
+            setShow={handleSWapDetailsShow}
+            header='Swap details'
+            modalId="swapDetails"
+        >
+            {
+                selectedSwap &&
+                <SwapDetails swapResponse={selectedSwap} />
+            }
+        </Modal>
     </>
 }
 
-const BlankHistory = ({ componentType, onNewTransferClick }: { componentType?: 'steps' | 'page', onNewTransferClick?: () => void }) => {
+const BlankHistory = ({ onNewTransferClick }: { onNewTransferClick?: () => void }) => {
 
     return <div className="w-full h-full min-h-[inherit] flex flex-col justify-between items-center ">
         <div />
@@ -263,19 +250,10 @@ const BlankHistory = ({ componentType, onNewTransferClick }: { componentType?: '
                     Transfers you make with this wallet/account will appear here after excution.
                 </p>
             </div>
-            {
-                componentType === 'steps' ?
-                    <button onClick={onNewTransferClick} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-600 py-2 px-3 rounded-lg">
-                        <Plus className="w-4 h-4" />
-                        <p>New Transfer</p>
-                    </button>
-                    :
-                    <Link href={"/"} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-600 py-2 px-3 rounded-lg">
-                        <Plus className="w-4 h-4" />
-                        <p>New Transfer</p>
-                    </Link>
-            }
-
+            <Link onClick={onNewTransferClick} href={"/"} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-600 py-2 px-3 rounded-lg">
+                <Plus className="w-4 h-4" />
+                <p>New Transfer</p>
+            </Link>
         </div>
         <div className="w-full">
             <SignIn />

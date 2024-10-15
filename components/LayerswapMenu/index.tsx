@@ -2,7 +2,6 @@ import { MenuIcon, ChevronLeft } from "lucide-react";
 import { FC, useState } from "react";
 import Modal from "../../components/modal/modal";
 import IconButton from "../buttons/iconButton";
-import HistoryWizard from "./WizardComponents/History";
 import { FormWizardProvider, useFormWizardaUpdate, useFormWizardState } from "../../context/formWizardProvider";
 import { MenuStep } from "../../Models/Wizard";
 import MenuList from "./MenuList";
@@ -10,6 +9,7 @@ import Wizard from "../Wizard/Wizard";
 import WizardItem from "../Wizard/WizardItem";
 import { NextRouter, useRouter } from "next/router";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
+import HistoryList from "../SwapHistory/HistoryComponent/History";
 
 const Comp = () => {
     const router = useRouter();
@@ -26,6 +26,7 @@ const Comp = () => {
             clearMenuPath(router)
         }
     }
+    const goBackToMenuStep = () => { goToStep(MenuStep.Menu, "back"); clearMenuPath(router) }
 
     const handleGoToStep = (step: MenuStep, path: string) => {
         goToStep(step)
@@ -63,7 +64,9 @@ const Comp = () => {
                             <WizardItem StepName={MenuStep.Menu}>
                                 <MenuList goToStep={handleGoToStep} />
                             </WizardItem>
-                            <HistoryWizard setModalOpenState={setOpenTopModal} />
+                            <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full">
+                                <HistoryList onNewTransferClick={() => handleModalOpenStateChange(false)} loadExplorerSwaps={true} />
+                            </WizardItem>
                         </Wizard>
                     </Modal>
                 </>
