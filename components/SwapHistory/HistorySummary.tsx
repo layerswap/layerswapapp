@@ -36,7 +36,6 @@ const HistorySummary: FC<SwapInfoProps> = ({
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
-
     const partner = partnerData?.data
     const { swap, quote } = swapResponse
 

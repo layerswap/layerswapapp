@@ -18,7 +18,6 @@ import { AuthStep } from "../../../Models/Wizard"
 import { SwapStatus } from "../../../Models/SwapStatus"
 import ResizablePanel from "../../ResizablePanel"
 import { useHistoryContext } from "../../../context/historyContext"
-import { useRouter } from "next/router"
 import React from "react"
 import { useVirtualizer } from '@tanstack/react-virtual'
 
@@ -46,7 +45,6 @@ const getExplorerKey = (addresses: string[]) => (index) => {
 type Swap = SwapResponse & { type: 'user' | 'explorer' }
 
 const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page', onSwapSettled, onNewTransferClick }) => {
-    const router = useRouter();
 
     const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
     const [showAll, setShowAll] = useState(false)
