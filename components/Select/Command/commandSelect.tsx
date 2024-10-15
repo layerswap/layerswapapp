@@ -77,7 +77,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                             {!filterItems?.length && searchQuery && (
                                 <div className="py-6 text-center text-sm">No results found.</div>
                             )}
-                            {searchQuery || !groupedCurrencies?.length ? 
+                            {(searchQuery || !groupedCurrencies?.length) ?
                                 groups.filter(group => group.items?.length > 0).map(group => (
                                     <CommandGroup key={group.name} heading={filterItems(group.items)?.length ? group.name : ""}>
                                         {filterItems(group.items).map(item => (
@@ -94,65 +94,82 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                 groupedCurrencies?.length ? (
                                     groupedCurrencies.map(g => (
                                         g.items && g.items.length > 0 ? (
-                                            <CommandGroup key={g.name} heading={filterItems(g.items)?.length ? g.name : ""}>
-                                                {filterItems(g.items).map(item => (
-                                                    <div key={item.id}>
-                                                        <div className="relative items-center flex-shrink-0 w-4 top-6">
-                                                            {item.leftIcon}
-                                                        </div>
-                                                        <Accordion type="single" collapsible key={item.name}>
-                                                            <AccordionItem value={item.name}>
-                                                                <AccordionTrigger className="flex mb-1 ml-4 items-center w-full overflow-hidden rounded-md py-2 px-1.5 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary">
-                                                                    <div className="whitespace-nowrap flex items-center gap-2 flex-grow">
-                                                                        {item.logo}
-                                                                        {item.displayName}
-                                                                        <div className="flex flex-col w-full items-end space-y-2 self-baseline">
-                                                                            <p className="text-secondary-text text-sm">
-                                                                                {item?.balanceAmount
-                                                                                    ? `$${new Intl.NumberFormat('en-US', {
-                                                                                        style: 'decimal',
-                                                                                    }).format(item.balanceAmount)}`
-                                                                                    : ''}
-                                                                            </p>
-                                                                            <div className="flex justify-end items-center w-full relative">
-                                                                                {item?.balanceAmount
-                                                                                    ? item.subItems?.filter(i => i?.balanceAmount)?.map(
-                                                                                        (subItem, index) => (
-                                                                                            <div
-                                                                                                key={subItem.id}
-                                                                                                className="w-3.5 absolute"
-                                                                                                style={{ right: `${index * 4}%` }}
-                                                                                            >
-                                                                                                {subItem.logo}
-                                                                                            </div>
+                                            g.name === 'Selected Network' ? (
+                                                <CommandGroup key={g.name} heading={g.name}>
+                                                    {filterItems(g.items).map(item =>
+                                                        item?.subItems?.map(subItem => (
+                                                            <div className="flex group" key={subItem.id}>
+                                                                <div className="relative items-center flex-shrink-0 w-4">
+                                                                    {subItem.leftIcon}
+                                                                </div>
+                                                                <CommandItem
+                                                                    className="grow"
+                                                                    value={subItem.id}
+                                                                    onSelect={() => handleSelectValue(subItem)}
+                                                                >
+                                                                    <SelectItem item={subItem} />
+                                                                </CommandItem>
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </CommandGroup>
+                                            ) : (
+                                                <CommandGroup key={g.name} heading={g.name}>
+                                                    {filterItems(g.items).map(item => (
+                                                        <div key={item.id}>
+                                                            <div className="relative items-center flex-shrink-0 w-4 top-6">
+                                                                {item.leftIcon}
+                                                            </div>
+                                                            <Accordion type="single" collapsible key={item.name} defaultValue="Selected Network">
+                                                                <AccordionItem value={item.name}>
+                                                                    <AccordionTrigger className="flex mb-1 ml-4 items-center w-full overflow-hidden rounded-md py-2 px-1.5 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary">
+                                                                        <div className="whitespace-nowrap flex items-center gap-2 flex-grow">
+                                                                            {item.logo}
+                                                                            {item.displayName}
+                                                                            <div className="flex flex-col w-full items-end space-y-2 self-baseline">
+                                                                                <p className="text-secondary-text text-sm">
+                                                                                    {item?.balanceAmount ? `$${new Intl.NumberFormat('en-US', { style: 'decimal' }).format(item.balanceAmount)}` : ''}
+                                                                                </p>
+                                                                                <div className="flex justify-end items-center w-full relative">
+                                                                                    {item?.balanceAmount
+                                                                                        ? item.subItems?.filter(i => i?.balanceAmount)?.map(
+                                                                                            (subItem, index) => (
+                                                                                                <div
+                                                                                                    key={subItem.id}
+                                                                                                    className="w-3.5 absolute"
+                                                                                                    style={{ right: `${index * 4}%` }}
+                                                                                                >
+                                                                                                    {subItem.logo}
+                                                                                                </div>
+                                                                                            )
                                                                                         )
-                                                                                    )
-                                                                                    : null}
+                                                                                        : null}
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-                                                                    </div>
-                                                                </AccordionTrigger>
-                                                                <AccordionContent className="rounded-md">
-                                                                    {item?.subItems?.map(subItem => (
-                                                                        <div className="flex group" key={subItem.id}>
-                                                                            <div className="relative items-center flex-shrink-0 w-4">
-                                                                                {subItem.leftIcon}
+                                                                    </AccordionTrigger>
+                                                                    <AccordionContent className="rounded-md">
+                                                                        {item?.subItems?.map(subItem => (
+                                                                            <div className="flex group" key={subItem.id}>
+                                                                                <div className="relative items-center flex-shrink-0 w-4">
+                                                                                    {subItem.leftIcon}
+                                                                                </div>
+                                                                                <CommandItem
+                                                                                    className="grow bg-secondary"
+                                                                                    value={subItem.id}
+                                                                                    onSelect={() => handleSelectValue(subItem)}
+                                                                                >
+                                                                                    <SelectItem item={subItem} />
+                                                                                </CommandItem>
                                                                             </div>
-                                                                            <CommandItem
-                                                                                className="grow bg-secondary"
-                                                                                value={subItem.id}
-                                                                                onSelect={() => handleSelectValue(subItem)}
-                                                                            >
-                                                                                <SelectItem item={subItem} />
-                                                                            </CommandItem>
-                                                                        </div>
-                                                                    ))}
-                                                                </AccordionContent>
-                                                            </AccordionItem>
-                                                        </Accordion>
-                                                    </div>
-                                                ))}
-                                            </CommandGroup>
+                                                                        ))}
+                                                                    </AccordionContent>
+                                                                </AccordionItem>
+                                                            </Accordion>
+                                                        </div>
+                                                    ))}
+                                                </CommandGroup>
+                                            )
                                         ) : null
                                     ))
                                 ) : null}
