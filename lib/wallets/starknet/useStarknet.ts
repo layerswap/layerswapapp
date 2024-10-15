@@ -4,7 +4,7 @@ import KnownInternalNames from "../../knownIds"
 import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
-import { Call, Contract, RpcProvider, shortString, byteArray } from "starknet";
+import { Call, Contract, RpcProvider, shortString } from "starknet";
 import PHTLCAbi from "../../../lib/abis/atomic/STARKNET_PHTLC.json"
 import ETHABbi from "../../../lib/abis/STARKNET_ETH.json"
 import { CommitmentParams, CreatePreHTLCParams, GetCommitsParams, LockParams, RefundParams } from "../phtlc";
@@ -110,7 +110,6 @@ export default function useStarknet(): WalletProvider {
 
     const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
     const timeLock = Math.floor((Date.now() + LOCK_TIME) / 1000)
-    const messanger = "0x152747029e738c20a4ecde5ef869ea072642938d62f0aa7f3d0e9dfb5051cb9"
 
     const createPreHTLC = async (params: CreatePreHTLCParams) => {
         const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, tokenContractAddress, amount, decimals, atomicContract: atomicAddress } = params
@@ -139,7 +138,6 @@ export default function useStarknet(): WalletProvider {
                 sourceAsset.symbol,
                 lpAddress,
                 timeLock,
-                messanger,
                 tokenContractAddress,
             ]
 
