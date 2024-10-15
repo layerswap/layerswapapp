@@ -16,10 +16,12 @@ const ConnectButton = ({
     children,
     className,
     onClose,
+    side = 'bottom',
 }: {
     children: ReactNode;
     className?: string;
     onClose?: () => void;
+    side?: 'top' | 'bottom' | 'left' | 'right';
 }) => {
     const { connectWallet, wallets } = useWallet();
     const [open, setOpen] = useState<boolean>();
@@ -52,7 +54,12 @@ const ConnectButton = ({
     );
     return isMobile ? (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger aria-label="Connect wallet">{children}</DialogTrigger>
+            <DialogTrigger
+                aria-label="Connect wallet"
+                className={`${className} disabled:opacity-50 disabled:cursor-not-allowed `}
+            >
+                {children}
+            </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] text-primary-text">
                 <DialogHeader>
                     <DialogTitle className="text-center">
@@ -96,7 +103,7 @@ const ConnectButton = ({
             >
                 {children}
             </PopoverTrigger>
-            <PopoverContent className="flex flex-col items-start gap-2 w-fit">
+            <PopoverContent side={side} className="flex flex-col items-start gap-2 w-fit">
                 {filteredConnectors.map((connector, index) => (
                     <button
                         type="button"

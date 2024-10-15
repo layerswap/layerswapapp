@@ -29,6 +29,7 @@ import { ImtblPassportProvider } from "../../WalletProviders/ImtblPassportProvid
 import { Exchange, ExchangeToken } from "../../../Models/Exchange";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";
+import { toHex } from "viem";
 
 type Props = {
     partner?: Partner,
