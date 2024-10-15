@@ -50,7 +50,7 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
     const [showAll, setShowAll] = useState(false)
     const { wallets } = useWallet()
     const { userId } = useAuthState()
-    const addresses = ['0x169dA96eef4ce602E8101CF5261553A127a4a21D']//wallets.map(w => w.address)
+    const addresses = wallets.map(w => w.address)
     const { setSelectedSwap, selectedSwap } = useHistoryContext()
     const handleopenSwapDetails = (swap: Swap, index: number) => {
         onSwapSettled && onSwapSettled()
