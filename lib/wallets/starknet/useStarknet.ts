@@ -157,12 +157,12 @@ export default function useStarknet(): WalletProvider {
             const parsedEvents = atomicContract.parseEvents(commitTransactionData);
             const tokenCommitedEvent = parsedEvents.find((event: any) => event.TokenCommitted || event?.['htlc::Erc20github::HashedTimelockERC20::TokenCommitted'])
 
-            const commitId = tokenCommitedEvent?.TokenCommitted?.commitId || tokenCommitedEvent?.['htlc::Erc20github::HashedTimelockERC20::TokenCommitted']?.commitId
-            if (!commitId) {
+            const Id = tokenCommitedEvent?.TokenCommitted?.Id || tokenCommitedEvent?.['htlc::Erc20github::HashedTimelockERC20::TokenCommitted']?.Id
+            if (!Id) {
                 throw new Error('No commit id')
             }
 
-            const res = toHex(commitId as bigint, { size: 32 })
+            const res = toHex(Id as bigint, { size: 32 })
             return { hash: trx.transaction_hash as `0x${string}`, commitId: res as `0x${string}` }
         }
         catch (e) {
