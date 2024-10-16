@@ -79,7 +79,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                             )}
                             {(searchQuery || !groupedCurrencies?.length) ?
                                 groups.filter(group => group.items?.length > 0).map(group => (
-                                    <CommandGroup key={group.name} heading={filterItems(group.items)?.length ? group.name : ""}>
+                                    <CommandGroup key={group.name} heading={filterItems(group.items)?.length ? <span>{group.name}</span> : ""}>
                                         {filterItems(group.items).map(item => (
                                             <CommandItem value={item.id} key={item.id} onSelect={() => handleSelectValue(item)}>
                                                 <div className="relative items-center flex-shrink-0 w-3">
