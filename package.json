@@ -120,7 +120,9 @@
     "typescript": "^5.1"
   },
   "resolutions": {
-    "rpc-websockets": "7.11.0"
+    "rpc-websockets": "7.11.0",
+    "viem": "^2.21.16",
+    "wagmi": "^2.12.16"
   },
   "engines": {
     "node": ">=20.9.0"
