@@ -81,7 +81,12 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, o
                 )
             })}
             {
-                walletQRData && <Dialog open={!!walletQRData} onOpenChange={(open) => { !open && setWalletQRData(undefined) }}>
+                walletQRData && <Dialog open={!!walletQRData} onOpenChange={(open) => {
+                    if (!open) {
+                        setWalletQRData(undefined)
+                        setSelectedProvider({ ...provider, connector: undefined })
+                    }
+                }}>
                     <DialogContent className="sm:max-w-[425px]">
                         <DialogHeader>
                             <DialogTitle className="text-center">Connect wallet</DialogTitle>
