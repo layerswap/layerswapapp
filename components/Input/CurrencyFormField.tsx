@@ -369,7 +369,7 @@ function GenerateGroupedCurrencyMenuItems(
                                 height="40"
                                 width="40"
                                 loading="eager"
-                                className={`${network?.tokens?.length > 1 ? "rounded-md" : "rounded-full"} object-contain`}
+                                className="rounded-md object-contain"
                             />
                         )}
                     </div>

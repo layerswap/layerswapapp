@@ -14,7 +14,7 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                         {item.menuItemLabel ?
                             <span className="flex space-x-1">
                                 {item.menuItemLabel}
-                                {item?.extendedAddress && <span className="self-end hidden group-hover:block">{item?.extendedAddress}</span>}
+                                {item?.extendedAddress && <span className="self-end invisible group-hover:visible">{item?.extendedAddress}</span>}
                             </span>
                             :
                             item.name}
