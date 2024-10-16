@@ -350,15 +350,15 @@ function GenerateGroupedCurrencyMenuItems(
                 const balancesArray = balances && Object.values(balances).flat();
                 const networkbalances = balancesArray?.filter(b => b?.network === network.name);
 
-                const total_network_balance_in_usd = networkbalances
+                const total_network_balance_in_usd = networkbalances?.length
                     ? networkbalances.reduce((acc, b) => {
                         const token = network?.tokens?.find(t => t?.symbol === b?.token);
                         const tokenPriceInUsd = token?.price_in_usd || 0;
                         const tokenPrecision = token?.precision || 0;
                         const formattedBalance = Number(truncateDecimals(b?.amount, tokenPrecision));
                         return acc + (formattedBalance * tokenPriceInUsd);
-                    }, 0).toFixed(2)
-                    : 0;
+                    }, 0)
+                    : undefined;
 
                 const networkLogo = (
                     <div className="flex-shrink-0 h-9 w-9 relative">
@@ -397,7 +397,7 @@ function GenerateGroupedCurrencyMenuItems(
                     name: network.name,
                     displayName: network.display_name,
                     logo: networkLogo,
-                    balanceAmount: Number(total_network_balance_in_usd),
+                    balanceAmount: total_network_balance_in_usd,
                     imgSrc: network.logo,
                     isAvailable: !!networkIsAvailable,
                     leftIcon: networkIcon,
@@ -423,22 +423,22 @@ function GenerateGroupedCurrencyMenuItems(
                         );
                         const token_balance = networkbalances?.find(b => b?.token === token?.symbol);
 
-                        const formattedBalanceAmount = token_balance ? Number(truncateDecimals(token_balance?.amount, token.precision)) : '';
-                        const balanceAmountInUsd = formattedBalanceAmount ? (token?.price_in_usd * formattedBalanceAmount).toFixed(2) : undefined;
+                        const formattedBalanceAmount = token_balance ? Number(truncateDecimals(token_balance?.amount, token.precision)) : null;
+                        const balanceAmountInUsd = formattedBalanceAmount ? (token?.price_in_usd * formattedBalanceAmount) : null;
                         const currencyIsAvailable = (token?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
                             !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || token.status === 'inactive');
                         const details = wallets?.length ? (
                             isBalanceLoading ? (
-                                <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                <div className='h-[20px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
                             ) : (
                                 <p className="text-primary-text text-sm flex flex-col items-end pr-1.5">
-                                    {Number(formattedBalanceAmount) ? <span>{formattedBalanceAmount}</span> : <span>0</span>}
-                                    {balanceAmountInUsd ? (
+                                    {(formattedBalanceAmount || formattedBalanceAmount === 0) ? <span>{formattedBalanceAmount.toFixed(2)}</span> : null}
+                                    {(balanceAmountInUsd || balanceAmountInUsd === 0) ? (
                                         <span className="text-secondary-text">
-                                            ${new Intl.NumberFormat("en-US", { style: "decimal" }).format(Number(balanceAmountInUsd))}
+                                            ${new Intl.NumberFormat("en-US", { style: "decimal" }).format(Number(balanceAmountInUsd.toFixed(2)))}
                                         </span>
                                     ) : (
-                                        <span className="text-secondary-text">$0</span>
+                                        null
                                     )}
                                 </p>
                             )
