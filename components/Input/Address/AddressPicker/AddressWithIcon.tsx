@@ -105,7 +105,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
             <Popover open={isPopoverOpen} onOpenChange={() => setPopoverOpen(!isPopoverOpen)} >
                 <PopoverTrigger asChild>
                     <div>
-                        <Tooltip defaultOpen={true}>
+                        <Tooltip disableHoverableContent={true}>
                             <TooltipTrigger asChild>
                                 <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-pointer">
                                     <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium`}>
