@@ -236,13 +236,14 @@ export default function useStarknet(): WalletProvider {
     }
 
     const addLock = async (params: CommitmentParams & LockParams) => {
-        const { id, contractAddress } = params
+        const { id, hashlock, contractAddress } = params
 
         if (!wallet?.metadata?.starknetAccount?.account) {
             throw new Error('Wallet not connected')
         }
         const args = [
             id,
+            hashlock,
             timeLock
         ]
         const atomicContract = new Contract(
