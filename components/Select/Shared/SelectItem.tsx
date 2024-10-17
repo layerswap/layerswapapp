@@ -18,7 +18,7 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                             <span className="flex space-x-1 group">
                                 <span className="truncate flex-grow min-w-0 max-w-full">{item.menuItemLabel}</span>
                                 {item?.extendedAddress && (
-                                    <span className="self-end truncate max-w-[40%] invisible group-hover:visible">{item?.extendedAddress}</span>
+                                    <span className="self-end truncate invisible group-hover:visible">{item?.extendedAddress}</span>
                                 )}
                             </span>
                             :

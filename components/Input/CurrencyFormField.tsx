@@ -304,6 +304,7 @@ function GenerateCurrencyMenuItems(
         )
 
         const network = routes?.find(r => r.name === currency.network_name);
+        const extendedAddress = (network && c.contract) && <ExtendedAddress address={addressFormat(c.contract, network)} network={network} isForCurrency={true} />
 
         const res: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
             baseObject: c,
@@ -319,7 +320,8 @@ function GenerateCurrencyMenuItems(
             badge,
             leftIcon: ResolveRouteIcon({ direction, isAvailable: currencyIsAvailable, routeNotFound, type: 'token' }),
             noWalletsConnectedText,
-            logo
+            logo,
+            extendedAddress
         };
 
         return res
