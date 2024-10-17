@@ -75,7 +75,7 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
         useSWRInfinite<ApiResponse<Swap[]>>(
             (index) => getKey(index, ["Completed", "PendingWithdrawal"], addresses),
             apiClient.fetcher,
-            { revalidateAll: true }
+            { revalidateAll: true, dedupingInterval: 10000 }
         )
 
     const handleSWapDetailsShow = (show: boolean) => {
