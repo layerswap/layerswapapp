@@ -38,7 +38,6 @@ const SwapsListModal: FC<Props> = ({ children, title, loadExplorerSwaps }) => {
                     />}>
                     <AnimatePresence>
                         <Content
-                            loadExplorerSwaps={loadExplorerSwaps}
                             refreshing={refreshing}
                         />
                     </AnimatePresence>

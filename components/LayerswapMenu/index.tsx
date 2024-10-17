@@ -10,12 +10,14 @@ import WizardItem from "../Wizard/WizardItem";
 import { NextRouter, useRouter } from "next/router";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import HistoryList from "../SwapHistory/HistoryComponent/History";
+import { useQueryState } from "../../context/query";
 
 const Comp = () => {
     const router = useRouter();
 
     const { goBack, currentStepName } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
+    const { appName } = useQueryState()
 
     const [openTopModal, setOpenTopModal] = useState(false);
 
@@ -65,7 +67,7 @@ const Comp = () => {
                                 <MenuList goToStep={handleGoToStep} />
                             </WizardItem>
                             <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full">
-                                <HistoryList onNewTransferClick={() => handleModalOpenStateChange(false)} loadExplorerSwaps={true} />
+                                <HistoryList onNewTransferClick={() => handleModalOpenStateChange(false)}/>
                             </WizardItem>
                         </Wizard>
                     </Modal>

@@ -1,5 +1,5 @@
 import { useRouter } from "next/router"
-import { useCallback, useState } from "react"
+import { useCallback } from "react"
 import HeaderWithMenu from "../HeaderWithMenu";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import dynamic from "next/dynamic";
@@ -26,10 +26,8 @@ function TransactionsHistory() {
   return (
     <div id="widget" className='bg-secondary-900 sm:shadow-card pb-4 rounded-lg w-full text-primary-text overflow-hidden relative h-[97vh] sm:h-[650px]'>
       <HeaderWithMenu goBack={goBack} />
-      <div className="px-6 h-full max-h-[92%] overflow-y-auto styled-scroll">
-        <Content
-          loadExplorerSwaps={true}
-        />
+      <div className="px-6 h-full max-h-[92%] overflow-y-auto styled-scroll" id='virtualListContainer'>
+        <Content />
       </div>
       <div id="widget_root" />
     </div>
