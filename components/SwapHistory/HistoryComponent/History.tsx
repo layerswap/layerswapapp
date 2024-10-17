@@ -19,6 +19,7 @@ import GuestCard from "../../guestCard"
 import { AuthStep } from "../../../Models/Wizard"
 import { SwapStatus } from "../../../Models/SwapStatus"
 import ResizablePanel from "../../ResizablePanel"
+import VaulDrawer from "../../modal/vaul"
 
 const PAGE_SIZE = 20
 type ListProps = {
@@ -221,17 +222,18 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, onNewTransferClick }) =
                 </div>
             }
         </div>
-        <Modal
+        <VaulDrawer
             show={openSwapDetailsModal}
             setShow={handleSWapDetailsShow}
             header='Swap details'
             modalId="swapDetails"
+            snapPointsCount={2}
         >
             {
                 selectedSwap &&
                 <SwapDetails swapResponse={selectedSwap} />
             }
-        </Modal>
+        </VaulDrawer>
     </>
 }
 

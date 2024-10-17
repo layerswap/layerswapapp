@@ -21,6 +21,7 @@ import { SwapStatus } from '../../Models/SwapStatus';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
+import VaulDrawer from '../modal/vaul';
 
 type Props = {
     swapResponse: SwapResponse
@@ -83,8 +84,9 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     }
 
     return (
-        <div className='flex flex-col justify-between w-full h-full gap-3'>
-            <div className='space-y-3 pt-2'>
+
+        <>
+            <VaulDrawer.Snap id='item-1' className='pb-2 space-y-3'>
                 <div className='p-3 bg-secondary-700 rounded-xl'>
                     <div className={`font-normal flex flex-col w-full relative z-10 ${(source_exchange || destination_exchange) ? 'space-y-2' : 'space-y-4'}`}>
 
@@ -181,7 +183,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
                     </div>
                 </div>
-
                 {/* Refuel */}
                 {
                     refuel && <div className='p-3 bg-secondary-700 rounded-xl'>
@@ -238,123 +239,132 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                     }
                 </div>
 
+            </VaulDrawer.Snap>
 
-                {/* Date and Status */}
-                <div className='p-3 bg-secondary-700 rounded-xl'>
-                    <div className='text-sm flex flex-col gap-3'>
-                        <div className="flex justify-between items-center text-sm text-primary-text">
-                            <p className="text-left text-secondary-text">Swap Id</p>
-                            <CopyButton toCopy={swap?.id} iconClassName='order-2 ml-1'>
-                                {shortenAddress(swap?.id)}
-                            </CopyButton>
-                        </div>
-                        <div className="flex justify-between items-baseline">
-                            <span className="text-left text-secondary-text">Date & Time</span>
-                            <span className='text-primary-text'>{(new Date(swap.created_date)).toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-baseline">
-                            <span className="text-left text-secondary-text">Time Consumed</span>
-                            <span className='text-primary-text'>
-                                {
-                                    (swapInputTransaction?.timestamp && swapOutputTransaction?.timestamp) ?
-                                        calculateDatesDifference(swapInputTransaction?.timestamp, swapOutputTransaction?.timestamp)
-                                        :
-                                        '-'
-                                }
-                            </span>
-                        </div>
-                        <div className="flex justify-between p items-baseline">
-                            <span className="text-left text-secondary-text">Status </span>
-                            <span className="text-primary-text">
-                                <StatusIcon swap={swap} />
-                            </span>
-                        </div>
-                    </div>
-                </div>
 
-                {/* Source and Destination Transactions */}
-                <div className='p-3 bg-secondary-700 rounded-xl text-primary-text'>
-                    <div className='text-sm flex flex-col gap-3'>
-                        <div className="flex justify-between items-baseline">
-                            <p className="text-left text-secondary-text">Source transaction</p>
-                            {
-                                swapInputTransaction?.transaction_hash ?
-                                    <Link
-                                        target="_blank"
-                                        href={input_tx_explorer_template?.replace("{0}", swapInputTransaction.transaction_hash)}
-                                        className='flex items-center space-x-1'
-                                    >
-                                        <span>{shortenAddress(swapInputTransaction.transaction_hash)}</span>
-                                        <ExternalLink className='h-4' />
-                                    </Link>
-                                    :
-                                    <span>-</span>
-                            }
-                        </div >
-                        <div className="flex justify-between items-baseline">
-                            <p className="text-left text-secondary-text">Destination transaction</p>
-                            {
-                                swapOutputTransaction?.transaction_hash ?
-                                    (
-                                        (swapOutputTransaction?.transaction_hash && swap?.destination_exchange?.name === KnownInternalNames.Exchanges.Coinbase && (isGuid(swapOutputTransaction?.transaction_hash))) ?
-                                            <span><CopyButton toCopy={swapOutputTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenAddress(swapOutputTransaction.transaction_hash)}</CopyButton></span>
-                                            :
+            <VaulDrawer.Snap id='item-2'>
+                <div className='flex flex-col justify-between w-full h-full gap-3'>
+                    <div className='space-y-3 pt-2'>
+
+                        {/* Date and Status */}
+                        <div className='p-3 bg-secondary-700 rounded-xl'>
+                            <div className='text-sm flex flex-col gap-3'>
+                                <div className="flex justify-between items-center text-sm text-primary-text">
+                                    <p className="text-left text-secondary-text">Swap Id</p>
+                                    <CopyButton toCopy={swap?.id} iconClassName='order-2 ml-1'>
+                                        {shortenAddress(swap?.id)}
+                                    </CopyButton>
+                                </div>
+                                <div className="flex justify-between items-baseline">
+                                    <span className="text-left text-secondary-text">Date & Time</span>
+                                    <span className='text-primary-text'>{(new Date(swap.created_date)).toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-baseline">
+                                    <span className="text-left text-secondary-text">Time Consumed</span>
+                                    <span className='text-primary-text'>
+                                        {
+                                            (swapInputTransaction?.timestamp && swapOutputTransaction?.timestamp) ?
+                                                calculateDatesDifference(swapInputTransaction?.timestamp, swapOutputTransaction?.timestamp)
+                                                :
+                                                '-'
+                                        }
+                                    </span>
+                                </div>
+                                <div className="flex justify-between p items-baseline">
+                                    <span className="text-left text-secondary-text">Status </span>
+                                    <span className="text-primary-text">
+                                        <StatusIcon swap={swap} />
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Source and Destination Transactions */}
+                        <div className='p-3 bg-secondary-700 rounded-xl text-primary-text'>
+                            <div className='text-sm flex flex-col gap-3'>
+                                <div className="flex justify-between items-baseline">
+                                    <p className="text-left text-secondary-text">Source transaction</p>
+                                    {
+                                        swapInputTransaction?.transaction_hash ?
                                             <Link
                                                 target="_blank"
-                                                href={output_tx_explorer_template?.replace("{0}", swapOutputTransaction.transaction_hash)}
+                                                href={input_tx_explorer_template?.replace("{0}", swapInputTransaction.transaction_hash)}
                                                 className='flex items-center space-x-1'
                                             >
-                                                <span>{shortenAddress(swapOutputTransaction.transaction_hash)}</span>
+                                                <span>{shortenAddress(swapInputTransaction.transaction_hash)}</span>
                                                 <ExternalLink className='h-4' />
                                             </Link>
-                                    )
-                                    :
-                                    <span>-</span>
-                            }
-                        </div >
+                                            :
+                                            <span>-</span>
+                                    }
+                                </div >
+                                <div className="flex justify-between items-baseline">
+                                    <p className="text-left text-secondary-text">Destination transaction</p>
+                                    {
+                                        swapOutputTransaction?.transaction_hash ?
+                                            (
+                                                (swapOutputTransaction?.transaction_hash && swap?.destination_exchange?.name === KnownInternalNames.Exchanges.Coinbase && (isGuid(swapOutputTransaction?.transaction_hash))) ?
+                                                    <span><CopyButton toCopy={swapOutputTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenAddress(swapOutputTransaction.transaction_hash)}</CopyButton></span>
+                                                    :
+                                                    <Link
+                                                        target="_blank"
+                                                        href={output_tx_explorer_template?.replace("{0}", swapOutputTransaction.transaction_hash)}
+                                                        className='flex items-center space-x-1'
+                                                    >
+                                                        <span>{shortenAddress(swapOutputTransaction.transaction_hash)}</span>
+                                                        <ExternalLink className='h-4' />
+                                                    </Link>
+                                            )
+                                            :
+                                            <span>-</span>
+                                    }
+                                </div >
+                            </div>
+                        </div>
                     </div>
+
+                    {
+                        swap.status === SwapStatus.Completed &&
+                        <button
+                            onClick={() => router.push({
+                                pathname: `/`,
+                                query: {
+                                    amount: requested_amount,
+                                    destAddress: destination_address,
+                                    from: source_network?.name,
+                                    to: destination_network?.name,
+                                    fromAsset: source_token.symbol,
+                                    toAsset: destination_token.symbol,
+                                    ...resolvePersistantQueryParams(router.query),
+                                }
+                            }, undefined, { shallow: false })}
+                            className='w-full inline-flex items-center gap-2 justify-center py-2.5 px-3 text-xl font-semibold bg-primary-text-placeholder hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-secondary-950'
+                        >
+                            <RefreshCw className='h-6 w-6' />
+                            <p>
+                                Repeat Swap
+                            </p>
+                        </button>
+                    }
+                    {
+                        (swap.status !== SwapStatus.Completed && swap.status !== SwapStatus.Expired && swap.status !== SwapStatus.Failed) &&
+                        <button
+                            onClick={() => router.push({
+                                pathname: `/swap/${swap.id}`,
+                                query: resolvePersistantQueryParams(router.query),
+                            }, undefined, { shallow: false })}
+                            className='w-full inline-flex items-center gap-2 justify-center py-2.5 px-3 text-xl font-semibold bg-primary hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-primary-text'
+                        >
+                            <p>
+                                Complete Swap
+                            </p>
+                        </button>
+                    }
+
                 </div>
-            </div>
+            </VaulDrawer.Snap>
 
-            {
-                swap.status === SwapStatus.Completed &&
-                <button
-                    onClick={() => router.push({
-                        pathname: `/`,
-                        query: {
-                            amount: requested_amount,
-                            destAddress: destination_address,
-                            from: source_network?.name,
-                            to: destination_network?.name,
-                            fromAsset: source_token.symbol,
-                            toAsset: destination_token.symbol,
-                            ...resolvePersistantQueryParams(router.query),
-                        }
-                    }, undefined, { shallow: false })}
-                    className='w-full inline-flex items-center gap-2 justify-center py-2.5 px-3 text-xl font-semibold bg-primary-text-placeholder hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-secondary-950'
-                >
-                    <RefreshCw className='h-6 w-6' />
-                    <p>
-                        Repeat Swap
-                    </p>
-                </button>
-            }
-            {
-                (swap.status !== SwapStatus.Completed && swap.status !== SwapStatus.Expired && swap.status !== SwapStatus.Failed) &&
-                <button
-                    onClick={() => router.push({
-                        pathname: `/swap/${swap.id}`,
-                        query: resolvePersistantQueryParams(router.query),
-                    }, undefined, { shallow: false })}
-                    className='w-full inline-flex items-center gap-2 justify-center py-2.5 px-3 text-xl font-semibold bg-primary hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-primary-text'
-                >
-                    <p>
-                        Complete Swap
-                    </p>
-                </button>
-            }
-
-        </div>
+        </>
 
     )
 }
