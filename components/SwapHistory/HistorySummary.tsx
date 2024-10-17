@@ -15,12 +15,17 @@ import useWallet from "../../hooks/useWallet";
 import AddressIcon from "../AddressIcon";
 import { addressFormat } from "../../lib/address/formatter";
 import { SwapStatus } from "../../Models/SwapStatus";
+import { Wallet } from "../../stores/walletStore";
 
 type SwapInfoProps = {
+    className?: string,
     swapResponse: SwapResponse,
+    wallets: Wallet[]
 }
 const HistorySummary: FC<SwapInfoProps> = ({
     swapResponse,
+    wallets,
+    className
 }) => {
 
     const {
@@ -30,8 +35,6 @@ const HistorySummary: FC<SwapInfoProps> = ({
         appName,
         hideAddress
     } = useQueryState()
-
-    const { wallets } = useWallet()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
@@ -66,7 +69,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
 
     return (
         source_token && <>
-            <div className="bg-secondary-700 p-3 w-full relative z-10 font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer">
+            <div className={`${className || ''} bg-secondary-700 z-10 p-3 w-full relative font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer`}>
                 <div className="grid grid-cols-6 sm:grid-cols-8 gap-3 w-full items-center">
                     {source?.display_name !== destination?.display_name ?
                         <div className="col-span-1 h-11 w-11 relative min-w-11">
