@@ -132,17 +132,21 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
                         {
                             (source_exchange || destination_exchange) &&
-                            <div className='flex flex-col gap-1 justify-start items-center w-fit ml-2.5'>
-                                <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-sm" />
-                                <Image
-                                    src={source_exchange ? source_network?.logo : destination_network?.logo}
-                                    alt={source_exchange ? source_network?.display_name : destination_network?.display_name}
-                                    width={24}
-                                    height={24}
-                                    className="rounded-md w-6 h-6"
-                                />
-                                <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-sm" />
+                            <div className='flex flex-row space-x-2'>
+                                <div className='flex flex-col gap-1 justify-start items-center w-fit ml-2.5'>
+                                    <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-sm" />
+                                    <Image
+                                        src={source_exchange ? source_network?.logo : destination_network?.logo}
+                                        alt={source_exchange ? source_network?.display_name : destination_network?.display_name}
+                                        width={24}
+                                        height={24}
+                                        className="rounded-md w-6 h-6"
+                                    />
+                                    <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-sm" />
+                                </div>
+                                <span className='text-secondary-text text-sm self-center'>{source_exchange ? source_network?.display_name : destination_network?.display_name}</span>
                             </div>
+
                         }
 
                         <div className='space-y-1'>
@@ -253,7 +257,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             <span className='text-primary-text'>{(new Date(swap.created_date)).toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between items-baseline">
-                            <span className="text-left text-secondary-text">Time Consumed</span>
+                            <span className="text-left text-secondary-text">Completion Time</span>
                             <span className='text-primary-text'>
                                 {
                                     (swapInputTransaction?.timestamp && swapOutputTransaction?.timestamp) ?
