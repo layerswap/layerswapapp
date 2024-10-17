@@ -68,14 +68,14 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
         useSWRInfinite<ApiResponse<Swap[]>>(
             (index) => getKey(index, ["PendingDeposit"], addresses),
             apiClient.fetcher,
-            { revalidateAll: true, dedupingInterval: 10000 }
+            { revalidateAll: true }
         )
 
     const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, isValidating, mutate } =
         useSWRInfinite<ApiResponse<Swap[]>>(
             (index) => getKey(index, ["Completed", "PendingWithdrawal"], addresses),
             apiClient.fetcher,
-            { revalidateAll: true, dedupingInterval: 10000 }
+            { revalidateAll: true}
         )
 
     const handleSWapDetailsShow = (show: boolean) => {
