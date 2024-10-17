@@ -15,7 +15,7 @@ const ResolveRouteIcon = (props: Props) => {
         return <Tooltip delayDuration={200}>
             <TooltipTrigger asChild >
                 <div className="absolute top-0.5 z-50 inset-0 flex items-center cursor-pointer">
-                    <Info className="!w-3.5 text-primary-text-placeholder hover:text-primary-text" />
+                    <Info className="!w-4 text-primary-text-placeholder hover:text-primary-text" />
                 </div>
             </TooltipTrigger>
             <TooltipContent side="right">
@@ -29,7 +29,7 @@ const ResolveRouteIcon = (props: Props) => {
         return <Tooltip delayDuration={200}>
             <TooltipTrigger asChild >
                 <div className="absolute top-0.5 z-50 inset-0 flex items-center cursor-pointer">
-                    <RouteOff className="!w-3.5 text-primary-text-placeholder hover:text-primary-text" />
+                    <RouteOff className="!w-4 text-primary-text-placeholder hover:text-primary-text" />
                 </div>
             </TooltipTrigger>
             <TooltipContent side="right">

@@ -466,8 +466,8 @@ function GenerateGroupedCurrencyMenuItems(
                                 <Image
                                     src={token.logo}
                                     alt="Project Logo"
-                                    height="40"
-                                    width="40"
+                                    height="36"
+                                    width="36"
                                     loading="eager"
                                     className="rounded-full object-contain"
                                 />

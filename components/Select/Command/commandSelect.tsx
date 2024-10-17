@@ -73,7 +73,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                     )}
                     {modalContent}
                     {!isLoading ? (
-                        <CommandList className="p-1">
+                        <CommandList className="p-1 overflow-visible">
                             {/*  TODO No unwrapped JSX text
                             {!filterItems?.length && searchQuery && (
                                 <div className="py-6 text-center text-sm">No results found.</div>
@@ -83,9 +83,6 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                     <CommandGroup key={group.name} heading={filterItems(group.items)?.length ? group.name : ""}>
                                         {filterItems(group.items).map(item => (
                                             <CommandItem value={item.id} key={item.id} onSelect={() => handleSelectValue(item)}>
-                                                <div className="relative items-center flex-shrink-0 w-3">
-                                                    {item.leftIcon}
-                                                </div>
                                                 <SelectItem item={item} />
                                             </CommandItem>
                                         ))}
@@ -100,9 +97,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                                     {filterItems(g.items).map(item =>
                                                         item?.subItems?.map(subItem => (
                                                             <div className="flex group" key={subItem.id}>
-                                                                <div className="relative items-center flex-shrink-0 w-4">
-                                                                    {subItem.leftIcon}
-                                                                </div>
+                                                                
                                                                 <CommandItem
                                                                     className="grow"
                                                                     value={subItem.id}
@@ -118,12 +113,12 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                                 <CommandGroup key={g.name} heading={g.name}>
                                                     {filterItems(g.items).map(item => (
                                                         <div key={item.id}>
-                                                            <div className="relative items-center flex-shrink-0 w-4 top-6">
+                                                            <div className="relative items-center flex-shrink-0 w-4 top-6 -left-4">
                                                                 {item.leftIcon}
                                                             </div>
                                                             <Accordion type="single" collapsible key={item.name} defaultValue="Selected Network">
                                                                 <AccordionItem value={item.name}>
-                                                                    <AccordionTrigger className="flex mb-1 ml-4 items-center w-full overflow-hidden rounded-md py-2 px-1.5 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary">
+                                                                    <AccordionTrigger className="flex mb-1 items-center w-full overflow-hidden rounded-md p-2 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary">
                                                                         <div className="whitespace-nowrap flex items-center gap-2 flex-grow">
                                                                             {item.logo}
                                                                             {item.displayName}
@@ -152,9 +147,6 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                                                     <AccordionContent className="rounded-md">
                                                                         {item?.subItems?.map(subItem => (
                                                                             <div className="flex group" key={subItem.id}>
-                                                                                <div className="relative items-center flex-shrink-0 w-4">
-                                                                                    {subItem.leftIcon}
-                                                                                </div>
                                                                                 <CommandItem
                                                                                     className="grow bg-secondary"
                                                                                     value={subItem.id}

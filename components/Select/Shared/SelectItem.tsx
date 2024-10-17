@@ -3,8 +3,11 @@ import { ISelectMenuItem } from "./Props/selectMenuItem";
 export default function SelectItem({ item }: { item: ISelectMenuItem }) {
 
     return (
-        <div className={`${item.noWalletsConnectedText ? "group-hover:bg-secondary-500" : "hover:bg-secondary-500 "} flex items-center justify-between w-full overflow-hidden rounded-md p-1.5`}>
+        <div className={`${item.noWalletsConnectedText ? "group-hover:bg-secondary-500" : "hover:bg-secondary-500 "} px-1 flex items-center justify-between w-full overflow-hidden rounded-md p-2`}>
             <div className="relative flex items-center gap-1.5">
+                <div className="relative items-center flex-shrink-0 w-4">
+                    {item.leftIcon}
+                </div>
                 <div className="flex-shrink-0">
                     {item.logo}
                 </div>
@@ -13,7 +16,7 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                         {item.menuItemImage && item.menuItemImage}
                         {item.menuItemLabel ?
                             <span className="flex space-x-1">
-                                {item.menuItemLabel}
+                                <span className="truncate max-w-[150px]">{item.menuItemLabel}</span>
                                 {item?.extendedAddress && <span className="self-end invisible group-hover:visible">{item?.extendedAddress}</span>}
                             </span>
                             :
