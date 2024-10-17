@@ -64,18 +64,18 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
     const getKey = useMemo(() => getSwapsKey(), [])
     const apiClient = new LayerSwapApiClient()
 
-    const { data: pendingSwapPages, size: pendingSwapsSize, setSize: setPendingSwapsSize, isLoading: peningSwapsLoading, isValidating: pendingSwapsValidating, mutate: mutatePendingSwaps } =
+    const { data: pendingSwapPages, size: pendingSwapsSize, setSize: setPendingSwapsSize, isLoading: pendingSwapsLoading, isValidating: pendingSwapsValidating, mutate: mutatePendingSwaps } =
         useSWRInfinite<ApiResponse<Swap[]>>(
             (index) => getKey(index, ["PendingDeposit"], addresses),
             apiClient.fetcher,
-            { revalidateAll: true }
+            { revalidateAll: true, refreshInterval: 10000 }
         )
 
     const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, isValidating, mutate } =
         useSWRInfinite<ApiResponse<Swap[]>>(
             (index) => getKey(index, ["Completed", "PendingWithdrawal"], addresses),
             apiClient.fetcher,
-            { revalidateAll: true}
+            { revalidateAll: true }
         )
 
     const handleSWapDetailsShow = (show: boolean) => {
@@ -102,6 +102,9 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
     const handleLoadMore = async () => {
         await setSize(size + 1)
     }
+    const handleLoadMorePendingSwaps = async () => {
+        await setPendingSwapsSize(pendingSwapsSize + 1)
+    }
 
     useEffect(() => {
         mutate()
@@ -116,6 +119,10 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
         .map(([key, values]) => ({ key, values }))
 
     const pendingSwaps = pendingSwapPages?.map(p => p?.data).flat(1) || []
+
+    const pendingSwapsisEmpty = !pendingSwapsLoading && pendingSwaps.length === 0
+    const pendingHaveMorepages = (pendingSwapPages && Number(pendingSwapPages[pendingSwapPages.length - 1]?.data?.length) == PAGE_SIZE);
+
 
     const flattenedSwaps = grouppedSwaps?.flatMap(g => {
         return [g.key, ...g.values]
@@ -182,7 +189,7 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
                             const swap = data
                             if (!swap) return <></>
 
-                            const collapsablePendingSwap =  pendingSwaps.length > 1 && virtualRow.index  === 0  
+                            const collapsablePendingSwap = pendingSwaps.length > 1 && virtualRow.index === 0
                             const collapsedPendingSwap = !showAll && collapsablePendingSwap
 
                             return (<>
@@ -206,6 +213,18 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
                                             <div className="z-0 h-6 -top-4 opacity-65 shadow-lg relative bg-secondary-700 p-3 w-[95%] mx-auto font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer" />}
                                     </div>
                                 </div>
+                                {
+                                    pendingHaveMorepages && virtualRow.index === pendingSwaps.length - 1 &&
+                                    <button
+                                        disabled={pendingSwapsLoading || pendingSwapsValidating}
+                                        type="button"
+                                        onClick={handleLoadMorePendingSwaps}
+                                        className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full"
+                                    >
+                                        <RefreshCw className={`w-4 h-4 ${(pendingSwapsLoading || pendingSwapsValidating) && 'animate-spin'}`} />
+                                        <span>Load more pending swaps</span>
+                                    </button>
+                                }
                             </>
                             )
                         })}
