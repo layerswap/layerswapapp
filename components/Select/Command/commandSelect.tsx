@@ -5,7 +5,7 @@ import {
     CommandList,
     CommandWrapper
 } from '../../shadcn/command';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import useWindowDimensions from '../../../hooks/useWindowDimensions';
 import SelectItem from '../Shared/SelectItem';
 import { SelectProps } from '../Shared/Props/SelectProps';
@@ -45,6 +45,12 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
         setValue(item);
         setShow(false);
     }, [setValue, setShow]);
+
+    useEffect(() => {
+        if (!show) {
+            setSearchQuery(''); 
+        }
+    }, [show])
 
     const filterItems = (items: ISelectMenuItem[]) => {
         const filtered = items.filter(
@@ -97,7 +103,6 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                                     {filterItems(g.items).map(item =>
                                                         item?.subItems?.map(subItem => (
                                                             <div className="flex group" key={subItem.id}>
-                                                                
                                                                 <CommandItem
                                                                     className="grow"
                                                                     value={subItem.id}
