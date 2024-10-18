@@ -122,7 +122,8 @@
   "resolutions": {
     "rpc-websockets": "7.11.0",
     "viem": "^2.21.16",
-    "wagmi": "^2.12.16"
+    "wagmi": "^2.12.16",
+    "@solana/web3.js": "1.66.0"
   },
   "engines": {
     "node": ">=20.9.0"

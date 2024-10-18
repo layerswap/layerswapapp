@@ -8,14 +8,16 @@ import {
     useWallet,
 } from '@fuels/react';
 import Fuel from "../../../components/icons/Wallets/Fuel";
+import useStorage from "../../../hooks/useStorage";
 
 export default function useFuel(): WalletProvider {
     const autofillSupportedNetworks = [KnownInternalNames.Networks.FuelTestnet]
     const name = 'fuel'
 
-    const { wallet } = useWallet()
-    const { connect } = useConnectUI()
+    const { wallet, isRefetching, isLoading, isFetching } = useWallet()
+    const { connect,isConnecting } = useConnectUI()
     const { disconnectAsync } = useDisconnect()
+    const { storageAvailable, setItem, getItem } = useStorage()
 
     const [shouldConnect, setShouldConnect] = useState(false)
 
@@ -27,8 +29,15 @@ export default function useFuel(): WalletProvider {
     }, [shouldConnect])
 
     const getWallet = () => {
+        if (!isConnecting && !isFetching && !isRefetching && storageAvailable && !wallet?.address && !isLoading) {
+            const fuelCurrentConnector = getItem('fuel-current-connector', 'localStorage')
+            if (fuelCurrentConnector && fuelCurrentConnector === 'Bako Safe') {
+                setItem('fuel-current-connector', '', 'localStorage')
+            }
+        }
+
         if (wallet) {
-            const address = wallet.address.toString()
+            const address = wallet.address.toB256()
             const w: Wallet = {
                 address: address,
                 connector: 'Fuel',

@@ -20,13 +20,15 @@ const fuelConfig = {
         fuelProvider: Provider.create(NETWORKS[0].url),
     }),
 };
-export const Providers = ({
+const FuelProviderWrapper = ({
     children,
 }: { children: React.ReactNode }) => {
 
     return (
-        <FuelProvider theme={'dark'} fuelConfig={fuelConfig} networks={NETWORKS}>
+        <FuelProvider uiConfig={{ suggestBridge: false }} theme={'dark'} fuelConfig={fuelConfig} networks={NETWORKS}>
             {children}
         </FuelProvider>
     );
 };
+
+export default FuelProviderWrapper;

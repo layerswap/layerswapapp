@@ -7,6 +7,7 @@ import useStarknet from "../lib/wallets/starknet/useStarknet"
 import useImtblX from "../lib/wallets/imtblX/useImtblX"
 import useSolana from "../lib/wallets/solana/useSolana"
 import { Network, RouteNetwork } from "../Models/Network"
+import useFuel from "../lib/wallets/fuel/useFuel"
 
 export type WalletProvider = {
     connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
@@ -26,7 +27,8 @@ export default function useWallet() {
         useEVM(),
         useStarknet(),
         useImtblX(),
-        useSolana()
+        useSolana(),
+        useFuel()
     ]
 
     async function connectWallet({ providerName, chain }: { providerName: string, chain?: string | number | null }) {
