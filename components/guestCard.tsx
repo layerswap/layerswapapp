@@ -8,12 +8,17 @@ import EmailStep from './Wizard/Steps/EmailStep';
 import Wizard from './Wizard/Wizard';
 import WizardItem from './Wizard/WizardItem';
 
-function GuestCard() {
+type Props = {
+    onLogin?: () => void
+}
+
+function GuestCard({ onLogin }: Props) {
     const { goToStep } = useFormWizardaUpdate()
     const { goBack, noToolBar } = useFormWizardState()
 
     const CodeOnNext = async () => {
         toast.success("You are successfully logged in.")
+        onLogin && onLogin()
     };
     const GoBackToEmailStep = () => goToStep(AuthStep.Email, "back")
     const GoToCodeStep = () => goToStep(AuthStep.Code)
