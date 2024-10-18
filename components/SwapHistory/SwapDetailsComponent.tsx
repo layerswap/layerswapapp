@@ -243,44 +243,46 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                     }
                 </div>
 
+                {/* Date and Status */}
+                <div className='p-3 bg-secondary-700 rounded-xl'>
+                    <div className='text-sm flex flex-col gap-3'>
+                        <div className="flex justify-between items-center text-sm text-primary-text">
+                            <p className="text-left text-secondary-text">Swap Id</p>
+                            <CopyButton toCopy={swap?.id} iconClassName='order-2 ml-1'>
+                                {shortenAddress(swap?.id)}
+                            </CopyButton>
+                        </div>
+                        <div className="flex justify-between items-baseline">
+                            <span className="text-left text-secondary-text">Date & Time</span>
+                            <span className='text-primary-text'>{(new Date(swap.created_date)).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-baseline">
+                            <span className="text-left text-secondary-text">Completion Time</span>
+                            <span className='text-primary-text'>
+                                {
+                                    (swapInputTransaction?.timestamp && swapOutputTransaction?.timestamp) ?
+                                        calculateDatesDifference(swapInputTransaction?.timestamp, swapOutputTransaction?.timestamp)
+                                        :
+                                        '-'
+                                }
+                            </span>
+                        </div>
+                        <div className="flex justify-between p items-baseline">
+                            <span className="text-left text-secondary-text">Status </span>
+                            <span className="text-primary-text">
+                                <StatusIcon swap={swap} />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+
             </VaulDrawer.Snap>
 
 
             <VaulDrawer.Snap id='item-2'>
                 <div className='flex flex-col justify-between w-full h-full gap-3 pb-4'>
                     <div className='space-y-3'>
-                        {/* Date and Status */}
-                        <div className='p-3 bg-secondary-700 rounded-xl'>
-                            <div className='text-sm flex flex-col gap-3'>
-                                <div className="flex justify-between items-center text-sm text-primary-text">
-                                    <p className="text-left text-secondary-text">Swap Id</p>
-                                    <CopyButton toCopy={swap?.id} iconClassName='order-2 ml-1'>
-                                        {shortenAddress(swap?.id)}
-                                    </CopyButton>
-                                </div>
-                                <div className="flex justify-between items-baseline">
-                                    <span className="text-left text-secondary-text">Date & Time</span>
-                                    <span className='text-primary-text'>{(new Date(swap.created_date)).toLocaleString()}</span>
-                                </div>
-                                <div className="flex justify-between items-baseline">
-                                    <span className="text-left text-secondary-text">Completion Time</span>
-                                    <span className='text-primary-text'>
-                                        {
-                                            (swapInputTransaction?.timestamp && swapOutputTransaction?.timestamp) ?
-                                                calculateDatesDifference(swapInputTransaction?.timestamp, swapOutputTransaction?.timestamp)
-                                                :
-                                                '-'
-                                        }
-                                    </span>
-                                </div>
-                                <div className="flex justify-between p items-baseline">
-                                    <span className="text-left text-secondary-text">Status </span>
-                                    <span className="text-primary-text">
-                                        <StatusIcon swap={swap} />
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
 
                         {/* Source and Destination Transactions */}
                         <div className='p-3 bg-secondary-700 rounded-xl text-primary-text'>
