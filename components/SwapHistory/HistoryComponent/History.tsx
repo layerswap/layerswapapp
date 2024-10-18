@@ -50,7 +50,7 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
     const { userId } = useAuthState()
     const addresses = wallets.map(w => {
         const network = networks.find(n => n.chain_id == w.chainId)
-        return addressFormat("0x169dA96eef4ce602E8101CF5261553A127a4a21D", network || null)
+        return addressFormat(w.address, network || null)
     })
     const { setSelectedSwap, selectedSwap } = useHistoryContext()
     const handleopenSwapDetails = (swap: Swap) => {
