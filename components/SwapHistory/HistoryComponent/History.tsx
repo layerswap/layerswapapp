@@ -165,14 +165,13 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
                                         data-index={virtualRow.index}
                                         ref={rowVirtualizer.measureElement}
                                     >
-                                        <div className="w-full after:h-1 after:w-full after:content-[''] after:block">
+                                        <div className="w-full pb-1">
                                             {
                                                 data !== 'Pending' &&
                                                 <p className="text-sm text-secondary-text font-normal pl-2">
                                                     {resolveDate(data)}
                                                 </p>
                                             }
-                                            
                                         </div>
                                     </div>
                                 )
@@ -190,15 +189,15 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
                                 ref={rowVirtualizer.measureElement}
                             >
                                 {collapsablePendingSwap &&
-                                    <div className="w-full flex justify-end">
-                                        <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text hover:text-primary-text pr-2'>
+                                    <div className="w-full flex justify-end pb-2">
+                                        <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text hover:text-primary-text pr-2 '>
                                             <p className="select-none">See all incomplete swaps</p>
                                             <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
                                         </button>
                                     </div>
                                 }
                                 <div onClick={() => handleopenSwapDetails(swap)}>
-                                    <div className="after:h-3 after:w-full after:content-[''] after:block">
+                                    <div className="pb-3">
                                         <HistorySummary swapResponse={swap} wallets={wallets} />
                                         {collapsedPendingSwap &&
                                             <div className="z-0 h-6 -top-4 opacity-65 shadow-lg relative bg-secondary-700 p-3 w-[95%] mx-auto font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer" />}

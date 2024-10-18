@@ -18,13 +18,12 @@ function TransactionsHistory() {
       })
   }, [router])
 
-
   return (
     <HistorySwapProvider>
-      <div className='max-h-full overflow-y-hidden group fixed inset-x-0 bottom-0 z-40 w-full   bg-secondary-900 h-full undefined shadow-lg'>
+      <div className='bg-secondary-900 sm:shadow-card pb-4 sm:relative rounded-lg w-full text-primary-text overflow-hidden  h-full sm:h-[650px]'>
         <div className="py-3 overflow-y-auto flex flex-col h-full z-40  pb-6">
           <HeaderWithMenu goBack={goBack} />
-          <div className="select-text max-h-full overflow-y-auto overflow-x-hidden styled-scroll px-6 h-full" id='virtualListContainer'>
+          <div className="px-6 h-full overflow-y-auto styled-scroll max-h-[80vh]" id='virtualListContainer'>
             <Content
               loadExplorerSwaps={true}
             />
