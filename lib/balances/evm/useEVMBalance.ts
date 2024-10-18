@@ -122,7 +122,6 @@ export default function useEVMBalance(): BalanceProvider {
 
             const gasProvider = new getGas(
                 {
-
                     publicClient,
                     chainId,
                     contract_address,

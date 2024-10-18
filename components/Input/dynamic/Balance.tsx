@@ -8,8 +8,8 @@ import { isValidAddress } from "../../../lib/address/validator";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
-    const { to, fromCurrency, toCurrency, from, destination_address, amount } = values
-    const { balances, isBalanceLoading, gases } = useBalancesState()
+    const { to, fromCurrency, toCurrency, from, destination_address } = values
+    const { balances, isBalanceLoading } = useBalancesState()
     const { getAutofillProvider: getProvider } = useWallet()
 
     const sourceWalletProvider = useMemo(() => {
@@ -27,9 +27,11 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     const destinationBalance = balances[destination_address || (destinationNetworkWallet?.address || '')]?.find(b => b?.network === to?.name && b?.token === toCurrency?.symbol)
 
-    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
+    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance.amount, fromCurrency?.precision)
     const destinationBalanceAmount = destinationBalance?.amount && truncateDecimals(destinationBalance?.amount, toCurrency?.precision)
     const balanceAmount = direction === 'from' ? walletBalanceAmount : destinationBalanceAmount
+
+    const token = direction === 'from' ? fromCurrency : toCurrency
 
     const previouslySelectedSource = useRef(from);
 
@@ -82,7 +84,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
                         <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
                             <div>
                                 <span>Balance:&nbsp;</span>
-                                <span>{balanceAmount}</span>
+                                <span>{balanceAmount.toFixed(token?.precision)}</span>
                             </div>
                         </div>
                     </div>
