@@ -8,6 +8,7 @@ import { MenuStep } from "../../../Models/Wizard"
 import { useRouter } from "next/router"
 import { clearMenuPath } from ".."
 import { useQueryState } from "../../../context/query"
+import { resolvePersistantQueryParams } from "../../../helpers/querryHelper"
 
 const HistoryWizard: FC<{ setModalOpenState: (value: boolean) => void }> = ({ setModalOpenState }) => {
     const router = useRouter();
@@ -23,14 +24,18 @@ const HistoryWizard: FC<{ setModalOpenState: (value: boolean) => void }> = ({ se
     const onNewTransferClick = () => {
         setModalOpenState(false)
         goToStep(MenuStep.Menu)
+        router.push({
+            pathname: "/",
+            query: resolvePersistantQueryParams(router.query)
+        })
     }
     
     return (
         <HistorySwapProvider>
-            <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full">
+            <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full" fitHeight>
                 <HistoryList onSwapSettled={() => goToStep(MenuStep.TransactionDetails)} onNewTransferClick={onNewTransferClick} componentType="steps" loadExplorerSwaps={!appName} />
             </WizardItem>
-            <WizardItem StepName={MenuStep.TransactionDetails} GoBack={goBackToHistoryListStep} >
+            <WizardItem StepName={MenuStep.TransactionDetails} GoBack={goBackToHistoryListStep} fitHeight>
                 <DetailsWrapper />
             </WizardItem>
         </HistorySwapProvider>
