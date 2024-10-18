@@ -9,6 +9,8 @@ type SnapPointsState = {
     snapPoints: SnapElement[];
     snapElemenetsHeight: SnapElement[];
     setSnapElemenetsHeight: Dispatch<SetStateAction<SnapElement[]>>;
+    headerHeight: number;
+    setHeaderHeight: Dispatch<SetStateAction<number>>;
 }
 
 export const SnapPointsContext = createContext<SnapPointsState | undefined>(undefined);
@@ -16,17 +18,21 @@ export const SnapPointsContext = createContext<SnapPointsState | undefined>(unde
 export const SnapPointsProvider: FC<{ children: ReactNode, snapPointsCount?: number, isMobile: boolean }> = ({ children, snapPointsCount = 1, isMobile }) => {
 
     const [snapElemenetsHeight, setSnapElemenetsHeight] = useState<SnapElement[]>([]);
+    const [headerHeight, setHeaderHeight] = useState<number>(0);
 
     const snapPoints = resolveSnapPoints({
         isMobile,
         snapPointsCount,
-        childrenHeights: snapElemenetsHeight.sort((a, b) => a.id - b.id)
+        childrenHeights: snapElemenetsHeight.sort((a, b) => a.id - b.id),
+        headerHeight
     });
 
     const contextValue: SnapPointsState = {
         snapPoints,
         snapElemenetsHeight,
-        setSnapElemenetsHeight
+        setSnapElemenetsHeight,
+        headerHeight,
+        setHeaderHeight
     };
 
     return (
@@ -36,7 +42,7 @@ export const SnapPointsProvider: FC<{ children: ReactNode, snapPointsCount?: num
     );
 };
 
-const resolveSnapPoints = ({ isMobile, snapPointsCount, childrenHeights }: { snapPointsCount: number, isMobile: boolean, childrenHeights: SnapElement[] }) => {
+const resolveSnapPoints = ({ isMobile, snapPointsCount, childrenHeights, headerHeight }: { snapPointsCount: number, isMobile: boolean, childrenHeights: SnapElement[], headerHeight: number }) => {
 
     let points: SnapElement[] = [];
 
@@ -49,7 +55,7 @@ const resolveSnapPoints = ({ isMobile, snapPointsCount, childrenHeights }: { sna
 
         const result = sumBeforeIndex(childrenHeights.map(h => h.height), i);
 
-        const pointHeight = childrenHeights?.[i]?.height + result + 65;
+        const pointHeight = childrenHeights?.[i]?.height + result + headerHeight;
         const viewportHeight = isMobile ? window.innerHeight : document.getElementById('widget')?.offsetHeight;
 
         if (!pointHeight || !viewportHeight) return [{ id: i + 1, height: 1 }];

@@ -10,14 +10,12 @@ import WizardItem from "../Wizard/WizardItem";
 import { NextRouter, useRouter } from "next/router";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import HistoryList from "../SwapHistory/HistoryComponent/History";
-import { useQueryState } from "../../context/query";
 
 const Comp = () => {
     const router = useRouter();
 
     const { goBack, currentStepName } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
-    const { appName } = useQueryState()
 
     const [openTopModal, setOpenTopModal] = useState(false);
 
