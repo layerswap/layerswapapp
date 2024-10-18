@@ -54,7 +54,6 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
     })
     const { setSelectedSwap, selectedSwap } = useHistoryContext()
     const handleopenSwapDetails = (swap: Swap) => {
-        onSwapSettled && onSwapSettled()
         setSelectedSwap(swap)
         setOpenSwapDetailsModal(true)
     }
@@ -72,16 +71,11 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
         useSWRInfinite<ApiResponse<Swap[]>>(
             getCompletedSSwapsKey,
             apiClient.fetcher,
-            { revalidateAll: false, revalidateFirstPage: false, dedupingInterval: 100000 }
+            { revalidateAll: false, revalidateFirstPage: false, dedupingInterval: 3000 }
         )
 
     const handleSWapDetailsShow = (show: boolean) => {
-        if (componentType === 'page') {
-            setOpenSwapDetailsModal(show)
-            if (!show) {
-                mutate()
-            }
-        }
+        setOpenSwapDetailsModal(show)
     }
 
     const userSwaps = (!(userSwapPages?.[0] instanceof EmptyApiResponse) && userSwapPages?.map(p => {
@@ -116,7 +110,6 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
 
     const pendingSwapsisEmpty = !pendingSwapsLoading && pendingSwaps.length === 0
     const pendingHaveMorepages = (pendingSwapPages && Number(pendingSwapPages[pendingSwapPages.length - 1]?.data?.length) == PAGE_SIZE);
-
 
     const flattenedSwaps = grouppedSwaps?.flatMap(g => {
         return [g.key, ...g.values]
@@ -234,7 +227,6 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
                 </div>
             </div>
             {
-                componentType === 'page' &&
                 <Modal
                     height="full"
                     show={openSwapDetailsModal}
