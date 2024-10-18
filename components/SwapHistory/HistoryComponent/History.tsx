@@ -252,7 +252,7 @@ type BlankHistoryProps = {
 
 const BlankHistory = ({ componentType, onNewTransferClick, onLogin }: BlankHistoryProps) => {
 
-    return <div className="w-full h-full min-h-[inherit] flex flex-col justify-between items-center ">
+    return <div className="w-full h-[70vh] sm:h-full min-h-[inherit] flex flex-col justify-between items-center ">
         <div />
         <div className="w-full h-full flex flex-col justify-center items-center ">
             <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
