@@ -21,7 +21,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
    const router = useRouter()
 
    return (
-      <div className="w-full grid grid-cols-5 px-6 mt-3" >
+      <div className="w-full grid grid-cols-5 px-6 mt-3 pb-2" >
          {
             goBack &&
             <IconButton onClick={goBack}

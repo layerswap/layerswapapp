@@ -60,7 +60,7 @@ const resolveSnapPoints = ({ isMobile, snapPointsCount, childrenHeights, headerH
 
         if (!pointHeight || !viewportHeight) return [{ id: i + 1, height: 1 }];
 
-        if ((pointHeight && viewportHeight) && pointHeight > viewportHeight) {
+        if ((pointHeight && viewportHeight) && pointHeight > (viewportHeight * .98)) {
             points.push({ id: i + 1, height: 1 });
             break;
         }

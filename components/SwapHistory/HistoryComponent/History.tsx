@@ -1,7 +1,7 @@
 import LayerSwapApiClient, { SwapResponse } from "../../../lib/layerSwapApiClient"
 import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
 import { ChevronDown, Plus, RefreshCw } from 'lucide-react'
-import { FC, useEffect, useMemo, useState } from "react"
+import { FC, useCallback, useMemo, useState } from "react"
 import HistorySummary from "../HistorySummary";
 import useSWRInfinite from 'swr/infinite'
 import useWallet from "../../../hooks/useWallet"
@@ -14,12 +14,12 @@ import { FormWizardProvider } from "../../../context/formWizardProvider"
 import { TimerProvider } from "../../../context/timerContext"
 import GuestCard from "../../guestCard"
 import { AuthStep } from "../../../Models/Wizard"
-import VaulDrawer from "../../modal/vaul"
 import React from "react"
 import { useVirtualizer } from '@tanstack/react-virtual'
 import SwapDetails from "../SwapDetailsComponent"
 import { addressFormat } from "../../../lib/address/formatter";
 import { useSettingsState } from "../../../context/settings";
+import VaulDrawer from "../../modal/vaul";
 
 const PAGE_SIZE = 20
 type ListProps = {
@@ -39,17 +39,17 @@ const getSwapsKey = () => (index: number, statuses: Status[], addresses?: string
 type Swap = SwapResponse & { type: 'user' | 'explorer' }
 
 const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
+    const { networks } = useSettingsState()
     const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
     const [showAll, setShowAll] = useState(false)
     const { wallets } = useWallet()
     const { userId } = useAuthState()
-    const { networks } = useSettingsState()
+    const [selectedSwap, setSelectedSwap] = useState<Swap | null>(null)
 
     const addresses = wallets.map(w => {
         const network = networks.find(n => n.chain_id == w.chainId)
         return addressFormat(w.address, network || null)
     })
-    const [selectedSwap, setSelectedSwap] = useState<Swap | undefined>()
 
     const handleopenSwapDetails = (swap: Swap) => {
         setSelectedSwap(swap)
@@ -62,21 +62,18 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
         useSWRInfinite<ApiResponse<Swap[]>>(
             (index) => getKey(index, ["PendingDeposit"], addresses),
             apiClient.fetcher,
-            { revalidateAll: true, refreshInterval: 10000 }
+            { revalidateAll: false }
         )
-
+    const getCompletedSSwapsKey = useCallback((index) => getKey(index, ["Completed"], addresses), [addresses])
     const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, isValidating, mutate } =
         useSWRInfinite<ApiResponse<Swap[]>>(
-            (index) => getKey(index, ["Completed", "PendingWithdrawal"], addresses),
+            getCompletedSSwapsKey,
             apiClient.fetcher,
-            { revalidateAll: true, dedupingInterval: 10000 }
+            { revalidateAll: false, revalidateFirstPage: false, dedupingInterval: 3000 }
         )
 
     const handleSWapDetailsShow = (show: boolean) => {
         setOpenSwapDetailsModal(show)
-        if (!show) {
-            mutate()
-        }
     }
 
     const userSwaps = (!(userSwapPages?.[0] instanceof EmptyApiResponse) && userSwapPages?.map(p => {
@@ -98,9 +95,6 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
         await setPendingSwapsSize(pendingSwapsSize + 1)
     }
 
-    useEffect(() => {
-        mutate()
-    }, [userId])
     const parentRef = React.useRef(null)
 
     const grouppedSwaps = Object
@@ -114,7 +108,6 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
 
     const pendingSwapsisEmpty = !pendingSwapsLoading && pendingSwaps.length === 0
     const pendingHaveMorepages = (pendingSwapPages && Number(pendingSwapPages[pendingSwapPages.length - 1]?.data?.length) == PAGE_SIZE);
-
 
     const flattenedSwaps = grouppedSwaps?.flatMap(g => {
         return [g.key, ...g.values]
@@ -130,110 +123,104 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
 
     const items = rowVirtualizer.getVirtualItems()
     if ((userSwapsLoading && !(Number(userSwaps?.length) > 0))) return <Snippet />
-    if (!wallets.length && !userId) return <ConnectOrSignIn />
-    if (!list.length) return <BlankHistory onNewTransferClick={onNewTransferClick} />
+    if (!wallets.length && !userId) return <ConnectOrSignIn onLogin={() => { mutate(); mutatePendingSwaps(); }} />
+    if (!list.length) return <BlankHistory onNewTransferClick={onNewTransferClick} onLogin={() => { mutate(); mutatePendingSwaps(); }} />
 
     return (
-        <>
-            <div className="relative">
+        <div className="relative">
+            <div
+                ref={parentRef}
+            >
                 <div
-                    ref={parentRef}
+                    style={{
+                        height: rowVirtualizer.getTotalSize(),
+                        width: '100%',
+                        position: 'relative',
+                    }}
                 >
                     <div
                         style={{
-                            height: rowVirtualizer.getTotalSize(),
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
                             width: '100%',
-                            position: 'relative',
+                            transform: `translateY(${items[0]?.start ? (items[0]?.start - 0) : 0}px)`,
                         }}
                     >
-                        <div
-                            className="space-y-2"
-                            style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                transform: `translateY(${items[0]?.start ? (items[0]?.start - 0) : 0}px)`,
-                            }}
-                        >
-                            {items.map((virtualRow) => {
-
-                                const data = list?.[virtualRow.index]
-                                if (typeof data === 'string') {
-                                    return (
-                                        <div
-                                            key={virtualRow.key}
-                                            data-index={virtualRow.index}
-                                            ref={rowVirtualizer.measureElement}
-                                        >
-                                            <div className="w-full mt-5">
-                                                {
-                                                    data !== 'Pending' &&
-                                                    <p className="text-sm text-secondary-text font-normal pl-2">
-                                                        {resolveDate(data)}
-                                                    </p>
-                                                }
-                                            </div>
-                                        </div>
-                                    )
-                                }
-
-
-                                const swap = data
-                                if (!swap) return <></>
-
-                                const collapsablePendingSwap = pendingSwaps.length > 1 && virtualRow.index === 0
-                                const collapsedPendingSwap = !showAll && collapsablePendingSwap
-
-                                return (<>
-                                    {collapsablePendingSwap &&
-                                        <div className="w-full flex justify-end">
-                                            <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text hover:text-primary-text pr-2'>
-                                                <p className="select-none">See all incomplete swaps</p>
-                                                <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
-                                            </button>
-                                        </div>
-                                    }
+                        {items.map((virtualRow) => {
+                            const data = list?.[virtualRow.index]
+                            if (typeof data === 'string') {
+                                return (
                                     <div
-                                        onClick={() => handleopenSwapDetails(swap)}
                                         key={virtualRow.key}
                                         data-index={virtualRow.index}
                                         ref={rowVirtualizer.measureElement}
                                     >
-                                        <div className="">
-                                            <HistorySummary swapResponse={swap} wallets={wallets} />
-                                            {collapsedPendingSwap &&
-                                                <div className="z-0 h-6 -top-4 opacity-65 shadow-lg relative bg-secondary-700 p-3 w-[95%] mx-auto font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer" />}
+                                        <div className="w-full pb-1">
+                                            {
+                                                data !== 'Pending' &&
+                                                <p className="text-sm text-secondary-text font-normal pl-2">
+                                                    {resolveDate(data)}
+                                                </p>
+                                            }
                                         </div>
                                     </div>
-                                    {
-                                        pendingHaveMorepages && virtualRow.index === pendingSwaps.length - 1 &&
-                                        <button
-                                            disabled={pendingSwapsLoading || pendingSwapsValidating}
-                                            type="button"
-                                            onClick={handleLoadMorePendingSwaps}
-                                            className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full"
-                                        >
-                                            <RefreshCw className={`w-4 h-4 ${(pendingSwapsLoading || pendingSwapsValidating) && 'animate-spin'}`} />
-                                            <span>Load more pending swaps</span>
-                                        </button>
-                                    }
-                                </>
                                 )
-                            })}
-                            {
-                                !isReachingEnd &&
-                                <button
-                                    disabled={isReachingEnd || userSwapsLoading || isValidating}
-                                    type="button"
-                                    onClick={handleLoadMore}
-                                    className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full"
-                                >
-                                    <RefreshCw className={`w-4 h-4 ${(userSwapsLoading || isValidating) && 'animate-spin'}`} />
-                                    <span>Load more</span>
-                                </button>
                             }
-                        </div>
+
+                            const swap = data
+                            if (!swap) return <></>
+
+                            const collapsablePendingSwap = pendingSwaps.length > 1 && virtualRow.index === 0
+                            const collapsedPendingSwap = !showAll && collapsablePendingSwap
+
+                            return (<div
+                                key={virtualRow.key}
+                                data-index={virtualRow.index}
+                                ref={rowVirtualizer.measureElement}
+                            >
+                                {collapsablePendingSwap &&
+                                    <div className="w-full flex justify-end pb-2">
+                                        <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text hover:text-primary-text pr-2 '>
+                                            <p className="select-none">See all incomplete swaps</p>
+                                            <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
+                                        </button>
+                                    </div>
+                                }
+                                <div onClick={() => handleopenSwapDetails(swap)}>
+                                    <div className="pb-3">
+                                        <HistorySummary swapResponse={swap} wallets={wallets} />
+                                        {collapsedPendingSwap &&
+                                            <div className="z-0 h-6 -top-4 opacity-65 shadow-lg relative bg-secondary-700 p-3 w-[95%] mx-auto font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer" />}
+                                    </div>
+                                </div>
+                                {
+                                    pendingHaveMorepages && virtualRow.index === pendingSwaps.length - 1 &&
+                                    <button
+                                        disabled={pendingSwapsLoading || pendingSwapsValidating}
+                                        type="button"
+                                        onClick={handleLoadMorePendingSwaps}
+                                        className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full"
+                                    >
+                                        <RefreshCw className={`w-4 h-4 ${(pendingSwapsLoading || pendingSwapsValidating) && 'animate-spin'}`} />
+                                        <span>Load more pending swaps</span>
+                                    </button>
+                                }
+                                {
+                                    virtualRow.index === list.length - 1 && !isReachingEnd &&
+                                    <button
+                                        disabled={isReachingEnd || userSwapsLoading || isValidating}
+                                        type="button"
+                                        onClick={handleLoadMore}
+                                        className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full"
+                                    >
+                                        <RefreshCw className={`w-4 h-4 ${(userSwapsLoading || isValidating) && 'animate-spin'}`} />
+                                        <span>Load more</span>
+                                    </button>
+                                }
+                            </div>
+                            )
+                        })}
                     </div>
                 </div>
             </div>
@@ -249,13 +236,18 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                     <SwapDetails swapResponse={selectedSwap} />
                 }
             </VaulDrawer>
-        </>
+        </div>
     )
 }
 
-const BlankHistory = ({ onNewTransferClick }: { onNewTransferClick?: () => void }) => {
+type BlankHistoryProps = {
+    onNewTransferClick?: () => void,
+    onLogin: () => void
+}
 
-    return <div className="w-full h-full min-h-[inherit] flex flex-col justify-between items-center ">
+const BlankHistory = ({ onNewTransferClick, onLogin }: BlankHistoryProps) => {
+
+    return <div className="w-full h-[70vh] sm:h-full min-h-[inherit] flex flex-col justify-between items-center ">
         <div />
         <div className="w-full h-full flex flex-col justify-center items-center ">
             <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
@@ -272,15 +264,16 @@ const BlankHistory = ({ onNewTransferClick }: { onNewTransferClick?: () => void 
                 <Plus className="w-4 h-4" />
                 <p>New Transfer</p>
             </Link>
+
         </div>
         <div className="w-full">
-            <SignIn />
+            <SignIn onLogin={onLogin} />
         </div>
     </div>
 
 }
 
-const ConnectOrSignIn = () => {
+const ConnectOrSignIn = ({ onLogin }: SignInProps) => {
 
     return <div className="w-full h-full  flex flex-col justify-between items-center ">
         <div className="flex flex-col items-center justify-center text-center w-full h-full">
@@ -302,13 +295,15 @@ const ConnectOrSignIn = () => {
                 </div>
             </ConnectButton>
             <div className="w-full overflow-hidden">
-                <SignIn />
+                <SignIn onLogin={onLogin} />
             </div>
         </div>
     </div>
 }
-
-const SignIn = () => {
+type SignInProps = {
+    onLogin: () => void
+}
+const SignIn = ({ onLogin }: SignInProps) => {
 
     const { userType } = useAuthState()
     const [showGuestCard, setShowGuestCard] = useState(false)
@@ -320,7 +315,7 @@ const SignIn = () => {
             {
                 showGuestCard ?
                     <div className="animate-fade-in">
-                        <GuestCard />
+                        <GuestCard onLogin={onLogin} />
                     </div>
                     :
                     <button onClick={() => setShowGuestCard(true)} className="text-secondary-text w-fit mx-auto flex justify-center mt-2 underline hover:no-underline">
