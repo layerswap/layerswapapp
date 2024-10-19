@@ -11,10 +11,10 @@ const BakoSafe = (props: SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.o
     </g>
     <defs>
         <linearGradient id="paint0_linear_97_19" x1="0" y1="0" x2="50" y2="50" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#FFC010" />
-            <stop offset="0.48" stop-color="#EBA312" />
-            <stop offset="0.71" stop-color="#D38015" />
-            <stop offset="0.99" stop-color="#B24F18" />
+            <stop stopColor="#FFC010" />
+            <stop offset="0.48" stopColor="#EBA312" />
+            <stop offset="0.71" stopColor="#D38015" />
+            <stop offset="0.99" stopColor="#B24F18" />
         </linearGradient>
     </defs>
 </svg>
