@@ -5,10 +5,6 @@ import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
 import { useSettingsState } from "../../../context/settings";
-import { StarknetkitConnector } from 'starknetkit'
-import { InjectedConnector } from "../../../node_modules/starknetkit/dist/injectedConnector";
-import { ArgentMobileConnector } from "../../../node_modules/starknetkit/dist/argentMobile"
-import { WebWalletConnector } from "../../../node_modules/starknetkit/dist/webwalletConnector";
 
 export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
@@ -41,6 +37,11 @@ export default function useStarknet(): WalletProvider {
     const connectWallet = useCallback(async () => {
         toast.dismiss('connect-wallet')
         const constants = (await import('starknet')).constants
+
+        const InjectedConnector = (await import('../../../node_modules/starknetkit/dist/injectedConnector')).InjectedConnector
+        const ArgentMobileConnector = (await import('../../../node_modules/starknetkit/dist/argentMobile')).ArgentMobileConnector
+        const WebWalletConnector = (await import('../../../node_modules/starknetkit/dist/webwalletConnector')).WebWalletConnector
+
         const connect = (await import('starknetkit')).connect
 
         const connectors = [
@@ -60,7 +61,7 @@ export default function useStarknet(): WalletProvider {
                     url: 'https://www.layerswap.io/app',
                     description: 'Move crypto across exchanges, blockchains, and wallets.',
                 }
-            }) as StarknetkitConnector,
+            }) as any,
             new WebWalletConnector(),
         ]
 
@@ -113,7 +114,7 @@ export default function useStarknet(): WalletProvider {
         }
     }
 
-    const reconnectWallet = async ({ chain }: { chain: string }) => {
+    const reconnectWallet = async () => {
         await disconnectWallet()
         await connectWallet()
     }
@@ -128,10 +129,4 @@ export default function useStarknet(): WalletProvider {
         asSourceSupportedNetworks: commonSupportedNetworks,
         name
     }
-}
-
-function extractChainId(wallet) {
-    return wallet.provider?.chainId // Braavos
-        || wallet.provider?.provider?.chainId // ArgentX 
-        || wallet.provider?.channel?.chainId // Argent mobile
 }
