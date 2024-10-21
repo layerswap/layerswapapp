@@ -15,12 +15,17 @@ import useWallet from "../../hooks/useWallet";
 import AddressIcon from "../AddressIcon";
 import { addressFormat } from "../../lib/address/formatter";
 import { SwapStatus } from "../../Models/SwapStatus";
+import { Wallet } from "../../stores/walletStore";
 
 type SwapInfoProps = {
+    className?: string,
     swapResponse: SwapResponse,
+    wallets: Wallet[]
 }
-const Summary: FC<SwapInfoProps> = ({
+const HistorySummary: FC<SwapInfoProps> = ({
     swapResponse,
+    wallets,
+    className
 }) => {
 
     const {
@@ -31,10 +36,8 @@ const Summary: FC<SwapInfoProps> = ({
         hideAddress
     } = useQueryState()
 
-    const { wallets } = useWallet()
-
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/apps?name=${appName}`, layerswapApiClient.fetcher)
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = partnerData?.data
     const { swap, quote } = swapResponse
 
@@ -66,8 +69,8 @@ const Summary: FC<SwapInfoProps> = ({
 
     return (
         source_token && <>
-            <div className="bg-secondary-700 p-3 w-full relative z-10 font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer">
-                <div className="grid grid-cols-8 gap-3 w-full items-center">
+            <div className={`${className || ''} bg-secondary-700 z-10 p-3 w-full relative font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer`}>
+                <div className="grid grid-cols-6 sm:grid-cols-8 gap-3 w-full items-center">
                     {source?.display_name !== destination?.display_name ?
                         <div className="col-span-1 h-11 w-11 relative min-w-11">
                             {
@@ -102,10 +105,10 @@ const Summary: FC<SwapInfoProps> = ({
                             }
                         </div>
                     }
-                    <div className="col-span-7 flex flex-col gap-0.5 w-full">
+                    <div className="col-span-5 sm:col-span-7 flex flex-col gap-0.5 w-full">
 
                         <div className="flex items-baseline justify-between w-full overflow-hidden">
-                            <p className="text-secondary-text text-base truncate max-w-[55%]">
+                            <p className="text-secondary-text text-sm sm:text-base truncate max-w-[55%]">
                                 {
                                     source?.display_name === destination?.display_name ?
                                         <>
@@ -118,7 +121,7 @@ const Summary: FC<SwapInfoProps> = ({
                                 }
                             </p>
 
-                            <p className="font-light text-secondary-text text-sm">{truncateDecimalsToFloor(sourceTransaction?.amount || swap.requested_amount, findIndexOfFirstNonZeroAfterComma((0.01 / Number(source_token?.price_in_usd.toFixed()))) || 0)} {source_token.symbol}</p>
+                            <p className="font-light text-secondary-text text-xs sm:text-sm ">{smartDecimalTruncate(sourceTransaction?.amount || swap.requested_amount, source_token?.price_in_usd)} {source_token.symbol}</p>
                         </div>
                         <div className="flex w-full justify-between items-start text-end">
                             <div className="flex items-center gap-0.5">
@@ -142,6 +145,7 @@ const Summary: FC<SwapInfoProps> = ({
                                     </div>
                                 }
                                 {
+                                    addressFormat(destAddress, destination_network) !== (sourceAddressFromInput ? addressFormat(sourceAddressFromInput, source_network) : null) &&
                                     <>
                                         <ChevronRightIcon className="h-3 w-3" />
                                         <div className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-secondary-950 rounded-md">
@@ -160,7 +164,7 @@ const Summary: FC<SwapInfoProps> = ({
                                     </>
                                 }
                             </div>
-                            <p className="font-medium text-primary-text text-lg leading-5">{truncateDecimalsToFloor(calculatedReceiveAmount, findIndexOfFirstNonZeroAfterComma((0.01 / Number(destination_token?.price_in_usd.toFixed()))) || 0)} {destination_token.symbol}</p>
+                            <p className="font-medium text-primary-text text-sm sm:text-lg leading-5 sm:leading-5">{smartDecimalTruncate(calculatedReceiveAmount, destination_token?.price_in_usd)} {destination_token.symbol}</p>
                         </div>
                     </div>
                 </div>
@@ -173,4 +177,19 @@ const Summary: FC<SwapInfoProps> = ({
     )
 }
 
-export default Summary
+const smartDecimalTruncate = (value: number, price_in_usd: number) => {
+    let decimals = findIndexOfFirstNonZeroAfterComma((0.01 / Number(price_in_usd.toFixed()))) || 0
+    let truncatedAmount = truncateDecimalsToFloor(value, decimals)
+
+    if (truncatedAmount === 0) {
+        while (truncatedAmount === 0) {
+            decimals += 1
+            truncatedAmount = truncateDecimalsToFloor(value, decimals)
+        }
+    }
+
+    return truncateDecimalsToFloor(value, decimals)
+}
+
+
+export default HistorySummary

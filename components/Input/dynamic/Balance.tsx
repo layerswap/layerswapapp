@@ -23,6 +23,8 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     const destinationBalanceAmount = destinationBalance?.amount && truncateDecimals(destinationBalance?.amount, toCurrency?.precision)
     const balanceAmount = direction === 'from' ? walletBalanceAmount : destinationBalanceAmount
 
+    const token = direction === 'from' ? fromCurrency : toCurrency
+
     const previouslySelectedSource = useRef(from);
 
     useEffect(() => {
@@ -63,7 +65,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
                     :
                     (balanceAmount !== undefined && !isNaN(balanceAmount)) &&
                     <>
-                        {balanceAmount}
+                        {balanceAmount.toFixed(token?.precision)}
                     </>
             }
         </>

@@ -34,6 +34,7 @@ import { Exchange, ExchangeToken } from "../../../Models/Exchange";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";
 import { FormSourceWalletButton } from "../../Input/SourceWalletPicker";
+import { toHex } from "viem";
 
 type Props = {
     partner?: Partner,

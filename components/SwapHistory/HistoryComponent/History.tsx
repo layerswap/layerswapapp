@@ -1,14 +1,11 @@
 import LayerSwapApiClient, { SwapResponse } from "../../../lib/layerSwapApiClient"
 import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
 import { ChevronDown, Plus, RefreshCw } from 'lucide-react'
-import Modal from "../../modal/modal"
-import { FC, useEffect, useMemo, useState } from "react"
-import Summary from "../Summary";
+import { FC, useCallback, useMemo, useState } from "react"
+import HistorySummary from "../HistorySummary";
 import useSWRInfinite from 'swr/infinite'
 import useWallet from "../../../hooks/useWallet"
 import Link from "next/link"
-import axios from "axios"
-import SwapDetails from "../SwapDetailsComponent"
 import Snippet, { HistoryItemSceleton } from "./Snippet"
 import { groupBy } from "../../utils/groupBy"
 import { useAuthState, UserType } from "../../../context/authContext"
@@ -17,11 +14,13 @@ import { FormWizardProvider } from "../../../context/formWizardProvider"
 import { TimerProvider } from "../../../context/timerContext"
 import GuestCard from "../../guestCard"
 import { AuthStep } from "../../../Models/Wizard"
-import { SwapStatus } from "../../../Models/SwapStatus"
-import ResizablePanel from "../../ResizablePanel"
 import { useHistoryContext } from "../../../context/historyContext"
-import { clearMenuPath, setMenuPath } from "../../LayerswapMenu"
-import { useRouter } from "next/router"
+import React from "react"
+import { useVirtualizer } from '@tanstack/react-virtual'
+import Modal from "../../modal/modal";
+import SwapDetails from "../SwapDetailsComponent"
+import { addressFormat } from "../../../lib/address/formatter";
+import { useSettingsState } from "../../../context/settings";
 
 const PAGE_SIZE = 20
 type ListProps = {
@@ -33,74 +32,50 @@ type ListProps = {
     onNewTransferClick?: () => void
 }
 
-const getSwapsKey = () => (index: number, userId: string | undefined) => {
-    if (!userId) return null
-    return `/internal/swaps?page=${index + 1}`
-}
+type Status = "Completed" | "PendingWithdrawal" | "PendingDeposit"
 
-const getExplorerKey = (addresses: string[]) => (index) => {
-    if (!addresses?.[index])
-        return null;
-    return `/explorer/${addresses[index]}`
+const getSwapsKey = () => (index: number, statuses: Status[], addresses?: string[]) => {
+    const addressesParams = addresses?.map(a => `&addresses=${a}`).join('') || ''
+    const statusesParams = statuses.map(s => `&statuses=${s}`).join('') || ''
+    return `/internal/swaps?page=${index + 1}${statusesParams}${addressesParams}`
 }
 
 type Swap = SwapResponse & { type: 'user' | 'explorer' }
 
-const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page', onSwapSettled, onNewTransferClick }) => {
-    const router = useRouter();
-
+const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onNewTransferClick }) => {
+    const { networks } = useSettingsState()
     const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
     const [showAll, setShowAll] = useState(false)
     const { wallets } = useWallet()
     const { userId } = useAuthState()
-    const addresses = wallets.map(w => w.address)
+    const addresses = wallets.map(w => {
+        const network = networks.find(n => n.chain_id == w.chainId)
+        return addressFormat(w.address, network || null)
+    })
     const { setSelectedSwap, selectedSwap } = useHistoryContext()
-
     const handleopenSwapDetails = (swap: Swap) => {
-        onSwapSettled && onSwapSettled()
         setSelectedSwap(swap)
         setOpenSwapDetailsModal(true)
-        setMenuPath(`/swap/${swap.swap.id}`, router)
     }
-
     const getKey = useMemo(() => getSwapsKey(), [])
-    const getFromExplorerKey = getExplorerKey(addresses)
-
     const apiClient = new LayerSwapApiClient()
 
+    const { data: pendingSwapPages, size: pendingSwapsSize, setSize: setPendingSwapsSize, isLoading: pendingSwapsLoading, isValidating: pendingSwapsValidating, mutate: mutatePendingSwaps } =
+        useSWRInfinite<ApiResponse<Swap[]>>(
+            (index) => getKey(index, ["PendingDeposit"], addresses),
+            apiClient.fetcher,
+            { revalidateAll: false }
+        )
+    const getCompletedSSwapsKey = useCallback((index) => getKey(index, ["Completed"], addresses), [addresses])
     const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, isValidating, mutate } =
         useSWRInfinite<ApiResponse<Swap[]>>(
-            (index) => getKey(index, userId),
+            getCompletedSSwapsKey,
             apiClient.fetcher,
-            { revalidateAll: true, dedupingInterval: 10000 }
+            { revalidateAll: false, revalidateFirstPage: false, dedupingInterval: 3000 }
         )
 
-    const explorerDataFetcher = async (url: string) => {
-        const uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2" + url
-        const data = await axios.get(uri).then(res => res.data).catch(e => {
-            if (e) return { data: [] }
-        })
-        return data
-    }
-
-    const { data: explorerPages, error: explorerError, isLoading: explorerSwapsLoading, setSize: setExplorerSize, size: explorerSize } = useSWRInfinite<ApiResponse<Swap[]>>(
-        loadExplorerSwaps ? getFromExplorerKey : () => null,
-        explorerDataFetcher,
-        { revalidateAll: true, dedupingInterval: 60000, parallel: true, initialSize: addresses?.length }
-    )
-
-    useEffect(() => {
-        if (explorerSize !== addresses.length) setExplorerSize(addresses.length)
-    }, [addresses.length])
-
     const handleSWapDetailsShow = (show: boolean) => {
-        if (componentType === 'page') {
-            setOpenSwapDetailsModal(show)
-            if (!show){
-                mutate()
-                clearMenuPath(router)
-            }
-        }
+        setOpenSwapDetailsModal(show)
     }
 
     const userSwaps = (!(userSwapPages?.[0] instanceof EmptyApiResponse) && userSwapPages?.map(p => {
@@ -110,15 +85,7 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
         return p?.data
     }).flat(1)) || []
 
-    const explorerSwaps = explorerPages?.map(p => {
-        p.data?.forEach(s => {
-            s.type = 'explorer'
-        })
-        return p?.data?.filter(s => s.swap.status === 'completed')
-    }).flat(1) || []
-
     const userSwapsisEmpty = !userSwapsLoading && userSwaps.length === 0
-    const explorerSwapsisEmpty = !explorerSwapsLoading && explorerSwaps.length === 0
 
     const isReachingEnd =
         userSwapsisEmpty || (userSwapPages && Number(userSwapPages[userSwapPages.length - 1]?.data?.length) < PAGE_SIZE);
@@ -126,134 +93,166 @@ const HistoryList: FC<ListProps> = ({ loadExplorerSwaps, componentType = 'page',
     const handleLoadMore = async () => {
         await setSize(size + 1)
     }
-    // TODO filter explorer swaps by status
-    !userSwapsLoading && explorerSwaps?.forEach(es => {
-        if (!es || userSwaps?.find(us => us?.swap.created_date === es.swap.created_date))
-            return
-        const userLoadedOldestSwap = userSwaps?.[userSwaps?.length - 1]
-        if (!userLoadedOldestSwap) {
-            userSwaps.push(es)
-            return
-        }
-        const userLoadedOldestSwapDate = new Date(userLoadedOldestSwap.swap.created_date)
-        const swapDate = new Date(es.swap.created_date)
-        if (userLoadedOldestSwapDate > swapDate && !isReachingEnd)
-            return
-        else {
-            const index = userSwaps.findLastIndex(us => us && new Date(us?.swap.created_date) > swapDate)
-            userSwaps.splice(index + 1 || 0, 0, es)
-        }
+    const handleLoadMorePendingSwaps = async () => {
+        await setPendingSwapsSize(pendingSwapsSize + 1)
+    }
+
+    const parentRef = React.useRef(null)
+
+    const grouppedSwaps = Object
+        .entries(
+            groupBy(
+                userSwaps as Swap[], ({ swap }) => new Date(swap.created_date).toLocaleDateString()
+            ))
+        .map(([key, values]) => ({ key, values }))
+
+    const pendingSwaps = pendingSwapPages?.map(p => p?.data).flat(1) || []
+
+    const pendingSwapsisEmpty = !pendingSwapsLoading && pendingSwaps.length === 0
+    const pendingHaveMorepages = (pendingSwapPages && Number(pendingSwapPages[pendingSwapPages.length - 1]?.data?.length) == PAGE_SIZE);
+
+    const flattenedSwaps = grouppedSwaps?.flatMap(g => {
+        return [g.key, ...g.values]
     })
 
-    const allEmpty = !!userSwapsisEmpty && !!explorerSwapsisEmpty
-    useEffect(() => {
-        mutate()
-    }, [userId])
+    const list = [...(showAll ? pendingSwaps : (pendingSwaps.slice(0, 1))), ...flattenedSwaps]
 
-    if ((userSwapsLoading && !(Number(userSwaps?.length) > 0) || explorerSwapsLoading)) return <Snippet />
-    if (!wallets.length && !userId) return <ConnectOrSignIn />
-    if (allEmpty) return <BlankHistory componentType={componentType} onNewTransferClick={onNewTransferClick} />
+    const rowVirtualizer = useVirtualizer({
+        count: (list?.length || 0),
+        getScrollElement: () => window.document.getElementById('virtualListContainer'),
+        estimateSize: () => 35,
+    })
 
-    const grouppedSwaps = !allEmpty
-        ? Object
-            .entries(
-                groupBy(
-                    userSwaps as Swap[], ({ swap }) =>
-                    swap.status === SwapStatus.Created
-                        || swap.status === SwapStatus.LsTransferPending
-                        || swap.status === SwapStatus.UserTransferPending
-                        || swap.status === SwapStatus.UserTransferDelayed
-                        ? 'Pending'
-                        : new Date(swap.created_date).toLocaleDateString()
-                ))
-            .map(([key, values]) => ({ key, values }))
-        : null
+    const items = rowVirtualizer.getVirtualItems()
+    if ((userSwapsLoading && !(Number(userSwaps?.length) > 0))) return <Snippet />
+    if (!wallets.length && !userId) return <ConnectOrSignIn onLogin={() => { mutate(); mutatePendingSwaps(); }} />
+    if (!list.length) return <BlankHistory componentType={componentType} onNewTransferClick={onNewTransferClick} onLogin={() => { mutate(); mutatePendingSwaps(); }} />
 
+    return (
+        <div className="relative">
+            <div
+                ref={parentRef}
+            >
+                <div
+                    style={{
+                        height: rowVirtualizer.getTotalSize(),
+                        width: '100%',
+                        position: 'relative',
+                    }}
+                >
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            transform: `translateY(${items[0]?.start ? (items[0]?.start - 0) : 0}px)`,
+                        }}
+                    >
+                        {items.map((virtualRow) => {
+                            const data = list?.[virtualRow.index]
+                            if (typeof data === 'string') {
+                                return (
+                                    <div
+                                        key={virtualRow.key}
+                                        data-index={virtualRow.index}
+                                        ref={rowVirtualizer.measureElement}
+                                    >
+                                        <div className="w-full pb-1">
+                                            {
+                                                data !== 'Pending' &&
+                                                <p className="text-sm text-secondary-text font-normal pl-2">
+                                                    {resolveDate(data)}
+                                                </p>
+                                            }
+                                        </div>
+                                    </div>
+                                )
+                            }
 
-    return <>
-        <div className="h-full space-y-3 pt-3 ">
+                            const swap = data
+                            if (!swap) return <></>
+
+                            const collapsablePendingSwap = pendingSwaps.length > 1 && virtualRow.index === 0
+                            const collapsedPendingSwap = !showAll && collapsablePendingSwap
+
+                            return (<div
+                                key={virtualRow.key}
+                                data-index={virtualRow.index}
+                                ref={rowVirtualizer.measureElement}
+                            >
+                                {collapsablePendingSwap &&
+                                    <div className="w-full flex justify-end pb-2">
+                                        <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text hover:text-primary-text pr-2 '>
+                                            <p className="select-none">See all incomplete swaps</p>
+                                            <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
+                                        </button>
+                                    </div>
+                                }
+                                <div onClick={() => handleopenSwapDetails(swap)}>
+                                    <div className="pb-3">
+                                        <HistorySummary swapResponse={swap} wallets={wallets} />
+                                        {collapsedPendingSwap &&
+                                            <div className="z-0 h-6 -top-4 opacity-65 shadow-lg relative bg-secondary-700 p-3 w-[95%] mx-auto font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer" />}
+                                    </div>
+                                </div>
+                                {
+                                    pendingHaveMorepages && virtualRow.index === pendingSwaps.length - 1 &&
+                                    <button
+                                        disabled={pendingSwapsLoading || pendingSwapsValidating}
+                                        type="button"
+                                        onClick={handleLoadMorePendingSwaps}
+                                        className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full"
+                                    >
+                                        <RefreshCw className={`w-4 h-4 ${(pendingSwapsLoading || pendingSwapsValidating) && 'animate-spin'}`} />
+                                        <span>Load more pending swaps</span>
+                                    </button>
+                                }
+                                {
+                                    virtualRow.index === list.length - 1 && !isReachingEnd &&
+                                    <button
+                                        disabled={isReachingEnd || userSwapsLoading || isValidating}
+                                        type="button"
+                                        onClick={handleLoadMore}
+                                        className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full"
+                                    >
+                                        <RefreshCw className={`w-4 h-4 ${(userSwapsLoading || isValidating) && 'animate-spin'}`} />
+                                        <span>Load more</span>
+                                    </button>
+                                }
+                            </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            </div>
             {
-                grouppedSwaps && <div
-                    className="text-sm flex flex-col gap-5 font-medium focus:outline-none h-full"
+                <Modal
+                    height="full"
+                    show={openSwapDetailsModal}
+                    setShow={handleSWapDetailsShow}
+                    header='Swap details'
+                    modalId="swapDetails"
                 >
                     {
-                        grouppedSwaps
-                            .sort((a, b) => a.key === 'Pending' ? -1 : b.key === 'Pending' ? 1 : 0)
-                            .map(({ key, values }) => {
-                                return <div key={key} className="flex flex-col gap-1.5">
-                                    <div className="w-full">
-                                        {
-                                            key !== 'Pending' &&
-                                            <p className="text-sm text-secondary-text font-normal pl-2">
-                                                {resolveDate(key)}
-                                            </p>
-                                        }
-                                        {
-                                            key == 'Pending' && values.length > 1 &&
-                                            <div className="w-full flex justify-end">
-                                                <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text pr-2'>
-                                                    <p>See all incomplete swaps</p>
-                                                    <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
-                                                </button>
-                                            </div>
-                                        }
-                                    </div>
-                                    <ResizablePanel className="space-y-3 pb-1">
-                                        {
-                                            values.filter((v, index) => ((key === 'Pending' && !showAll) ? index == 0 : true))?.map((swap) => {
-
-                                                if (!swap) return <></>
-
-                                                return <div
-                                                    onClick={() => handleopenSwapDetails(swap)}
-                                                    key={swap.swap.id}
-                                                >
-                                                    <Summary swapResponse={swap} />
-                                                </div>
-                                            })
-                                        }
-                                    </ResizablePanel>
-                                </div>
-                            })
+                        selectedSwap &&
+                        <SwapDetails swapResponse={selectedSwap} />
                     }
-
-                    {
-                        !isReachingEnd &&
-                        <button
-                            disabled={isReachingEnd || userSwapsLoading || explorerSwapsLoading || isValidating}
-                            type="button"
-                            onClick={handleLoadMore}
-                            className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80"
-                        >
-
-                            <RefreshCw className={`w-4 h-4 ${(userSwapsLoading || explorerSwapsLoading || isValidating) && 'animate-spin'}`} />
-                            <span>Load more</span>
-                        </button>
-                    }
-                </div>
+                </Modal>
             }
         </div>
-        {
-            componentType === 'page' &&
-            <Modal
-                height="full"
-                show={openSwapDetailsModal}
-                setShow={handleSWapDetailsShow}
-                header='Swap details'
-                modalId="swapDetails"
-            >
-                {
-                    selectedSwap &&
-                    <SwapDetails swapResponse={selectedSwap} />
-                }
-            </Modal>
-        }
-    </>
+    )
 }
 
-const BlankHistory = ({ componentType, onNewTransferClick }: { componentType?: 'steps' | 'page', onNewTransferClick?: () => void }) => {
+type BlankHistoryProps = {
+    componentType?: 'steps' | 'page',
+    onNewTransferClick?: () => void,
+    onLogin: () => void
+}
 
-    return <div className="w-full h-full min-h-[inherit] flex flex-col justify-between items-center ">
+const BlankHistory = ({ componentType, onNewTransferClick, onLogin }: BlankHistoryProps) => {
+
+    return <div className="w-full h-[70vh] sm:h-full min-h-[inherit] flex flex-col justify-between items-center ">
         <div />
         <div className="w-full h-full flex flex-col justify-center items-center ">
             <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
@@ -281,13 +280,13 @@ const BlankHistory = ({ componentType, onNewTransferClick }: { componentType?: '
 
         </div>
         <div className="w-full">
-            <SignIn />
+            <SignIn onLogin={onLogin} />
         </div>
     </div>
 
 }
 
-const ConnectOrSignIn = () => {
+const ConnectOrSignIn = ({ onLogin }: SignInProps) => {
 
     return <div className="w-full h-full  flex flex-col justify-between items-center ">
         <div className="flex flex-col items-center justify-center text-center w-full h-full">
@@ -309,13 +308,15 @@ const ConnectOrSignIn = () => {
                 </div>
             </ConnectButton>
             <div className="w-full overflow-hidden">
-                <SignIn />
+                <SignIn onLogin={onLogin} />
             </div>
         </div>
     </div>
 }
-
-const SignIn = () => {
+type SignInProps = {
+    onLogin: () => void
+}
+const SignIn = ({ onLogin }: SignInProps) => {
 
     const { userType } = useAuthState()
     const [showGuestCard, setShowGuestCard] = useState(false)
@@ -327,7 +328,7 @@ const SignIn = () => {
             {
                 showGuestCard ?
                     <div className="animate-fade-in">
-                        <GuestCard />
+                        <GuestCard onLogin={onLogin} />
                     </div>
                     :
                     <button onClick={() => setShowGuestCard(true)} className="text-secondary-text w-fit mx-auto flex justify-center mt-2 underline hover:no-underline">

@@ -40,13 +40,13 @@ const IconComponentWrapper = ({ children, withBg, classNames }: { children: Reac
   )
 }
 
-const GreenComponent = ({ text, withBg }: IconComponentProps) => {
+const GreenComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
     <IconComponentWrapper withBg={withBg} classNames="bg-[#54b487]/20 text-[#54b487]">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="none">
         <circle cx="30" cy="30" r="30" fill="#54b487" />
       </svg>
-      <p>{text}</p>
+      {!short && <p>{text}</p>}
     </IconComponentWrapper>
   )
 }
