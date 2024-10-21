@@ -83,7 +83,11 @@ export default function useStarknet(): WalletProvider {
             }
 
             if (wallet && connectorData?.account && connector) {
-                const account = await connector.account({})
+                const starkent = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetSepolia)
+                const WalletAccount = (await import('starknet')).WalletAccount
+
+                const starknetWalletAccount = new WalletAccount({ nodeUrl: starkent?.node_url }, wallet);
+
                 addWallet({
                     address: connectorData?.account,
                     chainId: chainId,
@@ -91,7 +95,7 @@ export default function useStarknet(): WalletProvider {
                     connector: wallet.name,
                     providerName: name,
                     metadata: {
-                        starknetAccount: account,
+                        starknetAccount: starknetWalletAccount,
                         wallet: wallet
                     }
                 })
