@@ -5,6 +5,10 @@ import { useCallback } from "react";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
 import { useSettingsState } from "../../../context/settings";
+import { StarknetkitConnector } from 'starknetkit'
+import { InjectedConnector } from "../../../node_modules/starknetkit/dist/injectedConnector";
+import { ArgentMobileConnector } from "../../../node_modules/starknetkit/dist/argentMobile"
+import { WebWalletConnector } from "../../../node_modules/starknetkit/dist/webwalletConnector";
 
 export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
@@ -38,16 +42,33 @@ export default function useStarknet(): WalletProvider {
         toast.dismiss('connect-wallet')
         const constants = (await import('starknet')).constants
         const connect = (await import('starknetkit')).connect
-        try {
-            const { wallet, connectorData, connector } = await connect({
-                argentMobileOptions: {
+
+        const connectors = [
+            new InjectedConnector({
+                options: { id: "argentX" },
+            }),
+            new InjectedConnector({
+                options: { id: "braavos" },
+            }),
+            new InjectedConnector({
+                options: { id: "keplr" },
+            }),
+            ArgentMobileConnector.init({
+                options: {
                     dappName: 'Layerswap',
                     projectId: WALLETCONNECT_PROJECT_ID,
                     url: 'https://www.layerswap.io/app',
                     description: 'Move crypto across exchanges, blockchains, and wallets.',
-                },
+                }
+            }) as StarknetkitConnector,
+            new WebWalletConnector(),
+        ]
+
+        try {
+            const { wallet, connectorData, connector } = await connect({
                 dappName: 'Layerswap',
-                modalMode: 'alwaysAsk'
+                modalMode: 'alwaysAsk',
+                connectors,
             })
             const chainId = `0x${connectorData?.chainId?.toString(16)}`
 
