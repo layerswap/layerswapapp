@@ -34,7 +34,7 @@ export default function useEVMBalance(): BalanceProvider {
             } = await import("./balance")
 
             const erc20BalancesContractRes = await getErc20Balances({
-                address: address,
+                address,
                 assets: network.tokens,
                 network,
                 publicClient,

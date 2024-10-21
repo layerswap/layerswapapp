@@ -103,7 +103,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const currencyAsset = direction === 'from' ? fromCurrency?.symbol : toCurrency?.symbol;
     const currencyNetwork = allCurrencies?.find(c => c.symbol === currencyAsset && c.network_name === from?.name)?.network_name
-
+    
     useEffect(() => {
         if (direction !== "to") return
 
@@ -114,11 +114,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         const default_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === (query?.toAsset)?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === to?.name)
             || currencyMenuItems?.find(c => c.baseObject.status === "active" && c.baseObject.network_name === to?.name)
-
-        const assetFromQuery = currencyMenuItems?.find(c =>
-            c.baseObject?.symbol?.toUpperCase() === (query?.toAsset)?.toUpperCase())
-
-        const isLocked = query?.lockToAsset
 
         const selected_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === to?.name)
@@ -273,7 +268,7 @@ function GenerateCurrencyMenuItems(
 
         const details = wallets?.length ? (<p className="text-primary-text text-sm flex flex-col items-end">
             {Number(formatted_balance_amount) ?
-                <span>{formatted_balance_amount}</span>
+                <span>{Number(formatted_balance_amount).toFixed(2)}</span>
                 :
                 <span>0</span>
             }
@@ -309,6 +304,7 @@ function GenerateCurrencyMenuItems(
         const res: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
             baseObject: c,
             id: `${c?.symbol?.toLowerCase()}_${c?.network_name?.toLowerCase()}`,
+            displayName,
             name: displayName || "-",
             menuItemLabel: DisplayNameComponent,
             balanceAmount: Number(formatted_balance_amount),
@@ -455,6 +451,7 @@ function GenerateGroupedCurrencyMenuItems(
                         const token_select_item: SelectMenuItem<RouteToken & { network_name: string, network_display_name: string, network_logo: string }> = {
                             baseObject: { ...token, network_name: network.name, network_display_name: network.display_name, network_logo: network.logo },
                             id: `${token?.symbol?.toLowerCase()}_${network.name?.toLowerCase()}`,
+                            displayName,
                             name: displayName || "-",
                             menuItemLabel: DisplayNameComponent,
                             balanceAmount: Number(formattedBalanceAmount),
