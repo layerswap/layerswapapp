@@ -6,6 +6,7 @@ import IconButton from '../buttons/iconButton';
 import { ChevronUp, X } from 'lucide-react';
 import { useMeasure } from '@uidotdev/usehooks';
 import { SnapElement, SnapPointsProvider, useSnapPoints } from '../../context/snapPointsContext';
+import { motion } from 'framer-motion';
 
 type VaulDrawerProps = {
     children: ReactNode;
@@ -59,7 +60,6 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     }, [height])
 
     const handleOpenChange = (open: boolean) => {
-        // setHideExpand(false);
         setSnap(open ? snapPoints[0].height : null);
         setShow(open);
     }
@@ -80,10 +80,23 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             setActiveSnapPoint={setSnap}
             handleOnly={!isMobile}
             fadeFromIndex={0}
+            modal={isMobile}
         >
             <Drawer.Portal >
 
-                <Drawer.Overlay className='absolute inset-0 z-40 bg-black/50 block' />
+                {
+                    isMobile
+                        ? <Drawer.Overlay className='absolute inset-0 z-40 bg-black/50 block' />
+                        : <motion.div
+                            key="backdrop"
+                            className={`absolute inset-0 z-40 bg-black/50 block`}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => handleOpenChange(false)}
+                        />
+                }
+
                 <Drawer.Content
                     data-testid="content"
                     className={`absolute flex flex-col bg-secondary-900 border-secondary-700 border-t-2 rounded-t-lg bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text ${snap === 1 && '!border-none !rounded-none'}`}
