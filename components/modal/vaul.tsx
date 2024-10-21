@@ -93,36 +93,32 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            onClick={() => handleOpenChange(false)}
                         />
                 }
 
                 <Drawer.Content
                     data-testid="content"
-                    className={`absolute flex flex-col bg-secondary-900 border-secondary-700 border-t-2 rounded-t-lg bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text ${snap === 1 && '!border-none !rounded-none'}`}
+                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text ${snap === 1 && '!border-none !rounded-none'}`}
                 >
                     <div
                         ref={headerRef}
-                        className='w-full'>
+                        className='w-full relative'>
                         {
                             isMobile &&
-                            <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-secondary-text mt-4" />
+                            <div className="absolute w-12 h-1 flex-shrink-0 rounded-full bg-primary-text-muted top-2.5 left-[calc(50%-24px)]" />
                         }
-                        <div className='flex items-center w-full justify-center text-center sm:text-left sm:justify-between px-6 pt-3 pb-2'>
+                        <div className='flex items-center w-full text-left justify-between px-6 pt-3 pb-2'>
                             <Drawer.Title className="text-lg text-secondary-text font-semibold">
                                 {header || 'Modal'}
                             </Drawer.Title>
-                            {
-                                !isMobile &&
-                                <Drawer.Close asChild>
-                                    <div className='-mr-2'>
-                                        <IconButton icon={
-                                            <X strokeWidth={3} />
-                                        }>
-                                        </IconButton>
-                                    </div>
-                                </Drawer.Close>
-                            }
+                            <Drawer.Close asChild>
+                                <div className='-mr-2'>
+                                    <IconButton icon={
+                                        <X strokeWidth={3} />
+                                    }>
+                                    </IconButton>
+                                </div>
+                            </Drawer.Close>
                         </div>
                         {
                             description &&
@@ -139,7 +135,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                     >
                         {children}
                         {
-                            !isLastSnap && snapElement && !isMobile &&
+                            !isLastSnap && snapElement &&
                             <div style={{ top: `${Number(snap?.toString().replace('px', '')) - 88}px` }} className={`w-full fixed left-0 z-50`}>
                                 <button onClick={goToNextSnap} className="w-full px-6 pt-10 pb-6 justify-center from-secondary-900 bg-gradient-to-t items-center gap-2 inline-flex text-secondary-text">
                                     <ChevronUp className="w-6 h-6 relative" />
