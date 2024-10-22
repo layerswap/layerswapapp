@@ -44,26 +44,40 @@ export default function useStarknet(): WalletProvider {
 
         const connect = (await import('starknetkit')).connect
 
-        const connectors = [
-            new InjectedConnector({
-                options: { id: "argentX" },
-            }),
-            new InjectedConnector({
-                options: { id: "braavos" },
-            }),
-            new InjectedConnector({
-                options: { id: "keplr" },
-            }),
-            ArgentMobileConnector.init({
+        const resolveConnectors = async () => {
+            const isSafari =
+                typeof window !== "undefined"
+                    ? /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+                    : false
+
+            const defaultConnectors: any[] = []
+
+            if (!isSafari) {
+                defaultConnectors.push(
+                    new InjectedConnector({ options: { id: "argentX" } }),
+                )
+                defaultConnectors.push(
+                    new InjectedConnector({ options: { id: "braavos" } }),
+                )
+                defaultConnectors.push(
+                    new InjectedConnector({ options: { id: "keplr" } }),
+                )
+            }
+
+            defaultConnectors.push(ArgentMobileConnector.init({
                 options: {
                     dappName: 'Layerswap',
                     projectId: WALLETCONNECT_PROJECT_ID,
                     url: 'https://www.layerswap.io/app',
                     description: 'Move crypto across exchanges, blockchains, and wallets.',
                 }
-            }) as any,
-            new WebWalletConnector(),
-        ]
+            }))
+            defaultConnectors.push(new WebWalletConnector())
+
+            return defaultConnectors
+        }
+
+        const connectors = await resolveConnectors()
 
         try {
             const { wallet, connectorData, connector } = await connect({
