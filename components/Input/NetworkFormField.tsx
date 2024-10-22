@@ -138,7 +138,9 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             {
                 direction === "from" ?
                     <SourceWalletPicker />
-                    : <span><Address partner={partner} >{DestinationWalletPicker}</Address></span> //TODO: implement destination hidden
+                    : <span><Address partner={partner} >{
+                        ({ destination, disabled, addressItem, connectedWallet, partner }) => <DestinationWalletPicker destination={destination} disabled={disabled} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />
+                    }</Address></span> //TODO: implement destination hidden
             }
         </div>
         <div ref={ref} className="bg-secondary-700 p-3 rounded-xl mt-1 grid grid-flow-row-dense grid-cols-6 items-center gap-2">

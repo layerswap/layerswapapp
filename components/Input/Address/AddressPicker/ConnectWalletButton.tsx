@@ -37,38 +37,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
         setIsLoading(false)
     }
 
-    return provider.connectedWallets?.length ?
-        <>
-            {
-                connectedWallets && connectedWallets.map((wallet, index) => {
-                    return <span key={index}>
-                        {
-                            wallet.addresses?.map((address) => {
-                                const addressItem = {
-                                    address: address,
-                                    group: AddressGroup.ConnectedWallet,
-                                }
-
-                                return <div key={address} className="flex flex-col gap-2">
-                                    <button type="button" onClick={() => onClick(address, wallet)} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 ${address && addressFormat(address, destination!) === addressFormat(destination_address!, destination!) && 'bg-secondary-800'}`}>
-                                        <div className={`flex items-center justify-between w-full`}>
-                                            <AddressWithIcon addressItem={addressItem} connectedWallet={wallet} destination={destination} />
-                                            <div className="flex h-6 items-center px-1">
-                                                {
-                                                    addressFormat(address, destination!) === addressFormat(destination_address!, destination!) &&
-                                                    <FilledCheck className="text-primary" />
-                                                }
-                                            </div>
-                                        </div>
-                                    </button>
-                                </div>
-                            })
-                        }
-                    </span>
-                })
-            }
-        </>
-        :
+    return <>
         <button typeof="button" onClick={connect} type="button" className={`py-5 px-6 bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl ${isLoading && 'cursor-progress opacity-80'}`}>
             <div className="flex flex-row justify-between gap-9 items-stretch">
                 <ResolveConnectorIcon
@@ -92,6 +61,35 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
                 </div>
             </div>
         </button>
+        {
+            connectedWallets && connectedWallets.map((wallet, index) => {
+                return <span key={index}>
+                    {
+                        wallet.addresses?.map((address) => {
+                            const addressItem = {
+                                address: address,
+                                group: AddressGroup.ConnectedWallet,
+                            }
+
+                            return <div key={address} className="flex flex-col gap-2">
+                                <button type="button" onClick={() => onClick(address, wallet)} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 ${address && addressFormat(address, destination!) === addressFormat(destination_address!, destination!) && 'bg-secondary-800'}`}>
+                                    <div className={`flex items-center justify-between w-full`}>
+                                        <AddressWithIcon addressItem={addressItem} connectedWallet={wallet} destination={destination} />
+                                        <div className="flex h-6 items-center px-1">
+                                            {
+                                                addressFormat(address, destination!) === addressFormat(destination_address!, destination!) &&
+                                                <FilledCheck className="text-primary" />
+                                            }
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+                        })
+                    }
+                </span>
+            })
+        }
+    </>
 }
 
 export default ConnectWalletButton

@@ -76,15 +76,25 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
 
+
+    useEffect(() => {
+        if (destination_address && !isValidAddress(destination_address, destination)) {
+            setFieldValue("destination_address", '')
+        }
+    }, [destination, destination_address])
+
     const inputReference = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const groupedAddresses = destination && resolveAddressGroups({ address_book, destination, destinationExchange, wallets: connectedWallets, newAddress, addressFromQuery: query.destAddress })
         if (groupedAddresses) setAddresses(groupedAddresses)
-    }, [address_book, destination, destinationExchange, newAddress, query.destAddress])
+    }, [address_book, destination, destinationExchange, newAddress, query.destAddress, connectedWallets?.length])
 
     const destinationAddressItem = destination && destination_address ? groupedAddresses?.find(a => addressFormat(a.address, destination) === addressFormat(destination_address, destination)) : undefined
+
     const addressBookAddresses = groupedAddresses?.filter(a => a.group !== AddressGroup.ConnectedWallet)
+
+    const connectedWallet = destination && destination_address ? connectedWallets?.find(w => w.addresses?.find(a => addressFormat(a, destination) === addressFormat(destination_address, destination))) : undefined
 
     const handleSelectAddress = useCallback((address: string, wallet?: Wallet) => {
         const selected = destination && groupedAddresses?.find(a => addressFormat(a.address, destination) === addressFormat(address, destination))
@@ -92,20 +102,21 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         setSelectedWallet(wallet)
         setFieldValue("destination_address", formattedAddress)
         close()
-
     }, [close, setFieldValue, groupedAddresses])
 
     const previouslyAutofilledAddress = useRef<string | undefined>(undefined)
 
     const autofillConnectedWallet = useCallback(() => {
+        if (destination_address) return
         setFieldValue("destination_address", activeWalletAddress)
         setSelectedWallet(activeWallet)
         previouslyAutofilledAddress.current = activeWalletAddress
         if (showAddressModal && activeWallet) setShowAddressModal(false)
-    }, [setFieldValue, setShowAddressModal, showAddressModal, destination, activeWallet, activeWalletAddress])
+    }, [setFieldValue, setShowAddressModal, showAddressModal, destination, activeWallet, activeWalletAddress, destination_address])
 
     useEffect(() => {
         if (isConnecting && activeWalletAddress) {
+            console.log("a")
             setIsConnecting(false)
             autofillConnectedWallet()
         }
@@ -113,6 +124,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     useEffect(() => {
         if ((!destination_address || (previouslyAutofilledAddress.current && previouslyAutofilledAddress.current != activeWalletAddress)) && activeWallet) {
+            console.log("b")
             autofillConnectedWallet()
         }
     }, [activeWallet, destination_address])
@@ -120,6 +132,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     useEffect(() => {
         if (previouslyAutofilledAddress.current === destination_address && !activeWallet) {
             setFieldValue("destination_address", undefined)
+            debugger
         }
     }, [activeWallet, previouslyAutofilledAddress])
     useEffect(() => {
@@ -133,7 +146,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             disabled={disabled}
             addressItem={destinationAddressItem}
             openAddressModal={() => setShowAddressModal(true)}
-            connectedWallet={activeWallet}
+            connectedWallet={connectedWallet}
             partner={partner}
             destination={destination}
         >{children({ destination, disabled, addressItem: destinationAddressItem, connectedWallet: selectedWallet, partner })}</AddressButton>
@@ -158,7 +171,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                 setFieldValue={setFieldValue}
                                 close={close}
                                 addresses={groupedAddresses}
-                                connectedWallet={activeWallet}
+                                connectedWallet={connectedWallet}
                             />
                             <div className="space-y-4">
                                 {
@@ -169,9 +182,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                         && destination
                                         && provider
                                         && !manualAddress &&
-                                        <ConnectWalletButton provider={provider} connectedWallet={activeWallet} onClick={(address: string, wallet: Wallet) => { handleSelectAddress(address, wallet) }} onConnect={() => setIsConnecting(true)} destination={destination} destination_address={destination_address} />
+                                        <ConnectWalletButton provider={provider} connectedWallet={connectedWallet} onClick={(address: string, wallet: Wallet) => { handleSelectAddress(address, wallet) }} onConnect={() => setIsConnecting(true)} destination={destination} destination_address={destination_address} />
                                 }
-
                                 {
                                     !disabled && addressBookAddresses && addressBookAddresses?.length > 0 && !manualAddress && destination &&
                                     <AddressBook

@@ -71,6 +71,7 @@ export default function useStarknet(): WalletProvider {
                 const account = await connector.account({})
                 addWallet({
                     address: connectorData?.account,
+                    addresses: [connectorData?.account],
                     chainId: chainId,
                     icon: resolveWalletConnectorIcon({ connector: wallet.name, address: connectorData?.account }),
                     connector: wallet.name,

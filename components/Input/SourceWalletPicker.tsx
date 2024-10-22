@@ -13,6 +13,7 @@ import { Wallet } from "../../stores/walletStore";
 import SwapButton from "../buttons/swapButton";
 import Balance from "./dynamic/Balance";
 import AddressIcon from "../AddressIcon";
+import { isValidAddress } from "../../lib/address/validator";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -29,23 +30,28 @@ const Component: FC = () => {
     const selectedWallet = values.source_wallet
     const activeWallet = walletNetwork ? provider?.activeWallet : wallets[0]
 
-    const connectedWalletAddress = provider?.activeWallet?.address
     const source_addsress = values.source_wallet?.address
-    const previouslyAutofilledAddress = useRef<string | undefined>(undefined)
 
     useEffect(() => {
-        if ((!source_addsress || (previouslyAutofilledAddress.current && previouslyAutofilledAddress.current != connectedWalletAddress)) && activeWallet && values.depositMethod !== 'deposit_address') {
+        if (source_addsress && !isValidAddress(source_addsress, walletNetwork)) {
+            setFieldValue('source_wallet', undefined)
+            setFieldValue('source_address', undefined)
+        }
+    }, [source_addsress, walletNetwork])
+
+    useEffect(() => {
+        if (!source_addsress && activeWallet && values.depositMethod !== 'deposit_address') {
             setFieldValue('source_wallet', activeWallet)
             setFieldValue('source_address', activeWallet?.address)
         }
     }, [activeWallet, source_addsress, values.depositMethod])
 
     useEffect(() => {
-        if (values.depositMethod === 'deposit_address' || !activeWallet?.address) {
+        if (values.depositMethod === 'deposit_address' || !activeWallet?.address || (values.source_address && !wallets.some(w => w?.addresses?.some(a => a === values.source_address)))) {
             setFieldValue('source_wallet', undefined)
             setFieldValue('source_address', undefined)
         }
-    }, [values.depositMethod, activeWallet?.address])
+    }, [values.depositMethod, activeWallet?.address, wallets.length])
 
     const handleWalletChange = () => {
         setOpenModal(true)
@@ -63,7 +69,7 @@ const Component: FC = () => {
         setOpenModal(false)
     }
 
-    if(!walletNetwork)
+    if (!walletNetwork)
         return <></>
 
     return <>
@@ -82,14 +88,14 @@ const Component: FC = () => {
                 :
                 <div className="rounded-lg bg-secondary-700 pl-2 flex items-center space-x-2 text-sm leading-4">
                     {
-                        selectedWallet && values.source_address && <>
+                        selectedWallet && values.source_wallet?.address && <>
                             <div><Balance values={values} direction="from" /></div>
                             <div onClick={handleWalletChange} className="rounded-lg bg-secondary-500 flex space-x-1 items-center py-0.5 pl-2 pr-1 cursor-pointer">
                                 <div className="inline-flex items-center relative p-0.5">
                                     <selectedWallet.icon className="w-5 h-5" />
                                 </div>
                                 <div className="text-primary-text">
-                                    {shortenAddress(values.source_address)}
+                                    {shortenAddress(values.source_wallet.address)}
                                 </div>
                                 <div className="w-5 h-5 items-center flex">
                                     <ChevronDown className="h-4 w-4" aria-hidden="true" />

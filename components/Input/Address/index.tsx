@@ -9,8 +9,6 @@ import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiCl
 import { useAuthState } from "../../../context/authContext"
 import { isValidAddress } from "../../../lib/address/validator"
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap"
-import AddressWithIcon from "./AddressPicker/AddressWithIcon"
-import { ChevronRight } from "lucide-react"
 
 type AddressProps = {
     children: (props: AddressTriggerProps) => JSX.Element;
@@ -36,30 +34,32 @@ const Address = ({ partner, children }: AddressProps) => {
     const previouslySelectedDestination = useRef(destination);
     const depositAddressIsFromAccountRef = useRef<boolean | null | undefined>(depositAddressIsFromAccount);
 
-    useEffect(() => {
-        depositAddressIsFromAccountRef.current = depositAddressIsFromAccount
-        return () => { (depositAddressIsFromAccountRef.current = null); return }
-    }, [depositAddressIsFromAccount])
+    // useEffect(() => {
+    //     depositAddressIsFromAccountRef.current = depositAddressIsFromAccount
+    //     return () => { (depositAddressIsFromAccountRef.current = null); return }
+    // }, [depositAddressIsFromAccount])
 
-    useEffect(() => {
-        if ((previouslySelectedDestination.current &&
-            (destination?.type != previouslySelectedDestination.current?.type)
-            || destination && !isValidAddress(values.destination_address, destination))) {
-            setFieldValue("destination_address", '')
-            setDepositAddressIsFromAccount(false)
-        }
-        previouslySelectedDestination.current = destination
-    }, [destination])
+    // useEffect(() => {   
+    //     if ((previouslySelectedDestination.current &&
+    //         (destination?.type != previouslySelectedDestination.current?.type)
+    //         || destination && !isValidAddress(values.destination_address, destination))) {
+    //         debugger
+    //         setFieldValue("destination_address", '')
+    //         setDepositAddressIsFromAccount(false)
+    //     }
+    //     previouslySelectedDestination.current = destination
+    // }, [destination])
 
     const previouslySelectedDestinationExchange = useRef(toExchange);
 
-    //If destination exchange changed, remove destination_address
-    useEffect(() => {
-        if (previouslySelectedDestinationExchange.current && (toExchange?.name != previouslySelectedDestinationExchange.current?.name)) {
-            setFieldValue("destination_address", '')
-        }
-        previouslySelectedDestinationExchange.current = toExchange
-    }, [toExchange])
+    // //If destination exchange changed, remove destination_address
+    // useEffect(() => {
+    //     if (previouslySelectedDestinationExchange.current && (toExchange?.name != previouslySelectedDestinationExchange.current?.name)) {
+    //         debugger
+    //         setFieldValue("destination_address", '')
+    //     }
+    //     previouslySelectedDestinationExchange.current = toExchange
+    // }, [toExchange])
 
     return (
         <AddressPicker
