@@ -1,25 +1,25 @@
-import LayerSwapApiClient, { SwapResponse } from "../../../lib/layerSwapApiClient"
-import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
+import LayerSwapApiClient, { SwapResponse } from "../../lib/layerSwapApiClient"
+import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse"
 import { ChevronDown, Plus, RefreshCw } from 'lucide-react'
 import { FC, useCallback, useMemo, useState } from "react"
-import HistorySummary from "../HistorySummary";
+import HistorySummary from "./HistorySummary";
 import useSWRInfinite from 'swr/infinite'
-import useWallet from "../../../hooks/useWallet"
+import useWallet from "../../hooks/useWallet"
 import Link from "next/link"
 import Snippet, { HistoryItemSceleton } from "./Snippet"
-import { groupBy } from "../../utils/groupBy"
-import { useAuthState, UserType } from "../../../context/authContext"
-import ConnectButton from "../../buttons/connectButton"
-import { FormWizardProvider } from "../../../context/formWizardProvider"
-import { TimerProvider } from "../../../context/timerContext"
-import GuestCard from "../../guestCard"
-import { AuthStep } from "../../../Models/Wizard"
+import { groupBy } from "../utils/groupBy"
+import { useAuthState, UserType } from "../../context/authContext"
+import ConnectButton from "../buttons/connectButton"
+import { FormWizardProvider } from "../../context/formWizardProvider"
+import { TimerProvider } from "../../context/timerContext"
+import GuestCard from "../guestCard"
+import { AuthStep } from "../../Models/Wizard"
 import React from "react"
 import { useVirtualizer } from '@tanstack/react-virtual'
-import SwapDetails from "../SwapDetailsComponent"
-import { addressFormat } from "../../../lib/address/formatter";
-import { useSettingsState } from "../../../context/settings";
-import VaulDrawer from "../../modal/vaul";
+import SwapDetails from "./SwapDetailsComponent"
+import { addressFormat } from "../../lib/address/formatter";
+import { useSettingsState } from "../../context/settings";
+import VaulDrawer from "../modal/vaul";
 
 const PAGE_SIZE = 20
 type ListProps = {

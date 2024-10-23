@@ -6,7 +6,7 @@ import IconButton from '../buttons/iconButton';
 import { ChevronUp, X } from 'lucide-react';
 import { useMeasure } from '@uidotdev/usehooks';
 import { SnapElement, SnapPointsProvider, useSnapPoints } from '../../context/snapPointsContext';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 type VaulDrawerProps = {
     children: ReactNode;
@@ -74,7 +74,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         ? <Drawer.Overlay className='absolute inset-0 z-40 bg-black/50 block' />
                         : <motion.div
                             key="backdrop"
-                            className={`absolute inset-0 z-40 bg-black/50 block`}
+                            className={`absolute inset-0 z-30 bg-black/50 block`}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -83,7 +83,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
                 <Drawer.Content
                     data-testid="content"
-                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text ${snapElement?.height === 1 && '!border-none !rounded-none'}`}
+                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !border-0 ${snapElement?.height === 1 && '!border-none !rounded-none'}`}
                 >
                     <div
                         ref={headerRef}
@@ -119,15 +119,21 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         })}
                     >
                         {children}
-                        {
-                            !isLastSnap && snapElement &&
-                            <div style={{ top: `${Number(snapElement.height?.toString().replace('px', '')) - 88}px` }} className={`w-full fixed left-0 z-50`}>
-                                <button onClick={goToNextSnap} className="w-full px-6 pt-10 pb-6 justify-center from-secondary-900 bg-gradient-to-t items-center gap-2 inline-flex text-secondary-text">
-                                    <ChevronUp className="w-6 h-6 relative" />
-                                    <div className="text-sm font-medium">Expand</div>
-                                </button>
-                            </div>
-                        }
+                        <AnimatePresence>
+                            {
+                                !isLastSnap && snapElement &&
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    style={{ top: `${Number(snapElement.height?.toString().replace('px', '')) - 88}px` }} className={`w-full fixed left-0 z-50`}>
+                                    <button onClick={goToNextSnap} className="w-full px-6 pt-10 pb-6 justify-center from-secondary-900 bg-gradient-to-t items-center gap-2 inline-flex text-secondary-text">
+                                        <ChevronUp className="w-6 h-6 relative" />
+                                        <div className="text-sm font-medium">Expand</div>
+                                    </button>
+                                </motion.div>
+                            }
+                        </AnimatePresence>
                     </div>
                 </Drawer.Content>
             </Drawer.Portal>

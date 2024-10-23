@@ -9,7 +9,7 @@ import Wizard from "../Wizard/Wizard";
 import WizardItem from "../Wizard/WizardItem";
 import { NextRouter, useRouter } from "next/router";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
-import HistoryList from "../SwapHistory/HistoryComponent/History";
+import HistoryList from "../SwapHistory/History";
 
 const Comp = () => {
     const router = useRouter();
