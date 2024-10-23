@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { Dispatch, FC, HTMLAttributes, ReactNode, SetStateAction, useEffect, useMemo, useState } from 'react';
+import { Dispatch, FC, HTMLAttributes, ReactNode, SetStateAction, useEffect, useState } from 'react';
 import { Drawer } from 'vaul';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
 import IconButton from '../buttons/iconButton';
@@ -20,29 +20,21 @@ type VaulDrawerProps = {
 
 const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description }) => {
     const { isMobile } = useWindowDimensions();
-    const [headerRef, { height }] = useMeasure();
-    const { setHeaderHeight, snapPoints } = useSnapPoints();
+    let [headerRef, { height }] = useMeasure();
+    const { setHeaderHeight } = useSnapPoints()
+
+    const [loaded, setLoaded] = useState(false);
+    const [snap, setSnap] = useState<number | string | null>(null);
     const [snapElement, setSnapElement] = useState<SnapElement | null>(null);
 
-    const snapPointsHeight = useMemo(() => snapPoints.map((item) => item.height), [snapPoints]);
-    const isLastSnap = snapElement?.id === snapPoints[snapPoints.length - 1]?.id;
+    const { snapPoints } = useSnapPoints()
+    const snapPointsHeight = snapPoints.map((item) => item.height);
 
+    const isLastSnap = snapElement?.id === snapPoints[snapPoints.length - 1].id;
     const goToNextSnap = () => {
         if (!snapElement) return;
         setSnapElement(snapPoints.find((item) => item.id === snapElement.id + 1) || null);
-    };
-
-    useEffect(() => {
-        if (show && snapPoints.length > 0) {
-            setSnapElement(snapPoints[0]);  // Set to first snap by default
-        }
-    }, [snapPoints, show]);
-
-    useEffect(() => {
-        if (height) {
-            setHeaderHeight(height);
-        }
-    }, [height, setHeaderHeight]);
+    }
 
     useEffect(() => {
         if (show && snapPoints.length > 0) {
@@ -50,10 +42,33 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
         }
     }, [snapPoints, show])
 
+    useEffect(() => {
+        if (!snapElement || snapElement.height === snap) return;
+
+        setSnap(snapElement.height)
+    }, [snapElement])
+
+    useEffect(() => {
+        if (!snap || snap === snapElement?.height) return
+
+        setSnapElement(snapPoints.find((item) => item.height === snap) || null)
+    }, [snap])
+
+    useEffect(() => {
+        if (!height) return;
+        setHeaderHeight(height);
+    }, [height])
+
     const handleOpenChange = (open: boolean) => {
-        setSnapElement(open ? snapPoints[0] : null);
+        setSnap(open ? snapPoints[0].height : null);
         setShow(open);
-    };
+    }
+
+    useEffect(() => {
+        setLoaded(true);
+    }, []);
+
+    if (!loaded) return null;
 
     return (
         <Drawer.Root
@@ -61,8 +76,8 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             onOpenChange={handleOpenChange}
             container={isMobile ? null : document.getElementById('widget')}
             snapPoints={snapPointsHeight}
-            activeSnapPoint={snapElement?.height}
-            setActiveSnapPoint={(height) => setSnapElement(snapPoints.find((item) => item.height === height) || null)}
+            activeSnapPoint={snap}
+            setActiveSnapPoint={setSnap}
             handleOnly={!isMobile}
             fadeFromIndex={0}
             modal={isMobile}
@@ -74,7 +89,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         ? <Drawer.Overlay className='absolute inset-0 z-40 bg-black/50 block' />
                         : <motion.div
                             key="backdrop"
-                            className={`absolute inset-0 z-30 bg-black/50 block`}
+                            className={`absolute inset-0 z-40 bg-black/50 block`}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -83,7 +98,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
                 <Drawer.Content
                     data-testid="content"
-                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !border-0 ${snapElement?.height === 1 && '!border-none !rounded-none'}`}
+                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text ${snap === 1 && '!border-none !rounded-none'}`}
                 >
                     <div
                         ref={headerRef}
@@ -114,8 +129,8 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                     </div>
                     <div
                         className={clsx('flex flex-col w-full h-fit px-6 styled-scroll relative', {
-                            'overflow-y-auto': snapElement?.height === 1,
-                            'overflow-hidden': snapElement?.height !== 1,
+                            'overflow-y-auto': snap === 1,
+                            'overflow-hidden': snap !== 1,
                         })}
                     >
                         {children}
@@ -126,6 +141,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.15 }}
                                     style={{ top: `${Number(snapElement.height?.toString().replace('px', '')) - 88}px` }} className={`w-full fixed left-0 z-50`}>
                                     <button onClick={goToNextSnap} className="w-full px-6 pt-10 pb-6 justify-center from-secondary-900 bg-gradient-to-t items-center gap-2 inline-flex text-secondary-text">
                                         <ChevronUp className="w-6 h-6 relative" />

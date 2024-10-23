@@ -4,8 +4,8 @@ import Header from "./Header";
 function TransactionsHistory() {
 
   return (
-    <div id="widget" className='bg-secondary-900 sm:shadow-card sm:relative rounded-lg w-full text-primary-text overflow-hidden  h-full sm:h-[650px]'>
-      <div className="overflow-y-auto flex flex-col h-full z-40 sm:pb-4">
+    <div id="widget" className='bg-secondary-900 sm:shadow-card sm:relative rounded-lg w-full text-primary-text overflow-y-auto sm:overflow-hidden max-h-screen h-full sm:h-[650px]'>
+      <div className="overflow-y-auto flex flex-col h-full z-40 pb-4 overflow-y-auto">
         <Header />
         <div className="px-6 h-full overflow-y-auto styled-scroll sm:max-h-[80vh]" id='virtualListContainer'>
           <Content />
