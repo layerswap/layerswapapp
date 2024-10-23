@@ -64,7 +64,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
             apiClient.fetcher,
             { revalidateAll: false }
         )
-    const getCompletedSSwapsKey = useCallback((index) => getKey(index, ["Completed"], addresses), [addresses])
+    const getCompletedSSwapsKey = useCallback((index) => getKey(index, ["Completed", "PendingWithdrawal"], addresses), [addresses])
     const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, isValidating, mutate } =
         useSWRInfinite<ApiResponse<Swap[]>>(
             getCompletedSSwapsKey,
