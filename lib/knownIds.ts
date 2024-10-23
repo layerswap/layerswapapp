@@ -166,6 +166,8 @@ export default class KnownInternalNames {
 
         public static readonly ParadexMainnet: string = "PARADEX_MAINNET"
 
+        public static readonly FuelMainnet: string = "FUEL_MAINNET"
+
         public static readonly FuelTestnet: string = "FUEL_TESTNET"
 
         public static readonly TronMainnet: string = "TRON_MAINNET"
