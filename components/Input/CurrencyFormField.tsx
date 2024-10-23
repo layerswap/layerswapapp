@@ -29,7 +29,6 @@ import NetworkSettings from "../../lib/NetworkSettings";
 import { ExtendedAddress } from "./Address/AddressPicker/AddressWithIcon";
 import { addressFormat } from "../../lib/address/formatter";
 import { groupBy } from "../utils/groupBy";
-import { Console } from "console";
 
 const WalletsHeader = dynamic(() => import("../ConnectedWallets").then((comp) => comp.WalletsHeader), {
     loading: () => <></>
