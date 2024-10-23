@@ -14,7 +14,6 @@ export default function useFuelBalance(): BalanceProvider {
 
     const getNetworkBalances = async ({ networkName, address }: NetworkBalancesProps) => {
         const network = networks.find(n => n.name === networkName)
-        console.log(network)
         let balances: Balance[] = []
 
         if (!network?.tokens) return
