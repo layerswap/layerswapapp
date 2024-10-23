@@ -48,7 +48,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
 
     useEffect(() => {
         if (!show) {
-            setSearchQuery(''); 
+            setSearchQuery('');
         }
     }, [show])
 
@@ -58,8 +58,26 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                 item?.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 item?.id?.toLowerCase().includes(searchQuery.toLowerCase())
         );
-        return filtered;
+        return filtered
+        // const prioritized = filtered.sort((a, b) => {
+        //     const query = searchQuery.toLowerCase();
+        //     const aStartsWithQuery =
+        //         a?.displayName?.toLowerCase().startsWith(query) || a?.id?.toLowerCase().startsWith(query);
+        //     const bStartsWithQuery =
+        //         b?.displayName?.toLowerCase().startsWith(query) || b?.id?.toLowerCase().startsWith(query);
+
+        //     if (aStartsWithQuery && !bStartsWithQuery) {
+        //         return -1; 
+        //     }
+        //     if (!aStartsWithQuery && bStartsWithQuery) {
+        //         return 1; 
+        //     }
+        //     return 0; 
+        // });
+
+        // return prioritized;
     };
+
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(e.target.value);
     };
