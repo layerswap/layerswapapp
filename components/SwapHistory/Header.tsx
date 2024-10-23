@@ -61,7 +61,7 @@ const variants = {
     enter: () => {
         return ({
             opacity: 0,
-            y: '100%',
+            y: '-100%',
         })
     },
     center: () => {
@@ -72,7 +72,7 @@ const variants = {
     },
     exit: () => {
         return ({
-            y: '100%',
+            y: '-100%',
             zIndex: 0,
             opacity: 0,
         })
