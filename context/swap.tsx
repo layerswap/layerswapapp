@@ -72,14 +72,16 @@ export function SwapDataProvider({ children }) {
     useEffect(() => {
         if (swapStatus)
             setInterval(ResolvePollingInterval(swapStatus))
-        return () => setInterval(0)
+        return () => {
+            setInterval(0)
+        }
     }, [swapStatus])
 
     useEffect(() => {
         if (!swapId)
             return
         const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
-        const txForSwap = data?.[swapId];
+        const txForSwap = data.state?.swapTransactions?.[swapId];
         setSwapTransaction(txForSwap)
     }, [swapId])
 

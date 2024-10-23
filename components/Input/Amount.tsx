@@ -3,7 +3,6 @@ import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import NumericInput from "./NumericInput";
 import { useBalancesState } from "../../context/balances";
-import { truncateDecimals } from "../utils/RoundDecimals";
 import { useFee } from "../../context/feeContext";
 import dynamic from "next/dynamic";
 import { useQueryState } from "../../context/query";

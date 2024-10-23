@@ -52,7 +52,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                     transition={{
                         duration: 0.15,
                     }}
-                    custom={{ direction: "back" ? -1 : 1, width: 100 }}
+                    custom={{ direction: -1 , width: 100 }}
                     variants={variants}
                     className={`text-primary-text text-base mt-3        
                         max-sm:fixed
@@ -63,7 +63,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         max-sm:shadow-widget-footer 
                         max-sm:p-4 
                         max-sm:px-6 
-                        max-sm:w-full ${hidden ? 'adnimation-slide-out' : ''}`}>
+                        max-sm:w-full ${hidden ? 'animation-slide-out' : ''}`}>
                     {children}
                     <div className="flex justify-center  text-primary-text-placeholder">
                         <span className="text-xs content-center footerLogo mt-2.5">Powered by</span> <GoHomeButton className='footerLogo ml-1 mt-2.5 fill-primary-text-placeholder h-5 w-auto cursor-pointer' />

@@ -11,8 +11,8 @@ import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "..
 import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import Modal from "../../modal/modal";
 import SwapForm from "./Form";
-import { NextRouter, useRouter } from "next/router";
 import useSWR from "swr";
+import { NextRouter, useRouter } from "next/router";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
@@ -176,6 +176,20 @@ export default function Form() {
         }
     }, [router, swap])
 
+
+    // const handleCloseSwapModal = () => {
+    //     let homeURL = window.location.protocol + "//"
+    //         + window.location.host
+
+    //     const params = resolvePersistantQueryParams(router.query)
+    //     if (params && Object.keys(params).length) {
+    //         const search = new URLSearchParams(params as any);
+    //         if (search)
+    //             homeURL += `?${search}`
+    //     }
+    //     window.history.replaceState({ ...window.history.state, as: homeURL, url: homeURL }, '', homeURL);
+    // }
+
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
@@ -198,13 +212,11 @@ export default function Form() {
                 <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
             }
         </Modal>
-        <Modal
-            height='fit'
+        <Modal height='fit'
             show={showSwapModal}
             setShow={handleShowSwapModal}
             header={`Complete the swap`}
-            modalId="showSwap"
-        >
+            modalId="showSwap">
             <ResizablePanel>
                 <SwapDetails type="contained" />
             </ResizablePanel>
@@ -317,6 +329,7 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
 }
 
 const setSwapPath = (swapId: string, router: NextRouter) => {
+    //TODO: as path should be without basepath and host
     const basePath = router?.basePath || ""
     var swapURL = window.location.protocol + "//"
         + window.location.host + `${basePath}/swap/${swapId}`;
@@ -326,6 +339,7 @@ const setSwapPath = (swapId: string, router: NextRouter) => {
         if (search)
             swapURL += `?${search}`
     }
+    
     window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
 }
 
@@ -340,5 +354,5 @@ const removeSwapPath = (router: NextRouter) => {
         if (search)
             homeURL += `?${search}`
     }
-    window.history.replaceState({ ...window.history.state, as: homeURL, url: homeURL }, '', homeURL);
+    window.history.replaceState({ ...window.history.state, as: router.asPath, url: homeURL }, '', homeURL);
 }
