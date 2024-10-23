@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { Dispatch, FC, HTMLAttributes, ReactNode, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, FC, HTMLAttributes, ReactNode, SetStateAction, useEffect, useMemo, useState } from 'react';
 import { Drawer } from 'vaul';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
 import IconButton from '../buttons/iconButton';
@@ -20,21 +20,29 @@ type VaulDrawerProps = {
 
 const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description }) => {
     const { isMobile } = useWindowDimensions();
-    let [headerRef, { height }] = useMeasure();
-    const { setHeaderHeight } = useSnapPoints()
-
-    const [loaded, setLoaded] = useState(false);
-    const [snap, setSnap] = useState<number | string | null>(null);
+    const [headerRef, { height }] = useMeasure();
+    const { setHeaderHeight, snapPoints } = useSnapPoints();
     const [snapElement, setSnapElement] = useState<SnapElement | null>(null);
 
-    const { snapPoints } = useSnapPoints()
-    const snapPointsHeight = snapPoints.map((item) => item.height);
+    const snapPointsHeight = useMemo(() => snapPoints.map((item) => item.height), [snapPoints]);
+    const isLastSnap = snapElement?.id === snapPoints[snapPoints.length - 1]?.id;
 
-    const isLastSnap = snapElement?.id === snapPoints[snapPoints.length - 1].id;
     const goToNextSnap = () => {
         if (!snapElement) return;
         setSnapElement(snapPoints.find((item) => item.id === snapElement.id + 1) || null);
-    }
+    };
+
+    useEffect(() => {
+        if (show && snapPoints.length > 0) {
+            setSnapElement(snapPoints[0]);  // Set to first snap by default
+        }
+    }, [snapPoints, show]);
+
+    useEffect(() => {
+        if (height) {
+            setHeaderHeight(height);
+        }
+    }, [height, setHeaderHeight]);
 
     useEffect(() => {
         if (show && snapPoints.length > 0) {
@@ -42,33 +50,10 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
         }
     }, [snapPoints, show])
 
-    useEffect(() => {
-        if (!snapElement || snapElement.height === snap) return;
-
-        setSnap(snapElement.height)
-    }, [snapElement])
-
-    useEffect(() => {
-        if (!snap || snap === snapElement?.height) return
-
-        setSnapElement(snapPoints.find((item) => item.height === snap) || null)
-    }, [snap])
-
-    useEffect(() => {
-        if (!height) return;
-        setHeaderHeight(height);
-    }, [height])
-
     const handleOpenChange = (open: boolean) => {
-        setSnap(open ? snapPoints[0].height : null);
+        setSnapElement(open ? snapPoints[0] : null);
         setShow(open);
-    }
-
-    useEffect(() => {
-        setLoaded(true);
-    }, []);
-
-    if (!loaded) return null;
+    };
 
     return (
         <Drawer.Root
@@ -76,8 +61,8 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             onOpenChange={handleOpenChange}
             container={isMobile ? null : document.getElementById('widget')}
             snapPoints={snapPointsHeight}
-            activeSnapPoint={snap}
-            setActiveSnapPoint={setSnap}
+            activeSnapPoint={snapElement?.height}
+            setActiveSnapPoint={(height) => setSnapElement(snapPoints.find((item) => item.height === height) || null)}
             handleOnly={!isMobile}
             fadeFromIndex={0}
             modal={isMobile}
@@ -98,7 +83,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
                 <Drawer.Content
                     data-testid="content"
-                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text ${snap === 1 && '!border-none !rounded-none'}`}
+                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text ${snapElement?.height === 1 && '!border-none !rounded-none'}`}
                 >
                     <div
                         ref={headerRef}
@@ -129,14 +114,14 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                     </div>
                     <div
                         className={clsx('flex flex-col w-full h-fit px-6 styled-scroll relative', {
-                            'overflow-y-auto': snap === 1,
-                            'overflow-hidden': snap !== 1,
+                            'overflow-y-auto': snapElement?.height === 1,
+                            'overflow-hidden': snapElement?.height !== 1,
                         })}
                     >
                         {children}
                         {
                             !isLastSnap && snapElement &&
-                            <div style={{ top: `${Number(snap?.toString().replace('px', '')) - 88}px` }} className={`w-full fixed left-0 z-50`}>
+                            <div style={{ top: `${Number(snapElement.height?.toString().replace('px', '')) - 88}px` }} className={`w-full fixed left-0 z-50`}>
                                 <button onClick={goToNextSnap} className="w-full px-6 pt-10 pb-6 justify-center from-secondary-900 bg-gradient-to-t items-center gap-2 inline-flex text-secondary-text">
                                     <ChevronUp className="w-6 h-6 relative" />
                                     <div className="text-sm font-medium">Expand</div>
