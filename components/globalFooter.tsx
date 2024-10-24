@@ -55,14 +55,7 @@ const GLobalFooter = () => {
     return (
         <>
             <footer className="z-0 hidden md:block fixed bottom-0 py-4 w-full px-6 lg:px-8 mt-auto">
-                {
-                    !isMaintenance &&
-                    (
-                        version === 'sandbox'
-                            ? <TestnetNewsComponent />
-                            : <MainnetNewsComponent />
-                    )
-                }
+                {version === 'sandbox' && <TestnetNewsComponent />}
                 <div className=" flex justify-between items-center w-full">
                     <div>
                         <div className="flex mt-3 md:mt-0 gap-6">
@@ -124,25 +117,5 @@ const TestnetNewsComponent = () => {
         </div>
     </div>
 }
-
-const MainnetNewsComponent = () => {
-    return <div className='bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative mb-5 max-w-sm text-secondary-text'>
-        <div className="overflow-hidden h-1 flex rounded-t-lg bg-secondary-500" />
-        <div className="w-full text-left text-base font-light p-6">
-            <div className='flex items-center justify-between'>
-                <p className='text-xl text-primary-text'>
-                    Scheduled Update
-                </p>
-            </div>
-            <div className='mt-2 text-left text-secondary-text'>
-                The Layerswap API and UI will be temporarily unavailable for 20 minutes, starting at {new Date(1729773000000).toLocaleTimeString()} today.
-            </div>
-            <div className='mt-2 text-left text-secondary-text'>
-                Any transactions already in progress will be processed to completion without interruption.
-            </div>
-        </div>
-    </div>
-}
-
 
 export default GLobalFooter
