@@ -61,7 +61,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const calculatedFeeAmountInUsd = inputTransactionFeeInUsd ? inputTransactionFeeInUsd + quote?.total_fee_in_usd : quote?.total_fee_in_usd
     const displayCalculatedFeeAmountInUsd = calculatedFeeAmountInUsd ? (calculatedFeeAmountInUsd < 0.01 ? '<$0.01' : `$${calculatedFeeAmountInUsd?.toFixed(2)}`) : null
     const displayLayerswapFeeInUsd = quote?.total_fee_in_usd ? (quote?.total_fee_in_usd < 0.01 ? '<$0.01' : `$${quote?.total_fee_in_usd?.toFixed(2)}`) : null
-
+console.log('swap', quote)
     const nativeCurrency = refuel?.token
     const truncatedRefuelAmount = nativeCurrency && !!refuel ?
         truncateDecimals(refuel.amount, nativeCurrency?.precision) : null
@@ -208,7 +208,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                     <AccordionTrigger className='w-full'>
                                         <div className="flex justify-between items-baseline text-sm w-full mr-1">
                                             <span className="text-left">Fees</span>
-                                            <span className='font-semibold text-primary-text'>{displayCalculatedFeeAmountInUsd}</span>
+                                            <span className='font-semibold text-primary-text'>{displayLayerswapFeeInUsd}</span>
                                         </div>
                                     </AccordionTrigger>
                                     <AccordionContent >
