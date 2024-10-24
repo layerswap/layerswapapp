@@ -80,7 +80,6 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             setActiveSnapPoint={setSnap}
             handleOnly={!isMobile}
             fadeFromIndex={0}
-            modal={isMobile}
         >
             <Drawer.Portal >
 
