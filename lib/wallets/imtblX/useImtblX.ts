@@ -42,6 +42,7 @@ export default function useImtblX(): WalletProvider {
                 disconnect: () => disconnectWallet(),
                 connect: () => connectWallet({ chain }),
                 isActive: true,
+                addresses: [res.address]
             });
         }
         catch (e) {
@@ -54,6 +55,8 @@ export default function useImtblX(): WalletProvider {
     }
 
     return {
+        activeAccountAddress: wallet?.address,
+        switchAccount: async () => { },
         connectedWallets: getWallet(),
         activeWallet: wallet,
         connectWallet,

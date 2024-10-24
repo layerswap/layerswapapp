@@ -3,6 +3,7 @@ import { Address } from "@ton/core";
 import KnownInternalNames from "../../knownIds";
 import { WalletProvider } from "../../../hooks/useWallet";
 import TON from "../../../components/icons/Wallets/TON";
+import { addresses } from "@eth-optimism/contracts-ts";
 export default function useTON(): WalletProvider {
     const withdrawalSupportedNetworks = [KnownInternalNames.Networks.TONMainnet]
     const name = 'TON'
@@ -14,6 +15,7 @@ export default function useTON(): WalletProvider {
     const iconUrl = (tonWallet as any)?.imageUrl
 
     const wallet = tonWallet && address ? {
+        addresses: [address],
         address,
         iconUrl,
         connector: name,
@@ -44,7 +46,9 @@ export default function useTON(): WalletProvider {
         }
     }
 
-    const provider = {
+    return {
+        activeAccountAddress: wallet?.address,
+        switchAccount: async () => { },
         connectedWallets: getWallet(),
         activeWallet: wallet,
         connectWallet,
@@ -55,6 +59,4 @@ export default function useTON(): WalletProvider {
         name,
         id,
     }
-
-    return provider
 }

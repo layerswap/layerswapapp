@@ -4,7 +4,7 @@ import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
 import { useSettingsState } from "../../../context/settings";
-import { useCallback } from "react";
+import { act, useCallback } from "react";
 
 export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
@@ -104,6 +104,8 @@ export default function useStarknet(): WalletProvider {
     }
 
     const provider = {
+        activeAccountAddress: activeWallet?.address,
+        switchAccount: async () => { },
         connectedWallets: getWallet(),
         activeWallet,
         connectWallet,
