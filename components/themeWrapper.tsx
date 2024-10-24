@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import toast, { ToastBar, Toaster } from "react-hot-toast"
 import Navbar from "./navbar"
 import GlobalFooter from "./globalFooter";
+import { Toaster as ShadcnToaster } from "./shadcn/toaster"
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -10,6 +11,8 @@ export default function ThemeWrapper({ children }: Props) {
     return <div className='styled-scroll'>
         <div className="invisible light"></div>
         <main className="styled-scroll">
+        <ShadcnToaster />
+
             <div className={`flex flex-col items-center min-h-screen overflow-hidden relative font-robo`}>
                 <Toaster position="top-center" toastOptions={{
                     duration: 5000,

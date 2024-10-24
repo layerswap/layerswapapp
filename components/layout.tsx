@@ -20,6 +20,9 @@ import RainbowKit from "./RainbowKit";
 import Solana from "./SolanaProvider";
 import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
+import useStorage from "../hooks/useStorage";
+import { useToast } from "./shadcn/use-toast";
+import { ToastAction } from "./shadcn/toast";
 // import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
@@ -31,6 +34,22 @@ type Props = {
 
 export default function Layout({ children, settings, themeData }: Props) {
   const router = useRouter();
+  const { toast } = useToast()
+  const { getItem, storageAvailable, setItem } = useStorage()
+
+  useEffect(() => {
+    if (storageAvailable) {
+      const scheduleNoteDismiss = getItem('scheduleNoteDismiss', 'localStorage')
+      if (!scheduleNoteDismiss) {
+        toast({
+          title: "Scheduled Update",
+          description: `The Layerswap will be temporarily unavailable for 20 minutes, starting at ${new Date(1729771200000).toLocaleTimeString()} today. In progress transactions will be completed without interruption.`,
+          action: <ToastAction onClick={() => { setItem('scheduleNoteDismiss', 'true', 'localStorage') }} altText="Dismiss">Dismiss</ToastAction>,
+          duration: 10000000,
+        })
+      }
+    }
+  }, [storageAvailable])
 
   useEffect(() => {
     function prepareUrl(params) {
