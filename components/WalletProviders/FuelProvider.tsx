@@ -17,9 +17,13 @@ const FuelProviderWrapper = ({
     const network = networks.find(network => network.name === KnownInternalNames.Networks.FuelMainnet || network.name === KnownInternalNames.Networks.FuelTestnet)
     const isMainnet = network?.name === KnownInternalNames.Networks.FuelMainnet
 
-    if (!network) return <>
+    if (!network) return <FuelProvider fuelConfig={{
+        connectors: undefined,
+        storage: undefined,
+        targetObject: undefined
+    }}>
         {children}
-    </>
+    </FuelProvider>
 
     const fuelConfig = {
         connectors: defaultConnectors({

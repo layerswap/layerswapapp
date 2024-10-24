@@ -9132,16 +9132,7 @@
     "@walletconnect/ethereum-provider" "2.17.0"
     cbw-sdk "npm:@coinbase/wallet-sdk@3.9.3"
 
-"@wagmi/core@2.13.4":
-  version "2.13.4"
-  resolved "https://registry.yarnpkg.com/@wagmi/core/-/core-2.13.4.tgz#8d5da08e450171bfe34f72a079cfa2b81825410a"
-  integrity sha512-J6gfxHYr8SCc/BzEa712LnI+qLFs5K2nBLupwQqQl4WiAlCu8SdcpbZokqiwfCMYhIRMj0+YFEP9qe4ypcexmw==
-  dependencies:
-    eventemitter3 "5.0.1"
-    mipd "0.0.7"
-    zustand "4.4.1"
-
-"@wagmi/core@2.14.1":
+"@wagmi/core@2.13.4", "@wagmi/core@2.14.1":
   version "2.14.1"
   resolved "https://registry.yarnpkg.com/@wagmi/core/-/core-2.14.1.tgz#e6adb8a350cfd7be4ea9c5581768f951c60127de"
   integrity sha512-Vl7VK5XdKxPfnYlp3E7U7AJSweBdfh+cd953hgAU2H+uNrekS9Nmt89l1b6WkwkYyqvccRDjsCtlcKRwvPtNAQ==
@@ -22915,13 +22906,6 @@ zod@^3.21.4:
   version "3.23.8"
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.23.8.tgz#e37b957b5d52079769fb8097099b592f0ef4067d"
   integrity sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==
-
-zustand@4.4.1:
-  version "4.4.1"
-  resolved "https://registry.yarnpkg.com/zustand/-/zustand-4.4.1.tgz#0cd3a3e4756f21811bd956418fdc686877e8b3b0"
-  integrity sha512-QCPfstAS4EBiTQzlaGP1gmorkh/UL1Leaj2tdj+zZCZ/9bm0WS7sI2wnfD5lpOszFqWJ1DcPnGoY8RDL61uokw==
-  dependencies:
-    use-sync-external-store "1.2.0"
 
 zustand@5.0.0:
   version "5.0.0"
