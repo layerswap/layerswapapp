@@ -34,7 +34,7 @@ export default function useFuelBalance(): BalanceProvider {
         };
 
         try {
-            const response = await retryWithExponentialBackoff(async () => await fetch('https://testnet.fuel.network/v1/graphql', {
+            const response = await retryWithExponentialBackoff(async () => await fetch(network.node_url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
