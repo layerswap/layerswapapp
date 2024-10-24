@@ -43,7 +43,7 @@ export default function Layout({ children, settings, themeData }: Props) {
       if (!scheduleNoteDismiss) {
         toast({
           title: "Scheduled Update",
-          description: `The Layerswap will be temporarily unavailable for 20 minutes, starting at ${new Date(1729771200000).toLocaleTimeString()} today. In progress transactions will be completed without interruption.`,
+          description: <span className="flex flex-col justify-start text-start gap-1"><span>Layerswap will be temporarily unavailable for 20 minutes, starting at {new Date(1729771200000).toLocaleTimeString()} today.</span> <span>In progress transactions will be completed without interruption.</span></span>,
           action: <ToastAction onClick={() => { setItem('scheduleNoteDismiss', 'true', 'localStorage') }} altText="Dismiss">Dismiss</ToastAction>,
           duration: 10000000,
         })
