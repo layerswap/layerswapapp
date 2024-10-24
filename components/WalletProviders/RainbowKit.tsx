@@ -1,6 +1,6 @@
 
 import '@rainbow-me/rainbowkit/styles.css';
-import { useSettingsState } from "../context/settings";
+import { useSettingsState } from "../../context/settings";
 import {
     AvatarComponent,
     connectorsForWallets,
@@ -8,11 +8,11 @@ import {
     DisclaimerComponent,
     RainbowKitProvider,
 } from '@rainbow-me/rainbowkit';
-import { NetworkType } from "../Models/Network";
-import resolveChain from "../lib/resolveChain";
+import { NetworkType } from "../../Models/Network";
+import resolveChain from "../../lib/resolveChain";
 import React from "react";
-import AddressIcon from "./AddressIcon";
-import NetworkSettings from "../lib/NetworkSettings";
+import AddressIcon from "../AddressIcon";
+import NetworkSettings from "../../lib/NetworkSettings";
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { argentWallet, bitgetWallet, coinbaseWallet, injectedWallet, metaMaskWallet, phantomWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';

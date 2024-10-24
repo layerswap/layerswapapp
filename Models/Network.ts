@@ -7,7 +7,8 @@ export enum NetworkType {
     Cosmos = "cosmos",
     StarkEx = "starkex",//TODO check this
     ZkSyncLite = "zksynclite",
-    TON = 'ton'
+    TON = 'ton',
+    Fuel = 'fuel',
 }
 
 export class Network {

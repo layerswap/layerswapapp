@@ -61,7 +61,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const provider = useMemo(() => {
         if (destinationExchange) return undefined
-        
+
         return values?.to && getProvider(values?.to)
     }, [values?.to, getProvider, destinationExchange])
 
@@ -169,13 +169,24 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
                                 {
                                     destinationExchange ?
-                                        <ExchangeNote destination={destination} destinationAsset={destinationAsset} destinationExchange={destinationExchange} />
+                                        <ExchangeNote
+                                            destination={destination}
+                                            destinationAsset={destinationAsset}
+                                            destinationExchange={destinationExchange}
+                                        />
                                         :
                                         !disabled
                                         && destination
                                         && provider
                                         && !manualAddress &&
-                                        <ConnectWalletButton provider={provider} connectedWallet={connectedWallet} onClick={() => { connectedWallet && handleSelectAddress(connectedWallet.address) }} onConnect={() => setIsConnecting(true)} destination={destination} destination_address={destination_address} />
+                                        <ConnectWalletButton
+                                            provider={provider}
+                                            connectedWallet={connectedWallet}
+                                            onClick={() => { connectedWallet && handleSelectAddress(connectedWallet.address) }}
+                                            onConnect={() => setIsConnecting(true)}
+                                            destination={destination}
+                                            destination_address={destination_address}
+                                        />
                                 }
 
                                 {

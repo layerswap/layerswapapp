@@ -15,11 +15,9 @@ import QueryProvider from "../context/query";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
-import TonConnectProvider from "./TonConnectProvider";
-import RainbowKit from "./RainbowKit";
-import Solana from "./SolanaProvider";
 import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
+import WalletsProviders from "./WalletProviders";
 // import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
@@ -134,17 +132,13 @@ export default function Layout({ children, settings, themeData }: Props) {
           <TooltipProvider delayDuration={500}>
             <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
               <ThemeWrapper>
-                <TonConnectProvider basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
-                  <RainbowKit>
-                    <Solana>
-                      <AsyncModalProvider>
-                        {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                          <MaintananceContent />
-                          : children}
-                      </AsyncModalProvider>
-                    </Solana>
-                  </RainbowKit>
-                </TonConnectProvider>
+                <WalletsProviders basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
+                  <AsyncModalProvider>
+                    {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                      <MaintananceContent />
+                      : children}
+                  </AsyncModalProvider>
+                </WalletsProviders>
               </ThemeWrapper>
             </ErrorBoundary>
           </TooltipProvider>
