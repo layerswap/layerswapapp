@@ -21,18 +21,10 @@ type Props = {
 const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connectedWallet, destination, destination_address }) => {
 
     const [isLoading, setIsLoading] = useState(false)
-    const connectedWallets = provider.connectedWallets
 
     const connect = async () => {
         setIsLoading(true)
         await provider.connectWallet({ chain: destination.chain_id })
-        if (onConnect) onConnect()
-        setIsLoading(false)
-    }
-
-    const disconnect = async () => {
-        setIsLoading(true)
-        await provider.disconnectWallets()
         if (onConnect) onConnect()
         setIsLoading(false)
     }
@@ -46,7 +38,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
                     className="grid grid-cols-2 gap-1 min-w-fit"
                 />
                 <div className="h-full space-y-2">
-                    <p className="text-sm font-medium text-secondary-text text-start">Connect your wallet to select a destination address</p>
+                    <p className="text-sm font-medium text-secondary-text text-start">Connect your wallet to browse and select from your addresses</p>
                     <div className="bg-primary-700/30 border-none !text-primary py-2 rounded-lg text-base font-semibold">
                         {
                             isLoading ?
@@ -61,34 +53,6 @@ const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connecte
                 </div>
             </div>
         </button>
-        {
-            connectedWallets && connectedWallets.map((wallet, index) => {
-                return <span key={index}>
-                    {
-                        wallet.addresses?.map((address) => {
-                            const addressItem = {
-                                address: address,
-                                group: AddressGroup.ConnectedWallet,
-                            }
-
-                            return <div key={address} className="flex flex-col gap-2">
-                                <button type="button" onClick={() => onClick(address, wallet)} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 ${address && addressFormat(address, destination!) === addressFormat(destination_address!, destination!) && 'bg-secondary-800'}`}>
-                                    <div className={`flex items-center justify-between w-full`}>
-                                        <AddressWithIcon addressItem={addressItem} connectedWallet={wallet} destination={destination} />
-                                        <div className="flex h-6 items-center px-1">
-                                            {
-                                                addressFormat(address, destination!) === addressFormat(destination_address!, destination!) &&
-                                                <FilledCheck className="text-primary" />
-                                            }
-                                        </div>
-                                    </div>
-                                </button>
-                            </div>
-                        })
-                    }
-                </span>
-            })
-        }
     </>
 }
 

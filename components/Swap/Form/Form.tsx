@@ -34,6 +34,7 @@ import { Exchange, ExchangeToken } from "../../../Models/Exchange";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";
 import { FormSourceWalletButton } from "../../Input/SourceWalletPicker";
+import { useSwapDataState } from "../../../context/swap";
 
 type Props = {
     partner?: Partner,
@@ -57,8 +58,9 @@ const SwapForm: FC<Props> = ({ partner }) => {
         fromExchange,
         toExchange,
         currencyGroup,
-        source_wallet
     } = values
+
+    const { selectedSourceAccount } = useSwapDataState()
     const [showConnectWalletModal, setShowConnectWalletModal] = useState(false);
     const { minAllowedAmount, valuesChanger } = useFee()
     const toAsset = values.toCurrency
@@ -153,7 +155,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
             setFieldValue('amount', walletBalance?.amount - networkGas?.gas)
     }, [values.amount])
 
-    const shoouldConnectWallet = values.depositMethod !== 'deposit_address' && !values.source_wallet
+    const shoouldConnectWallet = values.depositMethod !== 'deposit_address' && !selectedSourceAccount
 
     return <ImtblPassportProvider from={source} to={destination}>
         <>

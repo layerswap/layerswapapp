@@ -13,12 +13,14 @@ export type WalletProvider = {
     disconnectWallets: () => Promise<void> | undefined | void,
     connectedWallets: Wallet[] | undefined,
     activeWallet: Wallet | undefined,
+    activeAccountAddress: string | undefined,
     autofillSupportedNetworks?: string[],
     withdrawalSupportedNetworks: string[],
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,
-    availableWalletsForConnect?: LSConnector[]
+    availableWalletsForConnect?: LSConnector[],
+    switchAccount: (connector: Wallet, address: string) => Promise<void>
 }
 
 

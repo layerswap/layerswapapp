@@ -9,6 +9,7 @@ import { Partner } from '../Models/Partner';
 import { ApiError } from '../Models/ApiError';
 import { ResolvePollingInterval } from '../components/utils/SwapStatus';
 import useWallet from "../hooks/useWallet"
+import { Wallet } from '../stores/walletStore';
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
@@ -29,6 +30,7 @@ export type UpdateInterface = {
     setDepositAddressIsFromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
     setSwapId: (value: string) => void
+    setSelectedSourceAccount: (value: { wallet: Wallet, address: string } | undefined) => void
 }
 
 export type SwapData = {
@@ -39,6 +41,7 @@ export type SwapData = {
     depositActionsResponse?: DepositAction[],
     withdrawType: WithdrawType | undefined,
     swapTransaction: SwapTransaction | undefined,
+    selectedSourceAccount?: { wallet: Wallet, address: string }
 }
 
 export function SwapDataProvider({ children }) {
@@ -53,12 +56,10 @@ export function SwapDataProvider({ children }) {
     const [interval, setInterval] = useState(0)
     const { data: swapData, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
-    const { provider } = useWallet(swapData?.data?.swap.source_network, 'asSource')
-    const wallet = provider?.activeWallet
-    const source_address = wallet?.address
+    const [selectedSourceAccount, setSelectedSourceAccount] = useState<{ wallet: Wallet, address: string } | undefined>()
 
     const use_deposit_address = swapData?.data?.swap?.use_deposit_address
-    const deposit_actions_endpoint = `/swaps/${swapId}/deposit_actions${(use_deposit_address || !source_address) ? "" : `?source_address=${source_address}`}`
+    const deposit_actions_endpoint = `/swaps/${swapId}/deposit_actions${(use_deposit_address || !selectedSourceAccount) ? "" : `?source_address=${selectedSourceAccount?.address}`}`
 
     const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(swapData ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
 
@@ -88,7 +89,7 @@ export function SwapDataProvider({ children }) {
         if (!values)
             throw new Error("No swap data")
 
-        const { to, fromCurrency, toCurrency, from, refuel, fromExchange, toExchange, depositMethod, amount, destination_address, source_wallet } = values
+        const { to, fromCurrency, toCurrency, from, refuel, fromExchange, toExchange, depositMethod, amount, destination_address } = values
 
         if (!to || !fromCurrency || !toCurrency || !from || !amount || !destination_address || !depositMethod)
             throw new Error("Form data is missing")
@@ -108,7 +109,7 @@ export function SwapDataProvider({ children }) {
             reference_id: query.externalId,
             refuel: !!refuel,
             use_deposit_address: depositMethod === 'wallet' ? false : true,
-            source_address: source_wallet?.address
+            source_address: selectedSourceAccount?.address
         }
 
         const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
@@ -121,7 +122,7 @@ export function SwapDataProvider({ children }) {
             throw new Error("Could not create swap")
 
         return swapId;
-    }, [])
+    }, [selectedSourceAccount])
 
     const updateFns: UpdateInterface = {
         createSwap: createSwap,
@@ -130,7 +131,8 @@ export function SwapDataProvider({ children }) {
         mutateSwap: mutate,
         setDepositAddressIsFromAccount: setDepositAddressIsFromAccount,
         setWithdrawType,
-        setSwapId
+        setSwapId,
+        setSelectedSourceAccount
     };
     return (
         <SwapDataStateContext.Provider value={{
@@ -140,7 +142,8 @@ export function SwapDataProvider({ children }) {
             depositAddressIsFromAccount: !!depositAddressIsFromAccount,
             swapResponse: swapResponse,
             swapApiError: error,
-            depositActionsResponse
+            depositActionsResponse,
+            selectedSourceAccount
         }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}

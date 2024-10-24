@@ -1,14 +1,15 @@
-import { Connector, useAccount, useConnectors, useDisconnect, useSwitchAccount } from "wagmi"
+import { Connector, useAccount, useConfig, useConnectors, useDisconnect, useSwitchAccount } from "wagmi"
 import { NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Wallet } from "../../../stores/walletStore"
 import { EVMAddresses, useEVMAddressesStore } from "../../../stores/evmAddressesStore"
 import { useWalletModalState } from "../../../stores/walletModalStateStore"
+import { getConnections } from '@wagmi/core'
 
 export default function useEVM(): WalletProvider {
     const name = 'EVM'
@@ -38,107 +39,14 @@ export default function useEVM(): WalletProvider {
 
     const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
     const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
+    const setActiveAccountAddress = useWalletModalState((state) => state.setActiveAccountAddress)
+    const activeAccountAddress = useWalletModalState((state) => state.activeAccountAddress)
 
     const { disconnectAsync } = useDisconnect()
-    const { connectors: connectedWallets } = useSwitchAccount()
+    const { connectors: connectedWallets, switchAccountAsync } = useSwitchAccount()
     const activeAccount = useAccount()
     const allConnectors = useConnectors()
-
-    // console.log("connectedWallets", connectedWallets)
-    // useEffect(() => {
-    //     (async () => {
-    //         connectedWallets.forEach(async (connector) => {
-    //             const res = connector.getAccounts && await connector.getAccounts()
-    //             if (res && res.length > 0) {
-    //                 console.log(connector.name, connector.id, res)
-    //             }
-    //         })
-    //     })()
-    // }, [connectedWallets])
-
-    const uniqueConnectors = connectedWallets.filter((value, index, array) => array.findIndex(a => a.name.toLowerCase() === value.name.toLowerCase()) === index)
-
-    const EVMAddresses = useEVMAddressesStore((state) => state.EVMAddresses)
-    const addEVMAddresses = useEVMAddressesStore((state) => state.addEVMAddresses)
-    const [isLoading, setIsLoading] = useState(false)
-    const [fetchAddresses, setFetchAddresses] = useState(false)
-    const lastUniqueConnectors = useRef<Connector[] | null>(null)
-
-    useEffect(() => {
-        if (!fetchAddresses || isLoading || (uniqueConnectors && lastUniqueConnectors.current && uniqueConnectors.toString() === lastUniqueConnectors.current.toString())) return
-
-        setIsLoading(true)
-
-        uniqueConnectors.forEach(async connector => {
-            if (connector.name.toLowerCase() === activeAccount?.connector?.name.toLowerCase()) {
-                const item: EVMAddresses = { connectorName: connector.name, addresses: [...activeAccount?.addresses || []] }
-                addEVMAddresses(item)
-            } else {
-                const res = connector.getAccounts && await connector.getAccounts()
-                if (res && res.length > 0) {
-                    const item = { connectorName: connector.name, addresses: res as string[] }
-                    addEVMAddresses(item)
-                }
-            }
-
-        })
-
-        lastUniqueConnectors.current = uniqueConnectors
-
-        setIsLoading(false)
-        setFetchAddresses(false)
-    }, [uniqueConnectors])
-
-    const getConnectedWallets = useCallback(() => {
-
-        //TODO: handle Ronin wallet case
-        // let roninWalletNetworks = [
-        //     KnownInternalNames.Networks.RoninMainnet,
-        //     KnownInternalNames.Networks.EthereumMainnet,
-        //     KnownInternalNames.Networks.PolygonMainnet,
-        //     KnownInternalNames.Networks.BNBChainMainnet,
-        //     KnownInternalNames.Networks.ArbitrumMainnet];
-
-        // if (connector == "com.roninchain.wallet" && network && !roninWalletNetworks.includes(network.name)) {
-        //     return undefined;
-        // }
-
-
-        let wallets: Wallet[] = []
-
-        if (uniqueConnectors) {
-            if (!fetchAddresses) setFetchAddresses(true)
-
-            for (let i = 0; i < uniqueConnectors.length; i++) {
-
-                const account = uniqueConnectors[i];
-                const accountIsActive = activeAccount?.connector?.name === account.name
-
-                const activeAddress = activeAccount?.address
-
-                const addresses = EVMAddresses?.find(w => w.connectorName.toLowerCase() === account.name.toLowerCase())?.addresses
-                const address = accountIsActive ? activeAddress : addresses?.[0]
-                if (!address) continue
-
-                let wallet: Wallet = {
-                    isActive: accountIsActive,
-                    address,
-                    addresses: addresses,
-                    connector: account.name,
-                    providerName: name,
-                    isLoading: isLoading,
-                    icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account), address }),
-                    connect: connectWallet,
-                    disconnect: () => disconnectWallet(account.name)
-                }
-
-                wallets.push(wallet)
-            }
-        }
-
-        return wallets
-
-    }, [uniqueConnectors, activeAccount, EVMAddresses, isLoading])
+    const config = useConfig()
 
     const connectWallet = () => {
         try {
@@ -149,6 +57,46 @@ export default function useEVM(): WalletProvider {
             console.log(e)
         }
     }
+
+    const resolvedConnectors: Wallet[] = useMemo(() => {
+        const connections = getConnections(config)
+
+        return connectedWallets.map(w => {
+
+            //TODO: handle Ronin wallet case
+            // let roninWalletNetworks = [
+            //     KnownInternalNames.Networks.RoninMainnet,
+            //     KnownInternalNames.Networks.EthereumMainnet,
+            //     KnownInternalNames.Networks.PolygonMainnet,
+            //     KnownInternalNames.Networks.BNBChainMainnet,
+            //     KnownInternalNames.Networks.ArbitrumMainnet];
+
+            // if (connector == "com.roninchain.wallet" && network && !roninWalletNetworks.includes(network.name)) {
+            //     return undefined;
+            // }
+
+            const connection = connections.find(c => c.connector.id === w.id)
+            const accountIsActive = activeAccount?.connector?.id === w.id
+
+            const addresses = connection?.accounts as (string[] | undefined);
+            const activeAddress = activeAccount?.address
+
+            const address = accountIsActive ? activeAddress : addresses?.[0]
+            if (!address) return undefined
+
+            return {
+                isActive: accountIsActive,
+                address,
+                addresses: addresses || [address],
+                connector: w.name,
+                providerName: name,
+                icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(w), address }),
+                connect: connectWallet,
+                disconnect: () => disconnectWallet(w.name)
+            }
+        }).filter(w => w !== undefined) as Wallet[]
+    }, [activeAccount, connectedWallets, config])
+
 
     const disconnectWallet = async (connectorName: string) => {
 
@@ -175,46 +123,34 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-    const availableWalletsforConnect = resolveAvailableWallets(allConnectors, connectedWallets)
+    const handleSwitchAccount = useCallback(async (wallet: Wallet, address: string) => {
+        const connector = allConnectors.find(c => c.name === wallet.connector)
+        if (!connector)
+            throw new Error("Connector not found")
+        const { accounts } = await switchAccountAsync({ connector })
+        const account = accounts.find(a => a.toLowerCase() === address.toLowerCase())
+        if (!account)
+            throw new Error("Account not found")
+        setActiveAccountAddress(account)
+    }, [])
+
     {/* //TODO: refactor ordering */ }
-    availableWalletsforConnect.forEach(w => { w["order"] = resolveWalletConnectorIndex(w.id) })
-    const resolvedConnectedWallets = getConnectedWallets()
+    allConnectors.forEach(w => { w["order"] = resolveWalletConnectorIndex(w.id) })
 
     const provider = {
         connectWallet,
         disconnectWallets,
-        connectedWallets: resolvedConnectedWallets,
-        activeWallet: resolvedConnectedWallets.find(w => w.isActive),
+        connectedWallets: resolvedConnectors,
+        activeWallet: resolvedConnectors.find(w => w.isActive),
+        activeAccountAddress: activeAccountAddress || activeAccount?.address,
+        switchAccount: handleSwitchAccount,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
-        availableWalletsForConnect: availableWalletsforConnect as any,
+        availableWalletsForConnect: allConnectors as any,
         name,
         id,
     }
 
     return provider
-}
-
-const resolveAvailableWallets = (all_connectors: readonly Connector[], connected: readonly Connector[]) => {
-    return all_connectors
-    const available_connectors = all_connectors.filter((connector, index, array) => {
-
-        if (connector.id === 'io.metamask') {
-            connector['rkDetails'] = array.find(a => a.id === 'metaMask')?.['rkDetails']
-            return true
-        }
-        if (connector.id === 'metaMask') {
-            return false
-        }
-
-        return connector?.['rkDetails']
-            && array.findIndex(a => a?.['rkDetails']?.['id'] === connector?.['rkDetails']?.['id']) === index
-        // && !connected.some((connected_connector) => {
-        //     return connected_connector?.['rkDetails']?.['id'] === connector?.['rkDetails']?.['id']
-        // })
-    }).sort((a, b) => a['rkDetails']?.['index'] - b['rkDetails']?.['index'])
-
-    return available_connectors
-
 }

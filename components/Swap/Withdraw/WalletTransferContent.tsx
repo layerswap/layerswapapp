@@ -8,52 +8,69 @@ import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../Input/Address/AddressPicker';
 import { RefreshCw } from 'lucide-react';
 import { truncateDecimals } from '../../utils/RoundDecimals';
-import { useSwitchAccount } from 'wagmi';
+import { useConfig, useSwitchAccount } from 'wagmi';
 import { Wallet } from '../../../stores/walletStore';
 
 const WalletTransferContent: FC = () => {
-    const { swapResponse } = useSwapDataState()
+    const { swapResponse, selectedSourceAccount } = useSwapDataState()
+    const { setSelectedSourceAccount } = useSwapDataUpdate()
     const { swap } = swapResponse || {}
     const { source_exchange, source_token, source_network } = swap || {}
     const [isLoading, setIsloading] = useState(false);
     const { mutateSwap } = useSwapDataUpdate()
-    const { provider } = useWallet(source_network, 'withdrawal')
+    const { provider, wallets } = useWallet(source_network, 'withdrawal')
     const all_wallets = provider?.connectedWallets
-    const activeWallet = provider?.activeWallet
     const { balances, isBalanceLoading } = useBalancesState()
     const { fetchBalance, fetchGas } = useBalance()
     const { switchAccount, connectors } = useSwitchAccount()
-    const walletBalance = activeWallet && balances[activeWallet.address || '']?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
-    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
-    const changeWallet = useCallback(async (wallet: Wallet) => {
+    const changeWallet = useCallback(async (wallet: Wallet, address: string) => {
         const connector = connectors?.find(c => c.name === wallet.connector)
         if (!connector) return
         switchAccount({ connector })
+        setSelectedSourceAccount({ wallet, address })
     }, [provider, connectors])
 
     useEffect(() => {
-        source_network && source_token && fetchBalance(source_network, source_token);
-    }, [source_network, source_token, activeWallet?.address])
+        if(source_network && source_token){
+            all_wallets?.forEach(wallet => {
+                wallet.addresses.forEach(address => {
+                    fetchBalance(source_network, source_token, address);
+                })
+            })
+        }
+    }, [source_network, source_token, all_wallets?.length])
+
+    const selectedWallet = selectedSourceAccount?.wallet
+    const activeWallet = source_network ? provider?.activeWallet : wallets[0]
 
     useEffect(() => {
-        activeWallet?.address && source_network && source_token && fetchGas(source_network, source_token, activeWallet.address)
-    }, [source_network, source_token, activeWallet?.address])
+        if (!selectedSourceAccount && activeWallet) {
+            setSelectedSourceAccount({
+                wallet: activeWallet,
+                address: activeWallet.address
+            })
+        }
+    }, [activeWallet, setSelectedSourceAccount])
+
+    useEffect(() => {
+        selectedSourceAccount?.address && source_network && source_token && fetchGas(source_network, source_token, selectedSourceAccount.address)
+    }, [source_network, source_token, selectedSourceAccount?.address])
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!activeWallet) return
+        if (!selectedSourceAccount) return
         setIsloading(true);
-        await activeWallet.disconnect()
+        await selectedSourceAccount.wallet.disconnect()
         if (source_exchange) await mutateSwap()
         setIsloading(false);
-    }, [source_network?.type, swap?.source_exchange, activeWallet, setIsloading, isLoading])
+    }, [source_network?.type, swap?.source_exchange, selectedSourceAccount, setIsloading, isLoading])
 
     let accountAddress: string | undefined = ""
     if (swap?.source_exchange) {
         accountAddress = swap.exchange_account_name || ""
     }
-    else if (activeWallet) {
-        accountAddress = activeWallet.address || "";
+    else if (selectedSourceAccount) {
+        accountAddress = selectedSourceAccount.address || "";
     }
 
     if (!accountAddress || (swap?.source_exchange && !swap.exchange_account_connected)) {
@@ -82,32 +99,37 @@ const WalletTransferContent: FC = () => {
             all_wallets &&
             source_network &&
             all_wallets.map(wallet => {
-                return <div onClick={() => changeWallet(wallet)} key={`${wallet.address}_${wallet.connector}`} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
-                    <AddressWithIcon addressItem={{ address: wallet?.address || '', group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} destination={source_network} />
-                    <div>
-                        {
-                            walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
-                                <div className="text-right text-secondary-text font-normal text-sm">
-                                    {
-                                        isBalanceLoading ?
-                                            <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                                            :
-                                            <>
-                                                <span>{walletBalanceAmount}</span> <span>{source_token?.symbol}</span>
-                                            </>
-                                    }
+                return wallet.addresses.map(account => {
+                    const walletBalance = selectedSourceAccount && balances[account || '']?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
+                    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
+
+                    return <div onClick={() => changeWallet(wallet, account)} key={`${account}_${wallet.connector}`} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
+                        <AddressWithIcon addressItem={{ address: account || '', group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} destination={source_network} />
+                        <div>
+                            {
+                                walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
+                                    <div className="text-right text-secondary-text font-normal text-sm">
+                                        {
+                                            isBalanceLoading ?
+                                                <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                                :
+                                                <>
+                                                    <span>{walletBalanceAmount}</span> <span>{source_token?.symbol}</span>
+                                                </>
+                                        }
+                                    </div>
+                                    :
+                                    <></>
+                            }
+                            {
+                                selectedSourceAccount?.address === account && selectedSourceAccount?.wallet?.connector === wallet.connector &&
+                                <div className="text-right text-secondary-text font-normal text-xs">
+                                    <span className="text-primary-text">Active</span>
                                 </div>
-                                :
-                                <></>
-                        }
-                        {
-                            activeWallet?.address === wallet.address && activeWallet?.connector === wallet.connector &&
-                            <div className="text-right text-secondary-text font-normal text-xs">
-                                <span className="text-primary-text">Active</span>
-                            </div>
-                        }
+                            }
+                        </div>
                     </div>
-                </div>
+                })
             })
         }
     </div>

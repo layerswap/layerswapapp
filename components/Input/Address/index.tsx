@@ -43,7 +43,6 @@ const Address = ({ partner, children }: AddressProps) => {
     //     if ((previouslySelectedDestination.current &&
     //         (destination?.type != previouslySelectedDestination.current?.type)
     //         || destination && !isValidAddress(values.destination_address, destination))) {
-    //         debugger
     //         setFieldValue("destination_address", '')
     //         setDepositAddressIsFromAccount(false)
     //     }
@@ -55,7 +54,6 @@ const Address = ({ partner, children }: AddressProps) => {
     // //If destination exchange changed, remove destination_address
     // useEffect(() => {
     //     if (previouslySelectedDestinationExchange.current && (toExchange?.name != previouslySelectedDestinationExchange.current?.name)) {
-    //         debugger
     //         setFieldValue("destination_address", '')
     //     }
     //     previouslySelectedDestinationExchange.current = toExchange

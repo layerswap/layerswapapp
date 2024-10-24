@@ -1,6 +1,7 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import {
     useAccount,
+    useConfig,
     useSendTransaction
 } from "wagmi";
 import { createPublicClient, http, parseEther } from 'viem'
@@ -15,6 +16,7 @@ import { ButtonWrapper } from "./buttons";
 import { useSwapTransactionStore } from "../../../../../stores/swapTransactionStore";
 import { useSwapDataState } from "../../../../../context/swap";
 import { datadogRum } from "@datadog/browser-rum";
+import { sendTransaction } from '@wagmi/core'
 
 const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     depositAddress,
@@ -26,9 +28,13 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     const [buttonClicked, setButtonClicked] = useState(false)
     const [openChangeAmount, setOpenChangeAmount] = useState(false)
     const [estimatedGas, setEstimatedGas] = useState<bigint>()
-    const { address, chain } = useAccount();
+
+    const { selectedSourceAccount } = useSwapDataState()
+
+    const { chain } = useAccount();
     const { setSwapTransaction } = useSwapTransactionStore();
     const { depositActionsResponse } = useSwapDataState()
+    const config = useConfig()
 
     const callData = depositActionsResponse?.find(da => true)?.call_data as `0x${string}` | undefined
 
@@ -41,10 +47,10 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
 
     useEffect(() => {
         (async () => {
-            if (address && depositAddress) {
+            if (selectedSourceAccount?.address && depositAddress) {
                 try {
                     const gasEstimate = await publicClient.estimateGas({
-                        account: address,
+                        account: selectedSourceAccount.address as `0x${string}`,
                         to: depositAddress,
                         data: callData,
                     })
@@ -59,7 +65,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
                 }
             }
         })()
-    }, [address, callData, depositAddress, amount])
+    }, [selectedSourceAccount?.address, callData, depositAddress, amount])
 
     useEffect(() => {
         try {
@@ -82,13 +88,24 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
                 throw new Error('Missing amount')
             if (!transaction.sendTransaction)
                 throw new Error('Missing sendTransaction')
-            const tx = {
+            if (!selectedSourceAccount?.address)
+                throw new Error('No selected account')
+            // const tx = {
+            //     to: depositAddress,
+            //     value: parseEther(amount?.toString()),
+            //     gas: estimatedGas,
+            //     data: callData,
+            //     account: '0xA0Cf798816D4b9b9866b5330EEa46a18382f251e'
+            // }
+            // transaction?.sendTransaction(tx)
+            const result = await sendTransaction(config, {
+                data: callData,
                 to: depositAddress,
                 value: parseEther(amount?.toString()),
                 gas: estimatedGas,
-                data: callData
-            }
-            transaction?.sendTransaction(tx)
+                account: selectedSourceAccount.address as `0x${string}`,
+            })
+            setSwapTransaction(swapId, BackendTransactionStatus.Pending, result)
         } catch (e) {
             const error = new Error(e)
             error.name = "TransferTokenError"

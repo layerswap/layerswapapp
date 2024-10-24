@@ -14,6 +14,7 @@ import SwapButton from "../buttons/swapButton";
 import Balance from "./dynamic/Balance";
 import AddressIcon from "../AddressIcon";
 import { isValidAddress } from "../../lib/address/validator";
+import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -23,33 +24,35 @@ const Component: FC = () => {
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
+    const { setSelectedSourceAccount } = useSwapDataUpdate()
+    const { selectedSourceAccount } = useSwapDataState()
     const walletNetwork = values.fromExchange ? undefined : values.from
 
     const { provider, wallets } = useWallet(walletNetwork, 'asSource')
 
-    const selectedWallet = values.source_wallet
+    const selectedWallet = selectedSourceAccount?.wallet
     const activeWallet = walletNetwork ? provider?.activeWallet : wallets[0]
 
-    const source_addsress = values.source_wallet?.address
+    const source_addsress = selectedSourceAccount?.address
 
     useEffect(() => {
         if (source_addsress && !isValidAddress(source_addsress, walletNetwork)) {
-            setFieldValue('source_wallet', undefined)
-            setFieldValue('source_address', undefined)
+            setSelectedSourceAccount(undefined)
         }
     }, [source_addsress, walletNetwork])
 
     useEffect(() => {
         if (!source_addsress && activeWallet && values.depositMethod !== 'deposit_address') {
-            setFieldValue('source_wallet', activeWallet)
-            setFieldValue('source_address', activeWallet?.address)
+            setSelectedSourceAccount({
+                wallet: activeWallet,
+                address: activeWallet.address
+            })
         }
     }, [activeWallet, source_addsress, values.depositMethod])
 
     useEffect(() => {
-        if (values.depositMethod === 'deposit_address' || !activeWallet?.address || (values.source_address && !wallets.some(w => w?.addresses?.some(a => a === values.source_address)))) {
-            setFieldValue('source_wallet', undefined)
-            setFieldValue('source_address', undefined)
+        if (values.depositMethod === 'deposit_address' || !activeWallet?.address || (selectedSourceAccount && !wallets.some(w => w?.addresses?.some(a => a === selectedSourceAccount.address)))) {
+            setSelectedSourceAccount(undefined)
         }
     }, [values.depositMethod, activeWallet?.address, wallets.length])
 
@@ -58,13 +61,16 @@ const Component: FC = () => {
     }
 
     const handleSelectWallet = (wallet: Wallet | undefined, address: string | undefined) => {
-        setFieldValue('source_wallet', wallet)
-        setFieldValue('source_address', address)
-        if (!wallet) {
-            setFieldValue('depositMethod', 'deposit_address')
+        if (wallet && address) {
+            setSelectedSourceAccount({
+                wallet,
+                address
+            })
+            setFieldValue('depositMethod', 'wallet')
         }
         else {
-            setFieldValue('depositMethod', 'wallet')
+            setSelectedSourceAccount(undefined)
+            setFieldValue('depositMethod', 'deposit_address')
         }
         setOpenModal(false)
     }
@@ -88,14 +94,14 @@ const Component: FC = () => {
                 :
                 <div className="rounded-lg bg-secondary-700 pl-2 flex items-center space-x-2 text-sm leading-4">
                     {
-                        selectedWallet && values.source_wallet?.address && <>
+                        selectedWallet && selectedSourceAccount?.address && <>
                             <div><Balance values={values} direction="from" /></div>
                             <div onClick={handleWalletChange} className="rounded-lg bg-secondary-500 flex space-x-1 items-center py-0.5 pl-2 pr-1 cursor-pointer">
                                 <div className="inline-flex items-center relative p-0.5">
                                     <selectedWallet.icon className="w-5 h-5" />
                                 </div>
                                 <div className="text-primary-text">
-                                    {shortenAddress(values.source_wallet.address)}
+                                    {shortenAddress(selectedSourceAccount.address)}
                                 </div>
                                 <div className="w-5 h-5 items-center flex">
                                     <ChevronDown className="h-4 w-4" aria-hidden="true" />
@@ -193,12 +199,10 @@ export const FormSourceWalletButton: FC = () => {
 }
 
 export const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect }) => {
-    const {
-        values,
-    } = useFormikContext<SwapFormValues>();
 
     const { provider, wallets } = useWallet(route, purpose)
     const connectedWallets = route ? provider?.connectedWallets : wallets
+    const { selectedSourceAccount } = useSwapDataState()
 
     return (
         <div className="space-y-3 mt-4">
@@ -215,7 +219,7 @@ export const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect }) =
                     connectedWallets?.map((wallet) => {
                         return <>
                             {wallet.addresses?.map((address) => {
-                                const isSelected = values.source_address === address
+                                const isSelected = selectedSourceAccount?.address === address
                                 return <div key={address} onClick={() => onSelect(wallet, address)} className="w-full cursor-pointer relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
                                     <div className="flex space-x-4 items-center">
                                         <div className="flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9">
