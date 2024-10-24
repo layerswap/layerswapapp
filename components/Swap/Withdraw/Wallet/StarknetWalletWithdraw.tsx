@@ -14,7 +14,7 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
 
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { getWithdrawalProvider: getProvider, connectWallet } = useWallet()
+    const { getWithdrawalProvider: getProvider } = useWallet()
     const { userId } = useAuthState()
     const { setSwapTransaction } = useSwapTransactionStore();
 
