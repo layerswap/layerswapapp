@@ -99,8 +99,6 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-
-
     return {
         getConnectedWallet: getWallet,
         connectWallet,
