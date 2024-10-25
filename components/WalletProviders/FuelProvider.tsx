@@ -1,7 +1,7 @@
 
 import { defaultConnectors } from '@fuels/connectors';
 import { FuelProvider } from '@fuels/react';
-import { CHAIN_IDS, Provider } from 'fuels';
+import { CHAIN_IDS, Provider } from '@fuel-ts/account';
 import { useConfig } from 'wagmi';
 import KnownInternalNames from '../../lib/knownIds';
 import { useSettingsState } from '../../context/settings';
