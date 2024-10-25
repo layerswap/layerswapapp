@@ -20,13 +20,13 @@ export default function useFuel(): WalletProvider {
 
     const getWallet = () => {
 
-        if (!isConnecting && !isFetching && !isRefetching && storageAvailable && !wallet?.address && !isLoading) {
-            const fuelCurrentConnector = getItem('fuel-current-connector', 'localStorage')
+        // if (!isConnecting && !isFetching && !isRefetching && storageAvailable && !wallet?.address && !isLoading) {
+        //     const fuelCurrentConnector = getItem('fuel-current-connector', 'localStorage')
 
-            if (fuelCurrentConnector && fuelCurrentConnector === 'Bako Safe') {
-                setItem('fuel-current-connector', '', 'localStorage')
-            }
-        }
+        //     if (fuelCurrentConnector && fuelCurrentConnector === 'Bako Safe') {
+        //         setItem('fuel-current-connector', '', 'localStorage')
+        //     }
+        // }
 
         if (wallet) {
             const fuelCurrentConnector = getItem('fuel-current-connector', 'localStorage')
