@@ -35,13 +35,15 @@ export function WalletModalProvider({ children }) {
         <>
             {children}
             <Modal height="fit" show={open} setShow={setOpen} modalId={"connectNewWallet"} header={
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                     {
                         selectedProvider &&
-                        <IconButton onClick={goBack} icon={
-                            <ChevronLeft className="h-6 w-6" />
-                        }>
-                        </IconButton>
+                        <div className='-ml-2 mt-0.5'>
+                            <IconButton onClick={goBack} icon={
+                                <ChevronLeft className="h-6 w-6" />
+                            }>
+                            </IconButton>
+                        </div>
                     }
                     <p>Connect wallet</p>
                 </div>
