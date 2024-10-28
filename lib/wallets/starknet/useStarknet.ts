@@ -43,18 +43,53 @@ export default function useStarknet(): WalletProvider {
     const connectWallet = useCallback(async () => {
         toast.dismiss('connect-wallet')
         const constants = (await import('starknet')).constants
+
+        const InjectedConnector = (await import('../../../node_modules/starknetkit/dist/injectedConnector')).InjectedConnector
+        const ArgentMobileConnector = (await import('../../../node_modules/starknetkit/dist/argentMobile')).ArgentMobileConnector
+        const WebWalletConnector = (await import('../../../node_modules/starknetkit/dist/webwalletConnector')).WebWalletConnector
+
         const connect = (await import('starknetkit')).connect
 
-        try {
-            const { wallet, connectorData, connector } = await connect({
-                argentMobileOptions: {
+        const resolveConnectors = async () => {
+            const isSafari =
+                typeof window !== "undefined"
+                    ? /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+                    : false
+
+            const defaultConnectors: any[] = []
+
+            if (!isSafari) {
+                defaultConnectors.push(
+                    new InjectedConnector({ options: { id: "argentX" } }),
+                )
+                defaultConnectors.push(
+                    new InjectedConnector({ options: { id: "braavos" } }),
+                )
+                defaultConnectors.push(
+                    new InjectedConnector({ options: { id: "keplr" } }),
+                )
+            }
+
+            defaultConnectors.push(ArgentMobileConnector.init({
+                options: {
                     dappName: 'Layerswap',
                     projectId: WALLETCONNECT_PROJECT_ID,
                     url: 'https://www.layerswap.io/app',
                     description: 'Move crypto across exchanges, blockchains, and wallets.',
-                },
+                }
+            }))
+            defaultConnectors.push(new WebWalletConnector())
+
+            return defaultConnectors
+        }
+
+        const connectors = await resolveConnectors()
+
+        try {
+            const { wallet, connectorData, connector } = await connect({
                 dappName: 'Layerswap',
-                modalMode: 'alwaysAsk'
+                modalMode: 'alwaysAsk',
+                connectors,
             })
             const chainId = `0x${connectorData?.chainId?.toString(16)}`
 
@@ -68,7 +103,11 @@ export default function useStarknet(): WalletProvider {
             }
 
             if (wallet && connectorData?.account && connector) {
-                const account = await connector.account({})
+                const starkent = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetSepolia)
+                const WalletAccount = (await import('starknet')).WalletAccount
+
+                const starknetWalletAccount = new WalletAccount({ nodeUrl: starkent?.node_url }, wallet);
+
                 addWallet({
                     address: connectorData?.account,
                     addresses: [connectorData?.account],
@@ -77,7 +116,7 @@ export default function useStarknet(): WalletProvider {
                     connector: wallet.name,
                     providerName: name,
                     metadata: {
-                        starknetAccount: account,
+                        starknetAccount: starknetWalletAccount,
                         wallet: wallet
                     },
                     isActive: true,
@@ -102,8 +141,8 @@ export default function useStarknet(): WalletProvider {
             console.log(e)
         }
     }
-
-    const provider = {
+    
+    return {
         activeAccountAddress: activeWallet?.address,
         switchAccount: async () => { },
         connectedWallets: getWallet(),
@@ -116,6 +155,4 @@ export default function useStarknet(): WalletProvider {
         name,
         id,
     }
-
-    return provider
 }

@@ -65,9 +65,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
                     <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
                     :
                     (balanceAmount !== undefined && !isNaN(balanceAmount)) &&
-                    <>
-                        {balanceAmount.toFixed(token?.precision)}
-                    </>
+                    <span>{balanceAmount > 0 ? balanceAmount.toFixed(token?.precision) : balanceAmount}</span>
             }
         </>
     )

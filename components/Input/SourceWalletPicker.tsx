@@ -36,7 +36,7 @@ const Component: FC = () => {
     const source_addsress = selectedSourceAccount?.address
 
     useEffect(() => {
-        if (source_addsress && !isValidAddress(source_addsress, walletNetwork)) {
+        if (source_addsress && walletNetwork && !isValidAddress(source_addsress, walletNetwork)) {
             setSelectedSourceAccount(undefined)
         }
     }, [source_addsress, walletNetwork])
