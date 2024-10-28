@@ -16,7 +16,6 @@ import { ButtonWrapper } from "./buttons";
 import { useSwapTransactionStore } from "../../../../../stores/swapTransactionStore";
 import { useSwapDataState } from "../../../../../context/swap";
 import { datadogRum } from "@datadog/browser-rum";
-import { sendTransaction } from '@wagmi/core'
 
 const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     depositAddress,
@@ -34,7 +33,6 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     const { chain } = useAccount();
     const { setSwapTransaction } = useSwapTransactionStore();
     const { depositActionsResponse } = useSwapDataState()
-    const config = useConfig()
 
     const callData = depositActionsResponse?.find(da => true)?.call_data as `0x${string}` | undefined
 
@@ -49,12 +47,13 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
         (async () => {
             if (selectedSourceAccount?.address && depositAddress) {
                 try {
-                    const gasEstimate = await publicClient.estimateGas({
-                        account: selectedSourceAccount.address as `0x${string}`,
-                        to: depositAddress,
-                        data: callData,
-                    })
-                    setEstimatedGas(gasEstimate)
+                    //TODO: somehow does not work for none active accounts
+                    // const gasEstimate = await publicClient.estimateGas({
+                    //     account: selectedSourceAccount.address as `0x${string}`,
+                    //     to: depositAddress,
+                    //     data: callData,
+                    // })
+                    // setEstimatedGas(gasEstimate)
                 }
                 catch (e) {
                     const error = e;
@@ -90,22 +89,14 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
                 throw new Error('Missing sendTransaction')
             if (!selectedSourceAccount?.address)
                 throw new Error('No selected account')
-            // const tx = {
-            //     to: depositAddress,
-            //     value: parseEther(amount?.toString()),
-            //     gas: estimatedGas,
-            //     data: callData,
-            //     account: '0xA0Cf798816D4b9b9866b5330EEa46a18382f251e'
-            // }
-            // transaction?.sendTransaction(tx)
-            const result = await sendTransaction(config, {
-                data: callData,
+            const tx = {
                 to: depositAddress,
                 value: parseEther(amount?.toString()),
                 gas: estimatedGas,
-                account: selectedSourceAccount.address as `0x${string}`,
-            })
-            setSwapTransaction(swapId, BackendTransactionStatus.Pending, result)
+                data: callData,
+                account: selectedSourceAccount.address
+            }
+            transaction?.sendTransaction(tx as any)
         } catch (e) {
             const error = new Error(e)
             error.name = "TransferTokenError"
