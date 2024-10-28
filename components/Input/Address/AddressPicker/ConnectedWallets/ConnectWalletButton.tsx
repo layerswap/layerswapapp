@@ -1,24 +1,16 @@
 import { RefreshCw } from "lucide-react";
-import { WalletProvider } from "../../../../hooks/useWallet";
-import { addressFormat } from "../../../../lib/address/formatter";
-import { ResolveConnectorIcon } from "../../../icons/ConnectorIcons";
-import { Wallet } from "../../../../stores/walletStore";
-import { Network } from "../../../../Models/Network";
-import FilledCheck from "../../../icons/FilledCheck";
-import AddressWithIcon from "./AddressWithIcon";
-import { AddressGroup } from ".";
+import { WalletProvider } from "../../../../../hooks/useWallet";
+import { ResolveConnectorIcon } from "../../../../icons/ConnectorIcons";
+import { Network } from "../../../../../Models/Network";
 import { FC, useState } from "react";
 
 type Props = {
     provider: WalletProvider,
-    onClick: (address: string, wallet: Wallet) => void,
     onConnect?: () => void,
-    connectedWallet: Wallet | undefined,
     destination: Network,
-    destination_address?: string | undefined
 }
 
-const ConnectWalletButton: FC<Props> = ({ provider, onClick, onConnect, connectedWallet, destination, destination_address }) => {
+const ConnectWalletButton: FC<Props> = ({ provider, onConnect, destination }) => {
 
     const [isLoading, setIsLoading] = useState(false)
 
