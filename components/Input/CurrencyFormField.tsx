@@ -12,17 +12,13 @@ import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import useSWR from "swr";
 import { ApiResponse } from "../../Models/ApiResponse";
 import { Balance } from "../../Models/Balance";
-import dynamic from "next/dynamic";
 import { QueryParams } from "../../Models/QueryParams";
 import { ApiError, LSAPIKnownErrorCode } from "../../Models/ApiError";
 import { resolveNetworkRoutesURL } from "../../helpers/routes";
 import useWallet from "../../hooks/useWallet";
 import { ONE_WEEK } from "./NetworkFormField";
 import RouteIcon from "./RouteIcon";
-
-const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
-    loading: () => <></>,
-});
+import { useSwapDataState } from "../../context/swap";
 
 const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -34,11 +30,12 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { balances } = useBalancesState()
+    const { selectedSourceAccount } = useSwapDataState()
 
     const { provider: destinationWalletProvider } = useWallet(to, 'autofil')
     const { provider: sourceWalletProvider } = useWallet(from, 'autofil')
 
-    const address = direction === 'from' ? sourceWalletProvider?.activeWallet?.address : destination_address || destinationWalletProvider?.activeWallet?.address
+    const address = direction === 'from' ? (selectedSourceAccount?.address || sourceWalletProvider?.activeWallet?.address) : (destination_address || destinationWalletProvider?.activeWallet?.address)
 
     const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
     const apiClient = new LayerSwapApiClient()
@@ -142,7 +139,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     return (
         <div className="relative">
-            {/* <BalanceComponent values={values} direction={direction} /> */}
             <PopoverSelectWrapper
                 placeholder="Asset"
                 values={currencyMenuItems}

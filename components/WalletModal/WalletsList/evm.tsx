@@ -24,7 +24,6 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, o
                 const Icon = resolveWalletConnectorIcon({ connector: connectorId })
 
                 const isLoading = provider.connector?.name === connectorName
-                const name = connector?.['rkDetails']?.['id']
 
                 return (
                     <div key={index}>
