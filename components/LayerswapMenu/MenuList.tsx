@@ -100,10 +100,10 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
             </Menu.Group>
 
             <Menu.Group>
-                <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/privacy-policy' target="_blank" icon={<Shield className="h-5 w-5" />} >
+                <Menu.Item pathname='https://docs.layerswap.io/user-docs/more-information/privacy-policy' target="_blank" icon={<Shield className="h-5 w-5" />} >
                     Privacy Policy
                 </Menu.Item>
-                <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/terms-of-services' target="_blank" icon={<LibraryIcon className="h-5 w-5" />} >
+                <Menu.Item pathname='https://docs.layerswap.io/user-docs/more-information/terms-of-services' target="_blank" icon={<LibraryIcon className="h-5 w-5" />} >
                     Terms of Service
                 </Menu.Item>
             </Menu.Group>
