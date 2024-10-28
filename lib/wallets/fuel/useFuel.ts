@@ -21,7 +21,7 @@ import { useWallet as useSolanaWallet } from "@solana/wallet-adapter-react"
 import shortenAddress from "../../../components/utils/ShortenAddress";
 
 export default function useFuel(): WalletProvider {
-    const autofillSupportedNetworks = [KnownInternalNames.Networks.FuelTestnet]
+    const autofillSupportedNetworks = [KnownInternalNames.Networks.FuelTestnet, KnownInternalNames.Networks.FuelMainnet]
     const name = 'fuel'
 
     const { wallet, isRefetching, isLoading, isFetching } = useWallet()
@@ -41,7 +41,7 @@ export default function useFuel(): WalletProvider {
         //     if (fuelCurrentConnector && fuelCurrentConnector === 'Bako Safe') {
         //         setItem('fuel-current-connector', '', 'localStorage')
         //     }
-        // }
+        // 
 
         if (wallet) {
             let fuelCurrentConnector = getItem('fuel-current-connector', 'localStorage')
