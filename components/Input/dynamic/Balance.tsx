@@ -84,7 +84,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
                         <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
                             <div>
                                 <span>Balance:&nbsp;</span>
-                                <span>{balanceAmount.toFixed(token?.precision)}</span>
+                                <span>{balanceAmount > 0 ? balanceAmount.toFixed(token?.precision): balanceAmount}</span>
                             </div>
                         </div>
                     </div>

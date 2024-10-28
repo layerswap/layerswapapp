@@ -41,7 +41,7 @@ export default function useFuel(): WalletProvider {
         //     if (fuelCurrentConnector && fuelCurrentConnector === 'Bako Safe') {
         //         setItem('fuel-current-connector', '', 'localStorage')
         //     }
-        // }
+        // 
 
         if (wallet) {
             let fuelCurrentConnector = getItem('fuel-current-connector', 'localStorage')

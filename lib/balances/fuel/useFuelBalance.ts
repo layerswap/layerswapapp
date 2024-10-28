@@ -56,16 +56,14 @@ export default function useFuelBalance(): BalanceProvider {
                 }
             } = await response.json();
 
-            for (let i = 0; i < json.data.balances.nodes.length; i++) {
+            for (let i = 0; i < network.tokens.length; i++) {
 
-                const balance = json.data.balances.nodes[i]
-                const token = network.tokens.find(t => t.contract === balance.assetId)
-
-                if (!token) return
+                const token = network.tokens[i]
+                const balance = json.data.balances.nodes.find(b => b?.assetId === token.contract) || null
 
                 const balanceObj: Balance = {
                     network: networkName,
-                    amount: formatAmount(Number(balance.amount), token.decimals),
+                    amount: formatAmount(Number(balance?.amount || 0), token.decimals),
                     decimals: token.decimals,
                     isNativeCurrency: network.token?.symbol === token.symbol,
                     token: token.symbol,
@@ -118,9 +116,7 @@ export default function useFuelBalance(): BalanceProvider {
                 }),
             }));
             const json: any = await response.json();
-            const balanceAmount = Number(json.data.balance.amount)
-
-            if (!balanceAmount) return
+            const balanceAmount = Number(json.data.balance.amount || 0)
 
             const balance: Balance = {
                 network: networkName,
