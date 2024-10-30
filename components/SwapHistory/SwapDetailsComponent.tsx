@@ -68,7 +68,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
         truncateDecimals(refuel.amount, nativeCurrency?.precision) : null
     const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.price_in_usd || 1) * (truncatedRefuelAmount || 0)).toFixed(2)
 
-
     let sourceAccountAddress: string | undefined = undefined
     if (hideFrom && account) {
         sourceAccountAddress = account;
@@ -209,7 +208,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                     <AccordionTrigger className='w-full'>
                                         <div className="flex justify-between items-baseline text-sm w-full mr-1">
                                             <span className="text-left">Fees</span>
-                                            <span className='font-semibold text-primary-text'>{displayLayerswapFeeInUsd}</span>
+                                            <span className='font-semibold text-primary-text'>{displayCalculatedFeeAmountInUsd}</span>
                                         </div>
                                     </AccordionTrigger>
                                     <AccordionContent >
@@ -221,13 +220,13 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                     <p className="text-secondary-text text-xs flex justify-end">{displayLayerswapFeeInUsd}</p>
                                                 </div>
                                             </div>
-                                            {/* <div className="flex justify-between items-baseline text-sm">
+                                            <div className="flex justify-between items-baseline text-sm">
                                                 <span className="text-left text-secondary-text">Gas Fee</span>
                                                 <div className="flex flex-col items-end justify-end">
                                                     <p className="text-primary-text text-sm font-semibold">{inputTransactionFee?.toFixed(swapInputTransaction?.fee_token?.precision)} {swapInputTransaction?.fee_token?.symbol}</p>
                                                     <p className="text-secondary-text text-xs flex justify-end">{displayInputFeeInUsd}</p>
                                                 </div>
-                                            </div> */}
+                                            </div>
                                         </div>
                                     </AccordionContent>
                                 </AccordionItem>
