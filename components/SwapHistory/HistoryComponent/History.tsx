@@ -139,9 +139,8 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
                 values: g?.values?.filter(swap => {
                     const swapInputTransaction = swap?.swap?.transactions?.find(t => t.type === TransactionType.Input)
                     const fromAddress = addressFormat(swapInputTransaction?.from || '', swap.swap.source_network || null) ?? "";
-                    const toAddress = addressFormat(swapInputTransaction?.to || '', swap.swap.destination_network || null) ?? "";
-
-                    return selectedWallets.includes(fromAddress) || selectedWallets.includes(toAddress)
+                    const destAddress = addressFormat(swap.swap.destination_address || '', swap.swap.destination_network || null) ?? "";
+                    return selectedWallets.includes(fromAddress) || selectedWallets.includes(destAddress)
                 })
             };
         }).filter(g => g.values.length > 0)
