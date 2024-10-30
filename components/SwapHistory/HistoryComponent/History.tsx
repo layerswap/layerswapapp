@@ -73,7 +73,7 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
         if (!network) return w.address
         return addressFormat(w.address, network)
     })
-    
+
     const { setSelectedSwap, selectedSwap } = useHistoryContext()
     const handleopenSwapDetails = (swap: Swap) => {
         setSelectedSwap(swap)
@@ -140,7 +140,7 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
                     const swapInputTransaction = swap?.swap?.transactions?.find(t => t.type === TransactionType.Input)
                     const fromAddress = addressFormat(swapInputTransaction?.from || '', swap.swap.source_network || null) ?? "";
                     const toAddress = addressFormat(swapInputTransaction?.to || '', swap.swap.destination_network || null) ?? "";
-                    
+
                     return selectedWallets.includes(fromAddress) || selectedWallets.includes(toAddress)
                 })
             };
@@ -185,9 +185,11 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
                     <div>
                         <Menu.Button
                             onClick={() => setIsOpen(!isOpen)}
-                            className="flex w-full items-center justify-center space-x-2 rounded-md bg-secondary-700 px-3 py-1 text-sm text-primary-text-placeholder mb-5"
+                            className={`${isOpen ? "text-primary-text" : "text-primary-text-placeholder"} flex w-full items-center justify-center space-x-2 rounded-md bg-secondary-700 px-3 py-1 text-sm mb-5`}
                         >
-                            <span>Wallets</span>
+                            <span>
+                                Wallets{selectedWallets.length > 0 ? ` (${selectedWallets.length})` : ''}
+                            </span>
                             <ChevronDown className="size-4" />
                         </Menu.Button>
                     </div>
