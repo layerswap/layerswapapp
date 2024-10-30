@@ -338,14 +338,6 @@ function resolveDate(dateInput) {
     // Convert the time difference from milliseconds to days
     const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
 
-    // Format the input date to DD/MM/YYYY
-    const formatDate = (date) => {
-        const day = ("0" + date.getDate()).slice(-2);
-        const month = ("0" + (date.getMonth() + 1)).slice(-2);
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    }
-
     // Resolve the output based on the difference in days
     switch (dayDiff) {
         case 0:
@@ -364,7 +356,7 @@ function resolveDate(dateInput) {
             return "6 days ago";
         default:
             // If the date is more than 6 days ago, return it in DD/MM/YYYY format
-            return formatDate(inputDate);
+            return dateInput;
     }
 }
 

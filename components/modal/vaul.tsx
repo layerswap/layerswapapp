@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { Dispatch, FC, HTMLAttributes, ReactNode, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, FC, HTMLAttributes, ReactNode, SetStateAction, useEffect, useRef, useState } from 'react';
 import { Drawer } from 'vaul';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
 import IconButton from '../buttons/iconButton';
@@ -22,6 +22,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     const { isMobile } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
+    const expandRef = useRef<HTMLDivElement>(null);
 
     const [loaded, setLoaded] = useState(false);
     const [snap, setSnap] = useState<number | string | null>(null);
@@ -31,6 +32,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     const snapPointsHeight = snapPoints.map((item) => item.height);
 
     const isLastSnap = snapElement?.id === snapPoints[snapPoints.length - 1].id;
+
     const goToNextSnap = () => {
         if (!snapElement) return;
         setSnapElement(snapPoints.find((item) => item.id === snapElement.id + 1) || null);
@@ -78,8 +80,10 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             snapPoints={snapPointsHeight}
             activeSnapPoint={snap}
             setActiveSnapPoint={setSnap}
-            handleOnly={!isMobile}
             fadeFromIndex={0}
+            onDrag={(e) => {
+                if (e.movementY < 0 && !expandRef.current?.classList.contains('hidden')) expandRef.current?.classList.add('hidden')
+            }}
         >
             <Drawer.Portal >
 
@@ -97,7 +101,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
                 <Drawer.Content
                     data-testid="content"
-                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text ${snap === 1 && '!border-none !rounded-none'}`}
+                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 ${snap === 1 && '!border-none !rounded-none'}`}
                 >
                     <div
                         ref={headerRef}
@@ -127,7 +131,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         }
                     </div>
                     <div
-                        className={clsx('flex flex-col w-full h-fit px-6 styled-scroll relative', {
+                        className={clsx('flex flex-col w-full h-fit max-h-[90dvh] px-6 styled-scroll relative', {
                             'overflow-y-auto': snap === 1,
                             'overflow-hidden': snap !== 1,
                         })}
@@ -141,6 +145,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
                                     transition={{ duration: 0.15 }}
+                                    ref={expandRef}
                                     style={{ top: `${Number(snapElement.height?.toString().replace('px', '')) - 88}px` }} className={`w-full fixed left-0 z-50`}>
                                     <button onClick={goToNextSnap} className="w-full px-6 pt-10 pb-6 justify-center from-secondary-900 bg-gradient-to-t items-center gap-2 inline-flex text-secondary-text">
                                         <ChevronUp className="w-6 h-6 relative" />
