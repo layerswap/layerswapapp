@@ -187,9 +187,10 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
                             onClick={() => setIsOpen(!isOpen)}
                             className={`${isOpen ? "text-primary-text" : "text-primary-text-placeholder"} flex w-full items-center justify-center space-x-2 rounded-md bg-secondary-700 px-3 py-1 text-sm mb-5`}
                         >
-                            <span>
-                                Wallets{selectedWallets.length > 0 ? ` (${selectedWallets.length})` : ''}
-                            </span>
+                            <p>
+                                <span>Wallets</span>
+                                {selectedWallets.length > 0 && <span>{` (${selectedWallets.length})`}</span>}
+                            </p>
                             <ChevronDown className="size-4" />
                         </Menu.Button>
                     </div>
