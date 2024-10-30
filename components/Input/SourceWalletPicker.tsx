@@ -3,10 +3,9 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { FC, useEffect, useRef, useState } from "react";
 import useWallet, { WalletPurpose } from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
-import Image from "next/image";
 import { ChevronDown, Plus } from "lucide-react";
 import Modal from "../modal/modal";
-import { RouteNetwork } from "../../Models/Network";
+import { RouteNetwork, Token } from "../../Models/Network";
 import ConnectButton from "../buttons/connectButton";
 import FilledCheck from "../icons/FilledCheck";
 import { Wallet } from "../../stores/walletStore";
@@ -15,6 +14,9 @@ import Balance from "./dynamic/Balance";
 import AddressIcon from "../AddressIcon";
 import { isValidAddress } from "../../lib/address/validator";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
+import useBalance from "../../hooks/useBalance";
+import { useBalancesState } from "../../context/balances";
+import { truncateDecimals } from "../utils/RoundDecimals";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -27,13 +29,15 @@ const Component: FC = () => {
     const { setSelectedSourceAccount } = useSwapDataUpdate()
     const { selectedSourceAccount } = useSwapDataState()
     const walletNetwork = values.fromExchange ? undefined : values.from
-
+    const source_token = values.fromCurrency
     const { provider, wallets } = useWallet(walletNetwork, 'asSource')
+    const { fetchBalance } = useBalance()
 
     const selectedWallet = selectedSourceAccount?.wallet
     const activeWallet = walletNetwork ? provider?.activeWallet : wallets[0]
 
     const source_addsress = selectedSourceAccount?.address
+    const connectedWallets = provider?.connectedWallets
 
     useEffect(() => {
         if (source_addsress && walletNetwork && !isValidAddress(source_addsress, walletNetwork)) {
@@ -55,6 +59,16 @@ const Component: FC = () => {
             setSelectedSourceAccount(undefined)
         }
     }, [values.depositMethod, activeWallet?.address, wallets.length])
+
+    useEffect(() => {
+        if (walletNetwork && source_token) {
+            connectedWallets?.forEach(wallet => {
+                wallet.addresses.forEach(address => {
+                    fetchBalance(walletNetwork, source_token, address);
+                })
+            })
+        }
+    }, [walletNetwork, connectedWallets?.length, source_token])
 
     const handleWalletChange = () => {
         setOpenModal(true)
@@ -118,14 +132,15 @@ const Component: FC = () => {
             header={`Send from`}
             modalId="connectedWallets"
         >
-            <WalletsList route={walletNetwork} purpose={'autofil'} onSelect={handleSelectWallet} />
+            <WalletsList token={source_token} route={walletNetwork} purpose={'autofil'} onSelect={handleSelectWallet} />
         </Modal>}
     </>
 }
 
 type WalletListProps = {
     route?: RouteNetwork,
-    purpose: WalletPurpose
+    purpose: WalletPurpose,
+    token?: Token,
     onSelect: (wallet?: Wallet, address?: string) => void
 }
 
@@ -198,11 +213,12 @@ export const FormSourceWalletButton: FC = () => {
 
 }
 
-export const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect }) => {
+export const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect, token }) => {
 
     const { provider, wallets } = useWallet(route, purpose)
     const connectedWallets = route ? provider?.connectedWallets : wallets
     const { selectedSourceAccount } = useSwapDataState()
+    const { balances, isBalanceLoading } = useBalancesState()
 
     return (
         <div className="space-y-3 mt-4">
@@ -219,6 +235,9 @@ export const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect }) =
                     connectedWallets?.map((wallet) => {
                         return <>
                             {wallet.addresses?.map((address) => {
+                                const walletBalance = selectedSourceAccount && balances[address || '']?.find(b => b?.network === route?.name && b?.token === token?.symbol)
+                                const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, token?.precision)
+
                                 const isSelected = selectedSourceAccount?.address === address
                                 return <div key={address} onClick={() => onSelect(wallet, address)} className="w-full cursor-pointer relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
                                     <div className="flex space-x-4 items-center">
@@ -228,7 +247,24 @@ export const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect }) =
                                         <div>
                                             {
                                                 !wallet.isLoading && wallet.address &&
-                                                <p className="text-sm">{shortenAddress(address)}</p>
+                                                <span className="text-sm flex space-x-2">
+                                                    <span>{shortenAddress(address)}</span>
+                                                    {
+                                                        walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
+                                                            <div className="text-right text-secondary-text font-normal text-sm">
+                                                                {
+                                                                    isBalanceLoading ?
+                                                                        <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                                                        :
+                                                                        <>
+                                                                            <span>{walletBalanceAmount}</span> <span>{token?.symbol}</span>
+                                                                        </>
+                                                                }
+                                                            </div>
+                                                            :
+                                                            <></>
+                                                    }
+                                                </span>
                                             }
                                             <div className="flex space-x-1">
                                                 {
@@ -241,7 +277,6 @@ export const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect }) =
                                                     {wallet.connector}
                                                 </p>
                                             </div>
-
                                         </div>
                                     </div>
                                     <div className="flex h-6 items-center px-1">

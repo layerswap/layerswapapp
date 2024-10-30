@@ -15,6 +15,7 @@ export type Wallet = {
     addresses: string[] | `0x${string}`[];
     providerName: string
     icon: (props: any) => React.JSX.Element;
+    iconbase64?: string;
     //TODO: this is name of the connector, should be changed to connectorId
     connector?: string;
     metadata?: {
