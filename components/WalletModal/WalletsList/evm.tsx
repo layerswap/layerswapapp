@@ -8,6 +8,7 @@ import { WalletsListProps } from '..';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../shadcn/dialog';
 import { isMobile } from '../../../lib/wallets/connectors/utils/isMobile';
+import Image from 'next/image';
 
 const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFinish, setSelectedProvider }) => {
 
@@ -70,7 +71,7 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, o
                             <div className="flex gap-3 items-center font-semibold">
                                 {
                                     connector.icon ?
-                                        <img src={connector.icon} className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
+                                        <Image src={connector.icon} height={36} width={36} alt={connector.name} className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
                                         : <Icon className="w-8 h-8 rounded-md bg-secondary-900" />
                                 }
                                 <p>{connectorName}</p>
