@@ -87,17 +87,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
         >
             <Drawer.Portal >
 
-                {
-                    isMobile
-                        ? <Drawer.Overlay className='absolute inset-0 z-40 bg-black/50 block' />
-                        : <motion.div
-                            key="backdrop"
-                            className={`absolute inset-0 z-40 bg-black/50 block`}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                        />
-                }
+                <Drawer.Overlay className='absolute inset-0 z-50 bg-black/50 block' />
 
                 <Drawer.Content
                     data-testid="content"
@@ -178,7 +168,7 @@ const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
     }, [height])
 
     return (
-        <div {...props} ref={ref}>
+        <div {...props} className={props.className ?? 'pb-6'} ref={ref}>
             {props.children}
         </div>
     )

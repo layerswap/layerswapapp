@@ -1,9 +1,8 @@
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import useWallet, { WalletPurpose } from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
-import Image from "next/image";
 import { ChevronDown, Plus } from "lucide-react";
 import Modal from "../modal/modal";
 import { RouteNetwork } from "../../Models/Network";
@@ -15,6 +14,7 @@ import Balance from "./dynamic/Balance";
 import AddressIcon from "../AddressIcon";
 import { isValidAddress } from "../../lib/address/validator";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
+import VaulDrawer from "../modal/vaul";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -111,15 +111,16 @@ const Component: FC = () => {
                     }
                 </div>
         }
-        {<Modal
-            height='fit'
+        <VaulDrawer
             show={openModal}
             setShow={setOpenModal}
             header={`Send from`}
             modalId="connectedWallets"
         >
-            <WalletsList route={walletNetwork} purpose={'autofil'} onSelect={handleSelectWallet} />
-        </Modal>}
+            <VaulDrawer.Snap className="pb-3">
+                <WalletsList route={walletNetwork} purpose={'autofil'} onSelect={handleSelectWallet} />
+            </VaulDrawer.Snap>
+        </VaulDrawer>
     </>
 }
 
@@ -174,15 +175,16 @@ export const FormSourceWalletButton: FC = () => {
             >
                 Connect Wallet
             </SwapButton>
-            {<Modal
-                height='fit'
+            <VaulDrawer
                 show={openModal}
                 setShow={setOpenModal}
                 header={`Send from`}
                 modalId="connectedWallets"
             >
-                <WalletsList route={walletNetwork} purpose={'autofil'} onSelect={handleSelectWallet} />
-            </Modal>}
+                <VaulDrawer.Snap className="pb-3">
+                    <WalletsList route={walletNetwork} purpose={'autofil'} onSelect={handleSelectWallet} />
+                </VaulDrawer.Snap>
+            </VaulDrawer>
         </>
     }
     return <ConnectButton className="w-full">
@@ -205,7 +207,7 @@ export const WalletsList: FC<WalletListProps> = ({ route, purpose, onSelect }) =
     const { selectedSourceAccount } = useSwapDataState()
 
     return (
-        <div className="space-y-3 mt-4">
+        <div className="space-y-3">
             <ConnectButton className="w-full flex justify-center p-2 bg-secondary-700 rounded-md hover:bg-secondary-600">
                 <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
                     <Plus className="h-4 w-4" />

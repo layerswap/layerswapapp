@@ -1,13 +1,11 @@
 import { FC, useCallback, useEffect } from 'react'
-import Modal from '../modal/modal';
-import ResizablePanel from '../ResizablePanel';
 import { ChevronLeft, Loader } from 'lucide-react';
 import IconButton from '../buttons/iconButton';
 import { ResolveConnectorIcon } from '../icons/ConnectorIcons';
 import useWallet from '../../hooks/useWallet';
 import { ModalWalletProvider, useWalletModalState } from '../../stores/walletModalStateStore';
 import EVMConnectList from './WalletsList/evm';
-import { useConfig } from 'wagmi';
+import VaulDrawer from '../modal/vaul';
 
 export function WalletModalProvider({ children }) {
     const { providers } = useWallet();
@@ -34,21 +32,25 @@ export function WalletModalProvider({ children }) {
     return (
         <>
             {children}
-            <Modal height="fit" show={open} setShow={setOpen} modalId={"connectNewWallet"} header={
-                <div className="flex items-center gap-1">
-                    {
-                        selectedProvider &&
-                        <div className='-ml-2 mt-0.5'>
-                            <IconButton onClick={goBack} icon={
-                                <ChevronLeft className="h-6 w-6" />
-                            }>
-                            </IconButton>
-                        </div>
-                    }
-                    <p>Connect wallet</p>
-                </div>
-            }>
-                <ResizablePanel>
+            <VaulDrawer
+                show={open}
+                setShow={setOpen}
+                modalId={"connectNewWallet"}
+                header={
+                    <div className="flex items-center gap-1">
+                        {
+                            selectedProvider &&
+                            <div className='-ml-2 mt-0.5'>
+                                <IconButton onClick={goBack} icon={
+                                    <ChevronLeft className="h-6 w-6" />
+                                }>
+                                </IconButton>
+                            </div>
+                        }
+                        <p>Connect wallet</p>
+                    </div>
+                }>
+                <VaulDrawer.Snap>
                     {
                         selectedProvider ?
                             <div>
@@ -59,7 +61,7 @@ export function WalletModalProvider({ children }) {
                                 />
                             </div>
                             :
-                            <div className="grid grid-cols-4 gap-2 text-primary-text pt-3">
+                            <div className="grid grid-cols-4 gap-2 text-primary-text">
                                 {filteredProviders.map((provider, index) => (
                                     <button
                                         type="button"
@@ -88,8 +90,8 @@ export function WalletModalProvider({ children }) {
                                 ))}
                             </div>
                     }
-                </ResizablePanel>
-            </Modal>
+                </VaulDrawer.Snap>
+            </VaulDrawer>
         </>
     )
 }
