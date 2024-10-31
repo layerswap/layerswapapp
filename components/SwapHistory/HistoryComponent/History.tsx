@@ -68,7 +68,7 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
         );
     };
 
-    const addresses = wallets.map(w => {
+    const addresses = selectedWallets?.length ? selectedWallets : wallets.map(w => {
         const network = networks.find(n => n.type == w.providerName)
         if (!network) return w.address
         return addressFormat(w.address, network)
@@ -132,21 +132,11 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
 
     const pendingHaveMorepages = (pendingSwapPages && Number(pendingSwapPages[pendingSwapPages.length - 1]?.data?.length) == PAGE_SIZE);
 
-    const filteredSwaps = selectedWallets.length > 0
-        ? grouppedSwaps.flatMap(g => {
-            return {
-                key: g.key,
-                values: g?.values?.filter(swap => {
-                    const swapInputTransaction = swap?.swap?.transactions?.find(t => t.type === TransactionType.Input)
-                    const fromAddress = addressFormat(swapInputTransaction?.from || '', swap.swap.source_network || null) ?? "";
-                    const destAddress = addressFormat(swap.swap.destination_address || '', swap.swap.destination_network || null) ?? "";
-                    return selectedWallets.includes(fromAddress) || selectedWallets.includes(destAddress)
-                })
-            };
-        }).filter(g => g.values.length > 0)
-        : grouppedSwaps
+    const flattenedSwaps = grouppedSwaps?.flatMap(g => {
+        return [g.key, ...g.values]
+    })
 
-    const list = [...(showAll ? pendingSwaps : (pendingSwaps.slice(0, 1))), ...filteredSwaps.flatMap(g => [g.key, ...(g.values || [])])];
+    const list = [...(showAll ? pendingSwaps : (pendingSwaps.slice(0, 1))), ...flattenedSwaps]
 
     const rowVirtualizer = useVirtualizer({
         count: (list?.length || 0),
