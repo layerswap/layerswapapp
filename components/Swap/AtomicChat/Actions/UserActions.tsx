@@ -3,6 +3,7 @@ import useWallet from "../../../../hooks/useWallet";
 import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
 import { WalletActionButton } from "../buttons";
+import posthog from "posthog-js";
 
 export const UserCommitAction: FC = () => {
     const { source_network, destination_network, amount, address, source_asset, destination_asset, onCommit, commitId, setSourceDetails, setError } = useAtomicState();
@@ -55,7 +56,20 @@ export const UserCommitAction: FC = () => {
                 atomicContract: atomicContract,
                 chainId: source_network.chain_id,
             }) || {}
-            if (commitId) onCommit(commitId)
+            if (commitId) {
+                onCommit(commitId)
+
+                posthog.capture("Commit", {
+                    commitId: commitId,
+                    amount: amount,
+                    sourceNetwork: source_network.name,
+                    destinationNetwork: destination_network.name,
+                    sourceAsset: source_asset.symbol,
+                    destinationAsset: destination_asset.symbol,
+                    userAddress: address,
+                })
+                posthog.debug()
+            }
         }
         catch (e) {
             setError(e.details || e.message)
