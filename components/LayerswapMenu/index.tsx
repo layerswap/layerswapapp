@@ -29,13 +29,13 @@ export default function LayerswapMenu() {
         social: [
             {
                 name: 'Twitter',
-                href: 'https://twitter.com/layerswap',
+                href: 'https://twitter.com/layerswap/',
                 icon: (props) => TwitterLogo(props),
                 className: 'plausible-event-name=Twitter'
             },
             {
                 name: 'GitHub',
-                href: 'https://github.com/layerswap/layerswapapp',
+                href: 'https://github.com/layerswap/layerswapapp/',
                 icon: (props) => GitHubLogo(props),
                 className: 'plausible-event-name=GitHub'
             },
@@ -47,7 +47,7 @@ export default function LayerswapMenu() {
             },
             {
                 name: 'YouTube',
-                href: 'https://www.youtube.com/@layerswaphq',
+                href: 'https://www.youtube.com/@layerswaphq/',
                 icon: (props) => YoutubeLogo(props),
                 className: 'plausible-event-name=Youtube'
             },
@@ -89,7 +89,7 @@ export default function LayerswapMenu() {
                                     <>
                                         {
                                             router.pathname != '/committments' &&
-                                            <Menu.Item pathname='/committments' icon={<ScrollText className="h-5 w-5" />} >
+                                            <Menu.Item pathname='/committments/' icon={<ScrollText className="h-5 w-5" />} >
                                                 History
                                             </Menu.Item>
                                         }
@@ -111,16 +111,16 @@ export default function LayerswapMenu() {
                                     }} target="_blank" icon={<ChatIcon strokeWidth={2} className="h-5 w-5" />} >
                                         Help
                                     </Menu.Item>
-                                    <Menu.Item pathname='https://layerswap.notion.site/Layerswap-V8-Atomic-Bridging-Protocol-58944b7ddce54b838a23feee3aebebf5' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
+                                    <Menu.Item pathname='https://layerswap.notion.site/Layerswap-V8-Atomic-Bridging-Protocol-58944b7ddce54b838a23feee3aebebf5/' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
                                         Protocol Docs
                                     </Menu.Item>
                                 </Menu.Group>
 
                                 <Menu.Group>
-                                    <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/privacy-policy' target="_blank" icon={<Shield className="h-5 w-5" />} >
+                                    <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/privacy-policy/' target="_blank" icon={<Shield className="h-5 w-5" />} >
                                         Privacy Policy
                                     </Menu.Item>
-                                    <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/terms-of-services' target="_blank" icon={<LibraryIcon className="h-5 w-5" />} >
+                                    <Menu.Item pathname='https://docs.layerswap.io/user-docs/information/terms-of-services/' target="_blank" icon={<LibraryIcon className="h-5 w-5" />} >
                                         Terms of Service
                                     </Menu.Item>
                                 </Menu.Group>

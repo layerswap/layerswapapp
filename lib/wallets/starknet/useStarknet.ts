@@ -50,7 +50,7 @@ export default function useStarknet(): WalletProvider {
                 argentMobileOptions: {
                     dappName: 'Layerswap',
                     projectId: WALLETCONNECT_PROJECT_ID,
-                    url: 'https://www.layerswap.io/v8',
+                    url: 'https://www.layerswap.io/v8/',
                     description: 'Move crypto across exchanges, blockchains, and wallets.',
                     chainId: chainId as any
                 },

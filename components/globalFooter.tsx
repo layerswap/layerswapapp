@@ -9,37 +9,37 @@ const GLobalFooter = () => {
     const footerNavigation = {
         main: [
             { name: 'Product', href: '/' },
-            { name: 'Company', href: '/company' },
-            { name: 'FAQ', href: '/faq' },
-            { name: 'Privacy Policy', href: 'https://docs.layerswap.io/information/privacy-policy' },
-            { name: 'Terms of Services', href: 'https://docs.layerswap.io/information/terms-of-services' },
+            { name: 'Company', href: '/company/' },
+            { name: 'FAQ', href: '/faq/' },
+            { name: 'Privacy Policy', href: 'https://docs.layerswap.io/information/privacy-policy/' },
+            { name: 'Terms of Services', href: 'https://docs.layerswap.io/information/terms-of-services/' },
             { name: 'Docs', href: 'https://docs.layerswap.io/onboarding-sdk/' },
         ],
         social: [
             {
                 name: 'Twitter',
-                href: 'https://twitter.com/layerswap',
+                href: 'https://twitter.com/layerswap/',
                 icon: () => (
                     <TwitterLogo className="h-6 w-6" aria-hidden="true" />
                 ),
             },
             {
                 name: 'Discord',
-                href: 'https://discord.gg/layerswap',
+                href: 'https://discord.gg/layerswap/',
                 icon: () => (
                     <DiscordLogo className="h-6 w-6" aria-hidden="true" />
                 ),
             },
             {
                 name: 'GitHub',
-                href: 'https://github.com/layerswap/layerswapapp',
+                href: 'https://github.com/layerswap/layerswapapp/',
                 icon: () => (
                     <GitHubLogo className="h-6 w-6" aria-hidden="true" />
                 ),
             },
             {
                 name: 'YouTube',
-                href: 'https://www.youtube.com/@layerswaphq',
+                href: 'https://www.youtube.com/@layerswaphq/',
                 icon: () => (
                     <YoutubeLogo className="h-6 w-6" aria-hidden="true" />
                 ),
