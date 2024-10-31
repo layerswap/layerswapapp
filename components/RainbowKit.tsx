@@ -17,29 +17,7 @@ import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { argentWallet, bitgetWallet, coinbaseWallet, metaMaskWallet, phantomWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 import { createConfig } from 'wagmi';
-import { Chain, defineChain, http } from 'viem';
-import { arbitrum, arbitrumSepolia, immutableZkEvmTestnet, lineaSepolia, mainnet, optimism, optimismSepolia, sepolia, zoraSepolia, baseSepolia, blastSepolia, zkSyncSepoliaTestnet, taikoTestnetSepolia, scrollSepolia, mantleSepoliaTestnet, taikoHekla, berachainTestnetbArtio } from 'viem/chains';
-
-
-export const soneium_testnet = defineChain({
-    id: 1946,
-    name: 'Senoium Testnet',
-    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-    rpcUrls: {
-        default: {
-            http: ['https://rpc.minato.soneium.org/'],
-        },
-    },
-    blockExplorers: {
-        default: {
-            name: 'Soneium',
-            url: 'https://soneium.org',
-            apiUrl: 'https://explorer-testnet.soneium.org/api',
-        },
-    },
-})
-
-
+import { Chain, http } from 'viem';
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -82,32 +60,6 @@ const connectors = connectorsForWallets(
     }
 );
 
-const config = createConfig({
-    connectors,
-    chains: [sepolia, soneium_testnet, mainnet, optimism, optimismSepolia, arbitrumSepolia, arbitrum, lineaSepolia, zoraSepolia, baseSepolia, blastSepolia, zkSyncSepoliaTestnet, taikoTestnetSepolia, scrollSepolia, mantleSepoliaTestnet, taikoHekla, immutableZkEvmTestnet],
-    transports: {
-        [sepolia.id]: http("https://eth-sepolia.public.blastapi.io"),
-        [mainnet.id]: http(),
-        [optimism.id]: http(),
-        [optimismSepolia.id]: http("https://optimism-sepolia.public.blastapi.io"),
-        [arbitrumSepolia.id]: http("https://arbitrum-sepolia.public.blastapi.io"),
-        [arbitrum.id]: http("https://arbitrum-sepolia.public.blastapi.io"),
-        [lineaSepolia.id]: http("https://linea-sepolia.public.blastapi.io"),
-        [zoraSepolia.id]: http(),
-        [baseSepolia.id]: http(),
-        [blastSepolia.id]: http(),
-        [zkSyncSepoliaTestnet.id]: http(),
-        [taikoTestnetSepolia.id]: http(),
-        [scrollSepolia.id]: http(),
-        [mantleSepoliaTestnet.id]: http(),
-        [taikoHekla.id]: http(),
-        [immutableZkEvmTestnet.id]: http(),
-        [soneium_testnet.id]: http(),
-        [berachainTestnetbArtio.id]: http(),
-    },
-    ssr: true,
-});
-
 function RainbowKitComponent({ children }: Props) {
 
     const settings = useSettingsState();
@@ -119,7 +71,18 @@ function RainbowKitComponent({ children }: Props) {
             && net.token)
         .map(resolveChain).filter(isChain) as [Chain]
 
-    const transports = settingsChains.reduce((acc, ch) => (acc[ch.id] = http(), acc), {});
+    const transports = {}
+
+    settingsChains.forEach(chain => {
+        transports[chain.id] = chain.rpcUrls.default.http[0] ? http(chain.rpcUrls.default.http[0]) : http()
+    })
+
+    const config = createConfig({
+        connectors,
+        chains: settingsChains,
+        transports: transports,
+        ssr: true,
+    });
 
     const theme = darkTheme({
         accentColor: 'rgb(var(--ls-colors-primary-500))',
