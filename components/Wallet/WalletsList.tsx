@@ -2,9 +2,13 @@ import { Plus } from "lucide-react";
 import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import ConnectButton from "../buttons/connectButton";
+import AddressIcon from "../AddressIcon";
+import { useConfig } from "wagmi";
 
 const WalletsList = () => {
     const { wallets } = useWallet()
+    const { connectors } = useConfig()
+    console.log("connectors", connectors)
 
     return (
         <div className="space-y-3">
@@ -19,27 +23,56 @@ const WalletsList = () => {
             <div className="flex flex-col justify-start space-y-3">
                 {
                     wallets.map((wallet, index) => (
-                        <div key={index} className="w-full relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
-                            <div className="flex space-x-4 items-center">
-                                {
-                                    wallet.connector &&
-                                    <div className="inline-flex items-center relative">
-                                        <wallet.icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
-                                    </div>
-                                }
-                                <div>
+                        <div className="rounded-md outline-none bg-secondary-800 text-primary-tex border border-secondary-500">
+                            <div key={index} className="w-full relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3  ">
+                                <div className="flex space-x-4 items-center">
                                     {
-                                        !wallet.isLoading && wallet.address && 
-                                        <p className="text-sm">{shortenAddress(wallet.address)}</p>
+                                        wallet.connector &&
+                                        <div className="inline-flex items-center relative">
+                                            {
+                                                wallet.iconbase64 ?
+                                                    <img src={wallet.iconbase64} className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
+                                                    : <wallet.icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
+                                            }
+
+                                        </div>
                                     }
-                                    <p className="text-xs text-secondary-text">
-                                        {wallet.connector}
-                                    </p>
+                                    <div>
+                                        {
+                                            !wallet.isLoading && wallet.address &&
+                                            <span className="text-sm">{shortenAddress(wallet.address)}</span>
+                                        }
+                                        <p className="text-xs text-secondary-text">
+                                            {wallet.connector}
+                                        </p>
+                                    </div>
                                 </div>
+                                <button onClick={wallet.disconnect} className="text-xs text-secondary-text hover:opacity-75">
+                                    Disconnect
+                                </button>
                             </div>
-                            <button onClick={wallet.disconnect} className="text-xs text-secondary-text hover:opacity-75">
-                                Disconnect
-                            </button>
+                            {wallet.addresses.filter(a => a != wallet.address).length > 0 &&
+                                <div className="w-full grow p-3 pt-2 space-y-2 border-t border-secondary-500">
+                                    {
+                                        wallet.addresses.filter(a => a != wallet.address).map((address) => (
+                                            <div className="flex space-x-4 items-center">
+
+                                                <div className="w-9">
+                                                    <div className="flex bg-secondary-400  items-center justify-center rounded-md h-4 overflow-hidden w-4 m-auto">
+                                                        <AddressIcon className="scale-150 h-4 w-4 p-0.5" address={address} size={16} />
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    {
+                                                        !wallet.isLoading && wallet.address &&
+                                                        <p className="text-sm text-secondary-text">{shortenAddress(address)}</p>
+                                                    }
+                                                </div>
+                                            </div>
+                                        ))
+                                    }
+                                </div>}
                         </div>
                     ))
                 }
