@@ -68,7 +68,6 @@ export const UserCommitAction: FC = () => {
                     destinationAsset: destination_asset.symbol,
                     userAddress: address,
                 })
-                posthog.debug()
             }
         }
         catch (e) {
@@ -153,6 +152,15 @@ export const UserLockAction: FC = () => {
                 contractAddress: atomicContract,
                 lockData: destinationDetails
             })
+            
+            posthog.capture("Lock", {
+                commitId: commitId,
+                hashlock: destinationDetails?.hashlock,
+                contractAddress: atomicContract,
+                lockData: destinationDetails,
+                chainId: source_network.chain_id,
+            })
+
             setUserLocked(true)
         }
         catch (e) {
@@ -239,6 +247,15 @@ export const UserRefundAction: FC = () => {
                 chainId: source_network.chain_id,
                 contractAddress: sourceAtomicContract
             })
+
+            posthog.capture("Refund", {
+                commitId: commitId,
+                commit: sourceDetails,
+                hashlock: sourceDetails?.hashlock,
+                chainId: source_network.chain_id,
+                contractAddress: sourceAtomicContract
+            })
+
             setCompletedRefundHash(res)
             setRequestedRefund(true)
         }
