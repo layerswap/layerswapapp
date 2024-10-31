@@ -278,8 +278,8 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
             </VaulDrawer.Snap>
 
 
-            <VaulDrawer.Snap id='item-2'>
-                <div className='flex flex-col justify-between w-full h-full gap-3 pb-4'>
+            <VaulDrawer.Snap className='pb-3' id='item-2'>
+                <div className='flex flex-col justify-between w-full h-full gap-3'>
                     <div className='space-y-3'>
 
                         {/* Source and Destination Transactions */}

@@ -15,7 +15,7 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, o
     const [walletQRData, setWalletQRData] = useState<{ qr: string, icon: string | undefined } | undefined>(undefined)
 
     return (
-        <div className="flex flex-col gap-1 w-full max-h-[40vh] overflow-y-auto styled-scroll">
+        <div className="flex flex-col gap-1 w-full overflow-y-auto styled-scroll">
             {/* //TODO: refactor ordering */}
             {provider?.availableWalletsForConnect?.sort((a, b) => (a.order || 100) - (b.order || 100))?.map((connector, index) => {
                 const connectorName = connector?.name
