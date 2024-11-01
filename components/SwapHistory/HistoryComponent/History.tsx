@@ -56,7 +56,7 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
     const menuRef = useRef<HTMLDivElement>(null);
     const [selectedWallets, setSelectedWallets] = useState<string[]>([]);
 
-    const handleCheckboxToggle = (wallet: Wallet) => {
+    const handleCheckboxToggle = useCallback((wallet: Wallet) => {
         const network = networks.find(n => n.type == wallet.providerName);
         if (!network) return wallet.address
         const formattedAddress = addressFormat(wallet.address, network || null);
@@ -66,7 +66,18 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
                 ? prevSelected.filter((address) => address !== formattedAddress)
                 : [...prevSelected, formattedAddress]
         );
-    };
+    },[wallets]);
+
+    useEffect(() => {
+        const currentWalletAddresses = wallets.map(wallet => {
+            const network = networks.find(n => n.type === wallet.providerName);
+            return addressFormat(wallet.address, network || null);
+        });
+    
+        setSelectedWallets(prevSelected =>
+            prevSelected.filter(address => currentWalletAddresses.includes(address))
+        );
+    }, [wallets]);
 
     const addresses = selectedWallets?.length ? selectedWallets : wallets.map(w => {
         const network = networks.find(n => n.type == w.providerName)
@@ -199,10 +210,10 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
                                                 onClick={() => handleCheckboxToggle(wallet)}
                                             >
                                                 <wallet.icon className="w-6 h-6 p-0.5 mr-2" />
-                                                {shortenAddress(wallet.address)}
+                                                <span className="mr-6">{shortenAddress(wallet.address)}</span>
                                                 <input
                                                     type="checkbox"
-                                                    className="ml-6 w-4 h-4 text-primary-text-placeholder bg-transparent border-primary-text-placeholder rounded focus:ring-0 outline-none cursor-pointer"
+                                                    className="w-4 h-4 text-primary-text-placeholder bg-transparent border-primary-text-placeholder rounded focus:ring-0 outline-none cursor-pointer ml-auto"
                                                     checked={selectedWallets.includes(addressFormat(wallet.address, network || null))}
                                                     onChange={() => handleCheckboxToggle(wallet)}
                                                     onClick={(e) => e.stopPropagation()}
