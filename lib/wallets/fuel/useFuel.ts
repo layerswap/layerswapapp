@@ -30,8 +30,8 @@ export default function useFuel(): WalletProvider {
     const { storageAvailable, setItem, getItem } = useStorage()
     const { address: evmAddress, connector: evmConnector } = useAccount()
     const { connectors } = useConnectors()
-    const { publicKey, wallet: solanaWallet } = useSolanaWallet();
 
+    
 
     const getWallet = () => {
 
@@ -66,22 +66,6 @@ export default function useFuel(): WalletProvider {
                     customConnectorname = evmConnector.name
                 }
             }
-            // else if (fuelSolanaConnector && fuelSolanaConnector.connected && solanaWallet?.adapter && publicKey) {
-            //     // @ts-expect-error processPredicateData is only available in the Predicate class
-            //     const { predicateBytes } = Predicate.processPredicateData(
-            //         (fuelEvmConnector as any)?.predicateAccount?.bytecode,
-            //         (fuelEvmConnector as any)?.predicateAccount?.abi,
-            //         {
-            //             SIGNER: (fuelEvmConnector as any)?.predicateAccount?.adapter?.convertAddress(publicKey?.toBase58()),
-            //         },
-            //     );
-            //     const convertedAddress = Address.fromB256(getPredicateRoot(predicateBytes)).toString();
-            //     console.log("convertedAddress", convertedAddress)
-            //     if (convertedAddress.toLowerCase() === address.toLowerCase()) {
-            //         fuelCurrentConnector = `${solanaWallet.adapter.name} (${shortenAddress(publicKey?.toBase58())})`
-            //         customConnectorname = solanaWallet.adapter.name
-            //     }
-            // }
 
             const w: Wallet = {
                 address: address,
