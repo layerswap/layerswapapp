@@ -4,7 +4,7 @@ import Image from 'next/image'
 import shortenAddress, { shortenEmail } from '../utils/ShortenAddress';
 import CopyButton from '../buttons/copyButton';
 import StatusIcon from './StatusIcons';
-import { ExternalLink, RefreshCw } from 'lucide-react';
+import { ArrowRight, ExternalLink, Fuel, Info, RefreshCw } from 'lucide-react';
 import isGuid from '../utils/isGuid';
 import KnownInternalNames from '../../lib/knownIds';
 import { useQueryState } from '../../context/query';
@@ -22,6 +22,7 @@ import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import VaulDrawer from '../modal/vaul';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../shadcn/tooltip';
 
 type Props = {
     swapResponse: SwapResponse
@@ -183,21 +184,39 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             </div>
                         </div>
 
+                        {/* Refuel */}
+                        {
+                            refuel && <div className=' bg-secondary-700 rounded-xl py-1.5'>
+                                <div className="flex justify-between items-center text-sm font-normal">
+                                    <div className='inline-flex items-center text-primary-text gap-2'>
+                                        <Fuel className='h-4 w-4' />
+                                        <p className="text-left">Refuel</p>
+                                    </div>
+                                    <Tooltip delayDuration={100}>
+                                        <TooltipTrigger className='flex flex-col items-end'>
+                                            <div className="flex items-center gap-1 text-primary-buttonTextColor">
+                                                <Info className='h-3.5 w-3.5' />
+                                                <p className="text-primary-text text-sm font-normal">{truncatedRefuelAmount} {nativeCurrency?.symbol}</p>
+                                            </div>
+                                            {/* <p className="text-secondary-text text-sm font-normal">${refuelAmountInUsd}</p> */}
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <div className='flex flex-col gap-2 justify-start text-sm font-normal'>
+                                                <p className='text-secondary-text'>Conversion rate</p>
+                                                <div className="inline-flex gap-2 items-center text-primary-text">
+                                                    <p>{quote.refuel_in_source} {source_token.symbol}</p>
+                                                    <ArrowRight className='h-4 w-4' />
+                                                    <p>{refuel.amount} {refuel.token.symbol}</p>
+                                                </div>
+                                            </div>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
+                            </div>
+                        }
 
                     </div>
                 </div>
-                {/* Refuel */}
-                {
-                    refuel && <div className='p-3 bg-secondary-700 rounded-xl'>
-                        <div className="flex justify-between items-baseline text-sm">
-                            <p className="text-left text-secondary-text">Refuel</p>
-                            <div className="flex flex-col justify-end">
-                                <p className="text-primary-text text-sm font-semibold">{truncatedRefuelAmount} {nativeCurrency?.symbol}</p>
-                                <p className="text-secondary-text text-xs flex justify-end">${refuelAmountInUsd}</p>
-                            </div>
-                        </div>
-                    </div>
-                }
 
                 {/* Fees */}
                 <div className='p-3 bg-secondary-700 rounded-xl'>
