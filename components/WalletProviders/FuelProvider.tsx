@@ -1,10 +1,11 @@
 
 import { BakoSafeConnector, FuelWalletConnector, FueletWalletConnector, SolanaConnector, WalletConnectConnector, defaultConnectors } from '@fuels/connectors';
 import { FuelProvider } from '@fuels/react';
-import { CHAIN_IDS, Provider, urlJoin } from '@fuel-ts/account';
+import { CHAIN_IDS, Provider } from '@fuel-ts/account';
 import { useConfig } from 'wagmi';
 import KnownInternalNames from '../../lib/knownIds';
 import { useSettingsState } from '../../context/settings';
+import { BaskoRequestAPI } from '../../lib/wallets/fuel/Basko';
 export const HOST_URL = 'https://api.bako.global';
 
 const FuelProviderWrapper = ({
@@ -46,46 +47,5 @@ const FuelProviderWrapper = ({
     );
 };
 
-export const BAKO_STATE: {
-    state: { last_req?: Date, data: boolean, req_count: number, period_start?: Date },
-    period_durtion: number
-} = { state: { data: false, req_count: 0 }, period_durtion: 10000 };
-
-export class BaskoRequestAPI {
-    baseUrl: string;
-
-    constructor(baseUrl: string) {
-        this.baseUrl = baseUrl;
-    }
-
-    async get(pathname: string) {
-
-        if (!pathname.includes('/state')) {
-            const data = await fetch(urlJoin(this.baseUrl, pathname)).then((res) =>
-                res.json(),
-            );
-            return data;
-        }
-
-        const period_elapsed = BAKO_STATE.state?.period_start && new Date().getTime() - BAKO_STATE.state?.period_start?.getTime() > BAKO_STATE.period_durtion;
-        const skip = BAKO_STATE.state?.last_req && new Date().getTime() - BAKO_STATE.state?.last_req?.getTime() < 1000 * 60 * 2 && period_elapsed;
-
-        if (skip)
-            return BAKO_STATE.state?.data;
-
-        const data = await fetch(urlJoin(this.baseUrl, pathname)).then((res) =>
-            res.json(),
-        );
-        const count = BAKO_STATE.state?.req_count || 0;
-        BAKO_STATE.state = { last_req: new Date(), data, req_count: count + 1, period_start: period_elapsed ? new Date() : BAKO_STATE.state?.period_start || new Date() };
-        return data;
-    }
-
-    async delete(pathname: string) {
-        await fetch(urlJoin(this.baseUrl, pathname), {
-            method: 'DELETE',
-        });
-    }
-}
 
 export default FuelProviderWrapper;
