@@ -11,14 +11,13 @@ import useStorage from "../../../hooks/useStorage";
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon";
 import { useAccount, useConnections } from "wagmi";
 import {
-    FuelConnector,
     Predicate,
     getPredicateRoot,
 } from '@fuel-ts/account';
 import { Address } from '@fuel-ts/address';
-import { useWallet as useSolanaWallet } from "@solana/wallet-adapter-react"
 
 import shortenAddress from "../../../components/utils/ShortenAddress";
+import { BAKO_STATE } from "./Basko";
 
 export default function useFuel(): WalletProvider {
     const autofillSupportedNetworks = [KnownInternalNames.Networks.FuelTestnet, KnownInternalNames.Networks.FuelMainnet]
@@ -31,20 +30,11 @@ export default function useFuel(): WalletProvider {
     const { address: evmAddress, connector: evmConnector } = useAccount()
     const { connectors } = useConnectors()
 
-    
-
     const getWallet = () => {
-
-        // if (!isConnecting && !isFetching && !isRefetching && storageAvailable && !wallet?.address && !isLoading) {
-        //     const fuelCurrentConnector = getItem('fuel-current-connector', 'localStorage')
-
-        //     if (fuelCurrentConnector && fuelCurrentConnector === 'Bako Safe') {
-        //         setItem('fuel-current-connector', '', 'localStorage')
-        //     }
-        // 
 
         if (wallet) {
             let fuelCurrentConnector = getItem('fuel-current-connector', 'localStorage')
+
             let customConnectorname: string | undefined = undefined
             const fuelEvmConnector = connectors.find(c => c.name === 'Ethereum Wallets')
             const fuelSolanaConnector = connectors.find(c => c.name === 'Solana Wallets')
@@ -73,16 +63,21 @@ export default function useFuel(): WalletProvider {
                 providerName: name,
                 icon: resolveWalletConnectorIcon({ connector: customConnectorname || fuelCurrentConnector, address: address })
             }
+
             return w
         }
     }
 
     const connectWallet = () => {
+        BAKO_STATE.state.last_req = undefined
+        BAKO_STATE.period_durtion = 120_000
         return connect()
     }
 
     const disconnectWallet = async () => {
         try {
+            BAKO_STATE.state.last_req = undefined
+            BAKO_STATE.period_durtion = 10_000
             await disconnectAsync()
         }
         catch (e) {
