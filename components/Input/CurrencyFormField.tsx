@@ -72,21 +72,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const value = currencyMenuItems?.find(x => x.id == currencyAsset);
 
     useEffect(() => {
-        if (name === "toCurrency" && toCurrency && !isLoading && routes) {
-            const value = routes.data?.find(r => r.name === to?.name)?.tokens?.find(r => r.symbol === toCurrency?.symbol)
-            if (!value) return
-
-            if(!currencyIsSetManually && (value?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR)) {
-                const default_currency = currencyMenuItems?.find(c => c.baseObject?.status === "active")
-                if (default_currency) {
-                    setFieldValue(name, default_currency.baseObject, true)
-                }
-            }
-            setFieldValue(name, value)
-        }
-    }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
-
-    useEffect(() => {
         if (direction !== "to") return
 
         let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.symbol === currencyAsset)
@@ -143,8 +128,15 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         if (name === "toCurrency" && toCurrency && !isLoading && routes) {
             const value = routes.data?.find(r => r.name === to?.name)?.tokens?.find(r => r.symbol === toCurrency?.symbol)
             if (!value) return
-
-            setFieldValue(name, value)
+            
+            if (!currencyIsSetManually && (value?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR)) {
+                const default_currency = currencyMenuItems?.find(c => c.baseObject?.status === "active")
+                if (default_currency) {
+                    setFieldValue(name, default_currency.baseObject, true)
+                }
+            } else {
+                setFieldValue(name, value)
+            }
         }
     }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
 
@@ -152,8 +144,15 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         if (name === "fromCurrency" && fromCurrency && !isLoading && routes) {
             const value = routes.data?.find(r => r.name === from?.name)?.tokens?.find(r => r.symbol === fromCurrency?.symbol)
             if (!value) return
-            
-            setFieldValue(name, value)
+
+            if (!currencyIsSetManually && (value?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR)) {
+                const default_currency = currencyMenuItems?.find(c => c.baseObject?.status === "active")
+                if (default_currency) {
+                    setFieldValue(name, default_currency.baseObject, true)
+                }
+            } else {
+                setFieldValue(name, value)
+            }
         }
     }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
 
