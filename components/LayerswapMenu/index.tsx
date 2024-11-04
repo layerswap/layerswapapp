@@ -10,6 +10,7 @@ import WizardItem from "../Wizard/WizardItem";
 import { NextRouter, useRouter } from "next/router";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import HistoryList from "../SwapHistory/History";
+import VaulDrawer from "../modal/vaul";
 
 const Comp = () => {
     const router = useRouter();
@@ -41,7 +42,7 @@ const Comp = () => {
                         <MenuIcon strokeWidth="2" />
                     }>
                     </IconButton>
-                    <Modal
+                    <VaulDrawer
                         modalId="menuModal"
                         show={openTopModal}
                         setShow={handleModalOpenStateChange}
@@ -68,7 +69,7 @@ const Comp = () => {
                                 <HistoryList onNewTransferClick={() => handleModalOpenStateChange(false)}/>
                             </WizardItem>
                         </Wizard>
-                    </Modal>
+                    </VaulDrawer>
                 </>
             }
         </div >
