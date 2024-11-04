@@ -180,7 +180,7 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
                     <div className="pt-2 font-normal text-xs text-secondary-text">
                         <p className="block font-lighter text-left">
                             <span>Even after authorization Layerswap can&apos;t initiate a withdrawal without your explicit confirmation.&nbsp;</span>
-                            <a target='_blank' href='https://docs.layerswap.io/user-docs/connect-a-coinbase-account' className='text-primary-text underline hover:no-underline decoration-white cursor-pointer'>Learn more</a></p>
+                            <a target='_blank' href='https://docs.layerswap.io/user-docs/connect-a-coinbase-account/' className='text-primary-text underline hover:no-underline decoration-white cursor-pointer'>Learn more</a></p>
                     </div>
                 </div>
             </Widget.Footer>

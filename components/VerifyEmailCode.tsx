@@ -56,8 +56,8 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
         setShowDocModal(true)
     }
 
-    const handleOpenTerms = () => openDoc('https://docs.layerswap.io/user-docs/information/terms-of-services')
-    const handleOpenPrivacyPolicy = () => openDoc('https://docs.layerswap.io/user-docs/information/privacy-policy')
+    const handleOpenTerms = () => openDoc('https://docs.layerswap.io/user-docs/information/terms-of-services/')
+    const handleOpenPrivacyPolicy = () => openDoc('https://docs.layerswap.io/user-docs/information/privacy-policy/')
 
     const timerCountdown = userLockedOut ? 600 : 60
 

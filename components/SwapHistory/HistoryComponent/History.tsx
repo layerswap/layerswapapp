@@ -228,7 +228,7 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
             </div>
             {
                 <Modal
-                    height="full"
+                    height="80%"
                     show={openSwapDetailsModal}
                     setShow={handleSWapDetailsShow}
                     header='Swap details'

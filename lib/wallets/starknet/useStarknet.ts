@@ -68,7 +68,7 @@ export default function useStarknet(): WalletProvider {
                 options: {
                     dappName: 'Layerswap',
                     projectId: WALLETCONNECT_PROJECT_ID,
-                    url: 'https://www.layerswap.io/app',
+                    url: 'https://www.layerswap.io/app/',
                     description: 'Move crypto across exchanges, blockchains, and wallets.',
                 }
             }))

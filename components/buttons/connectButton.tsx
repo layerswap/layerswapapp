@@ -48,6 +48,11 @@ const ConnectButton = ({
             id: "solana",
             type: NetworkType.Solana,
         },
+        {
+            name: "Fuel",
+            id: "fuel",
+            type: NetworkType.Fuel,
+        },
     ];
     const filteredConnectors = knownConnectors.filter(
         (c) => !wallets.map((w) => w?.providerName).includes(c.id)

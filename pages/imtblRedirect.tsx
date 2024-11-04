@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { passportInstance, initilizePassport } from "../components/ImtblPassportProvider";
+import { passportInstance, initilizePassport } from "../components/WalletProviders/ImtblPassportProvider";
 import { useRouter } from "next/router";
 
 const ImtblRedirect = () => {
