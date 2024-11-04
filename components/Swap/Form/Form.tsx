@@ -25,7 +25,7 @@ import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
 import { resolveExchangesURLForSelectedToken } from "../../../helpers/routes";
 import ValidationError from "../../validationError";
-import { ImtblPassportProvider } from "../../ImtblPassportProvider";
+import { ImtblPassportProvider } from "../../WalletProviders/ImtblPassportProvider";
 import { Exchange, ExchangeToken } from "../../../Models/Exchange";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";

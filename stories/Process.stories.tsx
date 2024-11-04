@@ -23,7 +23,7 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import MainStepValidation from '../lib/mainStepValidator';
 import { FeeProvider, useFee } from '../context/feeContext';
 import { useArgs } from '@storybook/preview-api';
-import RainbowKitComponent from '../components/RainbowKit';
+import RainbowKitComponent from '../components/WalletProviders/RainbowKit';
 
 window.plausible = () => { }
 const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ settings, swapData, theme, initialValues, timestamp }) => {
