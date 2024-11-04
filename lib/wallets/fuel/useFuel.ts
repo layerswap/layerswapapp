@@ -17,7 +17,7 @@ import {
 import { Address } from '@fuel-ts/address';
 
 import shortenAddress from "../../../components/utils/ShortenAddress";
-import { BAKO_STATE } from "../../../components/WalletProviders/FuelProvider";
+// import { BAKO_STATE } from "../../../components/WalletProviders/FuelProvider";
 
 export default function useFuel(): WalletProvider {
     const autofillSupportedNetworks = [KnownInternalNames.Networks.FuelTestnet, KnownInternalNames.Networks.FuelMainnet]
@@ -69,15 +69,15 @@ export default function useFuel(): WalletProvider {
     }
 
     const connectWallet = () => {
-        BAKO_STATE.state.last_req = undefined
-        BAKO_STATE.period_durtion = 120_000
+        // BAKO_STATE.state.last_req = undefined
+        // BAKO_STATE.period_durtion = 120_000
         return connect()
     }
 
     const disconnectWallet = async () => {
         try {
-            BAKO_STATE.state.last_req = undefined
-            BAKO_STATE.period_durtion = 10_000
+            // BAKO_STATE.state.last_req = undefined
+            // BAKO_STATE.period_durtion = 10_000
             await disconnectAsync()
         }
         catch (e) {
