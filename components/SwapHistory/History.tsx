@@ -229,7 +229,6 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                 setShow={handleSWapDetailsShow}
                 header='Swap details'
                 modalId="swapDetails"
-                snapPointsCount={2}
             >
                 {
                     selectedSwap &&

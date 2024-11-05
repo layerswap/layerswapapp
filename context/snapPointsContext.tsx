@@ -15,14 +15,14 @@ type SnapPointsState = {
 
 export const SnapPointsContext = createContext<SnapPointsState | undefined>(undefined);
 
-export const SnapPointsProvider: FC<{ children: ReactNode, snapPointsCount?: number, isMobile: boolean }> = ({ children, snapPointsCount = 1, isMobile }) => {
+export const SnapPointsProvider: FC<{ children: ReactNode, isMobile: boolean }> = ({ children, isMobile }) => {
 
     const [snapElemenetsHeight, setSnapElemenetsHeight] = useState<SnapElement[]>([]);
     const [headerHeight, setHeaderHeight] = useState<number>(0);
 
     const snapPoints = resolveSnapPoints({
         isMobile,
-        snapPointsCount,
+        snapPointsCount: snapElemenetsHeight.length,
         childrenHeights: snapElemenetsHeight.sort((a, b) => a.id - b.id),
         headerHeight
     });

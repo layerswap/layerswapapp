@@ -82,7 +82,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     }
 
     return (
-
         <>
             <VaulDrawer.Snap id='item-1' className='pb-3 space-y-3'>
                 <div className='p-3 bg-secondary-700 rounded-xl'>
@@ -277,7 +276,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
             </VaulDrawer.Snap>
 
-
             <VaulDrawer.Snap className='pb-3' id='item-2'>
                 <div className='flex flex-col justify-between w-full h-full gap-3'>
                     <div className='space-y-3'>
@@ -366,9 +364,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
                 </div>
             </VaulDrawer.Snap>
-
         </>
-
     )
 }
 

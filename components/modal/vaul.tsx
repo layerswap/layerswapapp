@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { Dispatch, FC, HTMLAttributes, ReactNode, SetStateAction, useEffect, useRef, useState } from 'react';
+import { Children, Dispatch, FC, HTMLAttributes, ReactNode, SetStateAction, useEffect, useRef, useState } from 'react';
 import { Drawer } from 'vaul';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
 import IconButton from '../buttons/iconButton';
@@ -15,10 +15,10 @@ type VaulDrawerProps = {
     header: ReactNode;
     description?: ReactNode;
     modalId: string;
-    snapPointsCount?: number;
+    mobileMaxModalHeight?: '80%' | '90%' | 'full';
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, mobileMaxModalHeight = 'full' }) => {
     const { isMobile } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -31,7 +31,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     const { snapPoints } = useSnapPoints()
     const snapPointsHeight = snapPoints.map((item) => item.height);
 
-    const isLastSnap = snapElement?.id === snapPoints[snapPoints.length - 1].id;
+    const isLastSnap = snapElement?.id === snapPoints[snapPoints.length - 1]?.id;
 
     const goToNextSnap = () => {
         if (!snapElement) return;
@@ -91,7 +91,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
                 <Drawer.Content
                     data-testid="content"
-                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ${snap === 1 && '!border-none !rounded-none'}`}
+                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ${(snap === 1 && !(isMobile && mobileMaxModalHeight !== 'full')) && '!border-none !rounded-none'} ${(isMobile && mobileMaxModalHeight !== 'full') && `max-h-[${mobileMaxModalHeight}]`}`}
                 >
                     <div
                         ref={headerRef}
@@ -179,7 +179,7 @@ const VaulDrawer: typeof Comp & { Snap: FC<HTMLAttributes<HTMLDivElement>> } = (
     const { isMobile } = useWindowDimensions();
 
     return (
-        <SnapPointsProvider snapPointsCount={props.snapPointsCount} isMobile={isMobile}>
+        <SnapPointsProvider isMobile={isMobile}>
             <Comp {...props}>
                 {props.children}
             </Comp>
