@@ -49,6 +49,17 @@ export function isValidAddress(address?: string, network?: { name: string } | nu
         const decodedAddress = decodeBase58(address).toUpperCase();
         return decodedAddress.startsWith('41') && decodedAddress.length == 42
     }
+    else if (network?.name === KnownInternalNames.Networks.FuelTestnet || network?.name === KnownInternalNames.Networks.FuelMainnet) {
+        const hexRegex = /^[0-9a-fA-F]+$/;
+
+        if (address.startsWith("0x")) {
+            address = address.slice(2); // Remove the "0x" prefix
+        } else {
+            return false;
+        }
+
+        return address.length === 64 && hexRegex.test(address);
+    }
     else {
         return isValidEtherAddress(address);
     }

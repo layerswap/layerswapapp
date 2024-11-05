@@ -10,6 +10,7 @@ import { useBalancesState, useBalancesUpdate } from "../context/balances"
 import { Network, NetworkWithTokens, Token } from "../Models/Network"
 import { useQueryState } from "../context/query"
 import useTonBalance from "../lib/balances/ton/useTonBalance"
+import useFuelBalance from "../lib/balances/fuel/useFuelBalance"
 import useIsWindowVisible from "./useIsWindowVisible"
 
 export default function useBalanceProvider() {
@@ -21,7 +22,8 @@ export default function useBalanceProvider() {
         useZkSyncBalance(),
         useSolanaBalance(),
         useImxBalance(),
-        useTonBalance()
+        useTonBalance(),
+        useFuelBalance()
     ]
 
     const { balances, gases, isBalanceLoading } = useBalancesState()

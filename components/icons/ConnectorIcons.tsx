@@ -10,6 +10,9 @@ import OpenMask from "../icons/Wallets/OpenMask";
 import Phantom from "../icons/Wallets/Phantom";
 import CoinbaseIcon from "../icons/Wallets/Coinbase";
 import GlowIcon from "../icons/Wallets/Glow";
+import Fuel from "./Wallets/Fuel";
+import BakoSafe from "./Wallets/BakoSafe";
+import Ethereum from "./Wallets/Ethereum";
 
 export const ResolveConnectorIcon = ({
     connector,
@@ -59,6 +62,15 @@ export const ResolveConnectorIcon = ({
                     {children}
                 </div>
             );
+        case KnownConnectors.Fuel:
+            return (
+                <div className={className ?? "-space-x-2 flex"}>
+                    <Fuel className={iconClassName} />
+                    <BakoSafe className={iconClassName} />
+                    <Ethereum className={iconClassName} />
+                    {children}
+                </div>
+            );
         default:
             return <></>;
     }
@@ -69,5 +81,6 @@ const KnownConnectors = {
     EVM: "evm",
     TON: "ton",
     Solana: "solana",
-    Glow: "glow"
+    Glow: "glow",
+    Fuel: "fuel",
 };
