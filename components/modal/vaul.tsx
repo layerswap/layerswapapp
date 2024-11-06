@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 import { Dispatch, FC, HTMLAttributes, ReactNode, SetStateAction, useEffect, useRef, useState } from 'react';
-import { Drawer } from 'vaul';
+// import { Drawer } from 'vaul';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
 import IconButton from '../buttons/iconButton';
 import { ChevronUp, X } from 'lucide-react';
@@ -73,91 +73,92 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     if (!loaded) return null;
 
     return (
-        <Drawer.Root
-            open={show}
-            onOpenChange={handleOpenChange}
-            container={isMobile ? null : document.getElementById('widget')}
-            snapPoints={snapPointsHeight}
-            activeSnapPoint={snap}
-            setActiveSnapPoint={setSnap}
-            fadeFromIndex={0}
-            onDrag={(e) => {
-                if (e.movementY < 0 && !expandRef.current?.classList.contains('hidden')) expandRef.current?.classList.add('hidden')
-            }}
-        >
-            <Drawer.Portal >
+        <></>
+        // <Drawer.Root
+        //     open={show}
+        //     onOpenChange={handleOpenChange}
+        //     container={isMobile ? null : document.getElementById('widget')}
+        //     snapPoints={snapPointsHeight}
+        //     activeSnapPoint={snap}
+        //     setActiveSnapPoint={setSnap}
+        //     fadeFromIndex={0}
+        //     onDrag={(e) => {
+        //         if (e.movementY < 0 && !expandRef.current?.classList.contains('hidden')) expandRef.current?.classList.add('hidden')
+        //     }}
+        // >
+        //     <Drawer.Portal >
 
-                {
-                    isMobile
-                        ? <Drawer.Overlay className='absolute inset-0 z-40 bg-black/50 block' />
-                        : <motion.div
-                            key="backdrop"
-                            className={`absolute inset-0 z-40 bg-black/50 block`}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                        />
-                }
+        //         {
+        //             isMobile
+        //                 ? <Drawer.Overlay className='absolute inset-0 z-40 bg-black/50 block' />
+        //                 : <motion.div
+        //                     key="backdrop"
+        //                     className={`absolute inset-0 z-40 bg-black/50 block`}
+        //                     initial={{ opacity: 0 }}
+        //                     animate={{ opacity: 1 }}
+        //                     exit={{ opacity: 0 }}
+        //                 />
+        //         }
 
-                <Drawer.Content
-                    data-testid="content"
-                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ${snap === 1 && '!border-none !rounded-none'}`}
-                >
-                    <div
-                        ref={headerRef}
-                        className='w-full relative'>
-                        {
-                            isMobile &&
-                            <div className="absolute w-12 h-1 flex-shrink-0 rounded-full bg-primary-text-muted top-2.5 left-[calc(50%-24px)]" />
-                        }
-                        <div className='flex items-center w-full text-left justify-between px-6 pt-3 pb-2'>
-                            <Drawer.Title className="text-lg text-secondary-text font-semibold">
-                                {header || 'Modal'}
-                            </Drawer.Title>
-                            <Drawer.Close asChild>
-                                <div className='-mr-2'>
-                                    <IconButton icon={
-                                        <X strokeWidth={3} />
-                                    }>
-                                    </IconButton>
-                                </div>
-                            </Drawer.Close>
-                        </div>
-                        {
-                            description &&
-                            <Drawer.Description className="text-sm mt-2 text-secondary-text px-6">
-                                {description}
-                            </Drawer.Description>
-                        }
-                    </div>
-                    <div
-                        className={clsx('flex flex-col w-full h-fit max-h-[90dvh] px-6 styled-scroll relative', {
-                            'overflow-y-auto': snap === 1,
-                            'overflow-hidden': snap !== 1,
-                        })}
-                    >
-                        {children}
-                        <AnimatePresence>
-                            {
-                                !isLastSnap && snapElement &&
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.15 }}
-                                    ref={expandRef}
-                                    style={{ top: `${Number(snapElement.height?.toString().replace('px', '')) - 88}px` }} className={`w-full fixed left-0 z-50`}>
-                                    <button onClick={goToNextSnap} className="w-full px-6 pt-10 pb-6 justify-center from-secondary-900 bg-gradient-to-t items-center gap-2 inline-flex text-secondary-text">
-                                        <ChevronUp className="w-6 h-6 relative" />
-                                        <div className="text-sm font-medium">Expand</div>
-                                    </button>
-                                </motion.div>
-                            }
-                        </AnimatePresence>
-                    </div>
-                </Drawer.Content>
-            </Drawer.Portal>
-        </Drawer.Root>
+        //         <Drawer.Content
+        //             data-testid="content"
+        //             className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ${snap === 1 && '!border-none !rounded-none'}`}
+        //         >
+        //             <div
+        //                 ref={headerRef}
+        //                 className='w-full relative'>
+        //                 {
+        //                     isMobile &&
+        //                     <div className="absolute w-12 h-1 flex-shrink-0 rounded-full bg-primary-text-muted top-2.5 left-[calc(50%-24px)]" />
+        //                 }
+        //                 <div className='flex items-center w-full text-left justify-between px-6 pt-3 pb-2'>
+        //                     <Drawer.Title className="text-lg text-secondary-text font-semibold">
+        //                         {header || 'Modal'}
+        //                     </Drawer.Title>
+        //                     <Drawer.Close asChild>
+        //                         <div className='-mr-2'>
+        //                             <IconButton icon={
+        //                                 <X strokeWidth={3} />
+        //                             }>
+        //                             </IconButton>
+        //                         </div>
+        //                     </Drawer.Close>
+        //                 </div>
+        //                 {
+        //                     description &&
+        //                     <Drawer.Description className="text-sm mt-2 text-secondary-text px-6">
+        //                         {description}
+        //                     </Drawer.Description>
+        //                 }
+        //             </div>
+        //             <div
+        //                 className={clsx('flex flex-col w-full h-fit max-h-[90dvh] px-6 styled-scroll relative', {
+        //                     'overflow-y-auto': snap === 1,
+        //                     'overflow-hidden': snap !== 1,
+        //                 })}
+        //             >
+        //                 {children}
+        //                 <AnimatePresence>
+        //                     {
+        //                         !isLastSnap && snapElement &&
+        //                         <motion.div
+        //                             initial={{ opacity: 0 }}
+        //                             animate={{ opacity: 1 }}
+        //                             exit={{ opacity: 0 }}
+        //                             transition={{ duration: 0.15 }}
+        //                             ref={expandRef}
+        //                             style={{ top: `${Number(snapElement.height?.toString().replace('px', '')) - 88}px` }} className={`w-full fixed left-0 z-50`}>
+        //                             <button onClick={goToNextSnap} className="w-full px-6 pt-10 pb-6 justify-center from-secondary-900 bg-gradient-to-t items-center gap-2 inline-flex text-secondary-text">
+        //                                 <ChevronUp className="w-6 h-6 relative" />
+        //                                 <div className="text-sm font-medium">Expand</div>
+        //                             </button>
+        //                         </motion.div>
+        //                     }
+        //                 </AnimatePresence>
+        //             </div>
+        //         </Drawer.Content>
+        //     </Drawer.Portal>
+        // </Drawer.Root>
     );
 }
 
