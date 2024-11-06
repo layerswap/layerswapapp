@@ -49,7 +49,7 @@ module.exports = (phase, { defaultConfig }) => {
       return config;
     },
     productionBrowserSourceMaps: true,
-    transpilePackages: ['@imtbl/sdk', '@fuels/connectors', '@fuels/react']
+    transpilePackages: ['@imtbl/sdk', '@fuels/connectors', '@fuels/react', "@radix-ui/react-primitive", "@radix-ui/react-dialog"]
   }
   if (process.env.APP_BASE_PATH) {
     nextConfig.basePath = process.env.APP_BASE_PATH
