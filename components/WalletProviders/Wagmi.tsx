@@ -18,6 +18,7 @@ import { coinbaseWallet, metaMask, walletConnect } from 'wagmi/connectors'
 import { hasInjectedProvider } from '../../lib/wallets/connectors/getInjectedConnector';
 import { my_bitget } from '../../lib/wallets/connectors/bitget';
 import { isMobile } from '../../lib/isMobile';
+import FuelProviderWrapper from './FuelProvider';
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -64,9 +65,11 @@ function WagmiComponent({ children }: Props) {
         <WagmiProvider config={config} >
             <QueryClientProvider client={queryClient}>
                 <Solana>
-                    <WalletModalProvider>
-                        {children}
-                    </WalletModalProvider>
+                    <FuelProviderWrapper>
+                        <WalletModalProvider>
+                            {children}
+                        </WalletModalProvider>
+                    </FuelProviderWrapper>
                 </Solana>
             </QueryClientProvider>
         </WagmiProvider >

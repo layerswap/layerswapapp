@@ -39,7 +39,6 @@ const FuelProviderWrapper = ({
             })
         ]
     }
-
     return (
         <FuelProvider uiConfig={{ suggestBridge: false }} theme={'dark'} fuelConfig={fuelConfig}>
             {children}

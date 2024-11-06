@@ -95,7 +95,7 @@ export default function Layout({ children, settings, themeData }: Props) {
   themeData = themeData || THEME_COLORS.default
 
   const basePath = router?.basePath ?? ""
-
+  
   return (<>
     <Head>
       <title>Layerswap App</title>
