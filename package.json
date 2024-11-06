@@ -128,8 +128,7 @@
     "viem": "^2.21.16",
     "wagmi": "^2.12.16",
     "@wagmi/core": "2.14.1",
-    "@solana/web3.js": "1.66.0",
-    "@radix-ui/react-dismissable-layer": "1.1.1"
+    "@solana/web3.js": "1.66.0"
   },
   "engines": {
     "node": ">=20.9.0"
