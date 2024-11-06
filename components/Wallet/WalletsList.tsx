@@ -3,12 +3,9 @@ import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import ConnectButton from "../buttons/connectButton";
 import AddressIcon from "../AddressIcon";
-import { useConfig } from "wagmi";
 
 const WalletsList = () => {
     const { wallets } = useWallet()
-    const { connectors } = useConfig()
-    console.log("connectors", connectors)
 
     return (
         <div className="space-y-3">

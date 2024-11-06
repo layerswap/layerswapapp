@@ -6,10 +6,12 @@ import { useBalancesState } from '../../../context/balances';
 import useBalance from '../../../hooks/useBalance';
 import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../Input/Address/AddressPicker';
-import { RefreshCw } from 'lucide-react';
+import { ChevronDown, RefreshCw } from 'lucide-react';
 import { truncateDecimals } from '../../utils/RoundDecimals';
-import { useConfig, useSwitchAccount } from 'wagmi';
+import { useSwitchAccount } from 'wagmi';
 import { Wallet } from '../../../stores/walletStore';
+import Modal from '../../modal/modal';
+import { WalletsList } from '../../Input/SourceWalletPicker';
 
 const WalletTransferContent: FC = () => {
     const { swapResponse, selectedSourceAccount } = useSwapDataState()
@@ -23,16 +25,18 @@ const WalletTransferContent: FC = () => {
     const { balances, isBalanceLoading } = useBalancesState()
     const { fetchBalance, fetchGas } = useBalance()
     const { switchAccount, connectors } = useSwitchAccount()
+    const [openModal, setOpenModal] = useState(false)
 
     const changeWallet = useCallback(async (wallet: Wallet, address: string) => {
         const connector = connectors?.find(c => c.name === wallet.connector)
         if (!connector) return
         switchAccount({ connector })
         setSelectedSourceAccount({ wallet, address })
+        setOpenModal(false)
     }, [provider, connectors])
 
     useEffect(() => {
-        if(source_network && source_token){
+        if (source_network && source_token) {
             all_wallets?.forEach(wallet => {
                 wallet.addresses.forEach(address => {
                     fetchBalance(source_network, source_token, address);
@@ -43,6 +47,8 @@ const WalletTransferContent: FC = () => {
 
     const selectedWallet = selectedSourceAccount?.wallet
     const activeWallet = source_network ? provider?.activeWallet : wallets[0]
+    const walletBalance = balances[selectedWallet?.address || '']?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
+    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
     useEffect(() => {
         if (!selectedSourceAccount && activeWallet) {
@@ -81,58 +87,48 @@ const WalletTransferContent: FC = () => {
         </>
     }
 
-    return <div className="grid content-end">
-        <div className='flex w-full items-center text-sm justify-between'>
-            <span className='ml-1'>{swap?.source_exchange ? "Connected account" : "Send from"}</span>
-            <div onClick={handleDisconnect} className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200 hover:cursor-pointer">
-                {
-                    isLoading ?
-                        <RefreshCw className="h-3 w-auto animate-spin" />
-                        :
-                        <RefreshCw className="h-3 w-auto" />
-                }
-                <p>Switch Wallet</p>
+    return <>
+        <div className="grid content-end">
+            <div className='flex w-full items-center text-sm justify-between'>
+                <span className='ml-1'>{swap?.source_exchange ? "Connected account" : "Send from"}</span>
+                <div onClick={handleDisconnect} className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200 hover:cursor-pointer">
+                    {
+                        isLoading ?
+                            <RefreshCw className="h-3 w-auto animate-spin" />
+                            :
+                            <RefreshCw className="h-3 w-auto" />
+                    }
+                    <p>Switch Wallet</p>
+                </div>
             </div>
+            {
+                selectedWallet &&
+                source_network &&
+                <div onClick={() => setOpenModal(true)} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
+                    <AddressWithIcon
+                        addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet }}
+                        connectedWallet={selectedWallet}
+                        network={source_network}
+                        balance={(walletBalanceAmount && source_token) ? { amount: walletBalanceAmount, symbol: source_token?.symbol, isLoading: isBalanceLoading } : undefined}
+                    />
+                    <ChevronDown className="h-4 w-4" />
+                </div>
+            }
         </div>
         {
-            provider &&
-            all_wallets &&
             source_network &&
-            all_wallets.map(wallet => {
-                return wallet.addresses.map(account => {
-                    const walletBalance = selectedSourceAccount && balances[account || '']?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
-                    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
-
-                    return <div onClick={() => changeWallet(wallet, account)} key={`${account}_${wallet.connector}`} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
-                        <AddressWithIcon addressItem={{ address: account || '', group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} destination={source_network} />
-                        <div>
-                            {
-                                walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
-                                    <div className="text-right text-secondary-text font-normal text-sm">
-                                        {
-                                            isBalanceLoading ?
-                                                <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                                                :
-                                                <>
-                                                    <span>{walletBalanceAmount}</span> <span>{source_token?.symbol}</span>
-                                                </>
-                                        }
-                                    </div>
-                                    :
-                                    <></>
-                            }
-                            {
-                                selectedSourceAccount?.address === account && selectedSourceAccount?.wallet?.connector === wallet.connector &&
-                                <div className="text-right text-secondary-text font-normal text-xs">
-                                    <span className="text-primary-text">Active</span>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                })
-            })
+            source_token &&
+            <Modal
+                height='80%'
+                show={openModal}
+                setShow={setOpenModal}
+                header={`Send from`}
+                modalId="connectedWallets"
+            >
+                <WalletsList network={source_network} token={source_token} purpose={'autofil'} onSelect={changeWallet} />
+            </Modal>
         }
-    </div>
+    </>
 }
 
 export default WalletTransferContent
