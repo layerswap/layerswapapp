@@ -19,6 +19,7 @@ import useWallet from "../../hooks/useWallet";
 import { ONE_WEEK } from "./NetworkFormField";
 import RouteIcon from "./RouteIcon";
 import { useSwapDataState } from "../../context/swap";
+import useBalance from "../../hooks/useBalance";
 
 const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -31,6 +32,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const query = useQueryState()
     const { balances } = useBalancesState()
     const { selectedSourceAccount } = useSwapDataState()
+    const { fetchBalance } = useBalance()
 
     const { provider: destinationWalletProvider } = useWallet(to, 'autofil')
     const { provider: sourceWalletProvider } = useWallet(from, 'autofil')
@@ -128,6 +130,23 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             setFieldValue(name, value)
         }
     }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
+
+
+    const network = direction === 'from' ? from : to
+    const token = direction === 'from' ? fromCurrency : toCurrency
+    useEffect(() => {
+        let balanceGetHandler: any = undefined
+        if (network && token) {
+            (async () => {
+                balanceGetHandler = setInterval(async () => {
+                    await fetchBalance(network, token);
+                }, 60000)
+            })()
+        }
+        return () => {
+            clearInterval(balanceGetHandler)
+        }
+    }, [network, token])
 
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken>) => {

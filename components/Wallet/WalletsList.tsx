@@ -3,12 +3,10 @@ import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import ConnectButton from "../buttons/connectButton";
 import AddressIcon from "../AddressIcon";
-import { useConfig } from "wagmi";
+import Image from "next/image";
 
 const WalletsList = () => {
     const { wallets } = useWallet()
-    const { connectors } = useConfig()
-    console.log("connectors", connectors)
 
     return (
         <div className="space-y-3">
@@ -23,15 +21,15 @@ const WalletsList = () => {
             <div className="flex flex-col justify-start space-y-3">
                 {
                     wallets.map((wallet, index) => (
-                        <div className="rounded-md outline-none bg-secondary-800 text-primary-tex border border-secondary-500">
-                            <div key={index} className="w-full relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3  ">
+                        <div key={index} className="rounded-md outline-none bg-secondary-800 text-primary-tex border border-secondary-500">
+                            <div className="w-full relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3  ">
                                 <div className="flex space-x-4 items-center">
                                     {
                                         wallet.connector &&
                                         <div className="inline-flex items-center relative">
                                             {
                                                 wallet.iconbase64 ?
-                                                    <img src={wallet.iconbase64} className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
+                                                    <Image height={36} width={36} alt={wallet.connector} src={wallet.iconbase64} className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
                                                     : <wallet.icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
                                             }
 
@@ -54,8 +52,8 @@ const WalletsList = () => {
                             {wallet.addresses.filter(a => a != wallet.address).length > 0 &&
                                 <div className="w-full grow p-3 pt-2 space-y-2 border-t border-secondary-500">
                                     {
-                                        wallet.addresses.filter(a => a != wallet.address).map((address) => (
-                                            <div className="flex space-x-4 items-center">
+                                        wallet.addresses.filter(a => a != wallet.address).map((address, index) => (
+                                            <div key={index} className="flex space-x-4 items-center">
 
                                                 <div className="w-9">
                                                     <div className="flex bg-secondary-400  items-center justify-center rounded-md h-4 overflow-hidden w-4 m-auto">
