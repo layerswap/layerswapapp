@@ -50,7 +50,8 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
         }
         catch (e) {
             if (e?.message) {
-                if(e.message.includes('0x1')) setInsufficientFunds(true)
+                debugger
+                if(e.message.includes('0x1') || e.message.includes('Attempt to debit an account')) setInsufficientFunds(true)
                 else toast(e.message)
                 return
             }
