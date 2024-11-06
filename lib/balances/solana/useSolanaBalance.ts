@@ -10,6 +10,7 @@ import {
     NetworkBalancesProps
 } from "../../../Models/Balance";
 import { useSettingsState } from "../../../context/settings";
+import { datadogRum } from "@datadog/browser-rum";
 
 export default function useSolanaBalance(): BalanceProvider {
 
@@ -39,8 +40,20 @@ export default function useSolanaBalance(): BalanceProvider {
         );
 
         async function getTokenBalanceWeb3(connection: SolanaConnection, tokenAccount) {
-            const info = await connection.getTokenAccountBalance(tokenAccount);
-            return info?.value?.uiAmount;
+            try {
+                const info = await connection.getTokenAccountBalance(tokenAccount);
+                return info?.value?.uiAmount;
+            } catch (error) {
+                if (error.message && error.message.includes("could not find account")) {
+                    return 0;
+                } else {
+                    const solanaAccountError = new Error("Solana account error: " + error.message);
+                    solanaAccountError.name = "SolanaAccountError";
+                    solanaAccountError.cause = solanaAccountError;
+                    datadogRum.addError(solanaAccountError);
+                    return 0;
+                }
+            }
         }
 
         for (let i = 0; i < network.tokens.length; i++) {
@@ -104,8 +117,20 @@ export default function useSolanaBalance(): BalanceProvider {
         );
 
         async function getTokenBalanceWeb3(connection: SolanaConnection, tokenAccount) {
-            const info = await connection.getTokenAccountBalance(tokenAccount);
-            return info?.value?.uiAmount;
+            try {
+                const info = await connection.getTokenAccountBalance(tokenAccount);
+                return info?.value?.uiAmount;
+            } catch (error) {
+                if (error.message && error.message.includes("could not find account")) {
+                    return 0;
+                } else {
+                    const solanaAccountError = new Error("Solana account error: " + error.message);
+                    solanaAccountError.name = "SolanaAccountError";
+                    solanaAccountError.cause = solanaAccountError;
+                    datadogRum.addError(solanaAccountError);
+                    return 0;
+                }
+            }
         }
 
         let result: number | null = null

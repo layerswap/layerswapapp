@@ -9,9 +9,12 @@ import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
+import WalletMessage from './WalletTransfer/message';
 
 const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId }) => {
-    const [loading, setLoading] = useState(false);
+
+    const [loading, setLoading] = useState(false)
+    const [insufficientFunds, setInsufficientFunds] = useState(false)
     const { getWithdrawalProvider } = useWallet()
     const { setSwapTransaction } = useSwapTransactionStore();
 
@@ -47,7 +50,8 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
         }
         catch (e) {
             if (e?.message) {
-                toast(e.message)
+                if(e.message.includes('0x1')) setInsufficientFunds(true)
+                else toast(e.message)
                 return
             }
         }
@@ -62,6 +66,12 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
 
     return (
         <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
+            {insufficientFunds &&
+                <WalletMessage
+                    status="error"
+                    header='Insufficient funds'
+                    details='The balance of the connected wallet is not enough' />
+            }
             {
                 wallet &&
                 <ButtonWrapper isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >

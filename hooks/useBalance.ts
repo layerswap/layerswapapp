@@ -60,7 +60,7 @@ export default function useBalanceProvider() {
                     networkName: network.name,
                     address: address,
                 })
-
+                
                 if (networkBalances) {
                     setAllBalances((data) => {
                         const walletBalances = data[address]
@@ -77,7 +77,7 @@ export default function useBalanceProvider() {
 
     const fetchBalance = async (network: Network, token: Token, address?: string) => {
         if (!isWindowVisible) return
-
+        
         const provider = getAutofillProvider(network)
         const wallet = provider?.getConnectedWallet(network)
         address = address || query.account || wallet?.address
