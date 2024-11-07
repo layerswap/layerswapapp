@@ -25,7 +25,6 @@ import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
 import { resolveExchangesURLForSelectedToken } from "../../../helpers/routes";
 import ValidationError from "../../validationError";
-import { ImtblPassportProvider } from "../../ImtblPassportProvider";
 import Modal from "../../modal/modal";
 import useWallet from "../../../hooks/useWallet";
 import shortenAddress from "../../utils/ShortenAddress";
@@ -35,6 +34,7 @@ import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";
 import { FormSourceWalletButton } from "../../Input/SourceWalletPicker";
 import { useSwapDataState } from "../../../context/swap";
+import { ImtblPassportProvider } from "../../WalletProviders/ImtblPassportProvider";
 
 type Props = {
     partner?: Partner,

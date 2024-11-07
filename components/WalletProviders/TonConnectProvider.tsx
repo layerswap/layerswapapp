@@ -1,5 +1,5 @@
 import { THEME, TonConnectUIProvider } from "@tonconnect/ui-react"
-import { ThemeData } from "../Models/Theme";
+import { ThemeData } from "../../Models/Theme";
 
 const TonConnectProvider = ({ children, basePath, themeData, appName }: { children: JSX.Element | JSX.Element[], basePath: string, themeData: ThemeData, appName: string | undefined }) => {
 

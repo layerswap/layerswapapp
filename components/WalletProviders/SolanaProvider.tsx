@@ -30,7 +30,7 @@ function SolanaProvider({ children }: { children: ReactNode }) {
                     metadata: {
                         name: 'Layerwap',
                         description: 'Layerswap App',
-                        url: 'https://layerswap.io/app',
+                        url: 'https://layerswap.io/app/',
                         icons: ['https://www.layerswap.io/app/symbol.png'],
                     },
                 },

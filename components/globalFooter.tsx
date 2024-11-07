@@ -11,37 +11,37 @@ const GLobalFooter = () => {
     const footerNavigation = {
         main: [
             { name: 'Product', href: '/' },
-            { name: 'Company', href: '/company' },
-            { name: 'FAQ', href: '/faq' },
-            { name: 'Privacy Policy', href: 'https://docs.layerswap.io/information/privacy-policy' },
-            { name: 'Terms of Services', href: 'https://docs.layerswap.io/information/terms-of-services' },
+            { name: 'Company', href: '/company/' },
+            { name: 'FAQ', href: '/faq/' },
+            { name: 'Privacy Policy', href: 'https://docs.layerswap.io/user-docs/more-information/privacy-policy/' },
+            { name: 'Terms of Services', href: 'https://docs.layerswap.io/user-docs/more-information/terms-of-services/' },
             { name: 'Docs', href: 'https://docs.layerswap.io/onboarding-sdk/' },
         ],
         social: [
             {
                 name: 'Twitter',
-                href: 'https://twitter.com/layerswap',
+                href: 'https://twitter.com/layerswap/',
                 icon: () => (
                     <TwitterLogo className="h-6 w-6" aria-hidden="true" />
                 ),
             },
             {
                 name: 'Discord',
-                href: 'https://discord.gg/layerswap',
+                href: 'https://discord.gg/layerswap/',
                 icon: () => (
                     <DiscordLogo className="h-6 w-6" aria-hidden="true" />
                 ),
             },
             {
                 name: 'GitHub',
-                href: 'https://github.com/layerswap/layerswapapp',
+                href: 'https://github.com/layerswap/layerswapapp/',
                 icon: () => (
                     <GitHubLogo className="h-6 w-6" aria-hidden="true" />
                 ),
             },
             {
                 name: 'YouTube',
-                href: 'https://www.youtube.com/@layerswaphq',
+                href: 'https://www.youtube.com/@layerswaphq/',
                 icon: () => (
                     <YoutubeLogo className="h-6 w-6" aria-hidden="true" />
                 ),
@@ -59,10 +59,10 @@ const GLobalFooter = () => {
                 <div className=" flex justify-between items-center w-full">
                     <div>
                         <div className="flex mt-3 md:mt-0 gap-6">
-                            <Link target="_blank" href="https://docs.layerswap.io/information/privacy-policy" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
+                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/privacy-policy/" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
                                 Privacy Policy
                             </Link>
-                            <Link target="_blank" href="https://docs.layerswap.io/information/terms-of-services" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
+                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/terms-of-services/" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
                                 Terms of Services
                             </Link>
                         </div>
@@ -108,7 +108,7 @@ const TestnetNewsComponent = () => {
                 </div>
                 <span className="text-primary-text">Soneium Minato and 8+ other chains</span> <span>are now available in Layerswap v8</span>
             </div>
-            <Link href='https://layerswap.io/v8' target="_blank" className="flex items-center gap-1 underline hover:no-underline">
+            <Link href='https://layerswap.io/v8/' target="_blank" className="flex items-center gap-1 underline hover:no-underline">
                 <p>
                     layerswap.io/v8
                 </p>

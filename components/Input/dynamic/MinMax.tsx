@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react"
+import { useEffect } from "react"
 import useWallet from "../../../hooks/useWallet"
 import SecondaryButton from "../../buttons/secondaryButton"
 import { useFormikContext } from "formik";
@@ -13,12 +13,12 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
     const { fromCurrency, from, destination_address } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
-    const { balances, gases } = useBalancesState()
+    const { balances, gases, isBalanceLoading, isGasLoading } = useBalancesState()
     const query = useQueryState()
 
     const { provider } = useWallet(from, 'autofil')
 
-    const { fetchNetworkBalances, fetchGas } = useBalance()
+    const { fetchBalance, fetchGas } = useBalance()
 
     const wallet = provider?.activeWallet
 
@@ -52,13 +52,13 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
         maxAllowedAmount = Number(maxAmountFromApi) || 0
     }
 
-    const handleSetMaxAmount = useCallback(async () => {
+    const handleSetMaxAmount = async () => {
         setFieldValue('amount', maxAllowedAmount);
-        from && fetchNetworkBalances(from);
-
-        from && fromCurrency && fetchGas(from, fromCurrency, wallet?.address || destination_address || "");
-
-    }, [from, fromCurrency, destination_address, maxAllowedAmount])
+        if (from && fromCurrency) {
+            if (!isBalanceLoading) await fetchBalance(from, fromCurrency);
+            if (!isGasLoading) await fetchGas(from, fromCurrency, destination_address || wallet?.address || "");
+        }
+    }
 
     useEffect(() => {
         wallet?.address && onAddressGet(wallet.address)
