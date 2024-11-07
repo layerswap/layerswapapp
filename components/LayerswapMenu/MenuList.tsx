@@ -94,16 +94,16 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
                 <Menu.Item pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
                     Docs for Users
                 </Menu.Item>
-                <Menu.Item pathname='https://docs.layerswap.io/user-docs/partners-and-integrations' target="_blank" icon={<Users className="h-5 w-5" />} >
+                <Menu.Item pathname='https://docs.layerswap.io/user-docs/partners-and-integrations/' target="_blank" icon={<Users className="h-5 w-5" />} >
                     Docs for Partners
                 </Menu.Item>
             </Menu.Group>
 
             <Menu.Group>
-                <Menu.Item pathname='https://docs.layerswap.io/user-docs/more-information/privacy-policy' target="_blank" icon={<Shield className="h-5 w-5" />} >
+                <Menu.Item pathname='https://docs.layerswap.io/user-docs/more-information/privacy-policy/' target="_blank" icon={<Shield className="h-5 w-5" />} >
                     Privacy Policy
                 </Menu.Item>
-                <Menu.Item pathname='https://docs.layerswap.io/user-docs/more-information/terms-of-services' target="_blank" icon={<LibraryIcon className="h-5 w-5" />} >
+                <Menu.Item pathname='https://docs.layerswap.io/user-docs/more-information/terms-of-services/' target="_blank" icon={<LibraryIcon className="h-5 w-5" />} >
                     Terms of Service
                 </Menu.Item>
             </Menu.Group>
@@ -177,25 +177,25 @@ const navigation = {
     social: [
         {
             name: 'Twitter',
-            href: 'https://twitter.com/layerswap',
+            href: 'https://twitter.com/layerswap/',
             icon: (props) => TwitterLogo(props),
             className: 'plausible-event-name=Twitter'
         },
         {
             name: 'GitHub',
-            href: 'https://github.com/layerswap/layerswapapp',
+            href: 'https://github.com/layerswap/layerswapapp/',
             icon: (props) => GitHubLogo(props),
             className: 'plausible-event-name=GitHub'
         },
         {
             name: 'Discord',
-            href: 'https://discord.com/invite/KhwYN35sHy',
+            href: 'https://discord.com/invite/KhwYN35sHy/',
             icon: (props) => DiscordLogo(props),
             className: 'plausible-event-name=Discord'
         },
         {
             name: 'YouTube',
-            href: 'https://www.youtube.com/@layerswaphq',
+            href: 'https://www.youtube.com/@layerswaphq/',
             icon: (props) => YoutubeLogo(props),
             className: 'plausible-event-name=Youtube'
         },
@@ -207,7 +207,7 @@ const navigation = {
         },
         {
             name: 'Roadmap',
-            href: 'https://layerswap.ducalis.io/roadmap/summary',
+            href: 'https://layerswap.ducalis.io/roadmap/summary/',
             icon: (props) => <Map {...props}></Map>,
             className: 'plausible-event-name=Roadmap'
         },

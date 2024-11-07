@@ -1,37 +1,24 @@
 
 
 import '@rainbow-me/rainbowkit/styles.css';
-import { useSettingsState } from "../context/settings";
-import {
-    AvatarComponent,
-    ConnectButton,
-    connectorsForWallets,
-    createAuthenticationAdapter,
-    darkTheme,
-    DisclaimerComponent,
-    RainbowKitAuthenticationProvider,
-    RainbowKitProvider,
-    WalletButton,
-} from '@rainbow-me/rainbowkit';
-import { NetworkType } from "../Models/Network";
-import resolveChain from "../lib/resolveChain";
+import { useSettingsState } from "../../context/settings";
+import { NetworkType } from "../../Models/Network";
+import resolveChain from "../../lib/resolveChain";
 import React from "react";
-import AddressIcon from "./AddressIcon";
-import NetworkSettings from "../lib/NetworkSettings";
+import NetworkSettings from "../../lib/NetworkSettings";
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
-import { WalletModalProvider } from './WalletModal';
+import { WalletModalProvider } from '../WalletModal';
 import Solana from "./SolanaProvider";
-import { createStorage } from '@wagmi/core'
-import { mainnet } from 'wagmi/chains';
-import { my_argent } from '../lib/wallets/connectors/argent';
-import { my_rainbow } from '../lib/wallets/connectors/rainbow';
+import { my_argent } from '../../lib/wallets/connectors/argent';
+import { my_rainbow } from '../../lib/wallets/connectors/rainbow';
 import { coinbaseWallet, metaMask, walletConnect } from 'wagmi/connectors'
-import { hasInjectedProvider } from '../lib/wallets/connectors/getInjectedConnector';
-import { my_bitget } from '../lib/wallets/connectors/bitget';
-import { isMobile } from '../lib/isMobile';
+import { hasInjectedProvider } from '../../lib/wallets/connectors/getInjectedConnector';
+import { my_bitget } from '../../lib/wallets/connectors/bitget';
+import { isMobile } from '../../lib/isMobile';
+import FuelProviderWrapper from './FuelProvider';
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -39,8 +26,6 @@ type Props = {
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
 
 const queryClient = new QueryClient()
-
-
 
 function WagmiComponent({ children }: Props) {
     const settings = useSettingsState();
@@ -80,9 +65,11 @@ function WagmiComponent({ children }: Props) {
         <WagmiProvider config={config} >
             <QueryClientProvider client={queryClient}>
                 <Solana>
-                    <WalletModalProvider>
-                        {children}
-                    </WalletModalProvider>
+                    <FuelProviderWrapper>
+                        <WalletModalProvider>
+                            {children}
+                        </WalletModalProvider>
+                    </FuelProviderWrapper>
                 </Solana>
             </QueryClientProvider>
         </WagmiProvider >

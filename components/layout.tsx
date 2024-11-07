@@ -15,10 +15,9 @@ import QueryProvider from "../context/query";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
-import TonConnectProvider from "./TonConnectProvider";
-import Wagmi from "./Wagmi";
 import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
+import WalletsProviders from "./WalletProviders";
 // import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
@@ -96,7 +95,7 @@ export default function Layout({ children, settings, themeData }: Props) {
   themeData = themeData || THEME_COLORS.default
 
   const basePath = router?.basePath ?? ""
-
+  
   return (<>
     <Head>
       <title>Layerswap App</title>
@@ -134,15 +133,13 @@ export default function Layout({ children, settings, themeData }: Props) {
           <TooltipProvider delayDuration={500}>
             <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
               <ThemeWrapper>
-                <TonConnectProvider basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
-                  <Wagmi>
-                    <AsyncModalProvider>
-                      {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                        <MaintananceContent />
-                        : children}
-                    </AsyncModalProvider>
-                  </Wagmi>
-                </TonConnectProvider>
+                <WalletsProviders basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
+                  <AsyncModalProvider>
+                    {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                      <MaintananceContent />
+                      : children}
+                  </AsyncModalProvider>
+                </WalletsProviders>
               </ThemeWrapper>
             </ErrorBoundary>
           </TooltipProvider>

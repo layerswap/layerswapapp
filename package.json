@@ -17,8 +17,12 @@
     "@datadog/browser-rum": "^5.9.0",
     "@eth-optimism/contracts-ts": "^0.15.0",
     "@headlessui/react": "^2.1.1",
+    "@fuel-ts/account": "^0.96.1",
+    "@fuel-ts/address": "^0.96.1",
+    "@fuels/connectors": "^0.36.0",
+    "@fuels/react": "^0.36.0",
     "@imtbl/imx-sdk": "2.1.1",
-    "@imtbl/sdk": "^1.45.10",
+    "@imtbl/sdk": "1.45.10",
     "@metamask/jazzicon": "^2.0.0",
     "@paradex/sdk": "0.5.3",
     "@radix-ui/react-accordion": "^1.1.2",
@@ -111,6 +115,7 @@
     "eslint-config-next": "^14.0.4",
     "eslint-plugin-no-conditional-literals-in-jsx": "file:eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx",
     "eslint-plugin-storybook": "^0.6.14",
+    "fuels": "^0.96.1",
     "postcss": "^8.4.13",
     "storybook": "^7.4.5",
     "storybook-addon-mock": "^4.3.0",
@@ -120,7 +125,11 @@
     "typescript": "^5.1"
   },
   "resolutions": {
-    "rpc-websockets": "7.11.0"
+    "rpc-websockets": "7.11.0",
+    "viem": "^2.21.16",
+    "wagmi": "^2.12.16",
+    "@wagmi/core": "2.14.1",
+    "@solana/web3.js": "1.66.0"
   },
   "engines": {
     "node": ">=20.9.0"
