@@ -50,6 +50,7 @@ const resolveSnapPoints = ({ isMobile, snapPointsCount, childrenHeights, headerH
         if (n <= 0) return 0; // If n is 0 or negative, the sum is 0
         return arr.slice(0, n).reduce((acc, curr) => acc + curr, 0);
     }
+    const totalHeight = childrenHeights.reduce((accumulator, currentValue) => accumulator + Number(currentValue.height), 0) + headerHeight;
 
     for (let i = 0; i < snapPointsCount; i++) {
 
@@ -57,8 +58,6 @@ const resolveSnapPoints = ({ isMobile, snapPointsCount, childrenHeights, headerH
 
         const pointHeight = childrenHeights?.[i]?.height + result + headerHeight;
         const viewportHeight = isMobile ? window.innerHeight : document.getElementById('widget')?.offsetHeight;
-
-        const totalHeight = childrenHeights.reduce((accumulator, currentValue) => accumulator + Number(currentValue.height), 0) + headerHeight;
 
         if (!pointHeight || !viewportHeight) return [{ id: i + 1, height: 1 }];
 
