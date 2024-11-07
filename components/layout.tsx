@@ -103,7 +103,7 @@ export default function Layout({ children, settings, themeData }: Props) {
       <link rel="icon" type="image/png" sizes="32x32" href={`${basePath}/favicon/favicon-32x32.png`} />
       <link rel="icon" type="image/png" sizes="16x16" href={`${basePath}/favicon/favicon-16x16.png`} />
       <link rel="manifest" href={`${basePath}/favicon/site.webmanifest`} />
-      <link rel="canonical" href="https://layerswap.io" />
+      <link rel="canonical" href={`https://layerswap.io/${basePath}`} />
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content={`rgb(${themeData.secondary?.[900]})`} />
       <meta name="description" content="Streamline your asset transaction experience with Layerswap across 35+ blockchains" />

@@ -19,6 +19,7 @@ import { useQueryState } from "../../../../context/query";
 import { useAddressesStore } from "../../../../stores/addressesStore";
 import { Wallet } from "../../../../stores/walletStore";
 import ConnectedWallets from "./ConnectedWallets";
+import VaulDrawer from "../../../modal/vaul";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -152,13 +153,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             partner={partner}
             destination={destination}
         >{children({ destination, disabled, addressItem: destinationAddressItem, connectedWallet: selectedWallet, partner })}</AddressButton>
-        <Modal
+        <VaulDrawer
             header='Send To'
-            height="fit"
-            show={showAddressModal} setShow={setShowAddressModal}
+            show={showAddressModal}
+            setShow={setShowAddressModal}
             modalId="address"
         >
-            <ResizablePanel>
+            <VaulDrawer.Snap className="pb-0">
                 <div className='w-full flex flex-col justify-between h-full text-primary-text pt-2 min-h-[400px]'>
                     <div className='flex flex-col self-center grow w-full'>
                         <div className='flex flex-col self-center grow w-full space-y-5'>
@@ -200,7 +201,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                 !disabled
                                 && destination
                                 && provider
-                                && !manualAddress 
+                                && !manualAddress
                                 && connectedWallet &&
                                 <ConnectedWallets
                                     provider={provider}
@@ -225,8 +226,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         </div>
                     </div>
                 </div >
-            </ResizablePanel>
-        </Modal>
+            </VaulDrawer.Snap>
+        </VaulDrawer>
     </>
     )
 });

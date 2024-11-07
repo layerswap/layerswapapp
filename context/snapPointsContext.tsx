@@ -15,14 +15,14 @@ type SnapPointsState = {
 
 export const SnapPointsContext = createContext<SnapPointsState | undefined>(undefined);
 
-export const SnapPointsProvider: FC<{ children: ReactNode, snapPointsCount?: number, isMobile: boolean }> = ({ children, snapPointsCount = 1, isMobile }) => {
+export const SnapPointsProvider: FC<{ children: ReactNode, isMobile: boolean }> = ({ children, isMobile }) => {
 
     const [snapElemenetsHeight, setSnapElemenetsHeight] = useState<SnapElement[]>([]);
     const [headerHeight, setHeaderHeight] = useState<number>(0);
 
     const snapPoints = resolveSnapPoints({
         isMobile,
-        snapPointsCount,
+        snapPointsCount: snapElemenetsHeight.length,
         childrenHeights: snapElemenetsHeight.sort((a, b) => a.id - b.id),
         headerHeight
     });
@@ -54,6 +54,8 @@ const resolveSnapPoints = ({ isMobile, snapPointsCount, childrenHeights, headerH
     for (let i = 0; i < snapPointsCount; i++) {
 
         const result = sumBeforeIndex(childrenHeights.map(h => h.height), i);
+
+        if(typeof window === 'undefined') return [{ id: i + 1, height: 1 }];
 
         const pointHeight = childrenHeights?.[i]?.height + result + headerHeight;
         const viewportHeight = isMobile ? window.innerHeight : document.getElementById('widget')?.offsetHeight;

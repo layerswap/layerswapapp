@@ -3,7 +3,7 @@ import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import ConnectButton from "../buttons/connectButton";
 import AddressIcon from "../AddressIcon";
-import Image from "next/image";
+import Image from 'next/image'
 
 const WalletsList = () => {
     const { wallets } = useWallet()

@@ -1,19 +1,18 @@
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import useWallet, { WalletPurpose } from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import { ChevronDown, Plus } from "lucide-react";
-import Modal from "../modal/modal";
-import { Network, RouteNetwork, Token } from "../../Models/Network";
+import { Network, Token } from "../../Models/Network";
 import ConnectButton from "../buttons/connectButton";
 import FilledCheck from "../icons/FilledCheck";
 import { Wallet } from "../../stores/walletStore";
 import SwapButton from "../buttons/swapButton";
 import Balance from "./dynamic/Balance";
-import AddressIcon from "../AddressIcon";
 import { isValidAddress } from "../../lib/address/validator";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
+import VaulDrawer from "../modal/vaul";
 import useBalance from "../../hooks/useBalance";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
@@ -127,20 +126,19 @@ const Component: FC = () => {
                     }
                 </div>
         }
-        <Modal
-            height='fit'
+        <VaulDrawer
             show={openModal}
             setShow={setOpenModal}
             header={`Send from`}
             modalId="connectedWallets"
         >
-            <div className="space-y-3">
+            <VaulDrawer.Snap className="space-y-3">
                 <WalletsList network={walletNetwork} purpose={'autofil'} onSelect={handleSelectWallet} token={source_token} />
                 <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer">
                     Continue without a wallet
                 </div>
-            </div>
-        </Modal>
+            </VaulDrawer.Snap >
+        </VaulDrawer>
     </>
 }
 
@@ -196,20 +194,19 @@ export const FormSourceWalletButton: FC = () => {
             >
                 Connect Wallet
             </SwapButton>
-            <Modal
-                height='fit'
+            <VaulDrawer
                 show={openModal}
                 setShow={setOpenModal}
                 header={`Send from`}
                 modalId="connectedWallets"
             >
-                <div className="space-y-3">
+                <VaulDrawer.Snap className="space-y-3">
                     <WalletsList network={walletNetwork} purpose={'autofil'} onSelect={handleSelectWallet} token={values.fromCurrency} />
                     <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer">
                         Continue without a wallet
                     </div>
-                </div>
-            </Modal>
+                </VaulDrawer.Snap>
+            </VaulDrawer >
         </>
     }
     return <ConnectButton className="w-full">
@@ -233,7 +230,7 @@ export const WalletsList: FC<WalletListProps> = ({ network, purpose, onSelect, t
     const { balances, isBalanceLoading } = useBalancesState()
 
     return (
-        <div className="space-y-3 mt-4">
+        <div className="space-y-3">
             <ConnectButton className="w-full flex justify-center p-2 bg-secondary-700 rounded-md hover:bg-secondary-600">
                 <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
                     <Plus className="h-4 w-4" />
