@@ -24,7 +24,7 @@ const NetworkLogo: FC<Props> = (props) => {
     <div
       className={className}
       style={{
-        background: `url('${url}') -${x}px ${y}px`,
+        background: `url('${url}') -${x}px -${y}px`,
         width: `${width}px`,
         height: `${height}px`,
       }}
