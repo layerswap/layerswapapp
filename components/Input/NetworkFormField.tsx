@@ -67,7 +67,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const {
         data: metadata,
         isLoading: metadataLoading,
-    } = useSWR<ApiResponse<ILogoMetadata[]> | ILogoMetadata[]>(`${metadataURL}`, apiClient.outboudFetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<ILogoMetadata[]> | ILogoMetadata[]>(`${metadataURL}`, apiClient.outboundFetcher, { keepPreviousData: true })
 
     const [logoMetadata, setLogoMetadata] = useState<ILogoMetadata[]>([])
 

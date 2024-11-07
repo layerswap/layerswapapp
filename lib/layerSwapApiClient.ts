@@ -24,7 +24,7 @@ export default class LayerSwapApiClient {
 
     fetcher = (url: string) => this.AuthenticatedRequest<ApiResponse<any>>("GET", url)
 
-    outboudFetcher = (url: string) => this.OutboundRequest<ApiResponse<any>>("GET", url)
+    outboundFetcher = (url: string) => this.OutboundRequest<ApiResponse<any>>("GET", url)
 
     async GetRoutesAsync(direction: 'sources' | 'destinations'): Promise<ApiResponse<NetworkWithTokens[]>> {
         return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/${direction}?include_unmatched=true&include_swaps=true&include_unavailable=true`)
