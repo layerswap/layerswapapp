@@ -16,10 +16,11 @@ type Props = {
     addressItem: AddressItem;
     connectedWallet?: Wallet | undefined;
     partner?: Partner;
-    destination: Network;
+    network: Network;
+    balance?: { amount: number, symbol: string, isLoading: boolean } | undefined;
 }
 
-const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, destination }) => {
+const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, network, balance }) => {
 
     const difference_in_days = addressItem?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressItem.date).getTime()) / (1000 * 3600 * 24))) : undefined
 
@@ -76,8 +77,29 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, des
                 }
             </div>
             <div className="flex flex-col items-start">
-
-                <ExtendedAddress address={addressItem.address} network={destination} />
+                <div className="flex">
+                    <ExtendedAddress address={addressItem.address} network={network} />
+                    {
+                        balance &&
+                        <span className="text-sm flex space-x-2">
+                            {
+                                balance.amount != undefined && !isNaN(balance.amount) ?
+                                    <div className="text-right text-secondary-text font-normal text-sm">
+                                        {
+                                            balance.isLoading ?
+                                                <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                                :
+                                                <>
+                                                    <span>{balance.amount}</span> <span>{balance.symbol}</span>
+                                                </>
+                                        }
+                                    </div>
+                                    :
+                                    <></>
+                            }
+                        </span>
+                    }
+                </div>
 
                 <div className="text-secondary-text">
                     <div className="inline-flex items-center gap-1.5">
