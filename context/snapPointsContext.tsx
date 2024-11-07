@@ -58,7 +58,13 @@ const resolveSnapPoints = ({ isMobile, snapPointsCount, childrenHeights, headerH
         const pointHeight = childrenHeights?.[i]?.height + result + headerHeight;
         const viewportHeight = isMobile ? window.innerHeight : document.getElementById('widget')?.offsetHeight;
 
+        const totalHeight = childrenHeights.reduce((accumulator, currentValue) => accumulator + Number(currentValue.height), 0) + headerHeight;
+
         if (!pointHeight || !viewportHeight) return [{ id: i + 1, height: 1 }];
+
+        if (totalHeight && totalHeight < (viewportHeight * .90)) {
+            return [{ id: i + 1, height: `${totalHeight}px` }]
+        }
 
         if ((pointHeight && viewportHeight) && pointHeight > (viewportHeight * .98)) {
             points.push({ id: i + 1, height: 1 });
