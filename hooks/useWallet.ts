@@ -34,8 +34,8 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         useStarknet(),
         useImtblX(),
         useSolana(),
-        useFuel(),
         useTON(),
+        useFuel(),
     ]
 
     const provider = network && resolveProvider(network, walletProviders, purpose)

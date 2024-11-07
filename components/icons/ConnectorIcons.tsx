@@ -65,12 +65,12 @@ export const ResolveConnectorIcon = ({
             );
         case KnownConnectors.Fuel:
             return (
-                <div className={className ?? "-space-x-2 flex"}>
+                <IconsWrapper className={className}>
                     <Fuel className={iconClassName} />
                     <BakoSafe className={iconClassName} />
                     <Ethereum className={iconClassName} />
                     <Solana className={iconClassName} />
-                </div>
+                </IconsWrapper>
             );
         default:
             return <></>;

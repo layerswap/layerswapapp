@@ -29,7 +29,7 @@ const WalletsList = () => {
                                         <div className="inline-flex items-center relative">
                                             {
                                                 wallet.iconbase64 ?
-                                                    <Image height={36} width={36} alt={wallet.connector} src={wallet.iconbase64} className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
+                                                    <img alt={wallet.connector} src={wallet.iconbase64} className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
                                                     : <wallet.icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
                                             }
 

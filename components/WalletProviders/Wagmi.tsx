@@ -1,6 +1,5 @@
 
 
-import '@rainbow-me/rainbowkit/styles.css';
 import { useSettingsState } from "../../context/settings";
 import { NetworkType } from "../../Models/Network";
 import resolveChain from "../../lib/resolveChain";
@@ -11,14 +10,17 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
 import { WalletModalProvider } from '../WalletModal';
-import Solana from "./SolanaProvider";
 import { my_argent } from '../../lib/wallets/connectors/argent';
 import { my_rainbow } from '../../lib/wallets/connectors/rainbow';
 import { coinbaseWallet, metaMask, walletConnect } from 'wagmi/connectors'
 import { hasInjectedProvider } from '../../lib/wallets/connectors/getInjectedConnector';
 import { my_bitget } from '../../lib/wallets/connectors/bitget';
 import { isMobile } from '../../lib/isMobile';
-import FuelProviderWrapper from './FuelProvider';
+import dynamic from 'next/dynamic';
+
+const FuelProviderWrapper = dynamic(() => import("./FuelProvider").then((comp) => comp.default), {
+    loading: () => null
+})
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -64,13 +66,18 @@ function WagmiComponent({ children }: Props) {
     return (
         <WagmiProvider config={config} >
             <QueryClientProvider client={queryClient}>
-                <Solana>
-                    <FuelProviderWrapper>
-                        <WalletModalProvider>
+                {
+                    FuelProviderWrapper ?
+                        <FuelProviderWrapper>
+                            <WalletModalProvider>
+                                {children}
+                            </WalletModalProvider>
+                        </FuelProviderWrapper>
+                        :
+                        <>
                             {children}
-                        </WalletModalProvider>
-                    </FuelProviderWrapper>
-                </Solana>
+                        </>
+                }
             </QueryClientProvider>
         </WagmiProvider >
     )
