@@ -10,8 +10,8 @@ import { ChevronDown, RefreshCw } from 'lucide-react';
 import { truncateDecimals } from '../../utils/RoundDecimals';
 import { useSwitchAccount } from 'wagmi';
 import { Wallet } from '../../../stores/walletStore';
-import Modal from '../../modal/modal';
 import { WalletsList } from '../../Input/SourceWalletPicker';
+import VaulDrawer from '../../modal/vaul';
 
 const WalletTransferContent: FC = () => {
     const { swapResponse, selectedSourceAccount } = useSwapDataState()
@@ -118,15 +118,17 @@ const WalletTransferContent: FC = () => {
         {
             source_network &&
             source_token &&
-            <Modal
-                height='80%'
+            <VaulDrawer
+                mobileMaxModalHeight='80%'
                 show={openModal}
                 setShow={setOpenModal}
                 header={`Send from`}
                 modalId="connectedWallets"
             >
-                <WalletsList network={source_network} token={source_token} purpose={'autofil'} onSelect={changeWallet} />
-            </Modal>
+                <VaulDrawer.Snap>
+                    <WalletsList network={source_network} token={source_token} purpose={'autofil'} onSelect={changeWallet} />
+                </VaulDrawer.Snap>
+            </VaulDrawer>
         }
     </>
 }
