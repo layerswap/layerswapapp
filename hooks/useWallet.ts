@@ -7,6 +7,7 @@ import useStarknet from "../lib/wallets/starknet/useStarknet";
 import useTON from "../lib/wallets/ton/useTON";
 import { Wallet } from "../stores/walletStore";
 import { LSConnector } from "../lib/wallets/connectors/types";
+import useFuel from "../lib/wallets/fuel/useFuel"
 
 export type WalletProvider = {
     connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
@@ -15,14 +16,13 @@ export type WalletProvider = {
     activeWallet: Wallet | undefined,
     activeAccountAddress: string | undefined,
     autofillSupportedNetworks?: string[],
-    withdrawalSupportedNetworks: string[],
+    withdrawalSupportedNetworks?: string[],
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,
     availableWalletsForConnect?: LSConnector[],
     switchAccount: (connector: Wallet, address: string) => Promise<void>
 }
-
 
 export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 
@@ -32,9 +32,10 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
     const walletProviders: WalletProvider[] = [
         useEVM(),
         useStarknet(),
-        useTON(),
+        useImtblX(),
         useSolana(),
-        useImtblX()
+        useFuel(),
+        useTON(),
     ]
 
     const provider = network && resolveProvider(network, walletProviders, purpose)
@@ -68,22 +69,10 @@ const resolveProvider = (network: Network, walletProviders: WalletProvider[], pu
     if (!purpose) return
     switch (purpose) {
         case "withdrawal":
-            return walletProviders.find(provider => provider.withdrawalSupportedNetworks.includes(network.name))
+            return walletProviders.find(provider => provider.withdrawalSupportedNetworks?.includes(network.name))
         case "autofil":
             return walletProviders.find(provider => provider.autofillSupportedNetworks?.includes(network.name))
         case "asSource":
             return walletProviders.find(provider => provider.asSourceSupportedNetworks?.includes(network.name))
     }
-}
-
-
-export const useWalletProviders = () => {
-
-    const evm = useEVM()
-
-
-    const walletProviders: WalletProvider[] = useMemo(() => [evm,], [evm])
-
-    return walletProviders
-
 }

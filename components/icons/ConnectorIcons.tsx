@@ -11,7 +11,11 @@ import Phantom from "../icons/Wallets/Phantom";
 import CoinbaseIcon from "../icons/Wallets/Coinbase";
 import { Mail } from "lucide-react";
 import MyTonWallet from "./Wallets/MyTonWallet";
-import GlowIcon from "./Wallets/Glow";
+import GlowIcon from "../icons/Wallets/Glow";
+import Fuel from "./Wallets/Fuel";
+import BakoSafe from "./Wallets/BakoSafe";
+import Ethereum from "./Wallets/Ethereum";
+import Solana from "./Wallets/Solana";
 
 export const ResolveConnectorIcon = ({
     connector,
@@ -59,6 +63,15 @@ export const ResolveConnectorIcon = ({
                     <GlowIcon className={iconClassName} />
                 </IconsWrapper>
             );
+        case KnownConnectors.Fuel:
+            return (
+                <div className={className ?? "-space-x-2 flex"}>
+                    <Fuel className={iconClassName} />
+                    <BakoSafe className={iconClassName} />
+                    <Ethereum className={iconClassName} />
+                    <Solana className={iconClassName} />
+                </div>
+            );
         default:
             return <></>;
     }
@@ -73,5 +86,6 @@ const KnownConnectors = {
     EVM: "evm",
     TON: "ton",
     Solana: "solana",
-    Glow: "glow"
+    Glow: "glow",
+    Fuel: "fuel",
 };

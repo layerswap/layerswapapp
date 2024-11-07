@@ -1,34 +1,30 @@
-import LayerSwapApiClient, { SwapResponse } from "../../../lib/layerSwapApiClient"
-import { ApiResponse, EmptyApiResponse } from "../../../Models/ApiResponse"
+import LayerSwapApiClient, { SwapResponse } from "../../lib/layerSwapApiClient"
+import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse"
 import { ChevronDown, Plus, RefreshCw } from 'lucide-react'
 import { FC, useCallback, useMemo, useState } from "react"
-import HistorySummary from "../HistorySummary";
+import HistorySummary from "./HistorySummary";
 import useSWRInfinite from 'swr/infinite'
-import useWallet from "../../../hooks/useWallet"
+import useWallet from "../../hooks/useWallet"
 import Link from "next/link"
 import Snippet, { HistoryItemSceleton } from "./Snippet"
-import { groupBy } from "../../utils/groupBy"
-import { useAuthState, UserType } from "../../../context/authContext"
-import ConnectButton from "../../buttons/connectButton"
-import { FormWizardProvider } from "../../../context/formWizardProvider"
-import { TimerProvider } from "../../../context/timerContext"
-import GuestCard from "../../guestCard"
-import { AuthStep } from "../../../Models/Wizard"
-import { useHistoryContext } from "../../../context/historyContext"
+import { groupBy } from "../utils/groupBy"
+import { useAuthState, UserType } from "../../context/authContext"
+import ConnectButton from "../buttons/connectButton"
+import { FormWizardProvider } from "../../context/formWizardProvider"
+import { TimerProvider } from "../../context/timerContext"
+import GuestCard from "../guestCard"
+import { AuthStep } from "../../Models/Wizard"
 import React from "react"
 import { useVirtualizer } from '@tanstack/react-virtual'
-import Modal from "../../modal/modal";
-import SwapDetails from "../SwapDetailsComponent"
-import { addressFormat } from "../../../lib/address/formatter";
-import { useSettingsState } from "../../../context/settings";
+import SwapDetails from "./SwapDetailsComponent"
+import { addressFormat } from "../../lib/address/formatter";
+import { useSettingsState } from "../../context/settings";
+import VaulDrawer from "../modal/vaul";
 
 const PAGE_SIZE = 20
 type ListProps = {
     statuses?: string | number;
     refreshing?: boolean;
-    loadExplorerSwaps: boolean;
-    componentType?: 'steps' | 'page'
-    onSwapSettled?: () => void,
     onNewTransferClick?: () => void
 }
 
@@ -42,17 +38,19 @@ const getSwapsKey = () => (index: number, statuses: Status[], addresses?: string
 
 type Swap = SwapResponse & { type: 'user' | 'explorer' }
 
-const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onNewTransferClick }) => {
+const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
     const { networks } = useSettingsState()
     const [openSwapDetailsModal, setOpenSwapDetailsModal] = useState(false)
     const [showAll, setShowAll] = useState(false)
     const { wallets } = useWallet()
     const { userId } = useAuthState()
+    const [selectedSwap, setSelectedSwap] = useState<Swap | null>(null)
+
     const addresses = wallets.map(w => {
         const network = networks.find(n => n.chain_id == w.chainId)
         return addressFormat(w.address, network || null)
     })
-    const { setSelectedSwap, selectedSwap } = useHistoryContext()
+
     const handleopenSwapDetails = (swap: Swap) => {
         setSelectedSwap(swap)
         setOpenSwapDetailsModal(true)
@@ -126,7 +124,7 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
     const items = rowVirtualizer.getVirtualItems()
     if ((userSwapsLoading && !(Number(userSwaps?.length) > 0))) return <Snippet />
     if (!wallets.length && !userId) return <ConnectOrSignIn onLogin={() => { mutate(); mutatePendingSwaps(); }} />
-    if (!list.length) return <BlankHistory componentType={componentType} onNewTransferClick={onNewTransferClick} onLogin={() => { mutate(); mutatePendingSwaps(); }} />
+    if (!list.length) return <BlankHistory onNewTransferClick={onNewTransferClick} onLogin={() => { mutate(); mutatePendingSwaps(); }} />
 
     return (
         <div className="relative">
@@ -226,31 +224,28 @@ const HistoryList: FC<ListProps> = ({ componentType = 'page', onSwapSettled, onN
                     </div>
                 </div>
             </div>
-            {
-                <Modal
-                    height="full"
-                    show={openSwapDetailsModal}
-                    setShow={handleSWapDetailsShow}
-                    header='Swap details'
-                    modalId="swapDetails"
-                >
-                    {
-                        selectedSwap &&
-                        <SwapDetails swapResponse={selectedSwap} />
-                    }
-                </Modal>
-            }
+            <VaulDrawer
+                show={openSwapDetailsModal}
+                setShow={handleSWapDetailsShow}
+                header='Swap details'
+                modalId="swapDetails"
+                snapPointsCount={2}
+            >
+                {
+                    selectedSwap &&
+                    <SwapDetails swapResponse={selectedSwap} />
+                }
+            </VaulDrawer>
         </div>
     )
 }
 
 type BlankHistoryProps = {
-    componentType?: 'steps' | 'page',
     onNewTransferClick?: () => void,
     onLogin: () => void
 }
 
-const BlankHistory = ({ componentType, onNewTransferClick, onLogin }: BlankHistoryProps) => {
+const BlankHistory = ({ onNewTransferClick, onLogin }: BlankHistoryProps) => {
 
     return <div className="w-full h-[70vh] sm:h-full min-h-[inherit] flex flex-col justify-between items-center ">
         <div />
@@ -265,18 +260,10 @@ const BlankHistory = ({ componentType, onNewTransferClick, onLogin }: BlankHisto
                     Transfers you make with this wallet/account will appear here after excution.
                 </p>
             </div>
-            {
-                componentType === 'steps' ?
-                    <button onClick={onNewTransferClick} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-600 py-2 px-3 rounded-lg">
-                        <Plus className="w-4 h-4" />
-                        <p>New Transfer</p>
-                    </button>
-                    :
-                    <Link href={"/"} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-600 py-2 px-3 rounded-lg">
-                        <Plus className="w-4 h-4" />
-                        <p>New Transfer</p>
-                    </Link>
-            }
+            <Link onClick={onNewTransferClick} href={"/"} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-600 py-2 px-3 rounded-lg">
+                <Plus className="w-4 h-4" />
+                <p>New Transfer</p>
+            </Link>
 
         </div>
         <div className="w-full">
@@ -351,14 +338,6 @@ function resolveDate(dateInput) {
     // Convert the time difference from milliseconds to days
     const dayDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
 
-    // Format the input date to DD/MM/YYYY
-    const formatDate = (date) => {
-        const day = ("0" + date.getDate()).slice(-2);
-        const month = ("0" + (date.getMonth() + 1)).slice(-2);
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    }
-
     // Resolve the output based on the difference in days
     switch (dayDiff) {
         case 0:
@@ -377,7 +356,7 @@ function resolveDate(dateInput) {
             return "6 days ago";
         default:
             // If the date is more than 6 days ago, return it in DD/MM/YYYY format
-            return formatDate(inputDate);
+            return dateInput;
     }
 }
 
