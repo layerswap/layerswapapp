@@ -83,7 +83,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     }
 
     return (
-
         <>
             <VaulDrawer.Snap id='item-1' className='pb-3 space-y-3'>
                 <div className='p-3 bg-secondary-700 rounded-xl'>
@@ -216,6 +215,18 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
                     </div>
                 </div>
+                {/* Refuel */}
+                {
+                    refuel && <div className='p-3 bg-secondary-700 rounded-xl'>
+                        <div className="flex justify-between items-baseline text-sm">
+                            <p className="text-left text-secondary-text">Refuel</p>
+                            <div className="flex flex-col justify-end">
+                                <p className="text-primary-text text-sm font-semibold">{truncatedRefuelAmount} {nativeCurrency?.symbol}</p>
+                                <p className="text-secondary-text text-xs flex justify-end">${refuelAmountInUsd}</p>
+                            </div>
+                        </div>
+                    </div>
+                }
 
                 {/* Fees */}
                 <div className='p-3 bg-secondary-700 rounded-xl'>
@@ -296,9 +307,8 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
             </VaulDrawer.Snap>
 
-
-            <VaulDrawer.Snap id='item-2'>
-                <div className='flex flex-col justify-between w-full h-full gap-3 pb-4'>
+            <VaulDrawer.Snap className='pb-3' id='item-2'>
+                <div className='flex flex-col justify-between w-full h-full gap-3'>
                     <div className='space-y-3'>
 
                         {/* Source and Destination Transactions */}
@@ -385,9 +395,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
                 </div>
             </VaulDrawer.Snap>
-
         </>
-
     )
 }
 

@@ -66,7 +66,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                                 return <div key={address} className="flex flex-col gap-2">
                                     <button type="button" onClick={() => onClick(address, wallet)} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 ${address && addressFormat(address, destination!) === addressFormat(destination_address!, destination!) && 'bg-secondary-800'}`}>
                                         <div className={`flex items-center justify-between w-full`}>
-                                            <AddressWithIcon addressItem={addressItem} connectedWallet={wallet} destination={destination} />
+                                            <AddressWithIcon addressItem={addressItem} connectedWallet={wallet} network={destination} />
                                             <div className="flex h-6 items-center px-1">
                                                 {
                                                     addressFormat(address, destination!) === addressFormat(destination_address!, destination!) &&
@@ -114,7 +114,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
 
                                         return <div key={address} className="flex flex-col gap-2">
                                             <div className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 opacity-50`}>
-                                                <AddressWithIcon addressItem={addressItem} connectedWallet={wallet} destination={destination} />
+                                                <AddressWithIcon addressItem={addressItem} connectedWallet={wallet} network={destination} />
                                             </div>
                                         </div>
                                     })

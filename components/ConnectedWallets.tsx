@@ -2,12 +2,10 @@ import WalletIcon from "./icons/WalletIcon"
 import shortenAddress from "./utils/ShortenAddress"
 import useWallet from "../hooks/useWallet"
 import ConnectButton from "./buttons/connectButton"
-import SubmitButton from "./buttons/submitButton"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./shadcn/dialog"
 import { useState } from "react"
 import { Wallet } from "../stores/walletStore"
-import Modal from "./modal/modal"
 import WalletsList from "./Wallet/WalletsList"
+import VaulDrawer from "./modal/vaul"
 
 export const WalletsHeader = () => {
     const { wallets } = useWallet()
@@ -19,15 +17,16 @@ export const WalletsHeader = () => {
                 <button type="button" aria-label="Connected wallets" onClick={() => setOpenModal(true)} className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
                     <WalletsIcons wallets={wallets} />
                 </button>
-                <Modal
-                    height='fit'
+                <VaulDrawer
                     show={openModal}
                     setShow={setOpenModal}
-                    header={`Connected Wallets`}
+                    header={`Connected wallets`}
                     modalId="connectedWallets"
                 >
-                    <WalletsList />
-                </Modal>
+                    <VaulDrawer.Snap>
+                        <WalletsList />
+                    </VaulDrawer.Snap>
+                </VaulDrawer>
             </>
         )
     }
@@ -91,15 +90,16 @@ export const WalletsMenu = () => {
                             </>
                     }
                 </button>
-                <Modal
-                    height='fit'
+                <VaulDrawer
                     show={openModal}
                     setShow={setOpenModal}
-                    header={`Connected Wallets`}
+                    header={`Connected wallets`}
                     modalId="connectedWallets"
                 >
-                    <WalletsList />
-                </Modal>
+                    <VaulDrawer.Snap>
+                        <WalletsList />
+                    </VaulDrawer.Snap>
+                </VaulDrawer>
             </>
         )
     }

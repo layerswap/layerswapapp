@@ -29,7 +29,7 @@ const Wizard: FC<Props> = ({ children, wizardId }) => {
 
    const width = positionPercent || 0
    return <>
-      <div className={noToolBar ? `w-full h-full` : ` bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
+      <div id='widget' className={noToolBar ? `w-full h-full` : ` bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}>
          <div className="relative">
             {!noToolBar && <div className="overflow-hidden h-1 flex rounded-t-lg bg-secondary-500">
                <div style={{ width: `${width}%`, transition: 'width 1s' }} className="shadow-none flex flex-col whitespace-nowrap justify-center bg-primary"></div>

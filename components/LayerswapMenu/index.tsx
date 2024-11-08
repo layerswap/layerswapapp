@@ -1,6 +1,5 @@
 import { MenuIcon, ChevronLeft } from "lucide-react";
 import { FC, useState } from "react";
-import Modal from "../../components/modal/modal";
 import IconButton from "../buttons/iconButton";
 import { FormWizardProvider, useFormWizardaUpdate, useFormWizardState } from "../../context/formWizardProvider";
 import { MenuStep } from "../../Models/Wizard";
@@ -10,6 +9,7 @@ import WizardItem from "../Wizard/WizardItem";
 import { NextRouter, useRouter } from "next/router";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import HistoryList from "../SwapHistory/History";
+import VaulDrawer from "../modal/vaul";
 
 const Comp = () => {
     const router = useRouter();
@@ -35,42 +35,40 @@ const Comp = () => {
 
     return <>
         <div className="text-secondary-text cursor-pointer relative">
-            {
-                <>
-                    <IconButton onClick={() => setOpenTopModal(true)} icon={
-                        <MenuIcon strokeWidth="2" />
-                    }>
-                    </IconButton>
-                    <Modal
-                        modalId="menuModal"
-                        show={openTopModal}
-                        setShow={handleModalOpenStateChange}
-                        header={
-                            <div className="inline-flex items-center">
-                                {
-                                    goBack &&
-                                    <div className="-ml-2">
-                                        <IconButton onClick={goBack} icon={
-                                            <ChevronLeft strokeWidth="2" />
-                                        }>
-                                        </IconButton>
-                                    </div>
-                                }
-                                <h2>{currentStepName as string}</h2>
+            <IconButton onClick={() => setOpenTopModal(true)} icon={
+                <MenuIcon strokeWidth="2" />
+            }>
+            </IconButton>
+            <VaulDrawer
+                modalId="menuModal"
+                show={openTopModal}
+                setShow={handleModalOpenStateChange}
+                header={
+                    <div className="inline-flex items-center">
+                        {
+                            goBack &&
+                            <div className="-ml-2">
+                                <IconButton onClick={goBack} icon={
+                                    <ChevronLeft strokeWidth="2" />
+                                }>
+                                </IconButton>
                             </div>
                         }
-                    >
-                        <Wizard wizardId='menuWizard' >
-                            <WizardItem StepName={MenuStep.Menu}>
-                                <MenuList goToStep={handleGoToStep} />
-                            </WizardItem>
-                            <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full">
-                                <HistoryList onNewTransferClick={() => handleModalOpenStateChange(false)}/>
-                            </WizardItem>
-                        </Wizard>
-                    </Modal>
-                </>
-            }
+                        <h2>{currentStepName as string}</h2>
+                    </div>
+                }
+            >
+                <VaulDrawer.Snap id='item-1'>
+                    <Wizard wizardId='menuWizard' >
+                        <WizardItem StepName={MenuStep.Menu}>
+                            <MenuList goToStep={handleGoToStep} />
+                        </WizardItem>
+                        <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full">
+                            <HistoryList onNewTransferClick={() => handleModalOpenStateChange(false)} />
+                        </WizardItem>
+                    </Wizard>
+                </VaulDrawer.Snap>
+            </VaulDrawer>
         </div >
     </>
 }
