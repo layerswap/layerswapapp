@@ -71,7 +71,7 @@ const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, o
                             <div className="flex gap-3 items-center font-semibold">
                                 {
                                     connector.icon ?
-                                        <Image src={connector.icon} height={36} width={36} alt={connector.name} className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
+                                        <img src={connector.icon} alt={connector.name} className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
                                         : <Icon className="w-8 h-8 rounded-md bg-secondary-900" />
                                 }
                                 <p>{connectorName}</p>

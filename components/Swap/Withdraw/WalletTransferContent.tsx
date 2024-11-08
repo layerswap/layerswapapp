@@ -125,7 +125,7 @@ const WalletTransferContent: FC = () => {
                 header={`Send from`}
                 modalId="connectedWallets"
             >
-                <VaulDrawer.Snap>
+                <VaulDrawer.Snap id='item-1'>
                     <WalletsList network={source_network} token={source_token} purpose={'autofil'} onSelect={changeWallet} />
                 </VaulDrawer.Snap>
             </VaulDrawer>

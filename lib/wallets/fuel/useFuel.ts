@@ -15,7 +15,7 @@ import {
 } from '@fuel-ts/account';
 import { Address } from '@fuel-ts/address';
 import shortenAddress from "../../../components/utils/ShortenAddress";
-import { BAKO_STATE } from "./Basko";
+import { BAKO_STATE } from "./Bako";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 
 export default function useFuel(): WalletProvider {

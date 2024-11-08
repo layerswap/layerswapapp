@@ -1,13 +1,12 @@
-import { Connector, useAccount, useConfig, useConnectors, useDisconnect, useSwitchAccount } from "wagmi"
+import { useAccount, useConfig, useConnectors, useDisconnect, useSwitchAccount } from "wagmi"
 import { NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo } from "react"
 import { Wallet } from "../../../stores/walletStore"
-import { EVMAddresses, useEVMAddressesStore } from "../../../stores/evmAddressesStore"
 import { useWalletModalState } from "../../../stores/walletModalStateStore"
 import { getConnections } from '@wagmi/core'
 
@@ -124,7 +123,7 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-    const handleSwitchAccount = useCallback(async (wallet: Wallet, address: string) => {
+    const switchAccount = useCallback(async (wallet: Wallet, address: string) => {
         const connector = allConnectors.find(c => c.name === wallet.connector)
         if (!connector)
             throw new Error("Connector not found")
@@ -141,10 +140,10 @@ export default function useEVM(): WalletProvider {
     const provider = {
         connectWallet,
         disconnectWallets,
+        switchAccount,
         connectedWallets: resolvedConnectors,
         activeWallet: resolvedConnectors.find(w => w.isActive),
         activeAccountAddress: activeAccountAddress || activeAccount?.address,
-        switchAccount: handleSwitchAccount,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,

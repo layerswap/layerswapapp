@@ -50,7 +50,7 @@ export function WalletModalProvider({ children }) {
                         <p>Connect wallet</p>
                     </div>
                 }>
-                <VaulDrawer.Snap>
+                <VaulDrawer.Snap id='item-1'>
                     {
                         selectedProvider ?
                             <div>

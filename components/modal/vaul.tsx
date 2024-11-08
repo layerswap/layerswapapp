@@ -152,7 +152,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     );
 }
 
-const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
+const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: string }> = (props) => {
 
     let [ref, { height }] = useMeasure();
     const { setSnapElemenetsHeight } = useSnapPoints()
@@ -169,13 +169,13 @@ const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement>> = (props) => {
     }, [height])
 
     return (
-        <div {...props} className={props.className ?? 'pb-6'} ref={ref}>
+        <div {...props} className={props.className ?? 'pb-6'} id={props.id} ref={ref}>
             {props.children}
         </div>
     )
 }
 
-const VaulDrawer: typeof Comp & { Snap: FC<HTMLAttributes<HTMLDivElement>> } = (props) => {
+const VaulDrawer: typeof Comp & { Snap: typeof VaulDrawerSnap } = (props) => {
     const { isMobile } = useWindowDimensions();
 
     return (

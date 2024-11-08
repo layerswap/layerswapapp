@@ -5,7 +5,7 @@ import { CHAIN_IDS, Provider } from '@fuel-ts/account';
 import { useConfig } from 'wagmi';
 import KnownInternalNames from '../../lib/knownIds';
 import { useSettingsState } from '../../context/settings';
-import { BaskoRequestAPI } from '../../lib/wallets/fuel/Basko';
+import { BaskoRequestAPI } from '../../lib/wallets/fuel/Bako';
 export const HOST_URL = 'https://api.bako.global';
 
 const FuelProviderWrapper = ({

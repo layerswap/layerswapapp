@@ -23,7 +23,7 @@ export const WalletsHeader = () => {
                     header={`Connected wallets`}
                     modalId="connectedWallets"
                 >
-                    <VaulDrawer.Snap>
+                    <VaulDrawer.Snap id="item-1">
                         <WalletsList />
                     </VaulDrawer.Snap>
                 </VaulDrawer>
@@ -96,7 +96,7 @@ export const WalletsMenu = () => {
                     header={`Connected wallets`}
                     modalId="connectedWallets"
                 >
-                    <VaulDrawer.Snap>
+                    <VaulDrawer.Snap id="item-1">
                         <WalletsList />
                     </VaulDrawer.Snap>
                 </VaulDrawer>
