@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { Children, Dispatch, FC, HTMLAttributes, ReactNode, SetStateAction, useEffect, useRef, useState } from 'react';
+import { Dispatch, FC, ReactNode, SetStateAction, useEffect, useRef, useState } from 'react';
 import { Drawer } from 'vaul';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
 import IconButton from '../buttons/iconButton';

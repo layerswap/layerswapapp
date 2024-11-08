@@ -53,21 +53,22 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
     }, []);
 
     return (
-        <VaulDrawer
-            header={
-                header
-                    ? <div className="absolute top-4 left-8 text-lg text-secondary-text font-semibold">
-                        <div>{header}</div>
-                    </div>
-                    : <></>
-            }
-            show={show}
-            setShow={setShow}
-            modalId='comandSelect'
-            mobileMaxModalHeight='90%'
-        >
-            <VaulDrawer.Snap id='item-1'>
-                <CommandWrapper>
+        <CommandWrapper>
+
+            <VaulDrawer
+                header={
+                    header
+                        ? <div className="absolute top-4 left-8 text-lg text-secondary-text font-semibold">
+                            <div>{header}</div>
+                        </div>
+                        : <></>
+                }
+                show={show}
+                setShow={setShow}
+                modalId='comandSelect'
+                mobileMaxModalHeight='90%'
+            >
+                <VaulDrawer.Snap id='item-1'>
                     {
                         searchHint &&
                         <CommandInput
@@ -99,8 +100,8 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
                                 <SpinIcon className="animate-spin h-5 w-5" />
                             </div>
                     }
-                </CommandWrapper>
-            </VaulDrawer.Snap>
-        </VaulDrawer>
+                </VaulDrawer.Snap>
+            </VaulDrawer>
+        </CommandWrapper>
     )
 }

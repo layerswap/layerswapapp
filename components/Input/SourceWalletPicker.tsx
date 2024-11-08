@@ -132,7 +132,7 @@ const Component: FC = () => {
             header={`Send from`}
             modalId="connectedWallets"
         >
-            <VaulDrawer.Snap id="item-1" className="space-y-3">
+            <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
                 <WalletsList network={walletNetwork} purpose={'autofil'} onSelect={handleSelectWallet} token={source_token} />
                 <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer">
                     Continue without a wallet
@@ -200,7 +200,7 @@ export const FormSourceWalletButton: FC = () => {
                 header={`Send from`}
                 modalId="connectedWallets"
             >
-                <VaulDrawer.Snap id="item-1" className="space-y-3">
+                <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
                     <WalletsList network={walletNetwork} purpose={'autofil'} onSelect={handleSelectWallet} token={values.fromCurrency} />
                     <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer">
                         Continue without a wallet

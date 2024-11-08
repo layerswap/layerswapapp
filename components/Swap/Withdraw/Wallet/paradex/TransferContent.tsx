@@ -133,28 +133,17 @@ const Content: FC<{ network: NetworkWithTokens | undefined }> = ({ network }) =>
         {provider &&
             wallet &&
             source_network &&
-            <>
-                {/* <div onClick={handleDisconnect} className={"text-secondary-text justify-end hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200 hover:cursor-pointer"}>
-                    {
-                        isLoading ?
-                            <RefreshCw className="h-3 w-auto animate-spin" />
-                            :
-                            <RefreshCw className="h-3 w-auto" />
-                    }
-                    <p>Switch Wallet</p>
-                </div> */}
-                <div
-                    onClick={() => select(provider?.name)}
-                    className={`${isSelected ? 'bg-secondary-700 border-secondary-500 text-primary-text' : 'bg-secondary-900 border-secondary-700 text-secondary-text cursor-pointer hover:text-primary-text hover:border-secondary-500'} group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7`}>
-                    <AddressWithIcon addressItem={{ address: wallet?.address || '', group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} network={source_network} />
-                    {
-                        !isSelected &&
-                        <div className='font-light text-sm'>
-                            Select
-                        </div>
-                    }
-                </div>
-            </>
+            <div
+                onClick={() => select(provider?.name)}
+                className={`${isSelected ? 'bg-secondary-700 border-secondary-500 text-primary-text' : 'bg-secondary-900 border-secondary-700 text-secondary-text cursor-pointer hover:text-primary-text hover:border-secondary-500'} group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7`}>
+                <AddressWithIcon addressItem={{ address: wallet?.address || '', group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} network={source_network} />
+                {
+                    !isSelected &&
+                    <div className='font-light text-sm'>
+                        Select
+                    </div>
+                }
+            </div>
         }
     </>
 }

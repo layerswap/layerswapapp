@@ -63,14 +63,6 @@ const WalletTransferContent: FC = () => {
         selectedSourceAccount?.address && source_network && source_token && fetchGas(source_network, source_token, selectedSourceAccount.address)
     }, [source_network, source_token, selectedSourceAccount?.address])
 
-    const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!selectedSourceAccount) return
-        setIsloading(true);
-        await selectedSourceAccount.wallet.disconnect()
-        if (source_exchange) await mutateSwap()
-        setIsloading(false);
-    }, [source_network?.type, swap?.source_exchange, selectedSourceAccount, setIsloading, isLoading])
-
     let accountAddress: string | undefined = ""
     if (swap?.source_exchange) {
         accountAddress = swap.exchange_account_name || ""
@@ -89,18 +81,6 @@ const WalletTransferContent: FC = () => {
 
     return <>
         <div className="grid content-end">
-            <div className='flex w-full items-center text-sm justify-between'>
-                <span className='ml-1'>{swap?.source_exchange ? "Connected account" : "Send from"}</span>
-                <div onClick={handleDisconnect} className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200 hover:cursor-pointer">
-                    {
-                        isLoading ?
-                            <RefreshCw className="h-3 w-auto animate-spin" />
-                            :
-                            <RefreshCw className="h-3 w-auto" />
-                    }
-                    <p>Switch Wallet</p>
-                </div>
-            </div>
             {
                 selectedWallet &&
                 source_network &&
