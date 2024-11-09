@@ -41,7 +41,7 @@ export default function LayerswapMenu() {
             },
             {
                 name: 'Discord',
-                href: 'https://discord.com/invite/KhwYN35sHy',
+                href: 'https://discord.gg/layerswap',
                 icon: (props) => DiscordLogo(props),
                 className: 'plausible-event-name=Discord'
             },
