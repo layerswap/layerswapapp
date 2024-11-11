@@ -1,7 +1,7 @@
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { Transaction, Connection } from '@solana/web3.js';
+import { Transaction, Connection, PublicKey } from '@solana/web3.js';
 import useWallet from '../../../../hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
@@ -20,9 +20,15 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
 
     const provider = getWithdrawalProvider(network!);
     const wallet = provider?.getConnectedWallet(network);
-    const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
+    const { publicKey: walletPublicKey, signTransaction, connected } = useSolanaWallet();
     const solanaNode = network?.node_url
-
+    
+    useEffect(() => {
+        if (connected && walletPublicKey) {
+            console.log('Account changed:', walletPublicKey.toBase58());
+        }
+    }, [walletPublicKey, connected]);
+    
     const handleTransfer = useCallback(async () => {
 
         if (!signTransaction || !callData || !swapId) return
@@ -50,7 +56,6 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
         }
         catch (e) {
             if (e?.message) {
-                debugger
                 if(e.message.includes('0x1') || e.message.includes('Attempt to debit an account')) setInsufficientFunds(true)
                 else toast(e.message)
                 return
