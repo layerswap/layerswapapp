@@ -16,9 +16,10 @@ type VaulDrawerProps = {
     description?: ReactNode;
     modalId: string;
     mobileMaxModalHeight?: '80%' | '90%' | 'full';
+    modalConstantHeight?: boolean;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, mobileMaxModalHeight = 'full' }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, mobileMaxModalHeight = 'full', modalConstantHeight }) => {
     const { isMobile } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -29,7 +30,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     const [snapElement, setSnapElement] = useState<SnapElement | null>(null);
 
     const { snapPoints } = useSnapPoints()
-    const snapPointsHeight = snapPoints.map((item) => item.height);
+    const snapPointsHeight = modalConstantHeight ? [1] : snapPoints.map((item) => item.height);
 
     const isLastSnap = snapElement?.id === snapPoints[snapPoints.length - 1]?.id;
 
@@ -70,6 +71,19 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
         setLoaded(true);
     }, []);
 
+    useEffect(() => {
+        if (show) {
+            // Pushing the change to the end of the call stack
+            const timer = setTimeout(() => {
+                document.body.style.pointerEvents = '';
+            }, 0);
+
+            return () => clearTimeout(timer);
+        } else {
+            document.body.style.pointerEvents = 'auto';
+        }
+    }, [show]);
+
     if (!loaded) return null;
 
     return (
@@ -91,7 +105,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
                 <Drawer.Content
                     data-testid="content"
-                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ${(snap === 1 && ((isMobile && mobileMaxModalHeight == 'full') || !isMobile)) && '!border-none !rounded-none'} ${(isMobile && mobileMaxModalHeight !== 'full') && `max-h-[${mobileMaxModalHeight}]`}`}
+                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ${(snap === 1 && ((isMobile && mobileMaxModalHeight == 'full') || !isMobile)) && '!border-none !rounded-none'} ${(isMobile && mobileMaxModalHeight !== 'full') && `max-h-[${mobileMaxModalHeight}]`} ${modalConstantHeight && '!h-full'}`}
                 >
                     <div
                         ref={headerRef}

@@ -274,7 +274,7 @@ const BlankHistory = ({ onNewTransferClick, onLogin }: BlankHistoryProps) => {
 
 const ConnectOrSignIn = ({ onLogin }: SignInProps) => {
 
-    return <div className="w-full h-full  flex flex-col justify-between items-center ">
+    return <div className="w-full h-full flex flex-col justify-between items-center ">
         <div className="flex flex-col items-center justify-center text-center w-full h-full">
             <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
             <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />

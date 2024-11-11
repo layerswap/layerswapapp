@@ -57,13 +57,14 @@ const Comp = () => {
                         <h2>{currentStepName as string}</h2>
                     </div>
                 }
+                modalConstantHeight={true}
             >
-                <VaulDrawer.Snap id='item-1'>
+                <VaulDrawer.Snap id='item-1' className="h-full">
                     <Wizard wizardId='menuWizard' >
-                        <WizardItem StepName={MenuStep.Menu}>
+                        <WizardItem StepName={MenuStep.Menu} inModal>
                             <MenuList goToStep={handleGoToStep} />
                         </WizardItem>
-                        <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full">
+                        <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full" inModal>
                             <HistoryList onNewTransferClick={() => handleModalOpenStateChange(false)} />
                         </WizardItem>
                     </Wizard>

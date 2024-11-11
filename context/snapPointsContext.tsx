@@ -22,7 +22,7 @@ export const SnapPointsProvider: FC<{ children: ReactNode, isMobile: boolean }> 
 
     const snapPoints = resolveSnapPoints({
         isMobile,
-        snapPointsCount: snapElemenetsHeight.length,
+        snapPointsCount: snapElemenetsHeight.length || 1,
         childrenHeights: snapElemenetsHeight.sort((a, b) => a.id - b.id),
         headerHeight
     });
