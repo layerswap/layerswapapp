@@ -22,7 +22,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
     const wallet = provider?.getConnectedWallet(network);
     const { publicKey: walletPublicKey, signTransaction, connected } = useSolanaWallet();
     const solanaNode = network?.node_url
-    
+    debugger
     useEffect(() => {
         if (connected && walletPublicKey) {
             console.log('Account changed:', walletPublicKey.toBase58());
