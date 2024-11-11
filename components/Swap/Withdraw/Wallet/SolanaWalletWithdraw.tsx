@@ -22,13 +22,11 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
     const wallet = provider?.getConnectedWallet(network);
     const { publicKey: walletPublicKey, signTransaction, connected } = useSolanaWallet();
     const solanaNode = network?.node_url
-    debugger
+
     useEffect(() => {
-        if (connected && walletPublicKey) {
-            console.log('Account changed:', walletPublicKey.toBase58());
-        }
-    }, [walletPublicKey, connected]);
-    
+        setInsufficientFunds(false);
+    }, [walletPublicKey]);
+
     const handleTransfer = useCallback(async () => {
 
         if (!signTransaction || !callData || !swapId) return
@@ -56,7 +54,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
         }
         catch (e) {
             if (e?.message) {
-                if(e.message.includes('0x1') || e.message.includes('Attempt to debit an account')) setInsufficientFunds(true)
+                if (e.message.includes('0x1') || e.message.includes('Attempt to debit an account')) setInsufficientFunds(true)
                 else toast(e.message)
                 return
             }
