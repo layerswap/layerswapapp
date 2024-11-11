@@ -34,24 +34,31 @@ const WalletsList = () => {
 
                                         </div>
                                     }
-                                    <div>
-                                        {
-                                            !wallet.isLoading && wallet.address &&
-                                            <span className="text-sm">{shortenAddress(wallet.address)}</span>
-                                        }
-                                        <p className="text-xs text-secondary-text">
-                                            {wallet.connector}
-                                        </p>
-                                    </div>
+                                    {
+                                        wallet.addresses.length > 1 ?
+                                            <div>
+                                                <span className="text-base">{wallet.connector}</span>
+                                            </div>
+                                            : <div>
+                                                {
+                                                    !wallet.isLoading && wallet.address &&
+                                                    <span className="text-sm">{shortenAddress(wallet.address)}</span>
+                                                }
+                                                <p className="text-xs text-secondary-text">
+                                                    {wallet.connector}
+                                                </p>
+                                            </div>
+                                    }
+
                                 </div>
                                 <button onClick={wallet.disconnect} className="text-xs text-secondary-text hover:opacity-75">
                                     Disconnect
                                 </button>
                             </div>
-                            {wallet.addresses.filter(a => a != wallet.address).length > 0 &&
+                            {wallet.addresses.length > 1 &&
                                 <div className="w-full grow p-3 pt-2 space-y-2 border-t border-secondary-500">
                                     {
-                                        wallet.addresses.filter(a => a != wallet.address).map((address, index) => (
+                                        wallet.addresses.map((address, index) => (
                                             <div key={index} className="flex space-x-4 items-center">
 
                                                 <div className="w-9">
