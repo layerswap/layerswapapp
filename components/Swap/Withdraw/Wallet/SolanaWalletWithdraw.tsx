@@ -20,7 +20,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
 
     const provider = getWithdrawalProvider(network!);
     const wallet = provider?.getConnectedWallet(network);
-    const { publicKey: walletPublicKey, signTransaction, connected } = useSolanaWallet();
+    const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
     const solanaNode = network?.node_url
 
     useEffect(() => {
@@ -54,6 +54,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
         }
         catch (e) {
             if (e?.message) {
+                //0x1 means that the sending token account does not have enough funds to send to the recipient.
                 if (e.message.includes('0x1') || e.message.includes('Attempt to debit an account')) setInsufficientFunds(true)
                 else toast(e.message)
                 return
