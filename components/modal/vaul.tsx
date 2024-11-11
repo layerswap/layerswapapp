@@ -91,7 +91,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
                 <Drawer.Content
                     data-testid="content"
-                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ${(snap === 1 && !(isMobile && mobileMaxModalHeight !== 'full')) && '!border-none !rounded-none'} ${(isMobile && mobileMaxModalHeight !== 'full') && `max-h-[${mobileMaxModalHeight}]`}`}
+                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ${(snap === 1 && ((isMobile && mobileMaxModalHeight == 'full') || !isMobile)) && '!border-none !rounded-none'} ${(isMobile && mobileMaxModalHeight !== 'full') && `max-h-[${mobileMaxModalHeight}]`}`}
                 >
                     <div
                         ref={headerRef}

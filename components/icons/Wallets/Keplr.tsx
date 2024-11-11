@@ -10,20 +10,20 @@ const Keplr = (props: SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/
     </g>
     <defs>
         <linearGradient id="paint0_linear_425_5107" x1="21" y1="0" x2="21" y2="42" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#1FD1FF" />
-            <stop offset="1" stop-color="#1BB8FF" />
+            <stop stopColor="#1FD1FF" />
+            <stop offset="1" stopColor="#1BB8FF" />
         </linearGradient>
         <radialGradient id="paint1_radial_425_5107" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(2.00623 40.4086) rotate(-45.1556) scale(67.3547 68.3624)">
-            <stop stop-color="#232DE3" />
-            <stop offset="1" stop-color="#232DE3" stop-opacity="0" />
+            <stop stopColor="#232DE3" />
+            <stop offset="1" stopColor="#232DE3" stop-opacity="0" />
         </radialGradient>
         <radialGradient id="paint2_radial_425_5107" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(39.7379 41.7602) rotate(-138.45) scale(42.1137 64.2116)">
-            <stop stop-color="#8B4DFF" />
-            <stop offset="1" stop-color="#8B4DFF" stop-opacity="0" />
+            <stop stopColor="#8B4DFF" />
+            <stop offset="1" stopColor="#8B4DFF" stop-opacity="0" />
         </radialGradient>
         <radialGradient id="paint3_radial_425_5107" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(20.6501 0.311498) rotate(90) scale(33.1135 80.3423)">
-            <stop stop-color="#24D5FF" />
-            <stop offset="1" stop-color="#1BB8FF" stop-opacity="0" />
+            <stop stopColor="#24D5FF" />
+            <stop offset="1" stopColor="#1BB8FF" stop-opacity="0" />
         </radialGradient>
         <clipPath id="clip0_425_5107">
             <rect width="42" height="42" fill="white" />
