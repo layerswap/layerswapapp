@@ -6,7 +6,7 @@ import { useBalancesState } from '../../../context/balances';
 import useBalance from '../../../hooks/useBalance';
 import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../Input/Address/AddressPicker';
-import { ChevronDown, RefreshCw } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { truncateDecimals } from '../../utils/RoundDecimals';
 import { useSwitchAccount } from 'wagmi';
 import { Wallet } from '../../../stores/walletStore';
@@ -17,9 +17,7 @@ const WalletTransferContent: FC = () => {
     const { swapResponse, selectedSourceAccount } = useSwapDataState()
     const { setSelectedSourceAccount } = useSwapDataUpdate()
     const { swap } = swapResponse || {}
-    const { source_exchange, source_token, source_network } = swap || {}
-    const [isLoading, setIsloading] = useState(false);
-    const { mutateSwap } = useSwapDataUpdate()
+    const { source_token, source_network } = swap || {}
     const { provider, wallets } = useWallet(source_network, 'withdrawal')
     const all_wallets = provider?.connectedWallets
     const { balances, isBalanceLoading } = useBalancesState()
@@ -47,7 +45,7 @@ const WalletTransferContent: FC = () => {
 
     const selectedWallet = selectedSourceAccount?.wallet
     const activeWallet = source_network ? provider?.activeWallet : wallets[0]
-    const walletBalance = balances[selectedWallet?.address || '']?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
+    const walletBalance = balances[selectedSourceAccount?.address || '']?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
     useEffect(() => {
@@ -89,7 +87,7 @@ const WalletTransferContent: FC = () => {
                         addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet }}
                         connectedWallet={selectedWallet}
                         network={source_network}
-                        balance={(walletBalanceAmount && source_token) ? { amount: walletBalanceAmount, symbol: source_token?.symbol, isLoading: isBalanceLoading } : undefined}
+                        balance={(walletBalanceAmount !== undefined && source_token) ? { amount: walletBalanceAmount, symbol: source_token?.symbol, isLoading: isBalanceLoading } : undefined}
                     />
                     <ChevronDown className="h-4 w-4" />
                 </div>
