@@ -30,7 +30,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     const [snapElement, setSnapElement] = useState<SnapElement | null>(null);
 
     const { snapPoints } = useSnapPoints()
-    const snapPointsHeight = modalConstantHeight ? [1] : snapPoints.map((item) => item.height);
+    const snapPointsHeight = snapPoints.map((item) => item.height);
 
     const isLastSnap = snapElement?.id === snapPoints[snapPoints.length - 1]?.id;
 
@@ -105,7 +105,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
                 <Drawer.Content
                     data-testid="content"
-                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ${(snap === 1 && ((isMobile && mobileMaxModalHeight == 'full') || !isMobile)) && '!border-none !rounded-none'} ${(isMobile && mobileMaxModalHeight !== 'full') && `max-h-[${mobileMaxModalHeight}]`} ${modalConstantHeight && '!h-full'}`}
+                    className={`absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ${(snap === 1 && ((isMobile && mobileMaxModalHeight == 'full') || !isMobile)) && '!border-none !rounded-none'} ${(isMobile && mobileMaxModalHeight !== 'full') && `max-h-[${mobileMaxModalHeight}]`}`}
                 >
                     <div
                         ref={headerRef}
@@ -138,6 +138,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         className={clsx('flex flex-col w-full h-fit max-h-[90dvh] px-6 styled-scroll overflow-x-hidden relative', {
                             'overflow-y-auto': snap === 1,
                             'overflow-hidden': snap !== 1,
+                            'h-full': modalConstantHeight
                         })}
                         id="virtualListContainer"
                     >
