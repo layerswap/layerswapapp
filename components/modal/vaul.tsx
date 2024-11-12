@@ -73,7 +73,6 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
     useEffect(() => {
         if (show) {
-            // Pushing the change to the end of the call stack
             const timer = setTimeout(() => {
                 document.body.style.pointerEvents = '';
             }, 0);
@@ -98,23 +97,10 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             onDrag={(e) => {
                 if (e.movementY < 0 && !expandRef.current?.classList.contains('hidden')) expandRef.current?.classList.add('hidden')
             }}
-            modal={isMobile ? true : false}
         >
             <Drawer.Portal >
 
-                {
-                    isMobile
-                        ? <Drawer.Overlay className='absolute inset-0 z-50 bg-black/50 block' />
-                        : <Drawer.Close asChild>
-                            <motion.div
-                                key="backdrop"
-                                className={`absolute inset-0 z-50 bg-black/50 block pointer-events-none`}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                            />
-                        </Drawer.Close>
-                }
+                <Drawer.Overlay className='absolute inset-0 z-50 bg-black/50 block' />
 
                 <Drawer.Content
                     data-testid="content"
