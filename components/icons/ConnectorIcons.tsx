@@ -78,7 +78,7 @@ export const ResolveConnectorIcon = ({
 };
 
 const IconsWrapper = ({ children, className }: { children: React.ReactNode, className?: string }) => {
-    return <div className={`grid grid-cols-2 gap-1.5 ${className}`}>{children}</div>;
+    return <div className={className ?? "-space-x-2 flex"}>{children}</div>;
 }
 
 const KnownConnectors = {

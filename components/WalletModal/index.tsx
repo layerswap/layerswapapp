@@ -51,6 +51,7 @@ export function WalletModalProvider({ children }) {
                     </div>
                 }>
                 <VaulDrawer.Snap id='item-1'>
+
                     {
                         selectedProvider ?
                             <div>
@@ -61,12 +62,12 @@ export function WalletModalProvider({ children }) {
                                 />
                             </div>
                             :
-                            <div className="grid grid-cols-4 gap-2 text-primary-text">
+                            <div className="text-primary-text space-y-2">
                                 {filteredProviders.map((provider, index) => (
                                     <button
                                         type="button"
                                         key={index}
-                                        className="w-full h-fit bg-secondary-600 hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 p-3"
+                                        className="w-full h-fit bg-secondary-700 hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 p-3"
                                         onClick={async () => {
                                             if (provider.availableWalletsForConnect) {
                                                 setSelectedProvider(provider);
@@ -76,13 +77,13 @@ export function WalletModalProvider({ children }) {
                                             setOpen(false);
                                         }}
                                     >
-                                        <div className="flex flex-col gap-3 items-center font-semibold">
+                                        <div className="flex flex-row gap-3 items-center justify-between font-semibold px-4">
                                             <p>{provider.name}</p>
                                             {
                                                 provider &&
                                                 <ResolveConnectorIcon
                                                     connector={provider.id}
-                                                    iconClassName="w-8 h-8 rounded-md bg-secondary-900"
+                                                    iconClassName="w-7 h-7 rounded-full bg-secondary-700 p-0.5 border border-secondary-400"
                                                 />
                                             }
                                         </div>
