@@ -21,7 +21,7 @@ import { SwapStatus } from '../../Models/SwapStatus';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
-import VaulDrawer from '../modal/vaul';
+import VaulDrawer from '../modal/vaulModal';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../shadcn/tooltip';
 
 type Props = {

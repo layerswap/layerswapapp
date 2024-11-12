@@ -11,7 +11,7 @@ import { truncateDecimals } from '../../utils/RoundDecimals';
 import { useSwitchAccount } from 'wagmi';
 import { Wallet } from '../../../stores/walletStore';
 import { WalletsList } from '../../Input/SourceWalletPicker';
-import VaulDrawer from '../../modal/vaul';
+import VaulDrawer from '../../modal/vaulModal';
 
 const WalletTransferContent: FC = () => {
     const { swapResponse, selectedSourceAccount } = useSwapDataState()

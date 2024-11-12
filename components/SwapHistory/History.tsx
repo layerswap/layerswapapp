@@ -19,7 +19,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import SwapDetails from "./SwapDetailsComponent"
 import { addressFormat } from "../../lib/address/formatter";
 import { useSettingsState } from "../../context/settings";
-import VaulDrawer from "../modal/vaul";
+import VaulDrawer from "../modal/vaulModal";
 
 const PAGE_SIZE = 20
 type ListProps = {

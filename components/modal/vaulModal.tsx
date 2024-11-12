@@ -1,12 +1,12 @@
 import { clsx } from 'clsx';
 import { Dispatch, FC, ReactNode, SetStateAction, useEffect, useRef, useState } from 'react';
-import { Drawer } from 'vaul';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
 import IconButton from '../buttons/iconButton';
 import { ChevronUp, X } from 'lucide-react';
 import { useMeasure } from '@uidotdev/usehooks';
 import { SnapElement, SnapPointsProvider, useSnapPoints } from '../../context/snapPointsContext';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Drawer } from './vaul';
 
 type VaulDrawerProps = {
     children: ReactNode;
@@ -71,18 +71,6 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
         setLoaded(true);
     }, []);
 
-    useEffect(() => {
-        if (show) {
-            const timer = setTimeout(() => {
-                document.body.style.pointerEvents = '';
-            }, 0);
-
-            return () => clearTimeout(timer);
-        } else {
-            document.body.style.pointerEvents = 'auto';
-        }
-    }, [show]);
-
     if (!loaded) return null;
 
     return (
@@ -97,10 +85,13 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             onDrag={(e) => {
                 if (e.movementY < 0 && !expandRef.current?.classList.contains('hidden')) expandRef.current?.classList.add('hidden')
             }}
+            modal={isMobile ? true : false}
         >
             <Drawer.Portal >
 
-                <Drawer.Overlay className='absolute inset-0 z-50 bg-black/50 block' />
+                <Drawer.Close asChild>
+                    <Drawer.Overlay className='absolute inset-0 z-50 bg-black/50 block' />
+                </Drawer.Close>
 
                 <Drawer.Content
                     data-testid="content"

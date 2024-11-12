@@ -5,7 +5,7 @@ import { ResolveConnectorIcon } from '../icons/ConnectorIcons';
 import useWallet from '../../hooks/useWallet';
 import { ModalWalletProvider, useWalletModalState } from '../../stores/walletModalStateStore';
 import EVMConnectList from './WalletsList/evm';
-import VaulDrawer from '../modal/vaul';
+import VaulDrawer from '../modal/vaulModal';
 
 export function WalletModalProvider({ children }) {
     const { providers } = useWallet();

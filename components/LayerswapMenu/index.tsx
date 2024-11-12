@@ -9,7 +9,7 @@ import WizardItem from "../Wizard/WizardItem";
 import { NextRouter, useRouter } from "next/router";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import HistoryList from "../SwapHistory/History";
-import VaulDrawer from "../modal/vaul";
+import VaulDrawer from "../modal/vaulModal";
 
 const Comp = () => {
     const router = useRouter();

@@ -12,7 +12,7 @@ import SwapButton from "../buttons/swapButton";
 import Balance from "./dynamic/Balance";
 import { isValidAddress } from "../../lib/address/validator";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import VaulDrawer from "../modal/vaul";
+import VaulDrawer from "../modal/vaulModal";
 import useBalance from "../../hooks/useBalance";
 import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";

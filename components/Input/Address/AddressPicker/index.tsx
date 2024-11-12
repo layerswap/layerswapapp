@@ -19,7 +19,7 @@ import { useQueryState } from "../../../../context/query";
 import { useAddressesStore } from "../../../../stores/addressesStore";
 import { Wallet } from "../../../../stores/walletStore";
 import ConnectedWallets from "./ConnectedWallets";
-import VaulDrawer from "../../../modal/vaul";
+import VaulDrawer from "../../../modal/vaulModal";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",

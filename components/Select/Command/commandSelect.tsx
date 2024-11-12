@@ -13,7 +13,7 @@ import SelectItem from '../Shared/SelectItem';
 import { SelectProps } from '../Shared/Props/SelectProps'
 import SpinIcon from '../../icons/spinIcon';
 import { LeafletHeight } from '../../modal/leaflet';
-import VaulDrawer from '../../modal/vaul';
+import VaulDrawer from '../../modal/vaulModal';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
