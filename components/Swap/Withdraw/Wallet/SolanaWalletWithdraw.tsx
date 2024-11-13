@@ -10,10 +10,6 @@ import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
 import WalletMessage from './WalletTransfer/message';
-import {
-    SOLANA_ERROR__JSON_RPC__SERVER_ERROR_SEND_TRANSACTION_PREFLIGHT_FAILURE,
-    isSolanaError,
-} from '@solana/errors';
 
 const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId }) => {
 
