@@ -58,7 +58,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
 
     if (!wallet) {
         return <ConnectWalletButton />
-    }
+    } 
 
     return (
         <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
