@@ -27,7 +27,7 @@ const GLobalFooter = () => {
             },
             {
                 name: 'Discord',
-                href: 'https://discord.gg/layerswap/',
+                href: 'https://discord.gg/layerswap',
                 icon: () => (
                     <DiscordLogo className="h-6 w-6" aria-hidden="true" />
                 ),
