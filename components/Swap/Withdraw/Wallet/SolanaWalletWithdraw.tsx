@@ -10,6 +10,10 @@ import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
 import WalletMessage from './WalletTransfer/message';
+import {
+    SOLANA_ERROR__JSON_RPC__SERVER_ERROR_SEND_TRANSACTION_PREFLIGHT_FAILURE,
+    isSolanaError,
+} from '@solana/errors';
 
 const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId }) => {
 
@@ -54,8 +58,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
         }
         catch (e) {
             if (e?.message) {
-                //0x1 means that the sending token account does not have enough funds to send to the recipient.
-                if (e.message.includes('0x1') || e.message.includes('Attempt to debit an account')) setInsufficientFunds(true)
+                if (e?.logs?.some(m => m?.includes('insufficient funds')) || e.message.includes('Attempt to debit an account')) setInsufficientFunds(true)
                 else toast(e.message)
                 return
             }
@@ -97,7 +100,7 @@ export const configureAndSendCurrentTransaction = async (
     const blockHash = await connection.getLatestBlockhash();
     transaction.recentBlockhash = blockHash.blockhash;
     transaction.lastValidBlockHeight = blockHash.lastValidBlockHeight;
-
+    
     const signed = await signTransaction(transaction);
     const signature = await connection.sendRawTransaction(signed.serialize());
     const res = await connection.confirmTransaction({
