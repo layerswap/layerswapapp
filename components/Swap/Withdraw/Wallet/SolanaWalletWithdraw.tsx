@@ -11,10 +11,11 @@ import { WithdrawPageProps } from './WalletTransferContent';
 import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
 import WalletMessage from './WalletTransfer/message';
 
-const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token }) => {
+const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount }) => {
 
     const [loading, setLoading] = useState(false)
-    const [insufficientFunds, setInsufficientFunds] = useState(false)
+    const [insufficientFunds, setInsufficientFunds] = useState<boolean>(false)
+    const [insufficientToken, setInsufficientToken] = useState<string>('')
     const { getWithdrawalProvider } = useWallet()
     const { setSwapTransaction } = useSwapTransactionStore();
 
@@ -36,7 +37,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
             }
         }
     }
-    
+
     useEffect(() => {
         setInsufficientFunds(false);
     }, [walletPublicKey]);
@@ -52,7 +53,8 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
                 "confirmed"
             );
 
-            const solBalance = await connection.getBalance(walletPublicKey!);
+            const nativeBalance = await connection.getBalance(walletPublicKey!);
+            const solBalance = nativeBalance / LAMPORTS_PER_SOL
             const { getAssociatedTokenAddress } = await import('@solana/spl-token');
 
             let result: number | null = null
@@ -73,9 +75,10 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
             const transaction = Transaction.from(arrayBufferCallData)
             const feeInLamports = await transaction.getEstimatedFee(connection)
             const feeInSol = feeInLamports / LAMPORTS_PER_SOL
-            console.log(feeInSol, "feeInSol")
-            console.log(solBalance, "solBalance")
-            console.log(result, "result")
+            
+            if (solBalance < feeInSol) setInsufficientToken('SOL')
+            else if ((result || result === 0) && amount && token?.symbol && result < amount) setInsufficientToken(token?.symbol)
+
             const signature = await configureAndSendCurrentTransaction(
                 transaction,
                 connection,
@@ -88,7 +91,6 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
 
         }
         catch (e) {
-            console.log(e,"error")
             if (e?.message) {
                 if (e?.logs?.some(m => m?.includes('insufficient funds')) || e.message.includes('Attempt to debit an account')) setInsufficientFunds(true)
                 else toast(e.message)
@@ -110,7 +112,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
                 <WalletMessage
                     status="error"
                     header='Insufficient funds'
-                    details='The balance of the connected wallet is not enough' />
+                    details={`The balance of ${insufficientToken} in the connected wallet is not enough`} />
             }
             {
                 wallet &&
