@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { Transaction, Connection, PublicKey } from '@solana/web3.js';
+import { Transaction, Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import useWallet from '../../../../hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
@@ -11,7 +11,7 @@ import { WithdrawPageProps } from './WalletTransferContent';
 import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
 import WalletMessage from './WalletTransfer/message';
 
-const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId }) => {
+const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token }) => {
 
     const [loading, setLoading] = useState(false)
     const [insufficientFunds, setInsufficientFunds] = useState(false)
@@ -23,6 +23,20 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
     const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
     const solanaNode = network?.node_url
 
+    class SolanaConnection extends Connection { }
+    async function getTokenBalanceWeb3(connection: SolanaConnection, tokenAccount) {
+        try {
+            const info = await connection.getTokenAccountBalance(tokenAccount);
+            return info?.value?.uiAmount;
+        } catch (error) {
+            if (error.message && error.message.includes("could not find account")) {
+                return 0;
+            } else {
+                return 0;
+            }
+        }
+    }
+    
     useEffect(() => {
         setInsufficientFunds(false);
     }, [walletPublicKey]);
@@ -38,9 +52,30 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
                 "confirmed"
             );
 
+            const solBalance = await connection.getBalance(walletPublicKey!);
+            const { getAssociatedTokenAddress } = await import('@solana/spl-token');
+
+            let result: number | null = null
+            if (token?.contract) {
+                const sourceToken = new PublicKey(token?.contract);
+                const associatedTokenFrom = walletPublicKey && await getAssociatedTokenAddress(
+                    sourceToken,
+                    walletPublicKey
+                );
+                if (!associatedTokenFrom) return
+                result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
+            } else {
+                result = walletPublicKey && await connection.getBalance(walletPublicKey)
+            }
+
             const arrayBufferCallData = Uint8Array.from(atob(callData), c => c.charCodeAt(0))
 
             const transaction = Transaction.from(arrayBufferCallData)
+            const feeInLamports = await transaction.getEstimatedFee(connection)
+            const feeInSol = feeInLamports / LAMPORTS_PER_SOL
+            console.log(feeInSol, "feeInSol")
+            console.log(solBalance, "solBalance")
+            console.log(result, "result")
             const signature = await configureAndSendCurrentTransaction(
                 transaction,
                 connection,
@@ -53,6 +88,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
 
         }
         catch (e) {
+            console.log(e,"error")
             if (e?.message) {
                 if (e?.logs?.some(m => m?.includes('insufficient funds')) || e.message.includes('Attempt to debit an account')) setInsufficientFunds(true)
                 else toast(e.message)
@@ -96,7 +132,7 @@ export const configureAndSendCurrentTransaction = async (
     const blockHash = await connection.getLatestBlockhash();
     transaction.recentBlockhash = blockHash.blockhash;
     transaction.lastValidBlockHeight = blockHash.lastValidBlockHeight;
-    
+
     const signed = await signTransaction(transaction);
     const signature = await connection.sendRawTransaction(signed.serialize());
     const res = await connection.confirmTransaction({
