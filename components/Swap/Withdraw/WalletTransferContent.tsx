@@ -97,7 +97,6 @@ const WalletTransferContent: FC = () => {
             source_network &&
             source_token &&
             <VaulDrawer
-                mobileMaxModalHeight='80%'
                 show={openModal}
                 setShow={setOpenModal}
                 header={`Send from`}

@@ -89,8 +89,7 @@ export default function useEVM(): WalletProvider {
                 addresses: addresses || [address],
                 connector: w.name,
                 providerName: name,
-                icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(w), address }),
-                iconbase64: w.icon,
+                icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(w), address, iconUrl: w.icon }),
                 connect: connectWallet,
                 disconnect: () => disconnectWallet(w.name)
             }

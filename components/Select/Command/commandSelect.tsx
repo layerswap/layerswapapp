@@ -66,7 +66,6 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
                 show={show}
                 setShow={setShow}
                 modalId='comandSelect'
-                mobileMaxModalHeight='80%'
             >
                 <VaulDrawer.Snap id='item-1'>
                     {
