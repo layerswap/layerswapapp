@@ -11,6 +11,7 @@ import useFuel from "../lib/wallets/fuel/useFuel"
 
 export type WalletProvider = {
     connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
+    connectConnector?: (props?: { connector: InternalConnector }) => Promise<void> | undefined
     disconnectWallets: () => Promise<void> | undefined | void,
     connectedWallets: Wallet[] | undefined,
     activeWallet: Wallet | undefined,
@@ -20,8 +21,15 @@ export type WalletProvider = {
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,
-    availableWalletsForConnect?: LSConnector[],
+    availableWalletsForConnect?: InternalConnector[],
     switchAccount: (connector: Wallet, address: string) => Promise<void>
+}
+
+export type InternalConnector = {
+    name: string,
+    id: string,
+    icon: string,
+    order?: number
 }
 
 export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
@@ -42,7 +50,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
 
     const resolveConnectedWallets = () => {
         let connectedWallets: Wallet[] = []
-        
+
         walletProviders.forEach(wallet => {
             const w = wallet.connectedWallets
             connectedWallets = w && [...connectedWallets, ...w] || [...connectedWallets]

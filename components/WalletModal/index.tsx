@@ -4,8 +4,8 @@ import IconButton from '../buttons/iconButton';
 import { ResolveConnectorIcon } from '../icons/ConnectorIcons';
 import useWallet from '../../hooks/useWallet';
 import { ModalWalletProvider, useWalletModalState } from '../../stores/walletModalStateStore';
-import EVMConnectList from './WalletsList/evm';
 import VaulDrawer from '../modal/vaulModal';
+import ConnectList from './ConnectList';
 
 export function WalletModalProvider({ children }) {
     const { providers } = useWallet();
@@ -59,6 +59,7 @@ export function WalletModalProvider({ children }) {
                                     modalWalletProvider={selectedProvider}
                                     onFinish={() => setOpen(false)}
                                     setSelectedProvider={setSelectedProvider}
+                                    selectedProvider={selectedProvider}
                                 />
                             </div>
                             :
@@ -100,13 +101,19 @@ export function WalletModalProvider({ children }) {
 export type WalletsListProps = {
     modalWalletProvider: ModalWalletProvider;
     setSelectedProvider: (value: ModalWalletProvider | undefined) => void;
+    selectedProvider: ModalWalletProvider | undefined;
     onFinish: () => void;
 };
 
-const WalletsList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, setSelectedProvider }) => {
+const WalletsList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, setSelectedProvider, selectedProvider }) => {
 
-    if (modalWalletProvider?.id === 'evm') {
-        return <EVMConnectList modalWalletProvider={modalWalletProvider} onFinish={onFinish} setSelectedProvider={setSelectedProvider} />
+    if (modalWalletProvider?.availableWalletsForConnect) {
+        return <ConnectList
+            modalWalletProvider={modalWalletProvider}
+            onFinish={onFinish}
+            setSelectedProvider={setSelectedProvider}
+            selectedProvider={selectedProvider}
+        />
     }
     else {
         return <div className='h-40 w-full flex flex-col justify-center items-center'>

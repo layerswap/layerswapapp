@@ -1,4 +1,4 @@
-import { useAccount, useConfig, useConnectors, useDisconnect, useSwitchAccount } from "wagmi"
+import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
 import { NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
@@ -9,6 +9,9 @@ import { useCallback, useMemo } from "react"
 import { Wallet } from "../../../stores/walletStore"
 import { useWalletModalState } from "../../../stores/walletModalStateStore"
 import { getConnections } from '@wagmi/core'
+import toast from "react-hot-toast"
+import { isMobile } from "../../isMobile"
+import { mainnet } from "wagmi/chains"
 
 export default function useEVM(): WalletProvider {
     const name = 'EVM'
@@ -46,6 +49,7 @@ export default function useEVM(): WalletProvider {
     const activeAccount = useAccount()
     const allConnectors = useConnectors()
     const config = useConfig()
+    const { connectAsync } = useConnect();
 
     const connectWallet = () => {
         try {
@@ -54,6 +58,36 @@ export default function useEVM(): WalletProvider {
         }
         catch (e) {
             console.log(e)
+        }
+    }
+
+    const connectConnector = async ({ connector }) => {
+        try {
+            setSelectedProvider({ ...provider, connector: { name: connector.name } })
+            await connector.disconnect()
+            if (connector.id !== 'walletConnect') {
+                if (isMobile()) {
+                    getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
+                        window.location.href = uri;
+                    })
+                }
+                else {
+                    getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
+                        setSelectedProvider({ ...provider, connector: { name: connector.name, qr: uri } })
+                    })
+                }
+            }
+
+            await connectAsync({
+                chainId: mainnet.id,
+                connector: connector,
+            });
+
+
+        } catch (e) {
+            //TODO: handle error like in transfer
+            toast.error('Error connecting wallet')
+            throw new Error(e)
         }
     }
 
@@ -138,6 +172,7 @@ export default function useEVM(): WalletProvider {
 
     const provider = {
         connectWallet,
+        connectConnector,
         disconnectWallets,
         switchAccount,
         connectedWallets: resolvedConnectors,
@@ -153,3 +188,23 @@ export default function useEVM(): WalletProvider {
 
     return provider
 }
+
+
+const getWalletConnectUri = async (
+    connector: Connector,
+    uriConverter: (uri: string) => string = (uri) => uri,
+    useCallback: (uri: string) => void,
+): Promise<void> => {
+    const provider = await connector.getProvider();
+    if (connector.id === 'coinbase') {
+        // @ts-expect-error
+        return provider.qrUrl;
+    }
+    return new Promise<void>((resolve) => {
+        return provider?.['once'] && provider['once']('display_uri', (uri) => {
+            const converted = uriConverter(uri);
+            resolve(useCallback(uriConverter(uri)));
+        })
+    }
+    );
+};

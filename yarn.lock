@@ -6172,6 +6172,23 @@
   resolved "https://registry.yarnpkg.com/@starknet-io/types-js/-/types-js-0.7.7.tgz#444be5e4e585ec6f599d42d3407280d98b2dfdf8"
   integrity sha512-WLrpK7LIaIb8Ymxu6KF/6JkGW1sso988DweWu7p5QY/3y7waBIiPvzh27D9bX5KIJNRDyOoOVoHVEKYUYWZ/RQ==
 
+"@starknet-react/chains@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@starknet-react/chains/-/chains-3.1.0.tgz#35c75f8da68a8871e74a377a59b7de1345151312"
+  integrity sha512-h+fxh+Bs8h0ZSEX651vG3mn1NtMKzFDSHqrX7Q8YRRIeTKolPCx4vmoi5Gg19SXr/9iIVSwgx6qe4rVZTNfhcQ==
+
+"@starknet-react/core@^3.6.0":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@starknet-react/core/-/core-3.6.0.tgz#80b9920a8c511a2b255e29af05a3fc21c023fb7d"
+  integrity sha512-+5acQqMZkk6q2/cogoY7g/Ne2zgUHUvbgEc1dE9ItNbfpMJqxUtB5Ovt7+Q3utsYUYXbuxWgq/G6CjPHGrtqzg==
+  dependencies:
+    "@starknet-io/types-js" "^0.7.7"
+    "@starknet-react/chains" "^3.1.0"
+    "@tanstack/react-query" "^5.25.0"
+    eventemitter3 "^5.0.1"
+    viem "^2.21.1"
+    zod "^3.22.4"
+
 "@starkware-industries/starkware-crypto-utils@^0.2.1":
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/@starkware-industries/starkware-crypto-utils/-/starkware-crypto-utils-0.2.1.tgz#276e5cad3f1af0f8a8ae72277c0c05165975e292"
@@ -8000,7 +8017,7 @@
   resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.59.20.tgz#356718976536727b9af0ad1163a21fd6a44ee0a9"
   integrity sha512-e8vw0lf7KwfGe1if4uPFhvZRWULqHjFcz3K8AebtieXvnMOz5FSzlZe3mTLlPuUBcydCnBRqYs2YJ5ys68wwLg==
 
-"@tanstack/react-query@^5.40.1":
+"@tanstack/react-query@^5.25.0", "@tanstack/react-query@^5.40.1":
   version "5.59.20"
   resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-5.59.20.tgz#bacf1983f44c5690bb99b518f2ef71dc2fa875a4"
   integrity sha512-Zly0egsK0tFdfSbh5/mapSa+Zfc3Et0Zkar7Wo5sQkFzWyB3p3uZWOHR2wrlAEEV2L953eLuDBtbgFvMYiLvUw==
@@ -21614,7 +21631,7 @@ vfile@^5.0.0:
     unist-util-stringify-position "^3.0.0"
     vfile-message "^3.0.0"
 
-viem@2.20.1, viem@^1.3.0, viem@^2.1.1, viem@^2.21.16:
+viem@2.20.1, viem@^1.3.0, viem@^2.1.1, viem@^2.21.1, viem@^2.21.16:
   version "2.21.45"
   resolved "https://registry.yarnpkg.com/viem/-/viem-2.21.45.tgz#7a445428d4909cc334f231ee916ede1b69190603"
   integrity sha512-I+On/IiaObQdhDKWU5Rurh6nf3G7reVkAODG5ECIfjsrGQ3EPJnxirUPT4FNV6bWER5iphoG62/TidwuTSOA1A==
@@ -22622,7 +22639,7 @@ zod@3.22.4:
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.22.4.tgz#f31c3a9386f61b1f228af56faa9255e845cf3fff"
   integrity sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==
 
-zod@^3.21.4:
+zod@^3.21.4, zod@^3.22.4:
   version "3.23.8"
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.23.8.tgz#e37b957b5d52079769fb8097099b592f0ef4067d"
   integrity sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==
