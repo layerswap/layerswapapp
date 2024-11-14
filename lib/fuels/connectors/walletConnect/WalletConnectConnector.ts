@@ -24,7 +24,6 @@ import {
   type StorageAbstract,
   type TransactionRequestLike,
 } from 'fuels';
-import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
 
 // import {
 //   type EIP1193Provider,
@@ -47,7 +46,7 @@ import {
 } from './constants';
 import type { WalletConnectConfig } from './types';
 import { subscribeAndEnforceChain } from './utils';
-import { createWeb3ModalInstance } from './web3Modal';
+// import { createWagmiConfig, createWeb3ModalInstance } from './web3Modal';
 import { EIP1193Provider, EthereumWalletAdapter, Maybe, PredicateConnector, PredicateVersion, PredicateWalletAdapter, ProviderDictionary, getMockedSignatureIndex, getOrThrow, getProviderUrl } from '../../common';
 import { AppKit } from '@reown/appkit/react'
 import { PREDICATE_VERSIONS } from '../../evm-predicates';
@@ -67,7 +66,7 @@ export class WalletConnectConnector extends PredicateConnector {
 
   private fuelProvider!: FuelProvider;
   private ethProvider!: EIP1193Provider;
-  private bizda!: AppKit;
+  private appKit!: AppKit;
 
   private storage: StorageAbstract;
   private config: WalletConnectConfig = {} as WalletConnectConfig;
@@ -76,15 +75,15 @@ export class WalletConnectConnector extends PredicateConnector {
     super();
     this.storage =
       config.storage || new LocalStorage(WINDOW?.localStorage as Storage);
-    const adapter = config?.adapter ?? createWagmiConfig();
+    const wagmiConfig = config.wagmiConfig
 
-    if (adapter._internal.syncConnectedChain !== false) {
-      subscribeAndEnforceChain(adapter);
+    if (wagmiConfig._internal.syncConnectedChain !== false) {
+      subscribeAndEnforceChain(wagmiConfig);
     }
 
     this.customPredicate = config.predicateConfig || null;
     if (HAS_WINDOW) {
-      this.configProviders({ ...config, adapter: adapter });
+      this.configProviders({ ...config, wagmiConfig });
     }
     this.loadPersistedConnection();
   }
@@ -104,18 +103,18 @@ export class WalletConnectConnector extends PredicateConnector {
   // createModal re-instanciates the modal to update singletons from web3modal
   private createModal() {
     this.clearSubscriptions();
-    this.bizda = this.modalFactory(this.config);
+    // this.appKit = this.modalFactory(this.config);
     // ApiController.prefetch();
     this.setupWatchers();
   }
 
-  private modalFactory(config: WalletConnectConfig) {
-    return createWeb3ModalInstance({
-      projectId: config.projectId,
-      adapter: config.adapter,
-    });
+  // private modalFactory(config: WalletConnectConfig) {
+  //   return createWeb3ModalInstance({
+  //     projectId: config.projectId,
+  //     wagmiConfig: config.wagmiConfig,
+  //   });
 
-  }
+  // }
 
   private async handleConnect(
     account: NonNullable<GetAccountReturnType<Config>>,
@@ -137,11 +136,11 @@ export class WalletConnectConnector extends PredicateConnector {
   }
 
   private setupWatchers() {
-    const adapter = this.getWagmiConfig();
-    if (!adapter) throw new Error('Wagmi config not found');
+    const wagmiConfig = this.getWagmiConfig();
+    if (!wagmiConfig) throw new Error('Wagmi config not found');
 
     this.subscribe(
-      watchAccount(adapter, {
+      watchAccount(wagmiConfig, {
         onChange: async (account) => {
           switch (account.status) {
             case 'connected': {
@@ -160,8 +159,8 @@ export class WalletConnectConnector extends PredicateConnector {
     );
   }
 
-  protected getWagmiConfig(): Maybe<WagmiAdapter> {
-    return this.config?.adapter;
+  protected getWagmiConfig(): Maybe<Config> {
+    return this.config?.wagmiConfig;
   }
 
   protected getWalletAdapter(): PredicateWalletAdapter {
@@ -172,7 +171,7 @@ export class WalletConnectConnector extends PredicateConnector {
     return PREDICATE_VERSIONS;
   }
 
-  protected async configProviders(config: WalletConnectConfig = {}) {
+  protected async configProviders(config: WalletConnectConfig) {
     const network = getProviderUrl(config?.chainId ?? CHAIN_IDS.fuel.testnet);
     this.config = Object.assign(config, {
       fuelProvider: config.fuelProvider || FuelProvider.create(network),
@@ -206,7 +205,7 @@ export class WalletConnectConnector extends PredicateConnector {
 
   protected async requireConnection() {
     const wagmiConfig = this.getWagmiConfig();
-    if (!this.bizda) this.createModal();
+    if (!this.appKit) this.createModal();
 
     if (this.config.skipAutoReconnect || !wagmiConfig) return;
 
@@ -246,9 +245,10 @@ export class WalletConnectConnector extends PredicateConnector {
   public async connect(): Promise<boolean> {
     this.createModal();
     const result = await new Promise<boolean>((resolve, reject) => {
-      this.bizda.open();
+      console.log(this.config)
+      this.config.wagmiConfig.connectors.find((c) => c.id === 'walletConnect')?.connect()
       const wagmiConfig = this.getWagmiConfig();
-      const unsub = this.bizda.subscribeEvents(async (event) => {
+      const unsub = this.appKit.subscribeEvents(async (event) => {
         const requestValidations = () => {
           this.requestValidations()
             .then(() => resolve(true))
@@ -262,7 +262,7 @@ export class WalletConnectConnector extends PredicateConnector {
               const account = getAccount(wagmiConfig);
               if (account?.isConnected) {
                 unsub();
-                this.bizda.close();
+                this.appKit.close();
                 requestValidations();
                 break;
               }

@@ -6,16 +6,26 @@ import { arbitrum, mainnet, sepolia } from '@reown/appkit/networks'
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
 import { EthereumProvider } from '@walletconnect/ethereum-provider'
 
+export const createWagmiConfig = (): Config =>
+  createConfig({
+    chains: [sepolia, mainnet],
+    syncConnectedChain: true,
+    transports: {
+      [mainnet.id]: http(),
+      [sepolia.id]: http(),
+    },
+    connectors: [injected({ shimDisconnect: false })],
+  });
 
 
 interface CreateWeb3ModalProps {
-  adaper: WagmiAdapter;
+  adapter: WagmiAdapter | undefined;
   projectId?: string;
 }
 
 
 export function createWeb3ModalInstance({
-  adaper,
+  adapter,
   projectId = DEFAULT_PROJECT_ID,
 }: CreateWeb3ModalProps): AppKit {
   if (!projectId) {
@@ -25,9 +35,8 @@ export function createWeb3ModalInstance({
   }
 
 
-
   return createAppKit({
-    adapters: [adaper],
+    adapters: [adapter!],
     networks: [mainnet, arbitrum],
     projectId,
     allWallets: 'ONLY_MOBILE',
