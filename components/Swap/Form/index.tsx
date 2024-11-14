@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import MainStepValidation from "../../../lib/mainStepValidator";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "../../../lib/generateSwapInitialValues";
 import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
+import Modal from "../../modal/modal";
 import SwapForm from "./Form";
 import useSWR from "swr";
 import { NextRouter, useRouter } from "next/router";
@@ -25,6 +26,7 @@ import Image from 'next/image';
 import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useFee } from "../../../context/feeContext";
+import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
 import { DepositMethodProvider } from "../../../context/depositMethodContext";
 import { dynamicWithRetries } from "../../../lib/dynamicWithRetries";
@@ -36,7 +38,6 @@ import { useAsyncModal } from "../../../context/asyncModal";
 import { ValidationProvider } from "../../../context/validationErrorContext";
 import { TrackEvent } from "../../../pages/_document";
 import useBalance from "../../../hooks/useBalance";
-import VaulDrawer from "../../modal/vaulModal";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -191,28 +192,27 @@ export default function Form() {
                 }
             </AnimatePresence>
         </div>
-        <VaulDrawer
+        <Modal
+            height="fit"
             show={showConnectNetworkModal}
             setShow={setShowConnectNetworkModal}
             header={`${networkToConnect?.DisplayName} connect`}
             modalId="showNetwork"
         >
-            <VaulDrawer.Snap id='item-1'>
-                {
-                    networkToConnect &&
-                    <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
-                }
-            </VaulDrawer.Snap>
-        </VaulDrawer>
-        <VaulDrawer
+            {
+                networkToConnect &&
+                <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
+            }
+        </Modal>
+        <Modal height='fit'
             show={showSwapModal}
             setShow={handleShowSwapModal}
             header={`Complete the swap`}
             modalId="showSwap">
-            <VaulDrawer.Snap id='item-1'>
+            <ResizablePanel>
                 <SwapDetails type="contained" />
-            </VaulDrawer.Snap>
-        </VaulDrawer>
+            </ResizablePanel>
+        </Modal>
         <Formik
             innerRef={formikRef}
             initialValues={initialValues}

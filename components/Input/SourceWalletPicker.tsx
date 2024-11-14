@@ -229,16 +229,20 @@ export const WalletsList: FC<WalletListProps> = ({ network, purpose, onSelect, t
     const { selectedSourceAccount } = useSwapDataState()
     const { balances, isBalanceLoading } = useBalancesState()
 
+    const connect = async () => {
+        await provider?.connectWallet({ chain: network.chain_id })
+    }
+
     return (
         <div className="space-y-3">
-            <ConnectButton className="w-full flex justify-center p-2 bg-secondary-700 rounded-md hover:bg-secondary-600">
+            <button onClick={connect} type="button" className="w-full flex justify-center p-2 bg-secondary-700 rounded-md hover:bg-secondary-600">
                 <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
                     <Plus className="h-4 w-4" />
                     <span className="text-sm">
                         Connect new wallet
                     </span>
                 </div>
-            </ConnectButton>
+            </button>
             <div className="flex flex-col justify-start space-y-3">
                 {
                     connectedWallets?.map((wallet) => {

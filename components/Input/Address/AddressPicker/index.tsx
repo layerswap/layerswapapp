@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, ReactElement, forwardRef, useCallback, useEffect, useRef, useState } from "react";
+import { FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { AddressBookItem } from "../../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../../DTOs/SwapFormValues";
 import { isValidAddress } from "../../../../lib/address/validator";
@@ -19,7 +19,6 @@ import { useQueryState } from "../../../../context/query";
 import { useAddressesStore } from "../../../../stores/addressesStore";
 import { Wallet } from "../../../../stores/walletStore";
 import ConnectedWallets from "./ConnectedWallets";
-import VaulDrawer from "../../../modal/vaulModal";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -153,13 +152,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             partner={partner}
             destination={destination}
         >{children({ destination, disabled, addressItem: destinationAddressItem, connectedWallet: selectedWallet, partner })}</AddressButton>
-        <VaulDrawer
+        <Modal
             header='Send To'
-            show={showAddressModal}
-            setShow={setShowAddressModal}
+            height="fit"
+            show={showAddressModal} setShow={setShowAddressModal}
             modalId="address"
         >
-            <VaulDrawer.Snap id="item-1" className="pb-0">
+            <ResizablePanel>
                 <div className='w-full flex flex-col justify-between h-full text-primary-text pt-2 min-h-[400px]'>
                     <div className='flex flex-col self-center grow w-full'>
                         <div className='flex flex-col self-center grow w-full space-y-5'>
@@ -201,7 +200,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                                 !disabled
                                 && destination
                                 && provider
-                                && !manualAddress
+                                && !manualAddress 
                                 && connectedWallet &&
                                 <ConnectedWallets
                                     provider={provider}
@@ -226,8 +225,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         </div>
                     </div>
                 </div >
-            </VaulDrawer.Snap>
-        </VaulDrawer>
+            </ResizablePanel>
+        </Modal>
     </>
     )
 });

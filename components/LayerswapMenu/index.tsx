@@ -9,7 +9,7 @@ import WizardItem from "../Wizard/WizardItem";
 import { NextRouter, useRouter } from "next/router";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import HistoryList from "../SwapHistory/History";
-import VaulDrawer from "../modal/vaulModal";
+import Modal from "../modal/modal";
 
 const Comp = () => {
     const router = useRouter();
@@ -39,7 +39,7 @@ const Comp = () => {
                 <MenuIcon strokeWidth="2" />
             }>
             </IconButton>
-            <VaulDrawer
+            <Modal
                 modalId="menuModal"
                 show={openTopModal}
                 setShow={handleModalOpenStateChange}
@@ -57,19 +57,16 @@ const Comp = () => {
                         <h2>{currentStepName as string}</h2>
                     </div>
                 }
-                modalConstantHeight={true}
             >
-                <VaulDrawer.Snap id='item-1' className="h-full">
-                    <Wizard wizardId='menuWizard' >
-                        <WizardItem StepName={MenuStep.Menu} inModal>
-                            <MenuList goToStep={handleGoToStep} />
-                        </WizardItem>
-                        <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full" inModal>
-                            <HistoryList onNewTransferClick={() => handleModalOpenStateChange(false)} />
-                        </WizardItem>
-                    </Wizard>
-                </VaulDrawer.Snap>
-            </VaulDrawer>
+                <Wizard wizardId='menuWizard' >
+                    <WizardItem StepName={MenuStep.Menu} inModal>
+                        <MenuList goToStep={handleGoToStep} />
+                    </WizardItem>
+                    <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full" inModal>
+                        <HistoryList onNewTransferClick={() => handleModalOpenStateChange(false)} />
+                    </WizardItem>
+                </Wizard>
+            </Modal>
         </div >
     </>
 }

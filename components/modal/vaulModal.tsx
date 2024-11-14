@@ -89,7 +89,19 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             <Drawer.Portal >
 
                 <Drawer.Close asChild>
-                    <Drawer.Overlay className='absolute inset-0 z-50 bg-black/50 block' />
+                    {
+                        isMobile
+                            ? <Drawer.Overlay
+                                className='absolute inset-0 z-50 bg-black/50 block'
+                            />
+                            : <motion.div
+                                key="backdrop"
+                                className={`absolute inset-0 z-50 bg-black/50 block`}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                            />
+                    }
                 </Drawer.Close>
 
                 <Drawer.Content

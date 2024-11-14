@@ -8,7 +8,6 @@ import { WalletsListProps } from '..';
 import toast from 'react-hot-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../shadcn/dialog';
 import { isMobile } from '../../../lib/wallets/connectors/utils/isMobile';
-import Image from 'next/image';
 
 const EVMConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFinish, setSelectedProvider }) => {
 
