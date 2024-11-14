@@ -69,7 +69,7 @@
     "framer-motion": "^10.16.15",
     "js-sha3": "^0.8.0",
     "js-sha512": "^0.9.0",
-    "json-rpc-2.0": "^1.7.0",
+    "json-rpc-2.0": "1.7.0",
     "lucide-react": "^0.379.0",
     "memoizee": "^0.4.17",
     "next": "^14.0.4",
