@@ -1,11 +1,17 @@
-import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import { useWallet } from "@solana/wallet-adapter-react"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
+import { useWalletModal } from "../../../components/WalletProviders/SolanaProvider/useWalletModal"
 
 export default function useSolana(): WalletProvider {
-    const withdrawalSupportedNetworks = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet]
+
+    const withdrawalSupportedNetworks = [
+        KnownInternalNames.Networks.SolanaMainnet,
+        KnownInternalNames.Networks.SolanaDevnet,
+        KnownInternalNames.Networks.EclipseTestnet,
+        KnownInternalNames.Networks.EclipseMainnet
+    ]
 
     const name = 'solana'
     const { publicKey, disconnect, wallet } = useWallet();
@@ -17,13 +23,14 @@ export default function useSolana(): WalletProvider {
                 address: publicKey?.toBase58(),
                 connector: wallet?.adapter?.name,
                 providerName: name,
-                icon: resolveWalletConnectorIcon({ connector: String(wallet?.adapter.name), address: publicKey?.toBase58() })
+                icon: resolveWalletConnectorIcon({ connector: String(wallet?.adapter.name), address: publicKey?.toBase58(), iconUrl: wallet?.adapter?.icon }),
             }
         }
     }
 
-    const connectWallet = () => {
-        return setVisible && setVisible(true)
+    const connectWallet = ({ chain }: { chain?: string }) => {
+        const network = chain?.toLowerCase().includes('eclipse') ? 'eclipse' : 'solana'
+        return setVisible && setVisible({ show: true, network: network })
     }
 
     const disconnectWallet = async () => {
@@ -35,9 +42,9 @@ export default function useSolana(): WalletProvider {
         }
     }
 
-    const reconnectWallet = async () => {
+    const reconnectWallet = async ({ chain }: { chain?: string }) => {
         await disconnectWallet()
-        connectWallet()
+        connectWallet({ chain })
     }
 
     return {

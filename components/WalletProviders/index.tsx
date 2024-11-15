@@ -1,9 +1,9 @@
 import { FC } from "react"
 import TonConnectProvider from "./TonConnectProvider"
 import RainbowKit from "./RainbowKit"
-import SolanaProvider from "./SolanaProvider"
 import { ThemeData } from "../../Models/Theme"
 import dynamic from "next/dynamic"
+import SolanaProvider from "./SolanaProvider"
 
 const FuelProviderWrapper = dynamic(() => import("./FuelProvider").then((comp) => comp.default), {
     loading: () => null
