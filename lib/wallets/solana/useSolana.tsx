@@ -3,6 +3,7 @@ import KnownInternalNames from "../../knownIds"
 import { useWallet } from "@solana/wallet-adapter-react"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { useWalletModal } from "../../../components/WalletProviders/SolanaProvider/useWalletModal"
+import { Network } from "../../../Models/Network"
 
 export default function useSolana(): WalletProvider {
 
@@ -17,7 +18,12 @@ export default function useSolana(): WalletProvider {
     const { publicKey, disconnect, wallet } = useWallet();
     const { setVisible } = useWalletModal();
 
-    const getWallet = () => {
+    const getWallet = (network?: Network) => {
+
+        if (network?.name.toLowerCase().startsWith('eclipse') && !(wallet?.adapter?.name.toLowerCase() === "backpack" || wallet?.adapter?.name.toLowerCase() === "nightly")) {
+            return undefined
+        }
+
         if (publicKey) {
             return {
                 address: publicKey?.toBase58(),
