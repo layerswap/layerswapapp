@@ -59,9 +59,7 @@ export const WalletModal: FC = () => {
 
             // here we query all focusable elements
             const focusableElements = node.querySelectorAll('button');
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const firstElement = focusableElements[0]!;
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const lastElement = focusableElements[focusableElements.length - 1]!;
 
             if (event.shiftKey) {
@@ -146,7 +144,7 @@ export const WalletModal: FC = () => {
                                 onClick={handleCollapseClick}
                                 tabIndex={0}
                             >
-                                <span>{expanded ? 'Less ' : 'More '}options</span>
+                                <span><span>{expanded ? 'Less ' : 'More '}</span> <span>options</span></span>
                                 <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${expanded && '-rotate-180'}`} />
                             </button>
                         </div>
