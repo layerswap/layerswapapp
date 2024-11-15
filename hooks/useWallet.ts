@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { Network, RouteNetwork } from "../Models/Network"
 import useEVM from "../lib/wallets/evm/useEVM";
 import useImtblX from "../lib/wallets/imtblX/useImtblX";
@@ -21,6 +20,7 @@ export type WalletProvider = {
     name: string,
     id: string,
     availableWalletsForConnect?: LSConnector[],
+    // TODO: this may be riomved check if we use it
     switchAccount: (connector: Wallet, address: string) => Promise<void>
 }
 
@@ -42,7 +42,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
 
     const resolveConnectedWallets = () => {
         let connectedWallets: Wallet[] = []
-        
+
         walletProviders.forEach(wallet => {
             const w = wallet.connectedWallets
             connectedWallets = w && [...connectedWallets, ...w] || [...connectedWallets]

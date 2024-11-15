@@ -215,19 +215,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
                     </div>
                 </div>
-                {/* Refuel */}
-                {
-                    refuel && <div className='p-3 bg-secondary-700 rounded-xl'>
-                        <div className="flex justify-between items-baseline text-sm">
-                            <p className="text-left text-secondary-text">Refuel</p>
-                            <div className="flex flex-col justify-end">
-                                <p className="text-primary-text text-sm font-semibold">{truncatedRefuelAmount} {nativeCurrency?.symbol}</p>
-                                <p className="text-secondary-text text-xs flex justify-end">${refuelAmountInUsd}</p>
-                            </div>
-                        </div>
-                    </div>
-                }
-
                 {/* Fees */}
                 <div className='p-3 bg-secondary-700 rounded-xl'>
                     {

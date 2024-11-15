@@ -50,11 +50,13 @@ const resolveSnapPoints = ({ isMobile, snapPointsCount, childrenHeights, headerH
         if (n <= 0) return 0; // If n is 0 or negative, the sum is 0
         return arr.slice(0, n).reduce((acc, curr) => acc + curr, 0);
     }
+    const totalHeight = childrenHeights.reduce((accumulator, currentValue) => accumulator + Number(currentValue.height), 0) + headerHeight;
 
     for (let i = 0; i < snapPointsCount; i++) {
 
         const result = sumBeforeIndex(childrenHeights.map(h => h.height), i);
 
+        //TODO: test
         if(typeof window === 'undefined') return [{ id: i + 1, height: 1 }];
 
         const pointHeight = childrenHeights?.[i]?.height + result + headerHeight;
@@ -62,7 +64,11 @@ const resolveSnapPoints = ({ isMobile, snapPointsCount, childrenHeights, headerH
 
         if (!pointHeight || !viewportHeight) return [{ id: i + 1, height: 1 }];
 
-        if ((pointHeight && viewportHeight) && pointHeight > (viewportHeight * .95)) {
+        if (totalHeight && totalHeight < (viewportHeight * .9)) {
+            return [{ id: i + 1, height: `${totalHeight}px` }]
+        }
+
+        if ((pointHeight && viewportHeight) && pointHeight > (viewportHeight * .98)) {
             points.push({ id: i + 1, height: 1 });
             break;
         }
