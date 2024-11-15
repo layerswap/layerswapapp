@@ -6,7 +6,7 @@ import { ChevronUp, X } from 'lucide-react';
 import { useMeasure } from '@uidotdev/usehooks';
 import { SnapElement, SnapPointsProvider, useSnapPoints } from '../../context/snapPointsContext';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Drawer } from 'vaul';
+import { Drawer } from './vaul';
 
 type VaulDrawerProps = {
     children: ReactNode;
