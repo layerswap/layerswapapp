@@ -56,59 +56,62 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
     const itemDescription = descriptions.find(d => d.group === addressItem.group)
 
     return (
-        <div className='flex gap-3 text-sm items-center'>
-            <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
-                {
-                    (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ?
-                        <div className="shrink-0 flex items-center pointer-events-none">
-                            {
-                                partner?.logo &&
-                                <Image
-                                    alt="Partner logo"
-                                    className='rounded-md object-contain'
-                                    src={partner.logo}
-                                    width="36"
-                                    height="36"
-                                />
-                            }
-                        </div>
-                        :
-                        <AddressIcon className="scale-150 h-9 w-9" address={addressItem.address} size={36} />
-                }
-            </div>
-            <div className="flex flex-col items-start">
-                <div className="flex">
-                    <ExtendedAddress address={addressItem.address} network={network} />
+        <div className="w-full flex items-center justify-between">
+            <div className='flex gap-3 text-sm items-center'>
+                <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
                     {
-                        balance &&
-                        <span className="text-sm flex space-x-2">
-                            {
-                                balance.amount != undefined && !isNaN(balance.amount) ?
-                                    <div className="text-right text-secondary-text font-normal text-sm">
-                                        {
-                                            balance.isLoading ?
-                                                <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                                                :
-                                                <>
-                                                    <span>{balance.amount}</span> <span>{balance.symbol}</span>
-                                                </>
-                                        }
-                                    </div>
-                                    :
-                                    <></>
-                            }
-                        </span>
+                        (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ?
+                            <div className="shrink-0 flex items-center pointer-events-none">
+                                {
+                                    partner?.logo &&
+                                    <Image
+                                        alt="Partner logo"
+                                        className='rounded-md object-contain'
+                                        src={partner.logo}
+                                        width="36"
+                                        height="36"
+                                    />
+                                }
+                            </div>
+                            :
+                            <AddressIcon className="scale-150 h-9 w-9" address={addressItem.address} size={36} />
                     }
                 </div>
+                <div className="flex flex-col items-start">
+                    <div className="flex">
+                        <ExtendedAddress address={addressItem.address} network={network} />
+                    </div>
 
-                <div className="text-secondary-text">
-                    <div className="inline-flex items-center gap-1.5">
-                        {itemDescription?.icon && <itemDescription.icon className="rounded flex-shrink-0 h-4 w-4" />}
-                        {itemDescription?.text}
+                    <div className="text-secondary-text">
+                        <div className="inline-flex items-center gap-1.5">
+                            {itemDescription?.icon && <itemDescription.icon className="rounded flex-shrink-0 h-4 w-4" />}
+                            {itemDescription?.text}
+                        </div>
                     </div>
                 </div>
             </div>
+            {
+                balance &&
+                <span className="text-sm flex space-x-2 justif-end">
+                    {
+                        balance.amount != undefined && !isNaN(balance.amount) ?
+                            <div className="text-right text-secondary-text font-normal text-sm">
+                                {
+                                    balance.isLoading ?
+                                        <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                        :
+                                        <>
+                                            <span>{balance.amount}</span> <span>{balance.symbol}</span>
+                                        </>
+                                }
+                            </div>
+                            :
+                            <></>
+                    }
+                </span>
+            }
         </div>
+
     )
 }
 
