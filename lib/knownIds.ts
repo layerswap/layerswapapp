@@ -174,6 +174,10 @@ export default class KnownInternalNames {
 
         public static readonly TronTestnet: string = "TRON_TESTNET"
 
+        public static readonly EclipseTestnet: string = "ECLIPSE_TESTNET"
+
+        public static readonly EclipseMainnet: string = "ECLIPSE_MAINNET"
+
     }
 
     static Currencies = class {
