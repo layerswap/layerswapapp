@@ -1,13 +1,11 @@
 import { InternalConnector, WalletProvider } from "../../../hooks/useWallet";
-import { Wallet } from "../../../stores/walletStore"
+import { useWalletStore } from "../../../stores/walletStore"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
 import { useSettingsState } from "../../../context/settings";
-import { useConnect, useAccount } from "@starknet-react/core";
+import { useConnect, useDisconnect } from "@starknet-react/core";
 import { useWalletModalState } from "../../../stores/walletModalStateStore";
-import { useCallback } from "react";
-
 
 export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
@@ -26,13 +24,26 @@ export default function useStarknet(): WalletProvider {
     const id = 'starknet'
     const { networks } = useSettingsState()
 
-    const { account, chainId, connector } = useAccount()
-    const { connectAsync: connect, connectors } = useConnect();
+    const { connectors } = useConnect();
+    const { disconnectAsync} = useDisconnect()
+
+    const wallets = useWalletStore((state) => state.connectedWallets)
+    const addWallet = useWalletStore((state) => state.connectWallet)
+    const removeWallet = useWalletStore((state) => state.disconnectWallet)
 
     const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
     const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
 
     const isMainnet = networks?.some(network => network.name === KnownInternalNames.Networks.StarkNetMainnet)
+
+    const getWallet = () => {
+
+        const wallet = wallets.find(wallet => wallet.providerName === name)
+
+        if (!wallet) return
+
+        return [wallet]
+    }
 
     const connectWallet = async () => {
         try {
@@ -50,9 +61,43 @@ export default function useStarknet(): WalletProvider {
         try {
             const starknetConnector = connectors.find(c => c.id === connector.id)
 
-            await connect({ connector: starknetConnector })
+            const result = await starknetConnector?.connect({})
 
+            const walletChain = `0x${result?.chainId?.toString(16)}`
+            const wrongChanin = walletChain == '0x534e5f4d41494e' ? !isMainnet : isMainnet
+
+            if (result?.account && wrongChanin) {
+                disconnectWallets()
+                const errorMessage = `Please switch the network in your wallet to ${isMainnet ? 'Mainnet' : 'Sepolia'} and click connect again`
+                toast.error(errorMessage)
+                // throw new Error(errorMessage)
+            }
+
+            if (result?.account && starknetConnector) {
+                const starkent = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetSepolia)
+                const WalletAccount = (await import('starknet')).WalletAccount
+
+                const starknetWalletAccount = new WalletAccount({ nodeUrl: starkent?.node_url }, (starknetConnector as any).wallet);
+
+                addWallet({
+                    address: result?.account,
+                    addresses: [result?.account],
+                    chainId: walletChain,
+                    icon: resolveWalletConnectorIcon({ connector: connector.name, address: result?.account }),
+                    connector: connector.name,
+                    providerName: name,
+                    metadata: {
+                        starknetAccount: starknetWalletAccount,
+                        // wallet: account
+                    },
+                    isActive: true,
+                    connect: () => connectWallet(),
+                    disconnect: () => disconnectWallets()
+
+                })
+            }
         }
+
         catch (e) {
             console.log(e)
             toast.error(e.message, { id: 'connect-wallet', duration: 30000 })
@@ -60,9 +105,9 @@ export default function useStarknet(): WalletProvider {
     }
 
     const disconnectWallets = async () => {
-        const disconnect = (await import('starknetkit')).disconnect
         try {
-            await disconnect({ clearLastWallet: true })
+            await disconnectAsync()
+            removeWallet(name)
         }
         catch (e) {
             console.log(e)
@@ -77,61 +122,20 @@ export default function useStarknet(): WalletProvider {
         }
     })
 
-
-    //fix this
-    const getWallet = useCallback(() => {
-        if (account) {
-
-            const walletChain = account && `0x${chainId?.toString(16)}`
-            const wrongChanin = walletChain == '0x534e5f4d41494e' ? !isMainnet : isMainnet
-
-            if (account && wrongChanin) {
-                disconnectWallets()
-                const errorMessage = `Please switch the network in your wallet to ${isMainnet ? 'Mainnet' : 'Sepolia'} and click connect again`
-                toast.error(errorMessage)
-                // throw new Error(errorMessage)
-            }
-
-            if (account && connector?.account && connector) {
-
-                const wallet: Wallet = {
-                    address: account.address,
-                    addresses: [account.address],
-                    chainId: walletChain,
-                    icon: resolveWalletConnectorIcon({ connector: connector.name, address: account.address }),
-                    connector: connector.name,
-                    providerName: name,
-                    metadata: {
-                        starknetAccount: account,
-                        // wallet: account
-                    },
-                    isActive: true,
-                    connect: () => connectWallet(),
-                    disconnect: () => disconnectWallets()
-                }
-
-                return [wallet]
-            }
-
-        }
-
-        return undefined
-    }, [account, chainId, connector, connect, disconnectWallets, isMainnet])
-
     const provider: WalletProvider = {
         switchAccount: async () => { },
-        connectedWallets: getWallet(),
         connectWallet,
         connectConnector,
         disconnectWallets,
+        connectedWallets: getWallet(),
+        activeWallet: getWallet()?.[0],
+        activeAccountAddress: getWallet()?.[0]?.address,
         withdrawalSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
         availableWalletsForConnect: availableWalletsForConnect,
         name,
         id,
-        activeWallet: getWallet()?.[0],
-        activeAccountAddress: getWallet()?.[0].address
     }
 
     return provider

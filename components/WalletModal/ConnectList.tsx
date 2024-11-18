@@ -39,7 +39,7 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
             />
         </div>
     </div>
-    console.log(provider)
+
     return (
         <div className="flex flex-col gap-1 w-full overflow-y-auto styled-scroll">
             {provider?.availableWalletsForConnect?.sort((a, b) => (a.order || 100) - (b.order || 100))?.map((connector, index) => {

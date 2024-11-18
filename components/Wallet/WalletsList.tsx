@@ -6,7 +6,7 @@ import AddressIcon from "../AddressIcon";
 
 const WalletsList = () => {
     const { wallets } = useWallet()
-
+console.log(wallets)
     return (
         <div className="space-y-3">
             <ConnectButton className="w-full flex justify-center p-2 bg-secondary-700 rounded-md hover:bg-secondary-600">
