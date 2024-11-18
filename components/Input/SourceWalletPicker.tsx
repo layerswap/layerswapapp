@@ -31,17 +31,27 @@ const Component: FC = () => {
     const { selectedSourceAccount } = useSwapDataState()
     const walletNetwork = values.fromExchange ? undefined : values.from
     const source_token = values.fromCurrency
+    const destination_address = values.destination_address
     const { provider, wallets } = useWallet(walletNetwork, 'asSource')
     const { fetchBalance } = useBalance()
 
     const selectedWallet = selectedSourceAccount?.wallet
     const activeWallet = walletNetwork ? provider?.activeWallet : wallets[0]
-
     const source_addsress = selectedSourceAccount?.address
     const connectedWallets = provider?.connectedWallets
 
     useEffect(() => {
+
         if (source_addsress && walletNetwork && !isValidAddress(source_addsress, walletNetwork)) {
+            const defaultValue = activeWallet?.addresses?.find(a => a === destination_address)
+            if (defaultValue && isValidAddress(defaultValue, walletNetwork) && activeWallet) {
+                setSelectedSourceAccount({
+                    wallet: activeWallet,
+                    address: defaultValue
+                })
+                return
+            }
+
             setSelectedSourceAccount(undefined)
         }
     }, [source_addsress, walletNetwork])
@@ -53,7 +63,7 @@ const Component: FC = () => {
                 address: activeWallet.address
             })
         }
-    }, [activeWallet, source_addsress, values.depositMethod])
+    }, [activeWallet, source_addsress, values.depositMethod, destination_address])
 
     useEffect(() => {
         if (values.depositMethod === 'deposit_address' || !activeWallet?.address || (selectedSourceAccount && !wallets.some(w => w?.addresses?.some(a => a === selectedSourceAccount.address)))) {

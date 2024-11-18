@@ -19,6 +19,7 @@ import { useQueryState } from "../../../../context/query";
 import { useAddressesStore } from "../../../../stores/addressesStore";
 import { Wallet } from "../../../../stores/walletStore";
 import ConnectedWallets from "./ConnectedWallets";
+import { useSwapDataState } from "../../../../context/swap";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -68,12 +69,11 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const groupedAddresses = useAddressesStore(state => state.addresses)
     const setAddresses = useAddressesStore(state => state.setAddresses)
     const [selectedWallet, setSelectedWallet] = useState<Wallet | undefined>(undefined)
-
+    const { selectedSourceAccount } = useSwapDataState()
     const { provider, wallets } = useWallet(destinationExchange ? undefined : destination, 'autofil')
     const connectedWallets = provider?.connectedWallets
     const activeWallet = provider?.activeWallet
-    const activeWalletAddress = activeWallet?.address
-
+    const activeWalletAddress = (selectedSourceAccount && activeWallet?.addresses.find(a => a == selectedSourceAccount?.address)) || activeWallet?.address
     const [isConnecting, setIsConnecting] = useState(false)
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
@@ -112,7 +112,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const previouslyAutofilledAddress = useRef<string | undefined>(undefined)
 
     const autofillConnectedWallet = useCallback(() => {
-        if (destination_address) return
+        if (destination_address || !destination) return
+
         setFieldValue("destination_address", activeWalletAddress)
         setSelectedWallet(activeWallet)
         previouslyAutofilledAddress.current = activeWalletAddress
