@@ -10,6 +10,7 @@ interface WalletState {
 }
 
 export type Wallet = {
+    // TODO: might be unused and unnecessary check
     isActive: boolean;
     address: string | `0x${string}`;
     addresses: string[] | `0x${string}`[];

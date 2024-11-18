@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { Network, RouteNetwork } from "../Models/Network"
 import useEVM from "../lib/wallets/evm/useEVM";
 import useImtblX from "../lib/wallets/imtblX/useImtblX";
@@ -6,7 +5,6 @@ import useSolana from "../lib/wallets/solana/useSolana";
 import useStarknet from "../lib/wallets/starknet/useStarknet";
 import useTON from "../lib/wallets/ton/useTON";
 import { Wallet } from "../stores/walletStore";
-import { LSConnector } from "../lib/wallets/connectors/types";
 import useFuel from "../lib/wallets/fuel/useFuel"
 
 export type WalletProvider = {
