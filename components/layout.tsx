@@ -95,6 +95,7 @@ export default function Layout({ children, settings, themeData }: Props) {
   themeData = themeData || THEME_COLORS.default
 
   const basePath = router?.basePath ?? ""
+  const isCanonical = (router.pathname === "/app" || router.pathname === "/") && Object.keys(router.query).length === 0;
 
   return (<>
     <Head>
@@ -106,6 +107,7 @@ export default function Layout({ children, settings, themeData }: Props) {
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content={`rgb(${themeData.secondary?.[900]})`} />
       <meta name="description" content="Streamline your asset transaction experience with Layerswap across 50+ blockchains and 15+ exchanges. Fast, affordable and secure." />
+      {isCanonical && <link rel="canonical" href="https://layerswap.io/app/" />}
 
       {/* Facebook Meta Tags */}
       <meta property="og:url" content={`https://www.layerswap.io/${basePath}`} />
