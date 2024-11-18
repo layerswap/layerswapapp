@@ -28,14 +28,18 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
                 includeMargin={true}
                 size={350}
                 level={"H"}
-            // imageSettings={{
-            //     src: walletQRData.icon || "",
-            //     x: undefined,
-            //     y: undefined,
-            //     height: 50,
-            //     width: 50,
-            //     excavate: true,
-            // }}
+                imageSettings={
+                    selectedProvider.connector.iconUrl
+                        ? {
+                            src: selectedProvider.connector.iconUrl,
+                            x: undefined,
+                            y: undefined,
+                            height: 50,
+                            width: 50,
+                            excavate: true,
+                        }
+                        : undefined
+                }
             />
         </div>
     </div>

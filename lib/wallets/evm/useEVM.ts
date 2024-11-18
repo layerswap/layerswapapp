@@ -1,7 +1,7 @@
 import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
 import { NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
-import { WalletProvider } from "../../../hooks/useWallet"
+import { InternalConnector, WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
@@ -12,6 +12,7 @@ import { getConnections } from '@wagmi/core'
 import toast from "react-hot-toast"
 import { isMobile } from "../../isMobile"
 import { mainnet } from "wagmi/chains"
+import { LSConnector } from "../connectors/types"
 
 export default function useEVM(): WalletProvider {
     const name = 'EVM'
@@ -61,21 +62,20 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-    const connectConnector = async ({ connector }) => {
+    const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
         try {
             setSelectedProvider({ ...provider, connector: { name: connector.name } })
             await connector.disconnect()
-            if (connector.id !== 'walletConnect') {
-                if (isMobile()) {
-                    getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
-                        window.location.href = uri;
-                    })
-                }
-                else {
-                    getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
-                        setSelectedProvider({ ...provider, connector: { name: connector.name, qr: uri } })
-                    })
-                }
+
+            if (isMobile()) {
+                getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
+                    window.location.href = uri;
+                })
+            }
+            else {
+                getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
+                    setSelectedProvider({ ...provider, connector: { name: connector.name, qr: uri, iconUrl: connector.icon } })
+                })
             }
 
             await connectAsync({
