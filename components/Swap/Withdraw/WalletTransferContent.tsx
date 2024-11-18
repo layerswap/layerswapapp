@@ -6,7 +6,7 @@ import { useBalancesState } from '../../../context/balances';
 import useBalance from '../../../hooks/useBalance';
 import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../Input/Address/AddressPicker';
-import { ChevronDown } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { truncateDecimals } from '../../utils/RoundDecimals';
 import { useSwitchAccount } from 'wagmi';
 import { Wallet } from '../../../stores/walletStore';
@@ -89,7 +89,7 @@ const WalletTransferContent: FC = () => {
                         network={source_network}
                         balance={(walletBalanceAmount !== undefined && source_token) ? { amount: walletBalanceAmount, symbol: source_token?.symbol, isLoading: isBalanceLoading } : undefined}
                     />
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4" />
                 </div>
             }
         </div>
