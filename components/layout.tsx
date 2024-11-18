@@ -99,7 +99,7 @@ export default function Layout({ children, settings, themeData }: Props) {
 
   return (<>
     <Head>
-      <title>Layerswap V8 | Permissionless and Trustless Cross-Chain Bridging</title>
+      <title>Layerswap V8 | Permissionless and trustless asset bridging protocol</title>
       <link rel="apple-touch-icon" sizes="180x180" href={`${basePath}/favicon/apple-touch-icon.png`} />
       <link rel="icon" type="image/png" sizes="32x32" href={`${basePath}/favicon/favicon-32x32.png`} />
       <link rel="icon" type="image/png" sizes="16x16" href={`${basePath}/favicon/favicon-16x16.png`} />
@@ -107,13 +107,13 @@ export default function Layout({ children, settings, themeData }: Props) {
       <link rel="canonical" href="https://layerswap.io/v8/" />
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content={`rgb(${themeData.secondary?.[900]})`} />
-      <meta name="description" content="Experience Layerswap's Atomic Bridging Protocol in Testnet. No 3rd parties, just seamless and secure cross-chain asset transactions" />
+      <meta name="description" content="Experience Layerswap's Atomic Bridging Protocol in Testnet. No third parties, just seamless and secure cross-chain asset transactions." />
 
       {/* Facebook Meta Tags */}
       <meta property="og:url" content={`https://www.layerswap.io/${basePath}`} />
       <meta property="og:type" content="website" />
       <meta property="og:title" content="Layerswap V8 | Permissionless and Trustless Cross-Chain Bridging" />
-      <meta property="og:description" content="Experience Layerswap's Atomic Bridging Protocol in Testnet. No 3rd parties, just seamless and secure cross-chain asset transactions" />
+      <meta property="og:description" content="Experience Layerswap's Atomic Bridging Protocol in Testnet. No third parties, just seamless and secure cross-chain asset transactions." />
       <meta property="og:image" content={`https://layerswap.io/${basePath}/opengraph.jpg?v=2`} />
 
       {/* Twitter Meta Tags */}
@@ -121,7 +121,7 @@ export default function Layout({ children, settings, themeData }: Props) {
       <meta property="twitter:domain" content="layerswap.io" />
       <meta property="twitter:url" content={`https://www.layerswap.io/${basePath}`} />
       <meta name="twitter:title" content="Layerswap V8 | Permissionless and Trustless Cross-Chain Bridging" />
-      <meta name="twitter:description" content="Experience Layerswap's Atomic Bridging Protocol in Testnet. No 3rd parties, just seamless and secure cross-chain asset transactions" />
+      <meta name="twitter:description" content="Experience Layerswap's Atomic Bridging Protocol in Testnet. No third parties, just seamless and secure cross-chain asset transactions." />
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
     </Head>
     {
