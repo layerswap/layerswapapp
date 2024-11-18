@@ -33,12 +33,12 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const { balances } = useBalancesState()
     const { selectedSourceAccount } = useSwapDataState()
     const { fetchBalance } = useBalance()
-
+   
     const { provider: destinationWalletProvider } = useWallet(to, 'autofil')
     const { provider: sourceWalletProvider } = useWallet(from, 'autofil')
 
     const address = direction === 'from' ? (selectedSourceAccount?.address || sourceWalletProvider?.activeWallet?.address) : (destination_address || destinationWalletProvider?.activeWallet?.address)
-
+   
     const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
     const apiClient = new LayerSwapApiClient()
     const {
@@ -178,7 +178,7 @@ function GenerateCurrencyMenuItems(
     error?: ApiError
 ): SelectMenuItem<RouteToken>[] {
     const { to, from } = values
-
+    
     return currencies?.map(c => {
         const currency = c
         const displayName = currency.symbol;
