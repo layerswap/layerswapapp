@@ -33,7 +33,7 @@ import { Exchange, ExchangeToken } from "../../../Models/Exchange";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";
 import { FormSourceWalletButton } from "../../Input/SourceWalletPicker";
-import { useSwapDataState } from "../../../context/swap";
+import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import { ImtblPassportProvider } from "../../WalletProviders/ImtblPassportProvider";
 
 type Props = {
@@ -61,6 +61,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
     } = values
 
     const { selectedSourceAccount } = useSwapDataState()
+    const { setSelectedSourceAccount } = useSwapDataUpdate()
+    const { providers } = useWallet()
     const [showConnectWalletModal, setShowConnectWalletModal] = useState(false);
     const { minAllowedAmount, valuesChanger } = useFee()
     const toAsset = values.toCurrency
@@ -141,7 +143,28 @@ const SwapForm: FC<Props> = ({ partner }) => {
         const newFromToken = newFrom?.tokens.find(t => t.symbol === toCurrency?.symbol)
         const newToToken = newTo?.tokens.find(t => t.symbol === fromCurrency?.symbol)
 
-        setValues({ ...values, from: newFrom, to: newTo, fromCurrency: newFromToken, toCurrency: newToToken, toExchange: newToExchange, fromExchange: newFromExchange, currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined }, true)
+        setValues({
+            ...values,
+            from: newFrom,
+            to: newTo,
+            fromCurrency: newFromToken,
+            toCurrency: newToToken,
+            toExchange: newToExchange,
+            fromExchange: newFromExchange,
+            currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined,
+            destination_address: (selectedSourceAccount?.address && isValidAddress(selectedSourceAccount?.address, newFrom)) ? selectedSourceAccount?.address : values.destination_address
+        }, true);
+
+        if (newFrom && values.depositMethod !== 'deposit_address' && values.destination_address) {
+            const sourceProvider = providers.find(p => p.withdrawalSupportedNetworks?.includes(newFrom?.name))
+            const sourceWallet = sourceProvider?.connectedWallets?.find(w => !w.isNotAvailable && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase()))
+            if (sourceWallet) {
+                setSelectedSourceAccount({
+                    wallet: sourceWallet,
+                    address: values.destination_address
+                })
+            }
+        }
     }, [values, sourceRoutes, destinationRoutes, exchanges])
 
     const hideAddress = query?.hideAddress
