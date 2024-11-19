@@ -26,6 +26,7 @@ export type Wallet = {
     isLoading?: boolean,
     disconnect: () => Promise<void> | undefined | void;
     connect: () => Promise<void> | undefined | void;
+    isNotAvailable?: boolean;
 }
 
 export const useWalletStore = create<WalletState>()((set) => ({

@@ -3,7 +3,8 @@ import { EthereumProvider } from "./EthereumProvider";
 
 export type LSConnector = Connector & {
   resolveURI?: (uri: string) => string
-  order?: number
+  order?: number,
+  isAvailable?: boolean,
 }
 
 export interface ProviderRpcError extends Error {

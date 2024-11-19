@@ -143,7 +143,7 @@ const Component: FC = () => {
             modalId="connectedWallets"
         >
             <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
-                <WalletsList network={walletNetwork} purpose={'autofil'} onSelect={handleSelectWallet} token={source_token} />
+                <WalletsList network={walletNetwork} purpose={'withdrawal'} onSelect={handleSelectWallet} token={source_token} />
                 <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer">
                     Continue without a wallet
                 </div>
@@ -211,7 +211,7 @@ export const FormSourceWalletButton: FC = () => {
                 modalId="connectedWallets"
             >
                 <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
-                    <WalletsList network={walletNetwork} purpose={'autofil'} onSelect={handleSelectWallet} token={values.fromCurrency} />
+                    <WalletsList network={walletNetwork} purpose={'withdrawal'} onSelect={handleSelectWallet} token={values.fromCurrency} />
                     <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer">
                         Continue without a wallet
                     </div>
