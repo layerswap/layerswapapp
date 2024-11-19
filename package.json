@@ -48,6 +48,8 @@
     "@solana/wallet-adapter-solflare": "0.6.24",
     "@solana/wallet-adapter-walletconnect": "^0.1.16",
     "@solana/web3.js": "1.66.0",
+    "@starknet-react/chains": "^3.1.0",
+    "@starknet-react/core": "^3.6.0",
     "@stripe/crypto": "^0.0.4",
     "@stripe/stripe-js": "^1.53.0",
     "@tailwindcss/forms": "^0.5.0",

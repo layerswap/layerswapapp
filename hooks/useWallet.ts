@@ -5,11 +5,11 @@ import useSolana from "../lib/wallets/solana/useSolana";
 import useStarknet from "../lib/wallets/starknet/useStarknet";
 import useTON from "../lib/wallets/ton/useTON";
 import { Wallet } from "../stores/walletStore";
-import { LSConnector } from "../lib/wallets/connectors/types";
 import useFuel from "../lib/wallets/fuel/useFuel"
 
 export type WalletProvider = {
     connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
+    connectConnector?: (props?: { connector: InternalConnector }) => Promise<void> | undefined
     disconnectWallets: () => Promise<void> | undefined | void,
     connectedWallets: Wallet[] | undefined,
     activeWallet: Wallet | undefined,
@@ -19,9 +19,15 @@ export type WalletProvider = {
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,
-    availableWalletsForConnect?: LSConnector[],
-    // TODO: this may be riomved check if we use it
+    availableWalletsForConnect?: InternalConnector[],
     switchAccount: (connector: Wallet, address: string) => Promise<void>
+}
+
+export type InternalConnector = {
+    name: string,
+    id: string,
+    icon: string | undefined,
+    order?: number
 }
 
 export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
