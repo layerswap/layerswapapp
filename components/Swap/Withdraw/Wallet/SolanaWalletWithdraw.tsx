@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { Transaction, Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { Transaction, Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import useWallet from '../../../../hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
@@ -10,30 +10,27 @@ import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
 import WalletMessage from './WalletTransfer/message';
+import useSolanaBalance from '../../../../lib/balances/solana/useSolanaBalance';
 
 const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount }) => {
-
     const [loading, setLoading] = useState(false)
     const [insufficientFunds, setInsufficientFunds] = useState<boolean>(false)
     const [insufficientToken, setInsufficientToken] = useState<string>('')
     const { getWithdrawalProvider } = useWallet()
     const { setSwapTransaction } = useSwapTransactionStore();
 
+    const networkName = network?.name
     const provider = getWithdrawalProvider(network!);
     const wallet = provider?.getConnectedWallet(network);
     const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
     const solanaNode = network?.node_url
 
-    class SolanaConnection extends Connection { }
-    async function getTokenBalanceWeb3(connection: SolanaConnection, tokenAccount) {
-        try {
-            const info = await connection.getTokenAccountBalance(tokenAccount);
-            return info?.value?.uiAmount;
-        } catch (error) {
-            if (error.message && error.message.includes("could not find account")) {
-                return 0;
-            } else {
-                return 0;
+    const { getBalance } = useSolanaBalance()
+    async function getTokenBalance() {
+        if (token && networkName && wallet?.address) {
+            const res = await getBalance({ networkName, token, address: wallet?.address });
+            if (res && typeof res === "object" && "amount" in res) {
+                return res?.amount;
             }
         }
     }
@@ -53,31 +50,17 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
                 "confirmed"
             );
 
-            const nativeBalance = await connection.getBalance(walletPublicKey!);
-            const solBalance = nativeBalance / LAMPORTS_PER_SOL
-            const { getAssociatedTokenAddress } = await import('@solana/spl-token');
-
-            let result: number | null = null
-            if (token?.contract) {
-                const sourceToken = new PublicKey(token?.contract);
-                const associatedTokenFrom = walletPublicKey && await getAssociatedTokenAddress(
-                    sourceToken,
-                    walletPublicKey
-                );
-                if (!associatedTokenFrom) return
-                result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
-            } else {
-                result = walletPublicKey && await connection.getBalance(walletPublicKey)
-            }
-
             const arrayBufferCallData = Uint8Array.from(atob(callData), c => c.charCodeAt(0))
-
             const transaction = Transaction.from(arrayBufferCallData)
+
             const feeInLamports = await transaction.getEstimatedFee(connection)
             const feeInSol = feeInLamports / LAMPORTS_PER_SOL
-            
-            if (solBalance < feeInSol) setInsufficientToken('SOL')
-            else if ((result || result === 0) && amount && token?.symbol && result < amount) setInsufficientToken(token?.symbol)
+
+            const solBalance = walletPublicKey && await connection.getBalance(walletPublicKey)
+            const tokenBalance = await getTokenBalance()
+
+            if ((solBalance || solBalance === 0) && solBalance < feeInSol) setInsufficientToken('SOL')
+            else if ((tokenBalance || tokenBalance === 0) && amount && token?.symbol && tokenBalance < amount) setInsufficientToken(token?.symbol)
 
             const signature = await configureAndSendCurrentTransaction(
                 transaction,
