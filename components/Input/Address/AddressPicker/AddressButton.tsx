@@ -1,8 +1,6 @@
 import { FC } from "react"
-import { ChevronRight } from "lucide-react";
 import { AddressItem } from ".";
 import { Wallet } from "../../../../stores/walletStore";
-import AddressWithIcon from "./AddressWithIcon";
 import { Partner } from "../../../../Models/Partner";
 import { Network } from "../../../../Models/Network";
 

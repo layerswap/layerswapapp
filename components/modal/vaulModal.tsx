@@ -87,16 +87,15 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             modal={isMobile ? true : false}
         >
             <Drawer.Portal >
-
                 <Drawer.Close asChild>
                     {
                         isMobile
                             ? <Drawer.Overlay
-                                className='absolute inset-0 z-50 bg-black/50 block'
+                                className='fixed sm:absolute inset-0 z-50 bg-black/50 block'
                             />
                             : <motion.div
                                 key="backdrop"
-                                className={`absolute inset-0 z-50 bg-black/50 block`}
+                                className={`fixed sm:absolute inset-0 z-50 bg-black/50 block`}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
@@ -106,7 +105,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
                 <Drawer.Content
                     data-testid="content"
-                    className={clsx('absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ', {
+                    className={clsx('fixed sm:absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ', {
                         '!border-none !rounded-none': snap === 1,
                     })}
                 >

@@ -23,7 +23,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
 
     const [isLoading, setIsLoading] = useState(false)
     const [showIncompatibleWallets, setShowIncompatibleWallets] = useState(false)
-    const connectedWallets = provider.connectedWallets
+    const connectedWallets = provider.connectedWallets?.filter(wallet => !wallet.isNotAvailable)
 
     const connect = async () => {
         setIsLoading(true)
@@ -32,7 +32,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
         setIsLoading(false)
     }
 
-    const notCompatibleWallets = wallets.filter(wallet => wallet.providerName !== provider.name)
+    const notCompatibleWallets = wallets.filter(wallet => wallet.providerName !== provider.name || wallet.isNotAvailable)
 
     return <>
 

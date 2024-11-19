@@ -155,78 +155,76 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         >{children({ destination, disabled, addressItem: destinationAddressItem, connectedWallet: selectedWallet, partner })}</AddressButton>
         <Modal
             header='Send To'
-            height="fit"
+            height="80%"
             show={showAddressModal} setShow={setShowAddressModal}
             modalId="address"
         >
-            <ResizablePanel>
-                <div className='w-full flex flex-col justify-between h-full text-primary-text pt-2 min-h-[400px]'>
-                    <div className='flex flex-col self-center grow w-full'>
-                        <div className='flex flex-col self-center grow w-full space-y-5'>
+            {/* <ResizablePanel> */}
+                <div className='w-full flex flex-col justify-between h-full text-primary-text'>
+                    <div className='flex flex-col self-center grow w-full space-y-5 h-full'>
 
-                            {
-                                destinationExchange ?
-                                    <ExchangeNote
-                                        destination={destination}
-                                        destinationAsset={destinationAsset}
-                                        destinationExchange={destinationExchange}
-                                    />
-                                    :
-                                    !disabled
-                                    && destination
-                                    && provider
-                                    && !activeWallet &&
-                                    <ConnectWalletButton
-                                        provider={provider}
-                                        onConnect={() => setIsConnecting(true)}
-                                        destination={destination}
-                                    />
-                            }
-
-                            <ManualAddressInput
-                                manualAddress={manualAddress}
-                                setManualAddress={setManualAddress}
-                                setNewAddress={setNewAddress}
-                                values={values}
-                                partner={partner}
-                                name={name}
-                                inputReference={inputReference}
-                                setFieldValue={setFieldValue}
-                                close={close}
-                                addresses={groupedAddresses}
-                                connectedWallet={connectedWallet}
-                            />
-
-                            {
+                        {
+                            destinationExchange ?
+                                <ExchangeNote
+                                    destination={destination}
+                                    destinationAsset={destinationAsset}
+                                    destinationExchange={destinationExchange}
+                                />
+                                :
                                 !disabled
                                 && destination
                                 && provider
-                                && !manualAddress
-                                && connectedWallet &&
-                                <ConnectedWallets
+                                && !activeWallet &&
+                                <ConnectWalletButton
                                     provider={provider}
-                                    wallets={wallets}
-                                    onClick={(address: string, wallet: Wallet) => { handleSelectAddress(address, wallet) }}
                                     onConnect={() => setIsConnecting(true)}
                                     destination={destination}
-                                    destination_address={destination_address}
                                 />
-                            }
+                        }
 
-                            {
-                                !disabled && addressBookAddresses && addressBookAddresses?.length > 0 && !manualAddress && destination &&
-                                <AddressBook
-                                    addressBook={addressBookAddresses}
-                                    onSelectAddress={handleSelectAddress}
-                                    destination={destination}
-                                    destination_address={destination_address}
-                                    partner={partner}
-                                />
-                            }
-                        </div>
+                        <ManualAddressInput
+                            manualAddress={manualAddress}
+                            setManualAddress={setManualAddress}
+                            setNewAddress={setNewAddress}
+                            values={values}
+                            partner={partner}
+                            name={name}
+                            inputReference={inputReference}
+                            setFieldValue={setFieldValue}
+                            close={close}
+                            addresses={groupedAddresses}
+                            connectedWallet={connectedWallet}
+                        />
+
+                        {
+                            !disabled
+                            && destination
+                            && provider
+                            && !manualAddress
+                            && connectedWallet &&
+                            <ConnectedWallets
+                                provider={provider}
+                                wallets={wallets}
+                                onClick={(address: string, wallet: Wallet) => { handleSelectAddress(address, wallet) }}
+                                onConnect={() => setIsConnecting(true)}
+                                destination={destination}
+                                destination_address={destination_address}
+                            />
+                        }
+
+                        {
+                            !disabled && addressBookAddresses && addressBookAddresses?.length > 0 && !manualAddress && destination &&
+                            <AddressBook
+                                addressBook={addressBookAddresses}
+                                onSelectAddress={handleSelectAddress}
+                                destination={destination}
+                                destination_address={destination_address}
+                                partner={partner}
+                            />
+                        }
                     </div>
-                </div >
-            </ResizablePanel>
+                </div>
+            {/* </ResizablePanel> */}
         </Modal>
     </>
     )

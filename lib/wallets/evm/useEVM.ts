@@ -13,6 +13,8 @@ import toast from "react-hot-toast"
 import { isMobile } from "../../isMobile"
 import { mainnet } from "wagmi/chains"
 import { LSConnector } from "../connectors/types"
+import { renderToStaticMarkup } from "react-dom/server"
+import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 
 type Props = {
     network: Network | undefined,
@@ -79,7 +81,10 @@ export default function useEVM({ network, purpose }: Props): WalletProvider {
             }
             else {
                 getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
-                    setSelectedProvider({ ...provider, connector: { name: connector.name, qr: uri, iconUrl: connector.icon } })
+                    const Icon = resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
+                    const base64Icon = convertSvgComponentToBase64(Icon)
+
+                    setSelectedProvider({ ...provider, connector: { name: connector.name, qr: uri, iconUrl: base64Icon } })
                 })
             }
 
@@ -213,6 +218,7 @@ const getWalletConnectUri = async (
     }
     );
 };
+
 const isNotAvailable = (connector: Connector, network: Network | undefined) => {
     if (!network) return false
     return connector.id === "com.immutable.passport" && !network.name.toLowerCase().startsWith("immutable")
