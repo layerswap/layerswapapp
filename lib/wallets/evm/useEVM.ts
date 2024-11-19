@@ -1,7 +1,7 @@
 import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
-import { NetworkType } from "../../../Models/Network"
+import { InternalConnector, WalletProvider, WalletPurpose } from "../../../hooks/useWallet"
+import { Network, NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
-import { InternalConnector, WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
@@ -14,7 +14,12 @@ import { isMobile } from "../../isMobile"
 import { mainnet } from "wagmi/chains"
 import { LSConnector } from "../connectors/types"
 
-export default function useEVM(): WalletProvider {
+type Props = {
+    network: Network | undefined,
+    purpose: WalletPurpose | undefined
+}
+
+export default function useEVM({ network, purpose }: Props): WalletProvider {
     const name = 'EVM'
     const id = 'evm'
     const { networks } = useSettingsState()
@@ -46,7 +51,7 @@ export default function useEVM(): WalletProvider {
     const activeAccountAddress = useWalletModalState((state) => state.activeAccountAddress)
 
     const { disconnectAsync } = useDisconnect()
-    const { connectors: connectedWallets, switchAccountAsync } = useSwitchAccount()
+    const { connectors: activeConnectors, switchAccountAsync } = useSwitchAccount()
     const activeAccount = useAccount()
     const allConnectors = useConnectors()
     const config = useConfig()
@@ -94,7 +99,7 @@ export default function useEVM(): WalletProvider {
     const resolvedConnectors: Wallet[] = useMemo(() => {
         const connections = getConnections(config)
 
-        return connectedWallets.map(w => {
+        return activeConnectors.map(w => {
 
             //TODO: handle Ronin wallet case
             // let roninWalletNetworks = [
@@ -125,15 +130,16 @@ export default function useEVM(): WalletProvider {
                 providerName: name,
                 icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(w), address, iconUrl: w.icon }),
                 connect: connectWallet,
-                disconnect: () => disconnectWallet(w.name)
+                disconnect: () => disconnectWallet(w.name),
+                isNotAvailable: isNotAvailable(w, network)
             }
         }).filter(w => w !== undefined) as Wallet[]
-    }, [activeAccount, connectedWallets, config])
+    }, [activeAccount, activeConnectors, config])
 
     const disconnectWallet = async (connectorName: string) => {
 
         try {
-            const connector = connectedWallets.find(w => w.name.toLowerCase() === connectorName.toLowerCase())
+            const connector = activeConnectors.find(w => w.name.toLowerCase() === connectorName.toLowerCase())
             // connector && await connector.disconnect()
             await disconnectAsync({
                 connector: connector
@@ -146,7 +152,7 @@ export default function useEVM(): WalletProvider {
 
     const disconnectWallets = () => {
         try {
-            connectedWallets.forEach(async (connector) => {
+            activeConnectors.forEach(async (connector) => {
                 disconnectWallet(connector.name)
             })
         }
@@ -167,7 +173,7 @@ export default function useEVM(): WalletProvider {
     }
 
     {/* //TODO: refactor ordering */ }
-    allConnectors.forEach(w => { w["order"] = resolveWalletConnectorIndex(w.id) })
+    const availableWalletsForConnect = allConnectors.filter(w => !isNotAvailable(w, network)).map(w => ({ ...w, order: resolveWalletConnectorIndex(w.id) }))
 
     const provider = {
         connectWallet,
@@ -180,7 +186,7 @@ export default function useEVM(): WalletProvider {
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
-        availableWalletsForConnect: allConnectors as any,
+        availableWalletsForConnect: availableWalletsForConnect as any,
         name,
         id,
     }
@@ -207,3 +213,7 @@ const getWalletConnectUri = async (
     }
     );
 };
+const isNotAvailable = (connector: Connector, network: Network | undefined) => {
+    if (!network) return false
+    return connector.id === "com.immutable.passport" && !network.name.toLowerCase().startsWith("immutable")
+}
