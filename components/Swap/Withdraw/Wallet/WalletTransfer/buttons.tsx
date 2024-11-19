@@ -92,7 +92,7 @@ export const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ 
             >
                 {
                     error ? <span>Try again</span>
-                        : <span>Send from wallet</span>
+                        : <span>Switch network</span>
                 }
             </ButtonWrapper>
         }
