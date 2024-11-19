@@ -15,13 +15,12 @@ const connectors = [
 
 export const resolveWalletConnectorIcon = ({ connector, address, iconUrl }: { connector?: string, address?: string, iconUrl?: string }) => {
     const knownConnector = connectors.find(c => c.id === connector?.toLowerCase())
-    if (iconUrl) return SVGIconWrapper(iconUrl)
-    else if (!knownConnector) {
-        if (address) return AddressIconWrapper(address)
-        else return WalletIcon
-    }
 
-    return knownConnector.icon
+    if (knownConnector && knownConnector.icon) return knownConnector.icon
+    else if (iconUrl) return SVGIconWrapper(iconUrl)
+
+    if (address) return AddressIconWrapper(address)
+    else return WalletIcon
 }
 
 export const resolveWalletConnectorIndex = (id: string) => {
@@ -33,5 +32,5 @@ const AddressIconWrapper = (address: string) => (props: typeof AddressIcon) => {
 }
 
 const SVGIconWrapper = (iconUrl: string) => (props) => {
-    return <SVGWithImg {...props} imageUrl={iconUrl} />
+    return <SVGWithImg {...props} image_url={iconUrl} />
 }

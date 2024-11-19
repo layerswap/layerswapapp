@@ -25,7 +25,7 @@ export default function useStarknet(): WalletProvider {
     const { networks } = useSettingsState()
 
     const { connectors } = useConnect();
-    const { disconnectAsync} = useDisconnect()
+    const { disconnectAsync } = useDisconnect()
 
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
@@ -60,6 +60,14 @@ export default function useStarknet(): WalletProvider {
 
         try {
             const starknetConnector = connectors.find(c => c.id === connector.id)
+
+            if (!starknetConnector?.["_wallet"]) {
+                const installLink = connectorsConfigs.find(c => c.id === connector.id)
+                if (installLink) {
+                    window.open(installLink.installLink, "_blank");
+                    return
+                }
+            }
 
             const result = await starknetConnector?.connect({})
 
@@ -115,8 +123,11 @@ export default function useStarknet(): WalletProvider {
     }
 
     const availableWalletsForConnect: InternalConnector[] = connectors.map(connector => {
+
+        const name = (!connectorsConfigs.some(c => c.id === connector.id) || connector?.["_wallet"]) ? connector.name : `Install ${connectorsConfigs.find(c => c.id === connector.id)?.name}`
+
         return {
-            name: connector.name,
+            name: name,
             id: connector.id,
             icon: typeof connector.icon === 'string' ? connector.icon : `data:image/svg+xml;base64,${btoa(connector.icon.dark)}`
         }
@@ -140,3 +151,22 @@ export default function useStarknet(): WalletProvider {
 
     return provider
 }
+
+
+const connectorsConfigs = [
+    {
+        id: "braavos",
+        name: "Braavos",
+        installLink: "https://chromewebstore.google.com/detail/braavos-starknet-wallet/jnlgamecbpmbajjfhmmmlhejkemejdma"
+    },
+    {
+        id: "argent",
+        name: 'Argent X',
+        installLink: "https://chromewebstore.google.com/detail/argent-x-starknet-wallet/dlcobpjiigpikoobohmabehhmhfoodbb"
+    },
+    {
+        id: "keplr",
+        name: 'Keplr',
+        installLink: "https://chromewebstore.google.com/detail/keplr/dmkamcknogkgcdfhhbddcghachkejeap"
+    }
+]

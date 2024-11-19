@@ -26,7 +26,7 @@ export type WalletProvider = {
 export type InternalConnector = {
     name: string,
     id: string,
-    icon: string,
+    icon: string | undefined,
     order?: number
 }
 

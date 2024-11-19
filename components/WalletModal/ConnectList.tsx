@@ -46,38 +46,35 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
 
     return (
         <div className="flex flex-col gap-1 w-full overflow-y-auto styled-scroll">
-            {provider?.availableWalletsForConnect?.sort((a, b) => (a.order || 100) - (b.order || 100))?.map((connector, index) => {
-                const connectorName = connector?.name
-                const connectorId = connector?.id
+            {
+                provider?.availableWalletsForConnect?.sort((a, b) => (a.order || 100) - (b.order || 100))?.map((connector, index) => {
+                    const connectorName = connector?.name
+                    const connectorId = connector?.id
 
-                const Icon = resolveWalletConnectorIcon({ connector: connectorId })
+                    const Icon = resolveWalletConnectorIcon({ connector: connectorId, iconUrl: connector.icon })
+                    const isLoading = provider.connector?.name === connectorName
 
-                const isLoading = provider.connector?.name === connectorName
-
-                return (
-                    <div key={index}>
-                        <button
-                            type="button"
-                            disabled={!!provider.connector}
-                            className="w-full flex items-center justify-between hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 py-2"
-                            onClick={() => connect(connector)}
-                        >
-                            <div className="flex gap-3 items-center font-semibold">
+                    return (
+                        <div key={index}>
+                            <button
+                                type="button"
+                                disabled={!!provider.connector}
+                                className="w-full flex items-center justify-between hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 py-2"
+                                onClick={() => connect(connector)}
+                            >
+                                <div className="flex gap-3 items-center font-semibold">
+                                    <Icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
+                                    <p>{connectorName}</p>
+                                </div>
                                 {
-                                    connector.icon ?
-                                        <img src={connector.icon} alt={connector.name} className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
-                                        : <Icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
+                                    isLoading &&
+                                    <Loader className='h-4 w-4 animate-spin' />
                                 }
-                                <p>{connectorName}</p>
-                            </div>
-                            {
-                                isLoading &&
-                                <Loader className='h-4 w-4 animate-spin' />
-                            }
-                        </button>
-                    </div>
-                )
-            })}
+                            </button>
+                        </div>
+                    )
+                })
+            }
         </div>
     )
 }

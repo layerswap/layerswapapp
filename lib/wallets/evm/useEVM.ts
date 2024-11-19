@@ -5,7 +5,7 @@ import { InternalConnector, WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
-import { useCallback, useMemo } from "react"
+import { useMemo } from "react"
 import { Wallet } from "../../../stores/walletStore"
 import { useWalletModalState } from "../../../stores/walletModalStateStore"
 import { getConnections } from '@wagmi/core'
@@ -130,7 +130,6 @@ export default function useEVM(): WalletProvider {
         }).filter(w => w !== undefined) as Wallet[]
     }, [activeAccount, connectedWallets, config])
 
-
     const disconnectWallet = async (connectorName: string) => {
 
         try {
@@ -156,7 +155,7 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-    const switchAccount = useCallback(async (wallet: Wallet, address: string) => {
+    const switchAccount = async (wallet: Wallet, address: string) => {
         const connector = allConnectors.find(c => c.name === wallet.connector)
         if (!connector)
             throw new Error("Connector not found")
@@ -165,7 +164,7 @@ export default function useEVM(): WalletProvider {
         if (!account)
             throw new Error("Account not found")
         setActiveAccountAddress(account)
-    }, [])
+    }
 
     {/* //TODO: refactor ordering */ }
     allConnectors.forEach(w => { w["order"] = resolveWalletConnectorIndex(w.id) })
