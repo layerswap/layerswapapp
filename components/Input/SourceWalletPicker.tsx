@@ -144,9 +144,12 @@ const Component: FC = () => {
         >
             <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
                 <WalletsList network={walletNetwork} purpose={'withdrawal'} onSelect={handleSelectWallet} token={source_token} />
-                <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer">
-                    Continue without a wallet
-                </div>
+                {
+                    values.from?.deposit_methods.includes('deposit_address') &&
+                    <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer">
+                        Continue without a wallet
+                    </div>
+                }
             </VaulDrawer.Snap >
         </VaulDrawer>
     </>
@@ -170,7 +173,7 @@ export const FormSourceWalletButton: FC = () => {
 
     const walletNetwork = values.fromExchange ? undefined : values.from
 
-    const { wallets } = useWallet(walletNetwork, 'asSource')
+    const { wallets, provider } = useWallet(walletNetwork, 'withdrawal')
 
     const handleWalletChange = () => {
         setOpenModal(true)
@@ -191,9 +194,24 @@ export const FormSourceWalletButton: FC = () => {
         setOpenModal(false)
     }
 
+    const connect = async () => {
+        await provider?.connectWallet({ chain: walletNetwork?.chain_id || walletNetwork?.name })
+    }
+
     if (!mounted || !walletNetwork || !values.fromCurrency) return null
 
-    if (wallets.length > 0) {
+    if (!wallets.length && walletNetwork) {
+        return <SwapButton
+            className="plausible-event-name=Swap+initiated"
+            type='button'
+            isDisabled={false}
+            isSubmitting={false}
+            onClick={connect}
+        >
+            Connect Wallet
+        </SwapButton>
+    }
+    else if (wallets.length > 0) {
         return <>
             <SwapButton
                 className="plausible-event-name=Swap+initiated"
@@ -212,9 +230,12 @@ export const FormSourceWalletButton: FC = () => {
             >
                 <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
                     <WalletsList network={walletNetwork} purpose={'withdrawal'} onSelect={handleSelectWallet} token={values.fromCurrency} />
-                    <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer">
-                        Continue without a wallet
-                    </div>
+                    {
+                        values.from?.deposit_methods.includes('deposit_address') &&
+                        <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer">
+                            Continue without a wallet
+                        </div>
+                    }
                 </VaulDrawer.Snap>
             </VaulDrawer >
         </>

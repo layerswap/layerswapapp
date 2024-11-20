@@ -1,5 +1,5 @@
 import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
-import { InternalConnector, WalletProvider, WalletPurpose } from "../../../hooks/useWallet"
+import { InternalConnector, WalletProvider } from "../../../hooks/useWallet"
 import { Network, NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import KnownInternalNames from "../../knownIds"
@@ -13,15 +13,13 @@ import toast from "react-hot-toast"
 import { isMobile } from "../../isMobile"
 import { mainnet } from "wagmi/chains"
 import { LSConnector } from "../connectors/types"
-import { renderToStaticMarkup } from "react-dom/server"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 
 type Props = {
     network: Network | undefined,
-    purpose: WalletPurpose | undefined
 }
 
-export default function useEVM({ network, purpose }: Props): WalletProvider {
+export default function useEVM({ network }: Props): WalletProvider {
     const name = 'EVM'
     const id = 'evm'
     const { networks } = useSettingsState()
