@@ -1,10 +1,9 @@
-import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
-import { Wallet } from "../../../stores/walletStore"
 import { useWalletModal } from "../../../components/WalletProviders/SolanaProvider/useWalletModal"
 import { Network } from "../../../Models/Network"
+import { Wallet, WalletProvider } from "../../../Models/WalletProvider"
 
 export default function useSolana({ network }: { network: Network | undefined }): WalletProvider {
 

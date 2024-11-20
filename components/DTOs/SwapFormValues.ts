@@ -1,6 +1,5 @@
 import { RouteNetwork, RouteToken } from "../../Models/Network";
 import { Exchange, ExchangeToken } from "../../Models/Exchange";
-import { Wallet } from "../../stores/walletStore";
 
 export type SwapFormValues = {
   amount?: string;

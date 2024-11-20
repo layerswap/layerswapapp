@@ -17,9 +17,9 @@ import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";
 import { useQueryState } from "../../../../context/query";
 import { useAddressesStore } from "../../../../stores/addressesStore";
-import { Wallet } from "../../../../stores/walletStore";
 import ConnectedWallets from "./ConnectedWallets";
 import { useSwapDataState } from "../../../../context/swap";
+import { Wallet } from "../../../../Models/WalletProvider";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",

@@ -8,8 +8,7 @@ import { ApiResponse } from '../Models/ApiResponse';
 import { Partner } from '../Models/Partner';
 import { ApiError } from '../Models/ApiError';
 import { ResolvePollingInterval } from '../components/utils/SwapStatus';
-import useWallet from "../hooks/useWallet"
-import { Wallet } from '../stores/walletStore';
+import { Wallet } from '../Models/WalletProvider';
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,

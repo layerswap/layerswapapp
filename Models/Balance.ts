@@ -1,5 +1,5 @@
-import { Wallet } from "../stores/walletStore"
 import { Network, Token } from "./Network"
+import { Wallet } from "./WalletProvider"
 
 export type BalanceProps = {
     networkName: string,

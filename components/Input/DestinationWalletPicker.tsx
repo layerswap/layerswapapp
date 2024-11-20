@@ -2,11 +2,10 @@ import { WalletPurpose } from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
-import { RouteNetwork } from "../../Models/Network";
-import { Wallet } from "../../stores/walletStore";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
 import { Partner } from "../../Models/Partner";
 import AddressIcon from "../AddressIcon";
+import { Wallet } from "../../Models/WalletProvider";
 
 
 const Component = (props: AddressTriggerProps) => {

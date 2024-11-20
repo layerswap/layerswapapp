@@ -1,8 +1,8 @@
 import { useWalletStore } from "../../../stores/walletStore"
 import ImtblClient from "../../imtbl"
 import KnownInternalNames from "../../knownIds"
-import { WalletProvider } from "../../../hooks/useWallet"
 import IMX from "../../../components/icons/Wallets/IMX"
+import { WalletProvider } from "../../../Models/WalletProvider"
 
 export default function useImtblX(): WalletProvider {
     const withdrawalSupportedNetworks = [

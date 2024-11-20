@@ -1,6 +1,4 @@
 import KnownInternalNames from "../../knownIds";
-import { Wallet } from "../../../stores/walletStore";
-import { WalletProvider } from "../../../hooks/useWallet";
 import {
     useConnectUI,
     useDisconnect,
@@ -18,6 +16,7 @@ import { Address } from '@fuel-ts/address';
 import shortenAddress from "../../../components/utils/ShortenAddress";
 import { BAKO_STATE } from "./Basko";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
+import { Wallet, WalletProvider } from "../../../Models/WalletProvider";
 
 export default function useFuel(): WalletProvider {
     const autofillSupportedNetworks = [KnownInternalNames.Networks.FuelTestnet, KnownInternalNames.Networks.FuelMainnet]

@@ -3,7 +3,6 @@ import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "../../../AddressIcon";
 import shortenAddress from "../../../utils/ShortenAddress";
 import { History, ExternalLink, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2 } from "lucide-react";
-import { Wallet } from "../../../../stores/walletStore";
 import Image from "next/image";
 import { Partner } from "../../../../Models/Partner";
 import { Network } from "../../../../Models/Network";
@@ -11,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../../../shadcn/popover
 import useCopyClipboard from "../../../../hooks/useCopyClipboard";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../../shadcn/tooltip";
+import { Wallet } from "../../../../Models/WalletProvider";
 
 type Props = {
     addressItem: AddressItem;

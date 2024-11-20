@@ -9,9 +9,9 @@ import { AddressGroup } from '../../Input/Address/AddressPicker';
 import { ChevronRight } from 'lucide-react';
 import { truncateDecimals } from '../../utils/RoundDecimals';
 import { useSwitchAccount } from 'wagmi';
-import { Wallet } from '../../../stores/walletStore';
 import { WalletsList } from '../../Input/SourceWalletPicker';
 import VaulDrawer from '../../modal/vaulModal';
+import { Wallet } from '../../../Models/WalletProvider';
 
 const WalletTransferContent: FC = () => {
     const { swapResponse, selectedSourceAccount } = useSwapDataState()

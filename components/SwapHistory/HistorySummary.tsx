@@ -15,7 +15,7 @@ import useWallet from "../../hooks/useWallet";
 import AddressIcon from "../AddressIcon";
 import { addressFormat } from "../../lib/address/formatter";
 import { SwapStatus } from "../../Models/SwapStatus";
-import { Wallet } from "../../stores/walletStore";
+import { Wallet } from "../../Models/WalletProvider";
 
 type SwapInfoProps = {
     className?: string,

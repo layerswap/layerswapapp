@@ -6,7 +6,7 @@ import { RouteNetwork } from "../../../../Models/Network";
 import { FC } from "react";
 import AddressWithIcon from "./AddressWithIcon";
 import { Partner } from "../../../../Models/Partner";
-import { Wallet } from "../../../../stores/walletStore";
+import { Wallet } from "../../../../Models/WalletProvider";
 
 type AddressBookProps = {
     addressBook: AddressItem[];

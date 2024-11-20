@@ -7,7 +7,6 @@ import { ChevronDown, Plus } from "lucide-react";
 import { Network, Token } from "../../Models/Network";
 import ConnectButton from "../buttons/connectButton";
 import FilledCheck from "../icons/FilledCheck";
-import { Wallet } from "../../stores/walletStore";
 import SwapButton from "../buttons/swapButton";
 import Balance from "./dynamic/Balance";
 import { isValidAddress } from "../../lib/address/validator";
@@ -18,6 +17,7 @@ import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import AddressWithIcon from "./Address/AddressPicker/AddressWithIcon";
 import { AddressGroup } from "./Address/AddressPicker";
+import { Wallet } from "../../Models/WalletProvider";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)

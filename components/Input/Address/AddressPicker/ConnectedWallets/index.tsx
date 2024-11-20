@@ -1,14 +1,13 @@
 
 import { ChevronDown, Plus, RefreshCw } from "lucide-react";
-import { WalletProvider } from "../../../../../hooks/useWallet";
 import { addressFormat } from "../../../../../lib/address/formatter";
-import { Wallet } from "../../../../../stores/walletStore";
 import { Network } from "../../../../../Models/Network";
 import FilledCheck from "../../../../icons/FilledCheck";
 import AddressWithIcon from "../AddressWithIcon";
 import { FC, useState } from "react";
 import { AddressGroup } from "..";
 import ResizablePanel from "../../../../ResizablePanel";
+import { Wallet, WalletProvider } from "../../../../../Models/WalletProvider";
 
 type Props = {
     provider: WalletProvider,
