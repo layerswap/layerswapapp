@@ -12,8 +12,8 @@ import { getConnections } from '@wagmi/core'
 import toast from "react-hot-toast"
 import { isMobile } from "../../isMobile"
 import { mainnet } from "wagmi/chains"
-import { LSConnector } from "../connectors/types"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
+import { LSConnector } from "../connectors/EthereumProvider"
 
 type Props = {
     network: Network | undefined,
