@@ -13,7 +13,6 @@ import toast from "react-hot-toast"
 import { isMobile } from "../../isMobile"
 import { mainnet } from "wagmi/chains"
 import { LSConnector } from "../connectors/types"
-import { renderToStaticMarkup } from "react-dom/server"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 
 type Props = {
