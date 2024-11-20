@@ -1,11 +1,10 @@
-import { InternalConnector, WalletProvider } from "../../../hooks/useWallet";
+import { WalletProvider } from "../../../hooks/useWallet";
 import { useWalletStore } from "../../../stores/walletStore"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
 import { useSettingsState } from "../../../context/settings";
-import { useConnect, useDisconnect } from "@starknet-react/core";
-import { useWalletModalState } from "../../../stores/walletModalStateStore";
+import { act, useCallback } from "react";
 
 export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
@@ -24,149 +23,136 @@ export default function useStarknet(): WalletProvider {
     const id = 'starknet'
     const { networks } = useSettingsState()
 
-    const { connectors } = useConnect();
-    const { disconnectAsync } = useDisconnect()
+    const isMainnet = networks?.some(network => network.name === KnownInternalNames.Networks.StarkNetMainnet)
 
+    const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
     const wallets = useWalletStore((state) => state.connectedWallets)
+
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
 
-    const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
-    const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
-
-    const isMainnet = networks?.some(network => network.name === KnownInternalNames.Networks.StarkNetMainnet)
+    const activeWallet = wallets.find(wallet => wallet.providerName === name)
 
     const getWallet = () => {
-
-        const wallet = wallets.find(wallet => wallet.providerName === name)
-
-        if (!wallet) return
-
-        return [wallet]
-    }
-
-    const connectWallet = async () => {
-        try {
-            setSelectedProvider(provider)
-            setWalletModalIsOpen(true)
+        if (activeWallet) {
+            return [activeWallet]
         }
-        catch (e) {
-            console.log(e)
-        }
+        return undefined
     }
-
-    const connectConnector = async ({ connector }) => {
+    
+    const connectWallet = useCallback(async () => {
         toast.dismiss('connect-wallet')
+        const constants = (await import('starknet')).constants
+
+        const InjectedConnector = (await import('../../../node_modules/starknetkit/dist/injectedConnector')).InjectedConnector
+        const ArgentMobileConnector = (await import('../../../node_modules/starknetkit/dist/argentMobile')).ArgentMobileConnector
+        const WebWalletConnector = (await import('../../../node_modules/starknetkit/dist/webwalletConnector')).WebWalletConnector
+
+        const connect = (await import('starknetkit')).connect
+
+        const resolveConnectors = async () => {
+            const isSafari =
+                typeof window !== "undefined"
+                    ? /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+                    : false
+
+            const defaultConnectors: any[] = []
+
+            if (!isSafari) {
+                defaultConnectors.push(
+                    new InjectedConnector({ options: { id: "argentX" } }),
+                )
+                defaultConnectors.push(
+                    new InjectedConnector({ options: { id: "braavos" } }),
+                )
+                defaultConnectors.push(
+                    new InjectedConnector({ options: { id: "keplr" } }),
+                )
+            }
+
+            defaultConnectors.push(ArgentMobileConnector.init({
+                options: {
+                    dappName: 'Layerswap',
+                    projectId: WALLETCONNECT_PROJECT_ID,
+                    url: 'https://www.layerswap.io/app/',
+                    description: 'Move crypto across exchanges, blockchains, and wallets.',
+                }
+            }))
+            defaultConnectors.push(new WebWalletConnector())
+
+            return defaultConnectors
+        }
+
+        const connectors = await resolveConnectors()
 
         try {
-            const starknetConnector = connectors.find(c => c.id === connector.id)
+            const { wallet, connectorData, connector } = await connect({
+                dappName: 'Layerswap',
+                modalMode: 'alwaysAsk',
+                connectors,
+            })
+            const chainId = `0x${connectorData?.chainId?.toString(16)}`
 
-            if (!starknetConnector?.["_wallet"]) {
-                const installLink = connectorsConfigs.find(c => c.id === connector.id)
-                if (installLink) {
-                    window.open(installLink.installLink, "_blank");
-                    return
-                }
-            }
+            const walletChain = wallet && chainId
+            const wrongChanin = walletChain == constants.StarknetChainId.SN_MAIN ? !isMainnet : isMainnet
 
-            const result = await starknetConnector?.connect({})
-
-            const walletChain = `0x${result?.chainId?.toString(16)}`
-            const wrongChanin = walletChain == '0x534e5f4d41494e' ? !isMainnet : isMainnet
-
-            if (result?.account && wrongChanin) {
-                disconnectWallets()
+            if (wallet && wrongChanin) {
+                await disconnectWallets()
                 const errorMessage = `Please switch the network in your wallet to ${isMainnet ? 'Mainnet' : 'Sepolia'} and click connect again`
-                toast.error(errorMessage)
-                // throw new Error(errorMessage)
+                throw new Error(errorMessage)
             }
 
-            if (result?.account && starknetConnector) {
+            if (wallet && connectorData?.account && connector) {
                 const starkent = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetSepolia)
                 const WalletAccount = (await import('starknet')).WalletAccount
 
-                const starknetWalletAccount = new WalletAccount({ nodeUrl: starkent?.node_url }, (starknetConnector as any).wallet);
+                const starknetWalletAccount = new WalletAccount({ nodeUrl: starkent?.node_url }, wallet);
 
                 addWallet({
-                    address: result?.account,
-                    addresses: [result?.account],
-                    chainId: walletChain,
-                    icon: resolveWalletConnectorIcon({ connector: connector.name, address: result?.account }),
-                    connector: connector.name,
+                    address: connectorData?.account,
+                    addresses: [connectorData?.account],
+                    chainId: chainId,
+                    icon: resolveWalletConnectorIcon({ connector: wallet.name, address: connectorData?.account }),
+                    connector: wallet.name,
                     providerName: name,
                     metadata: {
                         starknetAccount: starknetWalletAccount,
-                        // wallet: account
+                        wallet: wallet
                     },
                     isActive: true,
                     connect: () => connectWallet(),
                     disconnect: () => disconnectWallets()
-
                 })
             }
         }
-
         catch (e) {
             console.log(e)
             toast.error(e.message, { id: 'connect-wallet', duration: 30000 })
         }
-    }
+    }, [addWallet, isMainnet])
 
     const disconnectWallets = async () => {
+        const disconnect = (await import('starknetkit')).disconnect
         try {
-            await disconnectAsync()
+            await disconnect({ clearLastWallet: true })
             removeWallet(name)
         }
         catch (e) {
             console.log(e)
         }
     }
-
-    const availableWalletsForConnect: InternalConnector[] = connectors.map(connector => {
-
-        const name = (!connectorsConfigs.some(c => c.id === connector.id) || connector?.["_wallet"]) ? connector.name : `Install ${connectorsConfigs.find(c => c.id === connector.id)?.name}`
-
-        return {
-            name: name,
-            id: connector.id,
-            icon: typeof connector.icon === 'string' ? connector.icon : `data:image/svg+xml;base64,${btoa(connector.icon.dark)}`
-        }
-    })
-
-    const provider: WalletProvider = {
+    
+    return {
+        activeAccountAddress: activeWallet?.address,
         switchAccount: async () => { },
-        connectWallet,
-        connectConnector,
-        disconnectWallets,
         connectedWallets: getWallet(),
-        activeWallet: getWallet()?.[0],
-        activeAccountAddress: getWallet()?.[0]?.address,
+        activeWallet,
+        connectWallet,
+        disconnectWallets,
         withdrawalSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
-        availableWalletsForConnect: availableWalletsForConnect,
         name,
         id,
     }
-
-    return provider
 }
-
-
-const connectorsConfigs = [
-    {
-        id: "braavos",
-        name: "Braavos",
-        installLink: "https://chromewebstore.google.com/detail/braavos-starknet-wallet/jnlgamecbpmbajjfhmmmlhejkemejdma"
-    },
-    {
-        id: "argent",
-        name: 'Argent X',
-        installLink: "https://chromewebstore.google.com/detail/argent-x-starknet-wallet/dlcobpjiigpikoobohmabehhmhfoodbb"
-    },
-    {
-        id: "keplr",
-        name: 'Keplr',
-        installLink: "https://chromewebstore.google.com/detail/keplr/dmkamcknogkgcdfhhbddcghachkejeap"
-    }
-]
