@@ -66,7 +66,7 @@ export default function useEVM({ network }: Props): WalletProvider {
         }
     }
 
-    const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
+    const connectConnector = async ({ connector }: { connector: any }) => {
         try {
             setSelectedProvider({ ...provider, connector: { name: connector.name } })
             await connector.disconnect()
