@@ -2,7 +2,7 @@ import { Network, RouteNetwork } from "../Models/Network"
 import useEVM from "../lib/wallets/evm/useEVM";
 import useImtblX from "../lib/wallets/imtblX/useImtblX";
 import useSolana from "../lib/wallets/solana/useSolana";
-import useStarknet from "../lib/wallets/starknet/useStarknet";
+// import useStarknet from "../lib/wallets/starknet/useStarknet";
 import useTON from "../lib/wallets/ton/useTON";
 import { Wallet } from "../stores/walletStore";
 import useFuel from "../lib/wallets/fuel/useFuel"
@@ -36,7 +36,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
 
     const walletProviders: WalletProvider[] = [
         useEVM({ network, purpose }),
-        useStarknet(),
+        // useStarknet(),
         useImtblX(),
         useSolana(),
         useTON(),
