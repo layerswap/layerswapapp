@@ -17,11 +17,11 @@ import { renderToStaticMarkup } from "react-dom/server"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 
 type Props = {
-    network: Network | undefined,
-    purpose: WalletPurpose | undefined
+    network?: Network | undefined,
+    purpose?: WalletPurpose | undefined
 }
 
-export default function useEVM({ network, purpose }: Props): WalletProvider {
+export default function useEVM(): WalletProvider {
     const name = 'EVM'
     const id = 'evm'
     const { networks } = useSettingsState()
@@ -136,7 +136,7 @@ export default function useEVM({ network, purpose }: Props): WalletProvider {
                 icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(w), address, iconUrl: w.icon }),
                 connect: connectWallet,
                 disconnect: () => disconnectWallet(w.name),
-                isNotAvailable: isNotAvailable(w, network)
+                // isNotAvailable: isNotAvailable(w, network)
             }
         }).filter(w => w !== undefined) as Wallet[]
     }, [activeAccount, activeConnectors, config])
@@ -178,7 +178,7 @@ export default function useEVM({ network, purpose }: Props): WalletProvider {
     }
 
     {/* //TODO: refactor ordering */ }
-    const availableWalletsForConnect = allConnectors.filter(w => !isNotAvailable(w, network)).map(w => ({ ...w, order: resolveWalletConnectorIndex(w.id) }))
+    const availableWalletsForConnect = allConnectors.map(w => ({ ...w, order: resolveWalletConnectorIndex(w.id) }))
 
     const provider = {
         connectWallet,
