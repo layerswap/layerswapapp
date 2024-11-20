@@ -1,9 +1,9 @@
 import { useTonConnectUI, useTonWallet } from "@tonconnect/ui-react"
 import { Address } from "@ton/core";
 import KnownInternalNames from "../../knownIds";
-import { WalletProvider } from "../../../hooks/useWallet";
 import TON from "../../../components/icons/Wallets/TON";
-import { addresses } from "@eth-optimism/contracts-ts";
+import { WalletProvider } from "../../../Models/WalletProvider";
+
 export default function useTON(): WalletProvider {
     const withdrawalSupportedNetworks = [KnownInternalNames.Networks.TONMainnet]
     const name = 'TON'

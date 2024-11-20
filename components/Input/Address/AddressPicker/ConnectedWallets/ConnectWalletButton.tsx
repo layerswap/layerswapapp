@@ -1,8 +1,8 @@
 import { RefreshCw } from "lucide-react";
-import { WalletProvider } from "../../../../../hooks/useWallet";
 import { ResolveConnectorIcon } from "../../../../icons/ConnectorIcons";
 import { Network } from "../../../../../Models/Network";
 import { FC, useState } from "react";
+import { WalletProvider } from "../../../../../Models/WalletProvider";
 
 type Props = {
     provider: WalletProvider,

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { WalletProvider } from '../hooks/useWallet';
+import { WalletProvider } from '../Models/WalletProvider';
 
 export type ModalWalletProvider = WalletProvider & {
     connector?: {

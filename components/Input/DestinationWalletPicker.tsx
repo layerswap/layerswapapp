@@ -1,4 +1,3 @@
-import { WalletPurpose } from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
