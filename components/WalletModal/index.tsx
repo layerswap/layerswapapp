@@ -1,38 +1,31 @@
-import { FC, useCallback, useEffect } from 'react'
-import { ChevronLeft, Loader } from 'lucide-react';
-import IconButton from '../buttons/iconButton';
-import { ResolveConnectorIcon } from '../icons/ConnectorIcons';
-import useWallet from '../../hooks/useWallet';
-import { ModalWalletProvider, useWalletModalState } from '../../stores/walletModalStateStore';
-import VaulDrawer from '../modal/vaulModal';
-import ConnectList from './ConnectList';
+
 
 export function WalletModalProvider({ children }) {
-    const { providers } = useWallet();
-    const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks)
+    // const { providers } = useWallet();
+    // const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks)
 
-    const open = useWalletModalState((state) => state.open)
-    const setOpen = useWalletModalState((state) => state.setOpen)
-    const selectedProvider = useWalletModalState((state) => state.selectedProvider)
-    const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
+    // const open = useWalletModalState((state) => state.open)
+    // const setOpen = useWalletModalState((state) => state.setOpen)
+    // const selectedProvider = useWalletModalState((state) => state.selectedProvider)
+    // const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
 
-    const goBack = useCallback(() => {
-        if (selectedProvider?.connector?.qr) {
-            setSelectedProvider({ ...selectedProvider, connector: undefined })
-            return;
-        }
-        setSelectedProvider(undefined)
-    }, [setSelectedProvider, selectedProvider])
+    // const goBack = useCallback(() => {
+    //     if (selectedProvider?.connector?.qr) {
+    //         setSelectedProvider({ ...selectedProvider, connector: undefined })
+    //         return;
+    //     }
+    //     setSelectedProvider(undefined)
+    // }, [setSelectedProvider, selectedProvider])
 
-    useEffect(() => {
-        if (!open && selectedProvider) {
-            setSelectedProvider(undefined)
-        }
-    }, [open])
+    // useEffect(() => {
+    //     if (!open && selectedProvider) {
+    //         setSelectedProvider(undefined)
+    //     }
+    // }, [open])
     return (
         <>
             {children}
-            <VaulDrawer
+            {/* <VaulDrawer
                 show={open}
                 setShow={setOpen}
                 modalId={"connectNewWallet"}
@@ -93,34 +86,34 @@ export function WalletModalProvider({ children }) {
                             </div>
                     }
                 </VaulDrawer.Snap>
-            </VaulDrawer>
+            </VaulDrawer> */}
         </>
     )
 }
 
 export type WalletsListProps = {
-    modalWalletProvider: ModalWalletProvider;
-    setSelectedProvider: (value: ModalWalletProvider | undefined) => void;
-    selectedProvider: ModalWalletProvider | undefined;
-    onFinish: () => void;
+    // modalWalletProvider: ModalWalletProvider;
+    // setSelectedProvider: (value: ModalWalletProvider | undefined) => void;
+    // selectedProvider: ModalWalletProvider | undefined;
+    // onFinish: () => void;
 };
 
-const WalletsList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, setSelectedProvider, selectedProvider }) => {
+const WalletsList = ({ modalWalletProvider, onFinish, setSelectedProvider, selectedProvider }) => {
 
-    if (modalWalletProvider?.availableWalletsForConnect) {
-        return <ConnectList
-            modalWalletProvider={modalWalletProvider}
-            onFinish={onFinish}
-            setSelectedProvider={setSelectedProvider}
-            selectedProvider={selectedProvider}
-        />
-    }
-    else {
-        return <div className='h-40 w-full flex flex-col justify-center items-center'>
-            <div className='flex items-center gap-2'>
-                <Loader className='h-6 w-6 animate-spin' />
-                <p><span>Connecting</span> <span>{modalWalletProvider?.name}</span></p>
-            </div>
-        </div>
-    }
+    // if (modalWalletProvider?.availableWalletsForConnect) {
+    //     return <ConnectList
+    //         modalWalletProvider={modalWalletProvider}
+    //         onFinish={onFinish}
+    //         setSelectedProvider={setSelectedProvider}
+    //         selectedProvider={selectedProvider}
+    //     />
+    // }
+    // else {
+    //     return <div className='h-40 w-full flex flex-col justify-center items-center'>
+    //         <div className='flex items-center gap-2'>
+    //             <Loader className='h-6 w-6 animate-spin' />
+    //             <p><span>Connecting</span> <span>{modalWalletProvider?.name}</span></p>
+    //         </div>
+    //     </div>
+    // }
 }

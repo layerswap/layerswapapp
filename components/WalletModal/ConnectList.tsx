@@ -1,52 +1,52 @@
-import { FC } from 'react'
-import { QRCodeSVG } from 'qrcode.react';
-import { resolveWalletConnectorIcon } from '../../lib/wallets/utils/resolveWalletIcon';
-import { Loader } from 'lucide-react';
-import { WalletsListProps } from '.';
+// import { FC } from 'react'
+// import { QRCodeSVG } from 'qrcode.react';
+// import { resolveWalletConnectorIcon } from '../../lib/wallets/utils/resolveWalletIcon';
+// import { Loader } from 'lucide-react';
+// import { WalletsListProps } from '.';
 
-const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFinish, setSelectedProvider, selectedProvider }) => {
+const ConnectList = ({ modalWalletProvider: provider, onFinish, setSelectedProvider, selectedProvider }) => {
 
-    const connect = async (connector: any) => {
-        try {
-            setSelectedProvider({ ...provider, connector: { name: connector.name } })
+    // const connect = async (connector: any) => {
+    //     try {
+    //         setSelectedProvider({ ...provider, connector: { name: connector.name } })
 
-            provider?.connectConnector && await provider.connectConnector({ connector })
+    //         provider?.connectConnector && await provider.connectConnector({ connector })
 
-            setSelectedProvider(undefined)
-            onFinish()
-        } catch (e) {
-            console.log(e)
-            setSelectedProvider({ ...provider, connector: undefined })
-        }
-    }
+    //         setSelectedProvider(undefined)
+    //         onFinish()
+    //     } catch (e) {
+    //         console.log(e)
+    //         setSelectedProvider({ ...provider, connector: undefined })
+    //     }
+    // }
 
-    if (selectedProvider?.connector?.qr) return <div className="flex flex-col justify-start space-y-2">
-        <div className='w-full flex justify-center pt-2'>
-            <QRCodeSVG
-                className="rounded-lg"
-                value={selectedProvider?.connector?.qr}
-                includeMargin={true}
-                size={350}
-                level={"H"}
-                imageSettings={
-                    selectedProvider.connector.iconUrl
-                        ? {
-                            src: selectedProvider.connector.iconUrl,
-                            x: undefined,
-                            y: undefined,
-                            height: 50,
-                            width: 50,
-                            excavate: true,
-                        }
-                        : undefined
-                }
-            />
-        </div>
-    </div>
+    // if (selectedProvider?.connector?.qr) return <div className="flex flex-col justify-start space-y-2">
+    //     <div className='w-full flex justify-center pt-2'>
+    //         <QRCodeSVG
+    //             className="rounded-lg"
+    //             value={selectedProvider?.connector?.qr}
+    //             includeMargin={true}
+    //             size={350}
+    //             level={"H"}
+    //             imageSettings={
+    //                 selectedProvider.connector.iconUrl
+    //                     ? {
+    //                         src: selectedProvider.connector.iconUrl,
+    //                         x: undefined,
+    //                         y: undefined,
+    //                         height: 50,
+    //                         width: 50,
+    //                         excavate: true,
+    //                     }
+    //                     : undefined
+    //             }
+    //         />
+    //     </div>
+    // </div>
 
     return (
         <div className="flex flex-col gap-1 w-full overflow-y-auto styled-scroll">
-            {
+            {/* {
                 provider?.availableWalletsForConnect?.sort((a, b) => (a.order || 100) - (b.order || 100))?.map((connector, index) => {
                     const connectorName = connector?.name
                     const connectorId = connector?.id
@@ -74,7 +74,7 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
                         </div>
                     )
                 })
-            }
+            } */}
         </div>
     )
 }
