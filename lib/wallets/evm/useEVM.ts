@@ -11,14 +11,13 @@ import toast from "react-hot-toast"
 import { isMobile } from "../../isMobile"
 import { mainnet } from "wagmi/chains"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
-import { LSConnector } from "../connectors/EthereumProvider"
-import {  Wallet, WalletProvider } from "../../../Models/WalletProvider"
+
 
 type Props = {
     network: Network | undefined,
 }
 
-export default function useEVM({ network }: Props): WalletProvider {
+export default function useEVM({ network }: Props): any {
     const name = 'EVM'
     const id = 'evm'
     const { networks } = useSettingsState()
@@ -98,7 +97,7 @@ export default function useEVM({ network }: Props): WalletProvider {
         }
     }
 
-    const resolvedConnectors: Wallet[] = useMemo(() => {
+    const resolvedConnectors: any[] = useMemo(() => {
         const connections = getConnections(config)
 
         return activeConnectors.map(w => {
@@ -135,7 +134,7 @@ export default function useEVM({ network }: Props): WalletProvider {
                 disconnect: () => disconnectWallet(w.name),
                 isNotAvailable: isNotAvailable(w, network)
             }
-        }).filter(w => w !== undefined) as Wallet[]
+        }).filter(w => w !== undefined) as any[]
     }, [activeAccount, activeConnectors, config])
 
     const disconnectWallet = async (connectorName: string) => {
@@ -163,7 +162,7 @@ export default function useEVM({ network }: Props): WalletProvider {
         }
     }
 
-    const switchAccount = async (wallet: Wallet, address: string) => {
+    const switchAccount = async (wallet: any, address: string) => {
         const connector = allConnectors.find(c => c.name === wallet.connector)
         if (!connector)
             throw new Error("Connector not found")
