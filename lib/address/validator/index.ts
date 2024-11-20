@@ -30,7 +30,7 @@ export function isValidAddress(address?: string, network?: { name: string } | nu
         }
         return false
     }
-    else if (network?.name === KnownInternalNames.Networks.SolanaMainnet || network?.name === KnownInternalNames.Networks.SolanaTestnet || network?.name === KnownInternalNames.Networks.SolanaDevnet) {
+    else if (network?.name.toLowerCase().startsWith("solana") || network?.name.toLowerCase().startsWith("eclipse")) {
         try {
             let pubkey = new PublicKey(address)
             let isSolana = PublicKey.isOnCurve(pubkey.toBuffer())

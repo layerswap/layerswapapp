@@ -38,7 +38,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         useEVM({ network }),
         useStarknet(),
         useImtblX(),
-        useSolana(),
+        useSolana({ network }),
         useTON(),
         useFuel(),
     ]

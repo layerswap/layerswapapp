@@ -1,12 +1,19 @@
-import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
 import { Wallet } from "../../../stores/walletStore"
+import { useWalletModal } from "../../../components/WalletProviders/SolanaProvider/useWalletModal"
+import { Network } from "../../../Models/Network"
 
-export default function useSolana(): WalletProvider {
-    const withdrawalSupportedNetworks = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet]
+export default function useSolana({ network }: { network: Network | undefined }): WalletProvider {
+
+    const withdrawalSupportedNetworks = [
+        KnownInternalNames.Networks.SolanaMainnet,
+        KnownInternalNames.Networks.SolanaDevnet,
+        KnownInternalNames.Networks.EclipseTestnet,
+        KnownInternalNames.Networks.EclipseMainnet
+    ]
 
     const name = 'Solana'
     const id = 'solana'
@@ -25,14 +32,20 @@ export default function useSolana(): WalletProvider {
     } : undefined
 
     const getWallet = () => {
+
         if (wallet) {
+            if (network?.name.toLowerCase().startsWith('eclipse') && !(solanaWallet?.adapter?.name.toLowerCase() === "backpack" || solanaWallet?.adapter?.name.toLowerCase() === "nightly")) {
+                return undefined
+            }
+
             return [wallet]
         }
         return undefined
     }
 
     const connectWallet = () => {
-        return setVisible && setVisible(true)
+        const solNetwork = network?.name?.toLowerCase().includes('eclipse') ? 'eclipse' : 'solana'
+        return setVisible && setVisible({ show: true, network: solNetwork })
     }
 
     const disconnectWallet = async () => {
