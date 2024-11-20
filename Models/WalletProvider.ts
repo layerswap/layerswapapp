@@ -1,0 +1,48 @@
+import { AccountInterface } from 'starknet';
+import { StarknetWindowObject } from 'starknetkit';
+import { RouteNetwork } from './Network';
+
+
+export type InternalConnector = {
+    name: string,
+    id: string,
+    icon: string | undefined,
+    order?: number
+}
+
+export type Wallet = {
+    // TODO: might be unused and unnecessary check
+    isActive: boolean;
+    address: string | `0x${string}`;
+    addresses: string[] | `0x${string}`[];
+    providerName: string
+    icon: (props: any) => React.JSX.Element;
+    //TODO: this is name of the connector, should be changed to connectorId
+    connector?: string;
+    metadata?: {
+        starknetAccount?: AccountInterface,
+        wallet?: StarknetWindowObject
+    }
+    chainId?: string | number,
+    isLoading?: boolean,
+    disconnect: () => Promise<void> | undefined | void;
+    connect: () => Promise<void> | undefined | void;
+    isNotAvailable?: boolean;
+}
+
+
+export type WalletProvider = {
+    connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
+    connectConnector?: (props?: { connector: InternalConnector }) => Promise<void> | undefined
+    disconnectWallets: () => Promise<void> | undefined | void,
+    connectedWallets: Wallet[] | undefined,
+    activeWallet: Wallet | undefined,
+    activeAccountAddress: string | undefined,
+    autofillSupportedNetworks?: string[],
+    withdrawalSupportedNetworks?: string[],
+    asSourceSupportedNetworks?: string[],
+    name: string,
+    id: string,
+    availableWalletsForConnect?: InternalConnector[],
+    switchAccount: (connector: Wallet, address: string) => Promise<void>
+}

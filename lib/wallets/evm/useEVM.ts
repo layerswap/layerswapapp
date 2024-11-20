@@ -1,12 +1,10 @@
 import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
-import { InternalConnector, WalletProvider } from "../../../hooks/useWallet"
 import { Network, NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useMemo } from "react"
-import { Wallet } from "../../../stores/walletStore"
 import { useWalletModalState } from "../../../stores/walletModalStateStore"
 import { getConnections } from '@wagmi/core'
 import toast from "react-hot-toast"
@@ -14,6 +12,7 @@ import { isMobile } from "../../isMobile"
 import { mainnet } from "wagmi/chains"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 import { LSConnector } from "../connectors/EthereumProvider"
+import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 
 type Props = {
     network: Network | undefined,
