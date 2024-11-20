@@ -7,7 +7,8 @@ export type InternalConnector = {
     name: string,
     id: string,
     icon: string | undefined,
-    order?: number
+    order?: number,
+    type?: 'injected' | 'other'
 }
 
 export type Wallet = {
@@ -35,6 +36,8 @@ export type WalletProvider = {
     connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
     connectConnector?: (props?: { connector: InternalConnector }) => Promise<void> | undefined
     disconnectWallets: () => Promise<void> | undefined | void,
+    switchAccount?: (connector: Wallet, address: string) => Promise<void>
+    availableWalletsForConnect?: InternalConnector[],
     connectedWallets: Wallet[] | undefined,
     activeWallet: Wallet | undefined,
     activeAccountAddress: string | undefined,
@@ -43,6 +46,4 @@ export type WalletProvider = {
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,
-    availableWalletsForConnect?: InternalConnector[],
-    switchAccount: (connector: Wallet, address: string) => Promise<void>
 }

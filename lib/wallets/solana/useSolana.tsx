@@ -1,13 +1,14 @@
 import KnownInternalNames from "../../knownIds"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
-import { useWalletModal } from "../../../components/WalletProviders/SolanaProvider/useWalletModal"
 import { Network } from "../../../Models/Network"
-import { Wallet, WalletProvider } from "../../../Models/WalletProvider"
+import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
+import { useWalletModalState } from "../../../stores/walletModalStateStore"
+import { useMemo } from "react"
 
 export default function useSolana({ network }: { network: Network | undefined }): WalletProvider {
 
-    const withdrawalSupportedNetworks = [
+    const commonSupportedNetworks = [
         KnownInternalNames.Networks.SolanaMainnet,
         KnownInternalNames.Networks.SolanaDevnet,
         KnownInternalNames.Networks.EclipseTestnet,
@@ -16,8 +17,10 @@ export default function useSolana({ network }: { network: Network | undefined })
 
     const name = 'Solana'
     const id = 'solana'
-    const { publicKey, disconnect, wallet: solanaWallet } = useWallet();
-    const { setVisible } = useWalletModal();
+    const { publicKey, disconnect, wallet: solanaWallet, select, wallets } = useWallet();
+
+    const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
+    const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
 
     const wallet: Wallet | undefined = publicKey ? {
         address: publicKey.toBase58(),
@@ -42,9 +45,20 @@ export default function useSolana({ network }: { network: Network | undefined })
         return undefined
     }
 
-    const connectWallet = () => {
-        const solNetwork = network?.name?.toLowerCase().includes('eclipse') ? 'eclipse' : 'solana'
-        return setVisible && setVisible({ show: true, network: solNetwork })
+    const connectWallet = async () => {
+        try {
+            setSelectedProvider(provider)
+            setWalletModalIsOpen(true)
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
+    const connectConnector = async ({ connector }: { connector: InternalConnector }) => {
+        const solanaConnector = wallets.find(w => w.adapter.name === connector.name)
+        if (!solanaConnector) throw new Error('Connector not found')
+        select(solanaConnector.adapter.name)
     }
 
     const disconnectWallet = async () => {
@@ -56,16 +70,44 @@ export default function useSolana({ network }: { network: Network | undefined })
         }
     }
 
+    const availableWalletsForConnect = useMemo(() => {
+        const connectors: InternalConnector[] = [];
+        const solNetwork = network?.name?.toLowerCase().includes('eclipse') ? 'eclipse' : 'solana'
+
+        for (const wallet of wallets) {
+
+            const internalConnector: InternalConnector = {
+                name: wallet.adapter.name,
+                id: wallet.adapter.name,
+                icon: wallet.adapter.icon,
+                type: wallet.readyState === 'Installed' ? 'injected' : 'other'
+            }
+
+            if (solNetwork === 'eclipse') {
+                if (!(wallet.adapter.name.toLowerCase() === "backpack" || wallet.adapter.name.toLowerCase() === "nightly")) {
+                    continue
+                } else {
+                    connectors.push(internalConnector)
+                }
+            } else {
+                connectors.push(internalConnector)
+            }
+        }
+
+        return connectors;
+    }, [wallets]);
+
     const provider = {
         activeAccountAddress: wallet?.address,
-        switchAccount: async () => { },
         connectedWallets: getWallet(),
         activeWallet: wallet,
         connectWallet,
+        connectConnector,
         disconnectWallets: disconnectWallet,
-        withdrawalSupportedNetworks,
-        autofillSupportedNetworks: withdrawalSupportedNetworks,
-        asSourceSupportedNetworks: withdrawalSupportedNetworks,
+        availableWalletsForConnect,
+        withdrawalSupportedNetworks: commonSupportedNetworks,
+        autofillSupportedNetworks: commonSupportedNetworks,
+        asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
     }

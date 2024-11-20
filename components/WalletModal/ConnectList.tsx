@@ -47,7 +47,7 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
     return (
         <div className="flex flex-col gap-1 w-full overflow-y-auto styled-scroll">
             {
-                provider?.availableWalletsForConnect?.sort((a, b) => (a.order || 100) - (b.order || 100))?.map((connector, index) => {
+                provider?.availableWalletsForConnect?.sort((a, b) => (a.type === 'injected' ? 0 : a.order || 100) - (b.type === 'injected' ? 0 : b.order || 100))?.map((connector, index) => {
                     const connectorName = connector?.name
                     const connectorId = connector?.id
 
@@ -66,10 +66,16 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
                                     <Icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
                                     <p>{connectorName}</p>
                                 </div>
-                                {
-                                    isLoading &&
-                                    <Loader className='h-4 w-4 animate-spin' />
-                                }
+                                <div className='inline-flex items-center gap-2'>
+                                    {
+                                        connector.type === 'injected' &&
+                                        <p className='text-xs text-secondary-text'>Detected</p>
+                                    }
+                                    {
+                                        isLoading &&
+                                        <Loader className='h-4 w-4 animate-spin' />
+                                    }
+                                </div>
                             </button>
                         </div>
                     )
