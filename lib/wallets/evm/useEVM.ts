@@ -11,7 +11,14 @@ import { useWalletModalState } from "../../../stores/walletModalStateStore"
 import { getConnections } from '@wagmi/core'
 import toast from "react-hot-toast"
 import { isMobile } from "../../isMobile"
+import { mainnet } from "wagmi/chains"
+import { LSConnector } from "../connectors/types"
+// import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 
+type Props = {
+    network?: Network | undefined,
+    purpose?: WalletPurpose | undefined
+}
 
 export default function useEVM(): WalletProvider {
     const name = 'EVM'
@@ -61,7 +68,7 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-    const connectConnector = async ({ connector }: { connector: any }) => {
+    const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
         try {
             setSelectedProvider({ ...provider, connector: { name: connector.name } })
             await connector.disconnect()
@@ -74,12 +81,14 @@ export default function useEVM(): WalletProvider {
             else {
                 getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
                     const Icon = resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
+                    // const base64Icon = convertSvgComponentToBase64(Icon)
 
                     setSelectedProvider({ ...provider, connector: { name: connector.name, qr: uri, iconUrl: "" } })
                 })
             }
 
             await connectAsync({
+                chainId: mainnet.id,
                 connector: connector,
             });
 
