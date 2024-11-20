@@ -11,7 +11,8 @@ import toast from "react-hot-toast"
 import { isMobile } from "../../isMobile"
 import { mainnet } from "wagmi/chains"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
+import { LSConnector } from "../connectors/EthereumProvider"
+import {  Wallet, WalletProvider } from "../../../Models/WalletProvider"
 
 type Props = {
     network: Network | undefined,
