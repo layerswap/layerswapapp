@@ -1,10 +1,10 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import { useRouter } from 'next/router';
 import { QueryParams } from '../Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';
-import { ApiResponse } from '../Models/ApiResponse';
+import { ApiResponse, CreateSwapParams, DepositAction, PublishedSwapTransactions, SwapResponse, SwapTransaction, WithdrawType } from '../Models/ApiResponse';
 import { Partner } from '../Models/Partner';
 import { ApiError } from '../Models/ApiError';
 import { ResolvePollingInterval } from '../components/utils/SwapStatus';

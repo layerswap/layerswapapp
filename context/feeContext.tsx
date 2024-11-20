@@ -1,8 +1,8 @@
 import { createContext, useState, useContext, useEffect } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { Quote } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import useSWR from 'swr';
-import { ApiResponse } from '../Models/ApiResponse';
+import { ApiResponse, Quote } from '../Models/ApiResponse';
 
 const FeeStateContext = createContext<ContextType | null>(null);
 

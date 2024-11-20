@@ -1,7 +1,7 @@
 import { Gift } from "lucide-react";
 import { FC } from "react";
-import { ApiResponse } from "../../Models/ApiResponse";
-import LayerSwapApiClient, { Campaign } from "../../lib/layerSwapApiClient";
+import { ApiResponse, Campaign } from "../../Models/ApiResponse";
+import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import SpinIcon from "../icons/spinIcon";
 import useSWR from 'swr'
 import Image from "next/image";

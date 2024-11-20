@@ -7,9 +7,9 @@ import MessageComponent from '../../MessageComponent';
 import { Widget } from '../../Widget/Index';
 import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
 import GoHomeButton from '../../utils/GoHome';
-import { TransactionType } from '../../../lib/layerSwapApiClient';
 import AppSettings from '../../../lib/AppSettings';
 import { useQueryState } from '../../../context/query';
+import { TransactionType } from '../../../Models/ApiResponse';
 
 const Success: FC = () => {
     const { networks: layers } = useSettingsState()

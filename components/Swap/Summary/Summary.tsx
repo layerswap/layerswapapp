@@ -2,12 +2,12 @@ import Image from "next/image";
 import { Fuel } from "lucide-react";
 import { FC } from "react";
 import { truncateDecimals } from "../../utils/RoundDecimals";
-import LayerSwapApiClient, { Refuel } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import useSWR from 'swr'
 import { useQueryState } from "../../../context/query";
-import { Network, Token } from "../../../Models/Network";
+import { Network, Refuel, Token } from "../../../Models/Network";
 import { Exchange } from "../../../Models/Exchange";
 import { addressFormat } from "../../../lib/address/formatter";
 import { ExtendedAddress } from "../../Input/Address/AddressPicker/AddressWithIcon";

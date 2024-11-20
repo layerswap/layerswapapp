@@ -1,9 +1,9 @@
 import { FC, useState } from "react"
 import Image from 'next/image'
-import LayerSwapApiClient, { Campaign, Leaderboard, Reward } from "../../../lib/layerSwapApiClient"
+import LayerSwapApiClient from "../../../lib/layerSwapApiClient"
 import { RewardsComponentLeaderboardSceleton } from "../../Sceletons"
 import useSWR from "swr"
-import { ApiResponse } from "../../../Models/ApiResponse"
+import { ApiResponse, Campaign, Leaderboard, Reward } from "../../../Models/ApiResponse"
 import ClickTooltip from "../../Tooltips/ClickTooltip"
 import shortenAddress from "../../utils/ShortenAddress"
 import { useAccount } from "wagmi"

@@ -1,4 +1,3 @@
-import { Refuel } from "../lib/layerSwapApiClient";
 
 export enum NetworkType {
     EVM = "evm",
@@ -9,6 +8,13 @@ export enum NetworkType {
     ZkSyncLite = "zksynclite",
     TON = 'ton',
     Fuel = 'fuel',
+}
+
+export type Refuel = {
+    network: Network
+    token: Token,
+    amount: number,
+    amount_in_usd: number
 }
 
 export class Network {

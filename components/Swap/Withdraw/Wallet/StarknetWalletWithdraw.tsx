@@ -1,13 +1,13 @@
 import { FC, useCallback, useState } from 'react'
 import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
-import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useAuthState } from '../../../../context/authContext';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ConnectWalletButton } from './WalletTransfer/buttons';
+import { BackendTransactionStatus } from '../../../../Models/ApiResponse';
 
 
 const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, callData, swapId }) => {

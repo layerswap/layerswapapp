@@ -2,8 +2,8 @@ import { FC, useCallback, useEffect, useState } from "react";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { useIntercom } from "react-use-intercom";
 import { useAuthState } from "../../context/authContext";
-import { SwapItem, TransactionType } from "../../lib/layerSwapApiClient";
 import { datadogRum } from "@datadog/browser-rum";
+import { SwapItem, TransactionType } from "../../Models/ApiResponse";
 
 const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTime, swap }) => {
 

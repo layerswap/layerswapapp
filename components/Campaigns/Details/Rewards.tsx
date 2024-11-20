@@ -3,10 +3,10 @@ import { FC } from "react"
 import Image from 'next/image'
 import BackgroundField from "../../backgroundField";
 import { Clock } from "lucide-react"
-import LayerSwapApiClient, { Campaign, Reward, RewardPayout } from "../../../lib/layerSwapApiClient"
+import LayerSwapApiClient from "../../../lib/layerSwapApiClient"
 import { RewardsComponentSceleton } from "../../Sceletons"
 import useSWR from "swr"
-import { ApiResponse } from "../../../Models/ApiResponse"
+import { ApiResponse, Campaign, Reward, RewardPayout } from "../../../Models/ApiResponse"
 import ClickTooltip from "../../Tooltips/ClickTooltip"
 import shortenAddress from "../../utils/ShortenAddress"
 import { Progress } from "../../ProgressBar";

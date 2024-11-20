@@ -1,11 +1,11 @@
 import { FC, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { useSwitchChain } from 'wagmi'
-import { PublishedSwapTransactions } from "../../../../../lib/layerSwapApiClient";
 import { ChangeNetworkButton, ConnectWalletButton } from "./buttons";
 import TransferTokenButton from "./TransferToken";
 import { WithdrawPageProps } from "../WalletTransferContent";
 import useWallet from "../../../../../hooks/useWallet";
+import { PublishedSwapTransactions } from "../../../../../Models/ApiResponse";
 
 const TransferFromWallet: FC<WithdrawPageProps> = ({
     network,

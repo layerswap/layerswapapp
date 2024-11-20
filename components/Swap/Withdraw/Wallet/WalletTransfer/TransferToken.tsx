@@ -6,7 +6,6 @@ import {
 } from "wagmi";
 import { createPublicClient, http, parseEther } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
-import { BackendTransactionStatus } from "../../../../../lib/layerSwapApiClient";
 import WalletIcon from "../../../../icons/WalletIcon";
 import Modal from '../../../../modal/modal';
 import MessageComponent from "../../../../MessageComponent";
@@ -16,6 +15,7 @@ import { ButtonWrapper } from "./buttons";
 import { useSwapTransactionStore } from "../../../../../stores/swapTransactionStore";
 import { useSwapDataState } from "../../../../../context/swap";
 import { datadogRum } from "@datadog/browser-rum";
+import { BackendTransactionStatus } from "../../../../../Models/ApiResponse";
 
 const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     depositAddress,

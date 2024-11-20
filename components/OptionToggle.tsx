@@ -1,8 +1,8 @@
 import { RadioGroup } from "@headlessui/react";
 import { ArrowRight } from "lucide-react";
 import { FC } from "react";
-import { SwapType } from "../lib/layerSwapApiClient";
 import { classNames } from "./utils/classNames";
+import { SwapType } from "../Models/ApiResponse";
 
 export interface NavRadioOption {
     value: string;

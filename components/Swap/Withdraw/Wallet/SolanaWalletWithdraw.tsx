@@ -1,6 +1,5 @@
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
-import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { Transaction, Connection } from '@solana/web3.js';
 import useWallet from '../../../../hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
@@ -9,6 +8,7 @@ import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
+import { BackendTransactionStatus } from '../../../../Models/ApiResponse';
 
 const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId }) => {
     const [loading, setLoading] = useState(false);

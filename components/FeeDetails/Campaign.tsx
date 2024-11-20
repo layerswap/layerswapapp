@@ -1,7 +1,7 @@
 import { FC } from "react"
-import LayerSwapApiClient, { Campaign, QuoteReward } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient from "../../lib/layerSwapApiClient"
 import useSWR from "swr"
-import { ApiResponse } from "../../Models/ApiResponse"
+import { ApiResponse, Campaign, QuoteReward } from "../../Models/ApiResponse"
 import ClickTooltip from "../Tooltips/ClickTooltip"
 import Image from 'next/image';
 import { Network } from "../../Models/Network"

@@ -5,7 +5,6 @@ import * as zksync from 'zksync';
 import { utils } from 'ethers';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
 import { useAccount } from 'wagmi';
@@ -16,6 +15,7 @@ import useWallet from '../../../../hooks/useWallet';
 import Link from 'next/link';
 import KnownInternalNames from '../../../../lib/knownIds';
 import { WithdrawPageProps } from './WalletTransferContent';
+import { BackendTransactionStatus } from '../../../../Models/ApiResponse';
 
 const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, sequenceNumber, swapId }) => {
     const [loading, setLoading] = useState(false);

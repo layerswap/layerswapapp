@@ -6,9 +6,9 @@ import * as Paradex from "./lib";
 import { useSettingsState } from '../../../../../context/settings';
 import KnownInternalNames from '../../../../../lib/knownIds';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
-import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
 import toast from 'react-hot-toast';
 import SubmitButton from '../../../../buttons/submitButton';
+import { BackendTransactionStatus } from '../../../../../Models/ApiResponse';
 
 const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {
 

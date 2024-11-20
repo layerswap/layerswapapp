@@ -8,10 +8,10 @@ import { useAccount } from 'wagmi';
 import { useSettingsState } from '../../../../../context/settings';
 import KnownInternalNames from '../../../../../lib/knownIds';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
-import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
 import { useEthersSigner } from '../../../../../lib/ethersToViem/ethers';
 import toast from 'react-hot-toast';
 import WalletIcon from '../../../../icons/WalletIcon';
+import { BackendTransactionStatus } from '../../../../../Models/ApiResponse';
 
 const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {
 

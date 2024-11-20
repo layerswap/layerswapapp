@@ -1,5 +1,5 @@
+import { SwapItem, PublishedSwapTransactions, TransactionType } from "../../Models/ApiResponse";
 import { SwapStatus } from "../../Models/SwapStatus"
-import { PublishedSwapTransactions, SwapItem, TransactionType } from "../../lib/layerSwapApiClient"
 
 export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, withBg?: boolean, short?: boolean }) {
   const status = swap.status;

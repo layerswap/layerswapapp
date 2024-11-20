@@ -3,7 +3,6 @@ import { Widget } from '../Widget/Index';
 import { useSwapDataState } from '../../context/swap';
 import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
-import { BackendTransactionStatus, TransactionType } from '../../lib/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
 import GasDetails from '../gasDetails';
 
@@ -12,6 +11,7 @@ type Props = {
 }
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 import SubmitButton from '../buttons/submitButton';
+import { BackendTransactionStatus, TransactionType } from '../../Models/ApiResponse';
 
 const SwapDetails: FC<Props> = ({ type }) => {
     const { swapResponse } = useSwapDataState()

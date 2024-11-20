@@ -1,13 +1,13 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
-import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import WarningMessage from '../../../WarningMessage';
 import GuideLink from '../../../guideLink';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
+import { BackendTransactionStatus } from '../../../../Models/ApiResponse';
 
 const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId }) => {
     const [loading, setLoading] = useState(false)

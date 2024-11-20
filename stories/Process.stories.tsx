@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { SwapItem, BackendTransactionStatus, TransactionType, SwapResponse } from '../lib/layerSwapApiClient';
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapData, SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
@@ -24,6 +23,7 @@ import MainStepValidation from '../lib/mainStepValidator';
 import { FeeProvider, useFee } from '../context/feeContext';
 import { useArgs } from '@storybook/preview-api';
 import WagmiComponent from '../components/WalletProviders/Wagmi';
+import { BackendTransactionStatus, SwapItem, SwapResponse, TransactionType } from '../Models/ApiResponse';
 
 window.plausible = () => { }
 const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ settings, swapData, theme, initialValues, timestamp }) => {

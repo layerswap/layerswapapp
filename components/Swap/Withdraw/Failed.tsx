@@ -3,10 +3,10 @@ import { useSwapDataState } from '../../../context/swap';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
 import { SwapStatus } from '../../../Models/SwapStatus';
-import { SwapItem } from '../../../lib/layerSwapApiClient';
 import { TrackEvent } from '../../../pages/_document';
 import QuestionIcon from '../../icons/Question';
 import Link from 'next/link';
+import { SwapItem } from '../../../Models/ApiResponse';
 
 const Failed: FC = () => {
     const { swapResponse } = useSwapDataState()

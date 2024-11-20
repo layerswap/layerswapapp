@@ -10,10 +10,10 @@ import { ActivationTokenPicker } from './ActivationTokentPicker';
 import { useActivationData, useLoopringAccount, useLoopringTokens } from './hooks';
 import { LoopringAPI } from '../../../../../lib/loopring/LoopringAPI';
 import { ChainId, UnlockedAccount } from '../../../../../lib/loopring/defs';
-import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
 import { WithdrawPageProps } from '../WalletTransferContent';
 import { useConfig } from 'wagmi'
 import AppSettings from '../../../../../lib/AppSettings';
+import { BackendTransactionStatus } from '../../../../../Models/ApiResponse';
 
 const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId, callData, depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);

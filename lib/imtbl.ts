@@ -1,7 +1,6 @@
 import { ERC20TokenType, ETHTokenType, Link, LinkResults } from '@imtbl/imx-sdk'
 import { Token } from '../Models/Network'
 import KnownInternalNames from './knownIds'
-import { SwapItem } from './layerSwapApiClient'
 import NetworkSettings from './NetworkSettings'
 
 export default class ImtblClient {

@@ -1,5 +1,5 @@
 import { FC } from 'react'
-import LayerSwapApiClient, { SwapResponse, TransactionType } from '../../lib/layerSwapApiClient';
+import LayerSwapApiClient from '../../lib/layerSwapApiClient';
 import Image from 'next/image'
 import shortenAddress, { shortenEmail } from '../utils/ShortenAddress';
 import CopyButton from '../buttons/copyButton';
@@ -8,7 +8,7 @@ import { ArrowRight, ExternalLink, Fuel, Info, RefreshCw } from 'lucide-react';
 import isGuid from '../utils/isGuid';
 import KnownInternalNames from '../../lib/knownIds';
 import { useQueryState } from '../../context/query';
-import { ApiResponse } from '../../Models/ApiResponse';
+import { ApiResponse, SwapResponse, TransactionType } from '../../Models/ApiResponse';
 import { Partner } from '../../Models/Partner';
 import useSWR from 'swr';
 import { isValidAddress } from '../../lib/address/validator';

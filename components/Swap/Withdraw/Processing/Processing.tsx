@@ -4,7 +4,7 @@ import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
-import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapResponse, Transaction } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { SwapFailReasons } from '../../../../Models/RangeError';
@@ -15,7 +15,7 @@ import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore
 import FormattedAverageCompletionTime from '../../../Common/FormattedAverageCompletionTime';
 import CountdownTimer from '../../../Common/CountDownTimer';
 import useSWR from 'swr';
-import { ApiResponse } from '../../../../Models/ApiResponse';
+import { ApiResponse, BackendTransactionStatus, SwapResponse, Transaction, TransactionStatus, TransactionType } from '../../../../Models/ApiResponse';
 import { datadogRum } from '@datadog/browser-rum';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../../context/authContext';

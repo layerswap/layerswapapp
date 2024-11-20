@@ -1,7 +1,7 @@
 
 import useSWR from "swr"
-import LayerSwapApiClient, { SwapResponse, TransactionType } from "../../lib/layerSwapApiClient"
-import { ApiResponse } from "../../Models/ApiResponse"
+import LayerSwapApiClient from "../../lib/layerSwapApiClient"
+import { ApiResponse, SwapResponse, TransactionType } from "../../Models/ApiResponse"
 import Image from 'next/image';
 import { useQueryState } from "../../context/query"
 import { Partner } from "../../Models/Partner"

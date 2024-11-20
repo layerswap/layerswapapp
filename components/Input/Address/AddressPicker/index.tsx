@@ -1,6 +1,5 @@
 import { useFormikContext } from "formik";
 import { FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
-import { AddressBookItem } from "../../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../../DTOs/SwapFormValues";
 import { isValidAddress } from "../../../../lib/address/validator";
 import { Partner } from "../../../../Models/Partner";
@@ -20,6 +19,7 @@ import { useAddressesStore } from "../../../../stores/addressesStore";
 import ConnectedWallets from "./ConnectedWallets";
 import { useSwapDataState } from "../../../../context/swap";
 import { Wallet } from "../../../../Models/WalletProvider";
+import { AddressBookItem } from "../../../../Models/ApiResponse";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",

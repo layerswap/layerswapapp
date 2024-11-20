@@ -4,10 +4,9 @@ import { useFormikContext } from "formik"
 import { Partner } from "../../../Models/Partner"
 import AddressPicker, { AddressTriggerProps } from "./AddressPicker"
 import useSWR from "swr"
-import { ApiResponse } from "../../../Models/ApiResponse"
-import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiClient"
+import { AddressBookItem, ApiResponse } from "../../../Models/ApiResponse"
+import LayerSwapApiClient from "../../../lib/layerSwapApiClient"
 import { useAuthState } from "../../../context/authContext"
-import { isValidAddress } from "../../../lib/address/validator"
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap"
 
 type AddressProps = {
