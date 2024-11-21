@@ -40,7 +40,7 @@ export function WalletModalProvider({ children }) {
                     <div className="flex items-center gap-1">
                         {
                             selectedProvider &&
-                            <div className='-ml-2 mt-0.5'>
+                            <div className='-ml-2'>
                                 <IconButton onClick={goBack} icon={
                                     <ChevronLeft className="h-6 w-6" />
                                 }>

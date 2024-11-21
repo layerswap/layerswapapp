@@ -45,7 +45,7 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
     </div>
 
     return (
-        <div className="flex flex-col gap-1 w-full overflow-y-auto styled-scroll">
+        <div className="flex flex-col gap-2 w-full overflow-y-auto styled-scroll">
             {
                 provider?.availableWalletsForConnect?.sort((a, b) => (a.type === 'injected' ? 0 : a.order || 100) - (b.type === 'injected' ? 0 : b.order || 100))?.map((connector, index) => {
                     const connectorName = connector?.name
@@ -59,22 +59,24 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
                             <button
                                 type="button"
                                 disabled={!!provider.connector}
-                                className="w-full flex items-center justify-between hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 py-2"
+                                className="w-full h-fit bg-secondary-700 hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 p-3"
                                 onClick={() => connect(connector)}
                             >
-                                <div className="flex gap-3 items-center font-semibold">
-                                    <Icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
-                                    <p>{connectorName}</p>
-                                </div>
-                                <div className='inline-flex items-center gap-2'>
-                                    {
-                                        connector.type === 'injected' &&
-                                        <p className='text-xs text-secondary-text'>Detected</p>
-                                    }
-                                    {
-                                        isLoading &&
-                                        <Loader className='h-4 w-4 animate-spin' />
-                                    }
+                                <div className='flex flex-row gap-3 items-center justify-between font-semibold px-4'>
+                                    <div className="flex gap-3 items-center font-semibold">
+                                        <Icon className="w-7 h-7 p-0.5 rounded-md bg-secondary-800" />
+                                        <p>{connectorName}</p>
+                                    </div>
+                                    <div className='inline-flex items-center gap-2'>
+                                        {
+                                            connector.type === 'injected' &&
+                                            <p className='text-xs text-secondary-text'>Detected</p>
+                                        }
+                                        {
+                                            isLoading &&
+                                            <Loader className='h-4 w-4 animate-spin' />
+                                        }
+                                    </div>
                                 </div>
                             </button>
                         </div>
