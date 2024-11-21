@@ -4,7 +4,6 @@ import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useMemo } from "react"
-import { useWalletModalState } from "../../../stores/walletModalStateStore"
 import { getConnections } from '@wagmi/core'
 import toast from "react-hot-toast"
 
@@ -38,10 +37,6 @@ export default function useEVM({ network }: Props): any {
         KnownInternalNames.Networks.BrineMainnet,
     ]
 
-    const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
-    const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
-    const setActiveAccountAddress = useWalletModalState((state) => state.setActiveAccountAddress)
-    const activeAccountAddress = useWalletModalState((state) => state.activeAccountAddress)
 
     const { disconnectAsync } = useDisconnect()
     const { connectors: activeConnectors, switchAccountAsync } = useSwitchAccount()
@@ -51,33 +46,11 @@ export default function useEVM({ network }: Props): any {
     const { connectAsync } = useConnect();
 
     const connectWallet = () => {
-        try {
-            setSelectedProvider(provider)
-            setWalletModalIsOpen(true)
-        }
-        catch (e) {
-            console.log(e)
-        }
+       
     }
 
     const connectConnector = async ({ connector }: { connector: any }) => {
-        try {
-            setSelectedProvider({ ...provider, connector: { name: connector.name } })
-            await connector.disconnect()
-
-           
-
-            await connectAsync({
-                chainId: mainnet.id,
-                connector: connector,
-            });
-
-
-        } catch (e) {
-            //TODO: handle error like in transfer
-            toast.error('Error connecting wallet')
-            throw new Error(e)
-        }
+      
     }
 
     const resolvedConnectors: any[] = useMemo(() => {
@@ -153,7 +126,6 @@ export default function useEVM({ network }: Props): any {
         const account = accounts.find(a => a.toLowerCase() === address.toLowerCase())
         if (!account)
             throw new Error("Account not found")
-        setActiveAccountAddress(account)
     }
 
     {/* //TODO: refactor ordering */ }
@@ -166,7 +138,7 @@ export default function useEVM({ network }: Props): any {
         switchAccount,
         connectedWallets: resolvedConnectors,
         activeWallet: resolvedConnectors.find(w => w.isActive),
-        activeAccountAddress: activeAccountAddress || activeAccount?.address,
+        activeAccountAddress: activeAccount?.address,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
