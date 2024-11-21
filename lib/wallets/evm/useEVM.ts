@@ -1,20 +1,28 @@
 import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
+import { Network, NetworkType } from "../../../Models/Network"
+import { useSettingsState } from "../../../context/settings"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useMemo } from "react"
 import { getConnections } from '@wagmi/core'
+import toast from "react-hot-toast"
+import { isMobile } from "../../isMobile"
+import { mainnet } from "wagmi/chains"
+import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 
 
 type Props = {
-    network: any | undefined,
+    network: Network | undefined,
 }
 
 export default function useEVM({ network }: Props): any {
     const name = 'EVM'
     const id = 'evm'
+    const { networks } = useSettingsState()
 
     const asSourceSupportedNetworks = [
+        ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
         KnownInternalNames.Networks.LoopringGoerli,
         KnownInternalNames.Networks.LoopringMainnet,
@@ -43,11 +51,42 @@ export default function useEVM({ network }: Props): any {
     const { connectAsync } = useConnect();
 
     const connectWallet = () => {
-       
+        try {
+
+        }
+        catch (e) {
+            console.log(e)
+        }
     }
 
     const connectConnector = async ({ connector }: { connector: any }) => {
-      
+        try {
+            await connector.disconnect()
+
+            if (isMobile()) {
+                getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
+                    window.location.href = uri;
+                })
+            }
+            else {
+                getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
+                    const Icon = resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
+                    const base64Icon = convertSvgComponentToBase64(Icon)
+
+                })
+            }
+
+            await connectAsync({
+                chainId: mainnet.id,
+                connector: connector,
+            });
+
+
+        } catch (e) {
+            //TODO: handle error like in transfer
+            toast.error('Error connecting wallet')
+            throw new Error(e)
+        }
     }
 
     const resolvedConnectors: any[] = useMemo(() => {
@@ -167,7 +206,7 @@ const getWalletConnectUri = async (
     );
 };
 
-const isNotAvailable = (connector: Connector, network: any | undefined) => {
+const isNotAvailable = (connector: Connector, network: Network | undefined) => {
     if (!network) return false
     return connector.id === "com.immutable.passport" && !network.name.toLowerCase().startsWith("immutable")
 }
