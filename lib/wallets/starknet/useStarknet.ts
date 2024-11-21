@@ -129,7 +129,8 @@ export default function useStarknet(): WalletProvider {
         return {
             name: name,
             id: connector.id,
-            icon: typeof connector.icon === 'string' ? connector.icon : `data:image/svg+xml;base64,${btoa(connector.icon.dark)}`
+            icon: typeof connector.icon === 'string' ? connector.icon : `data:image/svg+xml;base64,${btoa(connector.icon.dark)}`,
+            type: connector?.["_wallet"] ? 'injected' : 'other',
         }
     })
 

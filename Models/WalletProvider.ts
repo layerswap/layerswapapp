@@ -6,7 +6,7 @@ import { RouteNetwork } from './Network';
 export type InternalConnector = {
     name: string,
     id: string,
-    icon: string | undefined,
+    icon?: string | undefined,
     order?: number,
     type?: 'injected' | 'other'
 }

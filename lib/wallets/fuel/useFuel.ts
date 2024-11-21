@@ -1,34 +1,35 @@
 import KnownInternalNames from "../../knownIds";
 import {
-    useConnectUI,
     useDisconnect,
     useWallet,
     useConnectors
 } from '@fuels/react';
 import useStorage from "../../../hooks/useStorage";
-import { useAccount, useConnections } from "wagmi";
+import { useAccount } from "wagmi";
 import {
     Predicate,
     getPredicateRoot,
 } from '@fuel-ts/account';
 import { Address } from '@fuel-ts/address';
-
 import shortenAddress from "../../../components/utils/ShortenAddress";
 import { BAKO_STATE } from "./Basko";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
-import { Wallet, WalletProvider } from "../../../Models/WalletProvider";
+import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
+import { useWalletModalState } from "../../../stores/walletModalStateStore";
 
 export default function useFuel(): WalletProvider {
     const autofillSupportedNetworks = [KnownInternalNames.Networks.FuelTestnet, KnownInternalNames.Networks.FuelMainnet]
     const name = 'Fuel'
     const id = 'fuel'
 
-    const { wallet, isRefetching, isLoading, isFetching } = useWallet()
-    const { connect, isConnecting } = useConnectUI()
+    const { wallet } = useWallet()
     const { disconnectAsync } = useDisconnect()
-    const { storageAvailable, setItem, getItem } = useStorage()
+    const { getItem } = useStorage()
     const { address: evmAddress, connector: evmConnector } = useAccount()
     const { connectors } = useConnectors()
+
+    const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
+    const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
 
     const getWallet = () => {
 
@@ -72,10 +73,36 @@ export default function useFuel(): WalletProvider {
         }
     }
 
-    const connectWallet = () => {
-        BAKO_STATE.state.last_req = undefined
-        BAKO_STATE.period_durtion = 120_000
-        return connect()
+    const connectWallet = async () => {
+        try {
+            setSelectedProvider(provider)
+            setWalletModalIsOpen(true)
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
+    const connectConnector = async ({ connector }: { connector: InternalConnector }) => {
+        try {
+
+            const fuelConnector = connectors.find(w => w.name === connector.name)
+
+            if (!fuelConnector?.installed) {
+                const installLink = connectorsConfigs.find(c => c.id === connector.id)
+                if (installLink) {
+                    window.open(installLink.installLink, "_blank");
+                    return
+                }
+            }
+
+            BAKO_STATE.state.last_req = undefined
+            BAKO_STATE.period_durtion = 120_000
+            await fuelConnector?.connect()
+        }
+        catch (e) {
+            console.log(e)
+        }
     }
 
     const disconnectWallets = async () => {
@@ -99,15 +126,41 @@ export default function useFuel(): WalletProvider {
         }
     }
 
-    return {
+    const availableWalletsForConnect: InternalConnector[] = connectors.map(c => {
+
+        const name = c.installed ? c.name : `Install ${c.name}`
+
+        return {
+            name: name,
+            id: c.name,
+            type: c.installed ? 'injected' : 'other',
+        }
+    })
+
+    const provider = {
         connectWallet,
+        connectConnector,
         disconnectWallets,
+        switchAccount: reconnectWallet,
+        availableWalletsForConnect,
         autofillSupportedNetworks,
         activeAccountAddress: wallet?.address.toB256(),
         activeWallet: getWallet()?.[0],
         connectedWallets: getWallet(),
-        switchAccount: reconnectWallet,
         name,
         id,
     }
+
+    return provider
 }
+
+const connectorsConfigs = [
+    {
+        id: "Fuel Wallet",
+        installLink: "https://chromewebstore.google.com/detail/fuel-wallet/dldjpboieedgcmpkchcjcbijingjcgok"
+    },
+    {
+        id: "Fuelet Wallet",
+        installLink: "https://fuelet.app/download/"
+    },
+]
