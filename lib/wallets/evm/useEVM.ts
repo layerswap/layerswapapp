@@ -1,7 +1,6 @@
 import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
 import { useSettingsState } from "../../../context/settings"
 import KnownInternalNames from "../../knownIds"
-import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useMemo } from "react"
 import { getConnections } from '@wagmi/core'
@@ -102,7 +101,6 @@ export default function useEVM({ network }: Props): any {
                 addresses: addresses || [address],
                 connector: w.name,
                 providerName: name,
-                icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(w), address, iconUrl: w.icon }),
                 connect: connectWallet,
                 disconnect: () => disconnectWallet(w.name),
                 isNotAvailable: isNotAvailable(w, network)
@@ -146,7 +144,7 @@ export default function useEVM({ network }: Props): any {
     }
 
     {/* //TODO: refactor ordering */ }
-    const availableWalletsForConnect = allConnectors.filter(w => !isNotAvailable(w, network)).map(w => ({ ...w, order: resolveWalletConnectorIndex(w.id) }))
+    const availableWalletsForConnect = allConnectors.filter(w => !isNotAvailable(w, network)).map(w => ({ ...w }))
 
     const provider = {
         connectWallet,
