@@ -1,5 +1,7 @@
 import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
+import { useSettingsState } from "../../../context/settings"
 import KnownInternalNames from "../../knownIds"
+import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useMemo } from "react"
 import { getConnections } from '@wagmi/core'
 import toast from "react-hot-toast"
@@ -11,6 +13,7 @@ type Props = {
 export default function useEVM({ network }: Props): any {
     const name = 'EVM'
     const id = 'evm'
+    const { networks } = useSettingsState()
 
     const asSourceSupportedNetworks = [
         KnownInternalNames.Networks.ZksyncMainnet,
