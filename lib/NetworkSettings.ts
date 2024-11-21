@@ -291,18 +291,18 @@ export default class NetworkSettings {
             GasCalculationType: GasCalculation.OptimismType,
         };
         NetworkSettings.ImmutableXSettings = {
-            [KnownInternalNames.Networks.ImmutableXMainnet]: {
-                apiUri: "https://api.x.immutable.com/v1",
-                linkUri: "https://link.x.immutable.com",
-            },
-            [KnownInternalNames.Networks.ImmutableXGoerli]: {
-                apiUri: "https://api.sandbox.x.immutable.com/v1",
-                linkUri: "https://link.sandbox.x.immutable.com"
-            },
-            [KnownInternalNames.Networks.ImmutableXSepolia]: {
-                apiUri: "https://api.sandbox.x.immutable.com/v1",
-                linkUri: "https://link.sandbox.x.immutable.com"
-            },
+            // [KnownInternalNames.Networks.ImmutableXMainnet]: {
+            //     apiUri: "https://api.x.immutable.com/v1",
+            //     linkUri: "https://link.x.immutable.com",
+            // },
+            // [KnownInternalNames.Networks.ImmutableXGoerli]: {
+            //     apiUri: "https://api.sandbox.x.immutable.com/v1",
+            //     linkUri: "https://link.sandbox.x.immutable.com"
+            // },
+            // [KnownInternalNames.Networks.ImmutableXSepolia]: {
+            //     apiUri: "https://api.sandbox.x.immutable.com/v1",
+            //     linkUri: "https://link.sandbox.x.immutable.com"
+            // },
         }
 
         for (var k in NetworkSettings.KnownSettings) {
