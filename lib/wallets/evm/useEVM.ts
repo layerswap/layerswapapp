@@ -7,7 +7,6 @@ import { useMemo } from "react"
 import { getConnections } from '@wagmi/core'
 import toast from "react-hot-toast"
 import { mainnet } from "wagmi/chains"
-import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 
 type Props = {
     network: any | undefined,
