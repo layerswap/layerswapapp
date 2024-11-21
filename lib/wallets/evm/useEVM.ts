@@ -7,8 +7,6 @@ import { useMemo } from "react"
 import { useWalletModalState } from "../../../stores/walletModalStateStore"
 import { getConnections } from '@wagmi/core'
 import toast from "react-hot-toast"
-import { isMobile } from "../../isMobile"
-import { mainnet } from "wagmi/chains"
 
 
 type Props = {
@@ -67,19 +65,7 @@ export default function useEVM({ network }: Props): any {
             setSelectedProvider({ ...provider, connector: { name: connector.name } })
             await connector.disconnect()
 
-            if (isMobile()) {
-                getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
-                    window.location.href = uri;
-                })
-            }
-            else {
-                getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
-                    const Icon = resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
-                    // const base64Icon = convertSvgComponentToBase64(Icon)
-
-                    setSelectedProvider({ ...provider, connector: { name: connector.name, qr: uri, iconUrl: "" } })
-                })
-            }
+           
 
             await connectAsync({
                 chainId: mainnet.id,
