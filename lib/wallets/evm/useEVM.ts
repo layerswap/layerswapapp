@@ -1,11 +1,9 @@
 import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
 import { useSettingsState } from "../../../context/settings"
 import KnownInternalNames from "../../knownIds"
-import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useMemo } from "react"
 import { getConnections } from '@wagmi/core'
 import toast from "react-hot-toast"
-import { mainnet } from "wagmi/chains"
 
 type Props = {
     network: any | undefined,
@@ -57,7 +55,6 @@ export default function useEVM({ network }: Props): any {
        
 
             await connectAsync({
-                chainId: mainnet.id,
                 connector: connector,
             });
 
