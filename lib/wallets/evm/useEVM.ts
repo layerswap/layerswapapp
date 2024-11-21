@@ -10,13 +10,14 @@ import toast from "react-hot-toast"
 import { isMobile } from "../../isMobile"
 import { mainnet } from "wagmi/chains"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
-
+import { LSConnector } from "../connectors/EthereumProvider"
+import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 
 type Props = {
     network: Network | undefined,
 }
 
-export default function useEVM({ network }: Props): any {
+export default function useEVM({ network }: Props): WalletProvider {
     const name = 'EVM'
     const id = 'evm'
     const { networks } = useSettingsState()
@@ -41,8 +42,6 @@ export default function useEVM({ network }: Props): any {
         KnownInternalNames.Networks.ImmutableXGoerli,
         KnownInternalNames.Networks.BrineMainnet,
     ]
-
-
     const { disconnectAsync } = useDisconnect()
     const { connectors: activeConnectors, switchAccountAsync } = useSwitchAccount()
     const activeAccount = useAccount()
@@ -52,14 +51,13 @@ export default function useEVM({ network }: Props): any {
 
     const connectWallet = () => {
         try {
-
         }
         catch (e) {
             console.log(e)
         }
     }
 
-    const connectConnector = async ({ connector }: { connector: any }) => {
+    const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
         try {
             await connector.disconnect()
 
@@ -89,7 +87,7 @@ export default function useEVM({ network }: Props): any {
         }
     }
 
-    const resolvedConnectors: any[] = useMemo(() => {
+    const resolvedConnectors: Wallet[] = useMemo(() => {
         const connections = getConnections(config)
 
         return activeConnectors.map(w => {
@@ -126,7 +124,7 @@ export default function useEVM({ network }: Props): any {
                 disconnect: () => disconnectWallet(w.name),
                 isNotAvailable: isNotAvailable(w, network)
             }
-        }).filter(w => w !== undefined) as any[]
+        }).filter(w => w !== undefined) as Wallet[]
     }, [activeAccount, activeConnectors, config])
 
     const disconnectWallet = async (connectorName: string) => {
@@ -154,7 +152,7 @@ export default function useEVM({ network }: Props): any {
         }
     }
 
-    const switchAccount = async (wallet: any, address: string) => {
+    const switchAccount = async (wallet: Wallet, address: string) => {
         const connector = allConnectors.find(c => c.name === wallet.connector)
         if (!connector)
             throw new Error("Connector not found")
@@ -174,7 +172,7 @@ export default function useEVM({ network }: Props): any {
         switchAccount,
         connectedWallets: resolvedConnectors,
         activeWallet: resolvedConnectors.find(w => w.isActive),
-        activeAccountAddress:  activeAccount?.address,
+        activeAccountAddress: activeAccount?.address,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
