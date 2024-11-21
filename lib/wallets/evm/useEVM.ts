@@ -1,5 +1,4 @@
 import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
-import { Network, NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
@@ -13,7 +12,7 @@ import { mainnet } from "wagmi/chains"
 
 
 type Props = {
-    network: Network | undefined,
+    network: any | undefined,
 }
 
 export default function useEVM({ network }: Props): any {
@@ -22,7 +21,6 @@ export default function useEVM({ network }: Props): any {
     const { networks } = useSettingsState()
 
     const asSourceSupportedNetworks = [
-        ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
         KnownInternalNames.Networks.LoopringGoerli,
         KnownInternalNames.Networks.LoopringMainnet,
@@ -214,7 +212,7 @@ const getWalletConnectUri = async (
     );
 };
 
-const isNotAvailable = (connector: Connector, network: Network | undefined) => {
+const isNotAvailable = (connector: Connector, network: any | undefined) => {
     if (!network) return false
     return connector.id === "com.immutable.passport" && !network.name.toLowerCase().startsWith("immutable")
 }
