@@ -201,7 +201,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                             && destination
                             && provider
                             && !manualAddress
-                            && connectedWallet &&
+                            && 
                             <ConnectedWallets
                                 provider={provider}
                                 wallets={wallets}

@@ -200,7 +200,7 @@ export const FormSourceWalletButton: FC = () => {
 
     if (!mounted || !walletNetwork || !values.fromCurrency) return null
 
-    if (!wallets.length && walletNetwork) {
+    if (!provider?.connectedWallets?.length && walletNetwork) {
         return <SwapButton
             className="plausible-event-name=Swap+initiated"
             type='button'
@@ -278,12 +278,12 @@ export const WalletsList: FC<WalletListProps> = ({ network, purpose, onSelect, t
                 {
                     connectedWallets?.map((wallet) => {
                         return <>
-                            {wallet.addresses?.map((address) => {
+                            {wallet.addresses?.map((address, index) => {
                                 const walletBalance = balances[address]?.find(b => b?.network === network?.name && b?.token === token?.symbol)
                                 const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, token?.precision)
 
                                 const isSelected = selectedSourceAccount?.address === address
-                                return <div key={address} onClick={() => onSelect(wallet, address)} className="w-full cursor-pointer group/addressItem relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
+                                return <div key={index} onClick={() => onSelect(wallet, address)} className="w-full cursor-pointer group/addressItem relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
                                     <AddressWithIcon
                                         addressItem={{ address: address, group: AddressGroup.ConnectedWallet }}
                                         connectedWallet={wallet}
