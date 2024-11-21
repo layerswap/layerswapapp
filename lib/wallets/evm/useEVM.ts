@@ -77,9 +77,9 @@ export default function useEVM({ network }: Props): any {
             else {
                 getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
                     const Icon = resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
-                    const base64Icon = convertSvgComponentToBase64(Icon)
+                    // const base64Icon = convertSvgComponentToBase64(Icon)
 
-                    setSelectedProvider({ ...provider, connector: { name: connector.name, qr: uri, iconUrl: base64Icon } })
+                    setSelectedProvider({ ...provider, connector: { name: connector.name, qr: uri, iconUrl: "" } })
                 })
             }
 
