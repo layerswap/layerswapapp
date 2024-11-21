@@ -13,7 +13,7 @@ export default function useTron(): WalletProvider {
 
     const name = 'Tron'
     const id = 'tron'
-    const { wallets, wallet: tronWallet, disconnect } = useWallet();
+    const { wallets, wallet: tronWallet, disconnect, select } = useWallet();
 
     const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
     const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
@@ -52,6 +52,7 @@ export default function useTron(): WalletProvider {
         const tronConnector = wallets.find(w => w.adapter.name === connector.name)
         if (!tronConnector) throw new Error('Connector not found')
         try {
+            select(tronConnector.adapter.name)
             await tronConnector.adapter.connect()
         }
         catch (e) {

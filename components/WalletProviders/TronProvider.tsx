@@ -4,6 +4,9 @@ import { toast } from 'react-hot-toast';
 import { useEffect, useState } from 'react';
 import { WalletProvider } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { LedgerAdapter } from '@tronweb3/tronwallet-adapter-ledger';
+
+const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
+
 export default function TronProvider({ children }: { children: React.ReactNode }) {
     function onError(e: WalletError) {
         if (e instanceof WalletNotFoundError) {
@@ -29,15 +32,14 @@ export default function TronProvider({ children }: { children: React.ReactNode }
             const walletConnectAdapter = new WalletConnectAdapter({
                 network: 'Nile',
                 options: {
-                    relayUrl: 'wss://relay.walletconnect.com',
-                    // example WC app project ID
-                    projectId: '5fc507d8fc7ae913fff0b8071c7df231',
                     metadata: {
-                        name: 'Test DApp',
-                        description: 'JustLend WalletConnect',
-                        url: 'https://your-dapp-url.org/',
-                        icons: ['https://your-dapp-url.org/mainLogo.svg'],
+                        name: 'Layerswap',
+                        url: 'https://www.layerswap.io/app/',
+                        description: 'Move crypto across exchanges, blockchains, and wallets.',
+                        icons: ['https://www.layerswap.io/app/symbol.png'],
                     },
+                    projectId: WALLETCONNECT_PROJECT_ID,
+                    customStoragePrefix: 'walletConnect',
                 },
                 web3ModalConfig: {
                     themeMode: 'dark',
