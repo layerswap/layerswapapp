@@ -91,6 +91,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                         <button
                             onClick={() => { setShowIncompatibleWallets(!showIncompatibleWallets) }}
                             disabled={isLoading}
+                            type="button"
                             className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200"
                         >
                             {
