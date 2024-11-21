@@ -13,7 +13,7 @@ export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 export default function useWallet(network?: Network | undefined, purpose?: WalletPurpose) {
 
     const walletProviders: WalletProvider[] = [
-        // useEVM({ network }),
+        useEVM({ network }),
         useStarknet(),
         // useImtblX(),
         useSolana({ network }),
