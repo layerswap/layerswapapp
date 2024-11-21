@@ -174,7 +174,7 @@ export default function useEVM({ network }: Props): any {
         switchAccount,
         connectedWallets: resolvedConnectors,
         activeWallet: resolvedConnectors.find(w => w.isActive),
-        activeAccountAddress: activeAccount?.address,
+        activeAccountAddress:  activeAccount?.address,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
