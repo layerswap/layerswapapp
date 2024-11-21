@@ -9,7 +9,6 @@ import { useWalletModalState } from "../../../stores/walletModalStateStore"
 import { getConnections } from '@wagmi/core'
 import toast from "react-hot-toast"
 import { isMobile } from "../../isMobile"
-import { mainnet } from "wagmi/chains"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 import { LSConnector } from "../connectors/EthereumProvider"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
@@ -86,7 +85,6 @@ export default function useEVM({ network }: Props): WalletProvider {
             }
 
             await connectAsync({
-                chainId: mainnet.id,
                 connector: connector,
             });
 
