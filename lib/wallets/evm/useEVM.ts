@@ -1,6 +1,5 @@
 import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { useAccount, useDisconnect } from "wagmi"
-import { Network, NetworkType } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
@@ -14,7 +13,6 @@ export default function useEVM(): WalletProvider {
     const { disconnectAsync } = useDisconnect()
 
     const asSourceSupportedNetworks = [
-        ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
         KnownInternalNames.Networks.LoopringGoerli,
         KnownInternalNames.Networks.LoopringMainnet,
@@ -46,7 +44,7 @@ export default function useEVM(): WalletProvider {
         }
     }, [shouldConnect])
 
-    const getWallet = (network?: Network) => {
+    const getWallet = (network?: any) => {
         if (account && account.address && account.connector) {
             const connector = account.connector.id
             if (connector == "com.immutable.passport" && network && !(network.name == KnownInternalNames.Networks.ImmutableZkEVM || network.name == KnownInternalNames.Networks.ImmutableXMainnet)) {
