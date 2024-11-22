@@ -4,14 +4,15 @@ import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 import { WalletConnectWalletAdapter } from "@solana/wallet-adapter-walletconnect";
 import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
 import { GlowWalletAdapter } from "@solana/wallet-adapter-glow";
+import { NightlyWalletAdapter } from '@solana/wallet-adapter-wallets';
 import {
     ConnectionProvider,
     WalletProvider,
 } from "@solana/wallet-adapter-react";
-import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { ReactNode, useMemo } from "react";
 import { CoinbaseWalletAdapter } from "@solana/wallet-adapter-coinbase";
-require("@solana/wallet-adapter-react-ui/styles.css");
+import { WalletModalProvider } from "./SolanaWalletModalProvider";
+
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
 
 function SolanaProvider({ children }: { children: ReactNode }) {
@@ -23,6 +24,7 @@ function SolanaProvider({ children }: { children: ReactNode }) {
             new CoinbaseWalletAdapter(),
             new SolflareWalletAdapter(),
             new GlowWalletAdapter(),
+            new NightlyWalletAdapter(),
             new WalletConnectWalletAdapter({
                 network: solNetwork,
                 options: {

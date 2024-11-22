@@ -35,6 +35,8 @@ export const WalletTransferContent: FC = () => {
 
     const sourceIsSolana = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
         || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaDevnet?.toUpperCase();
+    const sourceIsEclipse = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.EclipseTestnet?.toUpperCase()
+        || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.EclipseMainnet?.toUpperCase();
 
     const sourceIsTon = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.TONMainnet?.toUpperCase()
 
@@ -77,7 +79,7 @@ export const WalletTransferContent: FC = () => {
             swapId={swap?.id}
             callData={callData}
         />;
-    else if (sourceIsSolana)
+    else if (sourceIsSolana || sourceIsEclipse)
         return <SolanaWalletWithdrawStep
             amount={amount}
             depositAddress={depositAddress}

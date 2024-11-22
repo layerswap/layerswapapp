@@ -26,7 +26,7 @@ const AddressIconWrapper = (address: string) => (props) => {
 }
 
 const SVGIconWrapper = (iconUrl: string) => (props) => {
-    return <SVGWithImg {...props} imageUrl={iconUrl} />
+    return <SVGWithImg {...props} imageurl={iconUrl} />
 }
 
 export default resolveWalletConnectorIcon
