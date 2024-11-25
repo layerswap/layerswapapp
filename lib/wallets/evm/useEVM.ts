@@ -65,7 +65,6 @@ export default function useEVM({ network }: Props): WalletProvider {
         }
     }
 
-    //TODO return connected wallet
     const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
         try {
             setSelectedProvider({ ...provider, connector: { name: connector.name } })
@@ -89,9 +88,24 @@ export default function useEVM({ network }: Props): WalletProvider {
                 connector: connector,
             });
 
-            const account = getAccount(config)
-            console.log(account)
-            return undefined
+            const activeAccount = getAccount(config)
+            const address = activeAccount.address
+
+            if (!activeAccount || !activeAccount.connector || !address) return undefined
+
+            const wallet: Wallet = {
+                isActive: true,
+                address: address,
+                addresses: activeAccount.addresses as string[] || [address],
+                connector: activeAccount.connector?.name,
+                providerName: name,
+                icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(activeAccount.connector), address, iconUrl: activeAccount.connector?.icon }),
+                connect: connectWallet,
+                disconnect: () => disconnectWallet(activeAccount.connector?.name || ""),
+                isNotAvailable: isNotAvailable(activeAccount.connector, network)
+            }
+
+            return [wallet]
 
         } catch (e) {
             //TODO: handle error like in transfer
