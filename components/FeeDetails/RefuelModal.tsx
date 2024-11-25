@@ -1,7 +1,6 @@
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import { Dispatch, FC, SetStateAction, useMemo } from 'react';
 import useWallet from '../../hooks/useWallet';
-import { useBalancesState } from '../../context/balances';
 import Modal from '../modal/modal';
 import { Fuel } from 'lucide-react';
 import { roundDecimals, truncateDecimals } from '../utils/RoundDecimals';
@@ -9,6 +8,7 @@ import SubmitButton from '../buttons/submitButton';
 import SecondaryButton from '../buttons/secondaryButton';
 import { useFormikContext } from 'formik';
 import { useFee } from '../../context/feeContext';
+import useSWRBalance from '../../lib/newbalances/useSWRBalance';
 
 type RefuelModalProps = {
     openModal: boolean,
@@ -23,7 +23,6 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
 
     const { to, toCurrency, refuel, destination_address } = values || {};
     const { getAutofillProvider: getProvider } = useWallet()
-    const { balances } = useBalancesState()
     const { fee } = useFee()
 
     const provider = useMemo(() => {
@@ -35,7 +34,9 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
     const token_usd_price = fee?.quote?.destination_network?.token?.price_in_usd || nativeAsset?.price_in_usd
 
     const connectedWallet = provider?.getConnectedWallet()
-    const destNativeTokenBalance = balances[destination_address || (connectedWallet?.address || '')]?.find(b => b.token === nativeAsset?.symbol && b.network === to?.name)
+
+    const { balance } = useSWRBalance(destination_address || (connectedWallet?.address || ''), to)
+    const destNativeTokenBalance = balance?.find(b => b.token === nativeAsset?.symbol && b.network === to?.name)
     const amountInUsd = (destNativeTokenBalance && token_usd_price) ? (destNativeTokenBalance.amount * token_usd_price).toFixed(2) : undefined
 
     const closeModal = () => {

@@ -2,10 +2,11 @@ import { useFormikContext } from "formik";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import NumericInput from "./NumericInput";
-import { useBalancesState } from "../../context/balances";
 import { useFee } from "../../context/feeContext";
 import dynamic from "next/dynamic";
 import { useQueryState } from "../../context/query";
+import useSWRGas from "../../lib/newgases/useSWRGas";
+import useSWRBalance from "../../lib/newbalances/useSWRBalance";
 
 const MinMax = dynamic(() => import("./dynamic/MinMax"), {
     loading: () => <></>,
@@ -18,14 +19,16 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { fromCurrency, from, to, amount, toCurrency, fromExchange, toExchange } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee, isFeeLoading } = useFee()
     const [isFocused, setIsFocused] = useState(false);
-    const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
     const [walletAddress, setWalletAddress] = useState<string>()
+    const { balance, isBalanceLoading } = useSWRBalance(walletAddress, from)
+    const {gas, isGasLoading} = useSWRGas(walletAddress, from, fromCurrency)
+
     const native_currency = from?.token
     const query = useQueryState()
 
-    const gasAmount = gases[from?.name || '']?.find(g => g?.token === fromCurrency?.symbol)?.gas || 0
+    const gasAmount = gas?.find(g => g?.token === fromCurrency?.symbol)?.gas || 0
     const name = "amount"
-    const walletBalance = walletAddress && balances[walletAddress]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+    const walletBalance = walletAddress && balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     let maxAllowedAmount: number | null = maxAmountFromApi || 0
     if (query.balances && fromCurrency) {
         try {

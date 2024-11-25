@@ -1,13 +1,13 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import { FC, useCallback, useMemo, useState } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import WalletIcon from '../../icons/WalletIcon';
 import useWallet from '../../../hooks/useWallet';
-import { useBalancesState } from '../../../context/balances';
-import useBalance from '../../../hooks/useBalance';
 import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../Input/Address/AddressPicker';
 import { RefreshCw } from 'lucide-react';
 import { truncateDecimals } from '../../utils/RoundDecimals';
+import useSWRBalance from '../../../lib/newbalances/useSWRBalance';
+import { useSettingsState } from '../../../context/settings';
 
 const WalletTransferContent: FC = () => {
     const { getWithdrawalProvider: getProvider, disconnectWallet } = useWallet()
@@ -16,25 +16,18 @@ const WalletTransferContent: FC = () => {
     const { source_exchange, source_token, source_network } = swap || {}
     const [isLoading, setIsloading] = useState(false);
     const { mutateSwap } = useSwapDataUpdate()
+    const { networks } = useSettingsState();
     const provider = useMemo(() => {
         return source_network && getProvider(source_network)
     }, [source_network, getProvider])
 
     const wallet = provider?.getConnectedWallet(source_network)
 
-    const { balances, isBalanceLoading } = useBalancesState()
-    const { fetchBalance, fetchGas } = useBalance()
+    const network = networks.find(n => n.chain_id == source_network?.chain_id)
+    const { balance, isBalanceLoading } = useSWRBalance(wallet?.address, network)
 
-    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
+    const walletBalance = wallet && balance?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
-
-    useEffect(() => {
-        source_network && source_token && fetchBalance(source_network, source_token);
-    }, [source_network, source_token, wallet?.address])
-
-    useEffect(() => {
-        wallet?.address && source_network && source_token && fetchGas(source_network, source_token, wallet.address)
-    }, [source_network, source_token, wallet?.address])
 
     const handleDisconnect = useCallback(async (e: React.MouseEvent<HTMLDivElement>) => {
         if (!wallet) return
