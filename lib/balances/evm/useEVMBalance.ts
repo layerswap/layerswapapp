@@ -95,12 +95,12 @@ export default function useEVMBalance(): BalanceProvider {
     }
 
 
-    const getGas = async ({ network, address, token, isSweeplessTx, recipientAddress = '0x2fc617e933a52713247ce25730f6695920b3befe' }: GasProps) => {
+    const getGas = async ({ network, address, token, recipientAddress = '0x2fc617e933a52713247ce25730f6695920b3befe' }: GasProps) => {
         const networkFromSettings = networks.find(n => n.name === network.name)
 
         const chainId = Number(network?.chain_id)
 
-        if (!networkFromSettings || !address || isSweeplessTx === undefined || !chainId || !recipientAddress) {
+        if (!networkFromSettings || !address || !chainId || !recipientAddress) {
             return
         }
 
@@ -130,8 +130,7 @@ export default function useEVMBalance(): BalanceProvider {
                     from: network,
                     currency: token,
                     destination: recipientAddress as `0x${string}`,
-                    nativeToken: token,
-                    isSweeplessTx,
+                    nativeToken: token
                 }
             )
 
