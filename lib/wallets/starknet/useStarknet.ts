@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { useSettingsState } from "../../../context/settings";
 import { useConnect, useDisconnect } from "@starknet-react/core";
 import { useWalletModalState } from "../../../stores/walletModalStateStore";
-import { InternalConnector, WalletProvider } from "../../../Models/WalletProvider";
+import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 
 export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
@@ -87,7 +87,7 @@ export default function useStarknet(): WalletProvider {
 
                 const starknetWalletAccount = new WalletAccount({ nodeUrl: starkent?.node_url }, (starknetConnector as any).wallet);
 
-                addWallet({
+                const wallet: Wallet = {
                     address: result?.account,
                     addresses: [result?.account],
                     chainId: walletChain,
@@ -102,7 +102,11 @@ export default function useStarknet(): WalletProvider {
                     connect: () => connectWallet(),
                     disconnect: () => disconnectWallets()
 
-                })
+                }
+
+                addWallet(wallet)
+
+                return [wallet]
             }
         }
 

@@ -46,7 +46,7 @@ const WalletsList = () => {
                                     }
 
                                 </div>
-                                <button onClick={wallet.disconnect} className="text-xs text-secondary-text hover:opacity-75">
+                                <button type="button" onClick={wallet.disconnect} className="text-xs text-secondary-text hover:opacity-75">
                                     Disconnect
                                 </button>
                             </div>

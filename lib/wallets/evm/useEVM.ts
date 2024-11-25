@@ -6,7 +6,7 @@ import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../util
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useMemo } from "react"
 import { useWalletModalState } from "../../../stores/walletModalStateStore"
-import { getConnections } from '@wagmi/core'
+import { getAccount, getConnections } from '@wagmi/core'
 import toast from "react-hot-toast"
 import { isMobile } from "../../isMobile"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
@@ -88,6 +88,24 @@ export default function useEVM({ network }: Props): WalletProvider {
                 connector: connector,
             });
 
+            const activeAccount = getAccount(config)
+            const address = activeAccount.address
+
+            if (!activeAccount || !activeAccount.connector || !address) return undefined
+
+            const wallet: Wallet = {
+                isActive: true,
+                address: address,
+                addresses: activeAccount.addresses as string[] || [address],
+                connector: activeAccount.connector?.name,
+                providerName: name,
+                icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(activeAccount.connector), address, iconUrl: activeAccount.connector?.icon }),
+                connect: connectWallet,
+                disconnect: () => disconnectWallet(activeAccount.connector?.name || ""),
+                isNotAvailable: isNotAvailable(activeAccount.connector, network)
+            }
+
+            return [wallet]
 
         } catch (e) {
             //TODO: handle error like in transfer
