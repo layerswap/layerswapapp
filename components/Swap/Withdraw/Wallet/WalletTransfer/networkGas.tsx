@@ -1,17 +1,18 @@
 import { FC } from "react"
 import { Network, Token } from "../../../../../Models/Network"
-import { useBalancesState } from "../../../../../context/balances"
 import { Fuel } from "lucide-react"
+import useSWRGas from "../../../../../lib/newgases/useSWRGas"
 
 type NetworkGasProps = {
+    address: string,
     network: Network,
     token: Token,
 }
-const NetworkGas: FC<NetworkGasProps> = ({ token, network }) => {
-
-    const { gases, isGasLoading } = useBalancesState()
+const NetworkGas: FC<NetworkGasProps> = ({ address, token, network }) => {
+    
+    const { gas, isGasLoading } = useSWRGas(address, network, token)
     const networkGas = network.name ?
-        gases?.[network.name]?.find(g => g?.token === token.symbol)?.gas : null
+        gas?.find(g => g?.token === token.symbol)?.gas : null
 
     if (!networkGas)
         return <></>

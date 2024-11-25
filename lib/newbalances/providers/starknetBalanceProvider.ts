@@ -1,13 +1,12 @@
 import { Balance } from "../../../Models/Balance";
-import { NetworkType, NetworkWithTokens } from "../../../Models/Network";
+import { NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import Erc20Abi from '../../abis/ERC20.json'
-
-
+import KnownInternalNames from "../../knownIds";
 
 export class StarknetBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
-        return network.type === NetworkType.Starknet
+        return (KnownInternalNames.Networks.StarkNetMainnet || KnownInternalNames.Networks.StarkNetGoerli || KnownInternalNames.Networks.StarkNetSepolia).includes(network.name)
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
@@ -53,5 +52,4 @@ export class StarknetBalanceProvider {
         }
         return balances
     }
-
 }

@@ -37,7 +37,6 @@ import { useAddressesStore } from "../../../stores/addressesStore";
 import { useAsyncModal } from "../../../context/asyncModal";
 import { ValidationProvider } from "../../../context/validationErrorContext";
 import { TrackEvent } from "../../../pages/_document";
-import useBalance from "../../../hooks/useBalance";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -67,7 +66,6 @@ export default function Form() {
     const { getProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
     const { getConfirmation } = useAsyncModal();
-    const { fetchBalance } = useBalance()
 
     const settings = useSettingsState();
     const query = useQueryState()
@@ -174,9 +172,6 @@ export default function Form() {
         pollFee(!value)
         setShowSwapModal(value)
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
-        if (value === false && swap?.source_network) {
-            fetchBalance(swap?.source_network, swap?.source_token)
-        }
     }, [router, swap])
 
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>

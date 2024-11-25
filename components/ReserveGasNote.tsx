@@ -1,4 +1,5 @@
 import { useBalancesState } from "../context/balances"
+import { useMemo } from "react"
 import useWallet from "../hooks/useWallet"
 import WarningMessage from "./WarningMessage"
 import { useFormikContext } from "formik"
@@ -6,20 +7,24 @@ import { SwapFormValues } from "./DTOs/SwapFormValues"
 import { truncateDecimals } from "./utils/RoundDecimals"
 import { useFee } from "../context/feeContext"
 import { Balance, Gas } from "../Models/Balance"
+import useSWRBalance from "../lib/newbalances/useSWRBalance"
+import useSWRGas from "../lib/newgases/useSWRGas"
 
 const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, networkGas: Gas) => void }) => {
     const {
         values,
     } = useFormikContext<SwapFormValues>();
-    const { balances, gases } = useBalancesState()
     const { minAllowedAmount } = useFee()
 
     const { provider } = useWallet(values.from, 'autofil')
     const wallet = provider?.activeWallet
+    //BALANCE:TODO: pass source address from form values
+    const { balance } = useSWRBalance(wallet?.address, values.from)
+    const { gas } = useSWRGas(wallet?.address, values.from, values.fromCurrency)
 
-    const walletBalance = wallet && balances[wallet.address || '']?.find(b => b?.network === values?.from?.name && b?.token === values?.fromCurrency?.symbol)
+    const walletBalance = wallet && balance?.find(b => b?.network === values?.from?.name && b?.token === values?.fromCurrency?.symbol)
     const networkGas = values.from?.name ?
-        gases?.[values.from?.name]?.find(g => g?.token === values?.fromCurrency?.symbol)
+        gas?.find(g => g?.token === values?.fromCurrency?.symbol)
         : null
 
     const mightBeAutOfGas = !!(networkGas && walletBalance?.isNativeCurrency && (Number(values.amount)

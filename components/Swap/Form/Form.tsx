@@ -273,7 +273,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                 process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
                 && values.from
                 && values.fromCurrency &&
-                <GasDetails network={values.from.name} currency={values.fromCurrency.symbol} />
+                <GasDetails address={''} network={values.from} currency={values.fromCurrency} />
             }
         </>
     </ImtblPassportProvider>

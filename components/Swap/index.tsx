@@ -15,8 +15,8 @@ import SubmitButton from '../buttons/submitButton';
 
 const SwapDetails: FC<Props> = ({ type }) => {
     const { swapResponse } = useSwapDataState()
-
     const { swap } = swapResponse || {}
+
     const swapStatus = swap?.status;
     const storedWalletTransactions = useSwapTransactionStore()
 
@@ -61,7 +61,7 @@ const SwapDetails: FC<Props> = ({ type }) => {
             {
                 process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
                 && swap &&
-                <GasDetails network={swap.source_network.name} currency={swap.source_token.symbol} />
+                <GasDetails address={swapInputTransaction?.from} network={swap.source_network} currency={swap.source_token} />
             }
         </>
     )
