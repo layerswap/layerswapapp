@@ -1,10 +1,16 @@
-import { useBalancesState } from "../context/balances"
+import useWallet from "../hooks/useWallet"
+import useSWRGas from "../lib/newgases/useSWRGas"
+import { Network, Token } from "../Models/Network"
 
-const GasDetails = ({ network, currency }: { network: string, currency: string }) => {
+const GasDetails = ({ network, currency }: {  network: Network | undefined, currency: Token }) => {
+    const { getSourceProvider } = useWallet()
 
-    const { gases } = useBalancesState()
-    const networkGas = gases?.[network]?.find(g => g?.token === currency)
+    const provider = network && getSourceProvider(network)
+    const wallet = provider?.getConnectedWallet()
 
+    const { gas } = useSWRGas(wallet?.address, network, currency)
+    const networkGas = gas?.find(g => g?.token === currency)
+debugger
     if (!networkGas?.gasDetails) return
 
     return (

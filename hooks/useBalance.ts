@@ -142,7 +142,6 @@ export default function useBalanceProvider() {
                     network,
                     token,
                     recipientAddress,
-                    isSweeplessTx: wallet.address !== userDestinationAddress,
                     wallet
                 })
 

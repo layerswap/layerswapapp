@@ -4,7 +4,7 @@ import { NetworkType, NetworkWithTokens } from "../../../Models/Network"
 
 export class EVMBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
-        return network.type === NetworkType.EVM
+        return network.type === NetworkType.EVM && !!network.token
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
@@ -55,8 +55,6 @@ export class EVMBalanceProvider {
             }
     
             let res: Balance[] = []
-
-            console.log(erc20Balances, nativeBalances)
             return res.concat(erc20Balances, nativeBalances)
         }
         catch (e) {
