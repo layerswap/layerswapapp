@@ -117,9 +117,6 @@ export default function Form() {
                     return;
                 }
             }
-            const provider = values.from && getProvider(values.from, 'asSource')
-            const wallet = provider?.activeWallet
-
             const swapId = await createSwap(values, query, partner);
             plausible(TrackEvent.SwapInitiated)
             setSwapId(swapId)

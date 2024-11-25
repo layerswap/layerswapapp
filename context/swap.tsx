@@ -8,7 +8,9 @@ import { ApiResponse } from '../Models/ApiResponse';
 import { Partner } from '../Models/Partner';
 import { ApiError } from '../Models/ApiError';
 import { ResolvePollingInterval } from '../components/utils/SwapStatus';
-import { Wallet } from '../Models/WalletProvider';
+import { Wallet, WalletProvider } from '../Models/WalletProvider';
+import useWallet from '../hooks/useWallet';
+import { Network } from '../Models/Network';
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
@@ -48,6 +50,7 @@ export function SwapDataProvider({ children }) {
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [depositAddressIsFromAccount, setDepositAddressIsFromAccount] = useState<boolean>()
     const router = useRouter();
+    const { providers } = useWallet()
     const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -57,12 +60,19 @@ export function SwapDataProvider({ children }) {
 
     const [selectedSourceAccount, setSelectedSourceAccount] = useState<{ wallet: Wallet, address: string } | undefined>()
 
+    const swapResponse = swapData?.data
+
+    const sourceIsSupported = swapResponse && WalletIsSupportedForSource({
+        providers: providers,
+        sourceNetwork: swapResponse.swap.source_network,
+        sourceWallet: selectedSourceAccount?.wallet
+    })
+
     const use_deposit_address = swapData?.data?.swap?.use_deposit_address
-    const deposit_actions_endpoint = `/swaps/${swapId}/deposit_actions${(use_deposit_address || !selectedSourceAccount) ? "" : `?source_address=${selectedSourceAccount?.address}`}`
+    const deposit_actions_endpoint = `/swaps/${swapId}/deposit_actions${(use_deposit_address || !selectedSourceAccount || !sourceIsSupported) ? "" : `?source_address=${selectedSourceAccount?.address}`}`
 
     const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(swapData ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
 
-    const swapResponse = swapData?.data
     const depositActionsResponse = depositActions?.data
 
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
@@ -96,6 +106,12 @@ export function SwapDataProvider({ children }) {
         const sourceLayer = from
         const destinationLayer = to
 
+        const sourceIsSupported = WalletIsSupportedForSource({
+            providers: providers,
+            sourceNetwork: sourceLayer,
+            sourceWallet: selectedSourceAccount?.wallet
+        })
+
         const data: CreateSwapParams = {
             amount: amount,
             source_network: sourceLayer?.name,
@@ -108,7 +124,7 @@ export function SwapDataProvider({ children }) {
             reference_id: query.externalId,
             refuel: !!refuel,
             use_deposit_address: depositMethod === 'wallet' ? false : true,
-            source_address: selectedSourceAccount?.address
+            source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined
         }
 
         const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
@@ -167,4 +183,8 @@ export function useSwapDataUpdate() {
     }
 
     return updateFns;
+}
+
+const WalletIsSupportedForSource = ({ providers, sourceNetwork, sourceWallet }: { providers: WalletProvider[] | undefined, sourceWallet: Wallet | undefined, sourceNetwork: Network | undefined }) => {
+    return sourceWallet && providers?.find(p => p.id === sourceWallet.providerName)?.asSourceSupportedNetworks?.some(n => n === sourceNetwork?.name) || false
 }
