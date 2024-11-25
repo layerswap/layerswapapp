@@ -4,7 +4,7 @@ import KnownInternalNames from "../../knownIds";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useEffect, useState } from "react";
-import { useWalletModalState } from "../../../stores/walletModalStateStore";
+import { useConnectModal } from "../../../components/WalletModal";
 
 export default function useTON(): WalletProvider {
     
@@ -20,9 +20,6 @@ export default function useTON(): WalletProvider {
     const [tonConnectUI] = useTonConnectUI();
 
     const [tonWallets, setTonWallets] = useState<WalletInfo[] | undefined>([])
-
-    const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
-    const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
 
     useEffect(() => {
         const getWallets = async () => {
@@ -54,10 +51,11 @@ export default function useTON(): WalletProvider {
         return undefined
     }
 
+    const { connect } = useConnectModal()
+
     const connectWallet = async () => {
         try {
-            setSelectedProvider(provider)
-            setWalletModalIsOpen(true)
+            return await connect(provider)
         }
         catch (e) {
             console.log(e)
@@ -132,7 +130,6 @@ export default function useTON(): WalletProvider {
         disconnectWallets,
         connectConnector,
         availableWalletsForConnect,
-        activeAccountAddress: wallet?.address,
         connectedWallets: getWallet(),
         activeWallet: wallet,
         withdrawalSupportedNetworks: commonSupportedNetworks,

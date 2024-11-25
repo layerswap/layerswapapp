@@ -16,9 +16,10 @@ type VaulDrawerProps = {
     description?: ReactNode;
     modalId: string;
     modalConstantHeight?: boolean;
+    onClose?: () => void;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, modalConstantHeight }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, modalConstantHeight, onClose }) => {
     const { isMobile } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -64,6 +65,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     const handleOpenChange = (open: boolean) => {
         setSnap(open ? snapPoints[0].height : null);
         setShow(open);
+        if (!open) return onClose && onClose()
     }
 
     useEffect(() => {

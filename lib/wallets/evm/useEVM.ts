@@ -5,13 +5,13 @@ import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useMemo } from "react"
-import { useWalletModalState } from "../../../stores/walletModalStateStore"
 import { getAccount, getConnections } from '@wagmi/core'
 import toast from "react-hot-toast"
 import { isMobile } from "../../isMobile"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 import { LSConnector } from "../connectors/EthereumProvider"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
+import { useConnectModal } from "../../../components/WalletModal"
 
 type Props = {
     network: Network | undefined,
@@ -43,11 +43,6 @@ export default function useEVM({ network }: Props): WalletProvider {
         KnownInternalNames.Networks.BrineMainnet,
     ]
 
-    const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
-    const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
-    const setActiveAccountAddress = useWalletModalState((state) => state.setActiveAccountAddress)
-    const activeAccountAddress = useWalletModalState((state) => state.activeAccountAddress)
-
     const { disconnectAsync } = useDisconnect()
     const { connectors: activeConnectors, switchAccountAsync } = useSwitchAccount()
     const activeAccount = useAccount()
@@ -55,10 +50,11 @@ export default function useEVM({ network }: Props): WalletProvider {
     const config = useConfig()
     const { connectAsync } = useConnect();
 
-    const connectWallet = () => {
+    const { connect, setSelectedProvider } = useConnectModal()
+
+    const connectWallet = async () => {
         try {
-            setSelectedProvider(provider)
-            setWalletModalIsOpen(true)
+            return await connect(provider)
         }
         catch (e) {
             console.log(e)
@@ -187,7 +183,6 @@ export default function useEVM({ network }: Props): WalletProvider {
         const account = accounts.find(a => a.toLowerCase() === address.toLowerCase())
         if (!account)
             throw new Error("Account not found")
-        setActiveAccountAddress(account)
     }
 
     {/* //TODO: refactor ordering */ }
@@ -200,7 +195,6 @@ export default function useEVM({ network }: Props): WalletProvider {
         switchAccount,
         connectedWallets: resolvedConnectors,
         activeWallet: resolvedConnectors.find(w => w.isActive),
-        activeAccountAddress: activeAccountAddress || activeAccount?.address,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,

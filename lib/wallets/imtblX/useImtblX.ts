@@ -44,6 +44,7 @@ export default function useImtblX(): WalletProvider {
                 isActive: true,
                 addresses: [res.address]
             });
+            return undefined
         }
         catch (e) {
             console.log(e)
@@ -55,7 +56,6 @@ export default function useImtblX(): WalletProvider {
     }
 
     return {
-        activeAccountAddress: wallet?.address,
         switchAccount: async () => { },
         connectedWallets: getWallet(),
         activeWallet: wallet,

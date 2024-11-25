@@ -2,7 +2,36 @@ import { FC } from 'react'
 import { QRCodeSVG } from 'qrcode.react';
 import { resolveWalletConnectorIcon } from '../../lib/wallets/utils/resolveWalletIcon';
 import { Loader } from 'lucide-react';
-import { WalletsListProps } from '.';
+import { Wallet } from '../../Models/WalletProvider';
+import { ModalWalletProvider } from '.';
+
+export type WalletsListProps = {
+    modalWalletProvider: ModalWalletProvider;
+    setSelectedProvider: (value: ModalWalletProvider | undefined) => void;
+    selectedProvider: ModalWalletProvider | undefined;
+    onFinish: (connectedWallet: Wallet[] | undefined) => void;
+};
+
+const WalletsList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, setSelectedProvider, selectedProvider }) => {
+
+    if (modalWalletProvider?.availableWalletsForConnect) {
+        return <ConnectList
+            modalWalletProvider={modalWalletProvider}
+            onFinish={onFinish}
+            setSelectedProvider={setSelectedProvider}
+            selectedProvider={selectedProvider}
+        />
+    }
+    else {
+        return <div className='h-40 w-full flex flex-col justify-center items-center'>
+            <div className='flex items-center gap-2'>
+                <Loader className='h-6 w-6 animate-spin' />
+                <p><span>Connecting</span> <span>{modalWalletProvider?.name}</span></p>
+            </div>
+        </div>
+    }
+}
+
 
 const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFinish, setSelectedProvider, selectedProvider }) => {
 
@@ -10,13 +39,14 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
         try {
             setSelectedProvider({ ...provider, connector: { name: connector.name } })
 
-            provider?.connectConnector && await provider.connectConnector({ connector })
+            const result = provider?.connectConnector && await provider.connectConnector({ connector })
 
             setSelectedProvider(undefined)
-            onFinish()
+            onFinish(result)
         } catch (e) {
             console.log(e)
             setSelectedProvider({ ...provider, connector: undefined })
+            onFinish(undefined)
         }
     }
 
@@ -86,4 +116,4 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
 }
 
 
-export default ConnectList
+export default WalletsList
