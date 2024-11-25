@@ -7,11 +7,11 @@ export class EVMGasProvider {
         return network.type === NetworkType.EVM && !!network.token
     }
 
-    getGas = async ({ network, token, address, isSweeplessTx, recipientAddress = '0x2fc617e933a52713247ce25730f6695920b3befe' }: GasProps) => {
+    getGas = async ({ address, network, token, recipientAddress = '0x2fc617e933a52713247ce25730f6695920b3befe' }: GasProps) => {
 
         const chainId = Number(network?.chain_id)
 
-        if (!network || !address || isSweeplessTx === undefined || !chainId || !recipientAddress) {
+        if (!network || !address || !chainId || !recipientAddress) {
             return
         }
 
@@ -33,7 +33,6 @@ export class EVMGasProvider {
 
             const gasProvider = new getGas(
                 {
-
                     publicClient,
                     chainId,
                     contract_address,
@@ -41,8 +40,7 @@ export class EVMGasProvider {
                     from: network,
                     currency: token,
                     destination: recipientAddress as `0x${string}`,
-                    nativeToken: token,
-                    isSweeplessTx,
+                    nativeToken: token
                 }
             )
 

@@ -61,7 +61,7 @@ const SwapDetails: FC<Props> = ({ type }) => {
             {
                 process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
                 && swap &&
-                <GasDetails address={swapInputTransaction?.from} network={swap.source_network} currency={swap.source_token} />
+                <GasDetails network={swap.source_network} currency={swap.source_token} />
             }
         </>
     )

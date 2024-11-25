@@ -37,7 +37,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const address = direction === 'from' ? (selectedSourceAccount?.address || sourceWalletProvider?.activeWallet?.address) : (destination_address || destinationWalletProvider?.activeWallet?.address)
 
-    const { balance } = direction === 'from' ? useSWRBalance(address, from) : useSWRBalance(destination_address, to)
+    const { balance } = useSWRBalance(address, direction === 'from' ? from : to)
 
     const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
     const apiClient = new LayerSwapApiClient()
@@ -52,7 +52,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         currencies!,
         values,
         direction,
-        balance,
+        balance || [],
         query,
         error
     )

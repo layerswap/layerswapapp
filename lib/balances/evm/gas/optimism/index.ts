@@ -45,7 +45,7 @@ export default class getOptimismGas extends getEVMGas {
                 args: [this.destination, amount]
             })
 
-            if (encodedData && this.isSweeplessTx) {
+            if (encodedData) {
                 encodedData = this.constructSweeplessTxData(encodedData)
             }
 

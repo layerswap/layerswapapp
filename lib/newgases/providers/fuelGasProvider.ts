@@ -6,7 +6,7 @@ export class FuelGasProvider {
         return (KnownInternalNames.Networks.FuelMainnet || KnownInternalNames.Networks.FuelTestnet).includes(network.name)
     }
 
-    async getGas({network: Network, token: Token, address: string}): Promise<any> {
+    async getGas({address: string, network: Network, token: Token}): Promise<any> {
         return null;
     }
 }
