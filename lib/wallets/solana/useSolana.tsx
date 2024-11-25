@@ -59,6 +59,22 @@ export default function useSolana({ network }: { network: Network | undefined })
         const solanaConnector = wallets.find(w => w.adapter.name === connector.name)
         if (!solanaConnector) throw new Error('Connector not found')
         select(solanaConnector.adapter.name)
+        await solanaConnector.adapter.connect()
+
+        const connectedWallet = wallets.find(w => w.adapter.connected === true)
+        const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()
+        const wallet: Wallet[] | undefined = connectedAddress ? [{
+            address: connectedAddress,
+            connector: connectedWallet?.adapter.name,
+            providerName: name,
+            icon: resolveWalletConnectorIcon({ connector: String(connectedWallet?.adapter.name), address: connectedAddress }),
+            disconnect,
+            connect: () => connectWallet(),
+            isActive: true,
+            addresses: [connectedAddress]
+        }] : undefined
+
+        return wallet
     }
 
     const disconnectWallet = async () => {
