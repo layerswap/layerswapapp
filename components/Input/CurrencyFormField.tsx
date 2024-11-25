@@ -40,7 +40,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const { to, fromCurrency, toCurrency, from, currencyGroup, destination_address } = values
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
-    const { balance } = direction === 'from' ? useSWRBalance(wallet?.address, from) : useSWRBalance(destination_address, to)
+    const { balance } = useSWRBalance(direction === 'from' ? wallet?.address : destination_address, direction === 'from' ? from : to)
 
     const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
     const apiClient = new LayerSwapApiClient()
