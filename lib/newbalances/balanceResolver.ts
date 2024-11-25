@@ -17,7 +17,7 @@ export class BalanceResolver {
         new FuelBalanceProvider(),
         new ImmutableXBalanceProvider(),
         new LoopringBalanceProvider(),
-        //new QueryBalanceProvider(),
+        new QueryBalanceProvider(),
         new SolanaBalanceProvider(),
         new TonBalanceProvider(),
         new ZkSyncBalanceProvider()

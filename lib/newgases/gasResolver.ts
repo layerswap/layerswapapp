@@ -21,11 +21,10 @@ export class GasResolver {
         new ZkSyncGasProvider()
     ];
 
-    getGas({network, token, address, isSweeplessTx, recipientAddress}: GasProps) {
-
+    getGas({address, network, token, recipientAddress}: GasProps) {
         const provider = this.providers.find(p => p.supportsNetwork(network));
         if (!provider) return;
 
-        return provider.getGas({ network, token, address, isSweeplessTx, recipientAddress });
+        return provider.getGas({ address, network, token, recipientAddress });
     }
 }

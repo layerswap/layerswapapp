@@ -11,7 +11,7 @@ export class LoopringGasProvider {
         return (KnownInternalNames.Networks.LoopringMainnet || KnownInternalNames.Networks.LoopringGoerli).includes(network.name)   
     }
 
-    getGas = async ({ network, token, address }: GasProps) => {
+    getGas = async ({ address, network, token }: GasProps) => {
         let gas: Gas[] = [];
         try {
 

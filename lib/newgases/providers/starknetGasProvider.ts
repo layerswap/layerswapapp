@@ -13,7 +13,7 @@ export class StarknetGasProvider {
         return (KnownInternalNames.Networks.StarkNetMainnet || KnownInternalNames.Networks.StarkNetGoerli || KnownInternalNames.Networks.StarkNetSepolia).includes(network.name)
     }
 
-    getGas = async ({ network, token, address, wallet }: GasProps) => {
+    getGas = async ({ address, network, token, wallet }: GasProps) => {
 
         const nodeUrl = network.node_url
         const contract_address = token?.contract

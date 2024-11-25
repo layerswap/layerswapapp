@@ -14,7 +14,6 @@ export default abstract class getEVMGas {
     protected currency: Token
     protected destination: `0x${string}`
     protected nativeToken: Token
-    protected isSweeplessTx: boolean
     constructor(
         {
             publicClient,
@@ -25,7 +24,6 @@ export default abstract class getEVMGas {
             currency,
             destination,
             nativeToken,
-            isSweeplessTx
         }: {
             publicClient: PublicClient,
             chainId: number,
@@ -35,7 +33,6 @@ export default abstract class getEVMGas {
             currency: Token,
             destination: `0x${string}`,
             nativeToken: Token,
-            isSweeplessTx: boolean
         }
     ) {
         this.publicClient = publicClient
@@ -46,7 +43,6 @@ export default abstract class getEVMGas {
         this.currency = currency
         this.destination = destination
         this.nativeToken = nativeToken
-        this.isSweeplessTx = isSweeplessTx
     }
 
     abstract resolveGas(): Promise<Gas | unknown> | undefined
@@ -118,7 +114,7 @@ export default abstract class getEVMGas {
             args: [this.destination, BigInt(1000)]
         })
 
-        if (encodedData && this.isSweeplessTx) {
+        if (encodedData) {
             encodedData = this.constructSweeplessTxData(encodedData)
         }
 

@@ -55,7 +55,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         currencies!,
         values,
         direction,
-        balance,
+        balance || [],
         query,
         error
     )

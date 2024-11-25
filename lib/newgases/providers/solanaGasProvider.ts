@@ -8,7 +8,7 @@ export class SolanaGasProvider {
         return KnownInternalNames.Networks.SolanaMainnet.includes(network.name)
     }
 
-    getGas = async ({ network, token, address }: GasProps) => {
+    getGas = async ({ address, network, token }: GasProps) => {
         if (!address)
             return
         const { PublicKey, Connection } = await import("@solana/web3.js");

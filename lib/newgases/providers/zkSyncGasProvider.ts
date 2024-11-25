@@ -9,7 +9,7 @@ export class ZkSyncGasProvider {
         return KnownInternalNames.Networks.ZksyncMainnet.includes(network.name)
     }
 
-    getGas = async ({ network, token, recipientAddress = '0x2fc617e933a52713247ce25730f6695920b3befe' }: GasProps) => {
+    getGas = async ({ address, network, token, recipientAddress = '0x2fc617e933a52713247ce25730f6695920b3befe' }: GasProps) => {
 
         let gas: Gas[] = [];
         const client = new ZkSyncLiteRPCClient();
