@@ -23,7 +23,7 @@ export default function useSolana({ network }: { network: Network | undefined })
         address: publicKey.toBase58(),
         connector: solanaWallet?.adapter?.name,
         providerName: name,
-        icon: resolveWalletConnectorIcon({ connector: String(solanaWallet?.adapter.name), address: publicKey?.toBase58() }),
+        icon: resolveWalletConnectorIcon({ connector: String(solanaWallet?.adapter.name), address: publicKey?.toBase58(), iconUrl: solanaWallet?.adapter?.icon }),
         disconnect,
         connect: () => connectWallet(),
         isActive: true,

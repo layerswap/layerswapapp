@@ -7,9 +7,7 @@ import { ChevronDown, Plus } from "lucide-react";
 import { Network, Token } from "../../Models/Network";
 import ConnectButton from "../buttons/connectButton";
 import FilledCheck from "../icons/FilledCheck";
-import SwapButton from "../buttons/swapButton";
 import Balance from "./dynamic/Balance";
-import { isValidAddress } from "../../lib/address/validator";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
 import VaulDrawer from "../modal/vaulModal";
 import useBalance from "../../hooks/useBalance";
@@ -18,6 +16,7 @@ import { truncateDecimals } from "../utils/RoundDecimals";
 import AddressWithIcon from "./Address/AddressPicker/AddressWithIcon";
 import { AddressGroup } from "./Address/AddressPicker";
 import { Wallet } from "../../Models/WalletProvider";
+import WalletIcon from "../icons/WalletIcon";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -32,44 +31,30 @@ const Component: FC = () => {
     const walletNetwork = values.fromExchange ? undefined : values.from
     const source_token = values.fromCurrency
     const destination_address = values.destination_address
-    const { provider, wallets } = useWallet(walletNetwork, 'asSource')
+    const { provider } = useWallet(walletNetwork, 'withdrawal')
     const { fetchBalance } = useBalance()
+    const wallets = provider?.connectedWallets || []
 
     const selectedWallet = selectedSourceAccount?.wallet
-    const activeWallet = walletNetwork ? provider?.activeWallet : wallets[0]
+    //TODO: sort by active wallet
+    const defaultWallet = walletNetwork && wallets?.find(w => !w.isNotAvailable)
     const source_addsress = selectedSourceAccount?.address
     const connectedWallets = provider?.connectedWallets
 
     useEffect(() => {
-
-        if (source_addsress && walletNetwork && !isValidAddress(source_addsress, walletNetwork)) {
-            const defaultValue = activeWallet?.addresses?.find(a => a === destination_address)
-            if (defaultValue && isValidAddress(defaultValue, walletNetwork) && activeWallet) {
-                setSelectedSourceAccount({
-                    wallet: activeWallet,
-                    address: defaultValue
-                })
-                return
-            }
-
-            setSelectedSourceAccount(undefined)
-        }
-    }, [source_addsress, walletNetwork])
-
-    useEffect(() => {
-        if (!source_addsress && activeWallet && values.depositMethod !== 'deposit_address') {
+        if (!source_addsress && defaultWallet && values.depositMethod !== 'deposit_address') {
             setSelectedSourceAccount({
-                wallet: activeWallet,
-                address: activeWallet.address
+                wallet: defaultWallet,
+                address: defaultWallet.address
             })
         }
-    }, [activeWallet, source_addsress, values.depositMethod, destination_address])
+    }, [defaultWallet, source_addsress, values.depositMethod, destination_address])
 
     useEffect(() => {
-        if (values.depositMethod === 'deposit_address' || !activeWallet?.address || (selectedSourceAccount && !wallets.some(w => w?.addresses?.some(a => a === selectedSourceAccount.address)))) {
+        if (values.depositMethod === 'deposit_address' || !defaultWallet?.address || (selectedSourceAccount && !wallets.some(w => w?.addresses?.some(a => a === selectedSourceAccount.address)))) {
             setSelectedSourceAccount(undefined)
         }
-    }, [values.depositMethod, activeWallet?.address, wallets.length])
+    }, [values.depositMethod, defaultWallet?.address, wallets.length])
 
     useEffect(() => {
         if (walletNetwork && source_token) {
@@ -206,27 +191,19 @@ export const FormSourceWalletButton: FC = () => {
     if (!mounted || !walletNetwork || !values.fromCurrency) return null
 
     if (!provider?.connectedWallets?.length && walletNetwork) {
-        return <SwapButton
-            className="plausible-event-name=Swap+initiated"
+        return <button
             type='button'
-            isDisabled={false}
-            isSubmitting={false}
             onClick={connect}
+            className="w-full"
         >
-            Connect Wallet
-        </SwapButton>
+            <Connect />
+        </button>
     }
     else if (wallets.length > 0) {
         return <>
-            <SwapButton
-                className="plausible-event-name=Swap+initiated"
-                type='button'
-                isDisabled={false}
-                isSubmitting={false}
-                onClick={handleWalletChange}
-            >
-                Connect Wallet
-            </SwapButton>
+            <button type="button" className="w-full" onClick={handleWalletChange}>
+                <Connect />
+            </button>
             <VaulDrawer
                 show={openModal}
                 setShow={setOpenModal}
@@ -246,14 +223,7 @@ export const FormSourceWalletButton: FC = () => {
         </>
     }
     return <ConnectButton className="w-full">
-        <SwapButton
-            className="plausible-event-name=Swap+initiated"
-            type='button'
-            isDisabled={false}
-            isSubmitting={false}
-        >
-            Connect Wallet
-        </SwapButton>
+        <Connect />
     </ConnectButton>
 
 }
@@ -286,34 +256,41 @@ export const WalletsList: FC<WalletListProps> = ({ network, purpose, onSelect, t
             </button>
             <div className="flex flex-col justify-start space-y-3">
                 {
-                    connectedWallets?.map((wallet) => {
-                        return <>
-                            {wallet.addresses?.map((address, index) => {
-                                const walletBalance = balances[address]?.find(b => b?.network === network?.name && b?.token === token?.symbol)
-                                const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, token?.precision)
+                    connectedWallets?.map((wallet) => (
+                        wallet.addresses?.map((address, index) => {
+                            const walletBalance = balances[address]?.find(b => b?.network === network?.name && b?.token === token?.symbol)
+                            const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, token?.precision)
 
-                                const isSelected = selectedSourceAccount?.address === address
-                                return <div key={index} onClick={() => onSelect(wallet, address)} className="w-full cursor-pointer group/addressItem relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
-                                    <AddressWithIcon
-                                        addressItem={{ address: address, group: AddressGroup.ConnectedWallet }}
-                                        connectedWallet={wallet}
-                                        network={network}
-                                        balance={(walletBalanceAmount !== undefined && token) ? { amount: walletBalanceAmount, symbol: token?.symbol, isLoading: isBalanceLoading } : undefined}
-                                    />
-                                    <div className="flex h-6 items-center px-1">
-                                        {
-                                            isSelected &&
-                                            <FilledCheck />
-                                        }
-                                    </div>
+                            const isSelected = selectedSourceAccount?.address === address
+                            return <div key={index} onClick={() => onSelect(wallet, address)} className="w-full cursor-pointer group/addressItem relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
+                                <AddressWithIcon
+                                    addressItem={{ address: address, group: AddressGroup.ConnectedWallet }}
+                                    connectedWallet={wallet}
+                                    network={network}
+                                    balance={(walletBalanceAmount !== undefined && token) ? { amount: walletBalanceAmount, symbol: token?.symbol, isLoading: isBalanceLoading } : undefined}
+                                />
+                                <div className="flex h-6 items-center px-1">
+                                    {
+                                        isSelected &&
+                                        <FilledCheck />
+                                    }
                                 </div>
-                            })}
-                        </>
-                    })
+                            </div>
+                        })
+                    ))
                 }
             </div>
         </div>
     )
+}
+
+const Connect: FC = () => {
+    return <div className="border border-primary disabled:border-primary-900 items-center space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md transform hover:brightness-125 transition duration-200 ease-in-out bg-primary py-3 md:px-3 bg-primary/20 border-none !text-primary !px-4" >
+        <span className="order-first absolute left-0 inset-y-0 flex items-center pl-3">
+            <WalletIcon className="h-6 w-6" strokeWidth="2" />
+        </span>
+        <span className="grow text-center">Connect a wallet</span>
+    </div>
 }
 
 

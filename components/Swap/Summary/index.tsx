@@ -11,7 +11,7 @@ const SwapSummary: FC = () => {
     const { swapResponse } = useSwapDataState()
     const { swap, quote: swapQuote, refuel: swapRefuel } = swapResponse || {}
     const { source_network, destination_network, source_token, destination_token } = swap || {}
-    const { provider } = useWallet(source_network, 'asSource')
+    const { provider } = useWallet(source_network, 'withdrawal')
     const {
         hideFrom,
         account,

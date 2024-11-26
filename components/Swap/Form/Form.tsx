@@ -140,7 +140,21 @@ const SwapForm: FC<Props> = ({ partner }) => {
         const newFromToken = newFrom?.tokens.find(t => t.symbol === toCurrency?.symbol)
         const newToToken = newTo?.tokens.find(t => t.symbol === fromCurrency?.symbol)
 
-        setValues({
+        const destinationProvider = (destination && !toExchange)
+            ? providers.find(p => p.withdrawalSupportedNetworks?.includes(destination?.name) && p.connectedWallets?.some(w => !w.isNotAvailable && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase())))
+            : undefined
+
+        const newDestinationProvider = (newTo && !toExchange) ? providers.find(p => p.name === destinationProvider?.name) : undefined
+        const oldDestinationWallet = newDestinationProvider?.connectedWallets?.find(w => w.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo?.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase()))
+        const oldDestinationWalletIsNotCompatible = destinationProvider?.name !== newDestinationProvider?.name || !(newTo && oldDestinationWallet?.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo?.name.toLowerCase()))
+        const destinationAvailableWallets = newTo ? newDestinationProvider?.connectedWallets?.filter(w => w.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === selectedSourceAccount?.address.toLowerCase())) : undefined
+
+        const oldSourceWalletIsNotCompatible = selectedSourceAccount?.wallet.providerName !== destinationProvider?.name || !(newFrom && selectedSourceAccount?.wallet.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase()))
+
+
+        const changeDestinationAddress = newTo && (oldDestinationWalletIsNotCompatible || oldSourceWalletIsNotCompatible) && destinationAvailableWallets
+
+        const newVales: SwapFormValues = {
             ...values,
             from: newFrom,
             to: newTo,
@@ -149,26 +163,31 @@ const SwapForm: FC<Props> = ({ partner }) => {
             toExchange: newToExchange,
             fromExchange: newFromExchange,
             currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined,
-            destination_address: (selectedSourceAccount?.address && isValidAddress(selectedSourceAccount?.address, newFrom)) ? selectedSourceAccount?.address : values.destination_address
-        }, true);
+            destination_address: values.destination_address,
+        }
 
-        if (newFrom && values.depositMethod !== 'deposit_address' && values.destination_address) {
-            const sourceProvider = providers.find(p => p.withdrawalSupportedNetworks?.includes(newFrom?.name))
-            const sourceWallet = sourceProvider?.connectedWallets?.find(w => !w.isNotAvailable && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase()))
-            if (sourceWallet) {
+        if (changeDestinationAddress) {
+            newVales.destination_address = selectedSourceAccount?.address
+        }
+
+        setValues(newVales, true);
+
+        const changeSourceAddress = newFrom && values.depositMethod !== 'deposit_address' && destinationProvider && (oldSourceWalletIsNotCompatible || changeDestinationAddress)
+
+        if (changeSourceAddress && values.destination_address) {
+            const sourceAvailableWallet = destinationProvider?.connectedWallets?.find(w => w.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase()))
+            if (sourceAvailableWallet) {
                 setSelectedSourceAccount({
-                    wallet: sourceWallet,
+                    wallet: sourceAvailableWallet,
                     address: values.destination_address
                 })
             }
+            else {
+                setSelectedSourceAccount(undefined)
+            }
+
         }
     }, [values, sourceRoutes, destinationRoutes, exchanges])
-
-    const hideAddress = query?.hideAddress
-        && query?.to
-        && query?.destAddress
-        && (query?.lockTo || query?.hideTo)
-        && isValidAddress(query?.destAddress as string, destination)
 
     const handleReserveGas = useCallback((walletBalance: Balance, networkGas: Gas) => {
         if (walletBalance && networkGas)

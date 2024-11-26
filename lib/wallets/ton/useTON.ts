@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { useConnectModal } from "../../../components/WalletModal";
 
 export default function useTON(): WalletProvider {
-    
+
     const commonSupportedNetworks = [
         KnownInternalNames.Networks.TONMainnet,
         KnownInternalNames.Networks.TONTestnet
@@ -19,15 +19,15 @@ export default function useTON(): WalletProvider {
     const tonWallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
 
-    const [tonWallets, setTonWallets] = useState<WalletInfo[] | undefined>([])
+    // const [tonWallets, setTonWallets] = useState<WalletInfo[] | undefined>([])
 
-    useEffect(() => {
-        const getWallets = async () => {
-            const wallets = await tonConnectUI.getWallets()
-            setTonWallets(wallets)
-        }
-        getWallets()
-    }, [])
+    // useEffect(() => {
+    //     const getWallets = async () => {
+    //         const wallets = await tonConnectUI.getWallets()
+    //         setTonWallets(wallets)
+    //     }
+    //     getWallets()
+    // }, [])
 
     const address = tonWallet?.account && Address.parse(tonWallet.account.address).toString({ bounceable: false })
     const iconUrl = tonWallet?.["imageUrl"]
@@ -36,7 +36,7 @@ export default function useTON(): WalletProvider {
         addresses: [address],
         address,
         iconUrl,
-        connector: name,
+        connector: tonWallet.device.appName,
         providerName: id,
         isActive: true,
         icon: resolveWalletConnectorIcon({ connector: name, address, iconUrl }),
@@ -51,27 +51,18 @@ export default function useTON(): WalletProvider {
         return undefined
     }
 
-    const { connect } = useConnectModal()
 
     const connectWallet = async () => {
-        try {
-            return await connect(provider)
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
 
-    const connectConnector = async ({ connector }: { connector: InternalConnector }) => {
-        const tonWallet = tonWallets?.find(w => w.name === connector.name)
-
-        if (!tonWallet) throw new Error('Connector not found')
+        if (tonWallet) {
+            await disconnectWallets()
+        }
 
         function connectAndWaitForStatusChange(wallet) {
             return new Promise((resolve, reject) => {
                 try {
                     // Initiate the connection
-                    tonConnectUI.connector.connect(wallet);
+                    tonConnectUI.openModal();
 
                     // Listen for the status change
                     tonConnectUI.onStatusChange((status) => {
@@ -119,17 +110,17 @@ export default function useTON(): WalletProvider {
         }
     }
 
-    const availableWalletsForConnect: InternalConnector[] | undefined = tonWallets?.map(w => ({
-        id: w.appName,
-        name: w.name,
-        icon: w.imageUrl,
-    }))
+    // const availableWalletsForConnect: InternalConnector[] | undefined = tonWallets?.map(w => ({
+    //     id: w.appName,
+    //     name: w.name,
+    //     icon: w.imageUrl,
+    // }))
 
     const provider = {
         connectWallet,
         disconnectWallets,
-        connectConnector,
-        availableWalletsForConnect,
+        // availableWalletsForConnect,
+        activeAccountAddress: wallet?.address,
         connectedWallets: getWallet(),
         activeWallet: wallet,
         withdrawalSupportedNetworks: commonSupportedNetworks,

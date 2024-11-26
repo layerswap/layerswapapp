@@ -67,12 +67,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const { destination_address, to: destination, toExchange: destinationExchange, toCurrency: destinationAsset } = values
     const groupedAddresses = useAddressesStore(state => state.addresses)
     const setAddresses = useAddressesStore(state => state.setAddresses)
-    const [selectedWallet, setSelectedWallet] = useState<Wallet | undefined>(undefined)
     const { selectedSourceAccount } = useSwapDataState()
     const { provider, wallets } = useWallet(destinationExchange ? undefined : destination, 'autofil')
     const connectedWallets = provider?.connectedWallets
-    const activeWallet = provider?.activeWallet
-    const activeWalletAddress = (selectedSourceAccount && activeWallet?.addresses.find(a => a == selectedSourceAccount?.address)) || activeWallet?.address
+    //TODO: sort by active wallet
+    const defaultWallet = provider?.connectedWallets?.find(w => !w.isNotAvailable)
+    const defaultAddress = (selectedSourceAccount && defaultWallet?.addresses.find(a => a == selectedSourceAccount?.address)) || defaultWallet?.address
+    const [isConnecting, setIsConnecting] = useState(false)
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
 
@@ -90,19 +91,18 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         if (groupedAddresses) setAddresses(groupedAddresses)
 
     }, [address_book, destination, destinationExchange, newAddress, query.destAddress, connectedWallets?.length])
-    
+
     const destinationAddressItem = destination && destination_address ?
         groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase()) || { address: destination_address, group: AddressGroup.ManualAdded }
         : undefined
 
     const addressBookAddresses = groupedAddresses?.filter(a => a.group !== AddressGroup.ConnectedWallet)
 
-    const connectedWallet = destination && destination_address ? connectedWallets?.find(w => w.addresses?.find(a => addressFormat(a, destination) === addressFormat(destination_address, destination))) : undefined
+    const connectedWallet = (destination && destination_address) ? connectedWallets?.find(w => w.addresses?.find(a => addressFormat(a, destination) === addressFormat(destination_address, destination))) : undefined
 
     const handleSelectAddress = useCallback((address: string, wallet: Wallet | undefined) => {
         const selected = destination && groupedAddresses?.find(a => addressFormat(a.address, destination) === addressFormat(address, destination))
         const formattedAddress = selected?.address
-        setSelectedWallet(wallet)
         setFieldValue("destination_address", formattedAddress)
         close()
     }, [close, setFieldValue, groupedAddresses])
@@ -112,30 +112,27 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const autofillConnectedWallet = useCallback(() => {
         if (destination_address || !destination) return
 
-        setFieldValue("destination_address", activeWalletAddress)
-        setSelectedWallet(activeWallet)
-        previouslyAutofilledAddress.current = activeWalletAddress
-        if (showAddressModal && activeWallet) setShowAddressModal(false)
-    }, [setFieldValue, setShowAddressModal, showAddressModal, destination, activeWallet, activeWalletAddress, destination_address])
+        setFieldValue("destination_address", defaultAddress)
+        previouslyAutofilledAddress.current = defaultAddress
+        if (showAddressModal && defaultWallet) setShowAddressModal(false)
+    }, [setFieldValue, setShowAddressModal, showAddressModal, destination, defaultWallet, defaultAddress, destination_address])
 
     const onConnect = (wallet: Wallet) => {
-        setSelectedWallet(wallet)
         setFieldValue("destination_address", wallet.address)
         close()
-        previouslyAutofilledAddress.current = wallet.address
     }
 
     useEffect(() => {
-        if ((!destination_address || (previouslyAutofilledAddress.current && previouslyAutofilledAddress.current != activeWalletAddress)) && activeWallet) {
+        if ((!destination_address || (previouslyAutofilledAddress.current && previouslyAutofilledAddress.current != defaultAddress)) && defaultWallet) {
             autofillConnectedWallet()
         }
-    }, [activeWallet, destination_address])
+    }, [defaultWallet, destination_address])
 
     useEffect(() => {
-        if (previouslyAutofilledAddress.current === destination_address && !activeWallet) {
+        if (previouslyAutofilledAddress.current === destination_address && !defaultWallet) {
             setFieldValue("destination_address", undefined)
         }
-    }, [activeWallet, previouslyAutofilledAddress])
+    }, [defaultWallet, previouslyAutofilledAddress])
     useEffect(() => {
         if (canFocus) {
             inputReference?.current?.focus()
@@ -150,7 +147,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             connectedWallet={connectedWallet}
             partner={partner}
             destination={destination}
-        >{children({ destination, disabled, addressItem: destinationAddressItem, connectedWallet: selectedWallet, partner })}</AddressButton>
+        >{children({ destination, disabled, addressItem: destinationAddressItem, connectedWallet: connectedWallet, partner })}</AddressButton>
         <Modal
             header='Send To'
             height="80%"
@@ -172,7 +169,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                             !disabled
                             && destination
                             && provider
-                            && !activeWallet &&
+                            && !defaultWallet &&
                             <ConnectWalletButton
                                 provider={provider}
                                 onConnect={onConnect}
