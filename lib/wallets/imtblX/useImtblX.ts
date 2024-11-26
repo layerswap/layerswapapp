@@ -34,7 +34,8 @@ export default function useImtblX(): WalletProvider {
         try {
             const imtblClient = new ImtblClient(networkName)
             const res = await imtblClient.ConnectWallet();
-            addWallet({
+
+            const wallet = {
                 address: res.address,
                 connector: 'imx',
                 providerName: name,
@@ -43,7 +44,10 @@ export default function useImtblX(): WalletProvider {
                 connect: () => connectWallet({ chain }),
                 isActive: true,
                 addresses: [res.address]
-            });
+            }
+
+            addWallet(wallet);
+            return wallet
         }
         catch (e) {
             console.log(e)
@@ -55,7 +59,6 @@ export default function useImtblX(): WalletProvider {
     }
 
     return {
-        activeAccountAddress: wallet?.address,
         switchAccount: async () => { },
         connectedWallets: getWallet(),
         activeWallet: wallet,

@@ -15,7 +15,7 @@ import shortenAddress from "../../../components/utils/ShortenAddress";
 import { BAKO_STATE } from "./Basko";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
-import { useWalletModalState } from "../../../stores/walletModalStateStore";
+import { useConnectModal } from "../../../components/WalletModal";
 
 export default function useFuel(): WalletProvider {
     const autofillSupportedNetworks = [KnownInternalNames.Networks.FuelTestnet, KnownInternalNames.Networks.FuelMainnet]
@@ -28,22 +28,20 @@ export default function useFuel(): WalletProvider {
     const { address: evmAddress, connector: evmConnector } = useAccount()
     const { connectors } = useConnectors()
 
-    const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
-    const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
-
     const getWallet = () => {
 
         if (wallet) {
             const result = resolveWallet(wallet.address.toB256(), connectors, evmAddress, evmConnector, connectWallet, disconnectWallets, name, getItem)
 
-            return result
+            return [result]
         }
     }
 
+    const { connect } = useConnectModal()
+
     const connectWallet = async () => {
         try {
-            setSelectedProvider(provider)
-            setWalletModalIsOpen(true)
+            return await connect(provider)
         }
         catch (e) {
             console.log(e)
@@ -122,7 +120,6 @@ export default function useFuel(): WalletProvider {
         switchAccount: reconnectWallet,
         availableWalletsForConnect,
         autofillSupportedNetworks,
-        activeAccountAddress: wallet?.address.toB256(),
         activeWallet: getWallet()?.[0],
         connectedWallets: getWallet(),
         name,
@@ -166,5 +163,5 @@ const resolveWallet = (address: string, connectors, evmAddress, evmConnector, co
         icon: resolveWalletConnectorIcon({ connector: customConnectorname || fuelCurrentConnector, address: address })
     }
 
-    return [w]
+    return w
 }

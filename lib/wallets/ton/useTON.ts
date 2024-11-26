@@ -4,7 +4,7 @@ import KnownInternalNames from "../../knownIds";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useEffect, useState } from "react";
-import { useWalletModalState } from "../../../stores/walletModalStateStore";
+import { useConnectModal } from "../../../components/WalletModal";
 
 export default function useTON(): WalletProvider {
 
@@ -20,9 +20,6 @@ export default function useTON(): WalletProvider {
     const [tonConnectUI] = useTonConnectUI();
 
     // const [tonWallets, setTonWallets] = useState<WalletInfo[] | undefined>([])
-
-    // const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
-    // const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
 
     // useEffect(() => {
     //     const getWallets = async () => {
@@ -78,7 +75,7 @@ export default function useTON(): WalletProvider {
             });
         }
 
-        const result: Wallet[] | undefined = await connectAndWaitForStatusChange(tonWallet)
+        const result: Wallet | undefined = await connectAndWaitForStatusChange(tonWallet)
             .then((status: ConnectedWallet) => {
                 const connectedAddress = Address.parse(status.account.address).toString({ bounceable: false })
                 const connectedName = status.device.appName
@@ -93,7 +90,7 @@ export default function useTON(): WalletProvider {
                     connect: () => connectWallet(),
                 } : undefined
 
-                return wallet ? [wallet] : undefined
+                return wallet ? wallet : undefined
             })
             .catch((error) => {
                 console.error('Promise rejected with error:', error);

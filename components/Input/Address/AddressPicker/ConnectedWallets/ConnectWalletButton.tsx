@@ -2,11 +2,11 @@ import { RefreshCw } from "lucide-react";
 import { ResolveConnectorIcon } from "../../../../icons/ConnectorIcons";
 import { Network } from "../../../../../Models/Network";
 import { FC, useState } from "react";
-import { WalletProvider } from "../../../../../Models/WalletProvider";
+import { Wallet, WalletProvider } from "../../../../../Models/WalletProvider";
 
 type Props = {
     provider: WalletProvider,
-    onConnect?: () => void,
+    onConnect?: (wallet: Wallet) => void,
     destination: Network,
 }
 
@@ -16,8 +16,8 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, destination }) =>
 
     const connect = async () => {
         setIsLoading(true)
-        await provider.connectWallet({ chain: destination.chain_id })
-        if (onConnect) onConnect()
+        const result = await provider.connectWallet({ chain: destination.chain_id })
+        if (onConnect && result) onConnect(result)
         setIsLoading(false)
     }
 

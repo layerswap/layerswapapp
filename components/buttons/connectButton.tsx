@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import useWallet from "../../hooks/useWallet";
-import { useWalletModalState } from "../../stores/walletModalStateStore";
+import { useConnectModal } from "../WalletModal";
 
 const ConnectButton = ({
     children,
@@ -11,11 +11,11 @@ const ConnectButton = ({
 }) => {
     const { providers } = useWallet();
     const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks)
-    const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
+    const { connect } = useConnectModal()
 
     return (
         <button
-            onClick={() => setWalletModalIsOpen(true)}
+            onClick={async () => { await connect() }}
             type="button"
             aria-label="Connect wallet"
             disabled={filteredProviders.length == 0}
