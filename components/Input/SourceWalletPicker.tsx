@@ -183,7 +183,7 @@ export const FormSourceWalletButton: FC = () => {
         const result = await provider?.connectWallet({ chain: walletNetwork?.chain_id || walletNetwork?.name })
 
         if(result) {
-            handleSelectWallet(result[0], result[0].address)
+            handleSelectWallet(result, result.address)
         }
 
     }
@@ -239,7 +239,7 @@ export const WalletsList: FC<WalletListProps> = ({ network, purpose, onSelect, t
         const result = await provider?.connectWallet({ chain: network?.chain_id || network?.name })
 
         if(result) {
-            onSelect(result[0], result[0].address)
+            onSelect(result, result.address)
         }
 
     }

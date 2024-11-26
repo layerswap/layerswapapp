@@ -47,7 +47,7 @@ export default function useImtblX(): WalletProvider {
             }
 
             addWallet(wallet);
-            return [wallet]
+            return wallet
         }
         catch (e) {
             console.log(e)

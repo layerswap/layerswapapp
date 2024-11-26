@@ -61,7 +61,7 @@ export default function useSolana({ network }: { network: Network | undefined })
 
         const connectedWallet = wallets.find(w => w.adapter.connected === true)
         const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()
-        const wallet: Wallet[] | undefined = connectedAddress ? [{
+        const wallet: Wallet | undefined = connectedAddress ? {
             address: connectedAddress,
             connector: connectedWallet?.adapter.name,
             providerName: name,
@@ -70,7 +70,7 @@ export default function useSolana({ network }: { network: Network | undefined })
             connect: () => connectWallet(),
             isActive: true,
             addresses: [connectedAddress]
-        }] : undefined
+        } : undefined
 
         return wallet
     }

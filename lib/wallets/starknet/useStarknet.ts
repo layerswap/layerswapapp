@@ -104,7 +104,7 @@ export default function useStarknet(): WalletProvider {
 
                 addWallet(wallet)
 
-                return [wallet]
+                return wallet
             }
         }
 

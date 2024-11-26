@@ -33,7 +33,7 @@ export default function useFuel(): WalletProvider {
         if (wallet) {
             const result = resolveWallet(wallet.address.toB256(), connectors, evmAddress, evmConnector, connectWallet, disconnectWallets, name, getItem)
 
-            return result
+            return [result]
         }
     }
 
@@ -163,5 +163,5 @@ const resolveWallet = (address: string, connectors, evmAddress, evmConnector, co
         icon: resolveWalletConnectorIcon({ connector: customConnectorname || fuelCurrentConnector, address: address })
     }
 
-    return [w]
+    return w
 }

@@ -14,7 +14,7 @@ export type ModalWalletProvider = WalletProvider & {
     }
 }
 
-type SharedType = { provider?: WalletProvider, connectCallback: (value: Wallet[] | undefined) => void }
+type SharedType = { provider?: WalletProvider, connectCallback: (value: Wallet | undefined) => void }
 
 type ConnectModalContextType = {
     connect: ({ provider, connectCallback }: SharedType) => void;
@@ -40,7 +40,7 @@ export function WalletModalProvider({ children }) {
         return;
     }
 
-    const onFinish = (connectedWallet: Wallet[] | undefined) => {
+    const onFinish = (connectedWallet: Wallet | undefined) => {
         if (connectConfig) {
             connectConfig.connectCallback(connectedWallet);
         }
@@ -114,7 +114,7 @@ export const useConnectModal = () => {
         throw new Error('useConnectModal must be used within a ConnectModalProvider');
     }
 
-    const connect: (provider?: WalletProvider) => Promise<Wallet[] | undefined> = (provider) =>
+    const connect: (provider?: WalletProvider) => Promise<Wallet | undefined> = (provider) =>
         new Promise((res) => {
             context.connect({ provider, connectCallback: res });
         });

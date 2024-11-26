@@ -101,7 +101,7 @@ export default function useEVM({ network }: Props): WalletProvider {
                 isNotAvailable: isNotAvailable(activeAccount.connector, network)
             }
 
-            return [wallet]
+            return wallet
 
         } catch (e) {
             //TODO: handle error like in transfer

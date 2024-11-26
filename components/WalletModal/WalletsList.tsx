@@ -9,7 +9,7 @@ export type WalletsListProps = {
     modalWalletProvider: ModalWalletProvider;
     setSelectedProvider: (value: ModalWalletProvider | undefined) => void;
     selectedProvider: ModalWalletProvider | undefined;
-    onFinish: (connectedWallet: Wallet[] | undefined) => void;
+    onFinish: (connectedWallet: Wallet | undefined) => void;
 };
 
 const WalletsList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, setSelectedProvider, selectedProvider }) => {
