@@ -195,7 +195,12 @@ export const FormSourceWalletButton: FC = () => {
     }
 
     const connect = async () => {
-        await provider?.connectWallet({ chain: walletNetwork?.chain_id || walletNetwork?.name })
+        const result = await provider?.connectWallet({ chain: walletNetwork?.chain_id || walletNetwork?.name })
+
+        if(result) {
+            handleSelectWallet(result[0], result[0].address)
+        }
+
     }
 
     if (!mounted || !walletNetwork || !values.fromCurrency) return null
@@ -261,7 +266,12 @@ export const WalletsList: FC<WalletListProps> = ({ network, purpose, onSelect, t
     const { balances, isBalanceLoading } = useBalancesState()
 
     const connect = async () => {
-        await provider?.connectWallet({ chain: network.chain_id })
+        const result = await provider?.connectWallet({ chain: network?.chain_id || network?.name })
+
+        if(result) {
+            onSelect(result[0], result[0].address)
+        }
+
     }
 
     return (

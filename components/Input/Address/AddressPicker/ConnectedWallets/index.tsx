@@ -13,7 +13,7 @@ type Props = {
     provider: WalletProvider,
     wallets: Wallet[],
     onClick: (address: string, wallet: Wallet) => void,
-    onConnect?: () => void,
+    onConnect?: (wallet: Wallet) => void,
     destination: Network,
     destination_address?: string | undefined
 }
@@ -26,8 +26,8 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
 
     const connect = async () => {
         setIsLoading(true)
-        await provider.connectWallet({ chain: destination.chain_id })
-        if (onConnect) onConnect()
+        const result = await provider.connectWallet({ chain: destination.chain_id })
+        if (onConnect && result) onConnect(result[0])
         setIsLoading(false)
     }
 

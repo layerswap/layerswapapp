@@ -106,8 +106,6 @@ export function WalletModalProvider({ children }) {
     )
 }
 
-
-
 export const useConnectModal = () => {
 
     const context = useContext<ConnectModalContextType>(ConnectModalContext as Context<ConnectModalContextType>);
