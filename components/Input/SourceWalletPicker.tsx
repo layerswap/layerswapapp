@@ -31,28 +31,30 @@ const Component: FC = () => {
     const walletNetwork = values.fromExchange ? undefined : values.from
     const source_token = values.fromCurrency
     const destination_address = values.destination_address
-    const { provider, wallets } = useWallet(walletNetwork, 'withdrawal')
+    const { provider } = useWallet(walletNetwork, 'withdrawal')
     const { fetchBalance } = useBalance()
+    const wallets = provider?.connectedWallets || []
 
     const selectedWallet = selectedSourceAccount?.wallet
-    const activeWallet = provider?.activeWallet
+    //TODO: sort by active wallet
+    const defaultWallet = walletNetwork && wallets?.find(w => !w.isNotAvailable)
     const source_addsress = selectedSourceAccount?.address
     const connectedWallets = provider?.connectedWallets
 
     useEffect(() => {
-        if (!source_addsress && activeWallet && values.depositMethod !== 'deposit_address') {
+        if (!source_addsress && defaultWallet && values.depositMethod !== 'deposit_address') {
             setSelectedSourceAccount({
-                wallet: activeWallet,
-                address: activeWallet.address
+                wallet: defaultWallet,
+                address: defaultWallet.address
             })
         }
-    }, [activeWallet, source_addsress, values.depositMethod, destination_address])
+    }, [defaultWallet, source_addsress, values.depositMethod, destination_address])
 
     useEffect(() => {
-        if (values.depositMethod === 'deposit_address' || !activeWallet?.address || (selectedSourceAccount && !wallets.some(w => w?.addresses?.some(a => a === selectedSourceAccount.address)))) {
+        if (values.depositMethod === 'deposit_address' || !defaultWallet?.address || (selectedSourceAccount && !wallets.some(w => w?.addresses?.some(a => a === selectedSourceAccount.address)))) {
             setSelectedSourceAccount(undefined)
         }
-    }, [values.depositMethod, activeWallet?.address, wallets.length])
+    }, [values.depositMethod, defaultWallet?.address, wallets.length])
 
     useEffect(() => {
         if (walletNetwork && source_token) {

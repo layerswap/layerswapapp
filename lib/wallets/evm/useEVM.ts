@@ -117,7 +117,7 @@ export default function useEVM({ network }: Props): WalletProvider {
     const resolvedConnectors: Wallet[] = useMemo(() => {
         const connections = getConnections(config)
 
-        return activeConnectors.map(w => {
+        return activeConnectors.map((w): Wallet | undefined => {
 
             //TODO: handle Ronin wallet case
             // let roninWalletNetworks = [
@@ -149,16 +149,19 @@ export default function useEVM({ network }: Props): WalletProvider {
                 icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(w), address, iconUrl: w.icon }),
                 connect: connectWallet,
                 disconnect: () => disconnectWallet(w.name),
-                isNotAvailable: isNotAvailable(w, network)
+                isNotAvailable: isNotAvailable(w, network),
+                //TODO:refactor this
+                asSourceSupportedNetworks: w.id === "com.immutable.passport" ? asSourceSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : asSourceSupportedNetworks,
+                autofillSupportedNetworks: w.id === "com.immutable.passport" ? autofillSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : autofillSupportedNetworks,
+                withdrawalSupportedNetworks: w.id === "com.immutable.passport" ? withdrawalSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : withdrawalSupportedNetworks,
             }
         }).filter(w => w !== undefined) as Wallet[]
-    }, [activeAccount, activeConnectors, config])
+    }, [activeAccount, activeConnectors, config, network])
 
     const disconnectWallet = async (connectorName: string) => {
 
         try {
             const connector = activeConnectors.find(w => w.name.toLowerCase() === connectorName.toLowerCase())
-            // connector && await connector.disconnect()
             await disconnectAsync({
                 connector: connector
             })
@@ -225,7 +228,6 @@ const getWalletConnectUri = async (
     }
     return new Promise<void>((resolve) => {
         return provider?.['once'] && provider['once']('display_uri', (uri) => {
-            const converted = uriConverter(uri);
             resolve(useCallback(uriConverter(uri)));
         })
     }
