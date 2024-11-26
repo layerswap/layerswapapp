@@ -17,6 +17,7 @@ import AddressWithIcon from "./Address/AddressPicker/AddressWithIcon";
 import { AddressGroup } from "./Address/AddressPicker";
 import { Wallet } from "../../Models/WalletProvider";
 import WalletIcon from "../icons/WalletIcon";
+import SubmitButton from "../buttons/submitButton";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -275,12 +276,9 @@ export const WalletsList: FC<WalletListProps> = ({ network, purpose, onSelect, t
 }
 
 const Connect: FC = () => {
-    return <div className="border border-primary disabled:border-primary-900 items-center space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md transform hover:brightness-125 transition duration-200 ease-in-out bg-primary py-3 md:px-3 bg-primary/20 border-none !text-primary !px-4" >
-        <span className="order-first absolute left-0 inset-y-0 flex items-center pl-3">
-            <WalletIcon className="h-6 w-6" strokeWidth="2" />
-        </span>
-        <span className="grow text-center">Connect a wallet</span>
-    </div>
+    return <SubmitButton type="button" icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />} >
+        Connect a wallet
+    </SubmitButton>
 }
 
 
