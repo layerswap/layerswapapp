@@ -15,7 +15,7 @@ import useSolanaBalance from '../../../../lib/balances/solana/useSolanaBalance';
 const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount }) => {
     const [loading, setLoading] = useState(false)
     const [insufficientFunds, setInsufficientFunds] = useState<boolean>(false)
-    const [insufficientToken, setInsufficientToken] = useState<string>('')
+    const [insufficientTokens, setInsufficientTokens] = useState<string[]>([])
     const { getWithdrawalProvider } = useWallet()
     const { setSwapTransaction } = useSwapTransactionStore();
 
@@ -52,9 +52,11 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
             const tokenbalanceData = token && networkName && wallet?.address ? await getBalance({ networkName, token, address: wallet?.address }) : undefined
             const tokenBalanceAmount = tokenbalanceData?.amount
 
-            if (Number(solBalance) < feeInSol) setInsufficientToken('SOL')
-            else if (amount && token?.symbol && Number(tokenBalanceAmount) < amount) setInsufficientToken(token?.symbol)
-        
+            const insufficientTokensArr: string[] = []
+            if (Number(solBalance) < feeInSol) insufficientTokensArr.push('SOL')
+            if (amount && token?.symbol && Number(tokenBalanceAmount) < amount) insufficientTokensArr.push(token?.symbol)
+            setInsufficientTokens(insufficientTokensArr)
+
             const signature = await configureAndSendCurrentTransaction(
                 transaction,
                 connection,
@@ -88,7 +90,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
                 <WalletMessage
                     status="error"
                     header='Insufficient funds'
-                    details={`The balance of ${insufficientToken} in the connected wallet is not enough`} />
+                    details={`The balance of ${insufficientTokens?.join(" and ")} in the connected wallet is not enough`} />
             }
             {
                 wallet &&
